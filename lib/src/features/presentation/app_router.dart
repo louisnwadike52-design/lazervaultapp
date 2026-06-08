@@ -499,6 +499,7 @@ import 'package:lazervault/src/features/payroll/presentation/views/pay_run_list_
 import 'package:lazervault/src/features/payroll/presentation/views/create_pay_run_screen.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/pay_run_details_screen.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/pay_slip_details_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/pay_run_receipt_screen.dart';
 
 // Inventory Imports (Business)
 import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_cubit.dart';
@@ -538,8 +539,6 @@ import 'package:lazervault/src/features/tax/presentation/views/vat_schedule_scre
 import 'package:lazervault/src/features/tax/presentation/views/record_vat_screen.dart';
 
 // Business Dashboard
-import 'package:lazervault/src/features/business_dashboard/presentation/cubit/business_dashboard_cubit.dart';
-import 'package:lazervault/src/features/business_dashboard/presentation/views/business_dashboard_screen.dart';
 import 'package:lazervault/src/features/business_analytics/presentation/cubit/business_analytics_cubit.dart';
 import 'package:lazervault/src/features/business_analytics/presentation/views/analytics_screen.dart';
 
@@ -2134,8 +2133,14 @@ GetPage(
     ),
     GetPage(
       name: AppRoutes.createAutoSaveRule,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AutoSaveCubit>(),
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<AutoSaveCubit>()),
+          // Bank Inflow trigger: linked banks + mandate state (same
+          // singletons the Beam flow shares).
+          BlocProvider.value(value: serviceLocator<OpenBankingCubit>()),
+          BlocProvider.value(value: serviceLocator<MandateCubit>()),
+        ],
         child: const CreateAutoSaveRuleScreen(),
       ),
       transition: Transition.rightToLeft,
@@ -3942,16 +3947,6 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
 
-    // ================== Business Dashboard Routes ==================
-    GetPage(
-      name: AppRoutes.businessDashboard,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<BusinessDashboardCubit>(),
-        child: const BusinessDashboardScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-
     // ================== Business Analytics Routes ==================
     GetPage(
       name: AppRoutes.businessAnalytics,
@@ -4018,6 +4013,11 @@ GetPage(
         child: PaySlipDetailsScreen(paySlipId: Get.parameters['id'] ?? ''),
       ),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.payRunReceipt,
+      page: () => const PayRunReceiptScreen(),
+      transition: Transition.downToUp,
     ),
 
     // ================== Inventory Routes (Business) ==================

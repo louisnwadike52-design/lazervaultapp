@@ -16,11 +16,12 @@ const TriggerType$json = const {
     const {'1': 'TRIGGER_ON_DEPOSIT', '2': 1},
     const {'1': 'TRIGGER_SCHEDULED', '2': 2},
     const {'1': 'TRIGGER_ROUND_UP', '2': 3},
+    const {'1': 'TRIGGER_EXTERNAL_INFLOW', '2': 4},
   ],
 };
 
 /// Descriptor for `TriggerType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List triggerTypeDescriptor = $convert.base64Decode('CgtUcmlnZ2VyVHlwZRITCg9UUklHR0VSX1VOS05PV04QABIWChJUUklHR0VSX09OX0RFUE9TSVQQARIVChFUUklHR0VSX1NDSEVEVUxFRBACEhQKEFRSSUdHRVJfUk9VTkRfVVAQAw==');
+final $typed_data.Uint8List triggerTypeDescriptor = $convert.base64Decode('CgtUcmlnZ2VyVHlwZRITCg9UUklHR0VSX1VOS05PV04QABIWChJUUklHR0VSX09OX0RFUE9TSVQQARIVChFUUklHR0VSX1NDSEVEVUxFRBACEhQKEFRSSUdHRVJfUk9VTkRfVVAQAxIbChdUUklHR0VSX0VYVEVSTkFMX0lORkxPVxAE');
 @$core.Deprecated('Use scheduleFrequencyDescriptor instead')
 const ScheduleFrequency$json = const {
   '1': 'ScheduleFrequency',
@@ -87,11 +88,13 @@ const AutoSaveRule$json = const {
     const {'1': 'last_triggered_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastTriggeredAt'},
     const {'1': 'trigger_count', '3': 21, '4': 1, '5': 5, '10': 'triggerCount'},
     const {'1': 'total_saved', '3': 22, '4': 1, '5': 1, '10': 'totalSaved'},
+    const {'1': 'source_linked_account_id', '3': 23, '4': 1, '5': 9, '10': 'sourceLinkedAccountId'},
+    const {'1': 'source_bank_name', '3': 24, '4': 1, '5': 9, '10': 'sourceBankName'},
   ],
 };
 
 /// Descriptor for `AutoSaveRule`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List autoSaveRuleDescriptor = $convert.base64Decode('CgxBdXRvU2F2ZVJ1bGUSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBISCgRuYW1lGAMgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIyCgx0cmlnZ2VyX3R5cGUYBSABKA4yDy5wYi5UcmlnZ2VyVHlwZVILdHJpZ2dlclR5cGUSLwoLYW1vdW50X3R5cGUYBiABKA4yDi5wYi5BbW91bnRUeXBlUgphbW91bnRUeXBlEiEKDGFtb3VudF92YWx1ZRgHIAEoAVILYW1vdW50VmFsdWUSKgoRc291cmNlX2FjY291bnRfaWQYCCABKAlSD3NvdXJjZUFjY291bnRJZBI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAkgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIqCgZzdGF0dXMYCiABKA4yEi5wYi5BdXRvU2F2ZVN0YXR1c1IGc3RhdHVzEjMKCWZyZXF1ZW5jeRgLIAEoDjIVLnBiLlNjaGVkdWxlRnJlcXVlbmN5UglmcmVxdWVuY3kSIwoNc2NoZWR1bGVfdGltZRgMIAEoCVIMc2NoZWR1bGVUaW1lEiEKDHNjaGVkdWxlX2RheRgNIAEoBVILc2NoZWR1bGVEYXkSHgoLcm91bmRfdXBfdG8YDiABKAVSCXJvdW5kVXBUbxIjCg10YXJnZXRfYW1vdW50GA8gASgBUgx0YXJnZXRBbW91bnQSJwoPbWluaW11bV9iYWxhbmNlGBAgASgBUg5taW5pbXVtQmFsYW5jZRIoChBtYXhpbXVtX3Blcl9zYXZlGBEgASgBUg5tYXhpbXVtUGVyU2F2ZRI5CgpjcmVhdGVkX2F0GBIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYEyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSRgoRbGFzdF90cmlnZ2VyZWRfYXQYFCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg9sYXN0VHJpZ2dlcmVkQXQSIwoNdHJpZ2dlcl9jb3VudBgVIAEoBVIMdHJpZ2dlckNvdW50Eh8KC3RvdGFsX3NhdmVkGBYgASgBUgp0b3RhbFNhdmVk');
+final $typed_data.Uint8List autoSaveRuleDescriptor = $convert.base64Decode('CgxBdXRvU2F2ZVJ1bGUSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBISCgRuYW1lGAMgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIyCgx0cmlnZ2VyX3R5cGUYBSABKA4yDy5wYi5UcmlnZ2VyVHlwZVILdHJpZ2dlclR5cGUSLwoLYW1vdW50X3R5cGUYBiABKA4yDi5wYi5BbW91bnRUeXBlUgphbW91bnRUeXBlEiEKDGFtb3VudF92YWx1ZRgHIAEoAVILYW1vdW50VmFsdWUSKgoRc291cmNlX2FjY291bnRfaWQYCCABKAlSD3NvdXJjZUFjY291bnRJZBI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAkgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIqCgZzdGF0dXMYCiABKA4yEi5wYi5BdXRvU2F2ZVN0YXR1c1IGc3RhdHVzEjMKCWZyZXF1ZW5jeRgLIAEoDjIVLnBiLlNjaGVkdWxlRnJlcXVlbmN5UglmcmVxdWVuY3kSIwoNc2NoZWR1bGVfdGltZRgMIAEoCVIMc2NoZWR1bGVUaW1lEiEKDHNjaGVkdWxlX2RheRgNIAEoBVILc2NoZWR1bGVEYXkSHgoLcm91bmRfdXBfdG8YDiABKAVSCXJvdW5kVXBUbxIjCg10YXJnZXRfYW1vdW50GA8gASgBUgx0YXJnZXRBbW91bnQSJwoPbWluaW11bV9iYWxhbmNlGBAgASgBUg5taW5pbXVtQmFsYW5jZRIoChBtYXhpbXVtX3Blcl9zYXZlGBEgASgBUg5tYXhpbXVtUGVyU2F2ZRI5CgpjcmVhdGVkX2F0GBIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYEyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSRgoRbGFzdF90cmlnZ2VyZWRfYXQYFCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg9sYXN0VHJpZ2dlcmVkQXQSIwoNdHJpZ2dlcl9jb3VudBgVIAEoBVIMdHJpZ2dlckNvdW50Eh8KC3RvdGFsX3NhdmVkGBYgASgBUgp0b3RhbFNhdmVkEjcKGHNvdXJjZV9saW5rZWRfYWNjb3VudF9pZBgXIAEoCVIVc291cmNlTGlua2VkQWNjb3VudElkEigKEHNvdXJjZV9iYW5rX25hbWUYGCABKAlSDnNvdXJjZUJhbmtOYW1l');
 @$core.Deprecated('Use createAutoSaveRuleRequestDescriptor instead')
 const CreateAutoSaveRuleRequest$json = const {
   '1': 'CreateAutoSaveRuleRequest',
@@ -110,12 +113,14 @@ const CreateAutoSaveRuleRequest$json = const {
     const {'1': 'target_amount', '3': 12, '4': 1, '5': 1, '10': 'targetAmount'},
     const {'1': 'minimum_balance', '3': 13, '4': 1, '5': 1, '10': 'minimumBalance'},
     const {'1': 'maximum_per_save', '3': 14, '4': 1, '5': 1, '10': 'maximumPerSave'},
+    const {'1': 'source_linked_account_id', '3': 15, '4': 1, '5': 9, '10': 'sourceLinkedAccountId'},
+    const {'1': 'source_bank_name', '3': 16, '4': 1, '5': 9, '10': 'sourceBankName'},
   ],
   '7': const {},
 };
 
 /// Descriptor for `CreateAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createAutoSaveRuleRequestDescriptor = $convert.base64Decode('ChlDcmVhdGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhIKBG5hbWUYASABKAlSBG5hbWUSIAoLZGVzY3JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9uEjIKDHRyaWdnZXJfdHlwZRgDIAEoDjIPLnBiLlRyaWdnZXJUeXBlUgt0cmlnZ2VyVHlwZRIvCgthbW91bnRfdHlwZRgEIAEoDjIOLnBiLkFtb3VudFR5cGVSCmFtb3VudFR5cGUSIQoMYW1vdW50X3ZhbHVlGAUgASgBUgthbW91bnRWYWx1ZRIqChFzb3VyY2VfYWNjb3VudF9pZBgGIAEoCVIPc291cmNlQWNjb3VudElkEjQKFmRlc3RpbmF0aW9uX2FjY291bnRfaWQYByABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEjMKCWZyZXF1ZW5jeRgIIAEoDjIVLnBiLlNjaGVkdWxlRnJlcXVlbmN5UglmcmVxdWVuY3kSIwoNc2NoZWR1bGVfdGltZRgJIAEoCVIMc2NoZWR1bGVUaW1lEiEKDHNjaGVkdWxlX2RheRgKIAEoBVILc2NoZWR1bGVEYXkSHgoLcm91bmRfdXBfdG8YCyABKAVSCXJvdW5kVXBUbxIjCg10YXJnZXRfYW1vdW50GAwgASgBUgx0YXJnZXRBbW91bnQSJwoPbWluaW11bV9iYWxhbmNlGA0gASgBUg5taW5pbXVtQmFsYW5jZRIoChBtYXhpbXVtX3Blcl9zYXZlGA4gASgBUg5tYXhpbXVtUGVyU2F2ZTplkkFiCmDSAQRuYW1l0gEMdHJpZ2dlcl90eXBl0gELYW1vdW50X3R5cGXSAQxhbW91bnRfdmFsdWXSARFzb3VyY2VfYWNjb3VudF9pZNIBFmRlc3RpbmF0aW9uX2FjY291bnRfaWQ=');
+final $typed_data.Uint8List createAutoSaveRuleRequestDescriptor = $convert.base64Decode('ChlDcmVhdGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhIKBG5hbWUYASABKAlSBG5hbWUSIAoLZGVzY3JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9uEjIKDHRyaWdnZXJfdHlwZRgDIAEoDjIPLnBiLlRyaWdnZXJUeXBlUgt0cmlnZ2VyVHlwZRIvCgthbW91bnRfdHlwZRgEIAEoDjIOLnBiLkFtb3VudFR5cGVSCmFtb3VudFR5cGUSIQoMYW1vdW50X3ZhbHVlGAUgASgBUgthbW91bnRWYWx1ZRIqChFzb3VyY2VfYWNjb3VudF9pZBgGIAEoCVIPc291cmNlQWNjb3VudElkEjQKFmRlc3RpbmF0aW9uX2FjY291bnRfaWQYByABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEjMKCWZyZXF1ZW5jeRgIIAEoDjIVLnBiLlNjaGVkdWxlRnJlcXVlbmN5UglmcmVxdWVuY3kSIwoNc2NoZWR1bGVfdGltZRgJIAEoCVIMc2NoZWR1bGVUaW1lEiEKDHNjaGVkdWxlX2RheRgKIAEoBVILc2NoZWR1bGVEYXkSHgoLcm91bmRfdXBfdG8YCyABKAVSCXJvdW5kVXBUbxIjCg10YXJnZXRfYW1vdW50GAwgASgBUgx0YXJnZXRBbW91bnQSJwoPbWluaW11bV9iYWxhbmNlGA0gASgBUg5taW5pbXVtQmFsYW5jZRIoChBtYXhpbXVtX3Blcl9zYXZlGA4gASgBUg5tYXhpbXVtUGVyU2F2ZRI3Chhzb3VyY2VfbGlua2VkX2FjY291bnRfaWQYDyABKAlSFXNvdXJjZUxpbmtlZEFjY291bnRJZBIoChBzb3VyY2VfYmFua19uYW1lGBAgASgJUg5zb3VyY2VCYW5rTmFtZTplkkFiCmDSAQRuYW1l0gEMdHJpZ2dlcl90eXBl0gELYW1vdW50X3R5cGXSAQxhbW91bnRfdmFsdWXSARFzb3VyY2VfYWNjb3VudF9pZNIBFmRlc3RpbmF0aW9uX2FjY291bnRfaWQ=');
 @$core.Deprecated('Use createAutoSaveRuleResponseDescriptor instead')
 const CreateAutoSaveRuleResponse$json = const {
   '1': 'CreateAutoSaveRuleResponse',
@@ -254,11 +259,12 @@ const AutoSaveTransaction$json = const {
     const {'1': 'success', '3': 9, '4': 1, '5': 8, '10': 'success'},
     const {'1': 'error_message', '3': 10, '4': 1, '5': 9, '10': 'errorMessage'},
     const {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    const {'1': 'metadata', '3': 12, '4': 1, '5': 9, '10': 'metadata'},
   ],
 };
 
 /// Descriptor for `AutoSaveTransaction`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List autoSaveTransactionDescriptor = $convert.base64Decode('ChNBdXRvU2F2ZVRyYW5zYWN0aW9uEg4KAmlkGAEgASgJUgJpZBIXCgdydWxlX2lkGAIgASgJUgZydWxlSWQSFwoHdXNlcl9pZBgDIAEoCVIGdXNlcklkEioKEXNvdXJjZV9hY2NvdW50X2lkGAQgASgJUg9zb3VyY2VBY2NvdW50SWQSNAoWZGVzdGluYXRpb25fYWNjb3VudF9pZBgFIAEoCVIUZGVzdGluYXRpb25BY2NvdW50SWQSFgoGYW1vdW50GAYgASgBUgZhbW91bnQSMgoMdHJpZ2dlcl90eXBlGAcgASgOMg8ucGIuVHJpZ2dlclR5cGVSC3RyaWdnZXJUeXBlEiUKDnRyaWdnZXJfcmVhc29uGAggASgJUg10cmlnZ2VyUmVhc29uEhgKB3N1Y2Nlc3MYCSABKAhSB3N1Y2Nlc3MSIwoNZXJyb3JfbWVzc2FnZRgKIAEoCVIMZXJyb3JNZXNzYWdlEjkKCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQ=');
+final $typed_data.Uint8List autoSaveTransactionDescriptor = $convert.base64Decode('ChNBdXRvU2F2ZVRyYW5zYWN0aW9uEg4KAmlkGAEgASgJUgJpZBIXCgdydWxlX2lkGAIgASgJUgZydWxlSWQSFwoHdXNlcl9pZBgDIAEoCVIGdXNlcklkEioKEXNvdXJjZV9hY2NvdW50X2lkGAQgASgJUg9zb3VyY2VBY2NvdW50SWQSNAoWZGVzdGluYXRpb25fYWNjb3VudF9pZBgFIAEoCVIUZGVzdGluYXRpb25BY2NvdW50SWQSFgoGYW1vdW50GAYgASgBUgZhbW91bnQSMgoMdHJpZ2dlcl90eXBlGAcgASgOMg8ucGIuVHJpZ2dlclR5cGVSC3RyaWdnZXJUeXBlEiUKDnRyaWdnZXJfcmVhc29uGAggASgJUg10cmlnZ2VyUmVhc29uEhgKB3N1Y2Nlc3MYCSABKAhSB3N1Y2Nlc3MSIwoNZXJyb3JfbWVzc2FnZRgKIAEoCVIMZXJyb3JNZXNzYWdlEjkKCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSGgoIbWV0YWRhdGEYDCABKAlSCG1ldGFkYXRh');
 @$core.Deprecated('Use getAutoSaveTransactionsRequestDescriptor instead')
 const GetAutoSaveTransactionsRequest$json = const {
   '1': 'GetAutoSaveTransactionsRequest',

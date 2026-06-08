@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/tr
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
@@ -89,6 +90,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       ''; // Stores amount as string of MINOR units (e.g., "2000" for £20.00)
   // final double maxAmount = 15358.00; // TODO: Get max from selected card/account later
   int selectedCardIndex = 0;
+  // The source wallet is LOCKED to the account active on the dashboard (the
+  // one the user swiped into). Other accounts render disabled — you send from
+  // the account you're in. _didInitActiveSelection makes the one-time
+  // pre-selection idempotent across rebuilds.
+  bool _didInitActiveSelection = false;
+  String? get _activeAccountId =>
+      serviceLocator<AccountManager>().activeAccountId;
   ServiceCategory? selectedCategory;
   List<ServiceCategory> _availableCategories = ServiceCategory.commonTransferCategories;
   final TextEditingController _referenceController = TextEditingController();
@@ -429,6 +437,21 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           child: CircularProgressIndicator(color: Colors.white));
     }
 
+    // LOCK the source to the active dashboard account: on the first build with
+    // accounts available, pre-select the account the user swiped into so the
+    // whole flow (fromAccountId at the review step) uses it, and disable every
+    // other card below.
+    final activeId = _activeAccountId;
+    if (!_didInitActiveSelection && activeId != null && activeId.isNotEmpty) {
+      final activeIdx = summaries.indexWhere((a) => a.id == activeId);
+      if (activeIdx >= 0 && activeIdx != selectedCardIndex) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => selectedCardIndex = activeIdx);
+        });
+      }
+      _didInitActiveSelection = true;
+    }
+
     return SizedBox(
       height: 100.h,
       child: ListView.builder(
@@ -437,6 +460,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         itemBuilder: (context, index) {
           final account = summaries[index];
             final isSelected = selectedCardIndex == index;
+            // Disabled = not the active dashboard account. You send from the
+            // wallet you're in; switch accounts on the dashboard to change it.
+            final isLocked = activeId != null &&
+                activeId.isNotEmpty &&
+                account.id != activeId;
 
             // Determine account type display
             String accountTypeDisplay = 'Personal';
@@ -461,8 +489,20 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             String last4 = account.accountNumberLast4;
 
             return GestureDetector(
-              onTap: () => setState(() => selectedCardIndex = index),
-              child: Container(
+              onTap: isLocked
+                  ? () => Get.snackbar(
+                        'Locked to current account',
+                        'Switch accounts on the dashboard to send from a different wallet.',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.black87,
+                        colorText: Colors.white,
+                        margin: EdgeInsets.all(12.w),
+                        duration: const Duration(seconds: 2),
+                      )
+                  : () => setState(() => selectedCardIndex = index),
+              child: Opacity(
+                opacity: isLocked ? 0.4 : 1.0,
+                child: Container(
                 margin: EdgeInsets.only(right: 12.w),
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 width: 160.w,
@@ -533,6 +573,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                     ),
                   ],
                 ),
+              ),
               ),
             );
           },

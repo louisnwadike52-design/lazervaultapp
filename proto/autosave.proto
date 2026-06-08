@@ -25,6 +25,7 @@ enum TriggerType {
     TRIGGER_ON_DEPOSIT = 1;      // Trigger when money is deposited
     TRIGGER_SCHEDULED = 2;        // Trigger on a schedule
     TRIGGER_ROUND_UP = 3;         // Round up transactions to nearest value
+    TRIGGER_EXTERNAL_INFLOW = 4;  // Money arriving in a linked external bank account
 }
 
 // Schedule frequency for scheduled auto-saves
@@ -84,6 +85,12 @@ message AutoSaveRule {
     google.protobuf.Timestamp last_triggered_at = 20;
     int32 trigger_count = 21;                  // Number of times triggered
     double total_saved = 22;                   // Total amount saved via this rule
+
+    // External-inflow trigger: the Mono-linked bank account that feeds this
+    // rule (banking-service pulls the save via its Direct Debit mandate).
+    // source_account_id is unused for TRIGGER_EXTERNAL_INFLOW.
+    string source_linked_account_id = 23;
+    string source_bank_name = 24;
 }
 
 // Create auto-save rule request
@@ -112,6 +119,11 @@ message CreateAutoSaveRuleRequest {
     double target_amount = 12;
     double minimum_balance = 13;
     double maximum_per_save = 14;
+
+    // Required when trigger_type is TRIGGER_EXTERNAL_INFLOW; source_account_id
+    // is ignored for that trigger.
+    string source_linked_account_id = 15;
+    string source_bank_name = 16;
 }
 
 // Create auto-save rule response
@@ -225,6 +237,9 @@ message AutoSaveTransaction {
     bool success = 9;
     string error_message = 10;
     google.protobuf.Timestamp created_at = 11;
+    // JSON context; external_inflow links the save to its banking deposit
+    // ({"deposit_reference", "external_txn_id", "bank_name"}).
+    string metadata = 12;
 }
 
 // Get auto-save transactions request

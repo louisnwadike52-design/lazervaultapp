@@ -539,6 +539,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String payRuns = '/payroll/pay-runs';
   static const String createPayRun = '/payroll/pay-runs/create';
   static const String payRunDetails = '/payroll/pay-runs/details';
+  static const String payRunReceipt = '/payroll/pay-runs/receipt';
   static const String paySlipDetails = '/payroll/payslip';
 
   // Customer CRM Routes (Business)

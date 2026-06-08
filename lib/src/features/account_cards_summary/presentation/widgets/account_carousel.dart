@@ -1023,6 +1023,26 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   Widget _buildBusinessAccountCard(BuildContext context, AccountSummaryEntity account) {
     final currencySymbol = _getCurrencySymbol(account.currency);
+    final isUp = account.trendPercentage >= 0;
+
+    // Same argument shape the personal card passes to the details sheet, so
+    // the Business "Details" CTA can reuse AccountActionsBottomSheet unchanged.
+    final cardArguments = {
+      'id': account.id,
+      'accountType': account.accountType,
+      'currency': account.currency,
+      'balance': _getAccountBalance(account),
+      'availableBalance': _getAvailableBalance(account),
+      'reservedBalance': account.reservedBalance,
+      'accountNumber':
+          account.accountNumber ?? '•••• ${account.accountNumberLast4}',
+      'accountNumberMasked': '•••• ${account.accountNumberLast4}',
+      'bankName': account.bankName ?? 'Wema Bank',
+      'accountName': account.accountName ?? 'LazerVault Business',
+      'trend':
+          '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
+      'isUp': isUp,
+    };
 
     return StreamBuilder<String?>(
       stream: _accountManager.accountIdStream,
@@ -1031,18 +1051,20 @@ class _AccountCarouselState extends State<AccountCarousel> {
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
+            // Business identity uses the app's ORANGE secondary (personal is
+            // the brand purple) over a dark base — on-theme, distinct.
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF0F2647),
-                Color(0xFF1B3A6B),
+                Color(0xFFC2410C), // orange-700
+                Color(0xFF431407), // orange-950 (near-black)
               ],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F2647).withValues(alpha: 0.3),
+                color: const Color(0xFFC2410C).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1107,7 +1129,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                              color: Colors.white.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: Text(
@@ -1175,11 +1197,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
                             ),
                           ),
                           _buildActionButton(
-                            "Dashboard",
-                            Icons.dashboard_rounded,
-                            onTap: () {
-                              Get.toNamed(AppRoutes.businessDashboard);
-                            },
+                            "Details",
+                            Icons.info_outline_rounded,
+                            onTap: () => widget.onShowDetails(cardArguments),
                           ),
                         ],
                       ),

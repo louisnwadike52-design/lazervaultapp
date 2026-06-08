@@ -107,11 +107,10 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.idPay),
   ];
 
-  // Business services (shown when Business card is active)
+  // Business services (shown when Business card is active).
+  // NOTE: the "Dashboard" tile was removed — it duplicated services already on
+  // this grid. The Business card's CTA now opens the account-details sheet.
   static const List<AppService> _businessServices = [
-    AppService(
-        serviceName: AppServiceName.businessDashboard,
-        serviceImg: AppServiceImg.businessDashboard),
     AppService(
         serviceName: AppServiceName.businessAnalytics,
         serviceImg: AppServiceImg.businessAnalytics),

@@ -103,6 +103,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   String? _currentUserId;
   String? _currentUsername;
 
+  // When on, any newly-entered recipient (not already a saved beneficiary) is
+  // persisted to the user's beneficiaries on confirm, so it shows up under the
+  // "Saved" tab + the landing-page Beneficiaries section next time.
+  bool _saveAsBeneficiaries = true;
+
   @override
   void initState() {
     super.initState();
@@ -269,6 +274,30 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     return _tempSelectedRecipients.any((r) => r.id == recipient.id || r.accountNumber == recipient.accountNumber);
   }
 
+  /// Persist any newly-entered recipient (one that isn't already a saved
+  /// beneficiary) to the user's beneficiaries via RecipientService. Fire and
+  /// forget — the cubit refreshes its list so the new beneficiary appears in
+  /// the Saved tab + landing Beneficiaries section. Internal LazerVault users
+  /// and external bank accounts both persist (the proto carries `type` +
+  /// `internalUserId`).
+  void _persistNewBeneficiaries() {
+    try {
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is! AuthenticationSuccess) return;
+      final token = authState.profile.session.accessToken;
+      final cubit = context.read<RecipientCubit>();
+      for (final r in _tempSelectedRecipients) {
+        if (r.isSaved) continue; // already a beneficiary
+        cubit.addRecipient(
+          recipient: r.copyWith(isSaved: true),
+          accessToken: token,
+        );
+      }
+    } catch (_) {
+      // Saving is best-effort; the transfer itself is unaffected.
+    }
+  }
+
   bool _isAlreadyAdded(RecipientModel recipient) {
     return widget.alreadySelectedIds.contains(recipient.id) ||
         widget.alreadySelectedIds.contains(recipient.accountNumber);
@@ -403,7 +432,38 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               color: btCard,
               border: Border(top: BorderSide(color: btBorder)),
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Save-as-beneficiary toggle — only meaningful when at least one
+                // newly-entered (unsaved) recipient is selected.
+                if (_tempSelectedRecipients.any((r) => !r.isSaved))
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: Row(
+                      children: [
+                        Icon(Icons.bookmark_added_outlined,
+                            color: btBlue, size: 18.sp),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            'Save new recipients to beneficiaries',
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                color: btTextPrimary,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        Switch.adaptive(
+                          value: _saveAsBeneficiaries,
+                          activeThumbColor: btBlue,
+                          onChanged: (v) =>
+                              setState(() => _saveAsBeneficiaries = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
@@ -425,6 +485,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   flex: 2,
                   child: ElevatedButton(
                     onPressed: _tempSelectedRecipients.isEmpty ? null : () {
+                      if (_saveAsBeneficiaries) _persistNewBeneficiaries();
                       widget.onRecipientsSelected(_tempSelectedRecipients);
                       Navigator.pop(context);
                     },
@@ -443,6 +504,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                     ),
                   ),
                 ),
+              ],
+            ),
               ],
             ),
           ),
@@ -1634,14 +1697,30 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
 
   void _selectDefaultAccount() {
     if (_accounts.isEmpty) return;
-    // Find the personal account with matching currency, or fallback to first
-    final personalIndex = _accounts.indexWhere(
-      (acc) => acc.accountType.toLowerCase() == 'personal' && acc.currency == _currency,
-    );
+    // Lock the batch source to the account that's active on the dashboard
+    // (e.g. when the user swiped into the Business wallet). Every other
+    // account is rendered disabled. Fall back to the personal account with the
+    // matching currency, then to the first account.
+    final activeId = GetIt.I<AccountManager>().activeAccountId;
+    var index = (activeId != null && activeId.isNotEmpty)
+        ? _accounts.indexWhere((acc) => acc.id == activeId)
+        : -1;
+    if (index < 0) {
+      index = _accounts.indexWhere(
+        (acc) => acc.accountType.toLowerCase() == 'personal' &&
+            acc.currency == _currency,
+      );
+    }
     setState(() {
-      _selectedAccountIndex = personalIndex >= 0 ? personalIndex : 0;
+      _selectedAccountIndex = index >= 0 ? index : 0;
       _updateCurrencyFromAccount();
     });
+  }
+
+  /// The active dashboard account the batch flow is locked to (null if none).
+  String? get _lockedAccountId {
+    final id = GetIt.I<AccountManager>().activeAccountId;
+    return (id != null && id.isNotEmpty) ? id : null;
   }
 
   void _updateCurrencyFromAccount() {
@@ -2560,16 +2639,38 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   final account = _accounts[index];
                   final isSelected = index == _selectedAccountIndex;
                   final typeColor = _getAccountTypeColor(account.accountType);
+                  // Lock the batch source to the active dashboard account; all
+                  // other accounts are disabled (dimmed + tap shows a hint).
+                  final lockedId = _lockedAccountId;
+                  final isLocked = lockedId != null && account.id != lockedId;
 
                   return GestureDetector(
                     onTap: () {
+                      if (isLocked) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Locked to your current account',
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            backgroundColor: btCardElevated,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                        return;
+                      }
                       setState(() {
                         _selectedAccountIndex = index;
                         _updateCurrencyFromAccount();
                       });
                       Navigator.pop(ctx);
                     },
-                    child: Container(
+                    child: Opacity(
+                      opacity: isLocked ? 0.4 : 1.0,
+                      child: Container(
                       margin: EdgeInsets.only(bottom: 8.h),
                       padding: EdgeInsets.all(14.w),
                       decoration: BoxDecoration(
@@ -2626,6 +2727,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                             Icon(Icons.check_circle, color: typeColor, size: 22.sp),
                         ],
                       ),
+                    ),
                     ),
                   );
                 },

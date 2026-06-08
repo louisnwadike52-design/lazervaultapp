@@ -199,6 +199,212 @@ class PayrollPdfService {
   }
 
   // ---------------------------------------------------------------------------
+  // Payroll Report (period summary)
+  // ---------------------------------------------------------------------------
+
+  /// Generate a payroll summary report PDF for a period. `summary` is the same
+  /// map the Reports tab renders (real backend aggregates), `breakdown` is the
+  /// optional per-deduction list from the tax report.
+  static Future<File> generatePayrollReportPdf({
+    required Map<String, dynamic> summary,
+    required String periodStart,
+    required String periodEnd,
+    List<Map<String, dynamic>> breakdown = const [],
+  }) async {
+    await _loadFonts();
+    final pdf = pw.Document();
+    final logo = await _loadLogo();
+    final generatedDate = _fullDateTimeFormat.format(DateTime.now());
+
+    double d(String k) => (summary[k] as num?)?.toDouble() ?? 0.0;
+    int i(String k) => (summary[k] as num?)?.toInt() ?? 0;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context context) => [
+          _buildHeader(logo, generatedDate, '$periodStart - $periodEnd'),
+          pw.SizedBox(height: 20),
+          pw.Text('Payroll Report',
+              style: _getTextStyle(fontSize: 22, isBold: true)),
+          pw.SizedBox(height: 4),
+          pw.Text('Period: $periodStart to $periodEnd',
+              style: _getTextStyle(fontSize: 12, color: PdfColors.grey600)),
+          pw.SizedBox(height: 20),
+          _buildReportSummaryTable(
+            gross: d('totalGross'),
+            deductions: d('totalDeductions'),
+            net: d('totalNet'),
+            employer: d('totalEmployerContributions'),
+            employees: i('employeeCount'),
+            payRuns: i('payRunCount'),
+          ),
+          if (breakdown.isNotEmpty) ...[
+            pw.SizedBox(height: 24),
+            pw.Text('Deduction Breakdown',
+                style: _getTextStyle(fontSize: 14, isBold: true)),
+            pw.SizedBox(height: 8),
+            _buildDeductionBreakdownTable(breakdown),
+          ],
+          pw.SizedBox(height: 30),
+          _buildFooter(),
+        ],
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final fileName =
+        'payroll_report_${periodStart}_$periodEnd.pdf'.replaceAll('-', '');
+    final file = File('${output.path}/$fileName');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Download the payroll report to device storage, returns the saved path.
+  static Future<String> downloadPayrollReport({
+    required Map<String, dynamic> summary,
+    required String periodStart,
+    required String periodEnd,
+    List<Map<String, dynamic>> breakdown = const [],
+  }) async {
+    final file = await generatePayrollReportPdf(
+      summary: summary,
+      periodStart: periodStart,
+      periodEnd: periodEnd,
+      breakdown: breakdown,
+    );
+    Directory? directory;
+    if (Platform.isAndroid) {
+      directory = Directory('/storage/emulated/0/Download');
+      if (!await directory.exists()) {
+        directory = await getExternalStorageDirectory();
+      }
+    } else if (Platform.isIOS) {
+      directory = await getApplicationDocumentsDirectory();
+    } else {
+      directory = await getDownloadsDirectory();
+    }
+    if (directory == null) {
+      throw Exception('Could not access downloads directory');
+    }
+    final saved =
+        File('${directory.path}/payroll_report_$periodStart-$periodEnd.pdf');
+    await file.copy(saved.path);
+    return saved.path;
+  }
+
+  /// Share the payroll report via the system share sheet.
+  static Future<void> sharePayrollReport({
+    required Map<String, dynamic> summary,
+    required String periodStart,
+    required String periodEnd,
+    List<Map<String, dynamic>> breakdown = const [],
+  }) async {
+    final file = await generatePayrollReportPdf(
+      summary: summary,
+      periodStart: periodStart,
+      periodEnd: periodEnd,
+      breakdown: breakdown,
+    );
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
+      text:
+          'Payroll Report ($periodStart to $periodEnd) - Net Paid: ${_formatAmount((summary['totalNet'] as num?)?.toDouble() ?? 0.0)}',
+      subject: 'LazerVault Payroll - Report',
+    ));
+  }
+
+  static pw.Widget _buildReportSummaryTable({
+    required double gross,
+    required double deductions,
+    required double net,
+    required double employer,
+    required int employees,
+    required int payRuns,
+  }) {
+    pw.TableRow row(String label, String value, {PdfColor? color, bool bold = false}) {
+      return pw.TableRow(children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: pw.Text(label, style: _getTextStyle(fontSize: 12, isBold: bold)),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: pw.Text(value,
+              textAlign: pw.TextAlign.right,
+              style: _getTextStyle(fontSize: 12, isBold: bold, color: color)),
+        ),
+      ]);
+    }
+
+    return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+      columnWidths: const {0: pw.FlexColumnWidth(2), 1: pw.FlexColumnWidth(1)},
+      children: [
+        row('Total Gross Pay', _formatAmount(gross)),
+        row('Total Deductions', '- ${_formatAmount(deductions)}',
+            color: PdfColors.red700),
+        row('Total Net Pay', _formatAmount(net),
+            color: PdfColors.green700, bold: true),
+        row('Employer Contributions', _formatAmount(employer),
+            color: PdfColors.orange700),
+        row('Employees Paid', '$employees'),
+        row('Pay Runs', '$payRuns'),
+      ],
+    );
+  }
+
+  static pw.Widget _buildDeductionBreakdownTable(
+      List<Map<String, dynamic>> breakdown) {
+    return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+      columnWidths: const {
+        0: pw.FlexColumnWidth(2),
+        1: pw.FlexColumnWidth(1),
+      },
+      children: [
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+          children: [
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: pw.Text('Type',
+                  style: _getTextStyle(fontSize: 11, isBold: true)),
+            ),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: pw.Text('Amount',
+                  textAlign: pw.TextAlign.right,
+                  style: _getTextStyle(fontSize: 11, isBold: true)),
+            ),
+          ],
+        ),
+        ...breakdown.map((d) {
+          final amt = ((d['amount'] as num?)?.toDouble() ?? 0.0) / 100.0;
+          final type = (d['type'] ?? d['description'] ?? 'Deduction').toString();
+          return pw.TableRow(children: [
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: pw.Text(type, style: _getTextStyle(fontSize: 11)),
+            ),
+            pw.Padding(
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: pw.Text(_formatAmount(amt),
+                  textAlign: pw.TextAlign.right,
+                  style: _getTextStyle(fontSize: 11)),
+            ),
+          ]);
+        }),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // PDF Section Builders
   // ---------------------------------------------------------------------------
 

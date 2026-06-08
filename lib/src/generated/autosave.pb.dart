@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $49;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 import 'autosave.pbenum.dart';
 
@@ -34,11 +34,13 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minimumBalance', $pb.PbFieldType.OD)
     ..a<$core.double>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
-    ..aOM<$49.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
-    ..aOM<$49.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $49.Timestamp.create)
-    ..aOM<$49.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastTriggeredAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastTriggeredAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerCount', $pb.PbFieldType.O3)
     ..a<$core.double>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSaved', $pb.PbFieldType.OD)
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceLinkedAccountId')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceBankName')
     ..hasRequiredFields = false
   ;
 
@@ -61,11 +63,13 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
-    $49.Timestamp? createdAt,
-    $49.Timestamp? updatedAt,
-    $49.Timestamp? lastTriggeredAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+    $1.Timestamp? lastTriggeredAt,
     $core.int? triggerCount,
     $core.double? totalSaved,
+    $core.String? sourceLinkedAccountId,
+    $core.String? sourceBankName,
   }) {
     final _result = create();
     if (id != null) {
@@ -133,6 +137,12 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     }
     if (totalSaved != null) {
       _result.totalSaved = totalSaved;
+    }
+    if (sourceLinkedAccountId != null) {
+      _result.sourceLinkedAccountId = sourceLinkedAccountId;
+    }
+    if (sourceBankName != null) {
+      _result.sourceBankName = sourceBankName;
     }
     return _result;
   }
@@ -311,37 +321,37 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   void clearMaximumPerSave() => clearField(17);
 
   @$pb.TagNumber(18)
-  $49.Timestamp get createdAt => $_getN(17);
+  $1.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($49.Timestamp v) { setField(18, v); }
+  set createdAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $49.Timestamp ensureCreatedAt() => $_ensure(17);
+  $1.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $49.Timestamp get updatedAt => $_getN(18);
+  $1.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($49.Timestamp v) { setField(19, v); }
+  set updatedAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $49.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $49.Timestamp get lastTriggeredAt => $_getN(19);
+  $1.Timestamp get lastTriggeredAt => $_getN(19);
   @$pb.TagNumber(20)
-  set lastTriggeredAt($49.Timestamp v) { setField(20, v); }
+  set lastTriggeredAt($1.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasLastTriggeredAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearLastTriggeredAt() => clearField(20);
   @$pb.TagNumber(20)
-  $49.Timestamp ensureLastTriggeredAt() => $_ensure(19);
+  $1.Timestamp ensureLastTriggeredAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.int get triggerCount => $_getIZ(20);
@@ -360,6 +370,24 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   $core.bool hasTotalSaved() => $_has(21);
   @$pb.TagNumber(22)
   void clearTotalSaved() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get sourceLinkedAccountId => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set sourceLinkedAccountId($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasSourceLinkedAccountId() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearSourceLinkedAccountId() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get sourceBankName => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set sourceBankName($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasSourceBankName() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearSourceBankName() => clearField(24);
 }
 
 class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
@@ -378,6 +406,8 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minimumBalance', $pb.PbFieldType.OD)
     ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceLinkedAccountId')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceBankName')
     ..hasRequiredFields = false
   ;
 
@@ -397,6 +427,8 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
+    $core.String? sourceLinkedAccountId,
+    $core.String? sourceBankName,
   }) {
     final _result = create();
     if (name != null) {
@@ -440,6 +472,12 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
     }
     if (maximumPerSave != null) {
       _result.maximumPerSave = maximumPerSave;
+    }
+    if (sourceLinkedAccountId != null) {
+      _result.sourceLinkedAccountId = sourceLinkedAccountId;
+    }
+    if (sourceBankName != null) {
+      _result.sourceBankName = sourceBankName;
     }
     return _result;
   }
@@ -589,6 +627,24 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   $core.bool hasMaximumPerSave() => $_has(13);
   @$pb.TagNumber(14)
   void clearMaximumPerSave() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get sourceLinkedAccountId => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set sourceLinkedAccountId($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasSourceLinkedAccountId() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearSourceLinkedAccountId() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get sourceBankName => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set sourceBankName($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasSourceBankName() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearSourceBankName() => clearField(16);
 }
 
 class CreateAutoSaveRuleResponse extends $pb.GeneratedMessage {
@@ -1446,7 +1502,8 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerReason')
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
-    ..aOM<$49.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
     ..hasRequiredFields = false
   ;
 
@@ -1462,7 +1519,8 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     $core.String? triggerReason,
     $core.bool? success,
     $core.String? errorMessage,
-    $49.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
+    $core.String? metadata,
   }) {
     final _result = create();
     if (id != null) {
@@ -1497,6 +1555,9 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     }
     if (createdAt != null) {
       _result.createdAt = createdAt;
+    }
+    if (metadata != null) {
+      _result.metadata = metadata;
     }
     return _result;
   }
@@ -1612,15 +1673,24 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(10);
 
   @$pb.TagNumber(11)
-  $49.Timestamp get createdAt => $_getN(10);
+  $1.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($49.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $49.Timestamp ensureCreatedAt() => $_ensure(10);
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
+
+  @$pb.TagNumber(12)
+  $core.String get metadata => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set metadata($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasMetadata() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearMetadata() => clearField(12);
 }
 
 class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {

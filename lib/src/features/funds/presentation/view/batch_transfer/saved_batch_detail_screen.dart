@@ -744,8 +744,13 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                 };
               }).toList();
               Get.offNamed(
-                AppRoutes.batchTransferReceipt,
+                AppRoutes.transferProof,
                 arguments: {
+                  // Batch variant rendered by the shared send-funds receipt.
+                  'isBatch': true,
+                  'amount': executed.totalAmount.toDouble() / 100,
+                  'fee': executed.totalFee.toDouble() / 100,
+                  'reference': executed.batchId,
                   'batchId': executed.batchId,
                   'totalAmount': executed.totalAmount.toDouble() / 100,
                   'totalFee': executed.totalFee.toDouble() / 100,

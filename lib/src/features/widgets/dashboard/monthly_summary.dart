@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/services/account_manager.dart';
+import '../../../../core/services/injection_container.dart';
+import '../../../../core/services/locale_manager.dart';
 import '../../statistics/cubit/statistics_cubit.dart';
 import '../../statistics/cubit/statistics_state.dart';
 import '../../../generated/accounts.pb.dart';
@@ -18,11 +23,35 @@ class MonthlySummary extends StatefulWidget {
 
 class _MonthlySummaryState extends State<MonthlySummary> {
   TimePeriod _selectedPeriod = TimePeriod.month;
+  StreamSubscription<String?>? _accountSub;
+  StreamSubscription<String>? _localeSub;
 
   @override
   void initState() {
     super.initState();
     _loadDataForPeriod(_selectedPeriod);
+
+    // Re-scope monthly spending when the swiped account or locale changes
+    // (mirrors RecentHistory) — the StatisticsCubit fetch carries the active
+    // account + locale via gRPC metadata, so a reload re-scopes it.
+    final accountManager = serviceLocator<AccountManager>();
+    final localeManager = serviceLocator<LocaleManager>();
+    _accountSub = accountManager.accountIdStream
+        .distinct()
+        .where((id) => id != null)
+        .listen((_) {
+      if (mounted) _loadDataForPeriod(_selectedPeriod);
+    });
+    _localeSub = localeManager.countryStream.distinct().listen((_) {
+      if (mounted) _loadDataForPeriod(_selectedPeriod);
+    });
+  }
+
+  @override
+  void dispose() {
+    _accountSub?.cancel();
+    _localeSub?.cancel();
+    super.dispose();
   }
 
   void _loadDataForPeriod(TimePeriod period) {

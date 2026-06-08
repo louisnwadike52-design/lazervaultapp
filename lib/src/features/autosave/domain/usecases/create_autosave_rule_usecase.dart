@@ -23,6 +23,8 @@ class CreateAutoSaveRuleUseCase {
     double? targetAmount,
     double? minimumBalance,
     double? maximumPerSave,
+    String? sourceLinkedAccountId,
+    String? sourceBankName,
   }) {
     return repository.createAutoSaveRule(
       name: name,
@@ -39,6 +41,8 @@ class CreateAutoSaveRuleUseCase {
       targetAmount: targetAmount,
       minimumBalance: minimumBalance,
       maximumPerSave: maximumPerSave,
+      sourceLinkedAccountId: sourceLinkedAccountId,
+      sourceBankName: sourceBankName,
     );
   }
 }

@@ -314,6 +314,11 @@ class _BatchTransferProcessingScreenState
         batchTransferDetails['currencySymbol'] as String? ?? '\u20a6';
 
     final receiptData = <String, dynamic>{
+      // Batch variant rendered by the shared send-funds TransferReceiptScreen.
+      'isBatch': true,
+      'amount': response.totalAmount.toDouble() / 100,
+      'fee': response.totalFee.toDouble() / 100,
+      'reference': response.batchId,
       'batchId': response.batchId,
       'totalAmount': response.totalAmount.toDouble() / 100,
       'totalFee': response.totalFee.toDouble() / 100,
@@ -367,7 +372,8 @@ class _BatchTransferProcessingScreenState
 
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
-        Get.offAllNamed(AppRoutes.batchTransferReceipt, arguments: receiptData);
+        // Reuse the send-funds receipt with the batch variant payload.
+        Get.offAllNamed(AppRoutes.transferProof, arguments: receiptData);
       }
     });
   }

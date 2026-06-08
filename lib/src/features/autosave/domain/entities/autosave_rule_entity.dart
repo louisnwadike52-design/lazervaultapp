@@ -6,6 +6,7 @@ enum TriggerType {
   onDeposit,    // Trigger when money is deposited
   scheduled,    // Trigger on a schedule
   roundUp,      // Round up transactions to nearest value
+  externalInflow, // Money arriving in a linked external bank account
 }
 
 enum ScheduleFrequency {
@@ -43,6 +44,11 @@ class AutoSaveRuleEntity extends Equatable {
   final AutoSaveStatus status;
   final String currency;
 
+  // External-inflow trigger: the Mono-linked bank account that feeds this
+  // rule. sourceAccountId is unused for TriggerType.externalInflow.
+  final String sourceLinkedAccountId;
+  final String sourceBankName;
+
   // For scheduled triggers
   final ScheduleFrequency? frequency;
   final String? scheduleTime; // HH:MM format
@@ -75,6 +81,8 @@ class AutoSaveRuleEntity extends Equatable {
     required this.destinationAccountId,
     required this.status,
     this.currency = 'NGN',
+    this.sourceLinkedAccountId = '',
+    this.sourceBankName = '',
     this.frequency,
     this.scheduleTime,
     this.scheduleDay,
@@ -102,6 +110,8 @@ class AutoSaveRuleEntity extends Equatable {
         destinationAccountId,
         status,
         currency,
+        sourceLinkedAccountId,
+        sourceBankName,
         frequency,
         scheduleTime,
         scheduleDay,
@@ -130,6 +140,10 @@ class AutoSaveRuleEntity extends Equatable {
         return _scheduleDescription;
       case TriggerType.roundUp:
         return 'Round up to nearest ${roundUpTo ?? 0}';
+      case TriggerType.externalInflow:
+        return sourceBankName.isNotEmpty
+            ? 'When money enters $sourceBankName'
+            : 'When money enters your linked bank';
       default:
         return 'Unknown trigger';
     }
@@ -165,6 +179,9 @@ class AutoSaveRuleEntity extends Equatable {
 
   String get amountDescription {
     if (amountType == AmountType.percentage) {
+      if (triggerType == TriggerType.externalInflow) {
+        return '${amountValue.toStringAsFixed(1)}% of each inflow';
+      }
       return '${amountValue.toStringAsFixed(1)}% of deposit';
     } else {
       return '${currency_formatter.CurrencySymbols.getSymbol(currency)}${amountValue.toStringAsFixed(2)} fixed';
@@ -207,6 +224,10 @@ class AutoSaveTransactionEntity extends Equatable {
   final String? errorMessage;
   final DateTime createdAt;
 
+  /// JSON context; external_inflow links the save to its banking deposit
+  /// ({"deposit_reference", "external_txn_id", "bank_name"}).
+  final String metadata;
+
   const AutoSaveTransactionEntity({
     required this.id,
     required this.ruleId,
@@ -220,6 +241,7 @@ class AutoSaveTransactionEntity extends Equatable {
     required this.success,
     this.errorMessage,
     required this.createdAt,
+    this.metadata = '',
   });
 
   @override
@@ -236,6 +258,7 @@ class AutoSaveTransactionEntity extends Equatable {
         success,
         errorMessage,
         createdAt,
+        metadata,
       ];
 
   // Formatted amount with currency

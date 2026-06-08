@@ -80,6 +80,8 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     double? targetAmount,
     double? minimumBalance,
     double? maximumPerSave,
+    String? sourceLinkedAccountId,
+    String? sourceBankName,
   }) async {
     if (isClosed) return;
 
@@ -120,6 +122,8 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       targetAmount: targetAmount,
       minimumBalance: minimumBalance,
       maximumPerSave: maximumPerSave,
+      sourceLinkedAccountId: sourceLinkedAccountId,
+      sourceBankName: sourceBankName,
     );
 
     result.fold(

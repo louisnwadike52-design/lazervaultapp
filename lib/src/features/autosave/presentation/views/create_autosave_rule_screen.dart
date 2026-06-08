@@ -33,7 +33,16 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
+import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_status_badge.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 
 // ─── Theme constants — aligned with the contribution flow palette ───
 const _bg = Color(0xFF0A0A0A);
@@ -45,6 +54,7 @@ const _accentDeep = Color.fromARGB(255, 78, 3, 208);
 const _onDepositTint = Color(0xFF3B82F6); // blue — on-deposit
 const _scheduledTint = Color(0xFF10B981); // emerald — scheduled
 const _roundUpTint = Color(0xFFF59E0B); // amber — round-up
+const _inflowTint = Color(0xFFFB923C); // orange — bank inflow (external)
 const _textMuted = Color(0xFF9CA3AF);
 const _danger = Color(0xFFEF4444);
 const _success = Color(0xFF10B981);
@@ -71,7 +81,13 @@ class CreateAutoSaveRuleScreen extends StatefulWidget {
 }
 
 class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
-  static const int _totalSteps = 6;
+  // Four-step flow (was six). Consolidated for a shorter-feeling journey
+  // without dropping any field:
+  //   0 Setup     = name + description + trigger type   (old 0 + 1)
+  //   1 Configure = trigger-specific config + amount    (old 2 + 3)
+  //   2 Accounts  = source + destination                (old 4)
+  //   3 Limits    = optional goals/guardrails           (old 5)
+  static const int _totalSteps = 4;
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
@@ -93,6 +109,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   String? _selectedSourceAccountId;
   String? _selectedDestinationAccountId;
 
+  // Bank-inflow trigger: the Mono-linked external account that feeds the
+  // rule. Selectable only when its Direct Debit mandate is ready to debit.
+  LinkedBankAccount? _selectedLinkedAccount;
+
   String? _stepError;
 
   @override
@@ -102,6 +122,19 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     context
         .read<AccountCardsSummaryCubit>()
         .fetchAccountSummaries(userId: userId, accessToken: null);
+
+    // Bank-inflow trigger needs the user's Mono-linked accounts + mandate
+    // states (same data the Beam flow uses).
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      context.read<OpenBankingCubit>().fetchLinkedAccounts(
+            userId: authState.profile.userId,
+            accessToken: authState.profile.session.accessToken,
+          );
+      context.read<MandateCubit>().fetchUserMandates(
+            userId: authState.profile.userId,
+          );
+    }
 
     final args = Get.arguments;
     if (args is Map && args.containsKey('duplicateFrom')) {
@@ -163,13 +196,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   String? _validateCurrentStep() {
     switch (_currentStep) {
       case 0:
+        // Setup: name (trigger always has a default, no validation needed).
         if (_nameController.text.trim().length < 3) {
           return 'Give your rule a name (3+ characters)';
         }
         return null;
       case 1:
-        return null;
-      case 2:
+        // Configure: trigger-specific config THEN amount.
         if (_selectedTriggerType == TriggerType.scheduled) {
           if (_selectedFrequency == null) return 'Pick how often it should run';
           if (_needsScheduleDay(_selectedFrequency!) &&
@@ -181,15 +214,25 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           final val = _resolvedRoundUpTo();
           if (val == null || val < 10) return 'Pick a round-up amount (≥ 10)';
         }
-        return null;
-      case 3:
         final amt = double.tryParse(_amountController.text.trim());
         if (amt == null || amt <= 0) return 'Enter a valid amount';
         if (_selectedAmountType == AmountType.percentage && amt > 100) {
           return 'Percentage must be 1-100';
         }
         return null;
-      case 4:
+      case 2:
+        if (_selectedTriggerType == TriggerType.externalInflow) {
+          if (_selectedLinkedAccount == null) {
+            return 'Pick the linked bank to save from';
+          }
+          if (!_isMandateReady(_selectedLinkedAccount!)) {
+            return 'Set up Direct Debit on that bank first';
+          }
+          if (_selectedDestinationAccountId == null) {
+            return 'Pick a destination account';
+          }
+          return null;
+        }
         if (_selectedSourceAccountId == null) return 'Pick a source account';
         if (_selectedDestinationAccountId == null) {
           return 'Pick a destination account';
@@ -198,7 +241,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           return 'Source and destination must differ';
         }
         return null;
-      case 5:
+      case 3:
         if (_maximumPerSaveController.text.isNotEmpty) {
           final maxPer = double.tryParse(_maximumPerSaveController.text);
           if (maxPer == null || maxPer <= 0) return 'Max per save must be > 0';
@@ -259,20 +302,27 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 
   void _submit() {
     final accountsState = context.read<AccountCardsSummaryCubit>().state;
+    final isInflow = _selectedTriggerType == TriggerType.externalInflow;
     String sourceName = 'Source';
     String destName = 'Destination';
     if (accountsState is AccountCardsSummaryLoaded) {
       final summaries = accountsState.accountSummaries;
-      final src = summaries.firstWhere(
-        (a) => a.id.toString() == _selectedSourceAccountId,
-        orElse: () => summaries.first,
-      );
+      if (!isInflow) {
+        final src = summaries.firstWhere(
+          (a) => a.id.toString() == _selectedSourceAccountId,
+          orElse: () => summaries.first,
+        );
+        sourceName = '${src.accountType} (****${src.accountNumberLast4})';
+      }
       final dst = summaries.firstWhere(
         (a) => a.id.toString() == _selectedDestinationAccountId,
         orElse: () => summaries.first,
       );
-      sourceName = '${src.accountType} (****${src.accountNumberLast4})';
       destName = '${dst.accountType} (****${dst.accountNumberLast4})';
+    }
+    if (isInflow && _selectedLinkedAccount != null) {
+      sourceName =
+          '${_selectedLinkedAccount!.bankName} (${_selectedLinkedAccount!.accountNumber})';
     }
 
     final isScheduled = _selectedTriggerType == TriggerType.scheduled;
@@ -286,7 +336,12 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         'triggerType': _selectedTriggerType,
         'amountType': _selectedAmountType,
         'amountValue': double.parse(_amountController.text),
-        'sourceAccountId': _selectedSourceAccountId!,
+        // External-inflow rules have no LazerVault source wallet — the
+        // linked bank is the source (banking-service mandate pulls from it).
+        'sourceAccountId': isInflow ? '' : _selectedSourceAccountId!,
+        'sourceLinkedAccountId':
+            isInflow ? _selectedLinkedAccount!.id : null,
+        'sourceBankName': isInflow ? _selectedLinkedAccount!.bankName : null,
         'destinationAccountId': _selectedDestinationAccountId!,
         'sourceAccountName': sourceName,
         'destinationAccountName': destName,
@@ -330,10 +385,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (i) => setState(() => _currentStep = i),
                 children: [
-                  _stepBasics(),
-                  _stepTriggerType(),
-                  _stepTriggerConfig(),
-                  _stepAmount(),
+                  _stepSetup(),
+                  _stepConfigure(),
                   _stepAccounts(),
                   _stepLimits(),
                 ],
@@ -355,25 +408,12 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   String _stepHeroTitle(int step) {
     switch (step) {
       case 0:
-        return 'Name your rule';
+        return 'Set up your rule';
       case 1:
-        return 'Pick a trigger';
+        return 'Configure & amount';
       case 2:
-        switch (_selectedTriggerType) {
-          case TriggerType.scheduled:
-            return 'When should it run?';
-          case TriggerType.roundUp:
-            return 'Round up to…';
-          case TriggerType.onDeposit:
-            return 'On every deposit';
-          case TriggerType.unknown:
-            return 'Configure trigger';
-        }
-      case 3:
-        return 'Choose amount';
-      case 4:
         return 'Pick accounts';
-      case 5:
+      case 3:
         return 'Optional limits';
     }
     return '';
@@ -382,34 +422,36 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   String _stepHeroSubtitle(int step) {
     switch (step) {
       case 0:
-        return 'A short, recognisable label and an optional note for yourself.';
+        return 'Name it and pick how it should fire. You can change this later.';
       case 1:
-        return 'Pick how the rule should fire. You can change this later.';
-      case 2:
+        // Configure step blends the trigger config with the amount, so the
+        // subtitle leads with the trigger-specific framing.
         switch (_selectedTriggerType) {
           case TriggerType.scheduled:
-            return 'Daily, weekly, bi-weekly or monthly. Choose any time of day.';
+            return 'Choose the cadence, then how much to save each run.';
           case TriggerType.roundUp:
-            return 'Every spend rounds up to this multiple. The change is saved.';
+            return 'Set the round-up unit, then an optional per-fire cap.';
           case TriggerType.onDeposit:
-            return 'Every credit on your source account triggers a save.';
+            return 'Save a fixed amount or a percentage of each deposit.';
+          case TriggerType.externalInflow:
+            return 'Save a fixed amount or a percentage of each bank inflow.';
           case TriggerType.unknown:
             return '';
         }
+      case 2:
+        return _selectedTriggerType == TriggerType.externalInflow
+            ? 'Pick the linked bank to watch and the LazerVault account the savings land in.'
+            : 'Money goes from the source to the destination. Pick a destination savings account.';
       case 3:
-        return _selectedTriggerType == TriggerType.roundUp
-            ? 'Cap each round-up save with a per-fire ceiling.'
-            : 'Save a fixed amount or a percentage of incoming deposits.';
-      case 4:
-        return 'Money goes from the source to the destination. Pick a destination savings account.';
-      case 5:
         return 'Goals and guardrails. Skip anything you don\'t need.';
     }
     return '';
   }
 
   Color _stepHeroAccent() {
-    if (_currentStep != 2) return _accent;
+    // The Configure step (1) carries the picked trigger's accent; everything
+    // else uses the wizard's primary indigo.
+    if (_currentStep != 1) return _accent;
     return _triggerColor(_selectedTriggerType);
   }
 
@@ -421,57 +463,67 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         return _scheduledTint;
       case TriggerType.roundUp:
         return _roundUpTint;
+      case TriggerType.externalInflow:
+        return _inflowTint;
       case TriggerType.unknown:
         return _accent;
     }
   }
 
-  // ─── Step 1: Basics ─────────────────────────────────────────────
+  // ─── Step 0: Setup (name + description + trigger type) ──────────
 
-  Widget _stepBasics() {
+  Widget _stepSetup() {
     return _StepBody(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _LabeledField(
-            label: 'Rule name',
-            counter:
-                '${_nameController.text.length}/60',
-            child: _TextInput(
-              controller: _nameController,
-              hint: 'e.g. Save on Paycheck',
-              autofocus: true,
-              maxLength: 60,
-              onChanged: (_) {
-                if (_stepError != null) setState(() => _stepError = null);
-                setState(() {}); // counter
-              },
-            ),
-          ),
-          SizedBox(height: 20.h),
-          _LabeledField(
-            label: 'Description',
-            optional: true,
-            counter:
-                '${_descriptionController.text.length}/200',
-            child: _TextInput(
-              controller: _descriptionController,
-              hint: 'A short note for yourself',
-              maxLines: 3,
-              maxLength: 200,
-              onChanged: (_) => setState(() {}),
-            ),
-          ),
+          _basicsSection(),
+          SizedBox(height: 28.h),
+          _SectionTitle('Choose a trigger'),
+          SizedBox(height: 14.h),
+          _triggerTypeSection(),
         ],
       ),
     );
   }
 
-  // ─── Step 2: Trigger type ───────────────────────────────────────
+  Widget _basicsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _LabeledField(
+          label: 'Rule name',
+          counter: '${_nameController.text.length}/60',
+          child: _TextInput(
+            controller: _nameController,
+            hint: 'e.g. Save on Paycheck',
+            autofocus: true,
+            maxLength: 60,
+            onChanged: (_) {
+              if (_stepError != null) setState(() => _stepError = null);
+              setState(() {}); // counter
+            },
+          ),
+        ),
+        SizedBox(height: 20.h),
+        _LabeledField(
+          label: 'Description',
+          optional: true,
+          counter: '${_descriptionController.text.length}/200',
+          child: _TextInput(
+            controller: _descriptionController,
+            hint: 'A short note for yourself',
+            maxLines: 3,
+            maxLength: 200,
+            onChanged: (_) => setState(() {}),
+          ),
+        ),
+      ],
+    );
+  }
 
-  Widget _stepTriggerType() {
-    return _StepBody(
-      child: Column(
+  Widget _triggerTypeSection() {
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _TriggerCard(
@@ -512,14 +564,43 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               _stepError = null;
             }),
           ),
+          SizedBox(height: 14.h),
+          _TriggerCard(
+            tint: _inflowTint,
+            icon: Icons.account_balance_rounded,
+            title: 'Bank Inflow',
+            description:
+                'Auto-save when money enters your linked bank. Direct Debit moves a slice straight into LazerVault.',
+            selected: _selectedTriggerType == TriggerType.externalInflow,
+            onTap: () => setState(() {
+              _selectedTriggerType = TriggerType.externalInflow;
+              _stepError = null;
+            }),
+          ),
+        ],
+      );
+  }
+
+  // ─── Step 1: Configure (trigger config + amount) ────────────────
+
+  Widget _stepConfigure() {
+    return _StepBody(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _triggerConfigSection(),
+          SizedBox(height: 26.h),
+          Container(height: 1, color: _hairline),
+          SizedBox(height: 26.h),
+          _SectionTitle('Amount'),
+          SizedBox(height: 14.h),
+          _amountSection(),
         ],
       ),
     );
   }
 
-  // ─── Step 3: Trigger config ─────────────────────────────────────
-
-  Widget _stepTriggerConfig() {
+  Widget _triggerConfigSection() {
     switch (_selectedTriggerType) {
       case TriggerType.scheduled:
         return _scheduledConfig();
@@ -527,14 +608,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         return _roundUpConfig();
       case TriggerType.onDeposit:
         return _onDepositConfig();
+      case TriggerType.externalInflow:
+        return _externalInflowConfig();
       case TriggerType.unknown:
         return const SizedBox.shrink();
     }
   }
 
   Widget _scheduledConfig() {
-    return _StepBody(
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _SectionTitle('Frequency'),
@@ -649,16 +731,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             },
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _roundUpConfig() {
     final presets = const [50, 100, 500, 1000];
     final isCustom =
         _selectedRoundUpTo != null && !presets.contains(_selectedRoundUpTo);
-    return _StepBody(
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _SectionTitle('Round up unit'),
@@ -718,8 +798,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             body: _roundUpExampleText(),
           ),
         ],
-      ),
-    );
+      );
   }
 
   String _roundUpExampleText() {
@@ -735,8 +814,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   }
 
   Widget _onDepositConfig() {
-    return _StepBody(
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _PreviewCard(
@@ -755,15 +833,44 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 'Saves caused by your own auto-save rules are filtered out, so the trigger can never fire itself.',
           ),
         ],
-      ),
-    );
+      );
   }
 
-  // ─── Step 4: Amount ─────────────────────────────────────────────
+  Widget _externalInflowConfig() {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _PreviewCard(
+            tint: _inflowTint,
+            icon: Icons.account_balance_rounded,
+            title: 'How it works',
+            body:
+                'When money lands in your linked bank account, LazerVault pulls your configured save through the bank\'s Direct Debit mandate into your savings. You pick the bank on the accounts step.',
+          ),
+          SizedBox(height: 14.h),
+          _PreviewCard(
+            tint: _onDepositTint,
+            icon: Icons.sync_rounded,
+            title: 'Detection timing',
+            body:
+                'Inflows are detected when your bank data syncs. Most saves fire within minutes of the money arriving.',
+          ),
+          SizedBox(height: 14.h),
+          _PreviewCard(
+            tint: _success,
+            icon: Icons.shield_outlined,
+            title: 'Direct Debit required',
+            body:
+                'The selected bank needs an active Direct Debit mandate. If it doesn\'t have one yet, you can set it up in the same flow.',
+          ),
+        ],
+      );
+  }
 
-  Widget _stepAmount() {
-    return _StepBody(
-      child: Column(
+  // ─── Amount section (rendered inside the Configure step) ────────
+
+  Widget _amountSection() {
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_selectedTriggerType != TriggerType.roundUp) ...[
@@ -787,9 +894,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               final symbol = snapshot.data ?? '\$';
               final isPct = _selectedAmountType == AmountType.percentage &&
                   _selectedTriggerType != TriggerType.roundUp;
+              final pctLabel =
+                  _selectedTriggerType == TriggerType.externalInflow
+                      ? 'Percentage of each inflow'
+                      : 'Percentage of deposit';
               final label = _selectedTriggerType == TriggerType.roundUp
                   ? 'Per-fire cap ($symbol)'
-                  : (isPct ? 'Percentage of deposit' : 'Save amount ($symbol)');
+                  : (isPct ? pctLabel : 'Save amount ($symbol)');
               return _LabeledField(
                 label: label,
                 child: _TextInput(
@@ -834,13 +945,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             ),
           ],
         ],
-      ),
-    );
+      );
   }
 
   // ─── Step 5: Accounts ───────────────────────────────────────────
 
   Widget _stepAccounts() {
+    if (_selectedTriggerType == TriggerType.externalInflow) {
+      return _stepAccountsExternalInflow();
+    }
     return _StepBody(
       child: BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
         builder: (context, state) {
@@ -933,6 +1046,147 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         },
       ),
     );
+  }
+
+  // ─── Step 5 (Bank Inflow): linked bank source + wallet destination ───
+
+  bool _isMandateReady(LinkedBankAccount account) {
+    final mandate = context.read<MandateCubit>().getMandateForAccount(account.id);
+    return mandate != null &&
+        (mandate.status == MandateStatus.readyToDebit ||
+            mandate.status == MandateStatus.active);
+  }
+
+  Widget _stepAccountsExternalInflow() {
+    return _StepBody(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SectionTitle('Linked bank to watch'),
+          SizedBox(height: 4.h),
+          Text(
+            'Saves are pulled from this bank via Direct Debit. Banks without a ready mandate show a setup action.',
+            style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
+          ),
+          SizedBox(height: 12.h),
+          BlocBuilder<OpenBankingCubit, OpenBankingState>(
+            builder: (context, obState) {
+              final accounts =
+                  context.read<OpenBankingCubit>().linkedAccounts;
+              if (obState is OpenBankingLoading && accounts.isEmpty) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40.h),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(_inflowTint),
+                    ),
+                  ),
+                );
+              }
+              if (accounts.isEmpty) {
+                return _PreviewCard(
+                  tint: _inflowTint,
+                  icon: Icons.link_off_rounded,
+                  title: 'No linked banks yet',
+                  body:
+                      'Link a bank account first (Deposit → Link bank). Once linked, it shows up here.',
+                );
+              }
+              return BlocBuilder<MandateCubit, MandateState>(
+                builder: (context, _) => Column(
+                  children: [
+                    for (final account in accounts) ...[
+                      _LinkedBankRow(
+                        account: account,
+                        mandate: context
+                            .read<MandateCubit>()
+                            .getMandateForAccount(account.id),
+                        selected: _selectedLinkedAccount?.id == account.id,
+                        ready: _isMandateReady(account),
+                        onTap: () => _onLinkedBankTapped(account),
+                      ),
+                      SizedBox(height: 12.h),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+          SizedBox(height: 16.h),
+          BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+            builder: (context, state) {
+              if (state is! AccountCardsSummaryLoaded) {
+                return const SizedBox.shrink();
+              }
+              final all = state.accountSummaries;
+              final dests = all
+                  .where((a) =>
+                      a.accountType.toLowerCase().contains('saving') ||
+                      a.accountType.toLowerCase().contains('money market'))
+                  .toList();
+              if (_selectedDestinationAccountId == null && dests.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  if (_selectedDestinationAccountId != null) return;
+                  setState(() => _selectedDestinationAccountId =
+                      dests.first.id.toString());
+                });
+              }
+              return _LabeledField(
+                label: 'Destination account',
+                badge: dests.isEmpty ? null : 'Savings',
+                help: dests.isEmpty
+                    ? 'You have no savings account yet. Pick any other account.'
+                    : 'Where each save lands inside LazerVault.',
+                child: _AccountDropdown(
+                  accounts: dests.isEmpty ? all : dests,
+                  valueId: _selectedDestinationAccountId,
+                  hint: 'Where the money lands',
+                  onChanged: (v) => setState(() {
+                    _selectedDestinationAccountId = v;
+                    _stepError = null;
+                  }),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onLinkedBankTapped(LinkedBankAccount account) {
+    if (_isMandateReady(account)) {
+      setState(() {
+        _selectedLinkedAccount = account;
+        _stepError = null;
+      });
+      return;
+    }
+    // No ready mandate — open the same management sheet the Beam flow uses
+    // so the user can set up / finish Direct Debit without leaving the wizard.
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    final mandate =
+        context.read<MandateCubit>().getMandateForAccount(account.id);
+    showMandateManagementBottomSheet(
+      context: context,
+      linkedAccountId: account.id,
+      userId: userId,
+      bankName: account.bankName,
+      accountName: account.accountName,
+      mandate: mandate,
+    ).then((_) {
+      if (!mounted) return;
+      // Refresh mandate state after the sheet closes; auto-select when the
+      // mandate became ready while the sheet was open.
+      context.read<MandateCubit>().fetchUserMandates(userId: userId);
+      if (_isMandateReady(account)) {
+        setState(() => _selectedLinkedAccount = account);
+      } else {
+        setState(() {});
+      }
+    });
   }
 
   // ─── Step 6: Limits ────────────────────────────────────────────
@@ -2283,6 +2537,129 @@ class _AccountsLoadErrorState extends StatelessWidget {
           SizedBox(height: 16.h),
           _SoftButton(label: 'Try again', onTap: onRetry),
         ],
+      ),
+    );
+  }
+}
+
+// Linked external bank row for the Bank Inflow trigger. State-driven:
+//   • mandate ready  → selectable card with a ⚡ ready badge
+//   • otherwise      → "Set up Direct Debit" action row (opens the same
+//     mandate sheet the Beam flow uses)
+class _LinkedBankRow extends StatelessWidget {
+  final LinkedBankAccount account;
+  final MandateEntity? mandate;
+  final bool selected;
+  final bool ready;
+  final VoidCallback onTap;
+  const _LinkedBankRow({
+    required this.account,
+    required this.mandate,
+    required this.selected,
+    required this.ready,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: selected ? _inflowTint.withValues(alpha: 0.12) : _surface,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: selected ? _inflowTint : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            if (!selected) _shadowSoft,
+            if (selected)
+              BoxShadow(
+                color: _inflowTint.withValues(alpha: 0.28),
+                blurRadius: 16,
+                offset: const Offset(0, 7),
+              ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: _inflowTint.withValues(alpha: selected ? 0.26 : 0.14),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.account_balance,
+                  color: _inflowTint, size: 22.sp),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    account.bankName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '${account.accountName}  ${account.accountNumber}',
+                    style: GoogleFonts.inter(
+                      color: _textMuted,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  MandateStatusBadge(mandate: mandate),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            if (ready)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 24.w,
+                height: 24.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? _inflowTint : Colors.transparent,
+                  border: Border.all(
+                    color: selected ? _inflowTint : _hairline,
+                    width: 2,
+                  ),
+                ),
+                child: selected
+                    ? Icon(Icons.check_rounded,
+                        color: Colors.white, size: 14.sp)
+                    : null,
+              )
+            else
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: _onDepositTint.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Text(
+                  'Set up Direct Debit',
+                  style: GoogleFonts.inter(
+                    color: _onDepositTint,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

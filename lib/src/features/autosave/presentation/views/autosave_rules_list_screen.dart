@@ -7,7 +7,6 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
-import 'package:lazervault/src/features/autosave/presentation/views/create_autosave_rule_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_analytics_card.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_filter_tabs.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_list_shimmer.dart';
@@ -551,20 +550,22 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
 
   Widget _buildFAB() {
     return FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BlocProvider.value(
-              value: context.read<AutoSaveCubit>(),
-              child: const CreateAutoSaveRuleScreen(),
-            ),
-          ),
-        ).then((_) => context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true));
-      },
+      onPressed: _openCreateRule,
       backgroundColor: const Color.fromARGB(255, 78, 3, 208),
       child: const Icon(Icons.add, color: Colors.white),
     );
+  }
+
+  /// Open the create-rule wizard via its NAMED route. The route registers
+  /// AutoSaveCubit + OpenBankingCubit + MandateCubit — the latter two are
+  /// required by the Bank Inflow trigger's linked-account picker. The old
+  /// inline Navigator.push only forwarded AutoSaveCubit, so opening the
+  /// wizard from here threw "Could not find Provider<OpenBankingCubit>".
+  void _openCreateRule() {
+    Get.toNamed(AppRoutes.createAutoSaveRule)?.then((_) {
+      if (!mounted) return;
+      context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+    });
   }
 
   Widget _buildEmptyState() {
@@ -597,17 +598,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
           ),
           SizedBox(height: 24.h),
           ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<AutoSaveCubit>(),
-                    child: const CreateAutoSaveRuleScreen(),
-                  ),
-                ),
-              ).then((_) => context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true));
-            },
+            onPressed: _openCreateRule,
             icon: const Icon(Icons.add),
             label: const Text('Create Rule'),
             style: ElevatedButton.styleFrom(

@@ -340,6 +340,10 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
         }
       case TriggerType.roundUp:
         return 'Round Up to ${currency_formatter.CurrencySymbols.formatAmountWithCurrency((rule.roundUpTo ?? 0).toDouble(), rule.currency)}';
+      case TriggerType.externalInflow:
+        return rule.sourceBankName.isNotEmpty
+            ? 'Bank Inflow from ${rule.sourceBankName}'
+            : 'Bank Inflow';
       default:
         return 'Unknown';
     }

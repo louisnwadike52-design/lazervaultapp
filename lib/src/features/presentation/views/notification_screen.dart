@@ -1,87 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/notifications/data/notifications_remote_datasource.dart';
 import 'package:lazervault/src/features/widgets/notifications_builder.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
-final List<NotificationService> notifications = [
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.sendFunds,
-        serviceImg: AppServiceImg.sendFunds),
-    title: 'Received Money Successfully',
-    subTitle: "Account No: 2003898497975797 has just received payment",
-    date: DateTime.now(),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.invoice,
-        serviceImg: AppServiceImg.invoice),
-    title: 'Invoice Payment Received',
-    subTitle: "Invoice #INV-2024-001 has been paid successfully",
-    date: DateTime.now().subtract(Duration(hours: 2)),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.invoice,
-        serviceImg: AppServiceImg.invoice),
-    title: 'New Invoice Created',
-    subTitle: "Invoice #INV-2024-002 created for client John Doe",
-    date: DateTime.now().subtract(Duration(hours: 5)),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.crypto,
-        serviceImg: AppServiceImg.crypto),
-    title: 'Crypto Transaction Complete',
-    subTitle: "Bitcoin purchase of 0.001 BTC completed successfully",
-    date: DateTime.now().subtract(Duration(days: 1)),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.payInvoice,
-        serviceImg: AppServiceImg.payInvoice),
-    title: 'Invoice Payment Completed',
-    subTitle: "Invoice payment successfully processed for £2,500.00",
-    date: DateTime.now().subtract(Duration(days: 1)),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.giftCards,
-        serviceImg: AppServiceImg.giftCards),
-    title: 'Gift Card Purchased',
-    subTitle: "Amazon gift card purchased successfully - \$50",
-    date: DateTime.now().subtract(Duration(days: 2)),
-  ),
-];
-
-final List<NotificationService> olderNotifications = [
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.payBills,
-        serviceImg: AppServiceImg.payBills),
-    title: 'Electricity Bill Paid',
-    subTitle: "Monthly electricity bill payment completed",
-    date: DateTime.now().subtract(Duration(days: 7)),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.invest,
-        serviceImg: AppServiceImg.invest),
-    title: 'Investment Portfolio Update',
-    subTitle: "Your portfolio gained +2.5% this week",
-    date: DateTime.now().subtract(Duration(days: 10)),
-  ),
-  NotificationService(
-    appService: const AppService(
-        serviceName: AppServiceName.exchange,
-        serviceImg: AppServiceImg.exchange),
-    title: 'Currency Exchange Complete',
-    subTitle: "Exchanged USD to EUR successfully",
-    date: DateTime.now().subtract(Duration(days: 14)),
-  ),
-];
+/// Maps a backend notification `type` to the AppService whose icon the
+/// NotificationsBuilder renders. Defaults to a transfer icon for unknown types.
+AppService _appServiceForType(String type) {
+  switch (type.toLowerCase()) {
+    case 'transfer':
+    case 'payment':
+    case 'deposit':
+    case 'withdrawal':
+      return const AppService(
+          serviceName: AppServiceName.sendFunds,
+          serviceImg: AppServiceImg.sendFunds);
+    case 'investment':
+      return const AppService(
+          serviceName: AppServiceName.invest, serviceImg: AppServiceImg.invest);
+    case 'giftcard':
+      return const AppService(
+          serviceName: AppServiceName.giftCards,
+          serviceImg: AppServiceImg.giftCards);
+    case 'bill':
+      return const AppService(
+          serviceName: AppServiceName.payBills,
+          serviceImg: AppServiceImg.payBills);
+    case 'invoice':
+      return const AppService(
+          serviceName: AppServiceName.invoice,
+          serviceImg: AppServiceImg.invoice);
+    case 'security':
+    case 'account':
+    default:
+      return const AppService(
+          serviceName: AppServiceName.phoneBanking,
+          serviceImg: AppServiceImg.phoneBanking);
+  }
+}
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -91,6 +53,72 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  late final NotificationsRemoteDataSource _ds;
+  bool _loading = true;
+  String? _error;
+  List<NotificationService> _recent = [];
+  List<NotificationService> _older = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _ds = NotificationsRemoteDataSource(
+      secureStorage: serviceLocator<SecureStorageService>(),
+      accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
+    );
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await _ds.getNotifications(limit: 50);
+      if (!mounted) return;
+      final cutoff = DateTime.now().subtract(const Duration(days: 7));
+      final recent = <NotificationService>[];
+      final older = <NotificationService>[];
+      for (final n in res.notifications) {
+        final item = NotificationService(
+          appService: _appServiceForType(n.type),
+          title: n.title,
+          subTitle: n.body,
+          date: n.createdAt,
+        );
+        (n.createdAt.isAfter(cutoff) ? recent : older).add(item);
+      }
+      setState(() {
+        _recent = recent;
+        _older = older;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Could not load notifications. Pull to retry.';
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _markAllRead() async {
+    try {
+      await _ds.markAllAsRead();
+    } catch (_) {}
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('All notifications marked as read'),
+        backgroundColor: Color.fromARGB(255, 78, 3, 208),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,46 +173,79 @@ class _NotificationScreenState extends State<NotificationScreen> {
           SizedBox(width: 8.w),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          vertical: 16.h,
-          horizontal: 16.w,
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color.fromARGB(255, 78, 3, 208),
         ),
+      );
+    }
+    if (_error != null) {
+      return RefreshIndicator(
+        onRefresh: _load,
+        color: const Color.fromARGB(255, 78, 3, 208),
+        child: ListView(
+          children: [
+            SizedBox(height: 120.h),
+            Icon(Icons.cloud_off_rounded,
+                size: 48.sp, color: Colors.grey[400]),
+            SizedBox(height: 16.h),
+            Text(_error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
+            SizedBox(height: 16.h),
+            Center(
+              child: TextButton(
+                onPressed: _load,
+                child: const Text('Retry'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final isEmpty = _recent.isEmpty && _older.isEmpty;
+    return RefreshIndicator(
+      onRefresh: _load,
+      color: const Color.fromARGB(255, 78, 3, 208),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Recent Section
-            _buildSectionHeader(
-              title: "Recent",
-              actionText: "Mark all as read",
-              onActionTap: () {
-                // Handle mark all as read
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('All notifications marked as read'),
-                    backgroundColor: Color.fromARGB(255, 78, 3, 208),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 16.h),
-            _buildNotificationsList(notifications),
-            
-            SizedBox(height: 32.h),
-            
-            // Older Section
-            _buildSectionHeader(
-              title: "Older",
-              actionText: "Clear all",
-              onActionTap: () {
-                _showClearDialog();
-              },
-            ),
-            SizedBox(height: 16.h),
-            _buildNotificationsList(olderNotifications),
-            
-            SizedBox(height: 32.h),
+            if (isEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 80.h),
+                child: _buildNotificationsList(const []),
+              )
+            else ...[
+              if (_recent.isNotEmpty) ...[
+                _buildSectionHeader(
+                  title: "Recent",
+                  actionText: "Mark all as read",
+                  onActionTap: _markAllRead,
+                ),
+                SizedBox(height: 16.h),
+                _buildNotificationsList(_recent),
+                SizedBox(height: 32.h),
+              ],
+              if (_older.isNotEmpty) ...[
+                _buildSectionHeader(
+                  title: "Older",
+                  actionText: "Mark all as read",
+                  onActionTap: _markAllRead,
+                ),
+                SizedBox(height: 16.h),
+                _buildNotificationsList(_older),
+                SizedBox(height: 32.h),
+              ],
+            ],
           ],
         ),
       ),
@@ -286,74 +347,4 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  void _showClearDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          title: Text(
-            'Clear All Notifications',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to clear all older notifications? This action cannot be undone.',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey[600],
-              height: 1.4,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  olderNotifications.clear();
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Older notifications cleared'),
-                    backgroundColor: Color.fromARGB(255, 78, 3, 208),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 78, 3, 208),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              ),
-              child: Text(
-                'Clear All',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

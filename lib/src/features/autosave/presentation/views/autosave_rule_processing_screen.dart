@@ -65,6 +65,8 @@ class _AutoSaveRuleProcessingScreenState
           targetAmount: ruleData['targetAmount'] as double?,
           minimumBalance: ruleData['minimumBalance'] as double?,
           maximumPerSave: ruleData['maximumPerSave'] as double?,
+          sourceLinkedAccountId: ruleData['sourceLinkedAccountId'] as String?,
+          sourceBankName: ruleData['sourceBankName'] as String?,
         );
   }
 

@@ -31,10 +31,18 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
   void _loadInsights() async {
     if (!mounted) return;
 
-    // Pull real data from StatisticsCubit for income/spending analysis
+    // Pull real data from StatisticsCubit for income/spending analysis.
     double monthlyIncome = 0;
     List<Map<String, dynamic>> spendingData = [];
     final statisticsCubit = context.read<StatisticsCubit>();
+    // Ensure real stats exist before composing the AI prompt — when opened
+    // cold (deep link / fresh session) the shared singleton may not have
+    // loaded yet. Without this the prompt was built on zero data and then
+    // back-filled with a fabricated income (removed below).
+    if (statisticsCubit.state is! StatisticsLoaded) {
+      await statisticsCubit.loadStatistics();
+      if (!mounted) return;
+    }
     final statsState = statisticsCubit.state;
 
     if (statsState is StatisticsLoaded && statsState.financialAnalytics != null) {
@@ -146,13 +154,9 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
         ? financialGoals.map((g) => g['name'] as String).toList()
         : ['Save more', 'Reduce spending'];
 
-    // Use sensible defaults if no real data yet
-    if (monthlyIncome == 0) monthlyIncome = 500000;
-    if (spendingData.isEmpty) {
-      spendingData = [
-        {'category': 'General', 'amount': 0, 'percentage': 0},
-      ];
-    }
+    // Honesty: pass the REAL income (even if 0/unavailable) — never a
+    // fabricated placeholder. The AI prompt + insights UI handle the
+    // no-data case. spendingData stays empty when there's genuinely none.
 
     // Extract failed/reversed transactions for AI analysis
     List<Map<String, dynamic>> failedTransactions = [];

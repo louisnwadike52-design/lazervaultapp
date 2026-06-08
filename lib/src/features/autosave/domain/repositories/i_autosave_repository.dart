@@ -38,6 +38,8 @@ abstract class IAutoSaveRepository {
     double? targetAmount,
     double? minimumBalance,
     double? maximumPerSave,
+    String? sourceLinkedAccountId,
+    String? sourceBankName,
   });
 
   /// Get all auto-save rules for the user

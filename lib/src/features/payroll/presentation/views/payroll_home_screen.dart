@@ -12,6 +12,7 @@ import 'employee_details_screen.dart';
 import 'add_employee_screen.dart';
 import 'create_pay_run_screen.dart';
 import 'pay_run_details_screen.dart';
+import '../../services/payroll_pdf_service.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
@@ -30,6 +31,49 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
   // Report period
   String _reportPeriodStart = '';
   String _reportPeriodEnd = '';
+  bool _exportingReport = false;
+
+  /// Export the payroll report as a PDF — download to storage or open the
+  /// share sheet. Uses the SAME real summary the Reports tab is showing.
+  Future<void> _exportReport(Map<String, dynamic> summary,
+      {required bool share}) async {
+    if (_exportingReport) return;
+    setState(() => _exportingReport = true);
+    try {
+      if (share) {
+        await PayrollPdfService.sharePayrollReport(
+          summary: summary,
+          periodStart: _reportPeriodStart,
+          periodEnd: _reportPeriodEnd,
+        );
+      } else {
+        final path = await PayrollPdfService.downloadPayrollReport(
+          summary: summary,
+          periodStart: _reportPeriodStart,
+          periodEnd: _reportPeriodEnd,
+        );
+        Get.snackbar(
+          'Report Saved',
+          'PDF saved to $path',
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: EdgeInsets.all(16.w),
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Export Failed',
+        'Could not export the report. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    } finally {
+      if (mounted) setState(() => _exportingReport = false);
+    }
+  }
 
   @override
   void initState() {
@@ -878,6 +922,76 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
             ],
           ),
           SizedBox(height: 16.h),
+
+          // Export report (PDF) — Download + Share. Only enabled once a real
+          // summary is loaded (empty map = nothing to export).
+          if (summary.isNotEmpty) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48.h,
+                    child: OutlinedButton.icon(
+                      onPressed: _exportingReport
+                          ? null
+                          : () => _exportReport(summary, share: false),
+                      icon: _exportingReport
+                          ? SizedBox(
+                              width: 16.w,
+                              height: 16.w,
+                              child: const CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xFF10B981)),
+                            )
+                          : Icon(Icons.download_outlined,
+                              color: const Color(0xFF10B981), size: 20.sp),
+                      label: Text(
+                        'Download PDF',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF10B981)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: SizedBox(
+                    height: 48.h,
+                    child: OutlinedButton.icon(
+                      onPressed: _exportingReport
+                          ? null
+                          : () => _exportReport(summary, share: true),
+                      icon: Icon(Icons.share_outlined,
+                          color: const Color(0xFF3B82F6), size: 20.sp),
+                      label: Text(
+                        'Share',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF3B82F6),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF3B82F6)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+          ],
 
           // Tax report button
           SizedBox(

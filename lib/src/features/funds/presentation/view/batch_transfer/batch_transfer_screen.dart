@@ -21,6 +21,9 @@ import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_form.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
@@ -42,6 +45,9 @@ class BatchTransferScreen extends StatefulWidget {
 class _BatchTransferScreenState extends State<BatchTransferScreen> {
   final SavedBatchesCubit _savedBatchesCubit =
       serviceLocator<SavedBatchesCubit>();
+  // Shared across the Beneficiaries section + the in-page form so saving a
+  // recipient in the form refreshes the beneficiaries list automatically.
+  final RecipientCubit _recipientCubit = serviceLocator<RecipientCubit>();
 
   @override
   void initState() {
@@ -55,6 +61,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _loadBeneficiaries();
       final arguments = Get.arguments as Map<String, dynamic>?;
       if (arguments != null && arguments['split_type'] != null) {
         _navigateToReviewForSplitBill(arguments);
@@ -62,15 +69,27 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
     });
   }
 
+  void _loadBeneficiaries({bool forceRefresh = false}) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      _recipientCubit.getRecipients(
+        accessToken: authState.profile.session.accessToken,
+        forceRefresh: forceRefresh,
+      );
+    }
+  }
+
   @override
   void dispose() {
     _savedBatchesCubit.close();
+    _recipientCubit.close();
     super.dispose();
   }
 
   Future<void> _onRefresh() async {
     context.read<BatchTransferCubit>().loadBatchTransferHistory(
         page: 1, pageSize: 5);
+    _loadBeneficiaries(forceRefresh: true);
     await _savedBatchesCubit.refresh();
   }
 
@@ -148,14 +167,21 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                           SizedBox(height: 14.h),
                           _buildSavedBatchesSection(),
                           SizedBox(height: 14.h),
-                          BlocProvider(
-                            create: (_) => serviceLocator<RecipientCubit>(),
-                            child: BatchTransferForm(
-                              preSelectedRecipients:
-                                  arguments?['preSelectedRecipients'],
-                              isRepeatTransaction:
-                                  arguments?['isRepeatTransaction'] ?? false,
-                              batchReference: arguments?['batchReference'],
+                          BlocProvider<RecipientCubit>.value(
+                            value: _recipientCubit,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildBeneficiariesSection(),
+                                SizedBox(height: 14.h),
+                                BatchTransferForm(
+                                  preSelectedRecipients:
+                                      arguments?['preSelectedRecipients'],
+                                  isRepeatTransaction:
+                                      arguments?['isRepeatTransaction'] ?? false,
+                                  batchReference: arguments?['batchReference'],
+                                ),
+                              ],
                             ),
                           ),
                           _buildRecentHistory(),
@@ -168,6 +194,397 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // ── Beneficiaries section ────────────────────────────────────────────────
+  String? get _accessToken {
+    final s = context.read<AuthenticationCubit>().state;
+    return s is AuthenticationSuccess ? s.profile.session.accessToken : null;
+  }
+
+  Widget _buildBeneficiariesSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: btCard,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: btBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.people_alt_outlined, color: btBlue, size: 18.sp),
+                SizedBox(width: 8.w),
+                Text('Beneficiaries',
+                    style: GoogleFonts.inter(
+                        color: btTextPrimary,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700)),
+                const Spacer(),
+                GestureDetector(
+                  onTap: _openAddBeneficiarySheet,
+                  child: Row(
+                    children: [
+                      Icon(Icons.add_circle_outline,
+                          color: btBlue, size: 16.sp),
+                      SizedBox(width: 4.w),
+                      Text('Add',
+                          style: GoogleFonts.inter(
+                              color: btBlue,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            BlocBuilder<RecipientCubit, RecipientState>(
+              builder: (context, state) {
+                if (state is RecipientLoading) {
+                  return SizedBox(
+                    height: 92.h,
+                    child: Center(
+                      child: SizedBox(
+                        width: 22.w,
+                        height: 22.w,
+                        child: const CircularProgressIndicator(
+                            strokeWidth: 2, color: btBlue),
+                      ),
+                    ),
+                  );
+                }
+                final recipients = state is RecipientLoaded
+                    ? state.recipients
+                    : const <RecipientModel>[];
+                if (recipients.isEmpty) {
+                  return _buildBeneficiariesEmpty();
+                }
+                return SizedBox(
+                  height: 96.h,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recipients.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                    itemBuilder: (context, i) =>
+                        _buildBeneficiaryChip(recipients[i]),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBeneficiariesEmpty() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 14.w),
+      decoration: BoxDecoration(
+        color: btCardElevated,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.bookmark_border_rounded, color: btTextTertiary, size: 26.sp),
+          SizedBox(height: 8.h),
+          Text('No beneficiaries yet',
+              style: GoogleFonts.inter(
+                  color: btTextSecondary,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
+          SizedBox(height: 4.h),
+          Text(
+            'Save recipients to reuse them. Toggle "Save to beneficiaries" when adding, or tap Add.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: btTextTertiary, fontSize: 11.sp),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBeneficiaryChip(RecipientModel r) {
+    final isInternal = r.type == 'internal' ||
+        r.bankName.toLowerCase() == 'lazervault';
+    final label = (r.alias != null && r.alias!.isNotEmpty) ? r.alias! : r.name;
+    final initial = label.isNotEmpty ? label[0].toUpperCase() : '?';
+    return GestureDetector(
+      onTap: () => _showBeneficiaryOptions(r),
+      child: SizedBox(
+        width: 72.w,
+        child: Column(
+          children: [
+            Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: BoxDecoration(
+                color: (isInternal ? btBlue : btOrange).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: (isInternal ? btBlue : btOrange)
+                        .withValues(alpha: 0.4)),
+              ),
+              alignment: Alignment.center,
+              child: Text(initial,
+                  style: GoogleFonts.inter(
+                      color: isInternal ? btBlueLight : btOrange,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700)),
+            ),
+            SizedBox(height: 6.h),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: btTextPrimary,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBeneficiaryOptions(RecipientModel r) {
+    final isInternal = r.type == 'internal' ||
+        r.bankName.toLowerCase() == 'lazervault';
+    final subtitle = isInternal
+        ? 'LazerVault • ${r.name}'
+        : '${r.displayBankName} •••• ${r.accountNumber.length >= 4 ? r.accountNumber.substring(r.accountNumber.length - 4) : r.accountNumber}';
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: btCard,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: btBorderLight,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22.r,
+                      backgroundColor:
+                          (isInternal ? btBlue : btOrange).withValues(alpha: 0.15),
+                      child: Text(
+                        (r.alias?.isNotEmpty == true ? r.alias! : r.name)
+                            .substring(0, 1)
+                            .toUpperCase(),
+                        style: GoogleFonts.inter(
+                            color: isInternal ? btBlueLight : btOrange,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              r.alias?.isNotEmpty == true ? r.alias! : r.name,
+                              style: GoogleFonts.inter(
+                                  color: btTextPrimary,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w700)),
+                          Text(subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                  color: btTextSecondary, fontSize: 12.sp)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _optionTile(Icons.send_rounded, 'Send money', btBlue, () {
+                Get.back();
+                _repeatToSendFunds(r);
+              }),
+              _optionTile(Icons.drive_file_rename_outline, 'Rename', btTextPrimary,
+                  () {
+                Get.back();
+                _renameBeneficiary(r);
+              }),
+              _optionTile(Icons.delete_outline_rounded, 'Delete', btRed, () {
+                Get.back();
+                _deleteBeneficiary(r);
+              }),
+              SizedBox(height: 8.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _optionTile(IconData icon, String label, Color color, VoidCallback onTap) {
+    return ListTile(
+      onTap: onTap,
+      leading: Icon(icon, color: color, size: 22.sp),
+      title: Text(label,
+          style: GoogleFonts.inter(
+              color: color == btRed ? btRed : btTextPrimary,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600)),
+    );
+  }
+
+  void _repeatToSendFunds(RecipientModel r) {
+    // Pre-load this beneficiary into the single send-funds flow.
+    Get.toNamed(AppRoutes.initiateSendFunds, arguments: r);
+  }
+
+  void _renameBeneficiary(RecipientModel r) {
+    final controller = TextEditingController(text: r.alias ?? '');
+    Get.bottomSheet(
+      Padding(
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(Get.context!).viewInsets.bottom),
+        child: Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: btCard,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Rename beneficiary',
+                  style: GoogleFonts.inter(
+                      color: btTextPrimary,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 6.h),
+              Text('Give ${r.name} a nickname',
+                  style: GoogleFonts.inter(
+                      color: btTextSecondary, fontSize: 12.sp)),
+              SizedBox(height: 14.h),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'e.g. Mum, Supplier A',
+                  hintStyle: GoogleFonts.inter(color: btTextTertiary),
+                  filled: true,
+                  fillColor: btCardElevated,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final token = _accessToken;
+                    if (token != null) {
+                      _recipientCubit.updateAlias(
+                        recipientId: r.id,
+                        alias: controller.text.trim(),
+                        accessToken: token,
+                      );
+                    }
+                    Get.back();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: btBlue,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text('Save',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _deleteBeneficiary(RecipientModel r) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: btCard,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.r)),
+        title: Text('Delete beneficiary?',
+            style: GoogleFonts.inter(
+                color: btTextPrimary, fontWeight: FontWeight.w700)),
+        content: Text(
+            'Remove ${r.alias?.isNotEmpty == true ? r.alias! : r.name} from your saved beneficiaries? This cannot be undone.',
+            style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: btTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              final token = _accessToken;
+              if (token != null) {
+                _recipientCubit.deleteRecipient(
+                    recipientId: r.id, accessToken: token);
+              }
+              Get.back();
+            },
+            child: Text('Delete',
+                style: GoogleFonts.inter(
+                    color: btRed, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openAddBeneficiarySheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => BlocProvider<RecipientCubit>.value(
+        value: _recipientCubit,
+        child: MultiSelectRecipientBottomSheet(
+          alreadySelectedIds: const [],
+          // Sheet persists the new recipient(s) via its own save toggle; we
+          // just refresh the list so they appear immediately.
+          onRecipientsSelected: (_) => _loadBeneficiaries(forceRefresh: true),
         ),
       ),
     );

@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_state.dart';
@@ -16,10 +20,40 @@ class Portfolio extends StatefulWidget {
 }
 
 class _PortfolioState extends State<Portfolio> {
+  late final PortfolioCubit _cubit;
+  StreamSubscription<String?>? _accountSub;
+  StreamSubscription<String>? _localeSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = serviceLocator<PortfolioCubit>()..loadPortfolio();
+
+    // Re-scope the portfolio when the swiped account or locale changes — the
+    // gRPC call already carries x-account-id / x-locale (GrpcCallOptionsHelper),
+    // so a reload here is all that's needed. Mirrors RecentHistory.
+    final accountManager = serviceLocator<AccountManager>();
+    final localeManager = serviceLocator<LocaleManager>();
+    _accountSub = accountManager.accountIdStream
+        .distinct()
+        .where((id) => id != null)
+        .listen((_) => _cubit.loadPortfolio());
+    _localeSub = localeManager.countryStream
+        .distinct()
+        .listen((_) => _cubit.loadPortfolio());
+  }
+
+  @override
+  void dispose() {
+    _accountSub?.cancel();
+    _localeSub?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => serviceLocator<PortfolioCubit>()..loadPortfolio(),
+    return BlocProvider.value(
+      value: _cubit,
       child: Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(

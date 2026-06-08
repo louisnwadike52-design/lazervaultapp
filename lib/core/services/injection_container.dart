@@ -694,9 +694,6 @@ import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_e
 // End Inventory Enhanced Imports
 
 // Business Dashboard Imports
-import 'package:lazervault/src/features/business_dashboard/data/repositories/business_dashboard_repository_impl.dart';
-import 'package:lazervault/src/features/business_dashboard/domain/repositories/business_dashboard_repository.dart';
-import 'package:lazervault/src/features/business_dashboard/presentation/cubit/business_dashboard_cubit.dart';
 // End Business Dashboard Imports
 
 // Business Analytics Imports
@@ -3527,22 +3524,6 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InventoryEnhancedCubit(
     repository: serviceLocator<InventoryEnhancedRepository>(),
-  ));
-
-  // ================== Feature: Business Dashboard ==================
-
-  // Repositories
-  serviceLocator.registerLazySingleton<BusinessDashboardRepository>(
-    () => BusinessDashboardRepositoryImpl(
-      accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
-      payrollClient: serviceLocator<payroll_pb.PayrollServiceClient>(),
-      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-    ),
-  );
-
-  // Blocs/Cubits
-  serviceLocator.registerFactory(() => BusinessDashboardCubit(
-    repository: serviceLocator<BusinessDashboardRepository>(),
   ));
 
   // ================== Feature: Business Analytics ==================

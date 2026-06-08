@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
 
@@ -155,11 +156,17 @@ class AutoSaveSwipeableCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: 12.h),
-                        Row(
+                        // Wrap (not Row) so a long trigger label like
+                        // "When money enters Guaranty Trust Bank" flows to a
+                        // second line instead of overflowing the card; each
+                        // chip is also width-capped + ellipsised as a final
+                        // guard against an extreme single value.
+                        Wrap(
+                          spacing: 8.w,
+                          runSpacing: 8.h,
                           children: [
                             _buildInfoChip(
                                 Icons.repeat, rule.triggerDescription),
-                            SizedBox(width: 8.w),
                             _buildInfoChip(
                                 Icons.attach_money, rule.amountDescription),
                           ],
@@ -185,6 +192,26 @@ class AutoSaveSwipeableCard extends StatelessWidget {
                             ],
                           ),
                         ],
+                        SizedBox(height: 8.h),
+                        // Creation timestamp — "Created Jun 7, 2026 · 8:40 PM".
+                        Row(
+                          children: [
+                            Icon(Icons.schedule,
+                                size: 12.sp, color: const Color(0xFF6B7280)),
+                            SizedBox(width: 4.w),
+                            Expanded(
+                              child: Text(
+                                'Created ${DateFormat('MMM d, y · h:mm a').format(rule.createdAt.toLocal())}',
+                                style: TextStyle(
+                                  color: const Color(0xFF6B7280),
+                                  fontSize: 10.sp,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                         if (rule.targetAmount != null) ...[
                           SizedBox(height: 12.h),
                           _buildProgressIndicator(),
@@ -222,6 +249,11 @@ class AutoSaveSwipeableCard extends StatelessWidget {
   Widget _buildInfoChip(IconData icon, String label) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      // Cap the chip so one very long value (e.g. a bank name) ellipsises
+      // inside the chip rather than pushing past the card edge. ~62% of the
+      // screen leaves room for the second chip to sit beside it when both
+      // are short, and to wrap below it when they aren't.
+      constraints: BoxConstraints(maxWidth: 0.62.sw),
       decoration: BoxDecoration(
         color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(6.r),
@@ -231,11 +263,15 @@ class AutoSaveSwipeableCard extends StatelessWidget {
         children: [
           Icon(icon, size: 12.sp, color: const Color(0xFF9CA3AF)),
           SizedBox(width: 4.w),
-          Text(
-            label,
-            style: TextStyle(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 10.sp,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 10.sp,
+              ),
             ),
           ),
         ],

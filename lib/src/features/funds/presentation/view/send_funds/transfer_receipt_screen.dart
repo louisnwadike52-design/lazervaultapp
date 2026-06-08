@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/move_transfer.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
+import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -41,6 +42,20 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
 
   Future<MoveTransfer> Function()? get _statusFetch =>
       transferDetails['moveStatusFetch'] as Future<MoveTransfer> Function()?;
+
+  // ── Batch variant ────────────────────────────────────────────────────────
+  // The same receipt renders a batch transfer when `isBatch == true`. The
+  // payload then carries `transfers` (per-recipient rows), `recipientCount`
+  // and `batchId` instead of a single recipient. Details collapse to a
+  // recipients summary + a "View All Recipients" sheet.
+  bool get _isBatch => transferDetails['isBatch'] == true;
+  List<Map<String, dynamic>> get _transfers =>
+      ((transferDetails['transfers'] as List?) ?? const [])
+          .whereType<Map>()
+          .map((m) => Map<String, dynamic>.from(m))
+          .toList();
+  int get _recipientCount =>
+      (transferDetails['recipientCount'] as int?) ?? _transfers.length;
 
   @override
   void initState() {
@@ -106,14 +121,23 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         transferDetails['createdAt'] as DateTime? ??
         DateTime.now();
 
-    final qrMap = {
-      'type': 'transfer',
-      'ref': reference,
-      'amount': amount.toStringAsFixed(2),
-      'currency': currency,
-      'to': recipientName,
-      'date': timestamp.toIso8601String(),
-    };
+    final qrMap = _isBatch
+        ? {
+            'type': 'batch_transfer',
+            'ref': transferDetails['batchId']?.toString() ?? reference,
+            'amount': amount.toStringAsFixed(2),
+            'currency': currency,
+            'recipients': _recipientCount,
+            'date': timestamp.toIso8601String(),
+          }
+        : {
+            'type': 'transfer',
+            'ref': reference,
+            'amount': amount.toStringAsFixed(2),
+            'currency': currency,
+            'to': recipientName,
+            'date': timestamp.toIso8601String(),
+          };
     _qrData = jsonEncode(qrMap);
   }
 
@@ -122,9 +146,12 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     setState(() => _isDownloading = true);
 
     try {
-      final filePath = await TagPayPdfService.downloadTransferReceipt(
-        transferDetails: transferDetails,
-      );
+      final filePath = _isBatch
+          ? await BatchTransferPdfService.downloadReceipt(
+              receiptData: transferDetails)
+          : await TagPayPdfService.downloadTransferReceipt(
+              transferDetails: transferDetails,
+            );
       Get.snackbar(
         'Receipt Saved',
         'PDF receipt saved to $filePath',
@@ -152,9 +179,13 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     setState(() => _isSharing = true);
 
     try {
-      await TagPayPdfService.shareTransferReceipt(
-        transferDetails: transferDetails,
-      );
+      if (_isBatch) {
+        await BatchTransferPdfService.shareReceipt(receiptData: transferDetails);
+      } else {
+        await TagPayPdfService.shareTransferReceipt(
+          transferDetails: transferDetails,
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Share Failed',
@@ -202,6 +233,13 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
 
                     // Transaction details with QR at bottom
                     _buildTransactionDetails(),
+
+                    // Batch-only: recipients summary CTA
+                    if (_isBatch) ...[
+                      SizedBox(height: 14.h),
+                      _buildAllRecipientsCTA(),
+                    ],
+                    SizedBox(height: 8.h),
                   ],
                 ),
               ),
@@ -263,7 +301,24 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     final live = _liveTransfer?.status;
     Color iconBg = const Color(0xFF10B981);
     IconData iconData = Icons.check;
-    String titleText = isScheduled ? 'Transfer Scheduled' : 'Transfer Successful';
+    String titleText = _isBatch
+        ? (isScheduled ? 'Batch Transfer Scheduled' : 'Batch Transfer Successful')
+        : (isScheduled ? 'Transfer Scheduled' : 'Transfer Successful');
+    // A partial batch (some recipients failed) shows an amber state.
+    if (_isBatch) {
+      final failed = transferDetails['failedTransfers'] as int? ?? 0;
+      final successful = transferDetails['successfulTransfers'] as int? ??
+          _recipientCount;
+      if (successful == 0 && _recipientCount > 0) {
+        iconBg = const Color(0xFFEF4444);
+        iconData = Icons.close;
+        titleText = 'Batch Transfer Failed';
+      } else if (failed > 0) {
+        iconBg = const Color(0xFFFB923C);
+        iconData = Icons.priority_high_rounded;
+        titleText = 'Partially Completed';
+      }
+    }
     String statusLine = _formatStatus(status);
     if (live != null) {
       statusLine = live.displayName;
@@ -363,6 +418,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   }
 
   Widget _buildTransactionDetails() {
+    if (_isBatch) return _buildBatchDetails();
     final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
     final recipientBank = transferDetails['recipientBankName'] as String?;
     final recipientAccount = transferDetails['recipientAccountMasked'] as String?;
@@ -488,6 +544,295 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           SizedBox(height: 14.h),
         ],
       ),
+    );
+  }
+
+  /// Batch variant of the details card: a recipients summary (count, totals,
+  /// reference) plus the QR — no single recipient/bank/account rows.
+  Widget _buildBatchDetails() {
+    final reference =
+        transferDetails['batchId']?.toString() ?? transferDetails['reference']?.toString() ?? '';
+    final fee = (transferDetails['fee'] as num?)?.toDouble() ??
+        (transferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
+    final currency = transferDetails['currency'] as String? ?? 'NGN';
+    final currencySymbol = _currencySymbol(currency);
+    final successful = transferDetails['successfulTransfers'] as int? ?? _recipientCount;
+    final failed = transferDetails['failedTransfers'] as int? ?? 0;
+    final sourceName = transferDetails['senderAccountName'] as String?;
+    final sourceInfo = transferDetails['senderAccountInfo'] as String?;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 0),
+            child: Text(
+              'Details',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          _buildDetailRow('Recipients',
+              '$_recipientCount ${_recipientCount == 1 ? 'transfer' : 'transfers'}'),
+          if (failed > 0) ...[
+            _buildDetailRow('Successful', '$successful'),
+            _buildDetailRow('Failed', '$failed'),
+          ],
+          if (sourceName != null && sourceName.isNotEmpty)
+            _buildDetailRow(
+              'From',
+              sourceInfo != null && sourceInfo.isNotEmpty
+                  ? '$sourceName ($sourceInfo)'
+                  : sourceName,
+            ),
+          _buildDetailRow('Fee',
+              fee > 0 ? '$currencySymbol${fee.toStringAsFixed(2)}' : 'Free'),
+          _buildDetailRow('Currency', currency.toUpperCase()),
+          if (reference.isNotEmpty) _buildDetailRow('Batch Ref', reference),
+          Divider(
+            color: const Color(0xFF2D2D2D),
+            height: 1,
+            indent: 16.w,
+            endIndent: 16.w,
+          ),
+          SizedBox(height: 14.h),
+          if (_qrData != null)
+            Center(
+              child: RepaintBoundary(
+                key: _qrKey,
+                child: QrImageView(
+                  data: _qrData!,
+                  version: QrVersions.auto,
+                  size: 80.w,
+                  backgroundColor: Colors.transparent,
+                  dataModuleStyle:
+                      const QrDataModuleStyle(color: Colors.white),
+                  eyeStyle: const QrEyeStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          SizedBox(height: 6.h),
+          if (reference.isNotEmpty)
+            Center(
+              child: Text(
+                reference,
+                style: GoogleFonts.robotoMono(
+                  fontSize: 10.sp,
+                  color: const Color(0xFF8E8E93),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          SizedBox(height: 14.h),
+        ],
+      ),
+    );
+  }
+
+  /// "View All Recipients (N)" CTA shown in the batch receipt body. Opens a
+  /// sheet listing each recipient with their amount + status.
+  Widget _buildAllRecipientsCTA() {
+    final transfers = _transfers;
+    if (transfers.isEmpty) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: () => _showRecipientsSheet(transfers),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14.r),
+          border:
+              Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.receipt_long_rounded,
+                color: const Color(0xFF3B82F6), size: 18.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'View All Recipients',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF3B82F6),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              '(${transfers.length})',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.7),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Icon(Icons.chevron_right,
+                color: const Color(0xFF3B82F6), size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRecipientsSheet(List<Map<String, dynamic>> transfers) {
+    final currency = transferDetails['currency'] as String? ?? 'NGN';
+    final symbol = _currencySymbol(currency);
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3D3D3D),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
+              child: Row(
+                children: [
+                  Text(
+                    'Recipients',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${transfers.length}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF8E8E93),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                itemCount: transfers.length,
+                separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                itemBuilder: (context, i) {
+                  final t = transfers[i];
+                  final name = (t['recipientName'] ?? 'Recipient').toString();
+                  final account = (t['recipientAccount'] ?? '').toString();
+                  final amount = (t['amount'] as num?)?.toDouble() ?? 0.0;
+                  final status = (t['status'] ?? 'completed').toString();
+                  final ok = status.toLowerCase() == 'completed' ||
+                      status.toLowerCase() == 'success';
+                  final last4 = account.length >= 4
+                      ? account.substring(account.length - 4)
+                      : account;
+                  return Container(
+                    padding: EdgeInsets.all(14.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161616),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38.w,
+                          height: 38.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : '?',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF3B82F6),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15.sp,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (last4.isNotEmpty)
+                                Text(
+                                  '•••• $last4',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF8E8E93),
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '$symbol${amount.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              ok ? 'Completed' : _formatStatus(status),
+                              style: GoogleFonts.inter(
+                                color: ok
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFFB923C),
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(Get.context!).padding.bottom + 8.h),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 

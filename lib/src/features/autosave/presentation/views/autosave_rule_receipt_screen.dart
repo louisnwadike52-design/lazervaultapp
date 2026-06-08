@@ -96,6 +96,11 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
         }
       case TriggerType.roundUp:
         return 'Round Up';
+      case TriggerType.externalInflow:
+        final bank = ruleData['sourceBankName'] as String?;
+        return bank != null && bank.isNotEmpty
+            ? 'Bank Inflow ($bank)'
+            : 'Bank Inflow';
       default:
         return 'Unknown';
     }

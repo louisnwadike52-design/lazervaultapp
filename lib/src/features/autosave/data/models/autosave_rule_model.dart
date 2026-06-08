@@ -25,6 +25,8 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
     super.lastTriggeredAt,
     required super.triggerCount,
     required super.totalSaved,
+    super.sourceLinkedAccountId,
+    super.sourceBankName,
   });
 
   factory AutoSaveRuleModel.fromProto(autosave_pb.AutoSaveRule proto) {
@@ -57,6 +59,8 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
       lastTriggeredAt: proto.hasLastTriggeredAt() ? proto.lastTriggeredAt.toDateTime() : null,
       triggerCount: proto.triggerCount,
       totalSaved: proto.totalSaved / 100, // kobo -> Naira
+      sourceLinkedAccountId: proto.sourceLinkedAccountId,
+      sourceBankName: proto.sourceBankName,
     );
   }
 
@@ -68,6 +72,8 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
         return TriggerType.scheduled;
       case autosave_pb.TriggerType.TRIGGER_ROUND_UP:
         return TriggerType.roundUp;
+      case autosave_pb.TriggerType.TRIGGER_EXTERNAL_INFLOW:
+        return TriggerType.externalInflow;
       default:
         return TriggerType.unknown;
     }
@@ -129,6 +135,7 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
     required super.success,
     super.errorMessage,
     required super.createdAt,
+    super.metadata,
   });
 
   factory AutoSaveTransactionModel.fromProto(autosave_pb.AutoSaveTransaction proto) {
@@ -144,6 +151,7 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
       success: proto.success,
       errorMessage: proto.errorMessage.isEmpty ? null : proto.errorMessage,
       createdAt: proto.createdAt.toDateTime(),
+      metadata: proto.metadata,
     );
   }
 }

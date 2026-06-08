@@ -86,6 +86,11 @@ class StatisticsLoaded extends StatisticsState {
   final ExternalDataStatus externalStatus;
   // Human-readable reason when externalStatus == unavailable.
   final String? externalError;
+  // True while a source/bank/period change is reloading on top of already-
+  // loaded data. The screen keeps the header + tabs mounted and swaps ONLY
+  // the content region to the shimmer skeleton while this is true, instead of
+  // tearing the whole screen down to a StatisticsLoading state.
+  final bool isRefreshing;
 
   const StatisticsLoaded({
     required this.startDate,
@@ -101,6 +106,7 @@ class StatisticsLoaded extends StatisticsState {
     this.selectedBankAccountId,
     this.externalStatus = ExternalDataStatus.notApplicable,
     this.externalError,
+    this.isRefreshing = false,
   });
 
   @override
@@ -118,6 +124,7 @@ class StatisticsLoaded extends StatisticsState {
         selectedBankAccountId,
         externalStatus,
         externalError,
+        isRefreshing,
       ];
 
   /// Create a copy with updated fields
@@ -135,6 +142,7 @@ class StatisticsLoaded extends StatisticsState {
     String? selectedBankAccountId,
     ExternalDataStatus? externalStatus,
     String? externalError,
+    bool? isRefreshing,
   }) {
     return StatisticsLoaded(
       startDate: startDate ?? this.startDate,
@@ -150,6 +158,7 @@ class StatisticsLoaded extends StatisticsState {
       selectedBankAccountId: selectedBankAccountId ?? this.selectedBankAccountId,
       externalStatus: externalStatus ?? this.externalStatus,
       externalError: externalError ?? this.externalError,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 }

@@ -293,6 +293,12 @@ class _AutoSaveTransactionsScreenState
         icon: Icons.unfold_more,
         accent: Color(0xFFFB923C),
       ),
+      const _FilterOption(
+        label: 'Bank inflow',
+        value: TriggerType.externalInflow,
+        icon: Icons.account_balance,
+        accent: Color(0xFFF97316),
+      ),
     ];
     final outcomeSelected = outcomeOptions.firstWhere(
       (o) => o.value == _successFilter,
@@ -900,6 +906,8 @@ class _TransactionTile extends StatelessWidget {
         return const Color(0xFF10B981);
       case TriggerType.roundUp:
         return const Color(0xFFFB923C);
+      case TriggerType.externalInflow:
+        return const Color(0xFFF97316);
       default:
         return const Color(0xFF6B7280);
     }
@@ -913,6 +921,8 @@ class _TransactionTile extends StatelessWidget {
         return Icons.south_west;
       case TriggerType.roundUp:
         return Icons.unfold_more;
+      case TriggerType.externalInflow:
+        return Icons.account_balance;
       default:
         return Icons.help_outline;
     }
@@ -926,6 +936,8 @@ class _TransactionTile extends StatelessWidget {
         return 'ON DEPOSIT';
       case TriggerType.roundUp:
         return 'ROUND-UP';
+      case TriggerType.externalInflow:
+        return 'BANK INFLOW';
       default:
         return 'OTHER';
     }
@@ -1252,6 +1264,8 @@ class _TransactionDetailsSheet extends StatelessWidget {
         return 'On deposit';
       case TriggerType.roundUp:
         return 'Round-up';
+      case TriggerType.externalInflow:
+        return 'Bank inflow';
       default:
         return 'Other';
     }

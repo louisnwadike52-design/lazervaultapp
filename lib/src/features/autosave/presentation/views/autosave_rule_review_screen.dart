@@ -89,6 +89,11 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
       case TriggerType.roundUp:
         final roundUpTo = ruleData['roundUpTo'] as int?;
         return 'Round up to nearest ${currency_formatter.CurrencySymbols.formatAmountWithCurrency((roundUpTo ?? 10).toDouble(), 'NGN')}';
+      case TriggerType.externalInflow:
+        final bank = ruleData['sourceBankName'] as String?;
+        return bank != null && bank.isNotEmpty
+            ? 'Automatically save when money enters $bank'
+            : 'Automatically save when money enters your linked bank';
       default:
         return 'Unknown trigger';
     }

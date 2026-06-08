@@ -157,7 +157,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
           GestureDetector(
@@ -166,16 +166,15 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
             // stuck after several pushes inside the feature.
             onTap: _exitToDashboard,
             child: Container(
-              width: 44.w,
-              height: 44.w,
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(22.r),
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
-                Icons.arrow_back_ios_new,
+                Icons.arrow_back,
                 color: Colors.white,
-                size: 18.sp,
+                size: 20.sp,
               ),
             ),
           ),
@@ -188,35 +187,92 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                   'Auto-Save',
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 28.sp,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4.h),
                 Text(
                   'Automate your savings goals',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
+                    color: Colors.grey[400],
                     fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(width: 12.w),
           ServiceVoiceButton(
             serviceName: 'autosave',
-            iconColor: const Color(0xFF4E03D0),
-            backgroundColor: const Color(0xFF4E03D0),
+            iconColor: _brand,
+            backgroundColor: _brand,
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Auto-Save',
             sourceContext: 'financial_products',
             icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF4E03D0),
+            iconColor: _brand,
           ),
+        ],
+      ),
+    );
+  }
+
+  // Brand purple — matches the Joint Funds / contribution surfaces so the
+  // savings hero reads as part of the same product family.
+  static const Color _brand = Color(0xFF4E03D0);
+
+  /// Shared shell for the hero card: brand-purple gradient + glow, the
+  /// "Savings Overview" header row, and a body the caller supplies (the
+  /// stat row, a spinner, or the empty-state copy).
+  Widget _heroShell({required Widget body}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _brand,
+            _brand.withValues(alpha: 0.82),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: _brand.withValues(alpha: 0.22),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(Icons.savings_rounded,
+                    size: 20.sp, color: Colors.white),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'Savings Overview',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          body,
         ],
       ),
     );
@@ -224,73 +280,74 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
 
   Widget _buildMetricsCard() {
     if (_isLoadingStatistics) {
-      return _buildLoadingMetricsCard();
+      return _heroShell(
+        body: SizedBox(
+          height: 56.h,
+          child: const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     if (_statistics == null) {
-      return _buildEmptyMetricsCard();
+      return _heroShell(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Start saving',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Create your first rule to save automatically.',
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 13.sp,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return StreamBuilder<String>(
       stream: CurrencySymbols.currencySymbolStream,
       builder: (context, snapshot) {
-        return Container(
-          padding: EdgeInsets.all(24.w),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1A1A3E),
-                Color(0xFF0A0E27),
-                Color(0xFF0F0F23),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Column(
+        return _heroShell(
+          body: Row(
             children: [
-              Icon(
-                Icons.savings,
-                size: 48.sp,
-                color: const Color(0xFF4E03D0),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Savings Overview',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: _buildMetricItem(
+                  label: 'Active Rules',
+                  value: _statistics!.activeRulesCount.toString(),
                 ),
               ),
-              SizedBox(height: 24.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildMetricItem(
-                    label: 'Active Rules',
-                    value: _statistics!.activeRulesCount.toString(),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 40.h,
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                  _buildMetricItem(
-                    label: 'Total Saved',
-                    value: _statistics!.formattedTotalSavedAllTime,
-                  ),
-                  Container(
-                    width: 1,
-                    height: 40.h,
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                  _buildMetricItem(
-                    label: 'This Month',
-                    value: _statistics!.formattedTotalSavedThisMonth,
-                  ),
-                ],
+              _heroDivider(),
+              Expanded(
+                child: _buildMetricItem(
+                  label: 'Total Saved',
+                  value: _statistics!.formattedTotalSavedAllTime,
+                ),
+              ),
+              _heroDivider(),
+              Expanded(
+                child: _buildMetricItem(
+                  label: 'This Month',
+                  value: _statistics!.formattedTotalSavedThisMonth,
+                ),
               ),
             ],
           ),
@@ -299,96 +356,43 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
     );
   }
 
+  Widget _heroDivider() => Container(
+        width: 1,
+        height: 38.h,
+        margin: EdgeInsets.symmetric(horizontal: 8.w),
+        color: Colors.white.withValues(alpha: 0.2),
+      );
+
   Widget _buildMetricItem({required String label, required String value}) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
+        // FittedBox so long currency figures (e.g. ₦1,250,000.00) shrink
+        // to fit their column instead of wrapping or overflowing — the
+        // alignment bug the old spaceAround row had.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         SizedBox(height: 4.h),
         Text(
           label,
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 12.sp,
+            color: Colors.white.withValues(alpha: 0.85),
+            fontSize: 11.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildLoadingMetricsCard() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1A1A3E),
-            Color(0xFF0A0E27),
-            Color(0xFF0F0F23),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyMetricsCard() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1A1A3E),
-            Color(0xFF0A0E27),
-            Color(0xFF0F0F23),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.savings,
-            size: 48.sp,
-            color: const Color(0xFF4E03D0),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Start Saving',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Create your first auto-save rule to get started',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -439,25 +443,32 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 32.sp,
-              color: color,
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(icon, size: 22.sp, color: color),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             Text(
               label,
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 14.sp,
+                fontSize: 12.5.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -570,19 +581,38 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
+                // Leading trigger badge — tints the card by trigger type so
+                // the list scans at a glance (matches the contribution-card
+                // leading-icon pattern on the Joint Funds surface).
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: _triggerColor(rule.triggerType)
+                        .withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(11.r),
+                  ),
+                  child: Icon(
+                    _triggerIcon(rule.triggerType),
+                    color: _triggerColor(rule.triggerType),
+                    size: 20.sp,
+                  ),
+                ),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     rule.name,
                     style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 16.sp,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
@@ -594,23 +624,23 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                   padding:
                       EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(rule.status).withValues(alpha: 0.1),
+                    color: _getStatusColor(rule.status).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
                     _getStatusText(rule.status),
                     style: TextStyle(
                       color: _getStatusColor(rule.status),
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 9.5.sp,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 12.h),
             Text(
-              '${rule.triggerDescription} - ${rule.amountDescription}',
+              '${rule.triggerDescription} • ${rule.amountDescription}',
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
@@ -650,6 +680,39 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         ),
       ),
     );
+  }
+
+  // Per-trigger accent + icon for the rule-card leading badge. Mirrors the
+  // create-rule wizard's trigger tints so the colour means the same thing
+  // everywhere in the feature.
+  Color _triggerColor(TriggerType t) {
+    switch (t) {
+      case TriggerType.onDeposit:
+        return const Color(0xFF3B82F6);
+      case TriggerType.scheduled:
+        return const Color(0xFF10B981);
+      case TriggerType.roundUp:
+        return const Color(0xFFF59E0B);
+      case TriggerType.externalInflow:
+        return const Color(0xFFFB923C);
+      default:
+        return _brand;
+    }
+  }
+
+  IconData _triggerIcon(TriggerType t) {
+    switch (t) {
+      case TriggerType.onDeposit:
+        return Icons.south_rounded;
+      case TriggerType.scheduled:
+        return Icons.schedule_rounded;
+      case TriggerType.roundUp:
+        return Icons.trending_up_rounded;
+      case TriggerType.externalInflow:
+        return Icons.account_balance_rounded;
+      default:
+        return Icons.savings_rounded;
+    }
   }
 
   Color _getStatusColor(AutoSaveStatus status) {

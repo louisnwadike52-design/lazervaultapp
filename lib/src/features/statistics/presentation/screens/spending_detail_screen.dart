@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_source_sheet.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/error_state_widget.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
@@ -76,6 +77,20 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
 
   // Track expanded categories (by name to avoid stale indices on refresh)
   final Set<String> _expandedCategories = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Self-heal when opened cold: the shared StatisticsCubit singleton may not
+    // have loaded yet (deep link / fresh session) — without this the body sat
+    // on an infinite spinner. If already loaded we reuse the data as-is.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cubit = context.read<StatisticsCubit>();
+      if (cubit.state is! StatisticsLoaded) {
+        cubit.loadStatistics();
+      }
+    });
+  }
 
   Future<void> _loadAIAnalysis() async {
     // Prevent concurrent calls
@@ -183,6 +198,18 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
       ),
       body: BlocBuilder<StatisticsCubit, StatisticsState>(
         builder: (context, state) {
+          // Surface failures instead of an endless spinner.
+          if (state is StatisticsError) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.r),
+                child: ErrorStateWidget(
+                  message: state.message,
+                  onRetry: () => context.read<StatisticsCubit>().loadStatistics(),
+                ),
+              ),
+            );
+          }
           if (state is! StatisticsLoaded) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.white),

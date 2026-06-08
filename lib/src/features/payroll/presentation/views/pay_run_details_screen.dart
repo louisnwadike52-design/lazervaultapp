@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart' hide Trans;
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/account_manager.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/pay_run_entity.dart';
 import '../../domain/entities/pay_slip_entity.dart';
+import '../../../transaction_pin/widgets/transaction_pin_modal.dart';
 import 'pay_slip_details_screen.dart';
 
 class PayRunDetailsScreen extends StatefulWidget {
@@ -20,22 +23,15 @@ class PayRunDetailsScreen extends StatefulWidget {
 }
 
 class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
-  final _pinController = TextEditingController();
-  final _accountIdController = TextEditingController();
   late final AccountManager _accountManager;
-  String _pinError = '';
-  bool _isProcessing = false;
+  // Last pay run rendered — captured so the receipt has the full breakdown
+  // (period, totals) even though PayRunProcessed only carries the counts.
+  PayRunEntity? _lastPayRun;
 
   @override
   void initState() {
     super.initState();
     _accountManager = serviceLocator<AccountManager>();
-
-    // Auto-fill account ID from AccountManager
-    final activeAccountId = _accountManager.activeAccountId;
-    if (activeAccountId != null && activeAccountId.isNotEmpty) {
-      _accountIdController.text = activeAccountId;
-    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PayrollCubit>().getPayRun(widget.payRunId);
@@ -44,8 +40,6 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
 
   @override
   void dispose() {
-    _pinController.dispose();
-    _accountIdController.dispose();
     super.dispose();
   }
 
@@ -74,7 +68,6 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
         child: BlocConsumer<PayrollCubit, PayrollState>(
           listener: (context, state) {
             if (state is PayRunApproved) {
-              setState(() => _isProcessing = false);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
@@ -83,17 +76,30 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
               );
               context.read<PayrollCubit>().getPayRun(widget.payRunId);
             } else if (state is PayRunProcessed) {
-              setState(() => _isProcessing = false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${state.message}\nSuccessful: ${state.successfulPayments} | Failed: ${state.failedPayments}',
-                  ),
-                  backgroundColor: const Color(0xFF10B981),
-                  duration: const Duration(seconds: 4),
-                ),
-              );
-              context.read<PayrollCubit>().getPayRun(widget.payRunId);
+              final pr = _lastPayRun;
+              final acct = _accountManager.activeAccountDetails;
+              Get.toNamed(AppRoutes.payRunReceipt, arguments: {
+                'name': pr?.name ?? 'Payroll',
+                'periodStart': pr?.payPeriodStart,
+                'periodEnd': pr?.payPeriodEnd,
+                'totalNet': pr?.totalNet ?? 0.0,
+                'currency': acct?.currency ?? 'NGN',
+                'employeeCount':
+                    pr?.employeeCount ?? (state.successfulPayments + state.failedPayments),
+                'successfulPayments': state.successfulPayments,
+                'failedPayments': state.failedPayments,
+                'reference': widget.payRunId,
+                'payRunId': widget.payRunId,
+                'sourceAccountName': acct != null && acct.accountType.isNotEmpty
+                    ? '${acct.accountType[0].toUpperCase()}${acct.accountType.substring(1)}'
+                    : acct?.accountType,
+                'sourceAccountLast4':
+                    acct != null && acct.accountNumber.length >= 4
+                        ? acct.accountNumber
+                            .substring(acct.accountNumber.length - 4)
+                        : null,
+                'processedAt': DateTime.now().toIso8601String(),
+              });
             } else if (state is PayRunCalculated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -102,7 +108,6 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
                 ),
               );
             } else if (state is PayrollError) {
-              setState(() => _isProcessing = false);
               final msg = state.message.toLowerCase();
               final isPinError = msg.contains('pin') || msg.contains('locked');
               if (isPinError) {
@@ -128,10 +133,12 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
             }
 
             if (state is PayRunLoaded) {
+              _lastPayRun = state.payRun;
               return _buildPayRunContent(state.payRun, []);
             }
 
             if (state is PayRunCalculated) {
+              _lastPayRun = state.payRun;
               return _buildPayRunContent(state.payRun, state.paySlips);
             }
 
@@ -605,359 +612,39 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
     );
   }
 
-  void _showProcessDialog(PayRunEntity payRun) {
-    _pinController.clear();
-    setState(() {
-      _pinError = '';
-      _isProcessing = false;
-    });
-
-    // Ensure account ID is current
-    final activeAccountId = _accountManager.activeAccountId;
-    if (activeAccountId != null && activeAccountId.isNotEmpty) {
-      _accountIdController.text = activeAccountId;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setSheetState) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3D3D3D),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 24.h),
-                Text(
-                  'Process Pay Run',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-
-                // Payment breakdown summary
-                Container(
-                  padding: EdgeInsets.all(14.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A0A0A),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildProcessDialogRow(
-                        'Total Gross Pay',
-                        payRun.formattedTotalGross,
-                        const Color(0xFF3B82F6),
-                      ),
-                      _buildProcessDialogRow(
-                        'Total Deductions',
-                        '-${payRun.formattedTotalDeductions}',
-                        const Color(0xFFEF4444),
-                      ),
-                      Divider(color: const Color(0xFF2D2D2D), height: 16.h),
-                      _buildProcessDialogRow(
-                        'Total Net Pay',
-                        payRun.formattedTotalNet,
-                        const Color(0xFF10B981),
-                        isBold: true,
-                      ),
-                      _buildProcessDialogRow(
-                        'Employees',
-                        '${payRun.employeeCount}',
-                        Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 10.h),
-                Text(
-                  'This will debit the total net amount from your business account.',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFFB923C),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 16.h),
-
-                // Source Account — read-only card from AccountManager
-                _buildSourceAccountCard(),
-                SizedBox(height: 14.h),
-
-                // Transaction PIN input
-                TextField(
-                  controller: _pinController,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: 15.sp),
-                  onChanged: (value) {
-                    if (_pinError.isNotEmpty) {
-                      setSheetState(() => _pinError = '');
-                      setState(() => _pinError = '');
-                    }
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Transaction PIN',
-                    labelStyle: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 14.sp,
-                    ),
-                    counterText: '',
-                    filled: true,
-                    fillColor: const Color(0xFF2D2D2D),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(
-                        color: _pinError.isNotEmpty
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF3B82F6),
-                        width: 1.5,
-                      ),
-                    ),
-                    errorText: _pinError.isNotEmpty ? _pinError : null,
-                    errorStyle: GoogleFonts.inter(
-                      color: const Color(0xFFEF4444),
-                      fontSize: 12.sp,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: const Color(0xFF9CA3AF),
-                      size: 20.sp,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-
-                // Process button with loading state
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: ElevatedButton(
-                    onPressed: _isProcessing
-                        ? null
-                        : () {
-                            // Validate account
-                            if (_accountIdController.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'No account selected. Please select an account from your dashboard first.'),
-                                  backgroundColor: Color(0xFFEF4444),
-                                ),
-                              );
-                              return;
-                            }
-
-                            // Validate PIN presence
-                            final pin = _pinController.text.trim();
-                            if (pin.isEmpty) {
-                              setSheetState(
-                                  () => _pinError = 'Please enter your PIN');
-                              setState(
-                                  () => _pinError = 'Please enter your PIN');
-                              return;
-                            }
-
-                            // Validate PIN is exactly 4 digits
-                            if (pin.length != 4 ||
-                                !RegExp(r'^\d{4}$').hasMatch(pin)) {
-                              setSheetState(() =>
-                                  _pinError = 'PIN must be exactly 4 digits');
-                              setState(() =>
-                                  _pinError = 'PIN must be exactly 4 digits');
-                              return;
-                            }
-
-                            setSheetState(() => _isProcessing = true);
-                            setState(() => _isProcessing = true);
-                            Navigator.of(sheetContext).pop();
-                            context.read<PayrollCubit>().processPayRun(
-                                  id: widget.payRunId,
-                                  pin: pin,
-                                  accountId:
-                                      _accountIdController.text.trim(),
-                                );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isProcessing
-                          ? const Color(0xFF3B82F6).withValues(alpha: 0.5)
-                          : const Color(0xFF3B82F6),
-                      disabledBackgroundColor:
-                          const Color(0xFF3B82F6).withValues(alpha: 0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isProcessing
-                        ? SizedBox(
-                            width: 24.w,
-                            height: 24.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
-                            ),
-                          )
-                        : Text(
-                            'Confirm & Process',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSourceAccountCard() {
-    final accountDetails = _accountManager.activeAccountDetails;
-    final hasAccount =
-        _accountIdController.text.trim().isNotEmpty && accountDetails != null;
-
-    if (hasAccount) {
-      final accountNumber = accountDetails.accountNumber;
-      final maskedNumber = accountNumber.length >= 4
-          ? '•••• ${accountNumber.substring(accountNumber.length - 4)}'
-          : accountNumber;
-
-      return Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(
-                Icons.account_balance,
-                color: const Color(0xFF3B82F6),
-                size: 20.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Source Account',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    '${accountDetails.accountType} $maskedNumber',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${accountDetails.currency.toUpperCase()} ${accountDetails.balance.toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF10B981),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.check_circle,
-              color: const Color(0xFF10B981),
-              size: 20.sp,
-            ),
-          ],
+  Future<void> _showProcessDialog(PayRunEntity payRun) async {
+    // Process is account-scoped to the active business account.
+    final accountId = _accountManager.activeAccountId;
+    if (accountId == null || accountId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Select a business account from your dashboard first.'),
+          backgroundColor: Color(0xFFEF4444),
         ),
       );
+      return;
     }
 
-    // No account selected — show warning card
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.warning_amber_rounded,
-            color: const Color(0xFFEF4444),
-            size: 24.sp,
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'No account selected. Please go back to your dashboard and select an account first.',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFEF4444),
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
+    // Reuse the SHARED transaction-PIN bottom sheet (same one Send Funds /
+    // Batch Transfer use). It returns the raw 4-digit PIN, which ProcessPayRun
+    // verifies server-side via auth-service.
+    final pin = await showTransactionPinModal(
+      context,
+      title: 'Process Pay Run',
+      message:
+          'Confirm payroll for ${payRun.employeeCount} ${payRun.employeeCount == 1 ? 'employee' : 'employees'}',
+      amount: payRun.totalNet,
+      currency: 'NGN',
+      currencySymbol: '\u20A6',
     );
+    if (pin == null || pin.length != 4) return;
+    if (!mounted) return;
+    context.read<PayrollCubit>().processPayRun(
+          id: widget.payRunId,
+          pin: pin,
+          accountId: accountId,
+        );
   }
 
   void _showPinErrorDialog(String errorMessage) {
@@ -1074,34 +761,6 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProcessDialogRow(String label, String value, Color valueColor,
-      {bool isBold = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 13.sp,
-              fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              color: valueColor,
-              fontSize: isBold ? 15.sp : 13.sp,
-              fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ],

@@ -14,12 +14,14 @@ class TriggerType extends $pb.ProtobufEnum {
   static const TriggerType TRIGGER_ON_DEPOSIT = TriggerType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_ON_DEPOSIT');
   static const TriggerType TRIGGER_SCHEDULED = TriggerType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_SCHEDULED');
   static const TriggerType TRIGGER_ROUND_UP = TriggerType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_ROUND_UP');
+  static const TriggerType TRIGGER_EXTERNAL_INFLOW = TriggerType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_EXTERNAL_INFLOW');
 
   static const $core.List<TriggerType> values = <TriggerType> [
     TRIGGER_UNKNOWN,
     TRIGGER_ON_DEPOSIT,
     TRIGGER_SCHEDULED,
     TRIGGER_ROUND_UP,
+    TRIGGER_EXTERNAL_INFLOW,
   ];
 
   static final $core.Map<$core.int, TriggerType> _byValue = $pb.ProtobufEnum.initByValue(values);

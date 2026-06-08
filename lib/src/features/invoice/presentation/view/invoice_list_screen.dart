@@ -26,6 +26,12 @@ class InvoiceListScreen extends StatefulWidget {
 class _InvoiceListScreenState extends State<InvoiceListScreen> {
   final TextEditingController _searchController = TextEditingController();
   InvoiceStatus? _selectedFilter;
+  // Last successfully loaded list + stats, so transient states (payment /
+  // service-fee / unlock / creation-queued) don't flash the empty state over
+  // an existing list.
+  List<Invoice> _lastInvoices = const [];
+  Map<String, dynamic>? _lastStats;
+  bool _hasLoadedOnce = false;
   
   @override
   void initState() {
@@ -229,31 +235,41 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               backgroundColor: Colors.red,
             ),
           );
-        }
-        
-        if (state is InvoiceOperationSuccess) {
+        } else if (state is InvoiceOperationSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green,
             ),
           );
+        } else if (state is InvoiceCreationQueued) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invoice is being created…'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (state is InvoicePaymentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.read<InvoiceCubit>().loadInvoices();
+        } else if (state is InvoiceServiceFeePaid ||
+            state is InvoiceUnlockSuccess) {
+          // A money step in another flow finished against this same cubit —
+          // refresh so the list reflects the new state.
+          context.read<InvoiceCubit>().loadInvoices();
         }
       },
       builder: (context, state) {
-        if (state is InvoiceLoading) {
-          return Center(
-            child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
-          );
-        }
-
         if (state is InvoicesLoaded) {
-          return Column(
-            children: [
-              if (state.statistics != null) _buildStatistics(state.statistics!),
-              Expanded(child: _buildInvoiceList(state.invoices)),
-            ],
-          );
+          _lastInvoices = state.invoices;
+          _lastStats = state.statistics;
+          _hasLoadedOnce = true;
+          return _buildLoadedColumn(state.invoices, state.statistics);
         }
 
         if (state is InvoiceSearchResults) {
@@ -261,11 +277,41 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         }
 
         if (state is InvoiceError) {
+          // Keep a populated list visible rather than blanking to an error.
+          if (_hasLoadedOnce && _lastInvoices.isNotEmpty) {
+            return _buildLoadedColumn(_lastInvoices, _lastStats);
+          }
           return _buildErrorState(state.message);
         }
 
+        if (state is InvoiceLoading) {
+          // First load → spinner; subsequent reloads keep the current list.
+          if (_hasLoadedOnce) {
+            return _buildLoadedColumn(_lastInvoices, _lastStats);
+          }
+          return Center(
+            child:
+                CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+          );
+        }
+
+        // Any other (transient) state: don't flash the empty state over an
+        // existing list — show the last loaded list if we have one.
+        if (_hasLoadedOnce) {
+          return _buildLoadedColumn(_lastInvoices, _lastStats);
+        }
         return _buildEmptyState();
       },
+    );
+  }
+
+  Widget _buildLoadedColumn(
+      List<Invoice> invoices, Map<String, dynamic>? statistics) {
+    return Column(
+      children: [
+        if (statistics != null) _buildStatistics(statistics),
+        Expanded(child: _buildInvoiceList(invoices)),
+      ],
     );
   }
 

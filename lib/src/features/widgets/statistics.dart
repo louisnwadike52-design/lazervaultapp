@@ -4,7 +4,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
@@ -27,6 +26,8 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/linked_b
 import 'package:lazervault/src/features/statistics/presentation/widgets/financial_health_score_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/cash_flow_insights_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/failed_transactions_card.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_content_skeleton.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/error_state_widget.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Returns true for platform/internal fee categories that should be
@@ -288,13 +289,10 @@ class _StatisticsState extends State<Statistics> {
         }
       },
       builder: (context, state) {
-        if (state is StatisticsLoading) {
-          return Container(
-            color: AppColors.secondaryBackgroundColor,
-            child: _buildLoadingShimmer(),
-          );
-        }
-
+        // The header + source tabs + wallet/bank scope row + linking + quick
+        // actions are ALWAYS mounted (driven by local state), so a source /
+        // bank / period switch never tears them down to a black screen. Only
+        // the stats region below swaps to the diagonal skeleton while loading.
         return Container(
           color: const Color(0xFF0A0A0A),
           child: RefreshIndicator(
@@ -309,10 +307,14 @@ class _StatisticsState extends State<Statistics> {
                   _buildHeader(),
                   SizedBox(height: 12.h),
 
-                  // ============ SOURCE FILTER (applies to EVERY section) ============
+                  // ============ SOURCE FILTER (the tabs) ============
                   // LazerVault wallet only / external banks only / combined —
                   // plus, when banks are in scope, All-banks vs one linked bank.
                   _buildSourceFilterBar(),
+
+                  // Wallet account selector — only meaningful for wallet/all
+                  // scopes; hidden on the Banks tab (bank chips scope there).
+                  _buildWalletAccountRow(),
                   SizedBox(height: 12.h),
 
                   // Honesty signal: when bank data couldn't be fetched from
@@ -333,47 +335,11 @@ class _StatisticsState extends State<Statistics> {
                   // ==================== QUICK ACTIONS SECTION (always) ========
                   _buildSectionHeader('Quick Actions'),
                   SizedBox(height: 12.h),
-                  _buildFeatureGrid(state),
+                  _buildFeatureGrid(),
                   SizedBox(height: 16.h),
 
-                  // Metrics below depend on real transaction data. For a
-                  // BANK-ONLY scope whose data couldn't be read, we already
-                  // show the notice above and SKIP the metric sections rather
-                  // than render misleading zeros/scores.
-                  if (!_bankScopeDataMissing) ...[
-                    // ================ OVERVIEW SECTION ================
-                    _buildSectionHeader('Overview', trailing: _buildScopeBadge()),
-                    SizedBox(height: 12.h),
-                    _buildQuickStats(state),
-                    SizedBox(height: 12.h),
-                    _buildPerformanceAlert(state),
-                    SizedBox(height: 16.h),
-
-                    // ================ INSIGHTS SECTION ================
-                    _buildSectionHeader('Insights'),
-                    SizedBox(height: 12.h),
-                    _buildFinancialHealthScore(state),
-                    SizedBox(height: 12.h),
-                    _buildCashFlowInsights(state),
-                    SizedBox(height: 16.h),
-                  ],
-
-                  if (!_bankScopeDataMissing) ...[
-                    // ================ ANALYTICS SECTION ================
-                    _buildSectionHeader('Analytics', trailing: _buildPeriodSelector()),
-                    SizedBox(height: 12.h),
-                    _buildSpendingChart(state),
-                    SizedBox(height: 12.h),
-                    _buildMonthlyTrendChart(state),
-                    SizedBox(height: 16.h),
-
-                    // ============ CATEGORY BREAKDOWN SECTION ============
-                    _buildCategoryAnalysisSection(state),
-                    SizedBox(height: 16.h),
-                  ],
-
-                  // ==================== MANAGEMENT SECTION ====================
-                  _buildManagementSection(state),
+                  // ==================== STATS CONTENT (skeleton-or-real) ======
+                  _buildStatsContent(state),
                   SizedBox(height: 100.h),
                 ],
               ),
@@ -381,6 +347,63 @@ class _StatisticsState extends State<Statistics> {
           ),
         );
       },
+    );
+  }
+
+  /// The metric-bearing region (Overview / Insights / Analytics / Category /
+  /// Management). Shows the diagonal dark skeleton on first load AND while a
+  /// source/bank/period change is reloading (isRefreshing), an inline error
+  /// widget on failure, and the real sections once loaded. The header + tabs
+  /// + quick actions above stay mounted throughout.
+  Widget _buildStatsContent(StatisticsState state) {
+    final showSkeleton = state is StatisticsInitial ||
+        state is StatisticsLoading ||
+        (state is StatisticsLoaded && state.isRefreshing);
+    if (showSkeleton) {
+      return const StatisticsContentSkeleton();
+    }
+    if (state is StatisticsError) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+        child: ErrorStateWidget(
+          message: state.message,
+          onRetry: () => context.read<StatisticsCubit>().refresh(),
+        ),
+      );
+    }
+    if (state is! StatisticsLoaded) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Metrics below depend on real transaction data. For a BANK-ONLY scope
+        // whose data couldn't be read, we already show the notice above and
+        // SKIP the metric sections rather than render misleading zeros/scores.
+        if (!_bankScopeDataMissing) ...[
+          _buildSectionHeader('Overview', trailing: _buildScopeBadge()),
+          SizedBox(height: 12.h),
+          _buildQuickStats(state),
+          SizedBox(height: 12.h),
+          _buildPerformanceAlert(state),
+          SizedBox(height: 16.h),
+          _buildSectionHeader('Insights'),
+          SizedBox(height: 12.h),
+          _buildFinancialHealthScore(state),
+          SizedBox(height: 12.h),
+          _buildCashFlowInsights(state),
+          SizedBox(height: 16.h),
+          _buildSectionHeader('Analytics', trailing: _buildPeriodSelector()),
+          SizedBox(height: 12.h),
+          _buildSpendingChart(state),
+          SizedBox(height: 12.h),
+          _buildMonthlyTrendChart(state),
+          SizedBox(height: 16.h),
+          _buildCategoryAnalysisSection(state),
+          SizedBox(height: 16.h),
+        ],
+        _buildManagementSection(state),
+      ],
     );
   }
 
@@ -422,37 +445,49 @@ class _StatisticsState extends State<Statistics> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.insights,
-                      color: const Color(0xFF3B82F6),
-                      size: 28.sp,
-                    ),
-                    SizedBox(width: 10.w),
-                    Text(
-                      'AI Budgeting',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.bold,
+            // Expanded so the title column yields space to the action icons
+            // instead of overflowing — the reusable 22sp header scale used
+            // across Auto-Save / Joint Funds.
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.insights,
+                        color: const Color(0xFF3B82F6),
+                        size: 22.sp,
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Smart budgeting powered by AI',
-                  style: TextStyle(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
+                      SizedBox(width: 8.w),
+                      Flexible(
+                        child: Text(
+                          'AI Budgeting',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Smart budgeting powered by AI',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            SizedBox(width: 8.w),
             // Per-service voice + chat icons — pin every session
             // opened from the Statistics tab to chat-statistics-service
             // via DIRECT_ROUTES['statistics']. Mirrors the canonical
@@ -469,10 +504,41 @@ class _StatisticsState extends State<Statistics> {
               icon: Icons.chat_bubble_outline,
               iconColor: const Color(0xFF3B82F6),
             ),
-            SizedBox(width: 8.w),
-            _buildAccountSelector(),
+            // Account selector moved OUT of the header (it overflowed beside
+            // the title + 2 icon buttons, and is useless on the Banks tab).
+            // It now renders under the source tabs for wallet/all scopes —
+            // see _buildWalletAccountRow().
           ],
         ),
+      ),
+    );
+  }
+
+  /// Wallet account selector row, shown UNDER the source tabs only for
+  /// wallet/all scopes (hidden on the Banks tab, where the bank scope chips
+  /// scope the numbers). Selecting an account re-scopes the wallet analytics
+  /// leg via AccountManager + StatisticsCubit.refresh().
+  Widget _buildWalletAccountRow() {
+    if (_statsSource == StatisticsSource.bank) return const SizedBox.shrink();
+    final selector = _buildAccountSelector();
+    if (selector is SizedBox) return const SizedBox.shrink(); // no accounts
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 0),
+      child: Row(
+        children: [
+          Icon(Icons.account_balance_wallet_rounded,
+              size: 14.sp, color: const Color(0xFF9CA3AF)),
+          SizedBox(width: 6.w),
+          Text(
+            'Wallet account',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500),
+          ),
+          const Spacer(),
+          selector,
+        ],
       ),
     );
   }
@@ -838,7 +904,9 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildFeatureGrid(StatisticsState state) {
+  Widget _buildFeatureGrid() {
+    // Bills + Categories removed — not needed on this surface. The four kept
+    // actions each have a verified end-to-end flow.
     final features = [
       _FeatureItem(
         title: 'Budgets',
@@ -862,25 +930,11 @@ class _StatisticsState extends State<Statistics> {
         route: AppRoutes.financialGoals,
       ),
       _FeatureItem(
-        title: 'Bills',
-        description: 'Recurring bills',
-        icon: Icons.receipt_long,
-        color: const Color(0xFFF59E0B),
-        route: AppRoutes.recurringBills,
-      ),
-      _FeatureItem(
         title: 'Spending',
         description: 'Analyze spending',
         icon: Icons.pie_chart,
         color: const Color(0xFFEC4899),
         route: AppRoutes.statisticsSpendingDetail,
-      ),
-      _FeatureItem(
-        title: 'Categories',
-        description: 'Manage categories',
-        icon: Icons.category,
-        color: const Color(0xFF06B6D4),
-        route: AppRoutes.categoryManagement,
       ),
     ];
 
@@ -2015,84 +2069,6 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildLoadingShimmer() {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-            child: Row(
-              children: [
-                Container(
-                  width: 28.w,
-                  height: 28.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Container(
-                  width: 160.w,
-                  height: 28.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 160.h,
-            margin: EdgeInsets.symmetric(horizontal: 16.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                  const Color(0xFF3B82F6).withValues(alpha: 0.03),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24.r),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12.h,
-                crossAxisSpacing: 12.w,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: 6,
-              itemBuilder: (context, index) => Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.03),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          ...[180.0, 240.0, 160.0].map((h) => Container(
-                height: h.h,
-                margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.03),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
 }
 
 // ==================== WIDGET CLASSES ====================

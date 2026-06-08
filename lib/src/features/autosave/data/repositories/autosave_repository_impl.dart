@@ -38,6 +38,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     double? targetAmount,
     double? minimumBalance,
     double? maximumPerSave,
+    String? sourceLinkedAccountId,
+    String? sourceBankName,
   }) async {
     try {
       // Convert amounts from major units (Naira) to minor units (kobo)
@@ -55,6 +57,13 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         sourceAccountId: sourceAccountId,
         destinationAccountId: destinationAccountId,
       );
+
+      if (sourceLinkedAccountId != null && sourceLinkedAccountId.isNotEmpty) {
+        request.sourceLinkedAccountId = sourceLinkedAccountId;
+      }
+      if (sourceBankName != null && sourceBankName.isNotEmpty) {
+        request.sourceBankName = sourceBankName;
+      }
 
       if (frequency != null) {
         request.frequency = _frequencyToProto(frequency);
@@ -546,6 +555,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return autosave_pb.TriggerType.TRIGGER_SCHEDULED;
       case entity.TriggerType.roundUp:
         return autosave_pb.TriggerType.TRIGGER_ROUND_UP;
+      case entity.TriggerType.externalInflow:
+        return autosave_pb.TriggerType.TRIGGER_EXTERNAL_INFLOW;
       default:
         return autosave_pb.TriggerType.TRIGGER_UNKNOWN;
     }

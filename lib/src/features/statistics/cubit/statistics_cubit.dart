@@ -121,7 +121,15 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     _isLoading = true;
     try {
       if (isClosed) return;
-      emit(const StatisticsLoading(loadingMessage: 'Loading statistics...'));
+      // Non-destructive reload: when we already have loaded data (a source /
+      // bank / period switch), keep it on screen and flip isRefreshing so the
+      // screen swaps ONLY the content region to the skeleton — header + tabs
+      // stay mounted. A true first load (no data yet) still emits Loading.
+      if (state is StatisticsLoaded) {
+        emit((state as StatisticsLoaded).copyWith(isRefreshing: true));
+      } else {
+        emit(const StatisticsLoading(loadingMessage: 'Loading statistics...'));
+      }
 
       final now = DateTime.now();
       final start = startDate ?? now.subtract(const Duration(days: 7));
