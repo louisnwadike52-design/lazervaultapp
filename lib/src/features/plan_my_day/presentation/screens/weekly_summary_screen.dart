@@ -16,11 +16,20 @@ class WeeklySummaryScreen extends StatefulWidget {
 
 class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   late DateTime _currentWeekStart;
+  Map<String, dynamic>? _summary; // real data from the planning backend
 
   @override
   void initState() {
     super.initState();
     _currentWeekStart = _getStartOfWeek(DateTime.now());
+    _loadSummary();
+  }
+
+  void _loadSummary() {
+    final d = _currentWeekStart;
+    final dateStr =
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    context.read<PlanMyDayCubit>().loadWeeklySummary(startDate: dateStr);
   }
 
   @override
@@ -49,6 +58,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
               setState(() {
                 _currentWeekStart = _currentWeekStart.subtract(const Duration(days: 7));
               });
+              _loadSummary();
             },
           ),
           Text(
@@ -64,15 +74,18 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
               setState(() {
                 _currentWeekStart = _currentWeekStart.add(const Duration(days: 7));
               });
+              _loadSummary();
             },
           ),
         ],
       ),
-      body: BlocBuilder<PlanMyDayCubit, PlanMyDayState>(
-        builder: (context, state) {
-          // Show loading or weekly summary data
-          return _buildWeeklySummary();
+      body: BlocListener<PlanMyDayCubit, PlanMyDayState>(
+        listener: (context, state) {
+          if (state is WeeklySummaryLoaded) {
+            setState(() => _summary = state.summary);
+          }
         },
+        child: _buildWeeklySummary(),
       ),
     );
   }
@@ -162,7 +175,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '12 of 18 tasks completed',
+                      '${(_summary?['total_tasks_completed'] as num?)?.toInt() ?? 0} of ${(_summary?['total_tasks_created'] as num?)?.toInt() ?? 0} tasks completed',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18.sp,
@@ -184,7 +197,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: 0.67,
+              widthFactor: (((_summary?['average_completion_rate'] as num?)?.toDouble() ?? 0) / 100).clamp(0.0, 1.0),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(

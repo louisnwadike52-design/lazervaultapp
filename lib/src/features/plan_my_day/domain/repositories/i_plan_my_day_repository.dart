@@ -3,6 +3,7 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/time_block.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summary.dart';
+import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 
 abstract class IPlanMyDayRepository {
   // Events
@@ -115,4 +116,14 @@ abstract class IPlanMyDayRepository {
 
   // Analytics
   Future<DailySummary> getDailySummary(String date);
+
+  // Reminders
+  Future<List<Reminder>> getReminders({bool enabledOnly = false});
+  Future<Reminder> createReminder(Reminder reminder);
+  Future<Reminder> updateReminder(String id, Reminder reminder);
+  Future<void> deleteReminder(String id);
+
+  // Weekly summary + productivity insights (raw maps — screens shape their own view)
+  Future<Map<String, dynamic>> getWeeklySummary({String? startDate});
+  Future<Map<String, dynamic>> getProductivityInsights({String period = 'week'});
 }

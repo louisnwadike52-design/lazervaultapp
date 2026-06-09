@@ -265,6 +265,18 @@ class ReminderDeleted extends PlanMyDayState {
   ReminderDeleted({required this.reminderId});
 }
 
+class WeeklySummaryLoaded extends PlanMyDayState {
+  final Map<String, dynamic> summary;
+
+  WeeklySummaryLoaded({required this.summary});
+}
+
+class ProductivityInsightsLoaded extends PlanMyDayState {
+  final Map<String, dynamic> insights;
+
+  ProductivityInsightsLoaded({required this.insights});
+}
+
 bool _isSameDay(DateTime date1, DateTime date2) {
   return date1.year == date2.year &&
       date1.month == date2.month &&

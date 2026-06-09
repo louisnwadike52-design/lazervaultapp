@@ -1,8 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class ProductivityInsightsScreen extends StatelessWidget {
+import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
+
+class ProductivityInsightsScreen extends StatefulWidget {
   const ProductivityInsightsScreen({super.key});
+
+  @override
+  State<ProductivityInsightsScreen> createState() =>
+      _ProductivityInsightsScreenState();
+}
+
+class _ProductivityInsightsScreenState
+    extends State<ProductivityInsightsScreen> {
+  String _period = 'week';
+  Map<String, dynamic>? _insights; // real data from the planning backend
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  void _load() {
+    context.read<PlanMyDayCubit>().loadProductivityInsights(period: _period);
+  }
+
+  // Map the backend score band ("low"/"medium"/"high") or numeric score to a
+  // 0..1 progress value for the ring.
+  double _scoreFraction() {
+    final score = _insights?['productivity_score'];
+    if (score is num) {
+      // numeric 0..100
+      return (score / 100).clamp(0.0, 1.0);
+    }
+    switch ((score ?? '').toString().toLowerCase()) {
+      case 'high':
+        return 0.85;
+      case 'medium':
+        return 0.55;
+      case 'low':
+        return 0.25;
+      default:
+        return 0.0;
+    }
+  }
+
+  String _scoreLabel() {
+    final score = _insights?['productivity_score'];
+    if (score is num) return score.round().toString();
+    final s = (score ?? '').toString();
+    if (s.isEmpty) return '0';
+    return s[0].toUpperCase() + s.substring(1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,48 +75,159 @@ class ProductivityInsightsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.tune, color: Colors.white),
+            color: const Color(0xFF1F1F1F),
+            onSelected: (value) {
+              setState(() => _period = value);
+              _load();
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: 'week',
+                child: Text('This Week', style: TextStyle(color: Colors.white)),
+              ),
+              PopupMenuItem(
+                value: 'month',
+                child:
+                    Text('This Month', style: TextStyle(color: Colors.white)),
+              ),
+              PopupMenuItem(
+                value: 'quarter',
+                child: Text('This Quarter',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: BlocListener<PlanMyDayCubit, PlanMyDayState>(
+        listener: (context, state) {
+          if (state is ProductivityInsightsLoaded) {
+            setState(() => _insights = state.insights);
+          }
+        },
+        child: BlocBuilder<PlanMyDayCubit, PlanMyDayState>(
+          builder: (context, state) {
+            if (state is PlanMyDayLoading && _insights == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF10B981)),
+              );
+            }
+            if (state is PlanMyDayError && _insights == null) {
+              return _buildError(state.message);
+            }
+            if (_insights == null) {
+              return _buildEmpty();
+            }
+            return _buildContent();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildError(String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
+            SizedBox(height: 16.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+            ),
+            SizedBox(height: 20.h),
+            ElevatedButton(
+              onPressed: _load,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+              ),
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.insights_outlined,
+                color: Colors.grey[600], size: 48),
+            SizedBox(height: 16.h),
+            Text(
+              'Not enough activity yet',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Complete tasks and plan your days to unlock productivity insights.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[400], fontSize: 13.sp),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    final strengths =
+        (_insights?['strength_areas'] as List?)?.cast<dynamic>() ?? const [];
+    final improvements =
+        (_insights?['improvement_areas'] as List?)?.cast<dynamic>() ?? const [];
+    final insightCards =
+        (_insights?['insights'] as List?)?.cast<dynamic>() ?? const [];
+
+    return RefreshIndicator(
+      color: const Color(0xFF10B981),
+      backgroundColor: const Color(0xFF1F1F1F),
+      onRefresh: () async => _load(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Productivity Score Card
             _buildProductivityScoreCard(),
             SizedBox(height: 20.h),
-
-            // Weekly Trend
-            _buildWeeklyTrendCard(),
-            SizedBox(height: 20.h),
-
-            // Strength Areas
-            _buildAreasCard(
-              title: 'Strength Areas',
-              icon: Icons.star,
-              iconColor: const Color(0xFFF59E0B),
-              areas: [
-                {'name': 'Task Completion', 'value': '85%', 'trend': '+12%'},
-                {'name': 'Focus Time', 'value': '6.2h/day', 'trend': '+8%'},
-                {'name': 'Consistency', 'value': '5 day streak', 'trend': 'Personal best!'},
-              ],
-            ),
-            SizedBox(height: 20.h),
-
-            // Improvement Areas
-            _buildAreasCard(
-              title: 'Areas to Improve',
-              icon: Icons.trending_up,
-              iconColor: const Color(0xFFEF4444),
-              areas: [
-                {'name': 'Meeting Efficiency', 'value': '62%', 'trend': '-5%'},
-                {'name': 'Break Taking', 'value': '1.2/day', 'trend': 'Too few'},
-                {'name': 'Task Estimation', 'value': 'Off by 30%', 'trend': 'Needs work'},
-              ],
-            ),
-            SizedBox(height: 20.h),
-
-            // AI Suggestions
-            _buildSuggestionsCard(),
+            if (strengths.isNotEmpty) ...[
+              _buildListCard(
+                title: 'Strength Areas',
+                icon: Icons.star,
+                iconColor: const Color(0xFFF59E0B),
+                items: strengths.map((e) => e.toString()).toList(),
+              ),
+              SizedBox(height: 20.h),
+            ],
+            if (improvements.isNotEmpty) ...[
+              _buildListCard(
+                title: 'Areas to Improve',
+                icon: Icons.trending_up,
+                iconColor: const Color(0xFFEF4444),
+                items: improvements.map((e) => e.toString()).toList(),
+              ),
+              SizedBox(height: 20.h),
+            ],
+            if (insightCards.isNotEmpty)
+              _buildInsightsCard(insightCards)
+            else
+              _buildNoInsightsHint(),
           ],
         ),
       ),
@@ -72,6 +235,9 @@ class ProductivityInsightsScreen extends StatelessWidget {
   }
 
   Widget _buildProductivityScoreCard() {
+    final fraction = _scoreFraction();
+    final trend = (_insights?['score_trend'] ?? '').toString();
+    final period = (_insights?['period'] ?? _period).toString();
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
@@ -99,138 +265,66 @@ class ProductivityInsightsScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    '78',
+                    _scoreLabel(),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 48.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  Text(
+                    'for this $period',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 12.sp,
+                    ),
+                  ),
                 ],
               ),
-              Container(
+              SizedBox(
                 width: 100.w,
                 height: 100.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: SizedBox(
-                        width: 80.w,
-                        height: 80.w,
-                        child: CircularProgressIndicator(
-                          value: 0.78,
-                          strokeWidth: 8,
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
+                child: Center(
+                  child: SizedBox(
+                    width: 80.w,
+                    height: 80.w,
+                    child: CircularProgressIndicator(
+                      value: fraction,
+                      strokeWidth: 8,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Icon(Icons.arrow_upward, color: Colors.white, size: 16),
-              SizedBox(width: 4.w),
-              Text(
-                '+8 points from last week',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
+          if (trend.trim().isNotEmpty) ...[
+            SizedBox(height: 16.h),
+            Row(
+              children: [
+                const Icon(Icons.trending_up, color: Colors.white, size: 16),
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: Text(
+                    trend,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeeklyTrendCard() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Weekly Trend',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          SizedBox(
-            height: 150.h,
-            child: _buildSimpleChart(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSimpleChart() {
-    // Simple bar chart using containers
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final values = [65, 78, 82, 70, 85, 60, 45];
-    final maxVal = 100.0;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(days.length, (index) {
-        final value = values[index] / maxVal;
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 24.w,
-              height: 100.h * value,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF3B82F6),
-                    value > 0.7 ? const Color(0xFF10B981) : const Color(0xFF8B5CF6),
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(4.r),
-                ),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              days[index],
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 12.sp,
-              ),
+              ],
             ),
           ],
-        );
-      }),
+        ],
+      ),
     );
   }
 
-  Widget _buildAreasCard({
+  Widget _buildListCard({
     required String title,
     required IconData icon,
     required Color iconColor,
-    required List<Map<String, String>> areas,
+    required List<String> items,
   }) {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -263,63 +357,41 @@ class ProductivityInsightsScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.h),
-          ...areas.map((area) => Padding(
+          ...items.map((item) => Padding(
                 padding: EdgeInsets.only(bottom: 12.h),
-                child: _buildAreaItem(area),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 6.h),
+                      child: Container(
+                        width: 6.w,
+                        height: 6.w,
+                        decoration: BoxDecoration(
+                          color: iconColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               )),
         ],
       ),
     );
   }
 
-  Widget _buildAreaItem(Map<String, String> area) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            area['name']!,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-            ),
-          ),
-        ),
-        Text(
-          area['value']!,
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 14.sp,
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: area['trend']!.contains('+')
-                ? const Color(0xFF10B981).withOpacity(0.2)
-                : area['trend']!.contains('-')
-                    ? const Color(0xFFEF4444).withOpacity(0.2)
-                    : const Color(0xFF3B82F6).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Text(
-            area['trend']!,
-            style: TextStyle(
-              color: area['trend']!.contains('+')
-                  ? const Color(0xFF10B981)
-                  : area['trend']!.contains('-')
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF3B82F6),
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSuggestionsCard() {
+  Widget _buildInsightsCard(List<dynamic> insightCards) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -334,14 +406,14 @@ class ProductivityInsightsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.psychology_outlined,
-                color: const Color(0xFF8B5CF6),
+                color: Color(0xFF8B5CF6),
                 size: 24,
               ),
               SizedBox(width: 12.w),
               Text(
-                'AI-Powered Suggestions',
+                'Insights & Suggestions',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -351,60 +423,104 @@ class ProductivityInsightsScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.h),
-          _buildSuggestionItem(
-            'Schedule deep work sessions',
-            'Your peak productivity is 9-11 AM. Block this time for important tasks.',
-            Icons.access_time,
-          ),
-          SizedBox(height: 12.h),
-          _buildSuggestionItem(
-            'Take more breaks',
-            'You\'ve been working 2+ hours without breaks. Try the Pomodoro technique.',
-            Icons.free_breakfast,
-          ),
-          SizedBox(height: 12.h),
-          _buildSuggestionItem(
-            'Rebalance your week',
-            'You\'re overloading Thursdays. Consider moving some tasks to Tuesday.',
-            Icons.balance,
+          ...insightCards.map((raw) {
+            final card = (raw as Map).cast<String, dynamic>();
+            return Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: _buildInsightItem(
+                (card['title'] ?? '').toString(),
+                (card['description'] ?? '').toString(),
+                (card['actionable_tip'] ?? '').toString(),
+                (card['type'] ?? 'suggestion').toString(),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoInsightsHint() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lightbulb_outline, color: Colors.grey[500], size: 22),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              'Keep planning your days. Tailored suggestions appear once there is enough activity to analyze.',
+              style: TextStyle(color: Colors.grey[400], fontSize: 13.sp),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSuggestionItem(String title, String description, IconData icon) {
+  Widget _buildInsightItem(
+      String title, String description, String tip, String type) {
+    final color = switch (type.toLowerCase()) {
+      'achievement' => const Color(0xFF10B981),
+      'warning' => const Color(0xFFEF4444),
+      'pattern' => const Color(0xFF3B82F6),
+      _ => const Color(0xFF8B5CF6),
+    };
+    final icon = switch (type.toLowerCase()) {
+      'achievement' => Icons.emoji_events_outlined,
+      'warning' => Icons.warning_amber_outlined,
+      'pattern' => Icons.insights_outlined,
+      _ => Icons.tips_and_updates_outlined,
+    };
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, color: const Color(0xFF8B5CF6), size: 18),
+          child: Icon(icon, color: color, size: 18),
         ),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
+              if (title.isNotEmpty)
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              Text(
-                description,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 12.sp,
+              if (description.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(top: 2.h),
+                  child: Text(
+                    description,
+                    style: TextStyle(color: Colors.grey[400], fontSize: 12.sp),
+                  ),
                 ),
-              ),
+              if (tip.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(top: 4.h),
+                  child: Text(
+                    tip,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12.sp,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

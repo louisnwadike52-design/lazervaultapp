@@ -3600,6 +3600,10 @@ Future<void> init() async {
       baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'http://10.0.2.2:8097',
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       accountManager: serviceLocator<AccountManager>(),
+      // Use the SHARED secure storage (AndroidOptions encryptedSharedPreferences:
+      // true) the auth flow writes the token to. A default FlutterSecureStorage()
+      // reads a different Android backend → "No authentication token found".
+      storage: serviceLocator<FlutterSecureStorage>(),
     ),
   );
 
@@ -3609,6 +3613,7 @@ Future<void> init() async {
       baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'http://10.0.2.2:8097',
       accountManager: serviceLocator<AccountManager>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      storage: serviceLocator<FlutterSecureStorage>(), // shared encrypted store
     ),
   );
 

@@ -469,7 +469,10 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const ProductivityInsightsScreen(),
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<PlanMyDayCubit>(),
+                    child: const ProductivityInsightsScreen(),
+                  ),
                 ),
               );
             },

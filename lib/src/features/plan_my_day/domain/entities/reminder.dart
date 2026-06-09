@@ -64,6 +64,47 @@ class Reminder {
     );
   }
 
+  /// Maps the planning-service backend shape (reminder_time as a proto
+  /// {seconds} timestamp, repeat_type, repeat_minutes_before, enabled) onto
+  /// this entity. The Flutter entity was designed independently of the backend.
+  factory Reminder.fromBackendJson(Map<String, dynamic> json) {
+    DateTime ts(dynamic v) {
+      if (v is Map && v['seconds'] != null) {
+        return DateTime.fromMillisecondsSinceEpoch((v['seconds'] as num).toInt() * 1000);
+      }
+      if (v is String && v.isNotEmpty) return DateTime.tryParse(v) ?? DateTime.now();
+      return DateTime.now();
+    }
+
+    final repeatType = (json['repeat_type'] as String?) ?? 'once';
+    final minutesBefore = (json['repeat_minutes_before'] as num?)?.toInt();
+    return Reminder(
+      id: json['id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      remindAt: ts(json['reminder_time']),
+      minutesBefore: minutesBefore,
+      reminderType: repeatType == 'once'
+          ? (minutesBefore != null && minutesBefore > 0 ? 'relative' : 'absolute')
+          : 'recurring',
+      repeatPattern: repeatType == 'once' ? null : repeatType,
+      isActive: json['enabled'] as bool? ?? true,
+      createdAt: ts(json['created_at']),
+    );
+  }
+
+  /// The request body the planning-service expects (reverse of fromBackendJson).
+  Map<String, dynamic> toBackendJson() {
+    return {
+      'title': title,
+      'reminder_time': remindAt.toUtc().toIso8601String(),
+      'repeat_type': reminderType == 'recurring' ? (repeatPattern ?? 'daily') : 'once',
+      'repeat_minutes_before': minutesBefore ?? 0,
+      'repeat_rule': '',
+      'enabled': isActive,
+    };
+  }
+
   factory Reminder.fromJson(Map<String, dynamic> json) {
     return Reminder(
       id: json['id'] as String,

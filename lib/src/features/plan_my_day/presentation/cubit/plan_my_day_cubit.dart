@@ -6,6 +6,7 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/time_block.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart' as plan;
 import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summary.dart';
+import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
 
@@ -575,5 +576,69 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
   int _parseTime(String time) {
     final parts = time.split(':');
     return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+  }
+
+  // ===== Reminders =====
+
+  Future<void> loadReminders({bool enabledOnly = false}) async {
+    emit(PlanMyDayLoading());
+    try {
+      final reminders = await _repository.getReminders(enabledOnly: enabledOnly);
+      emit(ReminderListLoaded(reminders: reminders));
+    } catch (e) {
+      emit(_parseError(e, 'Failed to load reminders'));
+    }
+  }
+
+  Future<void> createReminder(Reminder reminder) async {
+    try {
+      final created = await _repository.createReminder(reminder);
+      emit(ReminderCreated(reminder: created));
+      await loadReminders();
+    } catch (e) {
+      emit(_parseError(e, 'Failed to create reminder'));
+    }
+  }
+
+  Future<void> updateReminder(String id, Reminder reminder) async {
+    try {
+      final updated = await _repository.updateReminder(id, reminder);
+      emit(ReminderUpdated(reminder: updated));
+      await loadReminders();
+    } catch (e) {
+      emit(_parseError(e, 'Failed to update reminder'));
+    }
+  }
+
+  Future<void> deleteReminder(String id) async {
+    try {
+      await _repository.deleteReminder(id);
+      emit(ReminderDeleted(reminderId: id));
+      await loadReminders();
+    } catch (e) {
+      emit(_parseError(e, 'Failed to delete reminder'));
+    }
+  }
+
+  // ===== Weekly summary + productivity insights =====
+
+  Future<void> loadWeeklySummary({String? startDate}) async {
+    emit(PlanMyDayLoading());
+    try {
+      final summary = await _repository.getWeeklySummary(startDate: startDate);
+      emit(WeeklySummaryLoaded(summary: summary));
+    } catch (e) {
+      emit(_parseError(e, 'Failed to load weekly summary'));
+    }
+  }
+
+  Future<void> loadProductivityInsights({String period = 'week'}) async {
+    emit(PlanMyDayLoading());
+    try {
+      final insights = await _repository.getProductivityInsights(period: period);
+      emit(ProductivityInsightsLoaded(insights: insights));
+    } catch (e) {
+      emit(_parseError(e, 'Failed to load insights'));
+    }
   }
 }

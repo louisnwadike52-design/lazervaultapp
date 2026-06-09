@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/time_block.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summary.dart';
+import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
 
 class PlanMyDayRepository implements IPlanMyDayRepository {
@@ -733,6 +734,96 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       topCategories: [],
       productivityScore: 'medium',
     );
+  }
+
+  // ==================== REMINDERS ====================
+
+  @override
+  Future<List<Reminder>> getReminders({bool enabledOnly = false}) async {
+    final headers = await _getAuthHeaders();
+    final uri = Uri.parse('$_baseUrl/api/v1/planning/reminders')
+        .replace(queryParameters: enabledOnly ? {'enabled_only': 'true'} : null);
+    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['reminders'] != null) {
+        return (data['reminders'] as List)
+            .map((r) => Reminder.fromBackendJson(r as Map<String, dynamic>))
+            .toList();
+      }
+    }
+    return [];
+  }
+
+  @override
+  Future<Reminder> createReminder(Reminder reminder) async {
+    final headers = await _getAuthHeaders();
+    final response = await _client
+        .post(Uri.parse('$_baseUrl/api/v1/planning/reminders'),
+            headers: headers, body: jsonEncode(reminder.toBackendJson()))
+        .timeout(_receiveTimeout);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      if (data['reminder'] != null) {
+        return Reminder.fromBackendJson(data['reminder'] as Map<String, dynamic>);
+      }
+    }
+    throw PlanMyDayException('Failed to create reminder');
+  }
+
+  @override
+  Future<Reminder> updateReminder(String id, Reminder reminder) async {
+    final headers = await _getAuthHeaders();
+    final response = await _client
+        .put(Uri.parse('$_baseUrl/api/v1/planning/reminders/$id'),
+            headers: headers, body: jsonEncode(reminder.toBackendJson()))
+        .timeout(_receiveTimeout);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['reminder'] != null) {
+        return Reminder.fromBackendJson(data['reminder'] as Map<String, dynamic>);
+      }
+    }
+    throw PlanMyDayException('Failed to update reminder');
+  }
+
+  @override
+  Future<void> deleteReminder(String id) async {
+    final headers = await _getAuthHeaders();
+    final response = await _client
+        .delete(Uri.parse('$_baseUrl/api/v1/planning/reminders/$id'), headers: headers)
+        .timeout(_connectTimeout);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw PlanMyDayException('Failed to delete reminder');
+    }
+  }
+
+  // ==================== WEEKLY SUMMARY + INSIGHTS ====================
+
+  @override
+  Future<Map<String, dynamic>> getWeeklySummary({String? startDate}) async {
+    final headers = await _getAuthHeaders();
+    final uri = Uri.parse('$_baseUrl/api/v1/planning/summary/weekly')
+        .replace(queryParameters: startDate != null ? {'start_date': startDate} : null);
+    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['summary'] as Map<String, dynamic>?) ?? {};
+    }
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> getProductivityInsights({String period = 'week'}) async {
+    final headers = await _getAuthHeaders();
+    final uri = Uri.parse('$_baseUrl/api/v1/planning/insights')
+        .replace(queryParameters: {'period': period});
+    final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['insights'] as Map<String, dynamic>?) ?? {};
+    }
+    return {};
   }
 
   // ==================== PRIVATE HELPERS ====================
