@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 
@@ -27,8 +29,12 @@ class _PaySplitBillView extends StatefulWidget {
   State<_PaySplitBillView> createState() => _PaySplitBillViewState();
 }
 
-class _PaySplitBillViewState extends State<_PaySplitBillView> {
-  final _pinController = TextEditingController();
+class _PaySplitBillViewState extends State<_PaySplitBillView>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   bool _isProcessing = false;
 
   late final String splitBillId;
@@ -54,11 +60,6 @@ class _PaySplitBillViewState extends State<_PaySplitBillView> {
     }
   }
 
-  @override
-  void dispose() {
-    _pinController.dispose();
-    super.dispose();
-  }
 
   String get _formattedAmount {
     return '${_currencySymbol(currency)}${amount.toStringAsFixed(2)}';
@@ -93,19 +94,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView> {
     return balance != null && balance < amount;
   }
 
-  void _submitPayment() {
-    final pin = _pinController.text.trim();
-    if (pin.length != 6) {
-      Get.snackbar(
-        'Invalid PIN',
-        'Please enter your 6-digit transaction PIN',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-
+  Future<void> _submitPayment() async {
     final sourceAccountId = _accountManager.activeAccountId ?? '';
     if (sourceAccountId.isEmpty) {
       Get.snackbar(
@@ -130,12 +119,40 @@ class _PaySplitBillViewState extends State<_PaySplitBillView> {
     }
 
     HapticFeedback.mediumImpact();
+
+    // Open the canonical 4-digit TransactionPinModal bottom sheet. It mints a
+    // single-use verification token bound to "SPLIT-PAY-{splitBillId[:8]}" —
+    // the exact id split-bill-service validates the token against. The raw PIN
+    // never leaves the sheet. (Chat/voice mint the same token against the same
+    // binding.)
+    final idPrefix =
+        splitBillId.length >= 8 ? splitBillId.substring(0, 8) : splitBillId;
+    final transactionId = 'SPLIT-PAY-$idPrefix';
+
+    String? verificationToken;
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'split_bill_payment',
+      amount: amount,
+      currency: currency,
+      title: 'Confirm Payment',
+      message:
+          'Confirm split bill payment of $currency ${amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
+    );
+
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
     setState(() => _isProcessing = true);
 
     context.read<SplitBillCubit>().payShare(
           splitBillId: splitBillId,
           sourceAccountId: sourceAccountId,
-          transactionPin: pin,
+          transactionPin: verificationToken!,
         );
   }
 
@@ -219,8 +236,6 @@ class _PaySplitBillViewState extends State<_PaySplitBillView> {
                 _buildSummaryCard(),
                 const SizedBox(height: 16),
                 _buildAccountInfo(),
-                const SizedBox(height: 32),
-                _buildPinField(),
                 const SizedBox(height: 40),
                 _buildPayButton(),
               ],
@@ -408,71 +423,6 @@ class _PaySplitBillViewState extends State<_PaySplitBillView> {
               fontWeight: FontWeight.w600,
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPinField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Transaction PIN',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Enter your 6-digit transaction PIN to confirm',
-          style: TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _pinController,
-          obscureText: true,
-          maxLength: 6,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            letterSpacing: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          textAlign: TextAlign.center,
-          decoration: InputDecoration(
-            counterText: '',
-            hintText: '------',
-            hintStyle: const TextStyle(
-              color: Color(0xFF4B5563),
-              fontSize: 24,
-              letterSpacing: 12,
-            ),
-            filled: true,
-            fillColor: const Color(0xFF1F1F1F),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          ),
-          onSubmitted: (_) => _submitPayment(),
         ),
       ],
     );
