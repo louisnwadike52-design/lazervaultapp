@@ -356,6 +356,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
     _currentAccessToken = accessToken;
 
+    // Clean restart: if a session is already live (e.g. the user changed the
+    // language or voice mid-call from the picker), tear down the existing
+    // LiveKit room + WS first so the new STT/TTS choice takes effect
+    // deterministically instead of leaking a second room.
+    if (_room != null) {
+      print('VoiceSessionCubit: restarting — disposing existing room before new session');
+      _disconnectWebSocket();
+      await _disposeRoomResources();
+      _isVisualFeedbackActive = false;
+      _clearCaptions();
+    }
+
     try {
       final requestBody = <String, dynamic>{};
       if (serviceName != null && serviceName.isNotEmpty) {

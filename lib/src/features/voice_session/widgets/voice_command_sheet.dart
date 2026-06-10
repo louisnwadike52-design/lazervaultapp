@@ -54,6 +54,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   int _selectedRating = 0;
   bool _isSubmittingRating = false;
   bool _ratingSubmitted = false;
+  // One-shot guard so the biometric low-confidence warning modal shows once
+  // per session rather than re-popping if the event repeats.
+  bool _lowConfidenceWarned = false;
   final TextEditingController _feedbackController = TextEditingController();
 
   @override
@@ -486,19 +489,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             ),
           );
         } else if (state is VoiceSessionLowConfidenceWarning) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(state.message, style: const TextStyle(fontSize: 12))),
-                ],
-              ),
-              backgroundColor: const Color(0xFFFB923C),
-              duration: const Duration(seconds: 5),
-            ),
-          );
+          // Admin policy = warn: surface a modal so the user knows their
+          // voice could not be confidently verified, but the session
+          // continues (the 'exit' policy instead ends the call).
+          if (!_lowConfidenceWarned) {
+            _lowConfidenceWarned = true;
+            _showLowConfidenceWarningDialog(context, state.message);
+          }
         }
 
         // Manage animations based on state
@@ -2004,6 +2001,51 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       }
       _isDialogShowing = false;
     }
+  }
+
+  void _showLowConfidenceWarningDialog(BuildContext context, String message) {
+    _dismissActiveDialog();
+    _isDialogShowing = true;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFFB923C), size: 26),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Voice not fully verified',
+                style: TextStyle(fontSize: 17, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message.isNotEmpty
+              ? message
+              : 'We could not confidently match your voice. You can continue, but please keep transactions to amounts you are comfortable with.',
+          style: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              _isDialogShowing = false;
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    ).whenComplete(() => _isDialogShowing = false);
   }
 
   void _showUserSearchDialog(BuildContext context, List<Map<String, dynamic>> users, String query) {
