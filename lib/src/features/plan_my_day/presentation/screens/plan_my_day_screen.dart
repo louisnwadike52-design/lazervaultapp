@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/event.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
@@ -78,6 +80,24 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
+          actions: [
+            // Per-service voice button — pins the session to the Plan My Day
+            // agent via the gateway's 'planning' source-context routing
+            // (chat-planning-service). Non-money: no PIN.
+            ServiceVoiceButton(
+              serviceName: 'planning',
+              iconColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF3B82F6),
+            ),
+            SizedBox(width: 8.w),
+            // Per-service chat icon — opens the Plan My Day assistant chat,
+            // source_context 'planning' so the gateway routes to it.
+            MicroserviceChatIcon(
+              serviceName: 'Plan My Day',
+              sourceContext: 'planning',
+            ),
+            SizedBox(width: 12.w),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: const Color(0xFF3B82F6),
