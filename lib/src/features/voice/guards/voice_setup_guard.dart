@@ -257,10 +257,88 @@ class VoiceSetupGuard {
 
     if (shouldVerify != true) return false;
 
-    // Navigate to voice verification screen
-    final result = await Get.toNamed(AppRoutes.voiceVerification);
+    // Navigate to voice verification, with a bounded retry. A single failed
+    // biometric attempt (background noise, a stumble) should not abort the
+    // whole high-risk flow — offer the user up to [maxAttempts] tries.
+    const maxAttempts = 3;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      final result = await Get.toNamed(AppRoutes.voiceVerification);
+      if (result == true) return true;
 
-    return result == true;
+      // Out of attempts — stop without prompting again.
+      if (attempt >= maxAttempts) break;
+
+      if (!context.mounted) return false;
+      final retry = await _showVerificationFailedRetry(
+        context,
+        attempt: attempt,
+        maxAttempts: maxAttempts,
+      );
+      if (!retry) return false;
+    }
+
+    return false;
+  }
+
+  /// Ask the user whether to retry after a failed voice verification.
+  /// Returns true to retry, false to cancel the operation.
+  Future<bool> _showVerificationFailedRetry(
+    BuildContext context, {
+    required int attempt,
+    required int maxAttempts,
+  }) async {
+    final remaining = maxAttempts - attempt;
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(
+                  Icons.error_outline_rounded,
+                  color: Color(0xFFFB923C),
+                  size: 28,
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Verification Failed',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              remaining == 1
+                  ? 'We could not verify your voice. You have 1 more attempt.'
+                  : 'We could not verify your voice. You have $remaining more attempts.',
+              style: const TextStyle(fontSize: 15),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Try Again'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   /// Quick check if user is enrolled (no dialogs)

@@ -472,6 +472,19 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               duration: const Duration(seconds: 2),
             ),
           );
+        } else if (state is VoiceSessionLanguageCoerced) {
+          // Admin blocked the requested language at session start. Tell the
+          // user we are continuing in the effective language instead of
+          // silently switching them.
+          final from = _voiceLanguageLabel(state.coercedFrom);
+          final to = _voiceLanguageLabel(state.effectiveLanguage);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$from is not available right now. Continuing in $to.'),
+              backgroundColor: const Color(0xFFFB923C),
+              duration: const Duration(seconds: 4),
+            ),
+          );
         } else if (state is VoiceSessionLowConfidenceWarning) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -2137,5 +2150,34 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         ),
       ),
     );
+  }
+}
+
+/// Human-readable label for a language code, used in user-facing notices.
+/// Falls back to the upper-cased code for anything unmapped.
+String _voiceLanguageLabel(String code) {
+  switch (code.toLowerCase()) {
+    case 'en':
+      return 'English';
+    case 'yo':
+      return 'Yoruba';
+    case 'ig':
+      return 'Igbo';
+    case 'ha':
+      return 'Hausa';
+    case 'pcm':
+      return 'Pidgin';
+    case 'fr':
+      return 'French';
+    case 'es':
+      return 'Spanish';
+    case 'ar':
+      return 'Arabic';
+    case 'pt':
+      return 'Portuguese';
+    case 'sw':
+      return 'Swahili';
+    default:
+      return code.toUpperCase();
   }
 }

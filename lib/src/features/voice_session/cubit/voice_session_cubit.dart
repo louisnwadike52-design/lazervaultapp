@@ -20,7 +20,6 @@ import 'package:lazervault/core/utils/logger.dart';
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // --- Configuration ---
   final String _livekitWsUrl = dotenv.env['LIVEKIT_URL'] ?? (throw Exception('LIVEKIT_URL environment variable is not set.'));
-  final String _goBackendBaseApiUrl = dotenv.env['HTTP_API_HOST'] ?? (throw Exception('HTTP_API_HOST environment variable is not set.'));
   final String _voiceWsUrl = dotenv.env['VOICE_WS_URL'] ?? 'ws://localhost:3012';
   final String _voiceLanguageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? 'http://localhost:3013';
   final String _voiceAgentGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://localhost:3010';
@@ -384,7 +383,14 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       requestBody['locale'] = localeManager.currentLocale;
       requestBody['userCountry'] = localeManager.currentCountry;
 
-      final url = '$_goBackendBaseApiUrl/api/v1/voice/session/start';
+      // Call the voice-agent-gateway DIRECTLY (same base the rate/clone/
+      // process voice endpoints already use). The core-gateway gRPC proxy
+      // re-serialises this response through a fixed protobuf struct, which
+      // drops every field beyond roomName/livekitToken/agentUrl — including
+      // sessionId and the languageCoerced notice. The Python endpoint does
+      // its own JWT validation and accepts this exact body (camelCase via
+      // Pydantic AliasChoices), so the direct call is lossless and safe.
+      final url = '$_voiceAgentGatewayUrl/voice/session/start';
       print('VoiceSessionCubit: POST $url');
       final response = await http.post(
         Uri.parse(url),
@@ -416,6 +422,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
           if (roomName.isNotEmpty && livekitToken.isNotEmpty) {
             if (isClosed) return;
+            // If the admin language allow-list blocked the requested language,
+            // the backend coerced it to English. Surface that to the user
+            // (one transient state, just before credentials) instead of
+            // silently switching their language mid-flow.
+            if (data['languageCoerced'] == true) {
+              final coercedFrom = data['coercedFrom'] as String? ?? '';
+              final effectiveLanguage =
+                  data['effectiveLanguage'] as String? ?? 'en';
+              if (coercedFrom.isNotEmpty) {
+                emit(VoiceSessionLanguageCoerced(coercedFrom, effectiveLanguage));
+              }
+            }
             print('VoiceSessionCubit: Credentials loaded, room=$roomName, url=$_livekitWsUrl');
             emit(VoiceSessionCredentialsLoaded(
               roomName: roomName,

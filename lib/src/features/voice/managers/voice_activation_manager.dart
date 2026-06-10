@@ -14,6 +14,24 @@ import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enro
 class VoiceActivationManager {
   final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
 
+  /// Short-lived enrollment-status cache, shared across instances (this
+  /// manager is constructed fresh at each call site). Every voice button tap
+  /// would otherwise re-hit the biometrics service. Keyed by userId; only
+  /// genuine fetch results are cached (never the error fallback), and the
+  /// entry is invalidated the moment enrollment completes or is reset.
+  static const Duration _enrollmentTtl = Duration(seconds: 60);
+  static final Map<String, _EnrollmentCacheEntry> _enrollmentCache = {};
+
+  /// Drop the cached enrollment status for [userId] (or all users when null)
+  /// so the next check re-fetches. Call after enrollment completes or resets.
+  static void invalidateEnrollmentCache([String? userId]) {
+    if (userId == null) {
+      _enrollmentCache.clear();
+    } else {
+      _enrollmentCache.remove(userId);
+    }
+  }
+
   /// Check if the voice biometrics service is available
   Future<bool> isServiceAvailable() async {
     try {
@@ -25,14 +43,20 @@ class VoiceActivationManager {
   }
   /// Check if user has enrolled voice
   Future<bool> isVoiceEnrolled(String userId) async {
+    final cached = _enrollmentCache[userId];
+    if (cached != null && !cached.isExpired) {
+      return cached.isEnrolled;
+    }
     try {
       final status = await _voiceService.checkEnrollmentStatus(userId);
       print('VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
+      _enrollmentCache[userId] = _EnrollmentCacheEntry(status.isEnrolled);
       return status.isEnrolled;
     } catch (e) {
       // Log the error for debugging
       print('VoiceActivationManager: Error checking enrollment status: $e');
-      // On error, assume not enrolled to be safe
+      // On error, assume not enrolled to be safe. Do NOT cache this — it is a
+      // transient failure, not a confirmed "not enrolled" answer.
       return false;
     }
   }
@@ -188,6 +212,9 @@ class VoiceActivationManager {
             userId: userId,
             onEnrollmentComplete: () {
               enrollmentCompleted = true;
+              // Enrollment status just changed — drop the stale cache so the
+              // next isVoiceEnrolled() reflects it immediately.
+              invalidateEnrollmentCache(userId);
               Navigator.pop(context);
               if (onEnrollmentSuccess != null) {
                 onEnrollmentSuccess();
@@ -278,6 +305,8 @@ class VoiceActivationManager {
     } catch (e) {
       // Ignore error, continue to enrollment
     }
+    // Enrollment was just removed — invalidate any cached "enrolled" answer.
+    invalidateEnrollmentCache(userId);
 
     // Navigate to enrollment screen
     if (context.mounted) {
@@ -390,4 +419,14 @@ class VoiceActivationStatusBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+/// One cached enrollment answer with its capture time, used by
+/// [VoiceActivationManager]'s short-lived enrollment-status cache.
+class _EnrollmentCacheEntry {
+  final bool isEnrolled;
+  final DateTime fetchedAt;
+  _EnrollmentCacheEntry(this.isEnrolled) : fetchedAt = DateTime.now();
+  bool get isExpired =>
+      DateTime.now().difference(fetchedAt) > VoiceActivationManager._enrollmentTtl;
 }

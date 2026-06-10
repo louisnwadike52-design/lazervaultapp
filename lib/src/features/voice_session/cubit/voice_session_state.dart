@@ -72,6 +72,19 @@ class VoiceSessionLanguageChanged extends VoiceSessionState {
   List<Object?> get props => [room, language, locale];
 }
 
+/// The admin language allow-list blocked the user's requested language at
+/// session start, so the backend coerced it to [effectiveLanguage] (usually
+/// 'en'). Emitted once, just before [VoiceSessionCredentialsLoaded], so the UI
+/// can tell the user instead of silently switching their language. Does not
+/// affect the money path — only the language the agent responds in.
+class VoiceSessionLanguageCoerced extends VoiceSessionState {
+  final String coercedFrom;
+  final String effectiveLanguage;
+  const VoiceSessionLanguageCoerced(this.coercedFrom, this.effectiveLanguage);
+  @override
+  List<Object?> get props => [coercedFrom, effectiveLanguage];
+}
+
 class VoiceSessionError extends VoiceSessionState {
   final String message;
   const VoiceSessionError(this.message);
