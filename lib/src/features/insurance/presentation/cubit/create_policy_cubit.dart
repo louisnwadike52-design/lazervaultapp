@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:lazervault/core/config/api_config.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -621,51 +622,46 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     _autoFillIdentityNumbers(product);
   }
 
-  /// Read cached BVN / NIN from secure storage (populated by the KYC
-  /// verification flow on tier-2 success) and merge into the form.
-  /// Only writes when a matching form field exists AND the field isn't
-  /// already filled — preserving any value the user has already typed.
+  /// Prefill the verified NIN / BVN (and date of birth) from the user's KYC
+  /// record and merge into the form. Only writes when a matching form field
+  /// exists AND the field isn't already filled — preserving any value the
+  /// user has typed (and supporting "buying for someone else").
   ///
-  /// Matching is by field name pattern so it works across MyCover's
-  /// product-specific schema variations: `bvn`, `bvn_number`,
-  /// `customer_bvn`, `nin`, `nin_number`, `national_id` all match.
+  /// The raw NIN/BVN are NOT held on the device — Mono collects them
+  /// server-side during KYC — so we fetch the caller's OWN verified identity
+  /// from the backend prefill endpoint. Field-name matching handles MyCover's
+  /// product-specific schema variations (`bvn`, `bvn_number`, `nin`,
+  /// `national_id`, `date_of_birth`, …). On any failure the fields stay
+  /// editable/empty and financial-products-service still auto-fills them from
+  /// the same KYC record at purchase time (defence in depth).
   Future<void> _autoFillIdentityNumbers(InsuranceProduct product) async {
     final hasBvnField = product.formFields.any(
         (f) => _isBvnField(f.name) && (_formData[f.name] ?? '').isEmpty);
     final hasNinField = product.formFields.any(
         (f) => _isNinField(f.name) && (_formData[f.name] ?? '').isEmpty);
-    if (!hasBvnField && !hasNinField) return;
+    final hasDobField = product.formFields.any(
+        (f) => _isDobField(f.name) && (_formData[f.name] ?? '').isEmpty);
+    if (!hasBvnField && !hasNinField && !hasDobField) return;
 
-    SecureStorageService? storage;
-    try {
-      storage = serviceLocator<SecureStorageService>();
-    } catch (_) {
-      // Unit-test path with no GetIt — gracefully skip.
-      return;
-    }
-    String? bvn;
-    String? nin;
-    if (hasBvnField) bvn = await storage.getBvn();
-    if (hasNinField) nin = await storage.getNin();
-    if (isClosed) return;
-    if ((bvn == null || bvn.isEmpty) && (nin == null || nin.isEmpty)) {
-      // No KYC numbers cached yet — the BVN verification flow hasn't
-      // written them. Field stays empty, user types it in.
-      return;
-    }
+    final prefill = await _fetchInsurancePrefill();
+    if (isClosed || prefill == null) return;
+    final bvn = (prefill['bvn'] ?? '').toString();
+    final nin = (prefill['nin'] ?? '').toString();
+    final dob =
+        (prefill['dateOfBirth'] ?? prefill['date_of_birth'] ?? '').toString();
+    if (bvn.isEmpty && nin.isEmpty && dob.isEmpty) return;
+
     var mutated = false;
     for (final f in product.formFields) {
-      if (_isBvnField(f.name) &&
-          bvn != null &&
-          bvn.isNotEmpty &&
-          (_formData[f.name] ?? '').isEmpty) {
+      if ((_formData[f.name] ?? '').isNotEmpty) continue; // never clobber
+      if (_isBvnField(f.name) && bvn.isNotEmpty) {
         _formData[f.name] = bvn;
         mutated = true;
-      } else if (_isNinField(f.name) &&
-          nin != null &&
-          nin.isNotEmpty &&
-          (_formData[f.name] ?? '').isEmpty) {
+      } else if (_isNinField(f.name) && nin.isNotEmpty) {
         _formData[f.name] = nin;
+        mutated = true;
+      } else if (_isDobField(f.name) && dob.isNotEmpty) {
+        _formData[f.name] = dob;
         mutated = true;
       }
     }
@@ -675,6 +671,38 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         formData: Map<String, String>.from(_formData),
       ));
     }
+  }
+
+  /// Fetch the authenticated user's OWN verified identity (name/email/phone/
+  /// dob + raw nin/bvn) for prefill. Returns null on any failure so the form
+  /// degrades gracefully — fields stay editable and the backend auto-fill is
+  /// the safety net at purchase time.
+  Future<Map<String, dynamic>?> _fetchInsurancePrefill() async {
+    try {
+      final storage = serviceLocator<SecureStorageService>();
+      final token = await storage.getAccessToken();
+      if (token == null || token.isEmpty) return null;
+      final resp = await http.get(
+        Uri.parse(
+            '${ApiConfig.coreGatewayUrl}/api/v1/auth/me/insurance-prefill'),
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 10));
+      if (resp.statusCode != 200) return null;
+      final decoded = jsonDecode(resp.body);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } catch (_) {
+      // GetIt unavailable (unit tests), network error, parse error — skip.
+      return null;
+    }
+  }
+
+  bool _isDobField(String name) {
+    final n = name.toLowerCase();
+    return n == 'dob' ||
+        n.contains('date_of_birth') ||
+        n.contains('dateofbirth') ||
+        n.contains('birth_date') ||
+        n.contains('birthdate');
   }
 
   /// Picks the right half of the policy-holder's name to drop into a
