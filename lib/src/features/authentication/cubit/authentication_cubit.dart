@@ -1550,7 +1550,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             return;
           }
         } else {
-          final phoneError = _validateOptionalPhoneNumber(currentState.phoneNumber);
+          // Phone is REQUIRED for email-primary signups: identity verification
+          // (Mono Prove KYC) and SMS OTP both mandate a valid phone, so collect
+          // it now rather than letting KYC dead-end later for phone-less accounts.
+          final phoneError = _validatePhoneNumber(currentState.phoneNumber);
           if (phoneError != null) {
             _showErrorSnackbar('Validation Error', phoneError);
             if (isClosed) return;

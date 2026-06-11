@@ -23,6 +23,26 @@ enum CountryCode {
     this.dialingCode,
   );
 
+  /// National Significant Number length (digits AFTER the country code and the
+  /// optional national trunk "0"). Used to limit phone input and validate length
+  /// per country. e.g. NG "+234 803 123 4567" -> NSN "8031234567" = 10 digits.
+  int get nationalNumberLength {
+    switch (this) {
+      case CountryCode.nigeria:
+        return 10;
+      case CountryCode.uk:
+        return 10;
+      case CountryCode.usa:
+        return 10;
+      case CountryCode.ghana:
+        return 9;
+      case CountryCode.kenya:
+        return 9;
+      case CountryCode.southAfrica:
+        return 9;
+    }
+  }
+
   /// Get CountryCode enum from string code
   static CountryCode? fromCode(String code) {
     try {
@@ -160,6 +180,9 @@ class CountryConfig {
 
   /// Get dialing code for phone input
   String get dialingCode => country.dialingCode;
+
+  /// National Significant Number length for this country (see CountryCode).
+  int get nationalNumberLength => country.nationalNumberLength;
 
   /// Get country flag emoji
   String get flag => country.flag;

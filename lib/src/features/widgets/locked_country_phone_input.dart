@@ -122,7 +122,12 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(15),
+                          // Limit typing to the country's national number length
+                          // PLUS one, so a user may optionally type the leading
+                          // trunk "0" (e.g. NG: 10 digits, or 11 with the 0).
+                          LengthLimitingTextInputFormatter(
+                            _countryConfig.nationalNumberLength + 1,
+                          ),
                         ],
                         decoration: InputDecoration(
                           hintText: widget.hintText ?? 'Phone number',
@@ -190,18 +195,29 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
     widget.onChanged?.call(formatted);
   }
 
-  /// Format phone number to E.164
+  /// Format phone number to E.164.
+  ///
+  /// The user may type the national number with or without the leading trunk
+  /// "0" (e.g. NG "08031234567" or "8031234567") and may even paste a full
+  /// "+234..."/"234..." string. We normalise all of these to a clean E.164
+  /// (plus sign, dialing code, then the national number) by dropping the dialing
+  /// code and the single leading trunk "0" before re-prefixing, so we never
+  /// produce a malformed value like "+23408031234567".
   String _formatToE164(String number) {
-    // Remove all non-digit characters
-    final cleaned = number.replaceAll(RegExp(r'[^\d]'), '');
-    // Add country code if not present
-    if (cleaned.isEmpty) return '';
+    var digits = number.replaceAll(RegExp(r'[^\d]'), '');
+    if (digits.isEmpty) return '';
 
     final dialingCode = _countryConfig.dialingCode.replaceAll('+', '');
-    if (cleaned.startsWith(dialingCode)) {
-      return '+$cleaned';
+    // Drop the dialing code if the user typed/pasted it.
+    if (digits.startsWith(dialingCode)) {
+      digits = digits.substring(dialingCode.length);
     }
-    return '+$dialingCode$cleaned';
+    // Drop a single leading national trunk "0".
+    if (digits.startsWith('0')) {
+      digits = digits.substring(1);
+    }
+    if (digits.isEmpty) return '';
+    return '+$dialingCode$digits';
   }
 
   /// Clear input
@@ -222,11 +238,22 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
     }
 
     if (value.isNotEmpty) {
-      final cleaned = value.replaceAll(RegExp(r'[^\d]'), '');
-      if (cleaned.length < 7) {
-        setState(
-            () => _errorText = 'Please enter a valid phone number');
-        return 'Please enter a valid phone number';
+      // Strip the dialing code and a single leading trunk "0" to get the NSN,
+      // then require it to match the country's expected national length.
+      var nsn = value.replaceAll(RegExp(r'[^\d]'), '');
+      final dialingCode = _countryConfig.dialingCode.replaceAll('+', '');
+      if (nsn.startsWith(dialingCode)) {
+        nsn = nsn.substring(dialingCode.length);
+      }
+      if (nsn.startsWith('0')) {
+        nsn = nsn.substring(1);
+      }
+      final expected = _countryConfig.nationalNumberLength;
+      if (nsn.length != expected) {
+        final msg = 'Enter a valid ${_countryConfig.name} phone number '
+            '($expected digits after ${_countryConfig.dialingCode})';
+        setState(() => _errorText = msg);
+        return msg;
       }
     }
 

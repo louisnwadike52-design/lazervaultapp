@@ -165,6 +165,9 @@ extension DirectPayStageExtension on DirectPayStage {
 class DirectPayProgressController extends ChangeNotifier {
   DirectPayStage _stage = DirectPayStage.linking;
   DirectPayProgressFlow _flow = DirectPayProgressFlow.linkAndDeposit;
+  // The in-rail stage we were on when a failure occurred, so the rail can show
+  // the red X at the step that actually failed (not all-green-then-nothing).
+  DirectPayStage? _failedAtStage;
   String? _errorMessage;
   String? _errorTitle;
   bool _retryable = true;
@@ -174,6 +177,7 @@ class DirectPayProgressController extends ChangeNotifier {
   bool _isVisible = false;
 
   DirectPayStage get stage => _stage;
+  DirectPayStage? get failedAtStage => _failedAtStage;
   DirectPayProgressFlow get flow => _flow;
   String? get errorMessage => _errorMessage;
   String? get errorTitle => _errorTitle;
@@ -196,6 +200,7 @@ class DirectPayProgressController extends ChangeNotifier {
     // Start at the first stage of THIS journey — a redeposit on an
     // already-linked bank must never open on "Linking Account".
     _stage = flow.steps.first;
+    _failedAtStage = null;
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
@@ -209,6 +214,15 @@ class DirectPayProgressController extends ChangeNotifier {
     String? errorTitle,
     bool retryable = true,
   }) {
+    if (stage == DirectPayStage.failed) {
+      // Remember the step we failed AT (only if we were on a real rail step),
+      // so the indicator can mark that step red and leave later steps inactive.
+      if (_stage != DirectPayStage.failed && _stage != DirectPayStage.success) {
+        _failedAtStage = _stage;
+      }
+    } else {
+      _failedAtStage = null;
+    }
     _stage = stage;
     _errorMessage = errorMessage;
     _errorTitle = errorTitle;
@@ -224,6 +238,7 @@ class DirectPayProgressController extends ChangeNotifier {
   void reset() {
     _stage = DirectPayStage.linking;
     _flow = DirectPayProgressFlow.linkAndDeposit;
+    _failedAtStage = null;
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
@@ -625,7 +640,12 @@ class _DirectPayProgressBottomsheetState
     // no "Linking Account" step, so it renders 3 dots instead of 4.
     final flow = widget.controller.flow;
     final stages = flow.steps;
-    final currentIndex = flow.indexOf(currentStage);
+    // On failure, position the rail at the step we actually failed at (red X
+    // there, green before, inactive after) instead of running all steps to
+    // completion. success still ranks past the end (all green).
+    final currentIndex = currentStage == DirectPayStage.failed
+        ? flow.indexOf(widget.controller.failedAtStage ?? stages.first)
+        : flow.indexOf(currentStage);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 32.w),

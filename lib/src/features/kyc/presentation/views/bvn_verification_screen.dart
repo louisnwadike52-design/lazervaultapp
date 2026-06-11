@@ -535,6 +535,17 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               message: result.message,
             ));
         _showProgressDialog(result);
+      } else if (result.status == 'processing' || result.status == 'pending') {
+        // Mono finalises verification asynchronously — don't show a failure.
+        // Tell the user it's processing and reconcile the tier via the status
+        // endpoint (the mono.prove webhook completes it server-side in seconds).
+        _toast(
+          result.message.isNotEmpty
+              ? result.message
+              : 'Your verification is processing. We\'ll update your tier shortly.',
+          color: _accent,
+        );
+        _reconcileAfterProcessing();
       } else {
         _handleFailure(
           'Verification not completed',
@@ -562,6 +573,27 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       final st = await _prove.status();
       if (mounted) setState(() => _status = st);
     } catch (_) {/* ignore */}
+  }
+
+  /// After a "processing" completion, briefly reconcile the KYC status so the
+  /// tier card reflects the verification once the mono.prove webhook lands it
+  /// server-side. Bounded (not a continuous poll); stops as soon as the tier
+  /// advances or the user leaves the screen.
+  Future<void> _reconcileAfterProcessing() async {
+    for (var attempt = 0; attempt < 4; attempt++) {
+      await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+      try {
+        final st = await _prove.status();
+        if (!mounted) return;
+        setState(() => _status = st);
+        if (st.verified || st.tier >= 2) {
+          _toast('Your identity has been verified.', color: _success);
+          _finishVerified();
+          return;
+        }
+      } catch (_) {/* keep trying within the bound */}
+    }
   }
 
   /// Request camera + microphone BEFORE opening the Prove webview. Returns true

@@ -102,7 +102,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
   void _startLinkWatchdog() {
     _linkWatchdog?.cancel();
-    _linkWatchdog = Timer(const Duration(seconds: 30), () {
+    // 60s: linking runs a backend link + e-mandate creation (a couple of Mono
+    // API calls). Only fire if we are STILL on linking/initiating — once the
+    // flow reaches authorizing/processing the deposit is in motion and the
+    // WebSocket / settlement poll own the outcome.
+    _linkWatchdog = Timer(const Duration(seconds: 60), () {
       if (!mounted || !_isProgressSheetShown) return;
       final stage = _progressController.stage;
       if (stage == DirectPayStage.linking || stage == DirectPayStage.initiating) {
@@ -110,7 +114,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           DirectPayStage.failed,
           errorTitle: 'Taking too long',
           errorMessage:
-              "We couldn't finish linking your bank in time. Please check your connection and try again.",
+              "We couldn't reach your bank in time. Please check your connection and try again.",
           retryable: true,
         );
       }
@@ -828,7 +832,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               children: [
                 _bankLogoAvatar(account.bankName, size: 36),
                 const Spacer(),
-                _accessChip(persistent: recurring),
+                _accessChip(mode: _accessModeForAccount(account)),
                 SizedBox(width: 4.w),
                 InkWell(
                   borderRadius: BorderRadius.circular(20.r),
@@ -1122,6 +1126,71 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     if (ok && mounted) _openRedepositSheet(context, account);
   }
 
+  /// Switch a persistent (Direct Debit) account back to one-time DirectPay by
+  /// PAUSING its mandate. Reversible — "Switch to Direct Debit" reinstates it
+  /// with no re-authorization. (Permanent revocation is "Manage Direct Debit →
+  /// Cancel".) The badge flips to "One-time" once the cache refreshes.
+  void _switchToOneTime(LinkedBankAccount account, MandateEntity mandate) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    serviceLocator<MandateCubit>().pauseMandate(
+      mandateId: mandate.id,
+      userId: authState.profile.user.id,
+    );
+    Get.snackbar(
+      'Switched to one-time',
+      'Deposits from ${account.bankName} will use one-time approval. You can switch back anytime.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF1F1F1F),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) _loadUserMandates();
+    });
+  }
+
+  /// Switch a one-time account to persistent Direct Debit. If a PAUSED mandate
+  /// exists, reinstate it instantly (no re-authorization). Otherwise create +
+  /// authorize a fresh mandate (in-app Mono auth sheet). KYC gating happens in
+  /// showMandateSetupBottomSheet / the backend (KYC_REQUIRED) — see Phase D for
+  /// the proactive pre-flight check.
+  Future<void> _switchToDirectDebit(
+      LinkedBankAccount account, MandateEntity? mandate) async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final user = authState.profile.user;
+    if (mandate != null && mandate.isPaused) {
+      serviceLocator<MandateCubit>().reinstateMandate(
+        mandateId: mandate.id,
+        userId: user.id,
+      );
+      Get.snackbar(
+        'Switched to Direct Debit',
+        'Future deposits from ${account.bankName} will skip bank login.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted) _loadUserMandates();
+      });
+      return;
+    }
+    // No reusable mandate — create + authorize a fresh one.
+    final ok = await showMandateSetupBottomSheet(
+      context: context,
+      linkedAccountId: account.id,
+      userId: user.id,
+      bankName: account.bankName,
+      accountName: account.accountName,
+      userEmail: user.email,
+      userName: '${user.firstName} ${user.lastName}'.trim(),
+    );
+    if (ok && mounted) _loadUserMandates();
+  }
+
   /// In-app authorization for a freshly created e-mandate (the recurring
   /// toggle flow). Opens Mono's hosted mandate authorization in OUR themed
   /// bottom sheet (DirectPayFlow.mandate chrome) — same sheet as one-time
@@ -1221,9 +1290,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
-  /// Per-account action sheet: deposit, manage recurring (if any), unlink.
+  /// Per-account action sheet: deposit, switch mode, manage recurring, unlink.
   void _showAccountActions(BuildContext screenCtx, LinkedBankAccount account) {
-    final mandate = _mandateForAccount(account);
+    final mandate = _mandateForAccount(account); // active mandate (for Manage)
+    // Raw mandate of ANY status — drives the DirectPay⇄Direct-Debit switch.
+    final rawMandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    final isPersistent = rawMandate != null && rawMandate.isActive;
     showModalBottomSheet(
       context: screenCtx,
       backgroundColor: Colors.transparent,
@@ -1252,9 +1324,30 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   _openRedepositSheet(context, account);
                 },
               ),
-              if (mandate != null)
+              // Switch between one-time (DirectPay) and persistent (Direct Debit).
+              if (isPersistent)
+                ListTile(
+                  leading: Icon(Icons.schedule, color: const Color(0xFF9CA3AF)),
+                  title: Text('Switch to DirectPay (one-time)', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text('Approve each deposit at your bank; switch back anytime', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _switchToOneTime(account, rawMandate);
+                  },
+                )
+              else
                 ListTile(
                   leading: Icon(Icons.link, color: const Color(0xFF10B981)),
+                  title: Text('Switch to Direct Debit (persistent)', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text('Skip bank login on future deposits', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _switchToDirectDebit(account, rawMandate);
+                  },
+                ),
+              if (mandate != null)
+                ListTile(
+                  leading: Icon(Icons.tune, color: Colors.white.withValues(alpha: 0.7)),
                   title: Text('Manage Direct Debit', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text('Pause, reinstate or cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
                   onTap: () {
@@ -1396,8 +1489,38 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   }
 
   /// One-time vs Persistent access chip for a linked account.
-  Widget _accessChip({required bool persistent}) {
-    final color = persistent ? const Color(0xFF10B981) : const Color(0xFF9CA3AF);
+  /// The deposit-mode of a linked account, for the card badge:
+  /// "persistent" (active mandate), "pending" (mandate mid-authorization), or
+  /// "onetime" (no usable mandate). A pending mandate must NOT read as
+  /// "one-time" — it's a Direct Debit being set up.
+  String _accessModeForAccount(LinkedBankAccount account) {
+    final m = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    if (m == null) return 'onetime';
+    if (m.isActive) return 'persistent';
+    if (m.isActivating) return 'pending';
+    return 'onetime';
+  }
+
+  Widget _accessChip({required String mode}) {
+    late final Color color;
+    late final IconData icon;
+    late final String label;
+    switch (mode) {
+      case 'persistent':
+        color = const Color(0xFF10B981); // green
+        icon = Icons.link;
+        label = 'Persistent';
+        break;
+      case 'pending':
+        color = const Color(0xFFFB923C); // orange
+        icon = Icons.hourglass_bottom;
+        label = 'Setting up';
+        break;
+      default:
+        color = const Color(0xFF9CA3AF); // grey
+        icon = Icons.schedule;
+        label = 'One-time';
+    }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
@@ -1408,9 +1531,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(persistent ? Icons.link : Icons.schedule, color: color, size: 11.sp),
+          Icon(icon, color: color, size: 11.sp),
           SizedBox(width: 3.w),
-          Text(persistent ? 'Persistent' : 'One-time',
+          Text(label,
               style: TextStyle(color: color, fontSize: 10.sp, fontWeight: FontWeight.w700)),
         ],
       ),
@@ -1418,7 +1541,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   }
 
   Widget _buildLinkedAccountRow(BuildContext context, LinkedBankAccount account) {
-    final persistent = _mandateForAccount(account) != null;
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(13.w),
@@ -1449,7 +1571,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                           style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp)),
                     ),
                     SizedBox(width: 8.w),
-                    _accessChip(persistent: persistent),
+                    _accessChip(mode: _accessModeForAccount(account)),
                   ],
                 ),
               ],
@@ -2086,7 +2208,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // retry-less failure telling the user we'll finish in the background (the
     // backend deposit reconciler keeps settling it server-side).
     const tailInterval = Duration(seconds: 10);
-    const maxTailTicks = 30; // ~5 minutes
+    const maxTailTicks = 18; // ~3 minutes (poll-on-read now credits each tick)
     for (var tick = 0; tick < maxTailTicks; tick++) {
       await Future<void>.delayed(tailInterval);
       if (!mounted) return;
@@ -2131,7 +2253,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
     if (state is AccountLinked) {
       // Account successfully linked
-      debugPrint('[Deposit] Account linked: ${state.account.id}, bankName: ${state.account.bankName}');
+      debugPrint('[Deposit] Account linked: ${state.account.id}, bankName: ${state.account.bankName}, isNew: ${state.isNewAccount}');
+      // Already-linked edge case: the backend deduped to an existing row
+      // (same bank account for this user) instead of creating a duplicate.
+      // Tell the user we're reusing their existing connection rather than
+      // silently proceeding (or showing the same bank twice).
+      if (!state.isNewAccount) {
+        Get.snackbar(
+          '${state.account.bankName} already linked',
+          'Using your existing connection for this deposit.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFF1F1F1F),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
       setState(() {
         _linkedAccountId = state.account.id;
         _selectedBank = state.account.bankName; // narration + receipts
@@ -2230,6 +2366,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       }
       // pending/processing → keep the sheet on "processing"; the poll
       // continues until a terminal status arrives.
+    } else if (state is ServiceUnavailable) {
+      // Backend unreachable mid-flow (a gateway is down or the network dropped).
+      // Fail FAST with a clear message instead of spinning on "Linking…" until
+      // the watchdog — _showDepositFailure flips the rail to failed AT THE
+      // CURRENT STEP (red), so progress stops where it actually broke.
+      debugPrint('[Deposit] ServiceUnavailable: ${state.message}');
+      if (_isProgressSheetShown) {
+        _showDepositFailure(state.message.isNotEmpty
+            ? state.message
+            : "We couldn't reach your bank right now. Please check your connection and try again.");
+      }
     } else if (state is OpenBankingError) {
       debugPrint('[Deposit] OpenBankingError: ${state.message}, operation: ${state.operation}');
       // Don't surface link/unlink-list errors as a deposit failure (they're
@@ -2714,6 +2861,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       accessToken: accessToken,
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),
+      // Be EXPLICIT about the path the user chose: recurring → mandate debit
+      // (DebitMandate), one-time → DirectPay. Don't make the backend infer it
+      // from the linked account's mandate state.
+      useRecurringAccess: _useRecurringAccess,
     );
   }
 

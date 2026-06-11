@@ -827,11 +827,14 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // If user entered email on page 1, show phone field (optional)
             // If user entered phone on page 1, show email field (optional)
             if (primaryContactType == PrimaryContactType.email)
+              // Phone is REQUIRED: identity verification (Mono Prove KYC) and SMS
+              // OTP both mandate a valid phone, so we collect it at signup rather
+              // than letting KYC dead-end later for phone-less accounts.
               LockedCountryPhoneInput(
                 countryCode: countryCode,
                 initialValue: initialPhoneNumber,
-                hintText: 'Phone Number (Optional)',
-                isRequired: false,
+                hintText: 'Phone Number',
+                isRequired: true,
                 onChanged: (value) {
                   context.read<AuthenticationCubit>().signUpPhoneNumberChanged(value);
                 },

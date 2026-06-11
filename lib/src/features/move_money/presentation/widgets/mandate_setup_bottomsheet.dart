@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../cubit/mandate_cubit.dart';
@@ -104,11 +106,26 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
           }
           if (mounted) navigator.pop(true);
         } else if (state is MandateError) {
-          if (mounted) {
-            setState(() {
-              _errorMessage = state.message;
-            });
+          if (!mounted) return;
+          // KYC gate: Direct Debit needs a verified BVN/NIN. When the backend
+          // returns KYC_REQUIRED, close the sheet and route the user into the
+          // KYC flow instead of showing a raw error they can't act on.
+          final lower = state.message.toLowerCase();
+          if (lower.contains('kyc_required') ||
+              lower.contains('verify your identity') ||
+              lower.contains('verify') && lower.contains('bvn')) {
+            Navigator.of(context).pop(false);
+            Get.snackbar(
+              'Verify your identity',
+              'Complete a quick BVN verification to set up Direct Debit.',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+            Get.toNamed(AppRoutes.kycBVNVerification);
+            return;
           }
+          setState(() {
+            _errorMessage = state.message;
+          });
         }
       },
       builder: (context, state) {
