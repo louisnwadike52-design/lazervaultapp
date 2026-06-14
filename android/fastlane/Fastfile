@@ -1,0 +1,73 @@
+default_platform(:android)
+
+FLUTTER_DIR = File.expand_path("../..", __dir__) # lazervaultapp/
+
+def flutter(args)
+  Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
+end
+
+def aab_for(flavor)
+  File.join(FLUTTER_DIR,
+    "build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab")
+end
+
+def release_notes
+  `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
+end
+
+platform :android do
+  desc "Dev → Firebase App Distribution (internal testers)"
+  lane :dev do
+    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev")
+    firebase_app_distribution(
+      app: "1:961906506476:android:ec73b0375c4900043843c9",
+      android_artifact_type: "AAB",
+      android_artifact_path: aab_for("dev"),
+      groups: ENV["FAD_GROUPS"] || "internal-testers",
+      release_notes: release_notes,
+      # Prefer the SA JSON path (modern, no interactive login required).
+      # Set FIREBASE_SERVICE_ACCOUNT_JSON to the absolute path of the dev FCM
+      # service-account JSON. The SA needs `roles/firebaseappdistro.admin`
+      # on the dev Firebase project:
+      #   gcloud projects add-iam-policy-binding lazervault-dev \\
+      #     --member=serviceAccount:notifications-fcm-admin@lazervault-dev.iam.gserviceaccount.com \\
+      #     --role=roles/firebaseappdistro.admin --condition=None
+      # Legacy CLI-token path (FIREBASE_TOKEN from `firebase login:ci`) is
+      # the fallback when the SA env isn't set.
+      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    )
+  end
+
+  desc "Staging → Play Store internal track"
+  lane :staging do
+    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging")
+    upload_to_play_store(
+      track: "internal",
+      aab: aab_for("staging"),
+      json_key: ENV["PLAY_STORE_JSON_KEY"],
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft",
+    )
+  end
+
+  desc "Production → Play Store production track"
+  lane :production do
+    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod")
+    upload_to_play_store(
+      track: "production",
+      aab: aab_for("prod"),
+      json_key: ENV["PLAY_STORE_JSON_KEY"],
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "completed",
+    )
+  end
+end

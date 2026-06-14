@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "169699168674",
+    "project_id": "lazervault-testnet",
+    "storage_bucket": "lazervault-testnet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169699168674:android:f9025cedabdafadd4b22fb",
+        "android_client_info": {
+          "package_name": "com.lazervault.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAgKxMAEWU7I9JQOrc5Ufrmv5CN6p_Tek"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

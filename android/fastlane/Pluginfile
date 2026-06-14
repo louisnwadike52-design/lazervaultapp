@@ -1,0 +1,4 @@
+# Auto-updated by fastlane.
+# Remove this comment to manually edit this file.
+
+gem 'fastlane-plugin-firebase_app_distribution'

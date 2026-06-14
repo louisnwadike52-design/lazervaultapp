@@ -56,6 +56,8 @@
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>
+			<string>remote-notification</string>
+			<string>fetch</string>
 		</array>
 		<!-- Deep link URL scheme for lazervault:// -->
 		<!-- Used for DirectPay authorization callbacks and other in-app redirects -->

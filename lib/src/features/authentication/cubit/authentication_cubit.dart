@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
@@ -144,6 +145,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             // Token is valid, restore session
             _currentProfile = profile;
             emit(AuthenticationAuthenticated(profile));
+            unawaited(_registerPushTokenIfReady());
           },
         );
       }
@@ -2274,6 +2276,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (isClosed) return;
     _currentProfile = profile;
     emit(AuthenticationAuthenticated(profile));
+    unawaited(_registerPushTokenIfReady());
+  }
+
+  /// Pushes the FCM token to notifications-service. Called after every
+  /// transition to AuthenticationAuthenticated. The service skips the
+  /// network call if user_id isn't in secure storage yet.
+  Future<void> _registerPushTokenIfReady() async {
+    try {
+      if (!serviceLocator.isRegistered<PushNotificationsService>()) return;
+      await serviceLocator<PushNotificationsService>().registerCurrentToken();
+    } catch (_) {
+      // Token registration retries on next auth transition / app start.
+    }
   }
 
   // ===== Password Reset V2 (Email/SMS Support) =====

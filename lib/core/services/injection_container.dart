@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/grpc_channel_factory.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/src/features/p2p_chat/data/datasources/p2p_chat_remote_datasource.dart';
@@ -550,11 +551,6 @@ import 'package:lazervault/src/features/move_money/cubit/move_money_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/wallet_transfer_cubit.dart';
 
-// Lifestyle Imports
-import 'package:lazervault/src/features/lifestyle/data/datasources/lifestyle_remote_datasource.dart';
-import 'package:lazervault/src/features/lifestyle/data/repositories/lifestyle_repository_impl.dart';
-import 'package:lazervault/src/features/lifestyle/domain/repositories/i_lifestyle_repository.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 
 // Plan My Day Imports
 import 'package:lazervault/src/features/plan_my_day/data/repositories/plan_my_day_repository_impl.dart';
@@ -806,6 +802,16 @@ Future<void> init() async {
   // Register DashboardStateManager for preserving carousel positions across navigation
   serviceLocator.registerLazySingleton<DashboardStateManager>(
     () => DashboardStateManager(),
+  );
+
+  // Register PushNotificationsService — wires Firebase + FCM + foreground display.
+  // Initialised in main.dart; auth flow calls registerCurrentToken() post-login.
+  serviceLocator.registerLazySingleton<PushNotificationsService>(
+    () => PushNotificationsService(
+      secureStorage: serviceLocator<SecureStorageService>(),
+      accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
+    ),
   );
 
   // Register gRPC Call Options Helper with LocaleManager and AccountManager
@@ -1956,7 +1962,9 @@ Future<void> init() async {
   // Repositories - Using gRPC implementation for backend integration
   serviceLocator.registerLazySingleton<PortfolioRepository>(
     () => PortfolioRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      // PortfolioService is registered on the investment-gateway (50072), not
+      // commerce — it aggregates the user's stocks + crypto + investments.
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'investmentGrpcClient'),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
@@ -2938,6 +2946,21 @@ Future<void> init() async {
     instanceName: 'commerceGrpcClient',
   );
 
+  // Investment Gateway (50072) GrpcClient — serves Investments, Crypto,
+  // Statistics, and Portfolio. The dashboard Portfolio card uses this so it
+  // reaches PortfolioService where it's actually registered (investment-gateway
+  // aggregates stocks + crypto + other investments).
+  final investmentGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'investmentChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+  await investmentGrpcClient.initialize();
+  serviceLocator.registerLazySingleton<GrpcClient>(
+    () => investmentGrpcClient,
+    instanceName: 'investmentGrpcClient',
+  );
+
   // Repositories
   serviceLocator.registerLazySingleton<FinancialAnalyticsRepository>(
     () => FinancialAnalyticsRepository(
@@ -3110,6 +3133,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => FreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => UnfreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => DeleteFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => LeaveFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => SetupFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => UpdateFundDistributionModeUseCase(serviceLocator<FamilyAccountRepository>()));
@@ -3134,6 +3158,7 @@ Future<void> init() async {
       freezeFamilyAccount: serviceLocator<FreezeFamilyAccountUseCase>(),
       unfreezeFamilyAccount: serviceLocator<UnfreezeFamilyAccountUseCase>(),
       deleteFamilyAccount: serviceLocator<DeleteFamilyAccountUseCase>(),
+      leaveFamilyAccount: serviceLocator<LeaveFamilyAccountUseCase>(),
       processMemberContribution: serviceLocator<ProcessMemberContributionUseCase>(),
       setupFamilyAccount: serviceLocator<SetupFamilyAccountUseCase>(),
       updateFundDistributionMode: serviceLocator<UpdateFundDistributionModeUseCase>(),
@@ -3552,45 +3577,6 @@ Future<void> init() async {
     ),
   );
 
-  // ================== Feature: Lifestyle ==================
-  // Travel aggregation: flights, hotels, tours via lifestyle-gateway
-
-  // Data Source (HTTP via Dio to lifestyle-gateway, with JWT auth)
-  serviceLocator.registerLazySingleton<LifestyleRemoteDataSource>(
-    () {
-      final dio = Dio(BaseOptions(
-        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'http://10.0.2.2:8088',
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
-      ));
-
-      final authInterceptor = DioAuthInterceptor(
-        storage: serviceLocator<FlutterSecureStorage>(),
-        dio: dio,
-        localeManager: serviceLocator<LocaleManager>(),
-        accountManager: serviceLocator<AccountManager>(),
-      );
-
-      // Wire token refresh callback (shared with gRPC helper)
-      final grpcHelper = serviceLocator<GrpcCallOptionsHelper>();
-      authInterceptor.onTokenRefreshNeeded = grpcHelper.onTokenRefreshNeeded;
-
-      dio.interceptors.add(authInterceptor);
-
-      return LifestyleRemoteDataSource(dio);
-    },
-  );
-
-  // Repository
-  serviceLocator.registerLazySingleton<ILifestyleRepository>(
-    () => LifestyleRepositoryImpl(serviceLocator<LifestyleRemoteDataSource>()),
-  );
-
-  // Cubit
-  serviceLocator.registerFactory<LifestyleCubit>(
-    () => LifestyleCubit(serviceLocator<ILifestyleRepository>()),
-  );
-
   // ================== Feature: Plan My Day ==================
   // Day planning, task management, and productivity tracking
 
@@ -3650,6 +3636,25 @@ Future<void> init() async {
       authInterceptor.onTokenRefreshNeeded = grpcHelper.onTokenRefreshNeeded;
 
       dio.interceptors.add(authInterceptor);
+
+      // Forward the logged-in user's display name so the backend records who
+      // hosted/joined/sprayed (the JWT carries no name; the gateway forwards
+      // the X-User-Name header into x-user-name metadata). Without this, host
+      // names, participant names and gift-banner sender names render blank.
+      final secureStorage = serviceLocator<SecureStorageService>();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          try {
+            final fullName = await secureStorage.getUserFullName();
+            if (fullName != null && fullName.isNotEmpty) {
+              options.headers['X-User-Name'] = fullName;
+            }
+          } catch (_) {
+            // Best-effort — never block the request on a name lookup.
+          }
+          handler.next(options);
+        },
+      ));
 
       return SprayMeRemoteDataSource(dio);
     },

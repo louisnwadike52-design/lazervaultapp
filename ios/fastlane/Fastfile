@@ -1,0 +1,233 @@
+default_platform(:ios)
+
+FLUTTER_DIR = File.expand_path("../..", __dir__) # lazervaultapp/
+IOS_DIR     = File.expand_path("..", __dir__)    # lazervaultapp/ios/
+
+def flutter(args)
+  Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
+end
+
+def swap_firebase_plist(flavor)
+  src = File.join(IOS_DIR, "config", flavor, "GoogleService-Info.plist")
+  dst = File.join(IOS_DIR, "Runner", "GoogleService-Info.plist")
+  FileUtils.cp(src, dst)
+end
+
+def release_notes
+  `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
+end
+
+APP_IDENTIFIER  = "com.lazervault.app"
+SCHEME          = "Runner"
+WORKSPACE       = "ios/Runner.xcworkspace"
+
+# Resolve the App Store Connect API key from the env. The key is the .p8 you
+# downloaded from https://appstoreconnect.apple.com/access/api once; we keep
+# the actual file out of the repo and reference it by path.
+def asc_api_key
+  key_id     = ENV["APP_STORE_CONNECT_KEY_ID"]
+  issuer_id  = ENV["APP_STORE_CONNECT_ISSUER_ID"]
+  key_path   = ENV["APP_STORE_CONNECT_KEY_PATH"] || \
+               File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{key_id}.p8")
+  unless key_id && issuer_id && File.exist?(key_path)
+    UI.user_error!(<<~MSG)
+      App Store Connect API key not configured. Set in your shell:
+        export APP_STORE_CONNECT_KEY_ID="XXXXXXXXXX"          # 10-char Key ID
+        export APP_STORE_CONNECT_ISSUER_ID="xxxxxxxx-..."     # UUID from ASC → Keys
+        export APP_STORE_CONNECT_KEY_PATH="/abs/path/AuthKey_XXXXXXXXXX.p8"
+      Then run `fastlane setup_appstore` to verify.
+    MSG
+  end
+  app_store_connect_api_key(
+    key_id:      key_id,
+    issuer_id:   issuer_id,
+    key_filepath: key_path,
+    duration:    1200,
+    in_house:    false,
+  )
+end
+
+platform :ios do
+  desc "FIRST-TIME SETUP — verifies App Store Connect access, auto-creates the app listing if missing"
+  lane :setup_appstore do
+    key = asc_api_key
+    UI.header "Verifying App Store Connect access for #{APP_IDENTIFIER}"
+
+    # Try to fetch the latest build number — both proves auth AND proves the
+    # App Store Connect listing exists. Returns 0 when it exists but has no
+    # builds (the expected first-run state).
+    begin
+      build_num = latest_testflight_build_number(
+        api_key:              key,
+        app_identifier:       APP_IDENTIFIER,
+        initial_build_number: 0,
+      )
+      UI.success "✅ ASC API key valid"
+      UI.success "✅ App row found for #{APP_IDENTIFIER}"
+      UI.message "   Latest TestFlight build number: #{build_num} #{build_num == 0 ? '(no builds uploaded yet)' : ''}"
+    rescue => e
+      UI.important "App row NOT found on App Store Connect — running `produce` to create it."
+      UI.important "(Bundle ID is registered in Apple Developer Portal, but the App Store"
+      UI.important " listing is a separate Apple resource that must exist before TestFlight"
+      UI.important " uploads work. produce is the canonical fastlane way to create it.)"
+      produce(
+        api_key:        key,
+        app_identifier: APP_IDENTIFIER,
+        app_name:       "Lazervault",
+        language:       "English",
+        app_version:    "1.0",
+        sku:            "LAZERVAULT_IOS_001",
+        # Don't try to register the bundle id with the dev portal — the user
+        # already did that manually. Only create the App Store Connect row.
+        skip_itc:       false,
+        skip_devcenter: true,
+      )
+      UI.success "✅ App listing created on App Store Connect"
+    end
+
+    UI.message ""
+    UI.message "Next steps in order:"
+    UI.message "  1. bundle exec fastlane sync_signing      # match — pulls/creates distribution certs"
+    UI.message "  2. bundle exec fastlane beta              # build + upload to TestFlight internal"
+    UI.message "  3. bundle exec fastlane production        # full release lane"
+  end
+
+  desc "Sync iOS code-signing via fastlane match. Run once on this machine."
+  lane :sync_signing do
+    unless ENV["MATCH_GIT_URL"]
+      UI.user_error!(<<~MSG)
+        MATCH_GIT_URL not set. fastlane match stores certs/profiles in a
+        private git repo so any dev/CI box can pull them.
+        Quick start:
+          gh repo create lazervault/ios-certs --private --confirm
+          export MATCH_GIT_URL="git@github.com:lazervault/ios-certs.git"
+          export MATCH_PASSWORD="<a strong password — needed to decrypt>"
+        Then re-run this lane.
+      MSG
+    end
+    match(
+      type: "appstore",
+      app_identifier: [APP_IDENTIFIER],
+      readonly: false,  # first run; flip to true on CI
+      api_key: asc_api_key,
+    )
+  end
+
+  desc "Upload an existing IPA to TestFlight (skips rebuild). Useful when manually built in Xcode."
+  lane :testflight_upload_existing do |options|
+    ipa = options[:ipa] || UI.user_error!("Pass ipa:'<path>' to this lane")
+    upload_to_testflight(
+      api_key:                              asc_api_key,
+      ipa:                                  ipa,
+      skip_waiting_for_build_processing:    true,
+      changelog:                            (`git log -1 --pretty=%s`.strip),
+    )
+  end
+
+  desc "Quick alias for the staging lane (TestFlight internal group)"
+  lane :beta do
+    staging
+  end
+
+  desc "Open Firebase Console pages for the APNs .p8 + VAPID upload (one-time setup)"
+  lane :setup_push_credentials do
+    UI.header "APNs + Web Push setup (one-time, per Firebase project)"
+    UI.message "1. Apple Developer Console → Keys → '+' → enable 'Apple Push Notifications service (APNs)' → download .p8"
+    UI.message "   https://developer.apple.com/account/resources/authkeys/list"
+    UI.message ""
+    UI.message "2. Upload that .p8 to EACH Firebase project (one per env):"
+    %w[lazervault-dev lazervault-testnet lazervault-28875].each do |proj|
+      UI.message "   - #{proj}: https://console.firebase.google.com/project/#{proj}/settings/cloudmessaging"
+    end
+    UI.message ""
+    UI.message "3. Web Push VAPID key — generate one PER Firebase project:"
+    %w[lazervault-dev lazervault-testnet lazervault-28875].each do |proj|
+      UI.message "   - #{proj}: https://console.firebase.google.com/project/#{proj}/settings/cloudmessaging/web-push-certs"
+    end
+    UI.message ""
+    UI.message "4. Paste the VAPID key into the corresponding firebase_options_<env>.dart's web config"
+    UI.message "   (the FCM JS SDK reads it as vapidKey: in getToken({ vapidKey, serviceWorkerRegistration }))"
+    UI.message ""
+    UI.message "5. Re-run fastlane dev / staging / production to ship the updated config."
+    sh("open https://console.firebase.google.com/project/lazervault-dev/settings/cloudmessaging")
+  end
+
+  desc "Dev → Firebase App Distribution (internal testers)"
+  lane :dev do
+    swap_firebase_plist("dev")
+    flutter("build ios --release --no-codesign --flavor dev --dart-define=FLAVOR=dev")
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "development",
+      output_directory: "build/ios/ipa",
+      output_name: "Runner-dev.ipa",
+    )
+    firebase_app_distribution(
+      app: "1:961906506476:ios:a38d37e7cf1d32a33843c9",
+      ipa_path: "build/ios/ipa/Runner-dev.ipa",
+      groups: ENV["FAD_GROUPS"] || "internal-testers",
+      release_notes: release_notes,
+      # SA JSON preferred. Same SA needs `roles/firebaseappdistro.admin`
+      # on lazervault-dev — see android/fastlane/Fastfile for the gcloud
+      # command. CLI-token path is the fallback.
+      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    )
+  end
+
+  desc "Staging → TestFlight (internal group)"
+  lane :staging do
+    swap_firebase_plist("staging")
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
+    flutter("build ios --release --no-codesign --flavor staging --dart-define=FLAVOR=staging")
+    build_app(
+      workspace:        WORKSPACE,
+      scheme:           SCHEME,
+      configuration:    "Release",
+      export_method:    "app-store",
+      output_directory: "build/ios/ipa",
+      output_name:      "Runner-staging.ipa",
+    )
+    upload_to_testflight(
+      api_key:                              asc_api_key,
+      ipa:                                  "build/ios/ipa/Runner-staging.ipa",
+      skip_waiting_for_build_processing:    true,
+      groups:                               ["Internal"],
+      changelog:                            (`git log -1 --pretty=%s`.strip),
+    )
+  end
+
+  desc "Production → TestFlight (external) + App Store (no auto-submit)"
+  lane :production do
+    swap_firebase_plist("prod")
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
+    flutter("build ios --release --no-codesign --flavor prod --dart-define=FLAVOR=prod")
+    build_app(
+      workspace:        WORKSPACE,
+      scheme:           SCHEME,
+      configuration:    "Release",
+      export_method:    "app-store",
+      output_directory: "build/ios/ipa",
+      output_name:      "Runner-prod.ipa",
+    )
+    upload_to_testflight(
+      api_key:                              asc_api_key,
+      ipa:                                  "build/ios/ipa/Runner-prod.ipa",
+      skip_waiting_for_build_processing:    true,
+      groups:                               ["External"],
+      changelog:                            (`git log -1 --pretty=%s`.strip),
+    )
+    upload_to_app_store(
+      api_key:           asc_api_key,
+      ipa:               "build/ios/ipa/Runner-prod.ipa",
+      submit_for_review: false,
+      automatic_release: false,
+      skip_metadata:     true,
+      skip_screenshots:  true,
+    )
+  end
+end

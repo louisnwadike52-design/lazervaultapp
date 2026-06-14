@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/presentation/app_router.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'core/services/injection_container.dart';
+import 'core/services/push_notifications_service.dart';
 import 'src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/database/database_helper.dart';
@@ -93,6 +94,11 @@ void main() async {
   // Initialize the database
   final dbHelper = DatabaseHelper();
   await dbHelper.database;
+
+  // Initialize push notifications (Firebase + FCM). Fire-and-forget so we don't
+  // block first frame on permission prompts or token retrieval — the token is
+  // re-registered post-login via authentication_cubit.
+  unawaited(serviceLocator<PushNotificationsService>().initialize());
 
   // Permissions + audio settings are fire-and-forget: they don't gate
   // anything on first frame (the permission check just logs on denial;
