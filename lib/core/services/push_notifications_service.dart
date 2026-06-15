@@ -168,8 +168,15 @@ class PushNotificationsService {
   /// Called by the auth flow once a user is authenticated. Fetches the current
   /// FCM token and POSTs it to notifications-service. Safe to call multiple
   /// times — registration is idempotent server-side keyed by user_id+device_id.
+  ///
+  /// On web, getToken() requires a VAPID public key (per-Firebase-project,
+  /// generated in Console → Cloud Messaging → Web configuration). Without
+  /// it, FirebaseMessaging silently returns null and push never works on
+  /// web. On native (iOS/Android), the vapidKey arg is ignored.
   Future<void> registerCurrentToken() async {
-    final token = await FirebaseMessaging.instance.getToken();
+    final token = await FirebaseMessaging.instance.getToken(
+      vapidKey: kIsWeb ? DefaultFirebaseOptions.vapidKey : null,
+    );
     if (token == null || token.isEmpty) return;
     await _registerToken(token);
   }
@@ -219,7 +226,7 @@ class PushNotificationsService {
   }
 
   String get _coreGatewayBase {
-    final raw = dotenv.env['CORE_GATEWAY_URL'] ?? 'http://10.0.2.2:7878';
+    final raw = dotenv.env['CORE_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1';
     return raw
         .replaceAll('localhost', '10.0.2.2')
         .replaceAll('127.0.0.1', '10.0.2.2');
