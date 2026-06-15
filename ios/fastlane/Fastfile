@@ -34,11 +34,19 @@ end
 COMPRESSION_XCARGS = [
   "DEPLOYMENT_POSTPROCESSING=YES",
   "STRIP_INSTALLED_PRODUCT=YES",
-  "STRIP_STYLE=all",
+  # STRIP_STYLE=non-global is Apple's recommended setting for App Store
+  # distribution — strips debug symbols + local labels but preserves the
+  # global symbols SwiftPM packages (webview_flutter_wkwebview,
+  # url_launcher_ios, etc.) reference via dynamic linking. STRIP_STYLE=all
+  # over-strips these and breaks the archive.
+  "STRIP_STYLE=non-global",
   "STRIP_SWIFT_SYMBOLS=YES",
   "COPY_PHASE_STRIP=YES",
   "DEAD_CODE_STRIPPING=YES",
-  "LLVM_LTO=YES",
+  # LLVM_LTO=YES intermittently breaks compilation of pre-built SPM
+  # packages (resource_bundle_accessor.m on GoogleDataTransport hit a
+  # frontend crash on Xcode 26 with LTO + Os). Skipped — the size win is
+  # smaller than the other strip+optimize flags anyway.
   "SWIFT_COMPILATION_MODE=wholemodule",
   "SWIFT_OPTIMIZATION_LEVEL=-O",
   "GCC_OPTIMIZATION_LEVEL=s",
