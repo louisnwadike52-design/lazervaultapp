@@ -12,6 +12,49 @@ def dart_defines_base64(*kvs)
   Base64.strict_encode64(kvs.join(","))
 end
 
+# Xcode build settings applied to every iOS release build for maximum
+# binary size reduction:
+#
+# DEPLOYMENT_POSTPROCESSING=YES   Triggers post-processing (strip, etc.)
+# STRIP_INSTALLED_PRODUCT=YES     Strip symbols from installed binaries
+# STRIP_STYLE=all                 Strip every removable symbol (vs. debugging only)
+# STRIP_SWIFT_SYMBOLS=YES         Strip Swift module names from the binary
+# COPY_PHASE_STRIP=YES            Strip during the copy phase too
+# DEAD_CODE_STRIPPING=YES         Linker eliminates unreferenced functions
+# LLVM_LTO=YES                    Link-time optimization (cross-module inlining)
+# SWIFT_COMPILATION_MODE=wholemodule  Required for LLVM_LTO + better inlining
+# SWIFT_OPTIMIZATION_LEVEL=-O     Standard optimization (max for app)
+# GCC_OPTIMIZATION_LEVEL=s        Optimize C code for size (-Os)
+# ENABLE_BITCODE=NO               Bitcode is deprecated; off everywhere
+# VALIDATE_PRODUCT=YES            Strip debug + reject malformed bundles
+#
+# Apple's App Thinning at install time slices the .ipa per-device so users
+# only download what they need (architecture, asset variant, etc.) — these
+# settings shrink the master IPA before Apple's slicing kicks in.
+COMPRESSION_XCARGS = [
+  "DEPLOYMENT_POSTPROCESSING=YES",
+  "STRIP_INSTALLED_PRODUCT=YES",
+  "STRIP_STYLE=all",
+  "STRIP_SWIFT_SYMBOLS=YES",
+  "COPY_PHASE_STRIP=YES",
+  "DEAD_CODE_STRIPPING=YES",
+  "LLVM_LTO=YES",
+  "SWIFT_COMPILATION_MODE=wholemodule",
+  "SWIFT_OPTIMIZATION_LEVEL=-O",
+  "GCC_OPTIMIZATION_LEVEL=s",
+  "ENABLE_BITCODE=NO",
+  "VALIDATE_PRODUCT=YES",
+].join(" ")
+
+# Dart side — same compression flags as Android (set in the DART_DEFINES env).
+# Flutter's iOS Run Script Build Phase reads these via env vars and forwards
+# them to the kernel snapshot step.
+COMPRESSION_DART_ENV = {
+  "TREE_SHAKE_ICONS"   => "true",
+  "SPLIT_DEBUG_INFO"   => "#{FLUTTER_DIR}/build/symbols/ios",
+  "OBFUSCATE"          => "true",
+}
+
 def flutter(args)
   Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
 end
@@ -213,7 +256,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-staging.ipa",
-      xcargs:           "DART_DEFINES=#{dart_defines_base64('FLAVOR=staging')}",
+      xcargs:           "DART_DEFINES=#{dart_defines_base64('FLAVOR=staging')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-staging",
     )
     upload_to_testflight(
       api_key:                              asc_api_key,
@@ -237,6 +280,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-prod.ipa",
+      xcargs:           "DART_DEFINES=#{dart_defines_base64('FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     upload_to_testflight(
       api_key:                              asc_api_key,

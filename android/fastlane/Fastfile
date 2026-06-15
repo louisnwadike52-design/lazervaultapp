@@ -6,6 +6,25 @@ def flutter(args)
   Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
 end
 
+# Flutter compression flags applied to every release build:
+#
+# --release                  Standard release mode (AOT compile, no debug
+#                            assertions, tree-shaking, etc.)
+# --tree-shake-icons         Strip unused glyphs from the MaterialIcons font.
+#                            Typically saves 1.5 MB on the icon font alone.
+# --obfuscate                Apply Dart name obfuscation to release symbols.
+#                            Smaller AOT binary + makes reverse engineering
+#                            harder. Pair with --split-debug-info so we can
+#                            still symbolicate crash reports.
+# --split-debug-info=DIR     Strip debug info from the AOT binary and write
+#                            it to DIR. The binary shrinks by ~30%. Keep the
+#                            DIR (per build) so crash reports stay
+#                            symbolicatable via flutter symbolize.
+# --shrink                   (Android only) tells Gradle to use R8 + resource
+#                            shrinker (we also enable these in build.gradle.kts,
+#                            this is the Flutter side of the same switch).
+COMPRESSION_FLAGS = "--release --tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android --shrink"
+
 def aab_for(flavor)
   File.join(FLUTTER_DIR,
     "build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab")
@@ -40,7 +59,7 @@ platform :android do
   # Internal testing track: up to 100 testers, no review, instant rollout.
   # Equivalent to TestFlight Internal on iOS.
   lane :dev do
-    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev")
+    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "internal",
@@ -60,7 +79,7 @@ platform :android do
   # use this lane to push to Firebase App Distribution instead. APKs install
   # directly — no Play Console review.
   lane :dev_firebase do
-    flutter("build apk --flavor dev --dart-define=FLAVOR=dev --release")
+    flutter("build apk --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS} --split-per-abi")
     args = {
       app: "1:961906506476:android:ec73b0375c4900043843c9",
       android_artifact_type: "APK",
@@ -78,7 +97,7 @@ platform :android do
   # than internal but still gated. Devs typically promote builds from internal
   # → closed → open → production. Each promotion is a separate lane run.
   lane :staging do
-    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging")
+    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "alpha",
@@ -99,7 +118,7 @@ platform :android do
   # rollout in Play Console UI when ready (matches the no-auto-submit pattern
   # on iOS upload_to_app_store).
   lane :production do
-    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod")
+    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "production",

@@ -47,6 +47,35 @@ post_install do |installer|
       # Workaround for https://github.com/flutter/flutter/issues/64502
       config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES' # <= this line
 
+      # ---- IPA SIZE COMPRESSION on Pod targets ----
+      # The main Runner target's size settings (in Fastfile xcargs) don't
+      # propagate into Pod frameworks. Apply the equivalent here so every
+      # dependency framework also strips + LTO + size-optimises.
+      if config.name == 'Release' || config.name == 'Profile'
+        config.build_settings['DEPLOYMENT_POSTPROCESSING']  = 'YES'
+        config.build_settings['STRIP_INSTALLED_PRODUCT']    = 'YES'
+        config.build_settings['STRIP_STYLE']                = 'all'
+        config.build_settings['STRIP_SWIFT_SYMBOLS']        = 'YES'
+        config.build_settings['COPY_PHASE_STRIP']           = 'YES'
+        config.build_settings['DEAD_CODE_STRIPPING']        = 'YES'
+        config.build_settings['LLVM_LTO']                   = 'YES'
+        config.build_settings['SWIFT_COMPILATION_MODE']     = 'wholemodule'
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL']   = '-O'
+        config.build_settings['GCC_OPTIMIZATION_LEVEL']     = 's'
+        config.build_settings['ENABLE_BITCODE']             = 'NO'
+        # Drop debug symbols entirely on Release Pod targets — Flutter's
+        # split-debug-info keeps Dart symbols separately for crash reports;
+        # native deps don't need debug info in the shipped binary.
+        config.build_settings['DEBUG_INFORMATION_FORMAT']   = 'dwarf-with-dsym'
+      end
+
+      # Iframe Apple's deployment target floor — Pods/Manifest.lock pins many
+      # plugins at iOS 9.0 which Xcode 26 warns against (range starts at 12.0).
+      # Bumping to 13.0 (matching Firebase + the rest of our minimum) lets
+      # the linker drop a chunk of legacy code paths.
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      end
     end
   end
 end
