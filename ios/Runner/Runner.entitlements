@@ -2,8 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>com.apple.developer.siri</key>
-	<true/>
+	<!-- Siri removed — the app uses speech_to_text + voice_biometrics, NOT SiriKit
+	     intent capability. Re-add com.apple.developer.siri if SiriKit intent is
+	     wired in the future (also enable Siri on the App ID in Apple Developer). -->
 	<key>aps-environment</key>
 	<string>development</string>
 	<key>com.apple.developer.applesignin</key>

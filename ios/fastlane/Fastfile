@@ -1,7 +1,16 @@
 default_platform(:ios)
 
+require "base64"
+
 FLUTTER_DIR = File.expand_path("../..", __dir__) # lazervaultapp/
 IOS_DIR     = File.expand_path("..", __dir__)    # lazervaultapp/ios/
+
+# DART_DEFINES expects a base64-encoded comma-separated list of key=value.
+# Flutter's Xcode integration script (Run Script Build Phase) reads this env
+# var and forwards the values to the Dart kernel-snapshot step.
+def dart_defines_base64(*kvs)
+  Base64.strict_encode64(kvs.join(","))
+end
 
 def flutter(args)
   Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
@@ -19,7 +28,8 @@ end
 
 APP_IDENTIFIER  = "com.lazervault.app"
 SCHEME          = "Runner"
-WORKSPACE       = "ios/Runner.xcworkspace"
+# Relative to the ios/ dir where fastlane runs (cwd is fastlane/Fastfile's parent).
+WORKSPACE       = "Runner.xcworkspace"
 
 # Resolve the App Store Connect API key from the env. The key is the .p8 you
 # downloaded from https://appstoreconnect.apple.com/access/api once; we keep
@@ -182,7 +192,20 @@ platform :ios do
     swap_firebase_plist("staging")
     setup_ci if ENV["CI"]
     match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
-    flutter("build ios --release --no-codesign --dart-define=FLAVOR=staging")
+    # gym (build_app) triggers xcodebuild archive which invokes Flutter's
+    # Run Script Build Phase from within Xcode's environment — sidesteps the
+    # Tahoe + Xcode 26 xattr/codesign issue that breaks the standalone
+    # `flutter build ios --no-codesign` path. xcargs passes the dart-define
+    # through to Flutter's build script.
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: "382F6M9KSZ",
+      code_sign_identity: "Apple Distribution",
+      profile_name: "match AppStore com.lazervault.app",
+      bundle_identifier: "com.lazervault.app",
+      targets: ["Runner"],
+    )
     build_app(
       workspace:        WORKSPACE,
       scheme:           SCHEME,
@@ -190,6 +213,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-staging.ipa",
+      xcargs:           "DART_DEFINES=#{dart_defines_base64('FLAVOR=staging')}",
     )
     upload_to_testflight(
       api_key:                              asc_api_key,
