@@ -37,9 +37,15 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // PASTE — replace empty strings with the public VAPID keys from Firebase
-  // Console. Long base64 strings (~88 chars), starting with "B".
-  static const String _vapidKeyDev = '';
-  static const String _vapidKeyStaging = '';
-  static const String _vapidKeyProd = '';
+  // Public VAPID keys from Firebase Console → Cloud Messaging → Web
+  // configuration → Generate key pair (one per project). These identify
+  // the LazerVault server to the push service for verified delivery; they
+  // are NOT secrets (the private half stays in Firebase). Rotation: bump
+  // the env's key in Console + replace here + commit.
+  static const String _vapidKeyDev =
+      'BHWDhvqYw7-xVVu-ymCvBK8aZYm2NwuVNM1BhkCDOEg4IS4tDGkDjff65kodvC0lcn6pRdH7vPb3Y1OXaFiMboU';
+  static const String _vapidKeyStaging =
+      'BLB0Khtw1IUSEBvpRE19khszHBPSMqbLGPe5F4wSYCEZDErLjjaRUCMMIFFAsGZghYoih5skN2DAne8QzA9_JmQ';
+  static const String _vapidKeyProd =
+      'BFa8GCs0KawZ09d_TfUPw5Kj-PIJrTK-AyUX1fs2cbfukHETfT8HamprOgcF-K290qJZunkMmTNS3Ap0iQQ67wg';
 }
