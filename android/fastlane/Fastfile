@@ -11,32 +11,39 @@ def aab_for(flavor)
     "build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab")
 end
 
+def apk_for(flavor)
+  File.join(FLUTTER_DIR,
+    "build/app/outputs/flutter-apk/app-#{flavor}-release.apk")
+end
+
 def release_notes
   `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
 end
 
 platform :android do
   desc "Dev → Firebase App Distribution (internal testers)"
+  # Builds an APK (not AAB). Firebase App Distribution requires either an APK,
+  # OR an AAB on a Firebase project linked to a Play Developer account.
+  # Linking to Play is only worthwhile for production releases — dev builds
+  # stay APK so any tester device can install directly.
+  #
+  # `groups:` is only sent when FAD_GROUPS is set in the env to a group that
+  # actually exists in the Firebase project. Firebase rejects the whole
+  # distribution call with "HALTED release must have fraction" if the named
+  # group doesn't exist yet. Without it, the release uploads cleanly to
+  # Console where testers can be added manually.
   lane :dev do
-    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev")
-    firebase_app_distribution(
+    flutter("build apk --flavor dev --dart-define=FLAVOR=dev --release")
+    args = {
       app: "1:961906506476:android:ec73b0375c4900043843c9",
-      android_artifact_type: "AAB",
-      android_artifact_path: aab_for("dev"),
-      groups: ENV["FAD_GROUPS"] || "internal-testers",
+      android_artifact_type: "APK",
+      android_artifact_path: apk_for("dev"),
       release_notes: release_notes,
-      # Prefer the SA JSON path (modern, no interactive login required).
-      # Set FIREBASE_SERVICE_ACCOUNT_JSON to the absolute path of the dev FCM
-      # service-account JSON. The SA needs `roles/firebaseappdistro.admin`
-      # on the dev Firebase project:
-      #   gcloud projects add-iam-policy-binding lazervault-dev \\
-      #     --member=serviceAccount:notifications-fcm-admin@lazervault-dev.iam.gserviceaccount.com \\
-      #     --role=roles/firebaseappdistro.admin --condition=None
-      # Legacy CLI-token path (FIREBASE_TOKEN from `firebase login:ci`) is
-      # the fallback when the SA env isn't set.
       service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
       firebase_cli_token: ENV["FIREBASE_TOKEN"],
-    )
+    }
+    args[:groups] = ENV["FAD_GROUPS"] if ENV["FAD_GROUPS"] && !ENV["FAD_GROUPS"].empty?
+    firebase_app_distribution(args)
   end
 
   desc "Staging → Play Store internal track"
