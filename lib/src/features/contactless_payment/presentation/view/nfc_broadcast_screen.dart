@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,9 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/ndef_record.dart';
-import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
+import '../../services/hce_broadcaster.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -65,6 +63,9 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   bool _isCancelling = false;
   bool _fetchingTransactionDetails = false;
   int _transactionFetchRetries = 0;
+  // true => this receiver can't be tapped (iOS always; Android with NFC off),
+  // so the UI shows the Session ID share flow as the way to get paid.
+  bool _sessionIdMode = false;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -106,9 +107,64 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     }
 
     _startExpiryTimer();
-    _startNfcBroadcast();
+    _beginBroadcast();
     _startPolling();
     _subscribeWs();
+  }
+
+  /// Decide how this receiver makes itself "tappable", per platform:
+  ///
+  /// • Android → real Host Card Emulation (HCE): the phone presents the session
+  ///   as an NDEF tag, so any payer phone (Android NfcManager OR iPhone CoreNFC)
+  ///   can tap to read it. If NFC is off / no HCE hardware we fall back to
+  ///   Session ID mode and tell the user.
+  /// • iOS → Apple forbids third-party HCE, so an iPhone can NEVER be tapped as
+  ///   a tag. Always Session ID mode.
+  ///
+  /// Either way polling + WS run, so the receipt lands the instant the payer
+  /// pays — whether they tapped or typed the Session ID.
+  Future<void> _beginBroadcast() async {
+    if (Platform.isIOS) {
+      setState(() {
+        _sessionIdMode = true;
+        _statusText = 'Share your Session ID with the payer';
+      });
+      _notifySessionIdMode(_IosNoNfc());
+      return;
+    }
+
+    final started = await HceBroadcaster.startBroadcast(widget.nfcPayload);
+    if (!mounted) return;
+    if (started) {
+      setState(() {
+        _sessionIdMode = false;
+        _statusText = 'Hold the payer’s phone to the back of yours';
+      });
+    } else {
+      // NFC off or device without HCE → Session ID is the only way to receive.
+      setState(() {
+        _sessionIdMode = true;
+        _statusText = 'NFC is off — share your Session ID with the payer';
+      });
+      _notifySessionIdMode(_AndroidNfcOff());
+    }
+  }
+
+  /// One-time snackbar explaining why we're in Session ID mode and what to do.
+  /// Deferred to the first frame so the overlay is mounted.
+  void _notifySessionIdMode(_SessionIdReason reason) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Get.snackbar(
+        reason.snackTitle,
+        reason.snackBody,
+        backgroundColor: const Color(0xFFFB923C),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 6),
+        margin: EdgeInsets.all(12.w),
+      );
+    });
   }
 
   /// Connect the realtime WS overlay AND wire adaptive polling cadence.
@@ -160,63 +216,6 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     });
   }
 
-  void _startNfcBroadcast() async {
-    try {
-      final availability = await NfcManager.instance.checkAvailability();
-      if (availability != NfcAvailability.enabled || !mounted) return;
-
-      // Encode text payload as NDEF well-known Text record (UTF-8)
-      final languageCode = Uint8List.fromList([0x02]); // UTF-8, language code length = 2
-      final langBytes = Uint8List.fromList(utf8.encode('en'));
-      final textBytes = Uint8List.fromList(utf8.encode(widget.nfcPayload));
-      final payload = Uint8List.fromList([...languageCode, ...langBytes, ...textBytes]);
-      final ndefRecord = NdefRecord(
-        typeNameFormat: TypeNameFormat.wellKnown,
-        type: Uint8List.fromList([0x54]), // 'T' for Text
-        identifier: Uint8List(0),
-        payload: payload,
-      );
-      final ndefMessage = NdefMessage(records: [ndefRecord]);
-
-      NfcManager.instance.startSession(
-        pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
-        alertMessageIos: 'Hold another phone close to share payment request',
-        onDiscovered: (NfcTag tag) async {
-          try {
-            final ndef = Ndef.from(tag);
-            if (ndef == null || !ndef.isWritable) return;
-
-            await ndef.write(message: ndefMessage);
-            if (!mounted) return;
-
-            HapticFeedback.mediumImpact();
-            setState(() {
-              _statusText = 'Payment request sent! Waiting for confirmation...';
-            });
-          } catch (e) {
-            if (!mounted) return;
-            Get.snackbar(
-              'NFC Write Failed',
-              'Please try holding phones together again',
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-            );
-          }
-        },
-        onSessionErrorIos: (error) {
-          // Silently handle NFC errors during broadcast
-        },
-      );
-
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _statusText = 'NFC not available. Share session ID manually.';
-      });
-    }
-  }
-
   void _startPolling() {
     // Starts at the relaxed 3s cadence on the assumption WS will connect.
     // If WS fails, `_onWsHealthChanged` cancels + restarts this timer at
@@ -235,9 +234,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   }
 
   void _stopNfcBroadcast() {
-    try {
-      NfcManager.instance.stopSession();
-    } catch (_) {}
+    // Stop emulating the NDEF tag (Android HCE). No-op on iOS.
+    HceBroadcaster.stop();
   }
 
   void _cancelSession() {
@@ -410,6 +408,10 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (_sessionIdMode && !_isCompleted && !_isExpired) ...[
+                              _buildSessionIdAlert(),
+                              SizedBox(height: 20.h),
+                            ],
                             _buildAmountCard(),
                             SizedBox(height: 32.h),
                             _buildTimerSection(),
@@ -470,9 +472,11 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'NFC broadcast active',
+                  _sessionIdMode ? 'Session ID mode' : 'Tap to pay active',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF10B981),
+                    color: _sessionIdMode
+                        ? const Color(0xFFFB923C)
+                        : const Color(0xFF10B981),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -691,6 +695,88 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     );
   }
 
+  /// Production-grade notice shown when this receiver can't be tapped, with the
+  /// reason tailored to WHY: iPhone (Apple forbids HCE) vs Android with NFC off.
+  /// Either way it points the user at the "Copy Session ID" CTA below as the
+  /// supported path, and on Android offers a one-tap jump to NFC settings.
+  Widget _buildSessionIdAlert() {
+    final reason = Platform.isIOS ? _IosNoNfc() : _AndroidNfcOff();
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFFB923C).withValues(alpha: 0.16),
+            const Color(0xFFF97316).withValues(alpha: 0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(Icons.info_outline_rounded,
+                color: const Color(0xFFFB923C), size: 20.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reason.title,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  reason.body,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFD1D5DB),
+                    fontSize: 13.sp,
+                    height: 1.4,
+                  ),
+                ),
+                if (reason.showOpenNfcSettings) ...[
+                  SizedBox(height: 10.h),
+                  GestureDetector(
+                    onTap: () {
+                      const MethodChannel('com.lazervault.app/settings')
+                          .invokeMethod('openNfcSettings');
+                    },
+                    child: Text(
+                      'Open NFC settings',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFB923C),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                        decorationColor: const Color(0xFFFB923C),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _copySessionId() {
     Clipboard.setData(ClipboardData(text: widget.session.id));
     HapticFeedback.lightImpact();
@@ -804,4 +890,53 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
       ),
     );
   }
+}
+
+/// Why a receiver is in Session ID mode instead of NFC tap. Drives both the
+/// one-time snackbar copy and the persistent in-screen alert, so the messaging
+/// is consistent and tailored to the real cause.
+abstract class _SessionIdReason {
+  String get snackTitle;
+  String get snackBody;
+  String get title;
+  String get body;
+  bool get showOpenNfcSettings;
+}
+
+/// iPhone: Apple forbids third-party HCE, so an iPhone can never be tapped.
+class _IosNoNfc implements _SessionIdReason {
+  @override
+  String get snackTitle => 'Use Session ID on iPhone';
+  @override
+  String get snackBody =>
+      'iPhone can’t share payments by NFC tap. Tap “Copy Session ID”, then send '
+      'it to the payer — they enter it under “Enter Session ID” in Scan to Pay.';
+  @override
+  String get title => 'NFC tap isn’t available on iPhone';
+  @override
+  String get body =>
+      'Apple doesn’t allow iPhone-to-iPhone NFC payments. Tap “Copy Session ID” '
+      'below and send it to the payer — they enter it under “Enter Session ID” '
+      'in Scan to Pay to complete this payment.';
+  @override
+  bool get showOpenNfcSettings => false;
+}
+
+/// Android with NFC turned off (or no HCE hardware): tapping could work once
+/// NFC is enabled, so we offer the settings shortcut AND the Session ID path.
+class _AndroidNfcOff implements _SessionIdReason {
+  @override
+  String get snackTitle => 'NFC is off';
+  @override
+  String get snackBody =>
+      'Turn on NFC to let the payer tap your phone, or tap “Copy Session ID” and '
+      'send it to them to pay without tapping.';
+  @override
+  String get title => 'NFC is off on this phone';
+  @override
+  String get body =>
+      'Turn on NFC so the payer can tap your phone, or tap “Copy Session ID” '
+      'below and send it — they enter it under “Enter Session ID” in Scan to Pay.';
+  @override
+  bool get showOpenNfcSettings => true;
 }

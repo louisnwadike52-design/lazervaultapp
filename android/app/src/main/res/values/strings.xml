@@ -14,4 +14,8 @@
 
     <!-- Quick Settings Tile -->
     <string name="quick_pay_tile_label">LazerVault Pay</string>
+
+    <!-- NFC HCE (contactless payment broadcast) -->
+    <string name="hce_service_description">LazerVault contactless payments</string>
+    <string name="hce_aid_group_description">LazerVault payment request</string>
 </resources>

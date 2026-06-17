@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  HCE service descriptor for LazerVault contactless payments.
+
+  Registers the NFC Forum Type 4 Tag NDEF application AID (D2760000850101) so
+  an incoming NFC reader's "SELECT NDEF application" routes to
+  LazerVaultHostApduService. category="other" (not "payment") because this is a
+  generic NDEF tag emulation, not an EMV payment applet — it does not need to be
+  the default payment app and won't conflict with the wallet.
+
+  requireDeviceUnlock="false" so the receiver can present the payment request
+  from the lock screen without a contradictory unlock prompt; the actual money
+  movement still requires the payer's transaction PIN on their device.
+-->
+<host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/hce_service_description"
+    android:requireDeviceUnlock="false">
+    <aid-group
+        android:description="@string/hce_aid_group_description"
+        android:category="other">
+        <aid-filter android:name="D2760000850101" />
+    </aid-group>
+</host-apdu-service>
