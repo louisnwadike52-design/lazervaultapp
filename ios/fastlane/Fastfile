@@ -270,7 +270,10 @@ platform :ios do
       api_key:                              asc_api_key,
       ipa:                                  "build/ios/ipa/Runner-dev.ipa",
       skip_waiting_for_build_processing:    true,
-      groups:                               ["Internal"],
+      # No `groups:` — internal TestFlight groups (e.g. "Lazervault Admins")
+      # AUTO-receive every processed build; the ASC API rejects explicit
+      # build→internal-group assignment ("Builds cannot be assigned to this
+      # internal group"), which made the lane exit 1 AFTER a successful upload.
       changelog:                            (`git log -1 --pretty=%s`.strip),
     )
   end
@@ -315,7 +318,7 @@ platform :ios do
       api_key:                              asc_api_key,
       ipa:                                  "build/ios/ipa/Runner-staging.ipa",
       skip_waiting_for_build_processing:    true,
-      groups:                               ["Internal"],
+      # No `groups:` — internal groups auto-receive processed builds (see dev lane).
       changelog:                            (`git log -1 --pretty=%s`.strip),
     )
   end
