@@ -30,6 +30,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _storage = serviceLocator<FlutterSecureStorage>();
   bool _hasPasscodeSetup = false;
+  // One-shot guard: the async AuthenticationSuccess listener can re-fire
+  // (success snackbar + getUserProfile re-entrancy), which navigated to the
+  // dashboard twice (the "double swipe"). Navigate exactly once.
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -97,6 +101,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             listener: (context, state) async {
               switch (state) {
               case AuthenticationSuccess(profile: final profile):
+                // Guard against a duplicate navigation if the listener re-fires.
+                if (_navigated) break;
+                _navigated = true;
                 // Load user profile after successful authentication
                 context.read<ProfileCubit>().getUserProfile();
 

@@ -12,15 +12,20 @@ import 'package:lazervault/src/features/identity/domain/entities/device_permissi
 import 'package:lazervault/src/features/identity/domain/repositories/i_identity_repository.dart';
 import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
 import 'package:lazervault/src/generated/user.pb.dart' as user_pb;
+import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_grpc;
+import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
 
 class IdentityRepositoryImpl implements IIdentityRepository {
   final user_grpc.UserServiceClient _userServiceClient;
+  final auth_grpc.AuthServiceClient _authServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
   IdentityRepositoryImpl({
     required user_grpc.UserServiceClient userServiceClient,
+    required auth_grpc.AuthServiceClient authServiceClient,
     required GrpcCallOptionsHelper callOptionsHelper,
   })  : _userServiceClient = userServiceClient,
+        _authServiceClient = authServiceClient,
         _callOptionsHelper = callOptionsHelper;
 
   @override
@@ -278,14 +283,19 @@ class IdentityRepositoryImpl implements IIdentityRepository {
     required String passcode,
     required String password,
   }) async {
+    // Passcode setup is served by auth-service's RegisterPasscode RPC.
+    // UserService.SetPasscode is a disabled stub on core-gateway
+    // ("use /api/v1/auth/register-passcode instead"), so we route through
+    // AuthServiceClient (same client ChangePasscode uses). RegisterPasscode
+    // only needs the passcode; `password` is retained on the signature for
+    // callers but is not forwarded to this RPC.
     try {
       final callOptions = await _callOptionsHelper.withAuth();
-      final request = user_pb.SetPasscodeRequest(
+      final request = auth_pb.RegisterPasscodeRequest(
         passcode: passcode,
-        password: password,
       );
 
-      final response = await _userServiceClient.setPasscode(
+      final response = await _authServiceClient.registerPasscode(
         request,
         options: callOptions,
       );
@@ -294,8 +304,8 @@ class IdentityRepositoryImpl implements IIdentityRepository {
         return const Right(null);
       } else {
         return Left(ServerFailure(
-          message: response.message.isNotEmpty
-              ? response.message
+          message: response.msg.isNotEmpty
+              ? response.msg
               : 'Failed to set passcode',
           statusCode: 400,
         ));

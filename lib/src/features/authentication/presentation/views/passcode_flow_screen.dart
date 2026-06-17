@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/passcode_dots.dart';
+import 'package:lazervault/core/widgets/passcode_keypad.dart';
+import 'package:lazervault/core/widgets/shake_widget.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/change_passcode_usecase.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
@@ -67,6 +72,10 @@ class PasscodeFlowScreen extends StatefulWidget {
 class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
   static const int _passcodeLength = 6;
   static const Color _brand = Color(0xFF4834D4);
+
+  /// Drives the Revolut-style "wrong passcode" shake on the dots row, matching
+  /// the login screen (`passcode_sign_in.dart`).
+  final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
 
   final _storage = serviceLocator<FlutterSecureStorage>();
 
@@ -211,10 +220,12 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         _next = '';
         _step = 1;
       });
+      _shakeError();
       return;
     }
     if (_next.length < _passcodeLength) {
       setState(() => _error = 'Passcode must be 6 digits.');
+      _shakeError();
       return;
     }
 
@@ -271,6 +282,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
             _confirm = '';
             _step = 0;
           });
+          _shakeError();
         },
         (_) async {
           // Refresh the cached passcode so passcode-login keeps working.
@@ -290,6 +302,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         _next = '';
         _confirm = '';
       });
+      _shakeError();
     }
   }
 
@@ -319,6 +332,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
             _next = '';
             _confirm = '';
           });
+          _shakeError();
         },
         (_) async {
           await _storage.write(key: 'login_passcode', value: _next);
@@ -336,7 +350,16 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         _next = '';
         _confirm = '';
       });
+      _shakeError();
     }
+  }
+
+  /// Shake the dots + fire an error haptic, exactly like the login screen does
+  /// on a wrong passcode. Call inside a `setState` that has already updated
+  /// `_error` (and any step reset).
+  void _shakeError() {
+    _shakeKey.currentState?.shake();
+    Haptics.error();
   }
 
   void _onSuccess(String message) {
@@ -374,6 +397,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
                 _confirm = '';
               }
             });
+            _shakeError();
           }
         },
         builder: (context, _) => body,
@@ -383,13 +407,19 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
   }
 
   Widget _buildBody(BuildContext context) {
+    // Dark, login-matching presentation: a near-black gradient background
+    // with a centered dots row + 3x3 keypad, mirroring
+    // `passcode_sign_in.dart`. The password gate (setup-only) keeps a dark
+    // card style so it doesn't break the look.
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFF0A0A0A),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: _busy ? null : () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -397,16 +427,28 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
           style: GoogleFonts.inter(
             fontSize: 17.sp,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF1F2937),
+            color: Colors.white,
           ),
         ),
       ),
-      body: SafeArea(
-        child: _busy
-            ? const Center(child: LazerVaultLoader.small())
-            : _step == 3
-                ? _buildPasswordGate()
-                : _buildKeypad(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1A1430), // subtle brand-tinted top
+              Color(0xFF0A0A0A),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _busy
+              ? const Center(child: LazerVaultLoader.small())
+              : _step == 3
+                  ? _buildPasswordGate()
+                  : _buildKeypad(),
+        ),
       ),
     );
   }
@@ -420,20 +462,27 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
           style: GoogleFonts.inter(
             fontSize: 20.sp,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF1F2937),
+            color: Colors.white,
           ),
         ),
         SizedBox(height: 8.h),
         Text(
           _stepSubtitle,
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 13.sp,
             fontWeight: FontWeight.w400,
-            color: const Color(0xFF6B7280),
+            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
-        SizedBox(height: 24.h),
-        _buildDots(),
+        SizedBox(height: 30.h),
+        ShakeWidget(
+          key: _shakeKey,
+          child: PasscodeDots(
+            length: _passcodeLength,
+            filled: _activePasscode.length,
+          ),
+        ),
         SizedBox(height: 10.h),
         if (_error.isNotEmpty)
           Padding(
@@ -451,93 +500,15 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         else
           SizedBox(height: 16.h),
         const Spacer(),
-        _buildLazerVaultKeypad(),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.w),
+          child: PasscodeKeypad(
+            onDigit: _onDigit,
+            onBackspace: _onBackspace,
+          ),
+        ),
         SizedBox(height: 32.h),
       ],
-    );
-  }
-
-  Widget _buildDots() {
-    final filled = _activePasscode.length;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        _passcodeLength,
-        (i) => AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          margin: EdgeInsets.symmetric(horizontal: 6.w),
-          width: 14.w,
-          height: 14.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: i < filled ? _brand : const Color(0xFFD1D5DB),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLazerVaultKeypad() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 32.w),
-      child: GridView.count(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        crossAxisCount: 3,
-        mainAxisSpacing: 14.h,
-        crossAxisSpacing: 18.w,
-        childAspectRatio: 1.5,
-        children: [
-          for (var i = 1; i <= 9; i++) _digitButton('$i'),
-          const SizedBox.shrink(),
-          _digitButton('0'),
-          _iconButton(Icons.backspace_outlined, _onBackspace),
-        ],
-      ),
-    );
-  }
-
-  Widget _digitButton(String d) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _onDigit(d),
-        splashColor: _brand.withValues(alpha: 0.15),
-        child: Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE5E7EB)),
-          ),
-          child: Text(
-            d,
-            style: GoogleFonts.inter(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1F2937),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _iconButton(IconData icon, VoidCallback onTap) {
-    return Material(
-      color: Colors.transparent,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        splashColor: _brand.withValues(alpha: 0.15),
-        child: Container(
-          alignment: Alignment.center,
-          child: Icon(icon, size: 24.sp, color: const Color(0xFF6B7280)),
-        ),
-      ),
     );
   }
 
@@ -555,7 +526,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
             style: GoogleFonts.inter(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1F2937),
+              color: Colors.white,
             ),
           ),
           SizedBox(height: 8.h),
@@ -564,21 +535,30 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
             style: GoogleFonts.inter(
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF6B7280),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 20.h),
           TextField(
             controller: _passwordController,
             obscureText: true,
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               labelText: 'Account password',
+              labelStyle:
+                  TextStyle(color: Colors.white.withValues(alpha: 0.7)),
               hintText: 'Your LazerVault password',
+              hintStyle:
+                  TextStyle(color: Colors.white.withValues(alpha: 0.4)),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color(0xFF1F1F1F),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),

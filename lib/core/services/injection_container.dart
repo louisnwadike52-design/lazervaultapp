@@ -1150,6 +1150,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<IIdentityRepository>(
       () => IdentityRepositoryImpl(
           userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+          authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
           callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
         ));
 

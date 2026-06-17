@@ -11,6 +11,8 @@ import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
+import 'package:lazervault/core/widgets/passcode_dots.dart';
+import 'package:lazervault/core/widgets/passcode_keypad.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
@@ -115,13 +117,13 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
     }
   }
 
+  // Note: the key-tap haptic now fires inside the shared PasscodeKeypad, so
+  // these callbacks must NOT also call Haptics.keyTap() (would double-buzz).
   void _onNumberPressed(String number) {
-    Haptics.keyTap();
     context.read<AuthenticationCubit>().passcodeLoginDigitEntered(number);
   }
 
   void _onBackspacePressed() {
-    Haptics.keyTap();
     context.read<AuthenticationCubit>().passcodeLoginBackspace();
   }
 
@@ -308,47 +310,16 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                       SizedBox(height: 30.h),
                       ShakeWidget(
                         key: _passcodeShakeKey,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(_passcodeLength, (index) {
-                            bool isActive = index < enteredPasscode.length;
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: EdgeInsets.symmetric(horizontal: 8.w),
-                              width: 18.w,
-                              height: 18.w,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isActive
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.3),
-                              ),
-                            );
-                          }),
+                        child: PasscodeDots(
+                          length: _passcodeLength,
+                          filled: enteredPasscode.length,
                         ),
                       ),
                       SizedBox(height: 35.h),
-                      GridView.count(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 18.h,
-                        crossAxisSpacing: 25.w,
-                        childAspectRatio: 1.6,
-                        children: [
-                          ...List.generate(9, (index) {
-                            final number = (index + 1).toString();
-                            return _buildNumberButton(number, colorScheme, textTheme.titleLarge, Colors.white, isAuthenticating);
-                          }),
-                          Container(),
-                          _buildNumberButton('0', colorScheme, textTheme.titleLarge, Colors.white, isAuthenticating),
-                          _buildIconButton(
-                            icon: Icons.backspace_outlined,
-                            onPressed: isAuthenticating ? null : _onBackspacePressed,
-                            iconColor: isAuthenticating ? Colors.grey : Colors.white,
-                            colorScheme: colorScheme,
-                          ),
-                        ],
+                      PasscodeKeypad(
+                        onDigit: _onNumberPressed,
+                        onBackspace: _onBackspacePressed,
+                        disabled: isAuthenticating,
                       ),
                       SizedBox(height: 30.h),
                       TextButton(
@@ -433,32 +404,6 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildNumberButton(
-      String number, ColorScheme colorScheme, TextStyle? textStyle, Color textColor, bool isAuthenticating) {
-    return Material(
-      color: Colors.transparent,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: isAuthenticating ? null : () => _onNumberPressed(number),
-        child: Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.15),
-          ),
-          child: Text(
-            number,
-            style: (textStyle ?? Theme.of(context).textTheme.titleLarge)?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isAuthenticating ? Colors.grey : textColor,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
