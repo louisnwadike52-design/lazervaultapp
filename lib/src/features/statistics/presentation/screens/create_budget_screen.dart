@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/expense_category_helpers.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -205,12 +206,21 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           Get.back();
         } else if (state is BudgetError) {
           _isSaving = false;
-          Get.snackbar(
-            'Error',
-            state.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.BOTTOM,
+          // Page-contained + friendly: the cubit embeds raw e.toString() in
+          // .message, so pass it as `error` to friendlyError to sanitize, and
+          // bind the SnackBar to THIS form's Scaffold (not the dashboard).
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.clearSnackBars();
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                friendlyError(state.message,
+                    context: _isEditMode ? 'update your budget' : 'create your budget'),
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFF1F1F1F),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
       },

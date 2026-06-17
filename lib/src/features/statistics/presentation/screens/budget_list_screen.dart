@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/expense_
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 
 /// Budget List Screen - displays all user budgets
 class BudgetListScreen extends StatelessWidget {
@@ -61,19 +62,9 @@ class BudgetListView extends StatelessWidget {
             Expanded(
               child: BlocConsumer<BudgetCubit, BudgetState>(
                 listener: (context, state) {
-                  if (state is BudgetError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: const Color(0xFFEF4444),
-                        action: SnackBarAction(
-                          label: 'Retry',
-                          textColor: Colors.white,
-                          onPressed: () => context.read<BudgetCubit>().loadBudgets(),
-                        ),
-                      ),
-                    );
-                  } else if (state is BudgetCreated) {
+                  // BudgetError is rendered inline by the builder below (full
+                  // page error state with Retry) — no redundant raw snackbar.
+                  if (state is BudgetCreated) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.message),
@@ -111,37 +102,13 @@ class BudgetListView extends StatelessWidget {
                   }
 
                   if (state is BudgetError) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32.w),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
-                            SizedBox(height: 16.h),
-                            const Text(
-                              'Failed to load budgets',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              state.message,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                            ),
-                            SizedBox(height: 24.h),
-                            ElevatedButton.icon(
-                              onPressed: () => context.read<BudgetCubit>().loadBudgets(),
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Retry'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    // Inline, friendly, page-contained error state. `error:`
+                    // (not `message:`) so friendlyError sanitizes the raw
+                    // e.toString() the cubit embeds in .message.
+                    return AppErrorView(
+                      error: state.message,
+                      context: 'load your budgets',
+                      onRetry: () => context.read<BudgetCubit>().loadBudgets(),
                     );
                   }
 

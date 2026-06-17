@@ -16,6 +16,8 @@ import 'package:lazervault/src/features/funds/data/datasources/payments_transfer
 import '../../cubit/wallet_transfer_cubit.dart';
 import '../../cubit/wallet_transfer_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/app_error_view.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class WalletHistoryScreen extends StatefulWidget {
   const WalletHistoryScreen({super.key});
@@ -33,6 +35,9 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   String? _accountId;
+  // Set when a load fails; drives the inline AppErrorView on first-load
+  // failure (vs a transient pagination error which keeps the existing list).
+  Object? _loadError;
 
   final ScrollController _scrollController = ScrollController();
 
@@ -84,6 +89,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
       _transfers.clear();
       _hasMore = true;
     }
+    _loadError = null;
 
     context.read<WalletTransferCubit>().getWalletTransferHistory(
           accountId: _accountId!,
@@ -184,6 +190,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                 listener: (context, state) {
                   if (state is WalletTransferHistoryLoaded) {
                     setState(() {
+                      _loadError = null;
                       if (_transfers.isEmpty) {
                         _transfers.addAll(state.transfers);
                       } else {
@@ -200,13 +207,29 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                       _isLoadingMore = false;
                     });
                   } else if (state is WalletTransferHistoryError) {
-                    setState(() => _isLoadingMore = false);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: const Color(0xFFEF4444),
-                      ),
-                    );
+                    if (_transfers.isEmpty) {
+                      // First-load failure — render an inline, friendly,
+                      // page-contained error state with Retry (builder below).
+                      setState(() {
+                        _isLoadingMore = false;
+                        _loadError = state.message;
+                      });
+                    } else {
+                      // Pagination failure — keep the loaded list and show a
+                      // friendly, page-contained notice (raw message sanitized).
+                      setState(() => _isLoadingMore = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            friendlyError(state.message,
+                                context: 'load more transfers'),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: const Color(0xFF1F1F1F),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
                   }
                 },
                 builder: (context, state) {
@@ -214,6 +237,16 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                       _transfers.isEmpty) {
                     return const Center(
                       child: LazerVaultLoader.small(),
+                    );
+                  }
+
+                  // First-load failure with nothing to show: inline error,
+                  // friendly + page-contained, with a user-driven Retry.
+                  if (_loadError != null && _transfers.isEmpty) {
+                    return AppErrorView(
+                      error: _loadError,
+                      context: 'load your wallet history',
+                      onRetry: () => _loadTransfers(reset: true),
                     );
                   }
 

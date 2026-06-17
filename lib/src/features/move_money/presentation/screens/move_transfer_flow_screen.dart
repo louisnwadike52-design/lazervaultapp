@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -821,6 +822,27 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     return '${diff.inDays}d ago';
   }
 
+  /// Page-contained error SnackBar — bound to THIS screen's Scaffold via the
+  /// nearest ScaffoldMessenger, so a server failure surfaced here disappears
+  /// when the Beam flow pops instead of floating over the dashboard. Always
+  /// shows friendly text, never the raw gRPC/HTTP error.
+  void _showPageError(Object? error, {String? context}) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(this.context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          friendlyError(error, context: context),
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+        ),
+        backgroundColor: const Color(0xFF1F1F1F),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // Transfer execution (PIN → debit → payout)
   // ---------------------------------------------------------------------------
@@ -1151,14 +1173,11 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                     isKYCRequiredError(state.message)) {
                   _showKYCRequiredSheet(context);
                 } else {
-                  Get.snackbar(
-                    'Transfer Failed',
-                    state.message,
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: const Color(0xFF1F1F1F),
-                    colorText: const Color(0xFFEF4444),
-                    duration: const Duration(seconds: 4),
-                  );
+                  // Page-contained + friendly: stays on the Beam flow's
+                  // Scaffold (not over the dashboard once the flow pops) and
+                  // never shows the raw server message.
+                  _showPageError(state.message,
+                      context: 'complete your transfer');
                 }
               }
             },
@@ -1210,14 +1229,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   state is MandateCancelled) {
                 setState(() {}); // Trigger rebuild so badges reflect new state
               } else if (state is MandateError) {
-                Get.snackbar(
-                  'Direct Debit Issue',
-                  state.message,
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: const Color(0xFFFB923C),
-                  duration: const Duration(seconds: 4),
-                );
+                // Page-contained + friendly: Direct Debit setup failures stay
+                // on this flow, never the raw server message on the dashboard.
+                _showPageError(state.message,
+                    context: 'set up Direct Debit');
               }
             },
           ),

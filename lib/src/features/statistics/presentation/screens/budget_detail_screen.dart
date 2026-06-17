@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/expense_
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 
 /// Budget Detail Screen
 class BudgetDetailScreen extends StatefulWidget {
@@ -120,17 +121,10 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
             );
-          } else if (state is BudgetError) {
-            Get.snackbar(
-              'Error',
-              state.message,
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.BOTTOM,
-            );
-            // Retry loading
-            context.read<BudgetCubit>().loadBudgets();
           }
+          // BudgetError is no longer surfaced as a raw, auto-retrying snackbar
+          // floating over the dashboard — it's rendered inline on THIS page via
+          // AppErrorView in the builder below, with a user-driven Retry.
         },
         builder: (context, state) {
           if (state is BudgetLoading) {
@@ -152,6 +146,18 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
           final budget = _findBudget(state);
           if (budget != null) {
             return _BudgetDetailView(budget: budget);
+          }
+
+          // Load failed and we have nothing to show — inline, friendly, page-
+          // contained error state with a user-driven Retry (no raw snackbar).
+          if (state is BudgetError) {
+            // Pass the message as `error` (not `message`) so friendlyError
+            // sanitizes it — the cubit embeds raw e.toString() in .message.
+            return AppErrorView(
+              error: state.message,
+              context: 'load this budget',
+              onRetry: () => context.read<BudgetCubit>().loadBudgets(),
+            );
           }
 
           // Budget not found — may have been deleted or not yet loaded
