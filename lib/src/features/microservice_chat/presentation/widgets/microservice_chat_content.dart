@@ -224,6 +224,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 0,
@@ -653,7 +654,12 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
 
   Widget _buildInputArea(MicroserviceChatState state) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       decoration: BoxDecoration(
         color: Colors.grey[900],
         border: Border(

@@ -218,6 +218,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
+      resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(context),
       // ChatGPT-style left drawer listing all sessions. The drawer shares
       // the same ChatSessionsCubit instance provided by the parent screen
@@ -965,7 +966,12 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     final isLoading = state is GeneralChatLoading;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       decoration: BoxDecoration(
         color: Colors.grey[900],
         border: Border(

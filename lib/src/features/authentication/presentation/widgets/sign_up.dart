@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
@@ -303,6 +304,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     if (state is SignUpInProgress && state.currentPage == 2) {
       final err = _validatePhoneNsn();
       if (err != null) {
+        Haptics.error();
         setState(() => _phoneError = err);
         return;
       }

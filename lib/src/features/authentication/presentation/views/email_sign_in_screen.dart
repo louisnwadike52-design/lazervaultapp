@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -304,6 +305,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           controller: _emailController,
           validator: (value) {
             if (value == null || value.isEmpty || !GetUtils.isEmail(value)) {
+              Haptics.error();
               return 'Please enter a valid email';
             }
             return null;
@@ -318,6 +320,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           controller: _passwordController,
           validator: (value) {
             if (value == null || value.isEmpty) {
+              Haptics.error();
               return 'Please enter your password';
             }
             return null;

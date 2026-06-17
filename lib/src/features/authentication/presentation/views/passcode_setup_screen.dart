@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -20,6 +21,10 @@ class PasscodeSetupScreen extends StatefulWidget {
 class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   final int _passcodeLength = 6;
   bool _skipped = false;
+
+  // De-dupes the error haptic so a heavy buzz fires once per distinct
+  // passcode error, not on every rebuild while the error is shown.
+  String? _lastError;
   bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
   bool get _hasTransactionPin => (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
   bool get _fromForgotPasscode => (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
@@ -62,6 +67,15 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
 
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
+        if (state is PasscodeSetupInProgress) {
+          // Mismatch / invalid passcode → heavy haptic, once per new error.
+          if (state.errorMessage != null && state.errorMessage != _lastError) {
+            _lastError = state.errorMessage;
+            Haptics.error();
+          } else if (state.errorMessage == null) {
+            _lastError = null;
+          }
+        }
         if (state is AuthenticationSuccess) {
           if (_skipped) {
             // Skip passcode, continue to transaction PIN setup

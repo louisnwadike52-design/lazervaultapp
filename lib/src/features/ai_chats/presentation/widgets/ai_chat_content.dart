@@ -1659,7 +1659,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             FocusScope.of(context).unfocus();
           },
           child: Container(
-            margin: EdgeInsets.only(bottom: 60.h),
+            // Keep bottom-nav clearance (60.h) when the keyboard is closed,
+            // but rise with the keyboard so the input isn't covered.
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                  ? MediaQuery.of(context).viewInsets.bottom
+                  : 60.h,
+            ),
             decoration: const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
             child: Scaffold(
               backgroundColor: Colors.transparent,
