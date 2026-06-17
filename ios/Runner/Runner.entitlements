@@ -12,16 +12,18 @@
 		<string>Default</string>
 	</array>
 	<!-- NFC Tag Reading capability for contactless tap-to-pay.
-	     Must ALSO be enabled on the App ID in the Apple Developer portal
-	     for each provisioning profile (dev / staging / prod). NDEF covers
-	     the LazerVault NFC session payload (text record with the signed
-	     session id); TAG enables the broader CoreNFC tag-reading API
-	     surface that nfc_manager 4.x uses. Populate
+	     Must ALSO be enabled on the App ID in the Apple Developer portal.
+	     ONLY `TAG` here — NOT `NDEF`. The app reads/writes NDEF *through a
+	     CoreNFC tag session* (nfc_manager 4.x: startSession(pollingOptions:
+	     {iso14443, iso15693}) + Ndef.from(tag)), which is the `TAG` format.
+	     The standalone `NDEF` format is for NFCNDEFReaderSession (which we
+	     don't use) and Apple's binary validation REJECTS it when building
+	     with the iOS 26 SDK at a 13.0 deployment target (altool error 90778:
+	     "NDEF is disallowed"). Populate
 	     `com.apple.developer.nfc.readersession.iso7816.select-identifiers`
 	     when ISO 7816 / e-ID reading is added. -->
 	<key>com.apple.developer.nfc.readersession.formats</key>
 	<array>
-		<string>NDEF</string>
 		<string>TAG</string>
 	</array>
 </dict>

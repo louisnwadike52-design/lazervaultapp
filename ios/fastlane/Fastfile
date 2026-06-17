@@ -77,6 +77,26 @@ def release_notes
   `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
 end
 
+# Read "version: x.y.z+BUILD" from pubspec.yaml — the SINGLE source of truth for
+# CFBundleShortVersionString (name) and CFBundleVersion (build). Returns
+# [name, build] e.g. ["1.0.0", "17"].
+#
+# Why we pass these explicitly to gym instead of relying on the xcconfig:
+# Info.plist resolves CFBundleVersion from $(FLUTTER_BUILD_NUMBER), which lives
+# in the git-ignored ios/Flutter/Generated.xcconfig. `flutter pub get` does NOT
+# refresh that file, and these lanes build via gym (not `flutter build ios`), so
+# the IPA would otherwise archive a STALE build number and TestFlight rejects it
+# ("bundle version already used"). Passing FLUTTER_BUILD_NUMBER/NAME on the gym
+# xcargs command line overrides the stale xcconfig (command-line build settings
+# win over .xcconfig), so the build number always tracks pubspec.
+def pubspec_version
+  raw = File.read(File.join(FLUTTER_DIR, "pubspec.yaml"))[/^version:\s*(\S+)/, 1]
+  UI.user_error!("Could not parse 'version:' from pubspec.yaml") if raw.nil?
+  name, build = raw.split("+", 2)
+  UI.user_error!("pubspec version '#{raw}' missing +BUILD") if build.nil? || build.empty?
+  [name, build]
+end
+
 APP_IDENTIFIER  = "com.lazervault.app"
 SCHEME          = "Runner"
 # Relative to the ios/ dir where fastlane runs (cwd is fastlane/Fastfile's parent).
@@ -213,28 +233,45 @@ platform :ios do
     sh("open https://console.firebase.google.com/project/lazervault-dev/settings/cloudmessaging")
   end
 
-  desc "Dev → Firebase App Distribution (internal testers)"
+  desc "Dev → TestFlight (internal group) — dev flavor, cloudflared tunnel backend"
+  # Builds the dev flavor (points at the cloudflared dev backend) but ships it
+  # to TestFlight Internal instead of Firebase App Distribution, so testers run
+  # real on-device builds via the same install path as staging/prod. Distribution
+  # signing (match app-store) is required — TestFlight rejects development-signed
+  # IPAs — which is why this mirrors the staging lane's build path rather than the
+  # old `--no-codesign` + development-export Firebase flow.
   lane :dev do
     swap_firebase_plist("dev")
-    flutter("build ios --release --no-codesign --dart-define=FLAVOR=dev")
-    build_app(
-      workspace: "ios/Runner.xcworkspace",
-      scheme: "Runner",
-      configuration: "Release",
-      export_method: "development",
-      output_directory: "build/ios/ipa",
-      output_name: "Runner-dev.ipa",
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
+    # Refresh ios/Flutter/Generated.xcconfig from pubspec (build number/name) so
+    # gym picks up the freshly bumped CFBundleVersion — see staging lane for why.
+    Dir.chdir(FLUTTER_DIR) { sh("flutter pub get") }
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: "382F6M9KSZ",
+      code_sign_identity: "Apple Distribution",
+      profile_name: "match AppStore com.lazervault.app",
+      bundle_identifier: "com.lazervault.app",
+      targets: ["Runner"],
     )
-    firebase_app_distribution(
-      app: "1:961906506476:ios:a38d37e7cf1d32a33843c9",
-      ipa_path: "build/ios/ipa/Runner-dev.ipa",
-      groups: ENV["FAD_GROUPS"] || "internal-testers",
-      release_notes: release_notes,
-      # SA JSON preferred. Same SA needs `roles/firebaseappdistro.admin`
-      # on lazervault-dev — see android/fastlane/Fastfile for the gcloud
-      # command. CLI-token path is the fallback.
-      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
-      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    ver_name, ver_build = pubspec_version
+    build_app(
+      workspace:        WORKSPACE,
+      scheme:           SCHEME,
+      configuration:    "Release",
+      export_method:    "app-store",
+      output_directory: "build/ios/ipa",
+      output_name:      "Runner-dev.ipa",
+      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=dev', 'FLUTTER_FLAVOR=dev')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-dev",
+    )
+    upload_to_testflight(
+      api_key:                              asc_api_key,
+      ipa:                                  "build/ios/ipa/Runner-dev.ipa",
+      skip_waiting_for_build_processing:    true,
+      groups:                               ["Internal"],
+      changelog:                            (`git log -1 --pretty=%s`.strip),
     )
   end
 
@@ -264,6 +301,7 @@ platform :ios do
       bundle_identifier: "com.lazervault.app",
       targets: ["Runner"],
     )
+    ver_name, ver_build = pubspec_version
     build_app(
       workspace:        WORKSPACE,
       scheme:           SCHEME,
@@ -271,7 +309,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-staging.ipa",
-      xcargs:           "DART_DEFINES=#{dart_defines_base64('FLAVOR=staging')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-staging",
+      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=staging', 'FLUTTER_FLAVOR=staging')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-staging",
     )
     upload_to_testflight(
       api_key:                              asc_api_key,
@@ -287,7 +325,8 @@ platform :ios do
     swap_firebase_plist("prod")
     setup_ci if ENV["CI"]
     match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
-    flutter("build ios --release --no-codesign --dart-define=FLAVOR=prod")
+    flutter("build ios --release --no-codesign --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod")
+    ver_name, ver_build = pubspec_version
     build_app(
       workspace:        WORKSPACE,
       scheme:           SCHEME,
@@ -295,7 +334,7 @@ platform :ios do
       export_method:    "app-store",
       output_directory: "build/ios/ipa",
       output_name:      "Runner-prod.ipa",
-      xcargs:           "DART_DEFINES=#{dart_defines_base64('FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
+      xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
     )
     upload_to_testflight(
       api_key:                              asc_api_key,

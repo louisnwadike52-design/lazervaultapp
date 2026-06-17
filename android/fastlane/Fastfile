@@ -80,7 +80,7 @@ platform :android do
   #                                    human gate before public release)
   desc "Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)"
   lane :dev do
-    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS}")
+    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev --dart-define=FLUTTER_FLAVOR=dev #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "internal",
@@ -97,7 +97,7 @@ platform :android do
 
   desc "Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)"
   lane :staging do
-    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging #{COMPRESSION_FLAGS}")
+    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging --dart-define=FLUTTER_FLAVOR=staging #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "alpha",
@@ -114,7 +114,7 @@ platform :android do
 
   desc "Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)"
   lane :production do
-    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod #{COMPRESSION_FLAGS}")
+    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "production",
@@ -148,7 +148,7 @@ platform :android do
 
   desc "Dev fallback → Firebase App Distribution (debug-signed APK, no keystore needed)"
   lane :dev_firebase do
-    flutter("build apk --flavor dev --dart-define=FLAVOR=dev --debug --split-per-abi")
+    flutter("build apk --flavor dev --dart-define=FLAVOR=dev --dart-define=FLUTTER_FLAVOR=dev --debug --split-per-abi")
     args = {
       app: "1:961906506476:android:ec73b0375c4900043843c9",  # lazervault-dev Android app
       android_artifact_type: "APK",
@@ -163,7 +163,7 @@ platform :android do
 
   desc "Staging fallback → Firebase App Distribution (debug-signed APK)"
   lane :staging_firebase do
-    flutter("build apk --flavor staging --dart-define=FLAVOR=staging --debug --split-per-abi")
+    flutter("build apk --flavor staging --dart-define=FLAVOR=staging --dart-define=FLUTTER_FLAVOR=staging --debug --split-per-abi")
     args = {
       app: "1:169699168674:android:f9025cedabdafadd4b22fb",  # lazervault-testnet Android app
       android_artifact_type: "APK",
