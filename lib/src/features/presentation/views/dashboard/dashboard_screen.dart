@@ -133,6 +133,38 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Gated entry point for EXPLICITLY opening the voice agent (the dashboard
+  /// quick-action sheet's "Voice agent" item, post-refresh, etc.). Runs the
+  /// SAME enrollment check + setup-modal follow-up as the proactive
+  /// [_checkAndShowVoiceSetup] so these paths can't bypass setup and drop the
+  /// user into a voice session they haven't enrolled for. Only opens the voice
+  /// command sheet when enrollment is complete.
+  Future<void> _openVoiceAgentGated() async {
+    if (!mounted) return;
+    final setupManager = VoiceSetupManager(
+      voiceManager: VoiceActivationManager(),
+    );
+    final status = await setupManager.checkVoiceSetupStatus();
+    final skipCount = await setupManager.getSkipCount();
+    if (!mounted) return;
+
+    switch (status) {
+      case VoiceSetupStatus.completed:
+      case VoiceSetupStatus.notApplicable:
+        _openVoiceCommandSheet();
+        break;
+      case VoiceSetupStatus.mandatory:
+        _showVoiceSetupModal(canDismiss: false, skipCount: skipCount);
+        break;
+      case VoiceSetupStatus.pending:
+      case VoiceSetupStatus.dismissed:
+        // Not enrolled — even if the proactive prompt was recently skipped, an
+        // explicit tap to use voice should still route through setup.
+        _showVoiceSetupModal(canDismiss: true, skipCount: skipCount);
+        break;
+    }
+  }
+
   /// Show voice setup modal bottom sheet
   void _showVoiceSetupModal({required bool canDismiss, int? skipCount}) {
     showModalBottomSheet(
@@ -352,7 +384,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         },
         onOpenVoiceAgent: () {
           if (!mounted) return;
-          _openVoiceCommandSheet();
+          _openVoiceAgentGated();
         },
         onOpenProfile: () {
           if (!mounted) return;

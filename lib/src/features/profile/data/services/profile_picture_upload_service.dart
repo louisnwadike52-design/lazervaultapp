@@ -72,8 +72,11 @@ class ProfilePictureUploadService {
       );
     }
 
+    // httpCore already ends in `/api/v1`; appending `/v1/...` doubled it to
+    // `/api/v1/v1/profile-picture/upload-url` → HTTP 404. Route is
+    // POST /api/v1/profile-picture/upload-url.
     final uploadUrlEndpoint =
-        '${_endpoints.httpCore}/v1/profile-picture/upload-url';
+        '${_endpoints.httpCore}/profile-picture/upload-url';
 
     // Step 1: ask core-gateway for a scoped upload URL.
     final ticketResp = await _httpClient

@@ -74,8 +74,12 @@ class BankScanUploadService {
       );
     }
 
+    // httpCore already ends in `/api/v1` (see EndpointRegistry.httpCore), so the
+    // path here is just `/bank-scan/upload-url`. Appending `/v1/...` produced a
+    // doubled `/api/v1/v1/bank-scan/upload-url` → HTTP 404 "Could not start scan
+    // upload". The core-gateway route is POST /api/v1/bank-scan/upload-url.
     final uploadUrlEndpoint =
-        '${_endpoints.httpCore}/v1/bank-scan/upload-url';
+        '${_endpoints.httpCore}/bank-scan/upload-url';
 
     // Step 1: ask core-gateway for a scoped upload URL.
     final ticketResp = await _httpClient
