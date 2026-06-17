@@ -217,9 +217,11 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
   }
 
   void _skipVerification() {
-    if (!widget.isRequired) {
-      _navigateToNextScreen();
-    }
+    // Phone verification is always skippable during onboarding — the user can
+    // defer the SMS OTP to Settings if their network can't deliver the code
+    // right now. Skipping does NOT mark the phone verified; it only advances
+    // the flow to the same next step a successful verification reaches.
+    _navigateToNextScreen();
   }
 
   @override
@@ -227,7 +229,7 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
     final maskedPhone = _maskPhoneNumber(widget.phoneNumber);
 
     return PopScope(
-      canPop: !widget.isRequired, // Allow back only if not required
+      canPop: true, // Verification is skippable, so back navigation is allowed
       child: Scaffold(
         backgroundColor: Colors.white,
         body: BlocListener<PhoneVerificationCubit, PhoneVerificationState>(
@@ -520,21 +522,20 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                         ],
                       ),
 
-                      // Skip Button (only shown if not required)
-                      if (!widget.isRequired) ...[
-                        SizedBox(height: 16.h),
-                        TextButton(
-                          onPressed: _skipVerification,
-                          child: Text(
-                            'Skip for now',
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF6B7280),
-                            ),
+                      // Skip Button — always available; advances onboarding
+                      // without marking the phone verified.
+                      SizedBox(height: 16.h),
+                      TextButton(
+                        onPressed: _skipVerification,
+                        child: Text(
+                          'Skip for now',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF6B7280),
                           ),
                         ),
-                      ],
+                      ),
 
                       SizedBox(height: 48.h),
 

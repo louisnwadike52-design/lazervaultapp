@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -222,10 +221,11 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   }
 
   void _skipVerification() {
-    // Allow skip if not required OR in development mode
-    if (!widget.isRequired || kDebugMode) {
-      _navigateToNextScreen();
-    }
+    // Email verification is always skippable during onboarding — the user can
+    // defer the OTP to Settings if their inbox/network can't deliver the code
+    // right now. Skipping does NOT mark the email verified; it only advances
+    // the flow to the same next step a successful verification reaches.
+    _navigateToNextScreen();
   }
 
   @override
@@ -233,7 +233,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     final maskedEmail = _maskEmail(widget.email);
 
     return PopScope(
-      canPop: !widget.isRequired || kDebugMode, // Allow back if not required OR in dev mode
+      canPop: true, // Verification is skippable, so back navigation is allowed
       child: Scaffold(
         backgroundColor: Colors.white,
         body: MultiBlocListener(
@@ -458,21 +458,20 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                         ],
                       ),
 
-                      // Skip Button (shown if not required OR in development mode)
-                      if (!widget.isRequired || kDebugMode) ...[
-                        SizedBox(height: 16.h),
-                        TextButton(
-                          onPressed: _skipVerification,
-                          child: Text(
-                            'Skip for now',
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF6B7280),
-                            ),
+                      // Skip Button — always available; advances onboarding
+                      // without marking the email verified.
+                      SizedBox(height: 16.h),
+                      TextButton(
+                        onPressed: _skipVerification,
+                        child: Text(
+                          'Skip for now',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF6B7280),
                           ),
                         ),
-                      ],
+                      ),
 
                       SizedBox(height: 48.h),
 
