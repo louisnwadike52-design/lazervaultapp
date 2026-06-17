@@ -9,6 +9,7 @@ class StatementModel extends StatementEntity {
     super.filePath,
     required super.success,
     required super.message,
+    super.sha256,
   });
 
   factory StatementModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,7 @@ class StatementModel extends StatementEntity {
       filePath: json['filePath'],
       success: json['success'] ?? false,
       message: json['message'] ?? '',
+      sha256: (json['sha256'] as String?)?.isEmpty ?? true ? null : json['sha256'],
     );
   }
 
@@ -32,21 +34,24 @@ class StatementModel extends StatementEntity {
       'filePath': filePath,
       'success': success,
       'message': message,
+      'sha256': sha256,
     };
   }
 
-  // TODO: Add proto conversion when proto definitions are available
-  // factory StatementModel.fromProto(StatementProto proto) {
-  //   return StatementModel(
-  //     accountId: proto.accountId,
-  //     startDate: DateTime.fromMillisecondsSinceEpoch(proto.startDate.toInt() * 1000),
-  //     endDate: DateTime.fromMillisecondsSinceEpoch(proto.endDate.toInt() * 1000),
-  //     format: _parseProtoFormat(proto.format),
-  //     filePath: proto.filePath,
-  //     success: proto.success,
-  //     message: proto.message,
-  //   );
-  // }
+  /// Return a copy carrying the local on-disk [filePath] once the file has
+  /// been pulled down from the backend [downloadUrl].
+  StatementModel withLocalPath(String localPath) {
+    return StatementModel(
+      accountId: accountId,
+      startDate: startDate,
+      endDate: endDate,
+      format: format,
+      filePath: localPath,
+      success: success,
+      message: message,
+      sha256: sha256,
+    );
+  }
 
   static StatementFormat _parseFormat(String? format) {
     switch (format?.toLowerCase()) {

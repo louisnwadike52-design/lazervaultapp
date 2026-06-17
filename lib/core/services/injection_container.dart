@@ -63,6 +63,7 @@ import 'package:lazervault/src/features/authentication/cubit/phone_verification_
 import 'package:lazervault/src/features/authentication/data/repositories/face_recognition_repository.dart';
 import 'package:lazervault/src/features/statements/domain/repositories/i_statement_repository.dart';
 import 'package:lazervault/src/features/statements/data/repositories/statement_repository_impl.dart';
+import 'package:lazervault/src/features/statements/data/services/statement_file_service.dart';
 import 'package:lazervault/src/features/statements/domain/usecases/download_statement_usecase.dart';
 import 'package:lazervault/src/features/statements/domain/usecases/get_statement_history_usecase.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
@@ -1206,7 +1207,14 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IStatementRepository>(
-      () => StatementRepositoryImpl());
+      () => StatementRepositoryImpl(
+            accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+            secureStorage: serviceLocator<SecureStorageService>(),
+          ));
+
+  // File service (download + open + print of the rendered statement)
+  serviceLocator.registerLazySingleton<StatementFileService>(
+      () => StatementFileService());
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => DownloadStatementUseCase(serviceLocator<IStatementRepository>()));

@@ -11,9 +11,18 @@ class StatementEntity extends Equatable {
   final DateTime startDate;
   final DateTime endDate;
   final StatementFormat format;
+
+  /// For a freshly downloaded statement this carries the backend
+  /// `downloadUrl` (a signed URL to fetch the rendered file from). Once the
+  /// file has been pulled to disk it may be replaced with the local path.
   final String? filePath;
   final bool success;
   final String message;
+
+  /// SHA-256 checksum returned by the backend for the rendered file, used to
+  /// verify the bytes we download match what the service generated. Null when
+  /// the backend did not provide one.
+  final String? sha256;
 
   const StatementEntity({
     required this.accountId,
@@ -23,6 +32,7 @@ class StatementEntity extends Equatable {
     this.filePath,
     required this.success,
     required this.message,
+    this.sha256,
   });
 
   @override
@@ -34,6 +44,7 @@ class StatementEntity extends Equatable {
         filePath,
         success,
         message,
+        sha256,
       ];
 }
 

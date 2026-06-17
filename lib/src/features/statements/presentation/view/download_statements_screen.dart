@@ -10,7 +10,10 @@ import 'package:lazervault/src/features/statements/domain/entities/statement_ent
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_state.dart';
+import 'package:lazervault/src/features/statements/data/services/statement_file_service.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 
 class DownloadStatementsScreen extends StatefulWidget {
   const DownloadStatementsScreen({super.key});
@@ -24,6 +27,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   StatementFormat _selectedFormat = StatementFormat.pdf;
+  final StatementFileService _fileService = serviceLocator<StatementFileService>();
+  bool _isPreparingFile = false;
 
   @override
   void initState() {
@@ -94,6 +99,153 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
         );
   }
 
+  String _formatExtension(StatementFormat format) {
+    switch (format) {
+      case StatementFormat.pdf:
+        return 'pdf';
+      case StatementFormat.csv:
+        return 'csv';
+      case StatementFormat.excel:
+        return 'xlsx';
+    }
+  }
+
+  /// After the backend has generated the statement, pull the real file to disk
+  /// (verifying its sha256 when present) and offer Open / Print / Share.
+  Future<void> _handleDownloadSuccess(StatementEntity statement) async {
+    final downloadUrl = statement.filePath;
+    if (downloadUrl == null || downloadUrl.isEmpty) {
+      LVSnackbar.showError(
+        title: 'Download failed',
+        message: 'The statement is not available to download right now.',
+      );
+      return;
+    }
+
+    setState(() => _isPreparingFile = true);
+    try {
+      final ext = _formatExtension(statement.format);
+      final filename =
+          'statement_${statement.accountId}_${statement.startDate.millisecondsSinceEpoch}.$ext';
+      final localPath = await _fileService.downloadToFile(
+        downloadUrl,
+        filename,
+        expectedSha256: statement.sha256,
+      );
+
+      if (!mounted) return;
+      LVSnackbar.showSuccess(
+        title: 'Statement ready',
+        message: 'Your statement has been downloaded.',
+      );
+      _showStatementActions(localPath, statement.format);
+    } catch (e) {
+      if (!mounted) return;
+      LVSnackbar.showErrorFor(e, context: 'download your statement');
+    } finally {
+      if (mounted) setState(() => _isPreparingFile = false);
+    }
+  }
+
+  void _showStatementActions(String path, StatementFormat format) {
+    final isPdf = format == StatementFormat.pdf;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Statement downloaded',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                ListTile(
+                  leading: const Icon(Icons.open_in_new, color: Color(0xFF4E03D0)),
+                  title: Text(
+                    'Open',
+                    style: GoogleFonts.inter(color: const Color(0xFF1F2937)),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _openFile(path);
+                  },
+                ),
+                if (isPdf)
+                  ListTile(
+                    leading: const Icon(Icons.print, color: Color(0xFF4E03D0)),
+                    title: Text(
+                      'Print',
+                      style: GoogleFonts.inter(color: const Color(0xFF1F2937)),
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _printFile(path);
+                    },
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.ios_share, color: Color(0xFF4E03D0)),
+                  title: Text(
+                    'Share',
+                    style: GoogleFonts.inter(color: const Color(0xFF1F2937)),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _shareFile(path);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openFile(String path) async {
+    try {
+      await _fileService.openFile(path);
+    } catch (e) {
+      if (mounted) LVSnackbar.showErrorFor(e, context: 'open your statement');
+    }
+  }
+
+  Future<void> _printFile(String path) async {
+    try {
+      await _fileService.printPdf(path);
+    } catch (e) {
+      if (mounted) LVSnackbar.showErrorFor(e, context: 'print your statement');
+    }
+  }
+
+  Future<void> _shareFile(String path) async {
+    try {
+      await _fileService.shareFile(path);
+    } catch (e) {
+      if (mounted) LVSnackbar.showErrorFor(e, context: 'share your statement');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,15 +271,7 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
           BlocListener<StatementCubit, StatementState>(
             listener: (context, state) {
               if (state is StatementDownloadSuccess) {
-                Get.snackbar(
-                  'Success',
-                  state.statement.message,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(16.w),
-                  borderRadius: 12.r,
-                );
+                _handleDownloadSuccess(state.statement);
                 // Load statement history after successful download
                 if (_selectedAccountId != null) {
                   context.read<StatementCubit>().getStatementHistory(
@@ -353,7 +497,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
               // Download Button
               BlocBuilder<StatementCubit, StatementState>(
                 builder: (context, state) {
-                  final isDownloading = state is StatementDownloading;
+                  final isDownloading =
+                      state is StatementDownloading || _isPreparingFile;
 
                   return SizedBox(
                     width: double.infinity,
