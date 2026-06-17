@@ -14,6 +14,7 @@ import '../../../../../core/shared_widgets/app_loading_button.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
+import '../../domain/repositories/kyc_repository.dart';
 
 /// Dark-theme palette (matches the rest of the app — see CLAUDE.md).
 const Color _bg = Color(0xFF0A0A0A);
@@ -656,8 +657,33 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
 
   /// Skip KYC for now. From onboarding we smartly continue to the dashboard and
   /// remember the skip so onboarding doesn't loop; from Settings we just go back.
+  ///
+  /// Skipping must ALSO settle the user on a sane default tier server-side — a
+  /// skipped user is a real, usable account at the base tier, not a tier-less
+  /// limbo. We call auth-service's authoritative `SkipKYCUpgrade`, which assigns
+  /// the base tier (Tier 1) and returns it. This is best-effort and never blocks
+  /// the skip: if the network is down we still advance onboarding (the local
+  /// `has_skipped_kyc` flag prevents a loop, and the tier reconciles on the next
+  /// authenticated KYC status read).
   Future<void> _skipForNow() async {
+    // Read the user id synchronously (before any await) so we don't touch the
+    // BuildContext across an async gap.
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+
     await _writeFlag('has_skipped_kyc', 'true');
+
+    // Persist the default tier server-side (authoritative). Best-effort — a
+    // failure here must not strand the user mid-onboarding.
+    try {
+      if (userId.isNotEmpty) {
+        await serviceLocator<KYCRepository>().skipKYCUpgrade(userId: userId);
+      }
+    } catch (_) {
+      // Network/auth hiccup — the local skip flag still lets onboarding proceed
+      // and the tier reconciles on the next KYC status read.
+    }
+    if (!mounted) return;
+
     if (_isOnboardingRoot) {
       await _deleteFlag('kyc_onboarding_pending');
       Get.offAllNamed(AppRoutes.dashboard);
