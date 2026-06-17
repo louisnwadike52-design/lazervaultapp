@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -84,9 +85,19 @@ class ProveKycHttpService {
 
   final SecureStorageService _storage;
 
-  static const String _host =
-      String.fromEnvironment('TEST_BACKEND_HOST', defaultValue: '10.0.2.2');
-  static const String _base = 'http://$_host:8073/api/v1/kyc/prove';
+  /// Base for the KYC (Mono Prove) endpoints. In a real build this resolves to
+  /// the cloudflared host (e.g. https://dev.lazervault.app/api/v1/kyc/prove) via
+  /// HTTP_API_HOST in .env — the previous `http://10.0.2.2:8073` only worked on
+  /// the Android emulator and made the on-device KYC status spin forever.
+  static String get _base {
+    final host = dotenv.env['HTTP_API_HOST'];
+    if (host != null && host.isNotEmpty) {
+      return '${host.replaceAll(RegExp(r'/+$'), '')}/api/v1/kyc/prove';
+    }
+    // Local-dev fallback (Android emulator) when no runtime host is configured.
+    const h = String.fromEnvironment('TEST_BACKEND_HOST', defaultValue: '10.0.2.2');
+    return 'http://$h:8073/api/v1/kyc/prove';
+  }
 
   Future<Map<String, String>> _headers() async {
     final token = await _storage.getAccessToken();
