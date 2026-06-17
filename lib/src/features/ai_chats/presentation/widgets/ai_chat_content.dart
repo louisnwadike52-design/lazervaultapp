@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -189,6 +190,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   bool _isSubmitting = false;
   late AnimationController _typingDotsController;
   AiChatSettings _settings = AiChatSettings();
+  // Selected chatbot response language code (en/yo/ig/ha/pcm/fr/es). The AI
+  // replies in this language, and also auto-detects the language of each
+  // message on the backend.
+  String _chatLanguage = ChatLanguagePreference.defaultLanguage;
 
   // Media state
   final ImagePicker _imagePicker = ImagePicker();
@@ -226,8 +231,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   Future<void> _loadSettings() async {
     final settings = await AiChatSettings.load();
+    final language = await ChatLanguagePreference.getLanguage();
     if (mounted) {
-      setState(() => _settings = settings);
+      setState(() {
+        _settings = settings;
+        _chatLanguage = language;
+      });
     }
   }
 
@@ -614,6 +623,32 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     child: ListView(
                       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
                       children: [
+                        // --- Language ---
+                        _settingsLabel('Language'),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'The assistant replies in this language and also '
+                          'auto-detects the language you type in.',
+                          style: TextStyle(color: Colors.white38, fontSize: 11.sp),
+                        ),
+                        SizedBox(height: 8.h),
+                        _buildChipGroup(
+                          options:
+                              ChatLanguagePreference.supportedLanguages.keys.toList(),
+                          labels: ChatLanguagePreference.supportedLanguages.values
+                              .toList(),
+                          icons: List.filled(
+                            ChatLanguagePreference.supportedLanguages.length,
+                            Icons.translate_rounded,
+                          ),
+                          selected: _chatLanguage,
+                          onSelected: (v) {
+                            setModalState(() => _chatLanguage = v);
+                            setState(() => _chatLanguage = v);
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+
                         // --- Response Style ---
                         _settingsLabel('Response Style'),
                         SizedBox(height: 8.h),
@@ -706,6 +741,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         onPressed: () async {
                           final cubit = context.read<AIChatCubit>();
                           await _settings.save();
+                          // Persist + apply the selected chatbot language so the
+                          // next message instructs the backend to reply in it.
+                          await cubit.setLanguage(_chatLanguage);
                           // Sync to backend
                           cubit.updateSettings(
                             responseStyle: _settings.responseStyle,

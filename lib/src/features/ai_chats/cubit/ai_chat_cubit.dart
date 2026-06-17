@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/chat_session_manager.dart';
 import '../domain/usecases/process_ai_chat_usecase.dart';
 import '../domain/usecases/get_ai_chat_history_usecase.dart';
@@ -19,6 +20,13 @@ class AIChatCubit extends Cubit<AIChatState> {
   // Track session ID for conversation continuity — deterministic for persistence
   String? _sessionId;
 
+  /// User-selected chatbot response language code (en/yo/ig/ha/pcm/fr/es).
+  /// Loaded lazily from [ChatLanguagePreference]; defaults to 'en'.
+  String _language = ChatLanguagePreference.defaultLanguage;
+
+  /// The currently-selected chatbot language code.
+  String get language => _language;
+
   AIChatCubit({
     required ProcessChatUseCase processChatUseCase,
     required GetAIChatHistoryUseCase getAIChatHistoryUseCase,
@@ -30,10 +38,21 @@ class AIChatCubit extends Cubit<AIChatState> {
 
   // Load initial message and suggestions
   void initializeChat() {
+     // Load the persisted chatbot language so every request carries it.
+     ChatLanguagePreference.getLanguage().then((lang) {
+       _language = lang;
+     });
      if (state is! AIChatInitial) {
        if (isClosed) return;
        emit(const AIChatInitial());
      }
+  }
+
+  /// Persist and apply the user-selected chatbot response language.
+  /// The next message sent will instruct the backend to reply in this language.
+  Future<void> setLanguage(String code) async {
+    await ChatLanguagePreference.setLanguage(code);
+    _language = await ChatLanguagePreference.getLanguage();
   }
 
   // Load chat history using deterministic session ID
@@ -93,7 +112,7 @@ class AIChatCubit extends Cubit<AIChatState> {
       accessToken: accessToken,
       sessionId: _sessionId,
       sourceContext: 'general',
-      language: 'en',
+      language: _language,
     );
 
     if (isClosed) return;
@@ -221,7 +240,7 @@ class AIChatCubit extends Cubit<AIChatState> {
       accessToken: '', // HTTP datasource resolves the real token from storage
       sessionId: _sessionId,
       sourceContext: 'general',
-      language: 'en',
+      language: _language,
       extraMetadata: {
         'pin_verification_token': verificationToken,
         'callback_intent': callbackIntent,
@@ -350,7 +369,7 @@ class AIChatCubit extends Cubit<AIChatState> {
       accessToken: accessToken,
       sessionId: _sessionId,
       sourceContext: 'general',
-      language: 'en',
+      language: _language,
       mediaBase64: base64Data,
       mediaType: mediaType,
       mediaMimeType: mimeType,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/chat_session_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
@@ -42,6 +43,14 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
 
   List<GeneralChatMessageEntity> _currentMessages = [];
   late String _sessionId;
+
+  /// User-selected chatbot response language code (en/yo/ig/ha/pcm/fr/es).
+  /// Loaded from [ChatLanguagePreference]; defaults to 'en'.
+  String _language = ChatLanguagePreference.defaultLanguage;
+
+  /// The currently-selected chatbot language code.
+  String get language => _language;
+
   String? _currentService;
   final List<String> _conversationServices = [];
 
@@ -81,7 +90,18 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
     return _buildLegacySessionId();
   }
 
+  /// Persist and apply the user-selected chatbot response language. The next
+  /// message sent will instruct the backend to reply in this language.
+  Future<void> setLanguage(String code) async {
+    await ChatLanguagePreference.setLanguage(code);
+    _language = await ChatLanguagePreference.getLanguage();
+  }
+
   void initializeChat() {
+    // Load the persisted chatbot language so every request carries it.
+    ChatLanguagePreference.getLanguage().then((lang) {
+      _language = lang;
+    });
     _sessionId = _resolveInitialSessionId();
     _currentMessages = [];
     _currentService = null;
@@ -209,7 +229,9 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
 
     emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
-    final locale = serviceLocator<LocaleManager>().currentLocale;
+    // Locale follows the user-selected chatbot language so the backend
+    // replies in the chosen language regardless of device locale.
+    final locale = ChatLanguagePreference.localeFor(_language);
 
     final result = await sendMessageUseCase(
       message: text,
@@ -217,7 +239,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       userId: authState.profile.user.id,
       accessToken: '', // Access token is managed by GrpcCallOptionsHelper
       sourceContext: 'general', // Always 'general' for this screen
-      language: 'en',
+      language: _language,
       locale: locale,
     );
 
@@ -377,7 +399,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       // to loading + the bot response.
       emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
-      final locale = serviceLocator<LocaleManager>().currentLocale;
+      final locale = ChatLanguagePreference.localeFor(_language);
 
       // The downstream chat-*-service reads pin_verification_token,
       // callback_intent and callback_args from `entities`; the gateway
@@ -393,7 +415,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         userId: authState.profile.user.id,
         accessToken: '',
         sourceContext: 'general',
-        language: 'en',
+        language: _language,
         locale: locale,
         metadata: {
           'pin_verification_token': verificationToken,
@@ -509,7 +531,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     _currentMessages.add(userMessage);
     emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
-    final locale = serviceLocator<LocaleManager>().currentLocale;
+    final locale = ChatLanguagePreference.localeFor(_language);
 
     final result = await sendMessageUseCase(
       message: text,
@@ -517,7 +539,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       userId: authState.profile.user.id,
       accessToken: '',
       sourceContext: 'general',
-      language: 'en',
+      language: _language,
       locale: locale,
       mediaBase64: base64Data,
       mediaType: mediaType,

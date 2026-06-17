@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
@@ -138,15 +139,23 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final responseStyle = prefs.getString('ai_chat_settings_response_style') ?? 'balanced';
       final emojiUsage = prefs.getBool('ai_chat_settings_emoji_usage') ?? true;
 
+      // Resolve the user-selected chatbot language (defaults to 'en'). An
+      // explicit `language` arg from the caller wins; otherwise we use the
+      // persisted preference. The locale is derived from the selected language
+      // so the backend replies in the chosen language even when the device
+      // locale differs.
+      final selectedLanguage =
+          language ?? await ChatLanguagePreference.getLanguage();
+      final locale = ChatLanguagePreference.localeFor(selectedLanguage);
+
       // Build request body matching Chat Agent Gateway's ChatMessage model
-      final locale = _localeManager?.currentLocale ?? 'en-NG';
       final requestBody = <String, dynamic>{
         'message': query,
         'session_id': sessionId ?? _generateSessionId(),
         'user_id': userId,
         'access_token': accessToken,
         'source_context': sourceContext ?? 'dashboard',
-        'language': language ?? 'en',
+        'language': selectedLanguage,
         'locale': locale,
         'account_id': accountId,
         'user_country': country,
