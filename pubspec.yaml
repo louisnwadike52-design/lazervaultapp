@@ -167,13 +167,16 @@ dependency_overrides:
 flutter_launcher_icons:
   android: "ic_launcher"
   ios: true
-  image_path: "assets/images/app_icon_master.png"
+  # The home-screen icon is the ribbon mark on the brand-purple backdrop
+  # (logo composited onto #3D2F8B — same purple as the splash). This is the
+  # "with background" icon; iOS + legacy-Android launchers use it as-is.
+  image_path: "assets/images/app_icon_with_bg.png"
   # iOS icons must be RGB (no alpha) — package strips alpha on build.
   remove_alpha_ios: true
-  # Adaptive icon for Android 8+. background_color renders behind the
-  # foreground mark for the round + squircle masks. #0A0A0A matches the
-  # app's dark theme so the ribbon sits on the brand background.
-  adaptive_icon_background: "#0A0A0A"
+  # Adaptive icon for Android 8+. The foreground is the transparent ribbon
+  # mark; the background is the brand purple so the Android adaptive icon
+  # matches the iOS / legacy icon (ribbon on purple, not on dark).
+  adaptive_icon_background: "#3D2F8B"
   adaptive_icon_foreground: "assets/images/app_icon_master.png"
   min_sdk_android: 21
   web:
