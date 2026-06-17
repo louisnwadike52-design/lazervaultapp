@@ -9,6 +9,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
+import 'package:lazervault/core/widgets/shake_widget.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +25,13 @@ class PasscodeSignIn extends StatefulWidget {
 
 class _PasscodeSignInState extends State<PasscodeSignIn> {
   final int _passcodeLength = 6;
+
+  // Revolut-style "wrong passcode" shake: the dots row shakes + a heavy haptic
+  // fires whenever a new passcode error arrives. _lastError de-dupes so we
+  // shake once per distinct error, not on every rebuild.
+  final GlobalKey<ShakeWidgetState> _passcodeShakeKey =
+      GlobalKey<ShakeWidgetState>();
+  String? _lastError;
 
   final _secureStorage = serviceLocator<FlutterSecureStorage>();
   final LocalAuthentication _localAuth = LocalAuthentication();
@@ -107,10 +116,12 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
   }
 
   void _onNumberPressed(String number) {
+    Haptics.keyTap();
     context.read<AuthenticationCubit>().passcodeLoginDigitEntered(number);
   }
 
   void _onBackspacePressed() {
+    Haptics.keyTap();
     context.read<AuthenticationCubit>().passcodeLoginBackspace();
   }
 
@@ -208,6 +219,16 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
           // Load user profile after successful authentication
           context.read<ProfileCubit>().getUserProfile();
           Get.offAllNamed(AppRoutes.dashboard);
+        } else if (state is PasscodeLoginInProgress) {
+          // Wrong passcode → shake the dots + a heavy haptic, once per error.
+          if (state.errorMessage != null &&
+              state.errorMessage != _lastError) {
+            _lastError = state.errorMessage;
+            _passcodeShakeKey.currentState?.shake();
+            Haptics.error();
+          } else if (state.errorMessage == null) {
+            _lastError = null;
+          }
         }
       },
       builder: (context, state) {
@@ -285,23 +306,26 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                         ),
                       ),
                       SizedBox(height: 30.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(_passcodeLength, (index) {
-                          bool isActive = index < enteredPasscode.length;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: EdgeInsets.symmetric(horizontal: 8.w),
-                            width: 18.w,
-                            height: 18.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isActive
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.3),
-                            ),
-                          );
-                        }),
+                      ShakeWidget(
+                        key: _passcodeShakeKey,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(_passcodeLength, (index) {
+                            bool isActive = index < enteredPasscode.length;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              margin: EdgeInsets.symmetric(horizontal: 8.w),
+                              width: 18.w,
+                              height: 18.w,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isActive
+                                    ? Colors.white
+                                    : Colors.white.withValues(alpha: 0.3),
+                              ),
+                            );
+                          }),
+                        ),
                       ),
                       SizedBox(height: 35.h),
                       GridView.count(
