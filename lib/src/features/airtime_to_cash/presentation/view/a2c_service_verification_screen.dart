@@ -7,6 +7,7 @@ import '../../domain/entities/network_rate.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
 import '../widgets/a2c_step_indicator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen 2: Verify VTU Africa service availability and get destination phone number
 /// This follows VTU Africa's requirement to verify service BEFORE proceeding
@@ -219,14 +220,7 @@ class _A2CServiceVerificationScreenState
             ),
           ),
           // Inner loading indicator
-          SizedBox(
-            width: 60.w,
-            height: 60.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(networkColor),
-            ),
-          ),
+          LazerVaultLoader(size: 60),
         ],
       ),
     );

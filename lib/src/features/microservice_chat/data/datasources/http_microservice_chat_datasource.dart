@@ -140,7 +140,7 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
   HttpMicroserviceChatDataSource({
     required this.dio,
     required this.callOptionsHelper,
-    this.baseUrl = 'http://10.0.2.2:3011', // Chat Agent Gateway (10.0.2.2 for Android emulator)
+    this.baseUrl = 'https://api.lazervault.app/chat', // Chat Agent Gateway (10.0.2.2 for Android emulator)
   });
 
   @override

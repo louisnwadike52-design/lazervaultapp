@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../cubit/auto_renew_cubit.dart';
 import '../cubit/auto_renew_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AutoRenewManagementScreen extends StatefulWidget {
   const AutoRenewManagementScreen({super.key});
@@ -164,11 +165,7 @@ class _AutoRenewManagementScreenState extends State<AutoRenewManagementScreen> {
                     builder: (context, state) {
                       if (state is AutoRenewLoading) {
                         return const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFF3B82F6),
-                            ),
-                          ),
+                          child: LazerVaultLoader.small(),
                         );
                       }
 
@@ -201,11 +198,7 @@ class _AutoRenewManagementScreenState extends State<AutoRenewManagementScreen> {
                       // AutoRenewToggling — show loading overlay
                       if (state is AutoRenewToggling) {
                         return const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFF3B82F6),
-                            ),
-                          ),
+                          child: LazerVaultLoader.small(),
                         );
                       }
 

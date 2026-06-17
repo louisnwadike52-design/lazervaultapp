@@ -15,6 +15,7 @@ import 'pay_run_details_screen.dart';
 import '../../services/payroll_pdf_service.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PayrollHomeScreen extends StatefulWidget {
   const PayrollHomeScreen({super.key});
@@ -299,9 +300,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       builder: (context, state) {
         if (state is PayrollLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -568,9 +567,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       builder: (context, state) {
         if (state is PayrollLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -795,9 +792,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       builder: (context, state) {
         if (state is PayrollLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -936,12 +931,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                           ? null
                           : () => _exportReport(summary, share: false),
                       icon: _exportingReport
-                          ? SizedBox(
-                              width: 16.w,
-                              height: 16.w,
-                              child: const CircularProgressIndicator(
-                                  strokeWidth: 2, color: Color(0xFF10B981)),
-                            )
+                          ? LazerVaultLoader.tiny()
                           : Icon(Icons.download_outlined,
                               color: const Color(0xFF10B981), size: 20.sp),
                       label: Text(

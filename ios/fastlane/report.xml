@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000248">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: app_store_connect_api_key" time="0.002328">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: match" time="1.728401">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: flutter pub get" time="1.663465">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: update_code_signing_settings" time="0.033368">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: build_app" time="199.357621">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: app_store_connect_api_key" time="0.005012">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="7: upload_to_testflight" time="371.702457">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

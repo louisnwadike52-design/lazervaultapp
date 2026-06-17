@@ -16,6 +16,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/create_policy/insurance_category_products_screen.dart';
 import '../widgets/create_policy/insurance_form_screen.dart';
 import '../widgets/create_policy/insurance_quote_review_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // insurance_payment_confirm_screen.dart no longer used — folded into
 // insurance_quote_review_screen.dart so the user reviews and pays on
 // the same slide.
@@ -100,7 +101,7 @@ class _CreateInsurancePolicyCarouselState
           context: context,
           barrierDismissible: false,
           builder: (_) => const Center(
-            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+            child: LazerVaultLoader.small(),
           ),
         );
         // Outer guard at 65s — kept just ABOVE the datasource's 60s quote
@@ -526,14 +527,7 @@ class _CreateInsurancePolicyCarouselState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (_isProcessing && isLastPage) ...[
-                          SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          ),
+                          LazerVaultLoader.small(),
                           SizedBox(width: 8.w),
                           Text(
                             'Processing...',

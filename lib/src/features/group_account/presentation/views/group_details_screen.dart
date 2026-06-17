@@ -22,6 +22,7 @@ import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   final String groupId;
@@ -192,11 +193,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              const Color.fromARGB(255, 78, 3, 208),
-            ),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading group details...',

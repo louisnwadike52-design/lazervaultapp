@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom-sheet that lets the user rename a saved meter beneficiary
 /// inline. Used from the payment-history actions sheet AND the saved-
@@ -185,15 +186,7 @@ class _RenameMeterSheetBodyState extends State<_RenameMeterSheetBody> {
                   ),
                 ),
                 child: _saving
-                    ? SizedBox(
-                        height: 20.h,
-                        width: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         'Save',
                         style: GoogleFonts.inter(

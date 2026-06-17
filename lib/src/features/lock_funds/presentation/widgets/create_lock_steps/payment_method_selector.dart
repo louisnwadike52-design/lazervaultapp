@@ -12,6 +12,7 @@ import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Payment slide — step 5 of 5.
 ///
@@ -222,7 +223,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
         if (state is AccountCardsSummaryError) {
@@ -537,7 +538,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(14.r),
               ),
-              child: const Center(child: CircularProgressIndicator()),
+              child: const Center(child: LazerVaultLoader.small()),
             ),
           );
         }

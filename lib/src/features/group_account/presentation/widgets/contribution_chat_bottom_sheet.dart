@@ -19,6 +19,7 @@ import 'package:web_socket_channel/status.dart' as ws_status;
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../domain/entities/group_entities.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Per-contribution chat bottom sheet (90% screen height).
 ///
@@ -97,15 +98,15 @@ class _ContributionChatBottomSheetState
   //
   // Both bases are dotenv-driven with Android-emulator defaults so
   // the same build works for an iOS simulator (FINANCIAL_GATEWAY_HTTP=
-  // http://localhost:8016), a real device (LAN IP), or a deployed
+  // https://api.lazervault.app/api/v1), a real device (LAN IP), or a deployed
   // env (full https URLs). Falling back to 10.0.2.2 keeps the typical
   // ./start_all_local_no_docker.sh workflow zero-config.
   late final String _financialBase = _resolveBase(
       keys: const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL'],
-      fallback: 'http://10.0.2.2:8016');
+      fallback: 'https://api.lazervault.app/api/v1');
   late final String _mediaBase = _resolveBase(
       keys: const ['GROUP_ACCOUNTS_HTTP', 'GROUP_ACCOUNTS_HTTP_URL'],
-      fallback: 'http://10.0.2.2:8011');
+      fallback: 'https://api.lazervault.app/api/v1');
 
   String _resolveBase({required List<String> keys, required String fallback}) {
     for (final k in keys) {
@@ -820,7 +821,7 @@ class _ContributionChatBottomSheetState
   Widget _buildMessageList() {
     if (_initialLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+        child: LazerVaultLoader.small(),
       );
     }
     if (_error != null) {
@@ -1039,15 +1040,7 @@ class _ContributionChatBottomSheetState
                             ),
                           ),
                         ] else ...[
-                          SizedBox(
-                            width: 10.w,
-                            height: 10.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 1.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
-                            ),
-                          ),
+                          LazerVaultLoader(size: 10),
                           SizedBox(width: 6.w),
                           Text(
                             'Sending…',
@@ -1151,7 +1144,7 @@ class _ContributionChatBottomSheetState
                 color: Colors.black.withValues(alpha: 0.2),
                 child: const Center(
                   child:
-                      CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      LazerVaultLoader.tiny(),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
@@ -1191,10 +1184,7 @@ class _ContributionChatBottomSheetState
                 imageUrl: url,
                 httpHeaders: _authHeaders(),
                 fit: BoxFit.contain,
-                placeholder: (_, __) => const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
+                placeholder: (_, __) => LazerVaultLoader.tiny(),
                 errorWidget: (_, __, ___) =>
                     const Icon(Icons.broken_image, color: Colors.white),
               ),

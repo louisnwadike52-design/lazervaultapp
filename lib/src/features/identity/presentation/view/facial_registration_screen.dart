@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class FacialRegistrationScreen extends StatefulWidget {
   const FacialRegistrationScreen({super.key});
@@ -123,11 +124,11 @@ class _FacialRegistrationScreenState extends State<FacialRegistrationScreen> {
         },
         builder: (context, state) {
           if (state is IdentityLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
 
           if (!_isInitialized || _cameraController == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
 
           return Column(
@@ -195,14 +196,7 @@ class _FacialRegistrationScreenState extends State<FacialRegistrationScreen> {
                         ),
                       ),
                       child: _isCapturing
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : const Text(
                               'Capture Face',
                               style: TextStyle(

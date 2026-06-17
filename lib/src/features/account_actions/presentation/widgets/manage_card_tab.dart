@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import 'package:lazervault/core/utils/edge_case_validator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Manage Card Tab - Primary card actions
 class ManageCardTab extends StatelessWidget {
@@ -257,16 +258,7 @@ class ManageCardTab extends StatelessWidget {
                 ),
               ),
               if (isLoading)
-                SizedBox(
-                  width: 20.w,
-                  height: 20.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.w,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF6366F1),
-                    ),
-                  ),
-                )
+                LazerVaultLoader.small()
               else
                 Icon(
                   Icons.chevron_right_outlined,
@@ -347,14 +339,7 @@ class ManageCardTab extends StatelessWidget {
                 ),
               ),
               if (isLoading)
-                SizedBox(
-                  width: 20.w,
-                  height: 20.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.w,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                  ),
-                )
+                LazerVaultLoader.small()
               else
                 Icon(
                   Icons.chevron_right_outlined,

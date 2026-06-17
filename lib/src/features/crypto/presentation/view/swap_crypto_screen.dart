@@ -12,6 +12,7 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Removed ServiceVoiceButton import per #212 — voice icons live on
 // the parent crypto landing only; sub-screens like the swap detail
 // inherit the session pinned by the landing's canonical button.
@@ -1011,14 +1012,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             ),
             child: _isLoading
               ? Center(
-                  child: SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: CircularProgressIndicator(
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2,
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,

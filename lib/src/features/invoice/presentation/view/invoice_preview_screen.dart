@@ -33,6 +33,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 String _getCurrencySymbolFromCode(String code) {
   switch (code.toUpperCase()) {
@@ -962,14 +963,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                     ),
                   ),
                   icon: _isProcessingPayment
-                      ? SizedBox(
-                          width: 20.w,
-                          height: 20.w,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Icon(Icons.lock_outline, color: Colors.white, size: 20.sp),
                   label: Text(
                     _isProcessingPayment
@@ -1425,14 +1419,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(width: 16.w),
               const Text('Generating PDF...'),
             ],
@@ -1478,14 +1465,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(width: 16.w),
               Text('Preparing to share...'),
             ],
@@ -1684,14 +1664,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                             padding: EdgeInsets.symmetric(vertical: 14.h),
                           ),
                           child: _isSendingEmail
-                              ? SizedBox(
-                                  width: 20.w,
-                                  height: 20.w,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
+                              ? LazerVaultLoader.small()
                               : Text(
                                   'Send Invoice',
                                   style: GoogleFonts.inter(
@@ -1756,14 +1729,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(width: 16.w),
               Text('Sending invoice to $email...'),
             ],
@@ -2066,14 +2032,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(width: 16.w),
               Text('Preparing QR code...'),
             ],
@@ -2619,9 +2578,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     // Show loading indicator
     if (_loadingSearch) {
       return Center(
-        child: CircularProgressIndicator(
-          color: InvoiceThemeColors.infoBlue,
-        ),
+        child: LazerVaultLoader.small(),
       );
     }
 
@@ -3174,9 +3131,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.infoBlue),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading contacts...',

@@ -5,6 +5,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:sms_autofill/sms_autofill.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InputPin extends StatefulWidget {
   final User recipient;
@@ -165,14 +166,7 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
                 },
                 child: Center(
                   child: isLoading
-                      ? SizedBox(
-                          width: 24.w,
-                          height: 24.w,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Text(
                           "Confirm",
                           style: TextStyle(

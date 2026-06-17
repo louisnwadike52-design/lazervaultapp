@@ -15,6 +15,7 @@ import '../widgets/invoice_statistics_card.dart';
 import '../widgets/invoice_filter_chip.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InvoiceListScreen extends StatefulWidget {
   const InvoiceListScreen({super.key});
@@ -75,7 +76,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+                    LazerVaultLoader.small(),
                     SizedBox(height: 16.h),
                     Text(
                       'Loading your invoices...',
@@ -291,7 +292,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           }
           return Center(
             child:
-                CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+                LazerVaultLoader.small(),
           );
         }
 
@@ -794,14 +795,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(width: 16.w),
               Text('Generating PDF...'),
             ],

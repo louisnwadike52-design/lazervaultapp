@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/inventory/domain/entities/inventory_item
 import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
 import '../widgets/adjust_quantity_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InventoryItemDetailsScreen extends StatefulWidget {
   final InventoryItemEntity item;
@@ -537,14 +538,7 @@ class _InventoryItemDetailsScreenState
           Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: SizedBox(
-                height: 20.h,
-                width: 20.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF3B82F6),
-                ),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           )
         else if (_adjustments.isEmpty)

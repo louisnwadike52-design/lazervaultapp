@@ -18,6 +18,7 @@ import '../cubit/create_policy_cubit.dart';
 import 'create_insurance_policy_carousel.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceListScreen extends StatefulWidget {
   const InsuranceListScreen({super.key});
@@ -890,10 +891,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(24.r),
             ),
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(const Color.fromARGB(255, 78, 3, 208)),
-            ),
+            child: LazerVaultLoader.tiny(),
           ),
           SizedBox(height: 16.h),
           Text(

@@ -22,6 +22,7 @@ import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../../domain/entities/smart_card_validation_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Confirm-payment screen for cable TV subscriptions. Mirrors the data
 /// bundles + internet bill confirm screens — same save-as-beneficiary
@@ -435,15 +436,7 @@ class _CableTVPaymentConfirmationScreenState
                     ),
                   ),
                   child: _isProcessing
-                      ? SizedBox(
-                          width: 24.w,
-                          height: 24.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Text(
                           'Pay ₦${_currencyFormat.format(package.amount)}',
                           style: GoogleFonts.inter(
@@ -473,15 +466,7 @@ class _CableTVPaymentConfirmationScreenState
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: const Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-                ),
-              ),
+              child: LazerVaultLoader(size: 18),
             ),
           );
         }
@@ -768,15 +753,7 @@ class _CableTVPaymentConfirmationScreenState
               padding: EdgeInsets.all(14.w),
               child: Row(
                 children: [
-                  SizedBox(
-                    width: 16.w,
-                    height: 16.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                    ),
-                  ),
+                  LazerVaultLoader.tiny(),
                   SizedBox(width: 12.w),
                   Text(
                     'Checking saved state…',

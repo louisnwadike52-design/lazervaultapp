@@ -8,6 +8,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/public_group_detail_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PublicGroupsScreen extends StatefulWidget {
   const PublicGroupsScreen({super.key});
@@ -244,10 +245,7 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
               builder: (context, state) {
                 if (state is GroupAccountLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                    ),
+                    child: LazerVaultLoader.small(),
                   );
                 }
 
@@ -408,15 +406,7 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: isJoining
-            ? SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.tiny()
             : Text(
                 'Join',
                 style: GoogleFonts.inter(

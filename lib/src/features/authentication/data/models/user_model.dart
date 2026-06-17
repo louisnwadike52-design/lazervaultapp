@@ -35,6 +35,7 @@ class UserModel extends User {
     super.country,
     super.profilePicture,
     super.signupStatus,
+    super.currentSignupStep,
     super.hasPasscode = false,
     super.hasTransactionPin = false,
   });
@@ -98,6 +99,9 @@ class UserModel extends User {
       updatedAt: DateTime.tryParse(user.updatedAt) ?? DateTime.now(),
       signupStatus:
           user.signupStatus.isNotEmpty ? user.signupStatus : null,
+      currentSignupStep: user.currentSignupStep.isNotEmpty
+          ? user.currentSignupStep
+          : null,
     );
   }
 
@@ -127,12 +131,15 @@ class UserModel extends User {
       country: country,
       profilePicture: profilePicture,
       signupStatus: signupStatus,
+      currentSignupStep: currentSignupStep,
       hasPasscode: hasPasscode,
       hasTransactionPin: hasTransactionPin,
     );
   }
 
+  @override
   UserModel copyWith({
+    String? id,
     String? firstName,
     String? lastName,
     String? email,
@@ -147,13 +154,16 @@ class UserModel extends User {
     String? language,
     String? currency,
     String? country,
-    String? profilePicture,
+    // Signature matches User.copyWith — pass [Object()] to keep the
+    // existing value, pass `null` explicitly to clear it.
+    Object? profilePicture = _modelSentinel,
     String? signupStatus,
+    String? currentSignupStep,
     bool? hasPasscode,
     bool? hasTransactionPin,
   }) {
     return UserModel(
-        id: id,
+        id: id ?? this.id,
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,
         email: email ?? this.email,
@@ -168,8 +178,11 @@ class UserModel extends User {
         language: language ?? this.language,
         currency: currency ?? this.currency,
         country: country ?? this.country,
-        profilePicture: profilePicture ?? this.profilePicture,
+        profilePicture: identical(profilePicture, _modelSentinel)
+            ? this.profilePicture
+            : profilePicture as String?,
         signupStatus: signupStatus ?? this.signupStatus,
+        currentSignupStep: currentSignupStep ?? this.currentSignupStep,
         hasPasscode: hasPasscode ?? this.hasPasscode,
         hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin);
   }
@@ -191,6 +204,7 @@ class UserModel extends User {
           createdAt: map['createdAt'] as DateTime,
           updatedAt: map['updatedAt'] as DateTime,
           signupStatus: map['signupStatus'] as String?,
+          currentSignupStep: map['currentSignupStep'] as String?,
           hasPasscode: map['hasPasscode'] as bool? ?? false,
           hasTransactionPin: map['hasTransactionPin'] as bool? ?? false);
 
@@ -208,9 +222,15 @@ class UserModel extends User {
         "createdAt": createdAt,
         "updatedAt": updatedAt,
         "signupStatus": signupStatus,
+        "currentSignupStep": currentSignupStep,
         "hasPasscode": hasPasscode,
         "hasTransactionPin": hasTransactionPin,
       };
 
   String toJson() => jsonEncode(toMap());
 }
+
+/// Private sentinel parallel to the one in [User] — distinguishes
+/// "explicit null" (clear the field) from "no value passed" (keep
+/// existing) on the nullable `profilePicture` slot.
+const Object _modelSentinel = Object();

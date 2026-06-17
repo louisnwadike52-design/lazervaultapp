@@ -14,6 +14,7 @@ import 'contribution_type_badge.dart';
 import 'member_card.dart';
 import 'payment_group_widgets.dart';
 import 'status_pill.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom-sheet variant of the past-contribution detail screen.
 /// Mirrors the cycles-history `CycleDetailsBottomSheet` pattern so
@@ -140,7 +141,7 @@ class _PastContributionDetailsSheetState
                 builder: (context, state) {
                   if (state is PastContributionDetailsLoading) {
                     return const Center(
-                        child: CircularProgressIndicator());
+                        child: LazerVaultLoader.small());
                   }
                   if (state is PastContributionDetailsError) {
                     return _ErrorView(

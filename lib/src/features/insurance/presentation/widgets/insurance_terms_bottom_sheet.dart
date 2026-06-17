@@ -24,6 +24,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceTermsBottomSheet extends StatefulWidget {
   const InsuranceTermsBottomSheet({super.key, required this.urlResolver});
@@ -273,7 +274,7 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
   Widget _buildBody() {
     if (_resolving) {
       return _centered(
-        const CircularProgressIndicator(color: Color(0xFF6366F1)),
+        LazerVaultLoader.small(),
         title: 'Loading terms',
         subtitle: 'Fetching the latest version…',
       );

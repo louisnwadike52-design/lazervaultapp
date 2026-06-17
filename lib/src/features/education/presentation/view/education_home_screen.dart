@@ -11,8 +11,7 @@ import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_cubit.dart';
 import '../cubit/education_history_cubit.dart';
 import '../cubit/education_state.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Education PINs landing. Mirrors the internet / water landing pattern:
 /// quick-actions row (Saved Candidates, Reminders, History) → hero
@@ -96,24 +95,8 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          // Per-bill voice + chat icons — pin every session to the
-          // education flow on chat-products-service
-          // (DIRECT_ROUTES['education'] → primary 'utility').
-          ServiceVoiceButton(
-            serviceName: 'education',
-            iconColor: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF3B82F6),
-          ),
-          SizedBox(width: 8.w),
-          MicroserviceChatIcon(
-            serviceName: 'Education',
-            sourceContext: 'education',
-            icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF3B82F6),
-          ),
-          SizedBox(width: 12.w),
-        ],
+        // Per-bill voice + chat icons removed — unified utility bills
+        // landing page hosts the single chat/mic entry point now.
       ),
       body: SafeArea(
         child: BlocBuilder<EducationCubit, EducationState>(
@@ -132,18 +115,13 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
             if (state is EducationProvidersLoaded && rebuyPurchase != null) {
               _handleRebuyPurchase(rebuyPurchase, state.providers);
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(_primary),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 
             if (state is EducationLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_primary),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 

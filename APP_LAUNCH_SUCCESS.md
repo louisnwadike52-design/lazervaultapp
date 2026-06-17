@@ -101,7 +101,7 @@ Build Type: Debug
 Platform: Android (ARM64)
 Device: sdk gphone64 arm64 (Emulator)
 Android Version: API 36 (Android 16)
-Package: com.example.lazervaultapp
+Package: com.lazervault.app
 PID: 19301
 ```
 

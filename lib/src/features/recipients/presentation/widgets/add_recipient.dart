@@ -35,6 +35,7 @@ import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum AddRecipientMethod { bankDetails, lazervaultUser, contacts }
 
@@ -54,9 +55,13 @@ class _AddRecipientState extends State<AddRecipient> {
   final TextEditingController _sortCodeController = TextEditingController();
   final TextEditingController _bankController = TextEditingController(text: "Select Bank");
   final TextEditingController _bankSearchController = TextEditingController();
-  final bool _isPersonal = true; // Personal or Business account
   final bool _isFavorite = false;
   String _bankSearchQuery = '';
+  // Debounce timer for the bank-picker search field. We coalesce keystrokes
+  // into a single filter pass after the user pauses for ~250ms so we don't
+  // O(n) every list rebuild on every key (typical industry-standard search
+  // pacing — feels instant, avoids needless work on long bank lists).
+  Timer? _bankSearchDebounce;
 
   // Username Form Controller
   final TextEditingController _usernameController = TextEditingController();
@@ -117,6 +122,7 @@ class _AddRecipientState extends State<AddRecipient> {
     _sortCodeController.dispose();
     _bankController.dispose();
     _bankSearchController.dispose();
+    _bankSearchDebounce?.cancel();
     _usernameController.dispose();
     super.dispose();
   }
@@ -1041,14 +1047,7 @@ class _AddRecipientState extends State<AddRecipient> {
           ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 20.w,
-                  height: 20.h,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                ),
+                LazerVaultLoader.small(),
                 SizedBox(width: 12.w),
                 Text(
                   _isVerifying ? 'Verifying...' : 'Processing...',
@@ -1442,9 +1441,7 @@ class _AddRecipientState extends State<AddRecipient> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
-              color: Color.fromARGB(255, 78, 3, 208),
-            ),
+            LazerVaultLoader.small(),
             SizedBox(height: 16.h),
             Text(
               'Loading contacts...',
@@ -1755,9 +1752,7 @@ class _AddRecipientState extends State<AddRecipient> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(
-                color: Color.fromARGB(255, 78, 3, 208),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
                 'Checking if ${contact.name} is on LazerVault...',
@@ -2249,9 +2244,7 @@ class _AddRecipientState extends State<AddRecipient> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircularProgressIndicator(
-                                  color: Color.fromARGB(255, 78, 3, 208),
-                                ),
+                                LazerVaultLoader.small(),
                                 SizedBox(height: 16.h),
                                 Text(
                                   'Loading banks...',
@@ -2635,14 +2628,7 @@ class _AddRecipientState extends State<AddRecipient> {
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    SizedBox(
-                                      width: 20.w,
-                                      height: 20.h,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
+                                    LazerVaultLoader.small(),
                                     SizedBox(width: 12.w),
                                     Text(
                                       'Verifying...',
@@ -3014,18 +3000,31 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   void _showBankSelectionBottomSheet() {
+    // Reset the search controller every time the sheet opens so reopening
+    // doesn't surface a stale query the user already cleared.
+    _bankSearchController.clear();
+    _bankSearchQuery = '';
+    _bankSearchDebounce?.cancel();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-          ),
-          child: Column(
+        // StatefulBuilder gives the sheet its OWN setState so typing in
+        // the search box rebuilds the bank list IN PLACE — the parent
+        // _AddRecipientState's setState can't reach inside a modal route
+        // (the modal is a separate route, not a child), which is why
+        // search used to only "work" after the sheet was reopened.
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+              ),
+              child: Column(
             children: [
               // Handle Bar
               Container(
@@ -3109,10 +3108,21 @@ class _AddRecipientState extends State<AddRecipient> {
                 ),
                 child: TextField(
                   controller: _bankSearchController,
+                  // Debounced live filter. Each keystroke restarts a
+                  // 250ms timer; once it fires we re-filter via the
+                  // sheet's own setState so the bank list rebuilds
+                  // immediately under the user's cursor.
                   onChanged: (value) {
-                    setState(() {
-                      _bankSearchQuery = value.toLowerCase();
-                    });
+                    _bankSearchDebounce?.cancel();
+                    _bankSearchDebounce = Timer(
+                      const Duration(milliseconds: 250),
+                      () {
+                        if (!mounted) return;
+                        setSheetState(() {
+                          _bankSearchQuery = value.toLowerCase().trim();
+                        });
+                      },
+                    );
                   },
                   decoration: InputDecoration(
                     hintText: 'Search banks...',
@@ -3191,9 +3201,7 @@ class _AddRecipientState extends State<AddRecipient> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircularProgressIndicator(
-                              color: Color.fromARGB(255, 78, 3, 208),
-                            ),
+                            LazerVaultLoader.small(),
                             SizedBox(height: 16.h),
                             Text(
                               'Loading banks...',
@@ -3390,6 +3398,8 @@ class _AddRecipientState extends State<AddRecipient> {
               SizedBox(height: MediaQuery.of(context).padding.bottom),
             ],
           ),
+            );
+          },
         );
       },
     );

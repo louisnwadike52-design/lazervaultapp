@@ -55,7 +55,15 @@
             android:data="lazervault://quick-action/pay_bills" />
     </shortcut>
 
-    <!-- Google Assistant App Actions (Built-In Intents) -->
+    <!-- Google Assistant App Actions (Built-In Intents).
+         Requires "Actions on Google Terms of Service" accepted in Play Console
+         before uploading any build that includes these capabilities. Accept at:
+           https://console.actions.google.com  (sign in with the Play Console account)
+         If a Play upload fails with "APK contains an actions resource, but
+         Actions on Google terms of service not yet accepted", comment these
+         four <capability> blocks out, ship the build, accept the ToS, then
+         uncomment + redeploy. -->
+
     <!-- "Hey Google, send money on LazerVault" -->
     <capability android:name="actions.intent.CREATE_MONEY_TRANSFER">
         <intent
@@ -83,14 +91,7 @@
             android:data="lazervault://quick-action/pay_bills" />
     </capability>
 
-    <!-- "Hey Google, open LazerVault" (fallback for general open).
-         The previous <parameter android:name="feature"> child was rejected by
-         Firebase App Distribution / Play AAB validation because App Actions
-         requires every <parameter> inside an <intent> to have a matching
-         shortcut-level binding. The URL already encodes the feature path
-         (lazervault://quick-action/check_balance), so the inner <parameter>
-         was redundant — removing it satisfies the schema without losing the
-         deep link. -->
+    <!-- "Hey Google, open LazerVault" (fallback for general open) -->
     <capability android:name="actions.intent.OPEN_APP_FEATURE">
         <intent
             android:action="android.intent.action.VIEW"

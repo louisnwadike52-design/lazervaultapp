@@ -16,6 +16,7 @@ import '../../domain/entities/intl_airtime_operator.dart';
 import '../cubit/intl_airtime_cubit.dart';
 import '../cubit/intl_airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IntlReviewScreen extends StatefulWidget {
   const IntlReviewScreen({super.key});
@@ -236,8 +237,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
                 Container(
                   color: Colors.black54,
                   child: const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFF4E03D0)),
+                    child: LazerVaultLoader.small(),
                   ),
                 ),
             ],
@@ -430,8 +430,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: const Center(
-                child: CircularProgressIndicator(
-                    color: Color(0xFF4E03D0), strokeWidth: 2),
+                child: LazerVaultLoader.tiny(),
               ),
             );
           }
@@ -547,14 +546,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
                 borderRadius: BorderRadius.circular(16.r)),
           ),
           icon: disabled
-              ? SizedBox(
-                  width: 18.w,
-                  height: 18.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader(size: 18)
               : Icon(Icons.lock_outline_rounded,
                   color: Colors.white, size: 20.sp),
           label: Text(

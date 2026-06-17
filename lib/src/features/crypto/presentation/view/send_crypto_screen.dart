@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart'
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // SendCryptoScreen (PR6) — single-screen send flow:
 //   1. Pick asset (from user's holdings).
@@ -248,8 +249,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                           borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: state is CryptoWithdrawSubmitting || _isSubmitting
-                        ? const CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
+                        ? LazerVaultLoader.tiny()
                         : Text('Send',
                             style: GoogleFonts.inter(
                                 color: Colors.white,

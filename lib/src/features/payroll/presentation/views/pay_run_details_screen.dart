@@ -12,6 +12,7 @@ import '../../domain/entities/pay_run_entity.dart';
 import '../../domain/entities/pay_slip_entity.dart';
 import '../../../transaction_pin/widgets/transaction_pin_modal.dart';
 import 'pay_slip_details_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PayRunDetailsScreen extends StatefulWidget {
   final String payRunId;
@@ -125,10 +126,7 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
           builder: (context, state) {
             if (state is PayrollLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 
@@ -146,10 +144,7 @@ class _PayRunDetailsScreenState extends State<PayRunDetailsScreen> {
               // If we end up here from listing pay slips, re-fetch pay run
               context.read<PayrollCubit>().getPayRun(widget.payRunId);
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 

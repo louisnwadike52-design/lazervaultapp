@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Phases the PIN modal transitions through
 enum PinModalPhase { pinEntry, verifying, processing, success, failed }
@@ -719,14 +720,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: SizedBox(
-                width: 32.w,
-                height: 32.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-                ),
-              ),
+              child: LazerVaultLoader(size: 32),
             ),
           ),
         );
@@ -753,14 +747,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: SizedBox(
-                width: 32.w,
-                height: 32.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF7C3AED)),
-                ),
-              ),
+              child: LazerVaultLoader(size: 32),
             ),
           ),
         );
@@ -874,15 +861,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
                     : isFailed
                         ? Icon(Icons.close, size: 16.sp, color: Colors.red.shade700)
                         : isCurrent
-                            ? SizedBox(
-                                width: 12.w,
-                                height: 12.w,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(
-                                      Color(0xFF4E03D0)),
-                                ),
-                              )
+                            ? LazerVaultLoader(size: 12)
                             : null,
               ),
             ),

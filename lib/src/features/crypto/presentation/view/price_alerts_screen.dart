@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 const _bg = Color(0xFF0A0A0A);
 const _card = Color(0xFF1F1F1F);
@@ -368,7 +369,7 @@ class _CreateSheetState extends State<_CreateSheet> {
                 height: 180.h,
                 decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _divider)),
                 child: _loadingAssets
-                  ? const Center(child: CircularProgressIndicator(color: _accent))
+                  ? const Center(child: LazerVaultLoader.small())
                   : ListView.builder(
                       padding: EdgeInsets.zero, itemCount: _filtered.length,
                       itemBuilder: (_, i) {
@@ -412,7 +413,7 @@ class _CreateSheetState extends State<_CreateSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
               ),
               child: _creating
-                ? SizedBox(width: 22.w, height: 22.w, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? LazerVaultLoader(size: 22)
                 : Text('Create Alert', style: _inter(16, w: FontWeight.w600)),
             )),
             SizedBox(height: 8.h),

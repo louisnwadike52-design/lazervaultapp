@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mono_connect/mono_connect.dart';
 
 import '../../../../core/config/mono_config.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Mono Identity verification screen for Nigerian users (BVN-based KYC).
 ///
@@ -347,15 +348,7 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                     elevation: 0,
                   ),
                   child: _isLaunching
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 22)
                       : Text(
                           _hasError ? 'Retry Verification' : 'Start Verification',
                           style: const TextStyle(

@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../data/datasources/group_account_remote_data_source.dart';
 import 'create_contribution_state.dart';
@@ -25,7 +27,7 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
   String _title = '';
   String _description = '';
   double? _targetAmount;
-  String _currency = 'USD';
+  String _currency = serviceLocator<LocaleManager>().currentCurrency;
   DateTime _deadline = DateTime.now().add(const Duration(days: 30));
   ContributionFrequency? _frequency;
   double? _regularAmount;
@@ -438,7 +440,7 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
     _title = '';
     _description = '';
     _targetAmount = null;
-    _currency = 'USD';
+    _currency = serviceLocator<LocaleManager>().currentCurrency;
     _deadline = DateTime.now().add(const Duration(days: 30));
     _frequency = null;
     _regularAmount = null;

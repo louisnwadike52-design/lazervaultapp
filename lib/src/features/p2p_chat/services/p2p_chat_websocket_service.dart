@@ -127,9 +127,12 @@ class P2PChatWebSocketService {
 
     final host = dotenv.env['P2P_CHAT_HOST'] ?? '10.0.2.2';
     final port = int.tryParse(dotenv.env['P2P_CHAT_PORT'] ?? '8018') ?? 8018;
+    // Port 443 == the env points at the public tunnel which terminates
+    // TLS, so we must speak wss. Loopback dev (port 8018) stays on ws.
+    final tlsTunnel = port == 443;
 
     final wsUrl = Uri(
-      scheme: 'ws',
+      scheme: tlsTunnel ? 'wss' : 'ws',
       host: host,
       port: port,
       path: '/ws/chat',

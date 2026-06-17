@@ -83,10 +83,48 @@ class MandateCubit extends Cubit<MandateState> {
         }
       }
 
+      // Show the synced (cached) badges INSTANTLY...
       emit(UserMandatesLoaded(mandates: mandates));
+      // ...then re-verify against Mono (source of truth) in the background and
+      // update the badges if anything drifted. Fire-and-forget so the UI is
+      // never blocked on Mono round-trips.
+      unawaited(refreshUserMandatesFromMono(userId: userId));
     } catch (e) {
       // Silently fail — mandates are optional enhancement
       emit(UserMandatesLoaded(mandates: []));
+    }
+  }
+
+  /// Background refresh — Mono is the source of truth. Call this AFTER
+  /// [fetchUserMandates] has shown the synced (possibly stale) badge instantly:
+  /// it re-verifies each LIVE mandate against Mono (the backend getMandate
+  /// refreshes from Mono on read), updates the cache, and emits so the badges
+  /// correct themselves on display. Best-effort + silent — a refresh failure
+  /// never disturbs what the user already sees.
+  Future<void> refreshUserMandatesFromMono({required String userId}) async {
+    final live = _mandatesByAccountId.values
+        .where((m) => !m.isCancelled && !m.isRejected && !m.isExpired)
+        .toList();
+    if (live.isEmpty) return;
+
+    var changed = false;
+    for (final m in live) {
+      try {
+        final fresh = await _dataSource.getMandate(mandateId: m.id, userId: userId);
+        final existing = _mandatesByAccountId[fresh.linkedAccountId];
+        if (existing == null ||
+            existing.id != fresh.id ||
+            existing.status != fresh.status) {
+          _mandatesByAccountId[fresh.linkedAccountId] = fresh;
+          changed = true;
+        }
+      } catch (_) {
+        // best-effort background refresh — ignore transient errors
+      }
+    }
+
+    if (changed && !isClosed) {
+      emit(UserMandatesLoaded(mandates: _mandatesByAccountId.values.toList()));
     }
   }
 

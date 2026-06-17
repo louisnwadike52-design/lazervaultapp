@@ -19,6 +19,7 @@ import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -255,10 +256,17 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
 
                   if (state is AccountCardsSummaryLoading ||
                       state is AccountCardsSummaryInitial) {
+                    // Industry-standard inline card-area loader — 28px
+                    // (`.medium()`) reads as the page-level "loading
+                    // your accounts" spinner without dominating the
+                    // ~196px card slot. Sized inside a SizedBox that
+                    // matches the carousel height so the layout doesn't
+                    // collapse during load.
                     return SizedBox(
-                      height: 228.h,
+                      height: 190.h,
                       child: const Center(
-                          child: CircularProgressIndicator(color: Colors.white)),
+                        child: LazerVaultLoader.medium(),
+                      ),
                     );
                   }
                   if (state is AccountCardsSummaryError) {

@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CardCreationFormScreen extends StatefulWidget {
   const CardCreationFormScreen({super.key});
@@ -306,14 +307,7 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                           elevation: 8,
                         ),
                         child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : const Text(
                                 'Create Card',
                                 style: TextStyle(
@@ -746,9 +740,7 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
                       child: Container(
                         color: Colors.black.withValues(alpha: 0.5),
                         child: const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
+                          child: LazerVaultLoader.small(),
                         ),
                       ),
                     ),

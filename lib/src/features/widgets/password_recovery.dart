@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PasswordRecovery extends StatefulWidget {
   const PasswordRecovery({super.key});
@@ -483,14 +484,7 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
       ),
       onPressed: _isLoading ? null : _submitPasswordReset,
       child: _isLoading
-          ? SizedBox(
-              height: 20.h,
-              width: 20.w,
-              child: const CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2.5,
-              ),
-            )
+          ? LazerVaultLoader.small()
           : Text(
               "Send Reset Code",
               style: TextStyle(

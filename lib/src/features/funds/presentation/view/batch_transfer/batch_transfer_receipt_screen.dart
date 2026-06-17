@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchTransferReceiptScreen extends StatefulWidget {
   const BatchTransferReceiptScreen({super.key});
@@ -525,14 +526,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
         ),
         child: isLoading
             ? Center(
-                child: SizedBox(
-                  width: 16.w,
-                  height: 16.h,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                  ),
-                ),
+                child: LazerVaultLoader.tiny(),
               )
             : Icon(icon, color: color, size: 18.sp),
       ),
@@ -1605,14 +1599,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLoading)
-              SizedBox(
-                width: 14.w,
-                height: 14.h,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                ),
-              )
+              LazerVaultLoader(size: 14)
             else
               Icon(icon, color: color, size: 16.sp),
             SizedBox(width: 6.w),

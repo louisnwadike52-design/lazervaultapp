@@ -123,6 +123,32 @@ class SprayMeRemoteDataSource {
     }
   }
 
+  /// Buy gift credit straight from a personal account. The cart total is
+  /// debited from [sourceAccountId] and credited to the spendable spray balance.
+  /// This replaces fundWallet for joiners (no separate fundable wallet).
+  Future<SprayWallet> buyGiftCredit({
+    required List<Map<String, dynamic>> items,
+    required String sourceAccountId,
+    required String pin,
+    required String idempotencyKey,
+    String sessionId = '',
+    String currency = 'NGN',
+  }) async {
+    try {
+      final response = await _dio.post('/api/v1/sprayme/wallet/buy-gift', data: {
+        'items': items,
+        'source_account_id': sourceAccountId,
+        'transaction_pin': pin,
+        'idempotency_key': idempotencyKey,
+        'session_id': sessionId,
+        'currency': currency,
+      });
+      return SprayWallet.fromJson(response.data['wallet'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'buy gift credit');
+    }
+  }
+
   Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String pin}) async {
     try {
       final response = await _dio.post('/api/v1/sprayme/wallet/withdraw', data: {

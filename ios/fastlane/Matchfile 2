@@ -1,0 +1,23 @@
+# Match config for LazerVault iOS code-signing.
+#
+# `bundle exec fastlane match appstore` will:
+#   - Read git_url + type from this file
+#   - Read MATCH_PASSWORD from env (sourced from .env.appstore)
+#   - Authenticate to App Store Connect via the API key in .env.appstore
+#   - Create/fetch the Apple Distribution cert + provisioning profile
+#   - Encrypt them with MATCH_PASSWORD
+#   - Push the encrypted blobs to git_url
+#
+# On any other machine (dev laptop, CI runner):
+#   - Same git_url + MATCH_PASSWORD + API key → fastlane match pulls the
+#     same encrypted blobs and installs the cert into the keychain.
+#
+# Override for non-default scenarios via CLI flags: `fastlane match development`.
+
+git_url("git@github.com:louisnwadike52-design/ios-certs.git")
+storage_mode("git")
+
+type("appstore") # default; staging + production lanes pass type explicitly
+
+app_identifier(["com.lazervault.app"])
+team_id("382F6M9KSZ") # LAZERVAULT LTD

@@ -119,9 +119,11 @@ class ProductsWebSocketService {
   Future<void> _connectWebSocket(String userId, String accessToken) async {
     final wsHost = dotenv.env['PRODUCTS_WS_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['PRODUCTS_WS_PORT'] ?? '8083') ?? 8083;
+    // Port 443 == tunnel termination expects TLS (wss). Other ports = loopback dev.
+    final tlsTunnel = wsPort == 443;
 
     final wsUrl = Uri(
-      scheme: 'ws',
+      scheme: tlsTunnel ? 'wss' : 'ws',
       host: wsHost,
       port: wsPort,
       path: '/ws/products',
@@ -165,9 +167,10 @@ class ProductsWebSocketService {
   Future<void> _connectSSE(String userId, String accessToken) async {
     final wsHost = dotenv.env['PRODUCTS_WS_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['PRODUCTS_WS_PORT'] ?? '8083') ?? 8083;
+    final tlsTunnel = wsPort == 443;
 
     final sseUrl = Uri(
-      scheme: 'http',
+      scheme: tlsTunnel ? 'https' : 'http',
       host: wsHost,
       port: wsPort,
       path: '/ws/products',

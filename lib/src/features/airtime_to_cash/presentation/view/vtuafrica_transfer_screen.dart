@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// VTU Africa transfer confirmation screen.
 /// Shows the destination number to transfer airtime to, then submits the conversion.
@@ -695,14 +696,7 @@ class VtuafricaTransferScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: isLoading
-                      ? SizedBox(
-                          width: 20.w,
-                          height: 20.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Text(
                           'I Have Transferred, Confirm',
                           style: TextStyle(

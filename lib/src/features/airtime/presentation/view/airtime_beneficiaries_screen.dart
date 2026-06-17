@@ -10,6 +10,7 @@ import '../../../../../core/widgets/bill_details_sheet.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen to manage saved airtime beneficiaries.
 ///
@@ -692,14 +693,7 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
                       }
                     },
               child: isLoading
-                  ? SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 14)
                   : Text(
                       'Save',
                       style: TextStyle(

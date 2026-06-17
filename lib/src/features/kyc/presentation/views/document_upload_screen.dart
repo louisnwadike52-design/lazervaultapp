@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Document upload screen for Tier 3 KYC verification.
 ///
@@ -1051,16 +1052,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_isUploading) ...[
-              SizedBox(
-                width: 80,
-                height: 80,
-                child: CircularProgressIndicator(
-                  value: _overallProgress > 0 ? _overallProgress : null,
-                  strokeWidth: 4,
-                  backgroundColor: _cardBackground,
-                  valueColor: const AlwaysStoppedAnimation<Color>(_primary),
-                ),
-              ),
+              LazerVaultLoader(size: 80),
               const SizedBox(height: 24),
               Text(
                 'Uploading Documents... (${_filesUploaded}/$_totalFilesToUpload)',

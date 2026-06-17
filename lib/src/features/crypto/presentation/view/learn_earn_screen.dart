@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Colors
@@ -387,7 +388,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   // ---------------------------------------------------------------------------
   Widget _buildLearnTab() {
     if (_isLoadingLessons && _backendLessonsByCategory.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: _kAccent));
+      return const Center(child: LazerVaultLoader.small());
     }
     // Section icon per category. Unknown categories get a generic icon.
     IconData iconForCategory(String c) {
@@ -483,7 +484,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   // ---------------------------------------------------------------------------
   Widget _buildDiscoverTab() {
     if (_isLoadingDiscover) {
-      return const Center(child: CircularProgressIndicator(color: _kAccent));
+      return const Center(child: LazerVaultLoader.small());
     }
     if (_discoverError != null) {
       return RefreshIndicator(

@@ -1,15 +1,99 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_organization_entity.dart';
 import '../../domain/repositories/id_pay_repository.dart';
+import '../../services/id_pay_websocket_service.dart';
 import 'id_pay_state.dart';
+
+/// WS health for the creator's IDPay screen — drives adaptive polling
+/// in the IDPay display widget (parity with QR-pay / contactless).
+enum IDPayWsHealth { connecting, connected, failed }
 
 class IDPayCubit extends Cubit<IDPayState> {
   final IDPayRepository repository;
   List<IDPayEntity> _cachedIDPays = [];
   List<IDPayOrganizationEntity> _cachedOrganizations = [];
 
-  IDPayCubit({required this.repository}) : super(IDPayInitial());
+  /// Optional WS service for realtime payment-completed pushes. Nil-safe
+  /// (tests + flows that don't subscribe still work). Mirrors qr_payment.
+  final IDPayWebSocketService? wsService;
+
+  /// Public health signal — UI listens to flip its polling cadence.
+  final ValueNotifier<IDPayWsHealth> wsHealth =
+      ValueNotifier(IDPayWsHealth.connecting);
+
+  StreamSubscription<IDPayStatusEvent>? _wsEvents;
+  StreamSubscription<IDPayWebSocketConnectionState>? _wsConn;
+  Timer? _wsTimeoutTimer;
+
+  /// How long we wait for a `connected` before flipping wsHealth to
+  /// `failed`. Mirrors the contactless + QR timeout.
+  static const Duration _wsConnectTimeout = Duration(seconds: 8);
+
+  IDPayCubit({required this.repository, this.wsService})
+      : super(IDPayInitial());
+
+  /// Subscribe the creator's screen to realtime "Paid by …" events.
+  /// Drives [wsHealth] through every state transition so the screen can
+  /// adapt its polling cadence accordingly.
+  Future<void> subscribeToCreatedIDPay({
+    required String creatorUserId,
+    required String accessToken,
+    required void Function(IDPayStatusEvent event) onEvent,
+  }) async {
+    if (wsService == null) {
+      wsHealth.value = IDPayWsHealth.failed;
+      return;
+    }
+    wsHealth.value = IDPayWsHealth.connecting;
+    _wsTimeoutTimer?.cancel();
+    _wsEvents?.cancel();
+    _wsConn?.cancel();
+    try {
+      _wsConn = wsService!.connectionState.listen((cs) {
+        if (cs == IDPayWebSocketConnectionState.connected) {
+          _wsTimeoutTimer?.cancel();
+          wsHealth.value = IDPayWsHealth.connected;
+        } else if (cs == IDPayWebSocketConnectionState.error ||
+            cs == IDPayWebSocketConnectionState.disconnected) {
+          wsHealth.value = IDPayWsHealth.failed;
+        }
+      });
+      _wsEvents = wsService!.updates.listen(onEvent);
+      await wsService!.connect(
+          userId: creatorUserId, accessToken: accessToken);
+      // Connect resolves quickly; rely on the connectionState listener
+      // above to confirm `connected` (or flip to failed on timeout).
+      _wsTimeoutTimer = Timer(_wsConnectTimeout, () {
+        if (wsHealth.value != IDPayWsHealth.connected) {
+          wsHealth.value = IDPayWsHealth.failed;
+        }
+      });
+    } catch (_) {
+      wsHealth.value = IDPayWsHealth.failed;
+    }
+  }
+
+  /// Tear down the WS subscription. Safe to call multiple times.
+  Future<void> unsubscribeFromIDPay() async {
+    _wsTimeoutTimer?.cancel();
+    await _wsEvents?.cancel();
+    await _wsConn?.cancel();
+    _wsEvents = null;
+    _wsConn = null;
+    await wsService?.disconnect();
+  }
+
+  @override
+  Future<void> close() async {
+    await unsubscribeFromIDPay();
+    wsHealth.dispose();
+    return super.close();
+  }
 
   Future<void> createIDPay({
     required IDPayType type,
@@ -74,19 +158,31 @@ class IDPayCubit extends Cubit<IDPayState> {
     String? idempotencyKey,
   }) async {
     if (isClosed) return;
-    emit(IDPayLoading());
+    // Generate an idempotency key when the caller hasn't supplied one so a
+    // retry after a network blip becomes a no-op server-side. Previously
+    // null was always sent, which meant every retry tried to re-debit the
+    // user. Mirrors the electricity-bill / transfer cubit pattern.
+    final effectiveKey = idempotencyKey ?? const Uuid().v4();
+    emit(IDPayProcessing(payId: payId, amount: amount));
 
     final result = await repository.payIDPay(
       payId: payId,
       amount: amount,
       transactionPin: transactionPin,
       sourceAccountId: sourceAccountId,
-      idempotencyKey: idempotencyKey,
+      idempotencyKey: effectiveKey,
     );
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(IDPayError(message: failure.message)),
+      (failure) {
+        final msg = failure.message.toLowerCase();
+        if (msg.contains('insufficient')) {
+          emit(IDPayInsufficientFunds(message: failure.message));
+        } else {
+          emit(IDPayError(message: failure.message));
+        }
+      },
       (data) => emit(IDPayPaid(transaction: data.$1, newBalance: data.$2)),
     );
   }

@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/flutterwave_payment_webview.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DepositReviewScreen extends StatefulWidget {
   const DepositReviewScreen({super.key});
@@ -850,14 +851,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 20.w,
-                      height: 20.h,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
+                    LazerVaultLoader.small(),
                     SizedBox(width: 12.w),
                     Text(
                       'Processing...',

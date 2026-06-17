@@ -1,5 +1,5 @@
 // Tiny helper for the Android-emulator dev workflow: image URLs the
-// backend mints in local-dev (e.g. http://localhost:8083/uploads/...
+// backend mints in local-dev (e.g. https://api.lazervault.app/api/v1/uploads/...
 // or http://127.0.0.1:8083/uploads/...) are unreachable from inside
 // the emulator, which sees the host machine on 10.0.2.2 instead.
 //

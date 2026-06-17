@@ -12,6 +12,7 @@ import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_confirmation_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class NfcReaderScreen extends StatelessWidget {
   const NfcReaderScreen({super.key});
@@ -732,14 +733,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
               ),
               child: Center(
                 child: _isLoadingManual
-                    ? SizedBox(
-                        height: 22.h,
-                        width: 22.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader(size: 22)
                     : Text(
                         'Look Up Payment',
                         style: GoogleFonts.inter(

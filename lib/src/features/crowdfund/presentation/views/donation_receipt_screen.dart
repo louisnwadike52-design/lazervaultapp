@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../data/services/crowdfund_pdf_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DonationReceiptScreen extends StatefulWidget {
   final CrowdfundDonation donation;
@@ -494,14 +495,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: 16.sp,
-                  height: 16.sp,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                LazerVaultLoader.tiny()
               else
                 Icon(icon, color: Colors.white, size: 18.sp),
               SizedBox(width: 8.w),

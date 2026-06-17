@@ -10,6 +10,7 @@ import '../../domain/entities/education_beneficiary.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../cubit/education_beneficiary_cubit.dart';
 import '../cubit/education_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Saved exam candidates for education PIN purchases. Actions: View
 /// Details, View Purchases, Buy PIN, Set Reminder, Edit Nickname, Delete.
@@ -120,10 +121,7 @@ class _EducationSavedCandidatesScreenState
     }
     if (_loading && _beneficiaries == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(_primary),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
     }
     final list = _beneficiaries ?? const [];
@@ -476,14 +474,7 @@ class _EducationSavedCandidatesScreenState
                       }
                     },
               child: loading
-                  ? SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(_primary),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 14)
                   : Text('Save',
                       style: TextStyle(
                           color: _primary,

@@ -13,6 +13,7 @@ import '../widgets/watchlist_preview_card.dart';
 import '../widgets/quick_action_button.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Modern stocks home screen - Main entry point for stocks feature
 /// Follows insurance pattern with market-themed gradient and modern UI
@@ -310,14 +311,7 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
               borderRadius: BorderRadius.circular(30.r),
             ),
             child: Center(
-              child: SizedBox(
-                width: 30.w,
-                height: 30.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              child: LazerVaultLoader(size: 30),
             ),
           ),
           SizedBox(height: 20.h),
@@ -582,16 +576,7 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
         ),
       ),
       child: Center(
-        child: SizedBox(
-          width: 20.w,
-          height: 20.w,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              const Color(0xFF3B82F6).withValues(alpha: 0.5),
-            ),
-          ),
-        ),
+        child: LazerVaultLoader.small(),
       ),
     );
   }

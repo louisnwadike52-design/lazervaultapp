@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Financial Goals Screen
 /// Track and manage financial goals like emergency fund, vacation, car purchase, etc.
@@ -71,7 +72,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
         builder: (context, state) {
           if (state is BudgetLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF10B981)),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -111,7 +112,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
           }
 
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+            child: LazerVaultLoader.small(),
           );
         },
       ),

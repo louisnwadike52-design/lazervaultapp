@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen displaying AI-generated group account report with swipeable cards
 class GroupAccountReportScreen extends StatelessWidget {
@@ -218,9 +219,7 @@ class _LoadingView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(height: 24.h),
               Text(
                 message ?? 'Generating AI report...',

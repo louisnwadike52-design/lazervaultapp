@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/chat_session_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -31,6 +33,13 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
   final LoadMicroserviceChatHistoryUseCase? loadHistoryUseCase;
   final AuthenticationCubit authCubit;
 
+  /// Multi-tab chat: manages the active session id, drawer list, and
+  /// the "switch session" stream this cubit subscribes to. Optional so
+  /// callers without the manager (e.g. tests) still build.
+  final ChatSessionManager? sessionManager;
+
+  StreamSubscription<String?>? _sessionIdSub;
+
   List<GeneralChatMessageEntity> _currentMessages = [];
   late String _sessionId;
   String? _currentService;
@@ -43,9 +52,13 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
     required this.sendMessageUseCase,
     this.loadHistoryUseCase,
     required this.authCubit,
+    this.sessionManager,
   }) : super(const GeneralChatInitial());
 
-  String _buildSessionId() {
+  /// Build the *seed* session id used when the multi-tab manager has no
+  /// active session yet — falls back to the legacy deterministic id so
+  /// existing-user chat history maps cleanly to their "first tab".
+  String _buildLegacySessionId() {
     final locale = serviceLocator<LocaleManager>().currentLocale;
     final authState = authCubit.state;
     if (authState is AuthenticationSuccess) {
@@ -54,13 +67,46 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
     return 'general_unknown_$locale';
   }
 
+  /// Pick the best starting session id: prefer the multi-tab manager's
+  /// active id (restored from SecureStorage), fall back to the legacy
+  /// deterministic id so an existing user lands on their existing
+  /// rolling conversation — mapped into the multi-tab UI as their
+  /// "first session".
+  String _resolveInitialSessionId() {
+    final sm = sessionManager;
+    if (sm != null) {
+      final active = sm.currentSessionId;
+      if (active != null && active.isNotEmpty) return active;
+    }
+    return _buildLegacySessionId();
+  }
+
   void initializeChat() {
-    _sessionId = _buildSessionId();
+    _sessionId = _resolveInitialSessionId();
     _currentMessages = [];
     _currentService = null;
     _conversationServices.clear();
     _isSending = false;
     emit(GeneralChatInitial(messages: _currentMessages));
+
+    // Subscribe to session switches from the drawer. When the user picks
+    // another tab (or creates / deletes one), the manager broadcasts the
+    // new id; we reset local state and reload history for that session.
+    final sm = sessionManager;
+    if (sm != null) {
+      _sessionIdSub?.cancel();
+      _sessionIdSub = sm.currentSessionIdStream.listen((newId) {
+        if (newId == null || newId.isEmpty) return;
+        if (newId == _sessionId) return;
+        _sessionId = newId;
+        _currentMessages = [];
+        _currentService = null;
+        _conversationServices.clear();
+        emit(GeneralChatInitial(messages: _currentMessages));
+        // Reload the chosen session's transcript from the gateway.
+        loadHistory();
+      });
+    }
 
     // Add welcome message for Enhanced Gateway
     final welcomeMessage = GeneralChatMessageEntity(
@@ -250,6 +296,21 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             'isSystemMessage': false,
             if (response.receiptData != null)
               'receipt_data': response.receiptData,
+            // Surface the PIN prompt so general_chat_content renders the
+            // transaction PIN bottom sheet (_buildPinPromptCard reads
+            // metadata['pin_prompt']). Without this the general path collected
+            // the prompt server-side but never showed the sheet.
+            if (response.pinPrompt != null)
+              'pin_prompt': response.pinPrompt,
+            // Surface the classified LLM-provider error code (set by
+            // chat-agent-gateway's llm_failover module) so the chat content
+            // widget can render the downgrade banner + retry CTA. The
+            // gateway already swapped the assistant response_text for a
+            // friendly user-facing message; this signal lets the UI add
+            // an inline note explaining the provider degradation without
+            // exposing raw error strings.
+            if (response.llmErrorCode != null && response.llmErrorCode!.isNotEmpty)
+              'llm_error_code': response.llmErrorCode,
             if (quickActions != null && quickActions.isNotEmpty)
               'quick_actions': quickActions,
             if (billType != null && billType.isNotEmpty)
@@ -520,11 +581,22 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
 
   void clearChat() {
     _currentMessages = [];
-    _sessionId = _buildSessionId();
+    _sessionId = _resolveInitialSessionId();
     _currentService = null;
     _conversationServices.clear();
     emit(GeneralChatInitial(messages: _currentMessages));
     initializeChat();
+  }
+
+  /// Local-only helper: returns the currently-loaded session id so the
+  /// chat screen's AppBar can display "Rename current session" against
+  /// the right row. Source of truth is still `ChatSessionManager`.
+  String get currentSessionId => _sessionId;
+
+  @override
+  Future<void> close() async {
+    await _sessionIdSub?.cancel();
+    return super.close();
   }
 
   String _getServiceDisplayName(String service) {

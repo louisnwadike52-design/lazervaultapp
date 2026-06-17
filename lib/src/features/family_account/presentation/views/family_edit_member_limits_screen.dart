@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Edit Family Member Limits Screen
 /// Allows admins to update:
@@ -324,14 +326,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
                           borderRadius: BorderRadius.circular(28.r),
                           child: Center(
                             child: isLoading
-                                ? SizedBox(
-                                    width: 24.w,
-                                    height: 24.h,
-                                    child: const CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
+                                ? LazerVaultLoader.small()
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -477,7 +472,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '\$${widget.member.remainingBalance.toStringAsFixed(2)}',
+                '${CurrencySymbols.currentSymbol}${widget.member.remainingBalance.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: Colors.green[300],
                   fontSize: 16.sp,
@@ -595,7 +590,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             ),
             onChanged: (value) => _markAsModified(fieldKey),
             decoration: InputDecoration(
-              prefixText: '\$ ',
+              prefixText: '${CurrencySymbols.currentSymbol} ',
               prefixStyle: TextStyle(
                 color: const Color(0xFF3B82F6),
                 fontSize: 22.sp,
@@ -724,7 +719,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             ),
             onChanged: (value) => _markAsModified(fieldKey),
             decoration: InputDecoration(
-              prefixText: '\$ ',
+              prefixText: '${CurrencySymbols.currentSymbol} ',
               prefixStyle: TextStyle(
                 color: const Color(0xFF3B82F6),
                 fontSize: 16.sp,

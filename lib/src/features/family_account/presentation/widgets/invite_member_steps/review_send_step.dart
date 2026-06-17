@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Step 3: Review & Send Invitation
 /// - Recipient card with user info
@@ -327,14 +328,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                     borderRadius: BorderRadius.circular(28.r),
                     child: Center(
                       child: isLoading
-                          ? SizedBox(
-                              width: 24.w,
-                              height: 24.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

@@ -44,6 +44,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_contribution_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ContributionPaymentConfirmationScreen extends StatefulWidget {
   final Contribution contribution;
@@ -491,11 +492,7 @@ class _ContributionPaymentConfirmationScreenState
             child: OutlinedButton.icon(
               onPressed: _isDownloading ? null : _downloadReceipt,
               icon: _isDownloading
-                  ? SizedBox(
-                      width: 16.w,
-                      height: 16.w,
-                      child: const CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? LazerVaultLoader.tiny()
                   : Icon(Icons.download, size: 18.sp),
               label: Text(
                 _isDownloading ? 'Saving…' : 'Download',
@@ -518,15 +515,7 @@ class _ContributionPaymentConfirmationScreenState
             child: ElevatedButton.icon(
               onPressed: _isSharing ? null : _shareReceipt,
               icon: _isSharing
-                  ? SizedBox(
-                      width: 16.w,
-                      height: 16.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.tiny()
                   : Icon(Icons.ios_share, size: 18.sp),
               label: Text(
                 _isSharing ? 'Sharing…' : 'Share',

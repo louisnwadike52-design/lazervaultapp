@@ -14,6 +14,7 @@ import '../cubit/cable_tv_beneficiary_cubit.dart';
 import '../cubit/cable_tv_beneficiary_state.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create / edit a cable TV auto-renew schedule. Package and amount are
 /// loaded from the backend provider catalog — no free-text entry allowed.
@@ -415,15 +416,7 @@ class _CreateCableTVAutoRechargeScreenState
                       elevation: 0,
                     ),
                     child: _saving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _editId != null
                                 ? 'Update Auto-Renew'
@@ -464,14 +457,7 @@ class _CreateCableTVAutoRechargeScreenState
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 18.w,
-              height: 18.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-              ),
-            ),
+            LazerVaultLoader(size: 18),
             SizedBox(width: 12.w),
             Text('Loading packages…',
                 style: TextStyle(
@@ -573,14 +559,7 @@ class _CreateCableTVAutoRechargeScreenState
                     ),
             ),
             if (_packagesLoading)
-              SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                ),
-              )
+              LazerVaultLoader.tiny()
             else
               Icon(Icons.keyboard_arrow_down,
                   color: const Color(0xFF9CA3AF), size: 20.sp),
@@ -959,14 +938,7 @@ class _CreateCableTVAutoRechargeScreenState
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Center(
-        child: SizedBox(
-          width: 18,
-          height: 18,
-          child: const CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-          ),
-        ),
+        child: LazerVaultLoader(size: 18),
       ),
     );
   }

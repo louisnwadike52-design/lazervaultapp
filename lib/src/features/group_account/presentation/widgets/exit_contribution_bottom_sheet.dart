@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet that handles the member-exit flow end-to-end:
 ///
@@ -221,7 +222,7 @@ class _ExitContributionBottomSheetState
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 24.h),
         child: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          child: LazerVaultLoader.small(),
         ),
       );
     }
@@ -457,14 +458,7 @@ class _ExitContributionBottomSheetState
               elevation: 0,
             ),
             child: _confirming
-                ? SizedBox(
-                    width: 18.w,
-                    height: 18.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
+                ? LazerVaultLoader(size: 18)
                 : Text(
                     confirmLabel,
                     style: GoogleFonts.inter(

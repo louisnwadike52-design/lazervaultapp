@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 
 import 'add_funds_confirmation_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Processing screen for adding funds with animations
 class AddFundsProcessingScreen extends StatefulWidget {
@@ -346,16 +347,7 @@ class _AddFundsProcessingScreenState extends State<AddFundsProcessingScreen>
               ),
               // Loading indicator for active step
               if (isActive && !isCompleted)
-                SizedBox(
-                  width: 16.w,
-                  height: 16.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF4CAF50),
-                    ),
-                  ),
-                ),
+                LazerVaultLoader.tiny(),
             ],
           ),
         );

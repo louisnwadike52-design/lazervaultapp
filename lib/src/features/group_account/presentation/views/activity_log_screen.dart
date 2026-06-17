@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ActivityLogScreen extends StatefulWidget {
   final String groupId;
@@ -146,11 +147,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              Color.fromARGB(255, 78, 3, 208),
-            ),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading activity logs...',

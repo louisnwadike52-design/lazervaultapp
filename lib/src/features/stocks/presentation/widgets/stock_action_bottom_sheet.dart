@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum StockActionType { trending, movers, allStocks }
 
@@ -629,9 +630,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
 
   Widget _buildLoadingState() {
     return Center(
-      child: CircularProgressIndicator(
-        color: const Color(0xFF4A90E2),
-      ),
+      child: LazerVaultLoader.small(),
     );
   }
 

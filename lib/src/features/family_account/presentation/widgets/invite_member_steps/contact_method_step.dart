@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Step 1: Search & Select User
 /// Unified search across username, name, phone, email using ProfileCubit.searchUsers()
@@ -236,14 +237,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 24.h),
-        child: SizedBox(
-          width: 28.w,
-          height: 28.h,
-          child: const CircularProgressIndicator(
-            color: Color(0xFF3B82F6),
-            strokeWidth: 2,
-          ),
-        ),
+        child: LazerVaultLoader.medium(),
       ),
     );
   }

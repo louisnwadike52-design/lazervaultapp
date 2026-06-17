@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/src/features/support/domain/repositories/i_support_repository.dart';
 import 'package:lazervault/src/features/support/domain/entities/support_ticket.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
@@ -936,14 +937,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 ),
               ),
               child: isSubmitting
-                  ? SizedBox(
-                      height: 16.h,
-                      width: 16.w,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.tiny()
                   : Text(
                       'Submit',
                       style: GoogleFonts.inter(

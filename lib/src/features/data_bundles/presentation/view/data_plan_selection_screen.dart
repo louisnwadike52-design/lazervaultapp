@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/data_plan_entity.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DataPlanSelectionScreen extends StatefulWidget {
   const DataPlanSelectionScreen({super.key});
@@ -177,11 +178,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                   builder: (context, state) {
                     if (state is DataBundlesLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF3B82F6),
-                          ),
-                        ),
+                        child: LazerVaultLoader.small(),
                       );
                     }
 

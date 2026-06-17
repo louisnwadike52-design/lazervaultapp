@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class FamilyPendingInvitationsScreen extends StatefulWidget {
   const FamilyPendingInvitationsScreen({super.key});
@@ -150,7 +152,7 @@ class _FamilyPendingInvitationsScreenState
       builder: (context, state) {
         if (state is FamilyAccountLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            child: LazerVaultLoader.small(),
           );
         }
         if (state is PendingInvitationsLoaded) {
@@ -161,7 +163,7 @@ class _FamilyPendingInvitationsScreenState
         }
         // Transient accept/decline state → spinner while reload fires
         return const Center(
-          child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+          child: LazerVaultLoader.small(),
         );
       },
     );
@@ -192,7 +194,7 @@ class _FamilyPendingInvitationsScreenState
             builder: (context, state) {
               if (state is InvitationHistoryLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                  child: LazerVaultLoader.small(),
                 );
               }
               if (state is InvitationHistoryLoaded) {
@@ -342,7 +344,7 @@ class _FamilyPendingInvitationsScreenState
           if (e.initialAllocation > 0) ...[
             SizedBox(height: 8.h),
             Text(
-              'Initial allocation: \$${e.initialAllocation.toStringAsFixed(2)}',
+              'Initial allocation: ${CurrencySymbols.currentSymbol}${e.initialAllocation.toStringAsFixed(2)}',
               style: TextStyle(color: const Color(0xFF10B981), fontSize: 12.sp),
             ),
           ],
@@ -517,7 +519,7 @@ class _FamilyPendingInvitationsScreenState
               ),
               const Spacer(),
               Text(
-                '\$${invitation.initialAllocation.toStringAsFixed(2)}',
+                '${CurrencySymbols.currentSymbol}${invitation.initialAllocation.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: const Color(0xFF10B981),
                   fontSize: 14.sp,
@@ -541,7 +543,7 @@ class _FamilyPendingInvitationsScreenState
               ),
               const Spacer(),
               Text(
-                'Daily: \$${invitation.dailyLimit.toStringAsFixed(2)} / Monthly: \$${invitation.monthlyLimit.toStringAsFixed(2)}',
+                'Daily: ${CurrencySymbols.currentSymbol}${invitation.dailyLimit.toStringAsFixed(2)} / Monthly: ${CurrencySymbols.currentSymbol}${invitation.monthlyLimit.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 12.sp,

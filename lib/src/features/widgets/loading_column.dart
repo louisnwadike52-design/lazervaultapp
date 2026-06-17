@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LoadingColumn extends StatelessWidget {
   const LoadingColumn({required this.message, super.key});
@@ -10,7 +11,7 @@ class LoadingColumn extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
+          LazerVaultLoader.small(),
           const SizedBox(height: 10),
           Text("$message...")
         ],

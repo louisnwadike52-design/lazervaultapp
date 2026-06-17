@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/voice/managers/voice_activation_manager.
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
 import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
@@ -328,10 +327,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildLifestyleTab() {
-    return BlocProvider(
-      create: (_) => serviceLocator<LifestyleCubit>()..loadCategories(),
-      child: NewLifestyleScreen(onSwitchTab: _handleOnTabChange),
-    );
+    return NewLifestyleScreen(onSwitchTab: _handleOnTabChange);
   }
 
   /// Builds the dashboard tab with quick-action callbacks wired in. Mirrors

@@ -9,6 +9,7 @@ import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../services/airtime_pdf_service.dart';
 import '../utils/airtime_navigation_utils.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AirtimeDetailsScreen extends StatefulWidget {
   const AirtimeDetailsScreen({super.key});
@@ -149,10 +150,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               child: _isSharing
                   ? Padding(
                       padding: EdgeInsets.all(10.w),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                      child: LazerVaultLoader.tiny(),
                     )
                   : Icon(
                       Icons.share,
@@ -614,14 +612,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           child: OutlinedButton.icon(
             onPressed: _isDownloading ? null : () => _downloadReceipt(transaction),
             icon: _isDownloading
-                ? SizedBox(
-                    width: 16.w,
-                    height: 16.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.8)),
-                    ),
-                  )
+                ? LazerVaultLoader.tiny()
                 : Icon(
                     Icons.download,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -664,9 +655,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading transaction details...',

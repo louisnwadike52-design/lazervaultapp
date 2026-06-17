@@ -14,6 +14,7 @@ import '../cubit/water_auto_recharge_cubit.dart';
 import '../cubit/water_auto_recharge_state.dart';
 import '../cubit/water_beneficiary_cubit.dart';
 import '../cubit/water_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Saved water accounts. Mirrors the internet / data-bundles saved-contacts
 /// UX: list + tap-for-options + delete-with-rollover warning. Options:
@@ -149,10 +150,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
     }
     if (_loading && _beneficiaries == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(_primary),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
     }
     final list = _beneficiaries ?? const [];
@@ -702,14 +700,7 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
                       }
                     },
               child: loading
-                  ? SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(_primary),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 14)
                   : Text('Save',
                       style: TextStyle(
                           color: _primary,

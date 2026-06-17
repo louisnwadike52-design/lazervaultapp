@@ -11,6 +11,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../../services/exchange_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Exchange receipt — one widget for both flows (Convert + International
 /// Send Abroad). Visually modelled on the Send Funds
@@ -425,14 +426,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: 14.sp,
-                  height: 14.sp,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                LazerVaultLoader(size: 14)
               else if (icon != null)
                 Icon(icon, color: Colors.white, size: 16.sp),
               if (!isLoading && icon != null) SizedBox(width: 6.w),

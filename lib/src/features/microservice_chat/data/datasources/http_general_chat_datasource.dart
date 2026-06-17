@@ -122,6 +122,15 @@ class GeneralChatResponse {
   final String? previousService;
   final String timestamp;
   final Map<String, dynamic>? receiptData;
+  // PIN-entry prompt surfaced top-level by the gateway (mirrors receiptData).
+  // Drives the in-chat transaction PIN bottom sheet on the general chat path.
+  final Map<String, dynamic>? pinPrompt;
+  // Classified LLM-provider error code (insufficient_credit /
+  // model_not_found / auth_failed / provider_rate_limit / timeout / …).
+  // Surfaced top-level by the chat-agent-gateway so the cubit can
+  // forward it to the chat content widget, which renders the downgrade
+  // banner with a retry CTA. null when no LLM error occurred.
+  final String? llmErrorCode;
   final Map<String, dynamic>? metadata;
 
   GeneralChatResponse({
@@ -133,6 +142,8 @@ class GeneralChatResponse {
     this.previousService,
     required this.timestamp,
     this.receiptData,
+    this.pinPrompt,
+    this.llmErrorCode,
     this.metadata,
   });
 
@@ -156,6 +167,8 @@ class GeneralChatResponse {
       previousService: json['previous_service'] as String?,
       timestamp: json['timestamp'] as String? ?? '',
       receiptData: json['receipt_data'] as Map<String, dynamic>?,
+      pinPrompt: json['pin_prompt'] as Map<String, dynamic>?,
+      llmErrorCode: json['llm_error_code'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }

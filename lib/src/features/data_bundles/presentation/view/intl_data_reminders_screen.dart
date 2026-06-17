@@ -9,6 +9,7 @@ import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/data_reminder.dart';
 import '../cubit/data_reminder_cubit.dart';
 import '../cubit/data_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// International data reminders. Mirrors DataRemindersScreen but scoped to
 /// reminders whose linked beneficiary has country_code != 'NG'. Reuses the
@@ -168,10 +169,7 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen> {
                   if (state is DataReminderLoading ||
                       state is DataReminderInitial) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                      ),
+                      child: LazerVaultLoader.tiny(),
                     );
                   }
                   if (state is DataRemindersLoaded) {

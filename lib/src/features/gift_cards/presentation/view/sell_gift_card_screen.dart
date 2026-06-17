@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
@@ -19,6 +20,7 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'widgets/sell_rejection_reasons_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SellGiftCardScreen extends StatefulWidget {
   final SellableCard? preselectedCard;
@@ -161,7 +163,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         if (!didPop) _onBack();
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: kGiftCardBgTop,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -179,12 +181,12 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         ),
         centerTitle: true,
       ),
-      body: BlocConsumer<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(child: BlocConsumer<GiftCardCubit, GiftCardState>(
         listener: _onStateChanged,
         builder: (context, state) {
           if (state is SellableCardsLoading && _currentStep == 0) {
             return const Center(
-              child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+              child: LazerVaultLoader.small(),
             );
           }
           if (state is SellProcessing) {
@@ -192,7 +194,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           }
           return _buildCurrentStep(state);
         },
-      ),
+      )),
     ),
     );
   }
@@ -499,7 +501,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       return _buildErrorState(state.message);
     }
     return const Center(
-      child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+      child: LazerVaultLoader.small(),
     );
   }
 
@@ -1022,15 +1024,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                     ? null
                     : _onScanCardWithDialog,
                 icon: _isExtractingDetails
-                    ? SizedBox(
-                        width: 16.w,
-                        height: 16.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(
-                              InvoiceThemeColors.primaryPurple),
-                        ),
-                      )
+                    ? LazerVaultLoader.tiny()
                     : Icon(Icons.auto_awesome, size: 18.sp),
                 label: Text(
                   _isExtractingDetails
@@ -1168,10 +1162,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const CircularProgressIndicator(
-                          color: InvoiceThemeColors.primaryPurple,
-                          strokeWidth: 2,
-                        ),
+                        LazerVaultLoader.tiny(),
                         SizedBox(height: 10.h),
                         Text(
                           isPicking
@@ -1619,10 +1610,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 padding: EdgeInsets.symmetric(vertical: 24.h),
                 child: Column(
                   children: [
-                    const CircularProgressIndicator(
-                      color: InvoiceThemeColors.primaryPurple,
-                      strokeWidth: 2,
-                    ),
+                    LazerVaultLoader.tiny(),
                     SizedBox(height: 12.h),
                     Text(
                       'Getting best rate...',
@@ -2424,16 +2412,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 80.w,
-            height: 80.w,
-            child: CircularProgressIndicator(
-              value: state.progress,
-              strokeWidth: 4,
-              backgroundColor: const Color(0xFF2D2D2D),
-              color: InvoiceThemeColors.primaryPurple,
-            ),
-          ),
+          LazerVaultLoader(size: 80),
           SizedBox(height: 24.h),
           Text(
             state.currentStep,

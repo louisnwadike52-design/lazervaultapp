@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/move_transfer.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet explaining EXACTLY where a LazerBeam transfer is in its
 /// journey: which leg is running, whether money has left the source account,
@@ -258,14 +259,7 @@ class _MoveStatusInfoSheet extends StatelessWidget {
           color: const Color(0xFF10B981), size: 16.sp);
     }
     if (active) {
-      return SizedBox(
-        width: 16.sp,
-        height: 16.sp,
-        child: const CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(Color(0xFFFB923C)),
-        ),
-      );
+      return LazerVaultLoader.tiny();
     }
     return Icon(Icons.radio_button_unchecked,
         color: const Color(0xFF4B5563), size: 16.sp);

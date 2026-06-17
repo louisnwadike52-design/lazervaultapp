@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/src/features/plan_my_day/services/calendar_sync_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 final getIt = GetIt.instance;
 
@@ -50,9 +51,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
+              child: LazerVaultLoader.small(),
             )
           : SingleChildScrollView(
               padding: EdgeInsets.all(16.w),
@@ -256,14 +255,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
                       ),
                     ),
                     child: isSyncing
-                        ? SizedBox(
-                            width: 16.w,
-                            height: 16.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                            ),
-                          )
+                        ? LazerVaultLoader.tiny()
                         : Text(
                             'Sync Now',
                             style: TextStyle(

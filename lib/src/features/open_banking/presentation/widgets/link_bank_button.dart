@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Button widget for linking bank accounts
 class LinkBankButton extends StatelessWidget {
@@ -42,14 +43,7 @@ class LinkBankButton extends StatelessWidget {
           ),
         ),
         child: isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -88,14 +82,7 @@ class LinkBankButton extends StatelessWidget {
           ),
         ),
         child: isLoading
-            ? SizedBox(
-                width: 22.w,
-                height: 22.w,
-                child: const CircularProgressIndicator(
-                  color: Color(0xFF3B82F6),
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader(size: 22)
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

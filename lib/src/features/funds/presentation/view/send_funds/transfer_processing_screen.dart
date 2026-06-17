@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Transfer processing states from backend
 enum TransferProcessingStatus {
@@ -587,14 +588,7 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
             ),
           ),
           if (isCurrent && !_isCompleted)
-            SizedBox(
-              width: 16.w,
-              height: 16.h,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[400]!),
-              ),
-            ),
+            LazerVaultLoader.tiny(),
         ],
       ),
     );

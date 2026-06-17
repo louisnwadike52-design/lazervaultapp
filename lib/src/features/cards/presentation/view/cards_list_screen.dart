@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart'
     as card_entities;
 import 'package:lazervault/core/types/app_routes.dart';
@@ -76,9 +77,7 @@ class _CardsListScreenState extends State<CardsListScreen> {
         builder: (context, state) {
           if (state is CardLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF3B82F6),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 

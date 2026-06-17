@@ -1,4 +1,6 @@
-import 'dart:io'; // Added for Platform.isAndroid / Platform.isIOS
+// dart:io / device_info_plus were used to pick `.env` vs `.env.prod` by
+// physical-vs-emulator detection. The tier is now a build-time decision
+// via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,11 +9,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/data/datasources/cms_data.dart';
 import 'package:lazervault/src/features/presentation/app_router.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'core/services/endpoint_registry.dart';
+import 'src/core/config/app_environment.dart' show currentAppEnvironment;
 import 'core/services/injection_container.dart';
 import 'core/services/push_notifications_service.dart';
 import 'src/features/authentication/cubit/authentication_cubit.dart';
@@ -27,7 +32,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync_cubit.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
+// device_info_plus dropped — tier identity is build-time now (see above).
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/quick_actions_service.dart';
 import 'package:lazervault/src/core/services/deep_link_service.dart';
@@ -57,36 +62,34 @@ void main() async {
   FlutterNativeSplash.preserve(
       widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
 
-  // Determine .env file based on device type
-  String envFileName = ".env"; // Default to .env (for emulators or other platforms)
-  try {
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    if (Platform.isAndroid) {
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      if (androidInfo.isPhysicalDevice) {
-        envFileName = ".env.prod";
-      }
-    } else if (Platform.isIOS) {
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      if (iosInfo.isPhysicalDevice) {
-        envFileName = ".env.prod";
-      }
-    }
-  } catch (e) {
-    print("Error getting device info: $e. Defaulting to $envFileName");
-  }
-  
-  print("Attempting to load environment file: $envFileName");
+  // Single source of truth: always load `.env`. Per-tier source files
+  // (`.env.dev`, `.env.staging`, `.env.prod`) live alongside as the
+  // editable origin; `scripts/use-env.sh <tier>` copies the right one
+  // OVER `.env` before each build. This mirrors how the Go backend's
+  // `scripts/sync-env.sh` flips per-service `.env` files.
+  final tierName = currentAppEnvironment.tierName; // 'dev' / 'staging' / 'prod'
+  print("Build tier: $tierName, env source: .env "
+      "(populate via scripts/use-env.sh $tierName)");
 
   try {
-    // Load environment variables FIRST (before dependency injection)
-    await dotenv.load(fileName: envFileName);
-    print("$envFileName file loaded successfully.");
+    await dotenv.load(fileName: '.env');
+    print(".env file loaded successfully.");
   } catch (e) {
-    print("Error loading $envFileName file: $e");
-    // Consider how to handle errors - maybe default values are okay,
-    // or maybe the app shouldn't start without certain variables.
+    print("WARNING: could not load .env: $e — using compiled-in defaults.");
   }
+
+  // Initialise the backend URL registry BEFORE dependency injection so
+  // every grpc/http/ws factory reads the already-cached URLs on first
+  // construction. The call is fast (single SharedPreferences read) and
+  // never blocks on the network — the background refresh fires off
+  // asynchronously and updates the cache for the NEXT cold start.
+  await endpointRegistry.ensureReady();
+
+  // Hydrate the feature-flag cache from SharedPreferences before any widget
+  // reads a synchronous flag (e.g. dashboard's `FeatureFlags.dashboardCardsVisible`).
+  // The admin-side refresh that bulk-updates flags via
+  // `FeatureFlags.applyRemoteSnapshot` rides on top of this baseline.
+  await FeatureFlags.init();
 
   // Initialize dependency injection (after env vars are loaded)
   await init();
@@ -122,13 +125,24 @@ void main() async {
     ),
   );
 
-  runApp(const MyApp());
+  // Resolve the destination BEFORE mounting any Flutter UI. The native
+  // splash stays visible behind us during this read — there is no
+  // separate Flutter splash widget. As soon as we know where the user
+  // belongs (dashboard / sign-in / onboarding / passcode), MyApp mounts
+  // that route directly, and the native splash is dismissed on the
+  // first frame the destination paints. Net effect: ONE splash, no
+  // visible handoff.
+  final initialRoute = await _determineInitialRoute();
+
+  runApp(MyApp(initialRoute: initialRoute));
 
   // Initialize app icon quick actions (long-press shortcuts)
   QuickActionsService.instance.initialize();
 
-  // Remove the splash screen after the app has been fully initialized
-  FlutterNativeSplash.remove();
+  // Process any pending quick action shortcut that launched the app.
+  // (Previously this fired inside SplashScreen.initState; with the
+  // splash removed it lands here so the shortcut still gets honoured.)
+  QuickActionsService.instance.processPendingShortcut();
 }
 
 /// Helper function to determine the initial route based on authentication status
@@ -239,47 +253,14 @@ String? _getRouteForSignupStep(String? step) {
   }
 }
 
-/// Auth check screen that determines where to navigate on app start
-class AuthCheckScreen extends StatefulWidget {
-  const AuthCheckScreen({super.key});
-
-  @override
-  State<AuthCheckScreen> createState() => _AuthCheckScreenState();
-}
-
-class _AuthCheckScreenState extends State<AuthCheckScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthAndNavigate();
-  }
-
-  Future<void> _checkAuthAndNavigate() async {
-    final initialRoute = await _determineInitialRoute();
-
-    // Small delay to ensure app is ready
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    if (mounted) {
-      Get.offAllNamed(initialRoute);
-      // Process any quick action shortcut that launched the app
-      QuickActionsService.instance.processPendingShortcut();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-}
-
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  /// The resolved boot route. Determined synchronously by main() BEFORE
+  /// runApp so the native splash stays visible through the read and the
+  /// app boots straight onto the user's destination — no Flutter splash
+  /// surface in between.
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -292,6 +273,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _bootstrapDeepLinks();
+    // Dismiss the native splash on the first frame the destination
+    // screen paints — this is the seam where the OS surface hands off
+    // to Flutter rendering. By keeping the native splash up until then,
+    // there's no visible "two splash" handoff.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
   }
 
   @override
@@ -425,10 +413,15 @@ class _MyAppState extends State<MyApp> {
                   ),
             ),
           ),
-          initialRoute: AppRoutes.authCheck,
+          initialRoute: widget.initialRoute,
           unknownRoute: GetPage(
             name: '/not-found',
-            page: () => const AuthCheckScreen(),
+            // Unknown route → empty purple frame matches the native
+            // splash, so a misrouted boot doesn't flash a white screen.
+            page: () => const Scaffold(
+              backgroundColor: Color(0xFF3D2F8B),
+              body: SizedBox.shrink(),
+            ),
           ),
           getPages: AppRouter.routes,
         ),

@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CustomerListScreen extends StatefulWidget {
   const CustomerListScreen({super.key});
@@ -263,9 +264,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       builder: (context, state) {
         if (state is CustomerLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/investments/presentation/navigation/inve
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lean **Home** tab: discovery (movers, featured, pulse). Portfolio, watchlist,
 /// orders, and news live under the top pills — use [onJumpToSegment] to switch there.
@@ -131,7 +132,7 @@ class _InvestMarketLandingScrollState extends State<InvestMarketLandingScroll> {
     final accent = widget.hub.accentColor;
 
     if (_loading) {
-      return Center(child: CircularProgressIndicator(color: accent));
+      return Center(child: LazerVaultLoader.small());
     }
 
     if (_error != null) {

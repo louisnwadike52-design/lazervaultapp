@@ -9,6 +9,7 @@ import '../../../../../core/widgets/bill_history_actions_sheet.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/education_history_entity.dart';
 import '../cubit/education_history_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EducationHistoryScreen extends StatefulWidget {
   const EducationHistoryScreen({super.key});
@@ -218,9 +219,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
           if (state is EducationHistoryLoading &&
               state is! EducationHistoryLoaded) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(_accent),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -230,9 +229,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
 
           if (state is EducationHistoryInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(_accent),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -256,9 +253,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(_accent),
-                        ),
+                        child: LazerVaultLoader.small(),
                       ),
                     );
                   }

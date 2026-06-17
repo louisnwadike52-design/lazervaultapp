@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Opens a legal document (Terms of Service / Privacy Policy) in a themed in-app
 /// WebView, presented as a bottom sheet at 85% of the screen height. The URL is
@@ -117,7 +118,7 @@ class _LegalWebViewSheetState extends State<LegalWebViewSheet> {
                         ),
                         if (_loading)
                           const Center(
-                            child: CircularProgressIndicator(color: _indigo),
+                            child: LazerVaultLoader.small(),
                           ),
                       ],
                     ),

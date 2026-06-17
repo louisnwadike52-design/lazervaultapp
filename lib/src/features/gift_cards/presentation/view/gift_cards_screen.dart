@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,6 +15,7 @@ import '../../../microservice_chat/presentation/widgets/microservice_chat_icon.d
 import '../../../widgets/service_voice_button.dart';
 import 'widgets/country_selection_bottomsheet.dart';
 import 'widgets/gift_card_error_widget.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GiftCardsScreen extends StatefulWidget {
   const GiftCardsScreen({super.key});
@@ -112,8 +114,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
         },
         child: Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
-          body: SafeArea(
+          backgroundColor: kGiftCardBgTop,
+          body: GiftCardBackground(child: SafeArea(
             child: Column(
               children: [
                 _buildHeader(),
@@ -128,14 +130,30 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                     onRefresh: _onRefresh,
                     color: InvoiceThemeColors.primaryPurple,
                     backgroundColor: const Color(0xFF1F1F1F),
-                    child: _currentTab == 0
-                        ? _buildBrandsList(context.watch<GiftCardCubit>().state)
-                        : _buildSellableCardsList(context.watch<GiftCardCubit>().state),
+                    // `buildWhen` filters out cubit emissions that belong
+                    // to the OTHER tab's data fetch (SellableCards*,
+                    // SellRate*, SupportedCountriesLoaded, etc.). Without
+                    // it, `context.watch` rebuilt the brand grid every
+                    // time loadSellableCards()/loadSupportedCountries()
+                    // (both kicked off from initState) emitted a state,
+                    // which dropped through the brand-grid fall-through
+                    // and re-triggered loadGiftCardBrands() + flashed
+                    // shimmer over a settled "no brand" / loaded grid.
+                    child: BlocBuilder<GiftCardCubit, GiftCardState>(
+                      buildWhen: (prev, curr) {
+                        return _currentTab == 0
+                            ? _isBrandTabState(curr)
+                            : _isSellTabState(curr);
+                      },
+                      builder: (context, state) => _currentTab == 0
+                          ? _buildBrandsList(state)
+                          : _buildSellableCardsList(state),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
+          )),
         ),
       ),
     );
@@ -481,6 +499,33 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     );
   }
 
+  // Filters for the per-tab BlocBuilder. Brand and sell flows share one
+  // cubit but emit independent state families; without these gates the
+  // brand grid rebuilt on every SellableCards*/SupportedCountriesLoaded
+  // emission and re-fired loadGiftCardBrands() through the fall-through
+  // branch in _buildBrandsList, flashing shimmer over a settled grid.
+  bool _isBrandTabState(GiftCardState s) =>
+      s is GiftCardInitial ||
+      s is GiftCardBrandsLoading ||
+      s is GiftCardBrandsLoaded ||
+      s is GiftCardBrandsLoadingMore ||
+      s is GiftCardBrandsSearched ||
+      s is GiftCardBrandsEmpty ||
+      s is GiftCardTimeoutError ||
+      s is GiftCardServerUnavailable ||
+      s is GiftCardNetworkError ||
+      s is GiftCardError;
+
+  bool _isSellTabState(GiftCardState s) =>
+      s is GiftCardInitial ||
+      s is SellableCardsLoading ||
+      s is SellableCardsLoaded ||
+      s is SellableCardsEmpty ||
+      s is GiftCardTimeoutError ||
+      s is GiftCardServerUnavailable ||
+      s is GiftCardNetworkError ||
+      s is GiftCardError;
+
   Widget _buildBrandsList(GiftCardState state) {
     if (state is GiftCardBrandsLoading) {
       return _buildLoadingGrid();
@@ -581,14 +626,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           return Center(
             child: Padding(
               padding: EdgeInsets.all(16.w),
-              child: SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: InvoiceThemeColors.primaryPurple,
-                ),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           );
         }

@@ -9,6 +9,7 @@ import '../../domain/repositories/electricity_bill_repository.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaymentProcessingScreen extends StatefulWidget {
   const PaymentProcessingScreen({super.key});
@@ -24,6 +25,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
   int _currentStep = 0;
   bool _isComplete = false;
   bool _hasFailed = false;
+  bool _isAsyncPending = false;
   String _failMessage = '';
 
   ElectricityProviderEntity? _provider;
@@ -158,6 +160,56 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     super.dispose();
   }
 
+  /// Schedule advancing [_currentStep] to [target] after [after]. Subsequent
+  /// terminal-state callbacks short-circuit if a later step has already been
+  /// scheduled or reached.
+  void _scheduleStep(int target, {required Duration after}) {
+    Future.delayed(after, () {
+      if (!mounted || _hasFailed) return;
+      if (_currentStep < target) {
+        setState(() => _currentStep = target);
+      }
+    });
+  }
+
+  /// Walk from the current step to [finalStep] with short delays so the
+  /// user sees each indicator light up, then call [onArrive].
+  ///   - sync success → finalStep = 3 (Token Generated) → navigate.
+  ///   - async pending → finalStep = 2 (Processing) + pending hint → navigate.
+  void _runToReceipt({
+    required int finalStep,
+    required bool pending,
+    required VoidCallback onArrive,
+  }) {
+    if (!mounted || _hasFailed) return;
+    if (pending && !_isAsyncPending) {
+      setState(() => _isAsyncPending = true);
+    }
+    final stepDelay = const Duration(milliseconds: 600);
+    final pendingHintDwell = const Duration(milliseconds: 1200);
+
+    final stepsToAnimate = <int>[];
+    for (var s = _currentStep + 1; s <= finalStep; s++) {
+      stepsToAnimate.add(s);
+    }
+
+    Duration cumulative = Duration.zero;
+    for (final step in stepsToAnimate) {
+      cumulative += stepDelay;
+      Future.delayed(cumulative, () {
+        if (!mounted || _hasFailed) return;
+        setState(() => _currentStep = step);
+      });
+    }
+    final arriveDelay = pending
+        ? cumulative + pendingHintDwell
+        : cumulative + const Duration(milliseconds: 400);
+    Future.delayed(arriveDelay, () {
+      if (!mounted || _hasFailed) return;
+      onArrive();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_argsValid) {
@@ -186,11 +238,13 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
         body: SafeArea(
           child: BlocListener<ElectricityBillCubit, ElectricityBillState>(
             listener: (context, state) {
-              // Step progression is purely state-driven:
-              //   PaymentInitiating -> step 0 (submitted)
-              //   PaymentInitiated  -> step 1 (details confirmed on server)
-              //   AsyncPaymentPending / PaymentSuccess -> step 2 (processing)
-              //     then we navigate off-screen to the receipt.
+              // Visual step progression. Backend may emit terminal states
+              // (PaymentSuccess / AsyncPaymentPending) very quickly after
+              // PaymentInitiated, so we DRIVE the intermediate steps from
+              // a short staged timeline once we have the start signal. That
+              // way the user actually sees the flow (Confirming Details →
+              // Processing Payment → Token Generated / Pending) instead of
+              // a flash from step 0 to the receipt.
               if (state is PaymentInitiating) {
                 print('[PaymentProcessing] State: PaymentInitiating');
                 if (!_hasFailed && _currentStep != 0) {
@@ -202,28 +256,42 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 print('[PaymentProcessing] State: PaymentInitiated (id=${state.payment.id})');
                 if (!_hasFailed && _currentStep < 1) {
                   setState(() => _currentStep = 1);
+                  _scheduleStep(2, after: const Duration(milliseconds: 700));
                 }
               }
 
               if (state is PaymentSuccess) {
-                Get.offNamed(
-                  AppRoutes.electricityBillReceipt,
-                  arguments: {
-                    'payment': state.payment,
-                    ..._keepAliveArgs,
+                _runToReceipt(
+                  finalStep: 3,
+                  pending: false,
+                  onArrive: () {
+                    Get.offNamed(
+                      AppRoutes.electricityBillReceipt,
+                      arguments: {
+                        'payment': state.payment,
+                        ..._keepAliveArgs,
+                      },
+                    );
                   },
                 );
               }
 
               if (state is AsyncPaymentPending) {
-                // Async mode: payment accepted, token coming via SMS/webhook.
-                // Send user to receipt screen to show status + receive
-                // live updates via BalanceWebSocket.
-                Get.offNamed(
-                  AppRoutes.electricityBillReceipt,
-                  arguments: {
-                    'payment': state.payment,
-                    ..._keepAliveArgs,
+                // Async mode: payment accepted by the provider queue, token
+                // arrives later via webhook/SMS. Walk to step 2 (Processing),
+                // show the "we'll reflect when ready" hint, then navigate.
+                // The receipt screen already handles the pending state.
+                _runToReceipt(
+                  finalStep: 2,
+                  pending: true,
+                  onArrive: () {
+                    Get.offNamed(
+                      AppRoutes.electricityBillReceipt,
+                      arguments: {
+                        'payment': state.payment,
+                        ..._keepAliveArgs,
+                      },
+                    );
                   },
                 );
               }
@@ -256,7 +324,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   _buildPaymentSummary(provider, validationResult, amount),
                   const Spacer(flex: 2),
                   if (_hasFailed) _buildFailureInfo(),
-                  if (!_hasFailed && !_isComplete) _buildSecurityNote(),
+                  if (!_hasFailed && _isAsyncPending) _buildPendingHint(),
+                  if (!_hasFailed && !_isAsyncPending && !_isComplete)
+                    _buildSecurityNote(),
                   SizedBox(height: 32.h),
                 ],
               ),
@@ -371,15 +441,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   ),
                   // Status indicator
                   if (isActive && !_hasFailed)
-                    SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(step.activeColor),
-                      ),
-                    ),
+                    LazerVaultLoader.small(),
                   if (isCompleted || isFinalComplete)
                     Icon(
                       Icons.check_circle,
@@ -565,6 +627,37 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildPendingHint() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFB923C).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.hourglass_top,
+              size: 18.sp, color: const Color(0xFFFB923C)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'Processing in the background — your electricity token will '
+              'appear on the receipt once the provider confirms.',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFFFB923C),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

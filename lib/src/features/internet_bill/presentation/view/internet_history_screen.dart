@@ -11,6 +11,7 @@ import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
 
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/internet_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Internet bill purchase history. Lists every bill_payment row with
 /// bill_type=internet for the current user, newest first. Tapping any
@@ -172,7 +173,7 @@ class _InternetHistoryScreenState extends State<InternetHistoryScreen> {
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
               return const Center(
-                child: CircularProgressIndicator(color: _accent),
+                child: LazerVaultLoader.small(),
               );
             }
             if (snap.hasError) {

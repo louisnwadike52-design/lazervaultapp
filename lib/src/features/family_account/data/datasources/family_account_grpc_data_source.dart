@@ -217,6 +217,7 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     try {
       final request = family_pb.AllocateFundsRequest(
@@ -224,6 +225,7 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         memberId: memberId,
         amount: amount,
         description: description ?? '',
+        idempotencyKey: idempotencyKey ?? '',
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
@@ -314,11 +316,24 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   }
 
   @override
+  Future<double> leaveFamilyAccount({required String familyId}) async {
+    try {
+      final request = family_pb.LeaveFamilyAccountRequest(familyId: familyId);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.leaveFamilyAccount(request, options: callOptions);
+      return response.returnedBalance;
+    } on GrpcError catch (e) {
+      throw mapGrpcError(e);
+    }
+  }
+
+  @override
   Future<FamilyAccountProto> processMemberContribution({
     required String familyId,
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     try {
       final request = family_pb.ProcessMemberContributionRequest(
@@ -326,6 +341,7 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         memberId: memberId,
         amount: amount,
         description: description ?? '',
+        idempotencyKey: idempotencyKey ?? '',
       );
 
       final callOptions = await _callOptionsHelper.withAuth();

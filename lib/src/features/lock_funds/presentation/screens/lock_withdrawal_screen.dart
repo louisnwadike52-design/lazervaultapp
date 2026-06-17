@@ -9,6 +9,7 @@ import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import 'lock_withdrawal_success_screen.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockWithdrawalScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -481,14 +482,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
             ),
             child: Center(
               child: _isProcessing
-                  ? SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       widget.isEarlyWithdrawal ? 'Break Lock & Withdraw' : 'Withdraw Funds',
                       style: GoogleFonts.inter(

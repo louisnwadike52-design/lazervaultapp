@@ -39,12 +39,18 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   final http.Client httpClient;
   final SecureStorageService secureStorage;
   final String chatGatewayBaseUrl;
+  // Explicit core-payments REST base URL (e.g. https://api.lazervault.app
+  // in prod, http://10.0.2.2:8080 in dev). When unset, the previous
+  // chat-gateway port-swap behaviour kicks in as a back-compat fallback.
+  // Always favour the explicit env var via injection_container.
+  final String? corePaymentsBaseUrl;
 
   AiScanRemoteDataSourceImpl({
     required this.grpcClient,
     required this.httpClient,
     required this.secureStorage,
     required this.chatGatewayBaseUrl,
+    this.corePaymentsBaseUrl,
   });
 
   /// Build HTTP headers with all required metadata
@@ -435,10 +441,13 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         'verification_token': verificationToken,
       });
 
-      // Call payment service via gRPC or HTTP
-      // For now, using HTTP to core-payments-service REST endpoint
-      final paymentServiceUrl =
-          chatGatewayBaseUrl.replaceAll('3011', '8080'); // TODO: Use proper config
+      // Resolve core-payments base URL. Prefer the explicit injected
+      // value; fall back to the historic port-swap derivation when none
+      // is wired (kept so existing deployments don't break, but the
+      // setup script populates CORE_PAYMENTS_BASE_URL).
+      final paymentServiceUrl = corePaymentsBaseUrl?.isNotEmpty == true
+          ? corePaymentsBaseUrl!
+          : chatGatewayBaseUrl.replaceAll('3011', '8080');
       final uri = Uri.parse('$paymentServiceUrl/api/v1/payments/bank-details');
 
       final headers = await _getHeaders();

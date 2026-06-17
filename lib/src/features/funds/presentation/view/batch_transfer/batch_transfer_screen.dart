@@ -27,6 +27,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Landing screen for the Batch Transfer surface. Switches the previous
 /// nested `Column → Expanded(SingleChildScrollView(Column))` layout —
@@ -252,12 +253,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                   return SizedBox(
                     height: 92.h,
                     child: Center(
-                      child: SizedBox(
-                        width: 22.w,
-                        height: 22.w,
-                        child: const CircularProgressIndicator(
-                            strokeWidth: 2, color: btBlue),
-                      ),
+                      child: LazerVaultLoader(size: 22),
                     ),
                   );
                 }
@@ -747,11 +743,10 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
               builder: (context, state) {
                 if (state is SavedBatchesLoading ||
                     state is SavedBatchesInitial) {
-                  return SizedBox(
-                    height: 72.h,
-                    child: const Center(
-                        child: CircularProgressIndicator(color: btBlue)),
-                  );
+                  // Inline list-row loader — `.small()` (20px) matches
+                  // the "Saved batches" row scale. `.large()` made the
+                  // ribbon dominate the section.
+                  return const Center(child: LazerVaultLoader.small());
                 }
                 if (state is SavedBatchesError) {
                   return _emptySavedBatches(

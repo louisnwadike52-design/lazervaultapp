@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart'
     show AuthenticationSuccess;
 import 'package:lazervault/core/services/account_manager.dart';
@@ -446,10 +447,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: const Color(0xFF3B82F6),
-                    strokeWidth: 2,
-                  ),
+                  child: LazerVaultLoader.tiny(),
                 ),
               );
             }
@@ -721,14 +719,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          width: 20.w,
-                          height: 20.h,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
+                        LazerVaultLoader.small(),
                         SizedBox(width: 12.w),
                         Text(
                           'Processing Payment...',

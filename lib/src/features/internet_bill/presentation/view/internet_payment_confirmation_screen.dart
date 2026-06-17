@@ -18,6 +18,7 @@ import '../cubit/internet_auto_recharge_cubit.dart';
 import '../cubit/internet_beneficiary_cubit.dart';
 import '../widgets/internet_rollover_preference_sheet.dart';
 import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Confirm-payment screen for internet subscriptions. Mirrors the data
 /// bundles confirm screen — same save-as-beneficiary + rollover UX so
@@ -407,15 +408,7 @@ class _InternetPaymentConfirmationScreenState
                       ),
                     ),
                     child: _isProcessing
-                        ? SizedBox(
-                            width: 24.w,
-                            height: 24.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             'Pay \u20A6${_currencyFormat.format(package.displayAmount)}',
                             style: GoogleFonts.inter(

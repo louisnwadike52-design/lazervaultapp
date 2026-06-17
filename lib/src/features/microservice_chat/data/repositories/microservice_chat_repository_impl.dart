@@ -151,6 +151,20 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
           metadata = {'receipt_data': receiptDataFromEntities};
         }
 
+        // PIN-prompt history hydration. The chat-agent-gateway saves
+        // `metadata.pin_prompt` alongside `metadata.receipt_data`, but
+        // the prior history mapper ignored it — so a PIN flow
+        // interrupted by an app restart never re-opened on resume.
+        // Stash the raw payload here; a second pass below keeps it
+        // only on the LATEST assistant turn (PIN prompts are
+        // single-use, so re-emitting on an older message would re-open
+        // a modal for a transaction the user already settled).
+        final pinPromptFromMetadata = msg.metadata?['pin_prompt'];
+        if (pinPromptFromMetadata is Map<String, dynamic>) {
+          metadata = (metadata ?? <String, dynamic>{})
+            ..['pin_prompt'] = pinPromptFromMetadata;
+        }
+
         final isUser = msg.role == 'user';
         return MicroserviceChatMessageEntity(
           text: isUser ? maskIfPin(msg.content) : msg.content,
@@ -162,6 +176,27 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
           metadata: metadata,
         );
       }).toList();
+
+      // Second pass: PIN prompts are single-use. Strip pin_prompt from
+      // every assistant message EXCEPT the most recent one so the
+      // bottom sheet only re-appears when the prompt was the last
+      // thing the agent said (i.e. genuinely interrupted by an app
+      // restart). Receipt cards stay on every message — they're
+      // history artifacts, not active CTAs.
+      int latestBotIdx = -1;
+      for (var i = messages.length - 1; i >= 0; i--) {
+        if (!messages[i].isUser) {
+          latestBotIdx = i;
+          break;
+        }
+      }
+      for (var i = 0; i < messages.length; i++) {
+        if (i == latestBotIdx) continue;
+        final meta = messages[i].metadata;
+        if (meta != null && meta.containsKey('pin_prompt')) {
+          meta.remove('pin_prompt');
+        }
+      }
 
       return Right(messages);
     } catch (e) {

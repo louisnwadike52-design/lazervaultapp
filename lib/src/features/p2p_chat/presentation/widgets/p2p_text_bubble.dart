@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class P2PTextBubble extends StatelessWidget {
   final P2PMessageEntity message;
@@ -83,14 +84,7 @@ class P2PTextBubble extends StatelessWidget {
         return Icon(Icons.done,
             size: 14.w, color: Colors.white.withOpacity(0.6));
       case 'sending':
-        return SizedBox(
-          width: 12.w,
-          height: 12.w,
-          child: CircularProgressIndicator(
-            strokeWidth: 1.5,
-            color: Colors.white.withOpacity(0.5),
-          ),
-        );
+        return LazerVaultLoader(size: 12);
       case 'failed':
         return GestureDetector(
           onTap: onRetry,

@@ -10,6 +10,7 @@ import '../../data/datasources/water_beneficiary_remote_datasource.dart';
 import '../../domain/entities/water_auto_recharge.dart';
 import '../../domain/entities/water_beneficiary.dart';
 import '../../domain/entities/water_provider_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Water Bill payment confirmation.
 ///
@@ -469,14 +470,7 @@ class _WaterBillPaymentConfirmationScreenNewState
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 18.w,
-            height: 18.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-            ),
-          ),
+          LazerVaultLoader(size: 18),
           SizedBox(width: 12.w),
           Text(
             'Checking saved state…',

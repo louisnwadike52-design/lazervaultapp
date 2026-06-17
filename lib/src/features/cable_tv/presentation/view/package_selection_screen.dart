@@ -10,6 +10,7 @@ import '../../domain/entities/smart_card_validation_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PackageSelectionScreen extends StatefulWidget {
   const PackageSelectionScreen({super.key});
@@ -138,11 +139,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                   builder: (context, state) {
                     if (state is CableTVLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF3B82F6),
-                          ),
-                        ),
+                        child: LazerVaultLoader.small(),
                       );
                     }
 

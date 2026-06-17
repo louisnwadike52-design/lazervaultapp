@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Model for lazertag user search results
 class LazertagUser {
@@ -630,7 +631,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       builder: (context, state) {
         if (state is RecipientLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+            child: LazerVaultLoader.small(),
           );
         } else if (state is RecipientLoaded) {
           final filteredRecipients = _filterRecipients(state.recipients);
@@ -655,7 +656,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           if (!hasSavedMatches && !hasPlatformResults && _searchQuery.isNotEmpty) {
             if (_isLoadingLazertag) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+                child: LazerVaultLoader.small(),
               );
             }
             return _buildEmptyState(
@@ -703,7 +704,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               if (!hasSavedMatches && !hasPlatformResults && _isLoadingLazertag)
                 const Padding(
                   padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator(color: Color(0xFF4E03D0))),
+                  child: Center(child: LazerVaultLoader.small()),
                 ),
             ],
           );
@@ -719,7 +720,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   Widget _buildLazertagTab(ScrollController scrollController) {
     if (_isLoadingLazertag) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.blue),
+        child: LazerVaultLoader.small(),
       );
     }
 
@@ -764,7 +765,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   Widget _buildContactsTab(ScrollController scrollController) {
     if (_isLoadingContacts) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.blue),
+        child: LazerVaultLoader.small(),
       );
     }
 

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ProductivityInsightsScreen extends StatefulWidget {
   const ProductivityInsightsScreen({super.key});
@@ -112,7 +113,7 @@ class _ProductivityInsightsScreenState
           builder: (context, state) {
             if (state is PlanMyDayLoading && _insights == null) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF10B981)),
+                child: LazerVaultLoader.small(),
               );
             }
             if (state is PlanMyDayError && _insights == null) {
@@ -285,17 +286,7 @@ class _ProductivityInsightsScreenState
                 width: 100.w,
                 height: 100.w,
                 child: Center(
-                  child: SizedBox(
-                    width: 80.w,
-                    height: 80.w,
-                    child: CircularProgressIndicator(
-                      value: fraction,
-                      strokeWidth: 8,
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  ),
+                  child: LazerVaultLoader(size: 80),
                 ),
               ),
             ],

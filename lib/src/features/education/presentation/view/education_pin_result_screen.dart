@@ -11,6 +11,7 @@ import '../../domain/entities/education_pin_entity.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../../domain/entities/education_purchase_entity.dart';
 import '../../services/education_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EducationPinResultScreen extends StatefulWidget {
   const EducationPinResultScreen({super.key});
@@ -652,14 +653,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
             ),
             alignment: Alignment.center,
             child: loading
-                ? SizedBox(
-                    width: 22.sp,
-                    height: 22.sp,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                    ),
-                  )
+                ? LazerVaultLoader(size: 22)
                 : Icon(icon, color: color, size: 24.sp),
           ),
         ),

@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 
 import 'create_stock_trade_carousel.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Unified entry: optional [Stock] in route args, else symbol lookup then carousel.
 class StockTradeFlowScreen extends StatefulWidget {
@@ -196,7 +197,7 @@ class _StockTradeFlowScreenState extends State<StockTradeFlowScreen> {
                         const ColoredBox(
                           color: Color(0x66000000),
                           child: Center(
-                            child: CircularProgressIndicator(),
+                            child: LazerVaultLoader.small(),
                           ),
                         ),
                     ],

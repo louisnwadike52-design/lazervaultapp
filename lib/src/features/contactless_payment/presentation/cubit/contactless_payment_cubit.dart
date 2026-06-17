@@ -1,16 +1,119 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
+import '../../services/contactless_websocket_service.dart';
 import 'contactless_payment_state.dart';
+
+/// Health of the realtime WS overlay. Receiver screen reads this to
+/// decide its polling cadence — `connecting`/`connected` ⇒ 3s normal,
+/// `failed` ⇒ 1s tightened polling so the receipt still lands within
+/// a single tick of the payer's debit even when push delivery is broken.
+enum ContactlessWsHealth { connecting, connected, failed }
 
 class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
   final ContactlessPaymentRepository repository;
+  // Realtime WS overlay (optional — null-safe so existing callers and
+  // tests that don't pass one still work). When set, [subscribeToSession]
+  // wires the channel; an incoming `contactless.session.completed` event
+  // triggers a `checkSessionStatus` call so the cubit lands on the same
+  // final state the polling path produces.
+  final ContactlessWebSocketService? wsService;
+  StreamSubscription<ContactlessStatusEvent>? _wsSub;
+  StreamSubscription<ContactlessWebSocketConnectionState>? _wsConnSub;
+  Timer? _wsTimeoutTimer;
+  bool _wsConnected = false;
+  String? _activeSessionId;
+  /// Publicly observable WS health. The broadcast screen listens here:
+  /// `connected` → keeps the relaxed 3s poll; `failed` → tightens to 1s
+  /// so a permanently-dead WS still settles within ~1s of the payer's
+  /// debit landing.
+  final ValueNotifier<ContactlessWsHealth> wsHealth =
+      ValueNotifier(ContactlessWsHealth.connecting);
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(seconds: 2);
+  // If the WS connect hasn't fired a `connected` state-event within this
+  // window, the existing polling path takes over. Polling continues
+  // forever on its own cadence so even a permanently-failed WS doesn't
+  // break the flow.
+  static const Duration _wsConnectTimeout = Duration(seconds: 8);
 
-  ContactlessPaymentCubit({required this.repository})
-      : super(ContactlessPaymentInitial());
+  ContactlessPaymentCubit({
+    required this.repository,
+    this.wsService,
+  }) : super(ContactlessPaymentInitial());
+
+  /// Connect the WS overlay for the receiver-side session view. Idempotent
+  /// — safe to call multiple times; only one subscription is held.
+  /// Called from `nfc_broadcast_screen` after `PaymentSessionCreated`
+  /// emits. Polling continues regardless so this is pure speedup.
+  Future<void> subscribeToSession({
+    required String userId,
+    required String accessToken,
+    required String sessionId,
+  }) async {
+    if (wsService == null) {
+      wsHealth.value = ContactlessWsHealth.failed;
+      return;
+    }
+    _activeSessionId = sessionId;
+    wsHealth.value = ContactlessWsHealth.connecting;
+    try {
+      await wsService!.connect(userId: userId, accessToken: accessToken);
+      _wsSub?.cancel();
+      _wsSub = wsService!.updates.listen(_onWsEvent);
+      _wsConnSub?.cancel();
+      _wsConnSub = wsService!.connectionState.listen((s) {
+        if (s == ContactlessWebSocketConnectionState.connected) {
+          _wsConnected = true;
+          wsHealth.value = ContactlessWsHealth.connected;
+        } else if (s == ContactlessWebSocketConnectionState.error ||
+            s == ContactlessWebSocketConnectionState.disconnected) {
+          _wsConnected = false;
+          wsHealth.value = ContactlessWsHealth.failed;
+        }
+      });
+      _wsConnected = true;
+      wsHealth.value = ContactlessWsHealth.connected;
+      _wsTimeoutTimer?.cancel();
+      _wsTimeoutTimer = Timer(_wsConnectTimeout, () {
+        if (!_wsConnected) {
+          wsHealth.value = ContactlessWsHealth.failed;
+          // ignore: avoid_print
+          print('ContactlessPaymentCubit: WS connect timed out — '
+              'screen should tighten polling to 1s');
+        }
+      });
+    } catch (e) {
+      wsHealth.value = ContactlessWsHealth.failed;
+      // ignore: avoid_print
+      print('ContactlessPaymentCubit: WS connect failed: $e — '
+          'screen should tighten polling to 1s');
+    }
+  }
+
+  void _onWsEvent(ContactlessStatusEvent ev) {
+    if (ev.sessionId != _activeSessionId) return;
+    if (ev.eventType == 'contactless.session.completed' &&
+        _activeSessionId != null) {
+      // Fast-path: re-pull the session detail so the receipt screen has
+      // the canonical transaction record. The polling loop would do the
+      // same on its next tick — this just races ahead.
+      // ignore: discarded_futures
+      checkSessionStatus(_activeSessionId!);
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    _wsTimeoutTimer?.cancel();
+    await _wsSub?.cancel();
+    await _wsConnSub?.cancel();
+    wsHealth.dispose();
+    await wsService?.disconnect();
+    return super.close();
+  }
 
   /// Categorize error and determine if retryable
   (ContactlessErrorType, bool) _categorizeError(dynamic error) {

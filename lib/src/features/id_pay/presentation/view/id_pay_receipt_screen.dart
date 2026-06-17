@@ -6,6 +6,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_transaction_entity.dart';
 import '../../services/id_pay_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayReceiptScreen extends StatefulWidget {
   const IDPayReceiptScreen({super.key});
@@ -304,14 +305,7 @@ class _IDPayReceiptScreenState extends State<IDPayReceiptScreen> {
             child: OutlinedButton.icon(
               onPressed: _isSharing ? null : _shareReceipt,
               icon: _isSharing
-                  ? SizedBox(
-                      width: 18.sp,
-                      height: 18.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Icon(Icons.share, size: 18.sp),
               label: Text(
                 _isSharing ? 'Sharing...' : 'Share',
@@ -335,14 +329,7 @@ class _IDPayReceiptScreenState extends State<IDPayReceiptScreen> {
             child: OutlinedButton.icon(
               onPressed: _isDownloading ? null : _downloadReceipt,
               icon: _isDownloading
-                  ? SizedBox(
-                      width: 18.sp,
-                      height: 18.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Icon(Icons.download, size: 18.sp),
               label: Text(
                 _isDownloading ? 'Saving...' : 'Download',

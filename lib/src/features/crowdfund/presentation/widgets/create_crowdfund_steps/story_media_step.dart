@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class StoryMediaStep extends StatefulWidget {
   final TextEditingController storyController;
@@ -625,13 +626,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                 height: 200.h,
                 color: const Color(0xFF1A1A3E),
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: const Color(0xFF4E03D0),
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                  ),
+                  child: LazerVaultLoader.small(),
                 ),
               );
             },

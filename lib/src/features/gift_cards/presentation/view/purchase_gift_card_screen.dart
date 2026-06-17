@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,7 @@ import '../../domain/entities/gift_card_entity.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PurchaseGiftCardScreen extends StatefulWidget {
   final GiftCardBrand brand;
@@ -183,8 +185,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
+      backgroundColor: kGiftCardBgTop,
+      body: GiftCardBackground(child: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
@@ -213,7 +215,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 
@@ -884,14 +886,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           ),
           child: Center(
             child: _isPurchasing
-                ? SizedBox(
-                    height: 22.h,
-                    width: 22.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
+                ? LazerVaultLoader(size: 22)
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

@@ -18,14 +18,37 @@ class PortfolioLoading extends PortfolioState {
   const PortfolioLoading();
 }
 
-/// Portfolio loaded successfully
+/// Portfolio loaded successfully. History is merged into this state (not a
+/// separate state) so switching the chart timeframe never blanks the assets.
 class PortfolioLoaded extends PortfolioState {
   final Portfolio portfolio;
+  final List<PortfolioHistoryPoint> history;
+  final String historyPeriod;
+  final bool historyLoading;
 
-  const PortfolioLoaded({required this.portfolio});
+  const PortfolioLoaded({
+    required this.portfolio,
+    this.history = const [],
+    this.historyPeriod = '1M',
+    this.historyLoading = false,
+  });
+
+  PortfolioLoaded copyWith({
+    Portfolio? portfolio,
+    List<PortfolioHistoryPoint>? history,
+    String? historyPeriod,
+    bool? historyLoading,
+  }) {
+    return PortfolioLoaded(
+      portfolio: portfolio ?? this.portfolio,
+      history: history ?? this.history,
+      historyPeriod: historyPeriod ?? this.historyPeriod,
+      historyLoading: historyLoading ?? this.historyLoading,
+    );
+  }
 
   @override
-  List<Object?> get props => [portfolio];
+  List<Object?> get props => [portfolio, history, historyPeriod, historyLoading];
 }
 
 /// Portfolio summary loaded

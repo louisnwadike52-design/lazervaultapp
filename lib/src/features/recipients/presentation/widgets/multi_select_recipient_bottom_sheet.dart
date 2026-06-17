@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MultiSelectRecipientBottomSheet extends StatefulWidget {
   final List<dynamic> alreadySelectedIds;
@@ -219,7 +220,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 builder: (context, state) {
                   if (state is RecipientLoading) {
                     return const Center(
-                      child: CircularProgressIndicator(color: Colors.blue),
+                      child: LazerVaultLoader.small(),
                     );
                   } else if (state is RecipientLoaded) {
                     final filteredRecipients = _filterRecipients(state.recipients);

@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfe
 import 'package:lazervault/src/features/funds/presentation/widgets/saved_batch/add_recipient_sheet.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Detail / edit screen for a single saved batch. Lets the user rename
 /// the batch, add or remove recipients, edit per-item amounts, apply a
@@ -774,7 +775,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                 state is SavedBatchDetailInitial) {
               return const Scaffold(
                 backgroundColor: btBackground,
-                body: Center(child: CircularProgressIndicator(color: btBlue)),
+                body: Center(child: LazerVaultLoader.small()),
               );
             }
             if (state is SavedBatchDetailError) {
@@ -948,12 +949,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
             ),
           ),
           if (mutating)
-            SizedBox(
-              width: 18.w,
-              height: 18.w,
-              child: const CircularProgressIndicator(
-                  strokeWidth: 2, color: btBlue),
-            )
+            LazerVaultLoader(size: 18)
           else
             PopupMenuButton<String>(
               color: btCard,
@@ -1265,12 +1261,7 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
                   borderRadius: BorderRadius.circular(16.r)),
             ),
             child: _executing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: btTextPrimary),
-                  )
+                ? LazerVaultLoader(size: 18)
                 : Text(
                     batch.items.isEmpty
                         ? 'Add a recipient to send'

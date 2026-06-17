@@ -7,6 +7,7 @@ import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/entities/user_search_result_entity.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagDetailsBottomSheet extends StatefulWidget {
   final UserTagEntity tag;
@@ -315,14 +316,7 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                     ),
                   ),
                   icon: _isDownloadingInvoice
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF60A5FA),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(Icons.description_outlined, size: 18.sp, color: const Color(0xFF60A5FA)),
                   label: Text(
                     'Invoice',
@@ -351,14 +345,7 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                     ),
                   ),
                   icon: _isDownloadingReceipt
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF34D399),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(
                           Icons.receipt_long_outlined,
                           size: 18.sp,

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../offline/mutation.dart';
 import '../offline/mutation_queue.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Widget that displays pending mutations (offline queued operations).
 ///
@@ -175,14 +176,7 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: _isProcessing && widget.showProcessingIndicator
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFB923C)),
-                    ),
-                  )
+                ? LazerVaultLoader.tiny()
                 : const Icon(
                     Icons.cloud_off,
                     color: Color(0xFFFB923C),
@@ -285,14 +279,7 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
             ),
           ),
           if (isProcessing && widget.showProcessingIndicator)
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
-            )
+            LazerVaultLoader.small()
           else
             IconButton(
               icon: const Icon(Icons.close, size: 18, color: Color(0xFF9CA3AF)),

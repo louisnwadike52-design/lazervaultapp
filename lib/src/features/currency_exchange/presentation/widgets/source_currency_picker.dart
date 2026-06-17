@@ -8,6 +8,7 @@ import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 
 import '../../domain/repositories/i_exchange_repository.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Dark theme palette (per CLAUDE.md).
 const Color _background = Color(0xFF0A0A0A);
@@ -103,8 +104,13 @@ class _SourceCurrencyPickerSheetState
           serviceLocator<accounts_grpc.AccountsServiceClient>();
       final callOptions =
           await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      // The picker MUST see every wallet the user holds across every
+      // currency so the user can pick USD even while their locale is
+      // en-NG. The default of GetUserAccountsRequest (no flag) returns
+      // only the locale-currency accounts, which made the picker
+      // pretend the user had no USD balance.
       final response = await accountsClient.getUserAccounts(
-        accounts_pb.GetUserAccountsRequest(),
+        accounts_pb.GetUserAccountsRequest(includeAllCurrencies: true),
         options: callOptions,
       );
 
@@ -178,7 +184,7 @@ class _SourceCurrencyPickerSheetState
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
                     return const Center(
-                      child: CircularProgressIndicator(color: _primary),
+                      child: LazerVaultLoader.small(),
                     );
                   }
                   final wallets =

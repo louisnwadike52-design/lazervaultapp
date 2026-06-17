@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../cubit/insurance_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsurancePaymentScreen extends StatefulWidget {
   final Insurance insurance;
@@ -133,14 +134,7 @@ class _InsurancePaymentScreenState extends State<InsurancePaymentScreen> {
                   ),
                 ),
                 child: _isProcessing
-                    ? SizedBox(
-                        width: 24.sp,
-                        height: 24.sp,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         'Pay \$${widget.insurance.premiumAmount.toStringAsFixed(2)}',
                         style: GoogleFonts.inter(

@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../cubit/open_banking_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 
 /// Widget that displays banking errors with appropriate UI and actions
@@ -566,11 +567,7 @@ class RetryingIndicator extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          LazerVaultLoader.small(),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

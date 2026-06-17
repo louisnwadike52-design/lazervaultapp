@@ -12,6 +12,7 @@ import '../cubit/internet_beneficiary_cubit.dart';
 import '../cubit/internet_beneficiary_state.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create / edit an internet Rollover schedule. Mirrors the data
 /// bundles' `CreateDataAutoRechargeScreen`:
@@ -331,15 +332,7 @@ class _CreateInternetRolloverScreenState
                       elevation: 0,
                     ),
                     child: _saving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _editId != null
                                 ? 'Update Rollover'
@@ -550,14 +543,7 @@ class _CreateInternetRolloverScreenState
         padding: EdgeInsets.all(16.w),
         decoration: _selectorBox(),
         child: const Center(
-          child: SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(_green),
-            ),
-          ),
+          child: LazerVaultLoader(size: 18),
         ),
       );
 
@@ -709,10 +695,7 @@ class _PackagePickerSheet extends StatelessWidget {
               builder: (context, state) {
                 if (state is InternetBillLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(_green),
-                    ),
+                    child: LazerVaultLoader.tiny(),
                   );
                 }
                 if (state is InternetBillError) {

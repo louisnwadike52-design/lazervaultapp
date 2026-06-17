@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Mixin to easily add transaction PIN validation to any payment flow.
 ///
@@ -386,7 +387,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(),
+                    LazerVaultLoader.small(),
                     SizedBox(height: 16),
                     Text('Verifying PIN...'),
                   ],

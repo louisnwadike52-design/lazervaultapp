@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
+import 'package:lazervault/src/features/microservice_chat/cubit/chat_sessions_cubit.dart';
+import 'package:lazervault/src/features/microservice_chat/cubit/chat_sessions_state.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_cubit.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_state.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/entities/general_chat_message_entity.dart';
@@ -17,6 +19,7 @@ import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
+import 'chat_sessions_drawer.dart';
 import 'quick_action_chips.dart';
 
 class GeneralChatContent extends StatefulWidget {
@@ -216,6 +219,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: _buildAppBar(context),
+      // ChatGPT-style left drawer listing all sessions. The drawer shares
+      // the same ChatSessionsCubit instance provided by the parent screen
+      // (see general_chat_screen.dart) so opening/closing the drawer
+      // doesn't refetch the list.
+      drawer: const ChatSessionsDrawer(),
       body: BlocBuilder<GeneralChatCubit, GeneralChatState>(
         builder: (context, state) {
           if (state is GeneralChatSuccess) {
@@ -239,55 +247,154 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     return AppBar(
       backgroundColor: const Color(0xFF1E1E1E),
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
+      // Hamburger opens the sessions drawer. Builder gives us a context
+      // *under* the Scaffold so `Scaffold.of(context).openDrawer()` works.
+      leading: Builder(
+        builder: (ctx) => IconButton(
+          icon: const Icon(Icons.menu, color: Colors.white),
+          tooltip: 'Your chats',
+          onPressed: () => Scaffold.of(ctx).openDrawer(),
+        ),
       ),
-      title: BlocBuilder<GeneralChatCubit, GeneralChatState>(
-        builder: (context, state) {
-          String? currentService;
-          if (state is GeneralChatSuccess) {
-            currentService = state.currentService;
-          }
+      title: BlocBuilder<ChatSessionsCubit, ChatSessionsState>(
+        builder: (context, sessionsState) {
+          // Resolve the current session's title for display in the AppBar.
+          // Tap the title to inline-rename — matches ChatGPT's behaviour.
+          final (sessions, currentId) = switch (sessionsState) {
+            ChatSessionsLoaded(:final sessions, :final currentId) =>
+              (sessions, currentId),
+            ChatSessionsLoading(:final sessions, :final currentId) =>
+              (sessions, currentId),
+            ChatSessionsError(:final sessions, :final currentId) =>
+              (sessions, currentId),
+            ChatSessionsInitial() => (const [], null as String?),
+          };
+          final currentTitle = (currentId == null || currentId.isEmpty)
+              ? 'LazerVault Chat'
+              : sessions
+                  .where((s) => s.sessionId == currentId)
+                  .map((s) => s.title)
+                  .firstWhere(
+                    (_) => true,
+                    orElse: () => 'LazerVault Chat',
+                  );
 
-          return Column(
-            children: [
-            const Text(
-              'LazerVault Chat',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (currentService != null)
-              Text(
-                'Connected to ${_getServiceDisplayName(currentService)}',
-                style: TextStyle(
-                  color: Colors.green[400],
-                  fontSize: 11,
+          return BlocBuilder<GeneralChatCubit, GeneralChatState>(
+            builder: (context, chatState) {
+              String? currentService;
+              if (chatState is GeneralChatSuccess) {
+                currentService = chatState.currentService;
+              }
+              return InkWell(
+                onTap: (currentId == null || currentId.isEmpty)
+                    ? null
+                    : () => _showRenameCurrentDialog(context, currentId, currentTitle),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            currentTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (currentId != null && currentId.isNotEmpty) ...[
+                          const SizedBox(width: 4),
+                          const Icon(Icons.edit_outlined,
+                              size: 14, color: Colors.white54),
+                        ],
+                      ],
+                    ),
+                    if (currentService != null)
+                      Text(
+                        'Connected to ${_getServiceDisplayName(currentService)}',
+                        style: TextStyle(
+                          color: Colors.green[400],
+                          fontSize: 11,
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-          ],
-        );
-      },
-    ),
+              );
+            },
+          );
+        },
+      ),
       centerTitle: true,
       actions: [
+        // "+ New chat" quick action mirroring the drawer's CTA so users
+        // who never open the drawer still have one-tap access.
         IconButton(
-          icon: const Icon(Icons.refresh, color: Colors.white),
-          onPressed: () {
-            context.read<GeneralChatCubit>().clearChat();
-          },
+          icon: const Icon(Icons.add_comment_outlined, color: Colors.white),
+          tooltip: 'New chat',
+          onPressed: () => context.read<ChatSessionsCubit>().createNew(),
         ),
         IconButton(
           icon: const Icon(Icons.clear, color: Colors.white),
+          tooltip: 'Clear current chat',
           onPressed: () {
             _showClearChatDialog(context);
           },
         ),
       ],
     );
+  }
+
+  Future<void> _showRenameCurrentDialog(
+      BuildContext context, String sessionId, String currentTitle) async {
+    final cubit = context.read<ChatSessionsCubit>();
+    final controller = TextEditingController(text: currentTitle);
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          title: const Text('Rename chat',
+              style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 60,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Chat title',
+              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+              counterStyle: TextStyle(color: Color(0xFF9CA3AF)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF2D2D2D)),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF7C3AED)),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Color(0xFF9CA3AF))),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(controller.text.trim()),
+              child: const Text('Save',
+                  style: TextStyle(color: Color(0xFF7C3AED))),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    if (newTitle == null || newTitle.isEmpty || newTitle == currentTitle) return;
+    await cubit.rename(sessionId: sessionId, title: newTitle);
   }
 
   Widget _buildMessagesList(List<GeneralChatMessageEntity> messages, bool isLoading) {

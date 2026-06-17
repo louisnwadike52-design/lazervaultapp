@@ -22,6 +22,13 @@ class AccountPreviewCard extends StatelessWidget {
     final accountType = (accountArgs['accountType'] as String?) ?? 'Personal';
     final pendingBalance = balance - availableBalance;
     final hasPendingFunds = pendingBalance > 0.01;
+    // Overdraft surfaces when the spendable balance has gone negative —
+    // typically an authorised but unsettled debit. We show it explicitly
+    // (red dot + "Overdraft" label) instead of just rendering a negative
+    // Available number so the user understands their state.
+    final overdraftAmount =
+        availableBalance < 0 ? availableBalance.abs() : 0.0;
+    final hasOverdraft = overdraftAmount > 0.01;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -153,6 +160,14 @@ class AccountPreviewCard extends StatelessWidget {
                     'Held (Reserved)',
                     '$currencySymbol${reservedBalance.toStringAsFixed(2)}',
                     const Color(0xFFF59E0B),
+                  ),
+                ],
+                if (hasOverdraft) ...[
+                  SizedBox(height: 6.h),
+                  _buildBalanceRow(
+                    'Overdraft',
+                    '-$currencySymbol${overdraftAmount.toStringAsFixed(2)}',
+                    const Color(0xFFEF4444),
                   ),
                 ],
               ],

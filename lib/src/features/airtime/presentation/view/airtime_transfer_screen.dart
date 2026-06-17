@@ -7,6 +7,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/network_provider.dart';
 import '../cubit/airtime_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../cubit/airtime_state.dart'; // ignore: unused_import (used by BlocBuilder)
 
 class AirtimeTransferScreen extends StatefulWidget {
@@ -418,7 +419,7 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
               return _buildProviderGrid(state.providers);
             }
             if (state is AirtimeNetworkProvidersLoading) {
-              return Center(child: CircularProgressIndicator(strokeWidth: 2));
+              return Center(child: LazerVaultLoader.tiny());
             }
             return SizedBox.shrink();
           },

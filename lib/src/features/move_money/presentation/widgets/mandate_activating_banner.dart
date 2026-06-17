@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/mandate_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Persistent banner shown when a source account's mandate is activating
 /// (e.g., e-mandate awaiting 24-hour bank authorization).
@@ -40,14 +41,7 @@ class MandateActivatingBanner extends StatelessWidget {
           // Status row
           Row(
             children: [
-              SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFFFB923C),
-                ),
-              ),
+              LazerVaultLoader.tiny(),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(

@@ -33,53 +33,82 @@ class ChatMediaBubble extends StatelessWidget {
   }
 
   Widget _buildImageBubble() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 220, maxHeight: 220),
-        child: _buildImage(),
+    // RepaintBoundary isolates this bubble's painting so unrelated chat
+    // state emits (e.g. the next typed message) don't repaint the image
+    // — a major source of the previously-visible flicker.
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 220, maxHeight: 220),
+          child: _buildImage(),
+        ),
       ),
     );
   }
 
   Widget _buildImage() {
-    if (localMediaPath != null && localMediaPath!.isNotEmpty) {
-      final file = File(localMediaPath!);
+    // Prefer the remote URL once the upload has produced one — it's the
+    // canonical reference everyone else (other devices, chat history
+    // replays, web) renders from. The local file path is used as a
+    // *placeholder* while the network image is still loading so the
+    // user sees their picture instantly, then a smooth crossfade to
+    // the network image (no white-flash, no swap-and-reflow loop).
+    final hasRemote = mediaUrl != null &&
+        mediaUrl!.isNotEmpty &&
+        (mediaUrl!.startsWith('http://') || mediaUrl!.startsWith('https://'));
+    final hasLocal = localMediaPath != null && localMediaPath!.isNotEmpty;
+
+    File? localFile;
+    if (hasLocal) {
       try {
-        if (file.existsSync()) {
-          return Image.file(
-            file,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-          );
-        }
+        final f = File(localMediaPath!);
+        if (f.existsSync()) localFile = f;
       } catch (_) {
-        // File access error (deleted, permissions)
+        // File access error (deleted, permissions) — fall through to
+        // the remote-only or placeholder path.
       }
     }
-    if (mediaUrl != null &&
-        mediaUrl!.isNotEmpty &&
-        (mediaUrl!.startsWith('http://') || mediaUrl!.startsWith('https://'))) {
+
+    if (hasRemote) {
       return Image.network(
         mediaUrl!,
         fit: BoxFit.cover,
+        gaplessPlayback: true, // hold the previous frame during reload
         loadingBuilder: (_, child, progress) {
           if (progress == null) return child;
-          return Container(
-            width: 220,
-            height: 150,
-            color: const Color(0xFF2D2D2D),
-            child: const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFF3B82F6),
-              ),
-            ),
-          );
+          // Loading: render the local file underneath so the user sees
+          // their picture immediately instead of a blank spinner.
+          if (localFile != null) {
+            return Image.file(
+              localFile,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+            );
+          }
+          return _buildImagePlaceholder();
         },
+        errorBuilder: (_, __, ___) {
+          // Remote failed — fall back to the local file if we still
+          // have it, otherwise the placeholder.
+          if (localFile != null) {
+            return Image.file(localFile, fit: BoxFit.cover);
+          }
+          return _buildImagePlaceholder();
+        },
+      );
+    }
+
+    if (localFile != null) {
+      return Image.file(
+        localFile,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
         errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
       );
     }
+
     return _buildImagePlaceholder();
   }
 

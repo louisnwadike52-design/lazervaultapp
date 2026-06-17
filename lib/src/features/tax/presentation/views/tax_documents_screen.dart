@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/tax/domain/entities/tax_document_entity.dart';
 import '../cubit/tax_cubit.dart';
 import '../cubit/tax_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TaxDocumentsScreen extends StatefulWidget {
   const TaxDocumentsScreen({super.key});
@@ -94,9 +95,7 @@ class _TaxDocumentsScreenState extends State<TaxDocumentsScreen> {
       builder: (context, state) {
         if (state is TaxLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

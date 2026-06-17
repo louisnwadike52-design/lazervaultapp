@@ -8,9 +8,11 @@ import 'package:lazervault/src/features/sprayme/data/gift_catalog_defaults.dart'
 /// TikTok-style gift shop bottom sheet with categorized gifts
 class GiftShopSheet extends StatefulWidget {
   final List<SprayGift> gifts;
-  final double walletBalance; // in major units
+  final double walletBalance; // in major units (spendable "gifts to spray")
   final String currency;
   final void Function(SprayGift gift, int quantity) onSendGift;
+  /// Opens the buy-gifts-from-personal flow to top up the spendable balance.
+  final VoidCallback? onBuyGifts;
 
   const GiftShopSheet({
     super.key,
@@ -18,6 +20,7 @@ class GiftShopSheet extends StatefulWidget {
     required this.walletBalance,
     required this.currency,
     required this.onSendGift,
+    this.onBuyGifts,
   });
 
   @override
@@ -96,27 +99,60 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.account_balance_wallet, color: const Color(0xFFFFD700), size: 16.sp),
-                      SizedBox(width: 6.w),
-                      Text(
-                        '${widget.currency} ${widget.walletBalance.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.bolt, color: const Color(0xFFFFD700), size: 16.sp),
+                          SizedBox(width: 6.w),
+                          Text(
+                            '${widget.currency} ${widget.walletBalance.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (widget.onBuyGifts != null) ...[
+                      SizedBox(width: 8.w),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          widget.onBuyGifts!();
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF7C3AED),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add, color: Colors.white, size: 15.sp),
+                              SizedBox(width: 4.w),
+                              Text('Buy',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -292,11 +328,16 @@ class _GiftShopSheetState extends State<GiftShopSheet>
                       onPressed: () {
                         final gift = _allGifts.where((g) => g.id == _selectedGiftId).firstOrNull;
                         if (gift == null) return;
-                        // Final balance check before sending
+                        // Final balance check before sending. Out of spendable
+                        // credit? Send them to buy more gifts from their account.
                         if (!gift.isFree && widget.walletBalance < gift.priceMajor * _quantity) {
+                          if (widget.onBuyGifts != null) {
+                            widget.onBuyGifts!();
+                            return;
+                          }
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Insufficient wallet balance'),
+                              content: Text('Not enough gifts to spray. Buy more from your account.'),
                               backgroundColor: Color(0xFFEF4444),
                             ),
                           );

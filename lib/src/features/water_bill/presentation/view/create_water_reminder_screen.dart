@@ -10,6 +10,7 @@ import '../cubit/water_beneficiary_cubit.dart';
 import '../cubit/water_beneficiary_state.dart';
 import '../cubit/water_reminder_cubit.dart';
 import '../cubit/water_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create a water bill reminder. Title + date/time + optional
 /// beneficiary + optional amount + optional recurrence.
@@ -234,15 +235,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
                       elevation: 0,
                     ),
                     child: _saving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text('Create Reminder',
                             style: TextStyle(
                                 fontSize: 16.sp,

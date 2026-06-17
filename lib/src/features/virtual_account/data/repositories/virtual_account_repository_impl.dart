@@ -29,7 +29,11 @@ class VirtualAccountRepositoryImpl implements IVirtualAccountRepository {
     bool isPrimary = false,
   }) async {
     try {
-      print('Creating virtual account for $email with BVN: $bvn');
+      // Never log a raw BVN (PII). Show only a masked tail for debugging.
+      final maskedBvn = bvn.length >= 3
+          ? '${'*' * (bvn.length - 3)}${bvn.substring(bvn.length - 3)}'
+          : '***';
+      print('Creating virtual account for $email with BVN: $maskedBvn');
 
       final response = await _grpcClient.createVirtualAccount(
         accountName: accountName,

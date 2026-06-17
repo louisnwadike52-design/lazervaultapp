@@ -15,6 +15,7 @@ import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagPaymentConfirmationScreen extends StatefulWidget {
   final UserTagEntity tag;
@@ -387,7 +388,7 @@ class _TagPaymentConfirmationScreenState
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
 
@@ -774,14 +775,7 @@ class _TagPaymentConfirmationScreenState
           elevation: 0,
         ),
         child: _isProcessing
-            ? SizedBox(
-                height: 20.h,
-                width: 20.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Pay ${widget.tag.formattedAmount}',
                 style: GoogleFonts.inter(

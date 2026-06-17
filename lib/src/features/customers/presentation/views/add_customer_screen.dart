@@ -10,6 +10,7 @@ import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Add Customer — a 3-step wizard (Basics → Contact → Business) with per-step
 /// validation, a searchable country-code picker on the phone field (and a
@@ -786,15 +787,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   elevation: 0,
                 ),
                 child: isLoading
-                    ? SizedBox(
-                        height: 22.h,
-                        width: 22.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader(size: 22)
                     : Text(
                         _step < 2 ? 'Continue' : 'Add Customer',
                         style: GoogleFonts.inter(

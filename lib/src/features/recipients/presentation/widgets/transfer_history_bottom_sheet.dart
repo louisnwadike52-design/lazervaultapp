@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TransferHistoryBottomSheet extends StatefulWidget {
   const TransferHistoryBottomSheet({super.key});
@@ -445,10 +446,7 @@ class _TransferHistoryBottomSheetState
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF4E03D0),
-                  strokeWidth: 2,
-                ),
+                child: LazerVaultLoader.tiny(),
               ),
             );
           }
@@ -465,11 +463,68 @@ class _TransferHistoryItem extends StatelessWidget {
 
   const _TransferHistoryItem({required this.transaction});
 
+  /// Build the row's leading avatar from the counterparty's name. Prefers
+  /// initials-from-name (1 or 2 letters); falls back to a directional arrow
+  /// icon when the transaction has no counterparty name (e.g. a generic
+  /// "Credit" record where the sender is unknown).
+  ///
+  /// Sized to sit proportionally next to the 14sp title + 12sp date row —
+  /// 30×30 keeps the avatar visually present without dominating the row.
+  Widget _buildLeadingAvatar({required bool isIncoming}) {
+    final name = transaction.counterpartyName?.trim() ?? '';
+    final initials = _initialsFrom(name);
+    const brand = Color(0xFF4E03D0);
+    return Container(
+      width: 30.w,
+      height: 30.w,
+      decoration: BoxDecoration(
+        color: brand.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: initials.isNotEmpty
+          ? Text(
+              initials,
+              style: TextStyle(
+                color: brand,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            )
+          : Icon(
+              isIncoming ? Icons.call_received : Icons.call_made,
+              color: brand,
+              size: 14.sp,
+            ),
+    );
+  }
+
+  /// First-letter(s) of a person's name. "Jane Doe" → "JD",
+  /// "Mononym" → "M", empty/whitespace → "".
+  static String _initialsFrom(String name) {
+    if (name.isEmpty) return '';
+    final parts = name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
+        .toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final dateStr =
         DateFormat('dd MMM yyyy, HH:mm').format(transaction.createdAt);
     final isIncoming = transaction.flow == TransactionFlow.incoming;
+    final counterpartyName = transaction.counterpartyName?.trim();
+    final hasCounterparty =
+        counterpartyName != null && counterpartyName.isNotEmpty;
+    // Title prefers the actual sender/recipient name; falls back to the
+    // generic "Transfer Sent / Received / Credit" label only when the
+    // counterparty wasn't resolved (e.g. legacy records).
+    final displayTitle = hasCounterparty ? counterpartyName : transaction.title;
+    final directionColor =
+        isIncoming ? const Color(0xFF10B981) : Colors.grey[600];
 
     return InkWell(
       onTap: () => TransactionReceiptRouter.navigateToReceipt(transaction),
@@ -477,20 +532,8 @@ class _TransferHistoryItem extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12.h),
         child: Row(
           children: [
-            // Transfer icon
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isIncoming ? Icons.call_received : Icons.call_made,
-                color: const Color(0xFF4E03D0),
-                size: 20.sp,
-              ),
-            ),
+            // Recipient/sender avatar (initials, brand-coloured fallback).
+            _buildLeadingAvatar(isIncoming: isIncoming),
             SizedBox(width: 12.w),
 
             // Title + date + status
@@ -498,15 +541,29 @@ class _TransferHistoryItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    transaction.title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          displayTitle,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      // Compact directional arrow — replaces the large
+                      // leading-circle arrow that the avatar now occupies.
+                      Icon(
+                        isIncoming ? Icons.call_received : Icons.call_made,
+                        size: 12.sp,
+                        color: directionColor,
+                      ),
+                    ],
                   ),
                   SizedBox(height: 2.h),
                   Row(

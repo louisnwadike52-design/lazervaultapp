@@ -7,6 +7,7 @@ import '../../domain/entities/network_rate.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
 import '../widgets/a2c_step_indicator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class A2CNetworkSelectionScreen extends StatefulWidget {
   const A2CNetworkSelectionScreen({super.key});
@@ -363,10 +364,7 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            strokeWidth: 3,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 24.h),
           Text(
             'Loading Networks...',

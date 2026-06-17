@@ -9,8 +9,7 @@ import '../../domain/entities/internet_provider_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
 import '../widgets/internet_recent_transactions_card.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Internet Bill landing. Same shape as the other utility landings:
 ///   * ISP picker grid (live from `GetInternetProviders`)
@@ -84,31 +83,15 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
             ),
           ),
           centerTitle: true,
-          actions: [
-            // Per-bill voice + chat icons — pin every session to
-            // the internet flow on chat-products-service
-            // (DIRECT_ROUTES['internet'] → primary 'utility').
-            ServiceVoiceButton(
-              serviceName: 'internet',
-              iconColor: const Color(0xFF3B82F6),
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            SizedBox(width: 8.w),
-            MicroserviceChatIcon(
-              serviceName: 'Internet',
-              sourceContext: 'internet',
-              icon: Icons.chat_bubble_outline,
-              iconColor: const Color(0xFF3B82F6),
-            ),
-            SizedBox(width: 12.w),
-          ],
+          // Per-bill voice + chat icons removed — unified utility bills
+          // landing page hosts the single chat/mic entry point now.
         ),
         body: SafeArea(
           child: BlocBuilder<InternetBillCubit, InternetBillState>(
             builder: (context, state) {
               if (state is InternetBillLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(color: _accent),
+                  child: LazerVaultLoader.small(),
                 );
               }
               final providers = state is InternetBillProvidersLoaded

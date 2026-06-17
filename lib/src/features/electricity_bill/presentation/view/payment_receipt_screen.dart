@@ -17,6 +17,7 @@ import '../widgets/electricity_rollover_preference_sheet.dart';
 import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaymentReceiptScreen extends StatefulWidget {
   const PaymentReceiptScreen({super.key});
@@ -428,6 +429,14 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                     SizedBox(height: 16.h),
                     if (payment.hasToken) _buildTokenCard(),
                     if (payment.hasToken) SizedBox(height: 14.h),
+                    // Prepaid + no token yet: explicit "we'll show it here"
+                    // card. Covers both async-pending and the case where the
+                    // backend marks status=completed before the provider
+                    // delivers the token via webhook/SMS.
+                    if (!payment.hasToken && payment.isPrepaid) ...[
+                      _buildPendingTokenCard(),
+                      SizedBox(height: 14.h),
+                    ],
                     _buildTransactionDetails(),
                     SizedBox(height: 20.h),
                     BillReceiptQrBlock(
@@ -471,6 +480,10 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     if (payment.isReversed) return 'Payment Reversed';
     if (payment.isRefundFailed) return 'Refund Failed';
     if (payment.isCompleted && payment.hasToken) return 'Payment Successful!';
+    // Completed-but-token-not-yet — surfaces the in-flight state honestly
+    // for prepaid users (the SMS / webhook may still be 1-2 min away even
+    // though our row says completed).
+    if (payment.isCompleted && payment.isPrepaid) return 'Token Pending';
     if (payment.isCompleted) return 'Payment Successful!';
     // pending / processing / awaitingWebhook
     return 'Payment Submitted';
@@ -492,10 +505,15 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           ? 'Your electricity token is below'
           : 'Your payment has been processed';
     }
+    // Prepaid with no token — be explicit regardless of whether the row is
+    // pending/processing/completed. Backend can flip `completed` before the
+    // provider's SMS lands, and the user needs to know the token will
+    // appear here when it arrives.
+    if (payment.isPrepaid) {
+      return 'Token pending — we will show it on this receipt as soon as the provider sends it (usually via SMS within a few minutes).';
+    }
     if (payment.isPending || payment.isProcessing) {
-      return payment.isPrepaid
-          ? 'Waiting for confirmation. Your token will be sent via SMS once the provider confirms.'
-          : 'Waiting for confirmation from the provider.';
+      return 'Waiting for confirmation from the provider.';
     }
     return 'Your payment has been processed';
   }
@@ -546,6 +564,55 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPendingTokenCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFB923C).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.hourglass_top,
+              color: const Color(0xFFFB923C), size: 20.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Token pending',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Your electricity token will appear here as soon as '
+                  '${payment.providerName.isEmpty ? "the provider" : payment.providerName} '
+                  'delivers it (typically a few minutes — also sent via SMS).',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C).withValues(alpha: 0.9),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -790,14 +857,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           child: OutlinedButton.icon(
             onPressed: _isSharing ? null : _shareReceipt,
             icon: _isSharing
-                ? SizedBox(
-                    width: 16.sp,
-                    height: 16.sp,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.tiny()
                 : Icon(Icons.share, size: 16.sp),
             label: Text(
               _isSharing ? 'Sharing...' : 'Share',
@@ -821,14 +881,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           child: OutlinedButton.icon(
             onPressed: _isDownloading ? null : _downloadReceipt,
             icon: _isDownloading
-                ? SizedBox(
-                    width: 16.sp,
-                    height: 16.sp,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.tiny()
                 : Icon(Icons.download, size: 16.sp),
             label: Text(
               _isDownloading ? 'Saving...' : 'Download',

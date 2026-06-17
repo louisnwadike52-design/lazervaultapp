@@ -7,6 +7,7 @@ import '../cubit/payroll_state.dart';
 import '../../domain/entities/pay_run_entity.dart';
 import 'pay_run_details_screen.dart';
 import 'create_pay_run_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PayRunListScreen extends StatefulWidget {
   const PayRunListScreen({super.key});
@@ -69,10 +70,7 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
           builder: (context, state) {
             if (state is PayrollLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 

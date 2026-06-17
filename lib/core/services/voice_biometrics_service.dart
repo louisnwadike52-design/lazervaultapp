@@ -394,7 +394,14 @@ class VoiceBiometricsService {
   /// Check if the voice biometrics service is available
   Future<bool> isServiceAvailable() async {
     try {
-      final uri = Uri.parse('$baseUrl/health');
+      // `/voice/health` (not `/health`) because the cloudflared edge only
+      // routes the `/voice/...` path family to voice-agent-gateway. The
+      // gateway exposes both paths as aliases so this works with any
+      // baseUrl shape (with or without a trailing `/voice` segment).
+      final root = baseUrl.endsWith('/voice')
+          ? baseUrl.substring(0, baseUrl.length - '/voice'.length)
+          : baseUrl;
+      final uri = Uri.parse('$root/voice/health');
       final response = await _client.get(uri).timeout(
         const Duration(seconds: 5),
       );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Analytics ("Quick Stats") card on the All-Rules screen.
 ///
@@ -124,15 +125,7 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
               if (stats == null)
                 Padding(
                   padding: EdgeInsets.only(left: 8.w),
-                  child: SizedBox(
-                    width: 12.w,
-                    height: 12.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 1.4,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white70),
-                    ),
-                  ),
+                  child: LazerVaultLoader(size: 12),
                 ),
             ],
           ),

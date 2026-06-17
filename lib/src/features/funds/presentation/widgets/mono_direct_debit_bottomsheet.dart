@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Mono Direct Debit Bottomsheet - Matches exact Mono Connect design
 /// Custom bottomsheet that displays Mono info before launching Mono Connect WebView
@@ -381,14 +382,7 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
                         elevation: 0,
                       ),
                       child: _isLinking
-                          ? SizedBox(
-                              height: 20.h,
-                              width: 20.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

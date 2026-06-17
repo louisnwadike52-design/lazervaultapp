@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/notifications/data/notifications_remote_datasource.dart';
 import 'package:lazervault/src/features/widgets/notifications_builder.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Maps a backend notification `type` to the AppService whose icon the
 /// NotificationsBuilder renders. Defaults to a transfer icon for unknown types.
@@ -180,9 +181,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget _buildBody() {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Color.fromARGB(255, 78, 3, 208),
-        ),
+        child: LazerVaultLoader.small(),
       );
     }
     if (_error != null) {

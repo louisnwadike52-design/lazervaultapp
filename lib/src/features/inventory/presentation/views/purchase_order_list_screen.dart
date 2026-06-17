@@ -10,6 +10,7 @@ import '../../domain/entities/purchase_order_entity.dart';
 import '../../domain/entities/supplier_entity.dart';
 import '../cubit/inventory_enhanced_cubit.dart';
 import '../cubit/inventory_enhanced_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PurchaseOrderListScreen extends StatefulWidget {
   const PurchaseOrderListScreen({super.key});
@@ -697,9 +698,7 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen> {
       builder: (context, state) {
         if (state is InventoryEnhancedLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

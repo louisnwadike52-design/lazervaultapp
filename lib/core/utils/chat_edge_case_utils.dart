@@ -13,6 +13,7 @@ library;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// ========================================================================
 /// EMPTY/NULL VALUE HANDLING
@@ -512,7 +513,7 @@ Widget getLoadingWidget({String message = 'Loading...'}) {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const CircularProgressIndicator(),
+        LazerVaultLoader.small(),
         const SizedBox(height: 16),
         Text(message, style: const TextStyle(fontSize: 14)),
       ],

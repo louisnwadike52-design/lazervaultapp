@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_code_
 import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_transaction_details_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class QRPayHomeScreen extends StatefulWidget {
   const QRPayHomeScreen({super.key});
@@ -401,7 +402,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           return Center(
             child: Padding(
               padding: EdgeInsets.only(top: 24.h),
-              child: const CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             ),
           );
         }

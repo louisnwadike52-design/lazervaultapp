@@ -10,6 +10,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../../utils/meter_validation.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MeterInputScreen extends StatefulWidget {
   const MeterInputScreen({super.key});
@@ -441,14 +442,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
         ),
         child: _isValidating
             ? Center(
-                child: SizedBox(
-                  width: 24.w,
-                  height: 24.w,
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                ),
+                child: LazerVaultLoader.small(),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/identity/domain/entities/id_document.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDVerificationScreen extends StatefulWidget {
   const IDVerificationScreen({super.key});
@@ -98,7 +99,7 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
         },
         builder: (context, state) {
           if (state is IdentityLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
 
           return SingleChildScrollView(

@@ -11,6 +11,7 @@ import '../../domain/entities/id_pay_transaction_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import '../widgets/id_pay_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayDetailsScreen extends StatefulWidget {
   const IDPayDetailsScreen({super.key});
@@ -419,9 +420,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
           Center(
             child: Padding(
               padding: EdgeInsets.all(24.w),
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           ),
         ] else if (_transactions.isEmpty) ...[
@@ -557,15 +556,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
             ),
           ),
           child: isLoading
-              ? SizedBox(
-                  height: 22.h,
-                  width: 22.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFFEF4444)),
-                  ),
-                )
+              ? LazerVaultLoader(size: 22)
               : Text(
                   'Cancel IDPay',
                   style: GoogleFonts.inter(

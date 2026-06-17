@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/sprayme/domain/entities/spray_transactio
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_stats.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SprayMeWalletScreen extends StatefulWidget {
   const SprayMeWalletScreen({super.key});
@@ -19,9 +20,7 @@ class SprayMeWalletScreen extends StatefulWidget {
   State<SprayMeWalletScreen> createState() => _SprayMeWalletScreenState();
 }
 
-class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
   final _amountController = TextEditingController();
   final _pinController = TextEditingController();
 
@@ -43,7 +42,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _accountManager = serviceLocator<AccountManager>();
     _loadAccountDetails();
     _loadAll();
@@ -66,7 +64,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _amountController.dispose();
     _pinController.dispose();
     super.dispose();
@@ -92,42 +89,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
 
   bool _isFundingOrWithdrawing = false;
 
-  void _onFund() {
-    if (_isFundingOrWithdrawing) return;
-    final amount = int.tryParse(_amountController.text.trim());
-    final pin = _pinController.text.trim();
-
-    if (amount == null || amount <= 0) {
-      _showError('Please enter a valid amount');
-      return;
-    }
-    if (amount > 10000000) {
-      _showError('Maximum fund amount is $_accountCurrency 10,000,000');
-      return;
-    }
-    if (_accountId == null || _accountId!.isEmpty) {
-      _showError('No account found. Please select an account on the home screen first.');
-      return;
-    }
-    if (_accountBalance > 0 && amount * 100 > _accountBalance) {
-      final available = (_accountBalance / 100).toStringAsFixed(0);
-      _showError('Amount exceeds account balance ($_accountCurrency $available)');
-      return;
-    }
-    if (pin.length < 4 || pin.length > 6) {
-      _showError('PIN must be 4-6 digits');
-      return;
-    }
-
-    _isFundingOrWithdrawing = true;
-    HapticFeedback.lightImpact();
-    context.read<SprayMeCubit>().fundWallet(
-          amount: amount * 100, // Convert to kobo
-          sourceAccountId: _accountId!,
-          pin: pin,
-        );
-  }
-
   void _onWithdraw() {
     if (_isFundingOrWithdrawing) return;
     final amount = int.tryParse(_amountController.text.trim());
@@ -145,9 +106,11 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
       _showError('Wallet not loaded yet. Please wait and try again.');
       return;
     }
-    if (amount * 100 > _wallet!.balance) {
-      final available = (_wallet!.balance / 100).toStringAsFixed(0);
-      _showError('Insufficient balance. Available: $_accountCurrency $available');
+    // Withdrawals draw from accumulated EARNINGS (received gifts), not the
+    // spendable spray credit bought to spray with.
+    if (amount * 100 > _wallet!.earningsBalance) {
+      final available = (_wallet!.earningsBalance / 100).toStringAsFixed(0);
+      _showError('Insufficient earnings. Available: $_accountCurrency $available');
       return;
     }
     if (_accountId == null || _accountId!.isEmpty) {
@@ -267,7 +230,9 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
                   SizedBox(height: 20.h),
                   _buildStatsRow(),
                   SizedBox(height: 20.h),
-                  _buildFundWithdrawTabs(isLoading),
+                  _buildBuyGiftsInfo(),
+                  SizedBox(height: 16.h),
+                  _buildWithdrawSection(isLoading),
                   SizedBox(height: 24.h),
                   _buildTransactionHistory(),
                   SizedBox(height: 24.h),
@@ -297,11 +262,12 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
       );
     }
 
-    final balance = (_wallet?.balance ?? 0) / 100;
+    final spendable = (_wallet?.balance ?? 0) / 100;
+    final earnings = (_wallet?.earningsBalance ?? 0) / 100;
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 20.w),
+      padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF581C87), Color(0xFF7C3AED)],
@@ -312,28 +278,44 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
       ),
       child: Column(
         children: [
+          // Gifts-to-spray (spendable) — bought from your personal account.
           Text(
-            'Available Balance',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 14.sp,
+            'Gifts to spray',
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13.sp),
+          ),
+          SizedBox(height: 6.h),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: spendable),
+            duration: const Duration(milliseconds: 800),
+            builder: (context, value, _) => Text(
+              'NGN ${_formatAmount(value)}',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32.sp,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -1,
+              ),
             ),
           ),
-          SizedBox(height: 8.h),
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: balance),
-            duration: const Duration(milliseconds: 800),
-            builder: (context, value, _) {
-              return Text(
-                'NGN ${_formatAmount(value)}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 36.sp,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -1,
-                ),
-              );
-            },
+          SizedBox(height: 14.h),
+          Container(height: 1, color: Colors.white.withOpacity(0.15)),
+          SizedBox(height: 12.h),
+          // Earnings — accumulated received gifts, withdrawable to personal.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.savings_outlined, color: const Color(0xFF10B981), size: 16.sp),
+                  SizedBox(width: 6.w),
+                  Text('Earnings (withdrawable)',
+                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12.sp)),
+                ],
+              ),
+              Text('NGN ${_formatAmount(earnings)}',
+                  style: TextStyle(
+                      color: const Color(0xFF10B981), fontSize: 16.sp, fontWeight: FontWeight.w700)),
+            ],
           ),
         ],
       ),
@@ -439,9 +421,35 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
     );
   }
 
-  // ── Fund / Withdraw Tabs ─────────────────────────────────────────────────────
+  // ── Buy-gifts info (joiners top up by buying gifts in a live session) ──
 
-  Widget _buildFundWithdrawTabs(bool isLoading) {
+  Widget _buildBuyGiftsInfo() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.card_giftcard, color: const Color(0xFF3B82F6), size: 20.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              'To top up your gifts-to-spray, buy gifts from your personal account inside a live session. There is no wallet to fund.',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Withdraw earnings ─────────────────────────────────────────────────
+
+  Widget _buildWithdrawSection(bool isLoading) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -450,115 +458,19 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
-        children: [
-          // Tab bar
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A0A0A),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              onTap: (_) {
-                HapticFeedback.lightImpact();
-                _clearForm();
-              },
-              indicator: BoxDecoration(
-                color: const Color(0xFF7C3AED),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              labelColor: Colors.white,
-              unselectedLabelColor: const Color(0xFF9CA3AF),
-              labelStyle: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-              ),
-              tabs: const [
-                Tab(text: 'Fund Wallet'),
-                Tab(text: 'Withdraw'),
-              ],
-            ),
-          ),
-          SizedBox(height: 20.h),
-
-          // Tab content
-          SizedBox(
-            height: 340.h,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildFundForm(isLoading),
-                _buildWithdrawForm(isLoading),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFundForm(bool isLoading) {
-    return SingleChildScrollView(
-      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Source account card (TagPay-style, locked to personal)
-          _buildAccountCard(
-            label: 'Funding from',
-            isSource: true,
+          Text(
+            'Withdraw earnings',
+            style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Move your accumulated received gifts to your personal account.',
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
           ),
           SizedBox(height: 16.h),
-          _buildFormLabel('Amount ($_accountCurrency)'),
-          SizedBox(height: 6.h),
-          _buildFormField(
-            controller: _amountController,
-            hint: 'Enter amount',
-            keyboardType: TextInputType.number,
-            prefixText: '$_accountCurrency ',
-          ),
-          SizedBox(height: 14.h),
-          _buildFormLabel('Transaction PIN'),
-          SizedBox(height: 6.h),
-          _buildPinField(),
-          SizedBox(height: 20.h),
-          SizedBox(
-            width: double.infinity,
-            height: 48.h,
-            child: ElevatedButton(
-              onPressed: isLoading ? null : _onFund,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.4),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                elevation: 0,
-              ),
-              child: isLoading
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Text(
-                      'Fund Wallet',
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
-          ),
+          _buildWithdrawForm(isLoading),
         ],
       ),
     );
@@ -603,14 +515,7 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen>
                 elevation: 0,
               ),
               child: isLoading
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Withdraw',
                       style: TextStyle(

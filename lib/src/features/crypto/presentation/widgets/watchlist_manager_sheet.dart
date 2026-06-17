@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 const _bg = Color(0xFF0A0A0A);
 const _card = Color(0xFF1F1F1F);
@@ -172,7 +173,7 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
           return _shell(child: const Center(
             child: Padding(
               padding: EdgeInsets.all(48),
-              child: CircularProgressIndicator(color: _accent),
+              child: LazerVaultLoader.small(),
             ),
           ));
         }
@@ -239,14 +240,7 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
                     ),
                     const Spacer(),
                     if (_ensuringWatchlist)
-                      SizedBox(
-                        width: 14.w,
-                        height: 14.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 1.5,
-                          color: _accent,
-                        ),
-                      ),
+                      LazerVaultLoader(size: 14),
                     IconButton(
                       icon: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
                       onPressed: () => Get.back(),
@@ -389,12 +383,7 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
             ),
             SizedBox(width: 12.w),
             if (busy)
-              SizedBox(
-                width: 18.w,
-                height: 18.w,
-                child: const CircularProgressIndicator(
-                    strokeWidth: 1.5, color: _accent),
-              )
+              LazerVaultLoader(size: 18)
             else
               Container(
                 width: 28.w,

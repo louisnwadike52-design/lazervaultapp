@@ -33,6 +33,7 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../widgets/crypto_shimmer_loading.dart';
 import '../widgets/watchlist_manager_sheet.dart';
 import '../../../../generated/crypto.pb.dart' show PriceAlert;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CryptoScreen extends StatefulWidget {
   const CryptoScreen({super.key});
@@ -280,14 +281,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
               ),
               if (hasPriceLoading) ...[
                 SizedBox(width: 8.w),
-                SizedBox(
-                  width: 14.w,
-                  height: 14.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.6,
-                    valueColor: AlwaysStoppedAnimation(Colors.white.withValues(alpha: 0.55)),
-                  ),
-                ),
+                LazerVaultLoader(size: 14),
               ],
               SizedBox(width: 12.w),
               if (gainLossPercentage != 0)

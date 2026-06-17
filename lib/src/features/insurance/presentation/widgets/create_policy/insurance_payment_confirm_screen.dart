@@ -13,6 +13,7 @@ import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen 4: Confirm payment - active account selector with bottom sheet to change, amount display, confirm button
 class InsurancePaymentConfirmScreen extends StatefulWidget {
@@ -256,7 +257,7 @@ class _InsurancePaymentConfirmScreenState extends State<InsurancePaymentConfirmS
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
 

@@ -12,9 +12,12 @@ import 'package:nfc_manager/ndef_record.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class NfcBroadcastScreen extends StatelessWidget {
   final PaymentSessionEntity session;
@@ -105,6 +108,35 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     _startExpiryTimer();
     _startNfcBroadcast();
     _startPolling();
+    _subscribeWs();
+  }
+
+  /// Connect the realtime WS overlay AND wire adaptive polling cadence.
+  /// While WS is healthy the existing 3s poll is plenty (the WS push
+  /// arrives first). If the WS goes `failed` (initial connect timeout,
+  /// network error, or disconnect after a stretch) we restart the poll
+  /// timer at 1s so the receipt still lands within ~1s of the payer's
+  /// debit on the polling-only path.
+  void _subscribeWs() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final cubit = context.read<ContactlessPaymentCubit>();
+    cubit.subscribeToSession(
+      userId: authState.profile.userId,
+      accessToken: authState.profile.session.accessToken,
+      sessionId: widget.session.id,
+    );
+    cubit.wsHealth.addListener(_onWsHealthChanged);
+  }
+
+  void _onWsHealthChanged() {
+    if (!mounted) return;
+    final cubit = context.read<ContactlessPaymentCubit>();
+    final restartedInterval = cubit.wsHealth.value == ContactlessWsHealth.failed
+        ? const Duration(seconds: 1)
+        : const Duration(seconds: 3);
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(restartedInterval, _pollTick);
   }
 
   void _startExpiryTimer() {
@@ -186,15 +218,20 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   }
 
   void _startPolling() {
-    _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (!mounted || _isCompleted || _isExpired) {
-        timer.cancel();
-        return;
-      }
-      context
-          .read<ContactlessPaymentCubit>()
-          .checkSessionStatus(widget.session.id);
-    });
+    // Starts at the relaxed 3s cadence on the assumption WS will connect.
+    // If WS fails, `_onWsHealthChanged` cancels + restarts this timer at
+    // 1s. The tick body is extracted so the restart path reuses it.
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), _pollTick);
+  }
+
+  void _pollTick(Timer timer) {
+    if (!mounted || _isCompleted || _isExpired) {
+      timer.cancel();
+      return;
+    }
+    context
+        .read<ContactlessPaymentCubit>()
+        .checkSessionStatus(widget.session.id);
   }
 
   void _stopNfcBroadcast() {
@@ -214,6 +251,15 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   void dispose() {
     _expiryTimer?.cancel();
     _pollTimer?.cancel();
+    // Best-effort: detach the WS-health listener. context.read may throw
+    // if the BlocProvider is already gone (route-pop dispose order is
+    // not guaranteed), so swallow the lookup error.
+    try {
+      context
+          .read<ContactlessPaymentCubit>()
+          .wsHealth
+          .removeListener(_onWsHealthChanged);
+    } catch (_) {}
     _pulseController.dispose();
     _fadeController.dispose();
     _stopNfcBroadcast();
@@ -523,16 +569,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              SizedBox(
-                width: 100.w,
-                height: 100.w,
-                child: CircularProgressIndicator(
-                  value: _timerProgress,
-                  strokeWidth: 4,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  valueColor: AlwaysStoppedAnimation<Color>(timerColor),
-                ),
-              ),
+              LazerVaultLoader(size: 100),
               Text(
                 _formattedTime,
                 style: GoogleFonts.inter(
@@ -724,15 +761,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 ),
                 child: Center(
                   child: _isCancelling
-                      ? SizedBox(
-                          height: 20.h,
-                          width: 20.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFEF4444)),
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Text(
                           'Cancel Session',
                           style: GoogleFonts.inter(

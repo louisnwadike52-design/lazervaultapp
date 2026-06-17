@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'account_card.pb.dart' as $1;
+import 'account_card.pb.dart' as $0;
 
 import 'family_accounts.pbenum.dart';
 
@@ -3749,6 +3749,7 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberId')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -3758,6 +3759,7 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
     $core.String? memberId,
     $core.double? amount,
     $core.String? description,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (familyId != null) {
@@ -3771,6 +3773,9 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
     }
     if (description != null) {
       _result.description = description;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -3830,6 +3835,15 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(3);
   @$pb.TagNumber(4)
   void clearDescription() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get idempotencyKey => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set idempotencyKey($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIdempotencyKey() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIdempotencyKey() => clearField(5);
 }
 
 class AllocateFundsResponse extends $pb.GeneratedMessage {
@@ -4002,7 +4016,7 @@ class GenerateMemberCardRequest extends $pb.GeneratedMessage {
 
 class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateMemberCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
-    ..aOM<$1.AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: $1.AccountCard.create)
+    ..aOM<$0.AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: $0.AccountCard.create)
     ..aOM<FamilyMember>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'member', subBuilder: FamilyMember.create)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
@@ -4010,7 +4024,7 @@ class GenerateMemberCardResponse extends $pb.GeneratedMessage {
 
   GenerateMemberCardResponse._() : super();
   factory GenerateMemberCardResponse({
-    $1.AccountCard? card,
+    $0.AccountCard? card,
     FamilyMember? member,
     $core.String? message,
   }) {
@@ -4048,15 +4062,15 @@ class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   static GenerateMemberCardResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.AccountCard get card => $_getN(0);
+  $0.AccountCard get card => $_getN(0);
   @$pb.TagNumber(1)
-  set card($1.AccountCard v) { setField(1, v); }
+  set card($0.AccountCard v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCard() => $_has(0);
   @$pb.TagNumber(1)
   void clearCard() => clearField(1);
   @$pb.TagNumber(1)
-  $1.AccountCard ensureCard() => $_ensure(0);
+  $0.AccountCard ensureCard() => $_ensure(0);
 
   @$pb.TagNumber(2)
   FamilyMember get member => $_getN(1);
@@ -4477,12 +4491,135 @@ class DeleteFamilyAccountResponse extends $pb.GeneratedMessage {
   void clearReturnedBalance() => clearField(3);
 }
 
+class LeaveFamilyAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LeaveFamilyAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..hasRequiredFields = false
+  ;
+
+  LeaveFamilyAccountRequest._() : super();
+  factory LeaveFamilyAccountRequest({
+    $core.String? familyId,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    return _result;
+  }
+  factory LeaveFamilyAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LeaveFamilyAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LeaveFamilyAccountRequest clone() => LeaveFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LeaveFamilyAccountRequest copyWith(void Function(LeaveFamilyAccountRequest) updates) => super.copyWith((message) => updates(message as LeaveFamilyAccountRequest)) as LeaveFamilyAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LeaveFamilyAccountRequest create() => LeaveFamilyAccountRequest._();
+  LeaveFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<LeaveFamilyAccountRequest> createRepeated() => $pb.PbList<LeaveFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static LeaveFamilyAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LeaveFamilyAccountRequest>(create);
+  static LeaveFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+}
+
+class LeaveFamilyAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LeaveFamilyAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'returnedBalance', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  LeaveFamilyAccountResponse._() : super();
+  factory LeaveFamilyAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.double? returnedBalance,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (returnedBalance != null) {
+      _result.returnedBalance = returnedBalance;
+    }
+    return _result;
+  }
+  factory LeaveFamilyAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LeaveFamilyAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LeaveFamilyAccountResponse clone() => LeaveFamilyAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LeaveFamilyAccountResponse copyWith(void Function(LeaveFamilyAccountResponse) updates) => super.copyWith((message) => updates(message as LeaveFamilyAccountResponse)) as LeaveFamilyAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LeaveFamilyAccountResponse create() => LeaveFamilyAccountResponse._();
+  LeaveFamilyAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<LeaveFamilyAccountResponse> createRepeated() => $pb.PbList<LeaveFamilyAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static LeaveFamilyAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LeaveFamilyAccountResponse>(create);
+  static LeaveFamilyAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get returnedBalance => $_getN(2);
+  @$pb.TagNumber(3)
+  set returnedBalance($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasReturnedBalance() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReturnedBalance() => clearField(3);
+}
+
 class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessMemberContributionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberId')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -4492,6 +4629,7 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
     $core.String? memberId,
     $core.double? amount,
     $core.String? description,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (familyId != null) {
@@ -4505,6 +4643,9 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
     }
     if (description != null) {
       _result.description = description;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -4564,6 +4705,15 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(3);
   @$pb.TagNumber(4)
   void clearDescription() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get idempotencyKey => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set idempotencyKey($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIdempotencyKey() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIdempotencyKey() => clearField(5);
 }
 
 class ProcessMemberContributionResponse extends $pb.GeneratedMessage {
@@ -5004,6 +5154,8 @@ class FamilyAccount extends $pb.GeneratedMessage {
     ..e<FundDistributionMode>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fundDistributionMode', $pb.PbFieldType.OE, defaultOrMaker: FundDistributionMode.FUND_DISTRIBUTION_MODE_UNSPECIFIED, valueOf: FundDistributionMode.valueOf, enumValues: FundDistributionMode.values)
     ..aOB(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'setupCompleted')
     ..aOB(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spendingVisibilityEnabled')
+    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'virtualAccountId')
     ..hasRequiredFields = false
   ;
 
@@ -5027,6 +5179,8 @@ class FamilyAccount extends $pb.GeneratedMessage {
     FundDistributionMode? fundDistributionMode,
     $core.bool? setupCompleted,
     $core.bool? spendingVisibilityEnabled,
+    $core.String? currency,
+    $core.String? virtualAccountId,
   }) {
     final _result = create();
     if (id != null) {
@@ -5082,6 +5236,12 @@ class FamilyAccount extends $pb.GeneratedMessage {
     }
     if (spendingVisibilityEnabled != null) {
       _result.spendingVisibilityEnabled = spendingVisibilityEnabled;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (virtualAccountId != null) {
+      _result.virtualAccountId = virtualAccountId;
     }
     return _result;
   }
@@ -5261,6 +5421,24 @@ class FamilyAccount extends $pb.GeneratedMessage {
   $core.bool hasSpendingVisibilityEnabled() => $_has(17);
   @$pb.TagNumber(18)
   void clearSpendingVisibilityEnabled() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get currency => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set currency($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasCurrency() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearCurrency() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get virtualAccountId => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set virtualAccountId($core.String v) { $_setString(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasVirtualAccountId() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearVirtualAccountId() => clearField(20);
 }
 
 class FamilyMember extends $pb.GeneratedMessage {

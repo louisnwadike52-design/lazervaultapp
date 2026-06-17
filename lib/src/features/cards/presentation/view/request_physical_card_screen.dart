@@ -5,6 +5,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class RequestPhysicalCardScreen extends StatefulWidget {
   const RequestPhysicalCardScreen({super.key});
@@ -133,7 +134,7 @@ class _RequestPhysicalCardScreenState extends State<RequestPhysicalCardScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           child: state is CardCreating
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              ? LazerVaultLoader.small()
                               : Text(isLastStep ? 'Confirm Request' : 'Continue'),
                         ),
                       ),

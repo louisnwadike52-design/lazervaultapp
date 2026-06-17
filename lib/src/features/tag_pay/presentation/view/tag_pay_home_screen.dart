@@ -18,6 +18,7 @@ import '../widgets/tag_pay_pagination_bar.dart';
 import '../widgets/tag_details_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagPayHomeScreen extends StatefulWidget {
   const TagPayHomeScreen({super.key});
@@ -223,10 +224,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                  strokeWidth: 2,
-                ),
+                child: LazerVaultLoader.tiny(),
               ),
             ),
           );
@@ -1021,14 +1019,7 @@ class _SetUsernameSheetState extends State<_SetUsernameSheet> {
                   elevation: 0,
                 ),
                 child: _isLoading
-                    ? SizedBox(
-                        height: 22.h,
-                        width: 22.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader(size: 22)
                     : Text(
                         'Set Username',
                         style: GoogleFonts.inter(

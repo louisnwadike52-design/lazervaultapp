@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 
@@ -118,6 +119,34 @@ class SprayMeCubit extends Cubit<SprayMeState> {
         wallet: wallet,
         reference: 'SPRAY-FUND',
         message: 'Wallet funded successfully',
+      ));
+    } catch (e) {
+      emit(SprayMeError(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  /// Buy gift credit directly from the user's personal account. The bought
+  /// value lands in the spendable spray balance (no separate fundable wallet).
+  Future<void> buyGiftCredit({
+    required List<Map<String, dynamic>> items,
+    required String sourceAccountId,
+    required String pin,
+    String sessionId = '',
+    String currency = 'NGN',
+  }) async {
+    emit(SprayMeLoading());
+    try {
+      final wallet = await _repository.buyGiftCredit(
+        items: items,
+        sourceAccountId: sourceAccountId,
+        pin: pin,
+        idempotencyKey: const Uuid().v4(),
+        sessionId: sessionId,
+        currency: currency,
+      );
+      emit(GiftCreditPurchased(
+        wallet: wallet,
+        message: 'Gifts purchased — ready to spray',
       ));
     } catch (e) {
       emit(SprayMeError(e.toString().replaceAll('Exception: ', '')));

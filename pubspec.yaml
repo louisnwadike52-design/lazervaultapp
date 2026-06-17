@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+2
+version: 1.0.0+4
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -160,6 +160,48 @@ dependency_overrides:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+# Launcher icons — regenerated from one master via:
+#   dart run flutter_launcher_icons
+# Master is the same RGBA file used everywhere else in the app, so the
+# launcher icon and the in-app brand mark can never drift apart.
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/app_icon_master.png"
+  # iOS icons must be RGB (no alpha) — package strips alpha on build.
+  remove_alpha_ios: true
+  # Adaptive icon for Android 8+. background_color renders behind the
+  # foreground mark for the round + squircle masks. #0A0A0A matches the
+  # app's dark theme so the ribbon sits on the brand background.
+  adaptive_icon_background: "#0A0A0A"
+  adaptive_icon_foreground: "assets/images/app_icon_master.png"
+  min_sdk_android: 21
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
+
+# Native splash screen — brand-purple backdrop with the ribbon icon
+# centered. Run via: dart run flutter_native_splash:create
+#
+# Android 12+ uses windowSplashScreenAnimatedIcon, which the OS circularly
+# clips down to a ~192dp safe area. We therefore use a padded master
+# (1152×1152 canvas with the ribbon centered in the inner ~640×640) so the
+# circular mask never crops the mark. The pre-A12 launch_background path
+# uses the same image; it centers without scaling so the padding is also
+# fine there.
+flutter_native_splash:
+  color: "#3D2F8B"
+  image: "assets/images/app_icon_master_padded.png"
+  branding: "assets/images/splash_branding.png"
+  branding_mode: bottom
+  android_12:
+    icon_background_color: "#3D2F8B"
+    image: "assets/images/app_icon_master_padded.png"
+    branding: "assets/images/splash_branding.png"
+
 # The following section is specific to Flutter packages.
 flutter:
 
@@ -171,7 +213,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
-    - .env.prod
     - assets/
     - assets/images/
     - assets/images/logos/

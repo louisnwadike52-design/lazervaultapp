@@ -9,6 +9,7 @@ import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/cable_tv_reminder.dart';
 import '../cubit/cable_tv_reminder_cubit.dart';
 import '../cubit/cable_tv_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Cable TV subscription reminders. Mirrors `DataRemindersScreen`.
 class CableTVRemindersScreen extends StatefulWidget {
@@ -152,11 +153,7 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen> {
                   if (state is CableTVReminderLoading ||
                       state is CableTVReminderInitial) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                      ),
+                      child: LazerVaultLoader.tiny(),
                     );
                   }
                   if (state is CableTVRemindersLoaded) {

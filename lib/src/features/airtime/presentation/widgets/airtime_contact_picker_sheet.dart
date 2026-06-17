@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Airtime-specific contact picker.
 ///
@@ -121,7 +122,7 @@ class _AirtimeContactPickerSheetState extends State<AirtimeContactPickerSheet> {
           if (_loading)
             const Expanded(
               child: Center(
-                child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+                child: LazerVaultLoader.small(),
               ),
             )
           else if (_denied)

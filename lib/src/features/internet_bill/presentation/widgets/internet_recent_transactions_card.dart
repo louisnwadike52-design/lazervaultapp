@@ -11,6 +11,7 @@ import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import 'internet_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Top-of-landing strip showing the 3 most recent internet purchases.
 /// Mirrors `DataBundlesHomeScreen._buildHistoryStripPlaceholder`:
@@ -129,10 +130,7 @@ class _InternetRecentTransactionsCardState
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 child: const Center(
-                  child: CircularProgressIndicator(
-                    color: _primary,
-                    strokeWidth: 2,
-                  ),
+                  child: LazerVaultLoader.tiny(),
                 ),
               );
             }

@@ -9,6 +9,7 @@ import '../../domain/entities/intl_data_bundle.dart';
 import '../../domain/entities/intl_data_operator.dart';
 import '../cubit/intl_data_cubit.dart';
 import 'intl_data_checkout_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Processing screen for international data purchases. Fires the
 /// buy RPC via [IntlDataCubit] and shows a step-progress animation
@@ -297,14 +298,7 @@ class _IntlDataProcessingScreenState extends State<IntlDataProcessingScreen>
                   ),
                 ),
                 if (isActive)
-                  SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(step.color),
-                    ),
-                  ),
+                  LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(Icons.check_circle, color: step.color, size: 20.sp),
               ],

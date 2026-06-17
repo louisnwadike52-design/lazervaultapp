@@ -15,6 +15,7 @@ import '../../cubit/move_money_cubit.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/move_transfer.dart';
 import '../widgets/move_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Detailed view of a single move transfer.
 ///
@@ -174,14 +175,7 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      width: 12.w,
-                      height: 12.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 1.5,
-                        color: Color(0xFF3B82F6),
-                      ),
-                    ),
+                    LazerVaultLoader(size: 12),
                     SizedBox(width: 8.w),
                     Text(
                       'Auto-refreshing every 5s',

@@ -4,6 +4,7 @@ import '../../domain/entities/country.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CountrySelectionScreen extends StatefulWidget {
   const CountrySelectionScreen({super.key});
@@ -167,7 +168,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Colors.white),
+          LazerVaultLoader.small(),
           SizedBox(height: 16),
           Text(
             'Loading countries...',
@@ -292,14 +293,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
               ),
             ),
             trailing: isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : const Icon(
                     Icons.arrow_forward_ios,
                     color: Colors.white60,

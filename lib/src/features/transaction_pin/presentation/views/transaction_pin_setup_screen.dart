@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
 
@@ -217,12 +219,47 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
           }
         });
       }
+    } on GrpcError catch (e) {
+      // Translate the auth-service status code (see classifyPinError in
+      // transaction_pin_server.go) into a message that's actionable inline
+      // rather than dumping a raw "Exception: rpc error …" at the user.
+      String msg;
+      switch (e.code) {
+        case StatusCode.unauthenticated:
+          msg = 'Current PIN is incorrect.';
+          break;
+        case StatusCode.permissionDenied:
+          msg = 'PIN locked due to too many attempts. Try again later.';
+          break;
+        case StatusCode.alreadyExists:
+          msg = 'You already have a PIN. Use Update instead.';
+          break;
+        case StatusCode.notFound:
+          msg = 'You don\'t have a PIN yet. Create one first.';
+          break;
+        case StatusCode.invalidArgument:
+          msg = e.message ?? 'Invalid PIN.';
+          break;
+        default:
+          msg = e.message ?? 'Could not save your PIN. Try again.';
+      }
+      setState(() {
+        _isCreating = false;
+        _errorMessage = msg;
+        _confirmedPin = '';
+        _isConfirmMode = false;
+        _enteredPin = '';
+        if (_isChangePinMode) {
+          _hasEnteredCurrentPin = false;
+          _currentPin = '';
+        }
+      });
     } catch (e) {
       setState(() {
         _isCreating = false;
         _errorMessage = _isChangePinMode
-            ? 'Error changing PIN: ${e.toString()}'
-            : 'Error creating PIN: ${e.toString()}';
+            ? 'Error changing PIN: ${e.toString().replaceAll('Exception:', '').trim()}'
+            : 'Error creating PIN: ${e.toString().replaceAll('Exception:', '').trim()}';
         _confirmedPin = '';
         _isConfirmMode = false;
         _enteredPin = '';
@@ -386,7 +423,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
         body: Container(
           color: Colors.black,
           child: const Center(
-            child: CircularProgressIndicator(color: Colors.white),
+            child: LazerVaultLoader.medium(),
           ),
         ),
       );
@@ -568,10 +605,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                           padding: EdgeInsets.symmetric(vertical: 20.h),
                           child: Column(
                             children: [
-                              const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
+                              const LazerVaultLoader.small(),
                               SizedBox(height: 12.h),
                               Text(
                                 _isChangePinMode ? 'Changing your PIN...' : 'Creating your PIN...',

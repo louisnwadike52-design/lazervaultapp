@@ -20,8 +20,8 @@ class VoiceSettingsService {
     GetIt? getIt,
   ])  : _client = client ?? http.Client(),
         _getIt = getIt ?? serviceLocator,
-        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? 'http://localhost:3013',
-        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://localhost:3010';
+        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? 'https://api.lazervault.app/voice/languages',
+        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'https://api.lazervault.app/voice';
 
   Future<List<VoiceLanguage>> getSupportedLanguages({String country = 'NG'}) async {
     try {

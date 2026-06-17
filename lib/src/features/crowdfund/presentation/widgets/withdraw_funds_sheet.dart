@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet the campaign creator uses to move funds out of the
 /// campaign wallet into a destination account. Today the destination
@@ -526,14 +527,7 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                         const Color(0xFF4E03D0).withValues(alpha: 0.4),
                   ),
                   child: _isSubmitting
-                      ? SizedBox(
-                          width: 18.w,
-                          height: 18.w,
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Text(
                           'Confirm withdrawal',
                           style: GoogleFonts.inter(

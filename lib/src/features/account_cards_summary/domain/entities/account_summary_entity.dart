@@ -70,8 +70,17 @@ class AccountSummaryEntity extends Equatable {
   final int? memberCount; // Total member count
   final bool? allowMemberContributions; // Can members contribute
   final String? familyAccountId; // Family account ID (for setup navigation)
+  final String? virtualAccountId; // Family VIRTUAL account id (real-money pool) — spend FROM this
   final String? familyStatus; // Family account status (active, pending_setup, frozen, closed)
   final String? fundDistributionMode; // Fund distribution mode (shared_pool, equal_split, custom_allocation)
+
+  /// The account id money is actually spent FROM. For a family account this is
+  /// the family virtual account (the real-money pool) so the payments path can
+  /// detect the family + enforce member limits; for everything else it's [id].
+  String get spendingAccountId =>
+      (isFamilyAccount && (virtualAccountId?.isNotEmpty ?? false))
+          ? virtualAccountId!
+          : id;
 
   /// Estimated clearing time for pending deposits (e.g., "Available in 2h").
   /// Null when no clearing estimate is available from the backend.
@@ -99,6 +108,7 @@ class AccountSummaryEntity extends Equatable {
     this.memberCount,
     this.allowMemberContributions,
     this.familyAccountId,
+    this.virtualAccountId,
     this.familyStatus,
     this.fundDistributionMode,
     this.clearingEstimate,
@@ -168,15 +178,28 @@ class AccountSummaryEntity extends Equatable {
     required double trendPercentage,
     String? accountNumberLast4,
     String? familyAccountId,
+    String? virtualAccountId,
     String? familyStatus,
     String? fundDistributionMode,
   }) {
+    // What "Family Balance" means depends on the distribution mode:
+    //   • shared_pool   → everyone draws from the shared pool, so the spendable
+    //                     figure is the pool balance (memberRemainingBalance,
+    //                     which carries total_pool_balance from the backend).
+    //   • equal_split / custom_allocation → funds are carved into per-member
+    //                     allocations, so the allocated balance is the right
+    //                     headline figure.
+    // Showing the allocated portion for a shared pool understated what a member
+    // could actually spend (e.g. pool ₦1,550 but card read ₦500).
+    final double displayBalance = (fundDistributionMode == 'shared_pool')
+        ? memberRemainingBalance
+        : memberAllocatedBalance;
     return AccountSummaryEntity(
       id: id,
       accountType: 'Family & Friends',
       currency: currency,
-      balance: memberAllocatedBalance, // Show member's allocation as main balance
-      availableBalance: memberAllocatedBalance, // Match balance to avoid false pending
+      balance: displayBalance, // mode-aware spendable headline
+      availableBalance: displayBalance, // Match balance to avoid false pending
       accountNumberLast4: accountNumberLast4 ?? '••••',
       trendPercentage: trendPercentage,
       isFamilyAccount: true,
@@ -186,6 +209,7 @@ class AccountSummaryEntity extends Equatable {
       memberCount: memberCount,
       allowMemberContributions: allowMemberContributions,
       familyAccountId: familyAccountId,
+      virtualAccountId: virtualAccountId,
       familyStatus: familyStatus,
       fundDistributionMode: fundDistributionMode,
     );
@@ -212,6 +236,7 @@ class AccountSummaryEntity extends Equatable {
     int? memberCount,
     bool? allowMemberContributions,
     String? familyAccountId,
+    String? virtualAccountId,
     String? familyStatus,
     String? fundDistributionMode,
     String? clearingEstimate,
@@ -237,6 +262,7 @@ class AccountSummaryEntity extends Equatable {
       memberCount: memberCount ?? this.memberCount,
       allowMemberContributions: allowMemberContributions ?? this.allowMemberContributions,
       familyAccountId: familyAccountId ?? this.familyAccountId,
+      virtualAccountId: virtualAccountId ?? this.virtualAccountId,
       familyStatus: familyStatus ?? this.familyStatus,
       fundDistributionMode: fundDistributionMode ?? this.fundDistributionMode,
       clearingEstimate: clearingEstimate ?? this.clearingEstimate,

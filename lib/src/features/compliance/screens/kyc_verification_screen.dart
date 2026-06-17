@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/compliance/kyc_service.dart';
 import 'dart:io';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class KYCVerificationScreen extends StatefulWidget {
   final KYCLevel targetLevel;
@@ -527,11 +528,7 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : details.onStepContinue,
                     child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(_currentStep == _getSteps().length - 1
                             ? 'Submit'
                             : 'Continue'),

@@ -10,6 +10,7 @@ import '../../domain/entities/data_plan_entity.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../widgets/rollover_preference_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Consolidated confirmation page for a data bundle purchase.
 ///
@@ -429,15 +430,7 @@ class _DataPaymentConfirmationScreenState
             ),
           ),
           child: _isProcessing
-              ? SizedBox(
-                  width: 24.w,
-                  height: 24.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader.small()
               : Text(
                   'Pay \u20A6${_currencyFormat.format(price)}',
                   style: GoogleFonts.inter(

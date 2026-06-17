@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AddInventoryItemScreen extends StatefulWidget {
   const AddInventoryItemScreen({super.key});
@@ -682,14 +683,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
             elevation: 0,
           ),
           child: isLoading
-              ? SizedBox(
-                  height: 22.h,
-                  width: 22.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader(size: 22)
               : Text(
                   _currentStep < 2 ? 'Continue' : 'Add Item',
                   style: GoogleFonts.inter(

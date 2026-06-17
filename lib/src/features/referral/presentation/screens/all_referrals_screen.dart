@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/referral_transaction_entity.dart';
 import '../cubit/referral_cubit.dart';
 import '../cubit/referral_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AllReferralsScreen extends StatefulWidget {
   const AllReferralsScreen({super.key});
@@ -101,7 +102,7 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
         builder: (context, state) {
           if (state is ReferralLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -171,7 +172,7 @@ class _AllReferralsScreenState extends State<AllReferralsScreen>
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: const Center(
                 child:
-                    CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                    LazerVaultLoader.small(),
               ),
             );
           }

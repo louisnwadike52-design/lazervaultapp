@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/my_claims_cubit.dart';
 import 'insurance_claim_tracking_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MyClaimsScreen extends StatefulWidget {
   const MyClaimsScreen({super.key});
@@ -177,7 +178,7 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
         builder: (context, state) {
           if (state is MyClaimsLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+              child: LazerVaultLoader.small(),
             );
           }
           if (state is MyClaimsError) {
@@ -268,14 +269,7 @@ class _MyClaimsScreenState extends State<MyClaimsScreen>
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
       child: Center(
-        child: SizedBox(
-          width: 22.sp,
-          height: 22.sp,
-          child: const CircularProgressIndicator(
-            strokeWidth: 2,
-            color: Color(0xFF6366F1),
-          ),
-        ),
+        child: LazerVaultLoader(size: 22),
       ),
     );
   }

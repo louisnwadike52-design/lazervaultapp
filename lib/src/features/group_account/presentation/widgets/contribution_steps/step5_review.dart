@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/group_entities.dart';
 import '../../cubit/create_contribution_cubit.dart';
 import '../../cubit/create_contribution_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Step 5: Review all entered data before submission
 class Step5Review extends StatelessWidget {
@@ -19,7 +20,7 @@ class Step5Review extends StatelessWidget {
         final formState = state is CreateContributionFormUpdated ? state : null;
 
         if (formState == null) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LazerVaultLoader.small());
         }
 
         return SingleChildScrollView(

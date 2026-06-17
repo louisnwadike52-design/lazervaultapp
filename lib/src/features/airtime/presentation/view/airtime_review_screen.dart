@@ -15,6 +15,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../widgets/airtime_step_indicator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AirtimeReviewScreen extends StatefulWidget {
   const AirtimeReviewScreen({super.key});
@@ -865,7 +866,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
 
@@ -1168,14 +1169,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
+                    LazerVaultLoader.small(),
                     SizedBox(width: 12.w),
                     Text(
                       'Processing...',

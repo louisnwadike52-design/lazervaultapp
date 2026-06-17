@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/investments/presentation/theme/invest_tr
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Shared hub panels (Portfolio / Watchlist / Orders / News) for segmented invest UI.
 /// Parent must call the matching [StockCubit] load when this tab becomes visible.
@@ -24,7 +25,7 @@ class InvestHubPanels {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is PortfolioLoading) {
-          return Center(child: CircularProgressIndicator(color: accent));
+          return Center(child: LazerVaultLoader.small());
         }
         if (state is PortfolioError) {
           return _retryPanel(
@@ -73,7 +74,7 @@ class InvestHubPanels {
             ),
           );
         }
-        return Center(child: CircularProgressIndicator(color: accent));
+        return Center(child: LazerVaultLoader.small());
       },
     );
   }
@@ -85,7 +86,7 @@ class InvestHubPanels {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is WatchlistsLoading) {
-          return Center(child: CircularProgressIndicator(color: accent));
+          return Center(child: LazerVaultLoader.small());
         }
         if (state is WatchlistsError) {
           return _retryPanel(
@@ -157,7 +158,7 @@ class InvestHubPanels {
             ),
           );
         }
-        return Center(child: CircularProgressIndicator(color: accent));
+        return Center(child: LazerVaultLoader.small());
       },
     );
   }
@@ -169,7 +170,7 @@ class InvestHubPanels {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is OrdersLoading) {
-          return Center(child: CircularProgressIndicator(color: accent));
+          return Center(child: LazerVaultLoader.small());
         }
         if (state is OrdersLoaded) {
           final orders = state.orders;
@@ -238,7 +239,7 @@ class InvestHubPanels {
             ),
           );
         }
-        return Center(child: CircularProgressIndicator(color: accent));
+        return Center(child: LazerVaultLoader.small());
       },
     );
   }
@@ -249,7 +250,7 @@ class InvestHubPanels {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is MarketNewsLoading) {
-          return Center(child: CircularProgressIndicator(color: accent));
+          return Center(child: LazerVaultLoader.small());
         }
         if (state is MarketNewsError) {
           return _retryPanel(
@@ -297,7 +298,7 @@ class InvestHubPanels {
             ),
           );
         }
-        return Center(child: CircularProgressIndicator(color: accent));
+        return Center(child: LazerVaultLoader.small());
       },
     );
   }

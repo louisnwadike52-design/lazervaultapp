@@ -13,6 +13,7 @@ import '../helpers/account_reauth_helper.dart';
 import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
 import 'link_bank_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen to manage linked bank accounts
 class LinkedAccountsScreen extends StatefulWidget {
@@ -154,6 +155,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
             accountId: account.id,
             userId: userId,
             accessToken: accessToken,
+            isManual: true, // user tapped Refresh — show the snackbar
           );
     }
   }
@@ -250,7 +252,17 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
               ),
             );
             _fetchAccounts();
-          } else if (state is BalanceRefreshed) {
+          } else if (state is BalanceRefreshed && state.isManual) {
+            // Only show the snackbar when the user explicitly tapped
+            // Refresh. The auto-sweep fires BalanceRefreshed for every
+            // linked account on screen entry; surfacing each one would
+            // loop the snackbar (and previously triggered a recursive
+            // _fetchAccounts that re-entered the loading state).
+            //
+            // The cubit already mutates its internal _linkedAccounts
+            // list in place inside refreshBalance(), so the BlocBuilder
+            // below picks up the new balance on the same emit — no
+            // re-fetch needed.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -259,12 +271,11 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-            _fetchAccounts(); // Refresh list with updated balance
           }
         },
         builder: (context, state) {
           if (state is OpenBankingLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
 
           final accounts = context.read<OpenBankingCubit>().linkedAccounts;

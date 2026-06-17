@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// WebView wrapper for partner lifestyle services
 /// Opens verified partner websites in an embedded WebView
@@ -139,9 +140,7 @@ class _PartnerWebViewScreenState extends State<PartnerWebViewScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-            ),
+            LazerVaultLoader.small(),
             const SizedBox(height: 16),
             Text(
               'Loading $_loadingProgress%',

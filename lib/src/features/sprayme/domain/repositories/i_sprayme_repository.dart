@@ -26,6 +26,14 @@ abstract class ISprayMeRepository {
   // Wallet
   Future<SprayWallet> getWallet();
   Future<SprayWallet> fundWallet({required int amount, required String sourceAccountId, required String pin});
+  Future<SprayWallet> buyGiftCredit({
+    required List<Map<String, dynamic>> items,
+    required String sourceAccountId,
+    required String pin,
+    required String idempotencyKey,
+    String sessionId,
+    String currency,
+  });
   Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String pin});
 
   // Actions

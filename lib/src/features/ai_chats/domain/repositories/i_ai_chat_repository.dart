@@ -15,6 +15,7 @@ abstract class IAiChatRepository {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    Map<String, dynamic>? extraMetadata,
   });
 
   Future<Either<Failure, List<ChatMessageEntity>>> getChatHistory({

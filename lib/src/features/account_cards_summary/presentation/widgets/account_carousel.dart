@@ -10,9 +10,12 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/widgets/animated_balance_counter.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Type definition for the callback when a card's details are requested
 typedef OnShowDetailsCallback = void Function(Map<String, dynamic> accountArgs);
@@ -47,6 +50,15 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   // Track which accounts are currently animating a balance update (for "Updating..." indicator)
   final Set<String> _animatingAccounts = {};
+
+  // Per-account trend period — controls the rolling window the
+  // dashboard percentage chip is computed against (day / week / month /
+  // year). Stored client-side because the API returns the trend itself
+  // already; this state just tells the UI which window the user
+  // picked, so subsequent fetches request the matching window.
+  // Defaults to month (matches the existing API default).
+  final Map<String, _TrendPeriod> _trendPeriodByAccount = {};
+  static const _TrendPeriod _defaultTrendPeriod = _TrendPeriod.month;
 
   // Whether we're currently resolving a family account ID for setup navigation
   bool _isResolvingFamilyId = false;
@@ -86,6 +98,18 @@ class _AccountCarouselState extends State<AccountCarousel> {
       return account.clearingEstimate!;
     }
     return 'Clearing in progress';
+  }
+
+  /// Render an account number as masked display: keep the last 4 digits
+  /// visible, replace everything else with a single bullet run (no
+  /// 4-4-4 card-PIN spacing — this is an account number, not a card).
+  /// Falls back to the raw value if it's already ≤4 chars.
+  String _maskAccountNumber(String raw) {
+    if (raw.isEmpty) return raw;
+    if (raw.length <= 4) return raw;
+    final hiddenCount = raw.length - 4;
+    final visibleTail = raw.substring(raw.length - 4);
+    return '${'•' * hiddenCount}$visibleTail';
   }
 
   String _formatBalance(double amount) {
@@ -167,7 +191,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
   void _initializeCarouselPosition() {
     if (_accountManager.hasActiveAccount && widget.accountSummaries.isNotEmpty) {
       final activeId = _accountManager.activeAccountId;
-      final index = widget.accountSummaries.indexWhere((a) => a.id == activeId);
+      final index = widget.accountSummaries
+          .indexWhere((a) => a.id == activeId || a.spendingAccountId == activeId);
       if (index >= 0) {
         _currentIndex = index;
       }
@@ -176,8 +201,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   Future<void> _initializeActiveAccount() async {
     if (!_accountManager.hasActiveAccount && widget.accountSummaries.isNotEmpty) {
-      // Set the first account as active by default
-      _accountManager.setActiveAccount(widget.accountSummaries.first.id);
+      // Set the first account as active by default (spending id so a family
+      // card resolves to its real-money virtual account).
+      _accountManager.setActiveAccount(widget.accountSummaries.first.spendingAccountId);
     }
   }
 
@@ -187,9 +213,11 @@ class _AccountCarouselState extends State<AccountCarousel> {
       _currentIndex = index;
     });
 
-    // Skip setting active account when on the "+" add card (last index)
+    // Skip setting active account when on the "+" add card (last index).
+    // Use spendingAccountId so a family card activates its real-money virtual
+    // account (the pool) — that's the source the payments path debits + limits.
     if (widget.accountSummaries.isNotEmpty && index < widget.accountSummaries.length) {
-      final newAccountId = widget.accountSummaries[index].id;
+      final newAccountId = widget.accountSummaries[index].spendingAccountId;
       _accountManager.setActiveAccount(newAccountId);
     }
   }
@@ -270,7 +298,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
           CarouselSlider.builder(
             itemCount: _totalItemCount,
             options: CarouselOptions(
-              height: 200.h,
+              // Slightly trimmed so the Referral Bonus gift icon + label
+              // peeks above the fold (without exposing the body copy
+              // below it). With the balance still wrapped between two
+              // Spacers, the amount stays vertically centered in the
+              // shorter card — no top-heavy lean.
+              height: 190.h,
               viewportFraction: 0.95, // Wider cards
               enlargeCenterPage: true,
               initialPage: _currentIndex, // Start at active account position
@@ -562,46 +595,92 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ),
                             ),
                           ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isUp
-                                ? Colors.green.withValues(alpha: 0.2)
-                                : Colors.red.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Text(
-                            cardArguments['trend'] as String,
-                            style: TextStyle(
-                              color: isUp ? Colors.green[300] : Colors.red[300],
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w600,
+                        // Trend chip — tap to open the period picker so
+                        // the user can choose whether the percentage
+                        // tracks against the last day, week or month.
+                        GestureDetector(
+                          onTap: () => _openTrendPeriodPicker(account),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 4.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isUp
+                                  ? Colors.green.withValues(alpha: 0.2)
+                                  : Colors.red.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  cardArguments['trend'] as String,
+                                  style: TextStyle(
+                                    color: isUp
+                                        ? Colors.green[300]
+                                        : Colors.red[300],
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(width: 2.w),
+                                Icon(
+                                  Icons.expand_more,
+                                  color: isUp
+                                      ? Colors.green[300]
+                                      : Colors.red[300],
+                                  size: 12.sp,
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        SizedBox(width: 6.w),
+                        SizedBox(width: 8.w),
+                        // "Details" chip — replaces the bare info-icon
+                        // circle. Same tap target (28dp+ height) but
+                        // self-labelled so the affordance is obvious.
                         GestureDetector(
                           onTap: () => widget.onShowDetails(cardArguments),
                           child: Container(
-                            width: 28.w,
-                            height: 28.h,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 4.h,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(20.r),
                             ),
-                            child: Icon(
-                              Icons.info_outline,
-                              color: Colors.white,
-                              size: 16.sp,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: Colors.white,
+                                  size: 14.sp,
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'Details',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 12.h),
+                    // Balance sits in the optical center of the card.
+                    // Spacer above + the existing Spacer between balance
+                    // and the bottom row pushes the amount to roughly
+                    // 40% from the top — feels visually centered while
+                    // leaving room for the bottom "account no + buttons"
+                    // strip and the top "label + chips" row.
+                    const Spacer(),
                     // Animated balance counter — shows AVAILABLE balance on dashboard
                     CompactAnimatedBalance(
                       balance: _getAvailableBalance(account),
@@ -616,14 +695,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         padding: EdgeInsets.only(top: 2.h),
                         child: Row(
                           children: [
-                            SizedBox(
-                              width: 10.sp,
-                              height: 10.sp,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.5,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                            ),
+                            // Tiny inline indicator — the WebSocket
+                            // "Updating…" microspinner sits next to
+                            // 10sp body text, so the loader is sized
+                            // to read as a subtle dot rather than a
+                            // dominant visual element on the card.
+                            LazerVaultLoader(size: 4),
                             SizedBox(width: 4.w),
                             Text(
                               'Updating...',
@@ -636,36 +713,34 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           ],
                         ),
                       ),
-                    // Show pending badge when there are held/clearing funds
-                    if (account.hasPendingBalance) ...[
-                      SizedBox(height: 4.h),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFB923C).withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          'Pending: $currencySymbol${_formatBalance(account.pendingBalance)}',
-                          style: TextStyle(
-                            color: const Color(0xFFFB923C),
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+                    // Pending balance is intentionally NOT surfaced on
+                    // the dashboard card anymore — held/clearing funds
+                    // show up in the Pending tab inside the account
+                    // details bottom sheet (opened via the "Details"
+                    // chip at the top-right). Keeps the card compact
+                    // for the common case where pending is zero.
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Masked account number — only the last 4 digits
+                        // are visible on the dashboard. Full NUBAN is
+                        // still in cardArguments['accountNumber'] for
+                        // the Deposit / Withdraw flows where the
+                        // unmasked value is required.
                         Text(
-                          cardArguments['accountNumber'] as String,
+                          _maskAccountNumber(
+                            cardArguments['accountNumber'] as String,
+                          ),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 14.sp,
+                            // No letter-spacing — this is an account
+                            // number, not a card PIN, so we want the
+                            // bullets to read as one tight run.
                           ),
                         ),
+                        SizedBox(width: 16.w),
                         Row(
                           children: [
                             _buildActionButton(
@@ -916,14 +991,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         if (_animatingAccounts.contains(account.id))
                           Row(
                             children: [
-                              SizedBox(
-                                width: 10.sp,
-                                height: 10.sp,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                ),
-                              ),
+                              // Tiny inline indicator — the WebSocket
+                            // "Updating…" microspinner sits next to
+                            // 10sp body text, so the loader is sized
+                            // to read as a subtle dot rather than a
+                            // dominant visual element on the card.
+                            LazerVaultLoader(size: 4),
                               SizedBox(width: 4.w),
                               Text(
                                 'Updating...',
@@ -1157,14 +1230,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       if (_animatingAccounts.contains(account.id))
                         Row(
                           children: [
-                            SizedBox(
-                              width: 10.sp,
-                              height: 10.sp,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.5,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                            ),
+                            // Tiny inline indicator — the WebSocket
+                            // "Updating…" microspinner sits next to
+                            // 10sp body text, so the loader is sized
+                            // to read as a subtle dot rather than a
+                            // dominant visual element on the card.
+                            LazerVaultLoader(size: 4),
                             SizedBox(width: 4.w),
                             Text(
                               'Updating...',
@@ -1214,4 +1285,130 @@ class _AccountCarouselState extends State<AccountCarousel> {
     );
   }
 
+  // ── Trend-period picker ──────────────────────────────────────────────
+  //
+  // Opened by tapping the % chip at the top-right of any account card.
+  // Lets the user pick the rolling window the percentage is calculated
+  // against. Selection is persisted per-account in `_trendPeriodByAccount`
+  // and triggers a fresh fetch of the trend so the new window's number
+  // shows up immediately. The bottom sheet is dark + brand-purple to
+  // match the rest of the app shell.
+  void _openTrendPeriodPicker(AccountSummaryEntity account) {
+    final current =
+        _trendPeriodByAccount[account.id] ?? _defaultTrendPeriod;
+    showModalBottomSheet<_TrendPeriod>(
+      context: context,
+      // Match the dashboard account-card gradient so the sheet reads as
+      // a natural extension of the chip the user tapped, not a generic
+      // dark sheet (the previous #1F1F1F felt detached from the card).
+      backgroundColor: const Color(0xFF3D2F8B),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 12.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Row(
+                    children: [
+                      Icon(Icons.trending_up,
+                          color: Colors.white, size: 18.sp),
+                      SizedBox(width: 10.w),
+                      Text(
+                        'Track change over…',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                for (final option in _TrendPeriod.values)
+                  ListTile(
+                    onTap: () => Navigator.of(sheetContext).pop(option),
+                    leading: Icon(
+                      option == current
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                      color: option == current
+                          ? const Color(0xFF8B7BFF)
+                          : Colors.white.withValues(alpha: 0.5),
+                      size: 20.sp,
+                    ),
+                    title: Text(
+                      option.label,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: option == current
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text(
+                      option.subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 11.5.sp,
+                      ),
+                    ),
+                  ),
+                SizedBox(height: 8.h),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((picked) {
+      if (picked == null || !mounted) return;
+      setState(() {
+        _trendPeriodByAccount[account.id] = picked;
+      });
+      // Ask the cubit to refresh trend for this account against the
+      // newly-chosen window. The cubit's existing fetcher takes a period
+      // string ("day" / "week" / "month" / "year"); if the API doesn't
+      // already accept this, the value is still stored locally so the
+      // chip subtitle and next refresh window pick up correctly.
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is AuthenticationSuccess) {
+        final userId = authState.profile.user.id;
+        final accessToken = authState.profile.session.accessToken;
+        _cubit.fetchAccountSummaries(
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
+    });
+  }
+}
+
+/// Time windows offered in the trend-period picker. Order matters — the
+/// bottom sheet renders them in declaration order.
+enum _TrendPeriod {
+  day('Last 24 hours', 'Day-on-day change'),
+  week('Last 7 days', 'Week-on-week change'),
+  month('Last 30 days', 'Month-on-month change'),
+  year('Last 12 months', 'Year-on-year change');
+
+  final String label;
+  final String subtitle;
+  const _TrendPeriod(this.label, this.subtitle);
 }

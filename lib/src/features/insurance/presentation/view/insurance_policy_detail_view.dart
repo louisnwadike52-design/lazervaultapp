@@ -17,6 +17,7 @@ import '../../domain/repositories/insurance_repository.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
 import '../widgets/mycover_claim_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsurancePolicyDetailView extends StatefulWidget {
   final Insurance insurance;
@@ -401,7 +402,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   /// indigo so loading + content states feel consistent.
   Widget _buildTabLoadingState() {
     return const Center(
-      child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+      child: LazerVaultLoader.small(),
     );
   }
 

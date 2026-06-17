@@ -6,6 +6,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Budget Reminders Screen
 /// Displays budget alerts from the backend (threshold reached, budget exceeded, etc.)
@@ -80,7 +81,7 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
         builder: (context, state) {
           if (state is BudgetLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF10B981)),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -113,7 +114,7 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
           }
 
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+            child: LazerVaultLoader.small(),
           );
         },
       ),

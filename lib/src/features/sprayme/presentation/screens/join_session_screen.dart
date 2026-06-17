@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cu
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class JoinSessionScreen extends StatefulWidget {
   const JoinSessionScreen({super.key});
@@ -290,14 +291,7 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
               elevation: 0,
             ),
             child: isLoading
-                ? SizedBox(
-                    width: 22.w,
-                    height: 22.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
+                ? LazerVaultLoader(size: 22)
                 : Text(
                     'Join Session',
                     style: TextStyle(

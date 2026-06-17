@@ -13,6 +13,7 @@ import '../cubit/intl_airtime_cubit.dart';
 import '../cubit/intl_airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
 import '../widgets/intl_operator_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Consolidated international airtime purchase screen.
 ///
@@ -551,7 +552,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                 ),
               ),
             ] else ...[
-              const CircularProgressIndicator(color: Color(0xFF4E03D0)),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
                 'Loading country…',
@@ -697,14 +698,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
               if (state is IntlAirtimeLoading) {
                 return Padding(
                   padding: EdgeInsets.only(right: 14.w),
-                  child: SizedBox(
-                    width: 16.w,
-                    height: 16.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xFF4E03D0),
-                    ),
-                  ),
+                  child: LazerVaultLoader.tiny(),
                 );
               }
               return const SizedBox.shrink();

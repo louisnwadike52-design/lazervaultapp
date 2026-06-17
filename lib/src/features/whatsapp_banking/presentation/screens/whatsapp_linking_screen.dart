@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../cubit/whatsapp_banking_cubit.dart';
 import '../../cubit/whatsapp_banking_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class WhatsAppLinkingScreen extends StatefulWidget {
   const WhatsAppLinkingScreen({super.key});
@@ -444,14 +445,7 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                       elevation: 4,
                     ),
                     child: isLoading
-                        ? SizedBox(
-                            height: 20.h,
-                            width: 20.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _otpSent ? 'Verify & Link Account' : 'Send Verification Code',
                             style: TextStyle(

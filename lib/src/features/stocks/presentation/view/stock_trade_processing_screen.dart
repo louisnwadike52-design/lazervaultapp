@@ -8,6 +8,7 @@ import '../../domain/entities/stock_entity.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import 'stock_trade_confirmation_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Processing screen for stock trade with animations
 class StockTradeProcessingScreen extends StatefulWidget {
@@ -376,16 +377,7 @@ class _StockTradeProcessingScreenState extends State<StockTradeProcessingScreen>
               ),
               // Loading indicator for active step
               if (isActive && !isCompleted)
-                SizedBox(
-                  width: 16.w,
-                  height: 16.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF6366F1),
-                    ),
-                  ),
-                ),
+                LazerVaultLoader.tiny(),
             ],
           ),
         );

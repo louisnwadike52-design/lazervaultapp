@@ -13,16 +13,28 @@ import 'package:lazervault/src/features/voice_session/models/voice_language.dart
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/logger.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // --- Configuration ---
+  // LiveKit Cloud's URL stays dotenv-only — LiveKit lives outside the
+  // Cloudflare tunnel (it has its own SFU edge). The voice-ws, voice-
+  // agent and voice-language URLs all come from the EndpointRegistry so
+  // an admin URL rotation propagates without an app rebuild; dotenv
+  // overrides are still honoured for local-dev (10.0.2.2 dialling).
   final String _livekitWsUrl = dotenv.env['LIVEKIT_URL'] ?? (throw Exception('LIVEKIT_URL environment variable is not set.'));
-  final String _voiceWsUrl = dotenv.env['VOICE_WS_URL'] ?? 'ws://localhost:3012';
-  final String _voiceLanguageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? 'http://localhost:3013';
-  final String _voiceAgentGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://localhost:3010';
+  final String _voiceWsUrl = (dotenv.env['VOICE_WS_URL']?.isNotEmpty == true)
+      ? dotenv.env['VOICE_WS_URL']!
+      : endpointRegistry.wsVoice;
+  final String _voiceLanguageApiUrl = (dotenv.env['VOICE_LANGUAGE_API_URL']?.isNotEmpty == true)
+      ? dotenv.env['VOICE_LANGUAGE_API_URL']!
+      : endpointRegistry.httpVoiceLang;
+  final String _voiceAgentGatewayUrl = (dotenv.env['VOICE_AGENT_GATEWAY_URL']?.isNotEmpty == true)
+      ? dotenv.env['VOICE_AGENT_GATEWAY_URL']!
+      : endpointRegistry.httpVoiceAgent;
 
   static const String _prefKeyLanguage = 'voice_selected_language';
   static const String _prefKeyVoice = 'voice_selected_voice_id';

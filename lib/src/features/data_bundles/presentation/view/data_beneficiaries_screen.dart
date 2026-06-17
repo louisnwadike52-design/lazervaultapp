@@ -11,6 +11,7 @@ import '../cubit/data_auto_recharge_cubit.dart';
 import '../cubit/data_auto_recharge_state.dart';
 import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Saved data contacts. Mirrors `AirtimeBeneficiariesScreen` — list + add
 /// + delete + tap-to-purchase. Tap routes the user back into the data
@@ -168,10 +169,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
     }
     if (_loading && _beneficiaries == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
     }
     final list = _beneficiaries ?? const [];
@@ -873,15 +871,7 @@ class _DataBeneficiariesScreenState extends State<DataBeneficiariesScreen> {
                       }
                     },
               child: loading
-                  ? SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 14)
                   : Text('Save',
                       style: TextStyle(
                           color: const Color(0xFF4E03D0),

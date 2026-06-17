@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import 'donation_processing_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DonationPaymentScreen extends StatefulWidget {
   final Crowdfund crowdfund;
@@ -362,14 +363,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
                       elevation: 0,
                     ),
                     child: _isSubmitting
-                        ? SizedBox(
-                            height: 20.h,
-                            width: 20.w,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -654,14 +648,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 20.w,
-              height: 20.h,
-              child: const CircularProgressIndicator(
-                color: Color(0xFF4E03D0),
-                strokeWidth: 2,
-              ),
-            ),
+            LazerVaultLoader.small(),
             SizedBox(width: 12.w),
             Text(
               'Loading account...',

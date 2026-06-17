@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// A custom button widget that shows a loading state
 class AppLoadingButton extends StatelessWidget {
@@ -54,14 +55,10 @@ class AppLoadingButton extends StatelessWidget {
   }
 
   Widget _buildLoadingState() {
-    return SizedBox(
-      height: 24.h,
-      width: 24.w,
-      child: const CircularProgressIndicator(
-        strokeWidth: 2,
-        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-      ),
-    );
+    // Branded loader instead of the generic spinner so every button
+    // shows the company logo while it's working. Size matches the
+    // previous 24px spinner so existing button layouts are pixel-stable.
+    return const LazerVaultLoader.small();
   }
 
   Widget _buildNormalState() {

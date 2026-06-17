@@ -58,7 +58,7 @@ class OpenBankingRemoteDataSource {
   }
 
   static String _getBaseUrl() {
-    final host = dotenv.env['BANKING_API_URL'] ?? 'http://10.0.2.2:8082';
+    final host = dotenv.env['BANKING_API_URL'] ?? 'https://api.lazervault.app/api/v1';
     return '$host/api/v1';
   }
 

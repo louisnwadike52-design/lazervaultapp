@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 class QRDisplayScreen extends StatefulWidget {
   const QRDisplayScreen({super.key});
@@ -18,10 +23,12 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   Timer? _expiryTimer;
+  Timer? _pollTimer;
   Duration _remainingTime = Duration.zero;
 
   QRPaymentEntity? _qrCode;
   String? _qrData;
+  bool _paymentLanded = false;
 
   @override
   void initState() {
@@ -40,7 +47,64 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
 
     if (_qrCode != null) {
       _startExpiryTimer();
+      // Subscribe the realtime WS overlay AND start a 3s polling
+      // fallback. The two run concurrently — WS pushes typically arrive
+      // ~100ms after the payer's debit lands; polling guarantees the
+      // generator screen still flips to "Paid" within 3s worst-case if
+      // WS connect fails or drops.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _subscribeWsAndPoll();
+      });
     }
+  }
+
+  void _subscribeWsAndPoll() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final cubit = context.read<QRPaymentCubit>();
+    final qrCodeStr = _qrCode!.qrCode;
+    cubit.subscribeToGeneratedQR(
+      userId: authState.profile.userId,
+      accessToken: authState.profile.session.accessToken,
+      qrCode: qrCodeStr,
+    );
+    // Start at the relaxed 3s cadence. The wsHealth listener below flips
+    // it to 1s the moment the cubit reports `failed`, so a permanently-
+    // dead WS still settles within ~1s of the payer's debit.
+    _restartPolling(const Duration(seconds: 3));
+    cubit.wsHealth.addListener(_onQrWsHealthChanged);
+  }
+
+  void _restartPolling(Duration interval) {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(interval, _pollTick);
+  }
+
+  void _pollTick(Timer timer) {
+    if (!mounted || _paymentLanded) {
+      timer.cancel();
+      return;
+    }
+    final cubit = context.read<QRPaymentCubit>();
+    final qrCodeStr = _qrCode?.qrCode;
+    if (qrCodeStr == null) {
+      timer.cancel();
+      return;
+    }
+    // Cheap GET via gRPC; backend returns the QR row including its
+    // current `status`. The BlocListener below flips to the "Paid" UI
+    // when status transitions to paid.
+    cubit.getQRDetails(qrCode: qrCodeStr);
+  }
+
+  void _onQrWsHealthChanged() {
+    if (!mounted || _paymentLanded) return;
+    final cubit = context.read<QRPaymentCubit>();
+    final interval = cubit.wsHealth.value == QrPayWsHealth.failed
+        ? const Duration(seconds: 1)
+        : const Duration(seconds: 3);
+    _restartPolling(interval);
   }
 
   void _startExpiryTimer() {
@@ -65,12 +129,50 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
   void dispose() {
     _pulseController.dispose();
     _expiryTimer?.cancel();
+    _pollTimer?.cancel();
+    // Best-effort: detach the WS-health listener. context.read may throw
+    // if the BlocProvider is already gone (route-pop dispose order is
+    // not guaranteed), so swallow the lookup error.
+    try {
+      context
+          .read<QRPaymentCubit>()
+          .wsHealth
+          .removeListener(_onQrWsHealthChanged);
+    } catch (_) {}
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // BlocListener watches both polling (`QRDetailsLoaded`) and the WS
+    // overlay (which triggers `getQRDetails` internally on the
+    // `qr.payment.completed` event). Whichever path lands first flips
+    // `_paymentLanded` so the poll timer stops and the screen shows the
+    // "Paid" overlay. Banner-only for now; navigation to the receipt
+    // screen is the caller's choice based on this screen's role
+    // (waiting-room vs share-and-forget).
+    return BlocListener<QRPaymentCubit, QRPaymentState>(
+      listener: (context, state) {
+        if (state is QRDetailsLoaded &&
+            state.qrCode.status == QRPaymentStatus.paid &&
+            !_paymentLanded) {
+          if (!mounted) return;
+          setState(() {
+            _paymentLanded = true;
+            _qrCode = state.qrCode;
+          });
+          _pollTimer?.cancel();
+          HapticFeedback.lightImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Paid — receipt ready in your QR history.'),
+              backgroundColor: Color(0xFF10B981),
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -100,6 +202,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
             ],
           ),
         ),
+      ),
       ),
     );
   }

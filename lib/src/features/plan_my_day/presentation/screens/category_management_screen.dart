@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -50,9 +51,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         builder: (context, state) {
           if (state is PlanMyDayLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 

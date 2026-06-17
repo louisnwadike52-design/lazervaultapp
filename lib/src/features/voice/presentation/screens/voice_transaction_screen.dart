@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
 import '../screens/voice_registration_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Transaction Screen - Records voice command and processes transaction
 /// Production-ready with comprehensive error handling
@@ -499,7 +500,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
 
     try {
       // Get base URL for voice agent gateway
-      final baseUrl = widget.baseUrl ?? 'http://10.0.2.2:8888';
+      final baseUrl = widget.baseUrl ?? 'https://api.lazervault.app/api/v1';
       final uri = Uri.parse('$baseUrl/voice/process');
 
       // Prepare request with audio
@@ -749,7 +750,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
+              LazerVaultLoader.small(),
               SizedBox(height: 16),
               Text('Checking voice enrollment...'),
             ],
@@ -894,7 +895,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
                         else if (_isVerifying)
                           const Column(
                             children: [
-                              CircularProgressIndicator(),
+                              LazerVaultLoader.small(),
                               SizedBox(height: 16),
                               Text(
                                 'Verifying voice...',
@@ -905,7 +906,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
                         else if (_isProcessing)
                           const Column(
                             children: [
-                              CircularProgressIndicator(),
+                              LazerVaultLoader.small(),
                               SizedBox(height: 16),
                               Text(
                                 'Processing transaction...',

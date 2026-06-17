@@ -11,6 +11,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_state.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class Portfolio extends StatefulWidget {
   const Portfolio({super.key});
@@ -147,21 +148,29 @@ class _PortfolioState extends State<Portfolio> {
     );
   }
 
+  // Format an amount with its currency code, skipping the code when absent so
+  // we never render a stray leading space (e.g. " 0.00").
+  String _money(String currency, double value, {bool signed = false}) {
+    final code = currency.trim();
+    final sign = signed && value >= 0 ? '+' : '';
+    final amount = value.toStringAsFixed(2);
+    return code.isEmpty ? '$sign$amount' : '$sign$code $amount';
+  }
+
   Widget _buildPortfolioValue(PortfolioState state) {
     String totalValue = '£0.00';
     String gainLoss = '+£0.00';
     Color gainLossColor = Colors.green;
 
     if (state is PortfolioSummaryLoaded) {
-      totalValue = '${state.summary.currency} ${state.summary.totalValue.toStringAsFixed(2)}';
-      final isPositive = state.summary.totalGainLoss >= 0;
-      gainLoss = '${isPositive ? '+' : ''}${state.summary.currency} ${state.summary.totalGainLoss.toStringAsFixed(2)}';
-      gainLossColor = isPositive ? Colors.green : Colors.red;
+      totalValue = _money(state.summary.currency, state.summary.totalValue);
+      gainLoss = _money(state.summary.currency, state.summary.totalGainLoss, signed: true);
+      gainLossColor = state.summary.totalGainLoss >= 0 ? Colors.green : Colors.red;
     } else if (state is PortfolioLoaded) {
-      totalValue = '${state.portfolio.summary.currency} ${state.portfolio.summary.totalValue.toStringAsFixed(2)}';
-      final isPositive = state.portfolio.summary.totalGainLoss >= 0;
-      gainLoss = '${isPositive ? '+' : ''}${state.portfolio.summary.currency} ${state.portfolio.summary.totalGainLoss.toStringAsFixed(2)}';
-      gainLossColor = isPositive ? Colors.green : Colors.red;
+      final s = state.portfolio.summary;
+      totalValue = _money(s.currency, s.totalValue);
+      gainLoss = _money(s.currency, s.totalGainLoss, signed: true);
+      gainLossColor = s.totalGainLoss >= 0 ? Colors.green : Colors.red;
     }
 
     return Container(
@@ -216,19 +225,41 @@ class _PortfolioState extends State<Portfolio> {
     final assets = state.portfolio.assets.take(4).toList();
 
     if (assets.isEmpty) {
-      return Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Center(
-          child: Text(
-            'No assets yet',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 14.sp,
-            ),
+      return InkWell(
+        onTap: () => Get.toNamed(AppRoutes.portfolioDetails),
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 20.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.trending_up_rounded,
+                color: Colors.white.withValues(alpha: 0.6),
+                size: 28.sp,
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                'No investments yet',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Start with stocks or crypto to grow your portfolio',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.55),
+                  fontSize: 12.5.sp,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -350,9 +381,7 @@ class _PortfolioState extends State<Portfolio> {
     return Container(
       padding: EdgeInsets.all(40.w),
       child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
+        child: LazerVaultLoader.small(),
       ),
     );
   }

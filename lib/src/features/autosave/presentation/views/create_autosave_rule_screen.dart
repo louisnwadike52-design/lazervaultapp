@@ -43,6 +43,7 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ─── Theme constants — aligned with the contribution flow palette ───
 const _bg = Color(0xFF0A0A0A);
@@ -1037,10 +1038,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           return Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 60.h),
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(_accent),
-              ),
+              child: LazerVaultLoader.tiny(),
             ),
           );
         },
@@ -1077,10 +1075,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 40.h),
                   child: const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(_inflowTint),
-                    ),
+                    child: LazerVaultLoader.tiny(),
                   ),
                 );
               }

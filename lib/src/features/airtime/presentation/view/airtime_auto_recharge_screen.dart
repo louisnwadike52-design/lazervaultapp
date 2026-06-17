@@ -8,6 +8,7 @@ import '../../../../../core/widgets/bill_details_sheet.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../widgets/airtime_shimmer.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen to manage auto-recharge schedules
 class AirtimeAutoRechargeScreen extends StatefulWidget {
@@ -635,14 +636,7 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
                     elevation: 0,
                   ),
                   child: isLoading
-                      ? SizedBox(
-                          width: 20.w,
-                          height: 20.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Text(
                           'Save Changes',
                           style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),

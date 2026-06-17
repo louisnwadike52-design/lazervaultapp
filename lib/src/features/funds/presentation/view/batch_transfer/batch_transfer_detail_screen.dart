@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchTransferDetailScreen extends StatefulWidget {
   const BatchTransferDetailScreen({super.key});
@@ -47,7 +48,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                 builder: (context, state) {
                   if (state is BatchTransferDetailLoading) {
                     return const Center(
-                        child: CircularProgressIndicator(color: btBlue));
+                        child: LazerVaultLoader.small());
                   }
 
                   if (state is BatchTransferDetailError) {
@@ -59,7 +60,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                   }
 
                   return const Center(
-                      child: CircularProgressIndicator(color: btBlue));
+                      child: LazerVaultLoader.small());
                 },
               ),
             ),
@@ -897,14 +898,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLoading)
-              SizedBox(
-                width: 16.w,
-                height: 16.h,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                ),
-              )
+              LazerVaultLoader.tiny()
             else
               Icon(icon, color: color, size: 18.sp),
             SizedBox(width: 8.w),

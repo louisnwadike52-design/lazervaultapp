@@ -10,6 +10,7 @@ import '../cubit/education_beneficiary_cubit.dart';
 import '../cubit/education_beneficiary_state.dart';
 import '../cubit/education_reminder_cubit.dart';
 import '../cubit/education_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create an education reminder. Title + date/time + optional candidate
 /// + optional amount + optional recurrence.
@@ -236,15 +237,7 @@ class _CreateEducationReminderScreenState
                       elevation: 0,
                     ),
                     child: _saving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text('Create Reminder',
                             style: TextStyle(
                                 fontSize: 16.sp,

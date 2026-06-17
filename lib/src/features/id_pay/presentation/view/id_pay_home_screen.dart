@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../widgets/id_pay_details_bottom_sheet.dart';
 import '../widgets/id_pay_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayHomeScreen extends StatefulWidget {
   const IDPayHomeScreen({super.key});
@@ -218,9 +219,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
       builder: (context, state) {
         if (state is IDPayLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

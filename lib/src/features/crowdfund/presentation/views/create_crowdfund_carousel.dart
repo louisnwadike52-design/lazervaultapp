@@ -24,6 +24,7 @@ import '../../../../../core/services/injection_container.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/locale_manager.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 
 /// Main carousel controller for crowdfund creation
@@ -715,14 +716,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (_isProcessing) ...[
-                          SizedBox(
-                            width: 16.sp,
-                            height: 16.sp,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
+                          LazerVaultLoader.tiny(),
                           SizedBox(width: 12.w),
                         ],
                         Text(

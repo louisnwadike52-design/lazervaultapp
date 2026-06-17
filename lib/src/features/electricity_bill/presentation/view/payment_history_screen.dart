@@ -11,6 +11,7 @@ import '../../domain/entities/bill_payment_entity.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../widgets/electricity_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Electricity bill payment history. Mirrors `InternetHistoryScreen`:
 ///   * Same dark layout, purple `#4E03D0` accent
@@ -131,7 +132,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
           builder: (context, state) {
             if (state is PaymentHistoryLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: _accent),
+                child: LazerVaultLoader.small(),
               );
             }
             if (state is ElectricityBillError) {

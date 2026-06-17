@@ -11,6 +11,7 @@ import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'nfc_broadcast_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreatePaymentSessionScreen extends StatelessWidget {
   const CreatePaymentSessionScreen({super.key});
@@ -626,15 +627,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
           ),
           child: Center(
             child: _isCreating
-                ? SizedBox(
-                    height: 22.h,
-                    width: 22.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+                ? LazerVaultLoader(size: 22)
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Verification badge widget that displays user's KYC tier and status
 class VerificationBadge extends StatelessWidget {
@@ -84,14 +85,7 @@ class VerificationBadge extends StatelessWidget {
       );
     } else if (status == KYCStatus.inProgress ||
         status == KYCStatus.pendingReview) {
-      return SizedBox(
-        width: (size ?? 24) * 0.4,
-        height: (size ?? 24) * 0.4,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: color,
-        ),
-      );
+      return LazerVaultLoader(size: (size ?? 24) * 0.4);
     } else if (status == KYCStatus.rejected) {
       return Icon(
         Icons.close,

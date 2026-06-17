@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -31,6 +32,8 @@ import 'package:lazervault/src/features/funds/presentation/widgets/directpay_pro
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_mode_info.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_setup_bottomsheet.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -71,7 +74,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   // DirectPay vs Mandate toggle (NGN accounts)
   // false = DirectPay (one-time authorization per transaction)
   // true = Mandate (authorize once for recurring access)
-  bool _useRecurringAccess = false;
+  // DEFAULT to Direct Debit (recurring mandate): it authorizes once and makes
+  // every future deposit instant. The backend tries the mandate first and falls
+  // back to one-time DirectPay automatically when no usable mandate exists
+  // (see deposit_service InitiateDeposit), so this default never blocks a deposit.
+  bool _useRecurringAccess = true;
 
 
   /// Methods available for the current currency + platform. The backend
@@ -348,10 +355,24 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           }
         },
         builder: (authContext, authState) {
-          return Scaffold(
-            backgroundColor: const Color(0xFF1A1A1A),
-            appBar: _buildAppBar(),
-            body: BlocListener<OpenBankingCubit, OpenBankingState>(
+          // Gradient lives on a full-screen Container BEHIND a transparent
+          // Scaffold so it always covers the entire screen (behind the app bar
+          // and all the way to the bottom). Previously the gradient was on the
+          // body Container, which didn't fill the full height — the Scaffold's
+          // solid colour showed through below it as a mismatched band.
+          return Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1A1430), Color(0xFF120F1C), Color(0xFF0A090F)],
+                stops: [0.0, 0.42, 1.0],
+              ),
+            ),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: _buildAppBar(),
+              body: BlocListener<OpenBankingCubit, OpenBankingState>(
               listener: _openBankingListener,
               child: BlocConsumer<DepositCubit, DepositState>(
                 listener: _blocListener,
@@ -369,8 +390,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                           _buildSelectedCardSummary(),
                           SizedBox(height: 28.h),
                           // Saved banks first (deposit again with one tap),
-                          // then the method-first picker.
-                          _buildSavedBanksCarousel(context),
+                          // then the method-first picker. While the linked-
+                          // accounts fetch is in flight, the carousel slot
+                          // renders a labelled loading row instead of an
+                          // invisible gap.
+                          _buildSavedBanksCarousel(context, isOpenBankingLoading),
                           Text(
                             'How would you like to deposit?',
                             style: TextStyle(
@@ -395,6 +419,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   );
                 },
               ),
+            ),
             ),
           );
         },
@@ -438,9 +463,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.07),
+              Colors.white.withValues(alpha: 0.02),
+            ],
+          ),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          border: Border.all(color: accent.withValues(alpha: 0.20)),
         ),
         child: Row(
           children: [
@@ -448,8 +480,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               width: 42.w,
               height: 42.w,
               decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10.r),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    accent.withValues(alpha: 0.45),
+                    accent.withValues(alpha: 0.18),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(11.r),
+                border: Border.all(color: accent.withValues(alpha: 0.30)),
               ),
               child: Icon(method.icon, color: Colors.white, size: 22.sp),
             ),
@@ -754,8 +794,36 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// has an active mandate (reusable with no re-auth via Mono DebitMandate).
   /// Tapping opens a deposit-amount sheet; the overflow menu offers manage +
   /// unlink. "View all" lists them all in a modal.
-  Widget _buildSavedBanksCarousel(BuildContext context) {
-    if (_linkedAccounts.isEmpty) return const SizedBox.shrink();
+  Widget _buildSavedBanksCarousel(BuildContext context, bool isLoading) {
+    // While the open-banking cubit is fetching for the first time, the
+    // accounts list is still empty — render a labelled loading row in
+    // the carousel's slot so the section's identity stays present
+    // (instead of an invisible gap that later pops in).
+    if (_linkedAccounts.isEmpty) {
+      if (!isLoading) return const SizedBox.shrink();
+      return Container(
+        margin: EdgeInsets.only(bottom: 24.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF241C3D).withValues(alpha: 0.40),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
+        child: LazerVaultLoadingRow(
+          label: 'Loading linked accounts',
+          padding: EdgeInsets.zero,
+          labelStyle: TextStyle(
+            color: Colors.white.withValues(alpha: 0.85),
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+          loaderSize: 22,
+        ),
+      );
+    }
     // Rebuild on mandate-cache changes so the Persistent badge stays accurate.
     return BlocBuilder<MandateCubit, MandateState>(
       builder: (context, _) {
@@ -790,9 +858,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             ),
             SizedBox(height: 12.h),
             SizedBox(
-              height: 158.h,
+              height: 172.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(vertical: 2.h),
                 itemCount: accounts.length,
                 separatorBuilder: (_, __) => SizedBox(width: 12.w),
                 itemBuilder: (_, i) => _buildLinkedAccountCard(context, accounts[i]),
@@ -814,16 +883,42 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   Widget _buildLinkedAccountCard(BuildContext context, LinkedBankAccount account) {
     final mandate = _mandateForAccount(account);
     final recurring = mandate != null;
+    // Deposit-access state for this card:
+    //   persistent → active Direct Debit (auto-debit, no approval)
+    //   pending    → Direct Debit authorized but awaiting NIBSS activation; THIS
+    //                deposit still uses one-time DirectPay until it goes live
+    //   onetime    → no mandate, one-time DirectPay only
+    final mode = _accessModeForAccount(account);
+    final settingUp = mode == 'pending';
+    // While Direct Debit is still activating, the top chip honestly reads
+    // "One-time" (that's the rail this deposit uses now); the amber "Setting up
+    // Direct Debit" badge below carries the recurring-setup signal + info modal.
+    final chipMode = mode == 'persistent' ? 'persistent' : 'onetime';
+    final accent = _cardAccentColor(mode);
     return InkWell(
-      borderRadius: BorderRadius.circular(14.r),
+      borderRadius: BorderRadius.circular(16.r),
       onTap: () => _openRedepositSheet(context, account),
       child: Container(
-        width: 224.w,
-        padding: EdgeInsets.all(16.w),
+        width: 228.w,
+        padding: EdgeInsets.all(15.w),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF241C3D).withValues(alpha: 0.80),
+              const Color(0xFF15121F).withValues(alpha: 0.92),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: accent.withValues(alpha: 0.30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.22),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -832,8 +927,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               children: [
                 _bankLogoAvatar(account.bankName, size: 36),
                 const Spacer(),
-                _accessChip(mode: _accessModeForAccount(account)),
-                SizedBox(width: 4.w),
+                _accessChip(
+                  mode: chipMode,
+                  onTap: () => _showAccessModeInfo(mode, account),
+                  showInfo: true,
+                ),
+                SizedBox(width: 6.w),
                 InkWell(
                   borderRadius: BorderRadius.circular(20.r),
                   onTap: () => _showAccountActions(context, account),
@@ -874,11 +973,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                         fontWeight: FontWeight.w700));
               }
               return Row(mainAxisSize: MainAxisSize.min, children: [
-                SizedBox(
-                    width: 9.w,
-                    height: 9.w,
-                    child: const CircularProgressIndicator(
-                        strokeWidth: 1.5, color: Color(0xFF9CA3AF))),
+                LazerVaultLoader(size: 9),
                 SizedBox(width: 5.w),
                 Text('Fetching balance…',
                     style: TextStyle(
@@ -887,18 +982,156 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               ]);
             }),
             SizedBox(height: 6.h),
-            Row(
-              children: [
-                Text(recurring ? 'Tap to deposit' : 'Tap to deposit (one-time)',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11.sp)),
-                const Spacer(),
-                Icon(recurring ? Icons.refresh : Icons.chevron_right,
-                    color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
-              ],
-            ),
+            // Setting-up state gets the tappable "Setting up Direct Debit" badge
+            // in place of the deposit hint (same row → keeps the card height
+            // and the badges evenly spaced, never clustered). Other states keep
+            // the plain hint + arrow.
+            if (settingUp)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _settingUpDirectDebitBadge(account),
+              )
+            else
+              Row(
+                children: [
+                  Text(recurring ? 'Tap to deposit' : 'Tap to deposit (one-time)',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11.sp)),
+                  const Spacer(),
+                  Icon(recurring ? Icons.refresh : Icons.chevron_right,
+                      color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
+                ],
+              ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Tappable amber badge for a card whose Direct Debit mandate is authorized
+  /// but still activating with NIBSS. Tapping opens an info modal. The inner
+  /// InkWell consumes the tap, so it opens the modal without firing the card's
+  /// deposit tap.
+  Widget _settingUpDirectDebitBadge(LinkedBankAccount account) {
+    const amber = Color(0xFFFB923C);
+    return InkWell(
+      borderRadius: BorderRadius.circular(7.r),
+      onTap: () => _showDirectDebitSetupInfo(account),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 3.h),
+        decoration: BoxDecoration(
+          color: amber.withValues(alpha: 0.13),
+          borderRadius: BorderRadius.circular(7.r),
+          border: Border.all(color: amber.withValues(alpha: 0.38)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.hourglass_bottom, color: amber, size: 11.sp),
+            SizedBox(width: 5.w),
+            Flexible(
+              child: Text('Setting up Direct Debit',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: amber, fontSize: 10.sp, fontWeight: FontWeight.w700)),
+            ),
+            SizedBox(width: 4.w),
+            Icon(Icons.info_outline, color: amber.withValues(alpha: 0.85), size: 11.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Explains the "Direct Debit setting up" state (authorized, awaiting NIBSS)
+  /// in a themed dialog. Reached from the card badge and the account-actions
+  /// sheet.
+  void _showDirectDebitSetupInfo(LinkedBankAccount account) {
+    const amber = Color(0xFFFB923C);
+    final bank = account.bankName.isNotEmpty ? account.bankName : 'your bank';
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 38.w,
+                    height: 38.w,
+                    decoration: BoxDecoration(
+                      color: amber.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.hourglass_bottom, color: amber, size: 19.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text('Direct Debit is being set up',
+                        style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'You authorized recurring Direct Debit for $bank. Your bank is now '
+                'activating it with NIBSS. This can take a little while, sometimes up to 24 hours.',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13.sp, height: 1.45),
+              ),
+              SizedBox(height: 14.h),
+              _setupInfoBullet(Icons.bolt, const Color(0xFF3B82F6),
+                  'You can deposit right now. Until Direct Debit is live, deposits use a secure one-time approval.'),
+              SizedBox(height: 10.h),
+              _setupInfoBullet(Icons.autorenew, const Color(0xFF10B981),
+                  'Once it is active, future deposits debit automatically with no approval step.'),
+              SizedBox(height: 20.h),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
+                  child: Text('Got it', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Tapping the "Direct Debit" / "One-time" chip on a card opens the shared
+  /// access-mode info modal (same one Beam uses) explaining each deposit mode.
+  void _showAccessModeInfo(String mode, LinkedBankAccount account) {
+    showMandateModeInfoModal(
+      context,
+      current: mode == 'persistent'
+          ? MandateModeView.directDebit
+          : mode == 'pending'
+              ? MandateModeView.settingUp
+              : MandateModeView.oneTime,
+      bankName: account.bankName,
+      actionNoun: 'deposit',
+      switchHint: 'Tap the 3-dots on the card to switch between them.',
+    );
+  }
+
+  Widget _setupInfoBullet(IconData icon, Color color, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 16.sp),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(text,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 12.5.sp, height: 1.4)),
+        ),
+      ],
     );
   }
 
@@ -1296,6 +1529,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // Raw mandate of ANY status — drives the DirectPay⇄Direct-Debit switch.
     final rawMandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
     final isPersistent = rawMandate != null && rawMandate.isActive;
+    // Direct Debit authorized but still activating with NIBSS — it's already
+    // being set up, so we show status (not a "switch to Direct Debit" CTA).
+    final isActivating = rawMandate != null && rawMandate.isActivating;
     showModalBottomSheet(
       context: screenCtx,
       backgroundColor: Colors.transparent,
@@ -1333,6 +1569,20 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
                     _switchToOneTime(account, rawMandate);
+                  },
+                )
+              else if (isActivating)
+                // Already authorized + activating with NIBSS. Show status, not a
+                // "switch to Direct Debit" CTA (it's already being set up). Tap
+                // opens the same info modal as the card badge.
+                ListTile(
+                  leading: Icon(Icons.hourglass_bottom, color: const Color(0xFFFB923C)),
+                  title: Text('Setting up Direct Debit', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text('Authorized. Activating with your bank. Deposits use one-time approval until it is live.', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  trailing: Icon(Icons.info_outline, color: const Color(0xFFFB923C).withValues(alpha: 0.85), size: 18.sp),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _showDirectDebitSetupInfo(account);
                   },
                 )
               else
@@ -1501,43 +1751,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     return 'onetime';
   }
 
-  Widget _accessChip({required String mode}) {
-    late final Color color;
-    late final IconData icon;
-    late final String label;
+  /// State-coloured edge for a linked-account card: green when Direct Debit is
+  /// active, amber while it's setting up, soft purple for one-time only.
+  Color _cardAccentColor(String mode) {
     switch (mode) {
       case 'persistent':
-        color = const Color(0xFF10B981); // green
-        icon = Icons.link;
-        label = 'Persistent';
-        break;
+        return const Color(0xFF10B981); // green — active Direct Debit
       case 'pending':
-        color = const Color(0xFFFB923C); // orange
-        icon = Icons.hourglass_bottom;
-        label = 'Setting up';
-        break;
+        return const Color(0xFFFB923C); // amber — setting up
       default:
-        color = const Color(0xFF9CA3AF); // grey
-        icon = Icons.schedule;
-        label = 'One-time';
+        return const Color(0xFF7C5CFF); // soft purple — one-time
     }
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 11.sp),
-          SizedBox(width: 3.w),
-          Text(label,
-              style: TextStyle(color: color, fontSize: 10.sp, fontWeight: FontWeight.w700)),
-        ],
-      ),
-    );
+  }
+
+  /// Thin mapper onto the shared [LinkedAccountStateChip] so Deposit, Beam,
+  /// Withdrawal and budgeting all render the SAME pill. Pass [onTap] to open
+  /// the access-mode info modal.
+  Widget _accessChip({required String mode, VoidCallback? onTap, bool showInfo = false}) {
+    final state = mode == 'persistent'
+        ? LinkedAccountState.directDebit
+        : mode == 'pending'
+            ? LinkedAccountState.settingUp
+            : LinkedAccountState.oneTime;
+    return LinkedAccountStateChip(state: state, onTap: onTap, showInfoAffordance: showInfo);
   }
 
   Widget _buildLinkedAccountRow(BuildContext context, LinkedBankAccount account) {
@@ -1571,7 +1807,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                           style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp)),
                     ),
                     SizedBox(width: 8.w),
-                    _accessChip(mode: _accessModeForAccount(account)),
+                    _accessChip(
+                      mode: _accessModeForAccount(account),
+                      onTap: () => _showAccessModeInfo(_accessModeForAccount(account), account),
+                      showInfo: true,
+                    ),
                   ],
                 ),
               ],
@@ -2273,6 +2513,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         _selectedBank = state.account.bankName; // narration + receipts
       });
 
+      // The bank is LINKED now. A retry from here must reuse this connection,
+      // NOT re-open Mono Connect and re-link it. Re-point "Try Again" at the
+      // redeposit path (rail starts at "Preparing Deposit", no linking step) so
+      // a failed DEPOSIT retries the deposit — reusing the saved mandate /
+      // DirectPay — instead of re-linking an already-linked account.
+      _retryDeposit = () => _depositFromLinkedAccount(state.account);
+
       // Update progress to initiating stage
       _progressController.updateStage(DirectPayStage.initiating);
 
@@ -2300,6 +2547,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         _linkedAccountId = state.account.id;
         _selectedBank = state.account.bankName; // narration + receipts
       });
+
+      // Linked (with mandate) now — re-point "Try Again" at the redeposit path
+      // so a failed deposit reuses this connection instead of re-linking. See
+      // the AccountLinked branch above for the full rationale.
+      _retryDeposit = () => _depositFromLinkedAccount(state.account);
+
       _progressController.updateStage(DirectPayStage.initiating);
 
       if (state.mandateFailed) {

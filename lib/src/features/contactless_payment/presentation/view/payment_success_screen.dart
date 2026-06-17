@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import '../../services/contactless_pdf_service.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
   final double amount;
@@ -467,14 +468,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                 child: OutlinedButton.icon(
                                   onPressed: _isDownloading ? null : _downloadReceipt,
                                   icon: _isDownloading
-                                      ? SizedBox(
-                                          width: 18.sp,
-                                          height: 18.sp,
-                                          child: const CircularProgressIndicator(
-                                            color: Color.fromARGB(255, 78, 3, 208),
-                                            strokeWidth: 2,
-                                          ),
-                                        )
+                                      ? LazerVaultLoader(size: 18)
                                       : Icon(Icons.download_rounded, size: 18.sp),
                                   label: Text(
                                     _isDownloading ? 'Downloading...' : 'Download Receipt',
@@ -504,14 +498,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                               child: OutlinedButton.icon(
                                 onPressed: _isGeneratingPdf ? null : _shareReceipt,
                                 icon: _isGeneratingPdf
-                                    ? SizedBox(
-                                        width: 18.sp,
-                                        height: 18.sp,
-                                        child: const CircularProgressIndicator(
-                                          color: Color.fromARGB(255, 78, 3, 208),
-                                          strokeWidth: 2,
-                                        ),
-                                      )
+                                    ? LazerVaultLoader(size: 18)
                                     : Icon(Icons.share_rounded, size: 18.sp),
                                 label: Text(
                                   _isGeneratingPdf ? 'Generating PDF...' : 'Share Receipt',

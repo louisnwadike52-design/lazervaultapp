@@ -5,15 +5,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// Bottom sheet for setting up money spraying.
 /// User selects total amount to spray and denomination per tap.
 class MoneySpraySheet extends StatefulWidget {
-  final double walletBalance; // major units
+  final double walletBalance; // major units (spendable "gifts to spray")
   final String currency;
   final void Function(int totalAmountKobo, int denominationKobo) onConfirm;
+  /// Opens the buy-gifts-from-personal flow to top up the spendable balance.
+  final VoidCallback? onBuyGifts;
 
   const MoneySpraySheet({
     super.key,
     required this.walletBalance,
     required this.currency,
     required this.onConfirm,
+    this.onBuyGifts,
   });
 
   @override
@@ -420,28 +423,40 @@ class _MoneySpraySheetState extends State<MoneySpraySheet> {
                 ),
               ),
             ],
-            // Insufficient balance message when all presets disabled
+            // Insufficient balance: prompt to buy more gifts from personal account.
             if (_selectedAmount == null && !_isCustomAmount && widget.walletBalance < _amounts.first)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Container(
-                  padding: EdgeInsets.all(14.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFB923C).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.account_balance_wallet, color: const Color(0xFFFB923C), size: 18.sp),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          'Wallet balance too low. Fund your wallet to start spraying.',
-                          style: TextStyle(color: const Color(0xFFFB923C), fontSize: 12.sp),
+                child: GestureDetector(
+                  onTap: widget.onBuyGifts == null
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          widget.onBuyGifts!();
+                        },
+                  child: Container(
+                    padding: EdgeInsets.all(14.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.card_giftcard, color: const Color(0xFFFB923C), size: 18.sp),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            widget.onBuyGifts != null
+                                ? 'Not enough gifts to spray. Tap to buy more from your account.'
+                                : 'Not enough gifts to spray. Buy more from your account.',
+                            style: TextStyle(color: const Color(0xFFFB923C), fontSize: 12.sp),
+                          ),
                         ),
-                      ),
-                    ],
+                        if (widget.onBuyGifts != null)
+                          Icon(Icons.chevron_right, color: const Color(0xFFFB923C), size: 18.sp),
+                      ],
+                    ),
                   ),
                 ),
               ),

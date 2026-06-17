@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
 import '../screens/voice_registration_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Status Badge - Shows voice enrollment status and allows navigation to registration
 class VoiceStatusBadge extends StatefulWidget {
@@ -79,11 +80,7 @@ class _VoiceStatusBadgeState extends State<VoiceStatusBadge> {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            LazerVaultLoader.tiny(),
             SizedBox(width: 8),
             Text(
               'Checking voice...',

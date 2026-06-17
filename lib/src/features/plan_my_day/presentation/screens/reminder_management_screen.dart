@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ReminderManagementScreen extends StatefulWidget {
   const ReminderManagementScreen({super.key});
@@ -83,9 +84,7 @@ class _ReminderManagementScreenState extends State<ReminderManagementScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
+              child: LazerVaultLoader.small(),
             )
           : _reminders.isEmpty
               ? _buildEmptyState()

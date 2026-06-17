@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceClaimTrackingScreen extends StatefulWidget {
   final InsuranceClaim claim;
@@ -961,14 +962,7 @@ class _InsuranceClaimTrackingScreenState
                   ),
                 ),
                 child: _isCancelling
-                    ? SizedBox(
-                        width: 20.sp,
-                        height: 20.sp,
-                        child: const CircularProgressIndicator(
-                          color: Color(0xFFEF4444),
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         'Cancel Claim',
                         style: GoogleFonts.inter(

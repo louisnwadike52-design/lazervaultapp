@@ -9,6 +9,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../utils/group_validators.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateGroupBottomSheet extends StatefulWidget {
   const CreateGroupBottomSheet({super.key});
@@ -677,14 +678,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                           elevation: 0,
                         ),
                         child: _isLoading
-                            ? SizedBox(
-                                height: 20.h,
-                                width: 20.w,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Text(
                                 'Create Group',
                                 style: GoogleFonts.inter(

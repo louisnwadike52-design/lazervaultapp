@@ -70,16 +70,27 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       final isLoadMore = page > 0;
 
-      // NO CACHE on listing. Brand prices are FX-derived and FX
-      // moves continuously. Serving cached brands while the buy
-      // saga uses fresh FX produces the listing↔receipt mismatch
-      // we hit. Always show the loader + fetch fresh on every
-      // call (including tab switches). Pagination "load more"
-      // still appends to the in-memory accumulator so scroll
-      // doesn't re-fetch page 0.
+      // NO CACHE on listing. Brand prices are FX-derived and FX moves
+      // continuously, so we always re-fetch (no listing↔receipt drift).
+      // But the visible state is a separate question: emitting Loading
+      // here erased the previous brand state and flickered shimmer →
+      // empty → shimmer → empty every time an unrelated state
+      // (SellableCardsLoading, SupportedCountriesLoaded, …) emitted on
+      // the same cubit and the brand grid's fall-through path re-fired
+      // this method. Stale-while-revalidate: when a settled brand state
+      // already exists (Loaded / Empty / Searched), keep showing it
+      // while the background re-fetch runs. The result-fold below
+      // REPLACES the accumulator with the fresh page-0 response, so
+      // the user still sees up-to-date FX-derived prices the moment
+      // the call returns — they just never see the empty-shimmer flash
+      // in between. Pagination "load more" still appends to the
+      // accumulator so scroll doesn't re-fetch page 0.
+      final hasSettledBrandState = state is GiftCardBrandsLoaded ||
+          state is GiftCardBrandsEmpty ||
+          state is GiftCardBrandsSearched;
       if (isLoadMore) {
         emit(GiftCardBrandsLoadingMore(_accumulatedBrands));
-      } else {
+      } else if (!hasSettledBrandState) {
         _accumulatedBrands = [];
         _currentPage = 0;
         emit(GiftCardBrandsLoading());

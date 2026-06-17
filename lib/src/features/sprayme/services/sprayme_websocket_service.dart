@@ -89,9 +89,12 @@ class SprayMeWebSocketService {
 
     final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
     final port = int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088') ?? 8088;
+    // Port 443 == public tunnel which terminates TLS → must speak wss.
+    // Loopback dev (port 8088) keeps plain ws as before.
+    final tlsTunnel = port == 443;
 
     final wsUrl = Uri(
-      scheme: 'ws',
+      scheme: tlsTunnel ? 'wss' : 'ws',
       host: host,
       port: port,
       path: '/ws/sprayme',

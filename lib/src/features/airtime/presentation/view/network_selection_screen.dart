@@ -8,6 +8,7 @@ import '../cubit/airtime_state.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
 import '../widgets/airtime_step_indicator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class NetworkSelectionScreen extends StatefulWidget {
   const NetworkSelectionScreen({super.key});
@@ -323,11 +324,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            strokeWidth: 3,
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 24.h),
           Text(
             'Loading Network Providers...',

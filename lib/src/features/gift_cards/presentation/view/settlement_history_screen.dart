@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SettlementHistoryScreen extends StatefulWidget {
   const SettlementHistoryScreen({super.key});
@@ -28,7 +30,7 @@ class _SettlementHistoryScreenState extends State<SettlementHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: kGiftCardBgTop,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -46,11 +48,11 @@ class _SettlementHistoryScreenState extends State<SettlementHistoryScreen> {
         ),
         centerTitle: true,
       ),
-      body: BlocBuilder<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(child: BlocBuilder<GiftCardCubit, GiftCardState>(
         builder: (context, state) {
           if (state is GiftCardLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -116,7 +118,7 @@ class _SettlementHistoryScreenState extends State<SettlementHistoryScreen> {
 
           return _buildEmptyState();
         },
-      ),
+      )),
     );
   }
 

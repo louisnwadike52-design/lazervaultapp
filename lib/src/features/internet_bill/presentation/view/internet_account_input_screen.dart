@@ -9,6 +9,7 @@ import '../../domain/entities/internet_provider_entity.dart';
 import '../../domain/entities/internet_account_validation_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Per-ISP account input rules are grounded in real VTpass `/merchant-verify`
 /// behavior we probed against the sandbox on 2026-04-18 plus the public
@@ -667,14 +668,7 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
           ),
         ),
         child: isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 label,
                 style: GoogleFonts.inter(

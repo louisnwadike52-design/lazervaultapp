@@ -12,6 +12,7 @@
 // this surface; transfer flow is dropped end-to-end (Flutter + backend).
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,6 +26,7 @@ import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'widgets/gift_card_error_widget.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MyGiftCardsScreen extends StatefulWidget {
   const MyGiftCardsScreen({super.key});
@@ -36,7 +38,8 @@ class MyGiftCardsScreen extends StatefulWidget {
 class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  // 0 = Available, 1 = Expired, 2 = Failed, 3 = All. Transfer tab dropped.
+  // 0 = All, 1 = Available, 2 = Expired, 3 = Failed. All is the default
+  // landing tab so the user sees their full transaction history first.
   int _selectedTabIndex = 0;
   final ScrollController _scrollController = ScrollController();
   // Cached snapshot of the last successfully-loaded list. Lets the
@@ -123,8 +126,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        body: SafeArea(
+        backgroundColor: kGiftCardBgTop,
+        body: GiftCardBackground(child: SafeArea(
           child: Column(
             children: [
               _buildHeader(),
@@ -172,7 +175,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
               ),
             ],
           ),
-        ),
+        )),
       ),
     );
   }
@@ -256,10 +259,10 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
         splashFactory: NoSplash.splashFactory,
         overlayColor: WidgetStateProperty.all(Colors.transparent),
         tabs: [
+          _tabFor(icon: Icons.all_inclusive_rounded, label: 'All'),
           _tabFor(icon: Icons.check_circle_outline, label: 'Available'),
           _tabFor(icon: Icons.schedule_outlined, label: 'Expired'),
           _tabFor(icon: Icons.error_outline, label: 'Failed'),
-          _tabFor(icon: Icons.all_inclusive_rounded, label: 'All'),
         ],
       ),
     );
@@ -312,17 +315,17 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   Widget _buildGiftCardList(MyGiftCardsLoaded state) {
     final filtered = state.giftCards.where((card) {
       switch (_selectedTabIndex) {
-        case 0:
-          return card.status == 'available' && !_isExpired(card);
         case 1:
-          return _isExpired(card);
+          return card.status == 'available' && !_isExpired(card);
         case 2:
-          return _isFailed(card);
+          return _isExpired(card);
         case 3:
+          return _isFailed(card);
+        case 0:
         default:
-          // "All" intentionally includes failed rows so transaction
-          // history is complete — the user's last attempt to buy is
-          // visible even when it didn't end in an active card.
+          // "All" (index 0) intentionally includes failed rows so the
+          // transaction history is complete — the user's last attempt
+          // to buy is visible even when it didn't end in an active card.
           return true;
       }
     }).toList();
@@ -341,9 +344,9 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
         // pages are available (only on the All tab — the other tabs
         // filter the accumulator client-side and would mislead the
         // user with a "loading more" footer that can't actually grow
-        // their visible list). All is now index 3.
+        // their visible list). All is index 0.
         itemCount:
-            filtered.length + (state.hasMore && _selectedTabIndex == 3 ? 1 : 0),
+            filtered.length + (state.hasMore && _selectedTabIndex == 0 ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= filtered.length) {
             return _buildLoadMoreFooter(state.isLoadingMore);
@@ -358,18 +361,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
       child: Center(
-        child: SizedBox(
-          width: 22.w,
-          height: 22.w,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              isLoadingMore
-                  ? InvoiceThemeColors.primaryPurple
-                  : Colors.transparent,
-            ),
-          ),
-        ),
+        child: LazerVaultLoader(size: 22),
       ),
     );
   }
@@ -744,10 +736,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   // ── Empty / loading / error views ───────────────────────────────────
   Widget _buildLoadingView() {
     return Center(
-      child: CircularProgressIndicator(
-        valueColor:
-            AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
-      ),
+      child: LazerVaultLoader.small(),
     );
   }
 
@@ -805,32 +794,32 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
 
   Widget _buildEmptyTabView() {
     // _selectedTabIndex maps to the tabs in _buildTabBar:
-    //   0=Available, 1=Expired, 2=Failed, 3=All. The "All" branch is
+    //   0=All, 1=Available, 2=Expired, 3=Failed. The "All" branch is
     //   the only state where we know the user has nothing at all;
     //   the others just mean "nothing of THIS status" — they may
     //   have entries in another tab, so we offer a one-tap "See all"
     //   CTA to take them there instead of leaving them stuck.
-    final isAllTab = _selectedTabIndex == 3;
+    final isAllTab = _selectedTabIndex == 0;
     final (title, subtitle, icon) = switch (_selectedTabIndex) {
       0 => (
+          'No gift cards yet',
+          'Your purchased cards will appear here.',
+          Icons.card_giftcard,
+        ),
+      1 => (
           'No available cards',
           'Cards you can redeem appear here. Buy one to get started.',
           Icons.check_circle_outline,
         ),
-      1 => (
+      2 => (
           'Nothing has expired',
           'Cards that pass their expiry date will show up here.',
           Icons.schedule_outlined,
         ),
-      2 => (
+      3 => (
           'No failed purchases',
           "Empty here means every purchase landed cleanly. That's a good thing.",
           Icons.error_outline,
-        ),
-      3 => (
-          'No gift cards yet',
-          'Your purchased cards will appear here.',
-          Icons.card_giftcard,
         ),
       _ => (
           'No gift cards yet',
@@ -869,8 +858,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
               SizedBox(height: 14.h),
               TextButton.icon(
                 onPressed: () {
-                  setState(() => _selectedTabIndex = 3);
-                  _tabController.animateTo(3);
+                  setState(() => _selectedTabIndex = 0);
+                  _tabController.animateTo(0);
                 },
                 icon: const Icon(Icons.list_rounded, size: 16),
                 label: const Text('See all cards'),

@@ -8,6 +8,7 @@ import '../../../../../core/widgets/bill_auto_recharge_item.dart';
 import '../../domain/entities/data_auto_recharge.dart';
 import '../cubit/data_auto_recharge_cubit.dart';
 import '../cubit/data_auto_recharge_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Data Rollover (auto-recharge) management. Mirrors
 /// `AirtimeAutoRechargeScreen`: list with pause/resume/delete + tap-to-edit.
@@ -87,10 +88,7 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
           if (state is DataAutoRechargesLoading ||
               state is DataAutoRechargeInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-              ),
+              child: LazerVaultLoader.tiny(),
             );
           }
           if (state is DataAutoRechargeError) {

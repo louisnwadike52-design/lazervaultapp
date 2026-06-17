@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Called when the user taps "Create Reminder". Must throw on failure so the
 /// sheet can surface a retryable snackbar. The caller owns the cubit/repo
@@ -346,15 +347,7 @@ class _BillReminderCreateSheetState extends State<BillReminderCreateSheet> {
                   elevation: 0,
                 ),
                 child: _loading
-                    ? SizedBox(
-                        width: 20.w,
-                        height: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         'Create Reminder',
                         style: TextStyle(

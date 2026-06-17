@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/employee_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditEmployeeScreen extends StatefulWidget {
   final EmployeeEntity employee;
@@ -759,14 +760,7 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
             elevation: 0,
           ),
           child: isLoading
-              ? SizedBox(
-                  height: 22.h,
-                  width: 22.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader(size: 22)
               : Text(
                   _currentStep < 2 ? 'Continue' : 'Save Changes',
                   style: GoogleFonts.inter(

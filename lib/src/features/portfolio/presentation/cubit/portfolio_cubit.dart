@@ -70,17 +70,27 @@ class PortfolioCubit extends Cubit<PortfolioState> {
     }
   }
 
-  /// Load portfolio history for a specific period
+  /// Load portfolio history for a period and MERGE it into the current loaded
+  /// state. A history failure never wipes the portfolio — it just stops the
+  /// chart spinner and keeps the assets/summary on screen.
   Future<void> loadHistory(String period) async {
+    final current = state;
+    if (current is! PortfolioLoaded) return;
     try {
       if (isClosed) return;
-      emit(const PortfolioLoading());
+      emit(current.copyWith(historyLoading: true, historyPeriod: period));
       final history = await repository.getPortfolioHistory(period);
       if (isClosed) return;
-      emit(PortfolioHistoryLoaded(history: history, period: period));
-    } catch (e) {
+      final s = state;
+      if (s is PortfolioLoaded) {
+        emit(s.copyWith(history: history, historyPeriod: period, historyLoading: false));
+      }
+    } catch (_) {
       if (isClosed) return;
-      emit(PortfolioError(message: e.toString()));
+      final s = state;
+      if (s is PortfolioLoaded) {
+        emit(s.copyWith(historyLoading: false));
+      }
     }
   }
 

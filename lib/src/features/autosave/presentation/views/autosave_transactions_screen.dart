@@ -10,6 +10,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart' as cur;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lists every autosave transaction the user has executed across all
 /// rules — manual triggers, scheduled fires, on-deposit fires,
@@ -165,7 +166,7 @@ class _AutoSaveTransactionsScreenState
           }
           final txs = _lastTxs;
           if (txs == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
           final filtered = _applyFilters(txs);
           return Column(

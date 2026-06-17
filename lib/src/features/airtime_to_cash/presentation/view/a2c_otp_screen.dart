@@ -12,6 +12,7 @@ import '../../domain/entities/network_rate.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
 import '../widgets/a2c_step_indicator.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class A2COTPScreen extends StatefulWidget {
   const A2COTPScreen({super.key});
@@ -642,15 +643,7 @@ class _A2COTPScreenState extends State<A2COTPScreen>
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
+                    LazerVaultLoader.small(),
                     SizedBox(width: 12.w),
                     Text(
                       'Verifying...',

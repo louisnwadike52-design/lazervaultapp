@@ -325,10 +325,21 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
         type: DocumentType.accountStatement,
         title: 'Account Statement',
         description: 'Statement from ${startDate.day}/${startDate.month}/${startDate.year} to ${endDate.day}/${endDate.month}/${endDate.year}',
-        format: format,
+        // Honour what the backend actually rendered — the user may have
+        // asked for PDF and got CSV (or vice versa) via a future
+        // upgrade; we never want to lie about the file extension.
+        format: response.format.toUpperCase() == 'CSV'
+            ? DocumentFormat.csv
+            : format,
         downloadUrl: response.downloadUrl,
         createdAt: DateTime.now(),
         validUntil: DateTime.fromMillisecondsSinceEpoch(response.validUntil.toInt() * 1000),
+        sha256: response.sha256.isEmpty ? null : response.sha256,
+        generatedAt: response.generatedAt.toInt() > 0
+            ? DateTime.fromMillisecondsSinceEpoch(response.generatedAt.toInt() * 1000)
+            : null,
+        cached: response.cached,
+        transactionCount: response.transactionCount.toInt(),
       ));
     } catch (e) {
       return Left(Failure(

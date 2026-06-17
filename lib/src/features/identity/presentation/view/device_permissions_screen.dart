@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/identity/domain/entities/device_permission.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DevicePermissionsScreen extends StatefulWidget {
   const DevicePermissionsScreen({super.key});
@@ -192,7 +193,7 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen> {
         },
         builder: (context, state) {
           if (state is IdentityLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
 
           return ListView(

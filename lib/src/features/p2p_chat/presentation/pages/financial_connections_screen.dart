@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversa
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class FinancialConnectionsScreen extends StatefulWidget {
   const FinancialConnectionsScreen({super.key});
@@ -194,7 +195,7 @@ class _FinancialConnectionsScreenState
         builder: (context, state) {
           if (state is P2PConversationsLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -204,7 +205,7 @@ class _FinancialConnectionsScreenState
 
           if (state is P2PUserSearchLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -407,14 +408,7 @@ class _FinancialConnectionsScreenState
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         children: [
-          SizedBox(
-            width: 16.w,
-            height: 16.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Color(0xFF3B82F6),
-            ),
-          ),
+          LazerVaultLoader.tiny(),
           SizedBox(width: 12.w),
           Text(
             'Loading saved contacts...',

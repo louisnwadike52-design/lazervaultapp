@@ -14,6 +14,7 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../../../tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import '../../../tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Normalize a deadline date to 23:59:59.999 in the user's local
 /// timezone. The date picker returns midnight (start-of-day), which
@@ -2943,14 +2944,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   ),
                   child: Center(
                     child: isLoading
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -3376,14 +3370,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             suffixIcon: _isSearching
                 ? Padding(
                     padding: EdgeInsets.all(12.w),
-                    child: SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-                      ),
-                    ),
+                    child: LazerVaultLoader.small(),
                   )
                 : _searchQuery.isNotEmpty
                     ? IconButton(
@@ -3457,14 +3444,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         padding: EdgeInsets.all(24.w),
         child: Column(
           children: [
-            SizedBox(
-              width: 32.w,
-              height: 32.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-              ),
-            ),
+            LazerVaultLoader(size: 32),
             SizedBox(height: 12.h),
             Text(
               'Searching...',
@@ -3710,14 +3690,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
               disabledBackgroundColor: Colors.grey[800],
             ),
             child: _isAddingMember
-                ? SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : Text(
                     _selectedUser != null ? 'Add to Rotation' : 'Select a User',
                     style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600),

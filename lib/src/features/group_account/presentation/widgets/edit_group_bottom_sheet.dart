@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/social_link_helpers.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditGroupBottomSheet extends StatefulWidget {
   final GroupAccount group;
@@ -478,14 +479,7 @@ class _EditGroupBottomSheetState extends State<EditGroupBottomSheet> {
                           elevation: 0,
                         ),
                         child: _isLoading
-                            ? SizedBox(
-                                height: 20.h,
-                                width: 20.w,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Text(
                                 'Update Group',
                                 style: GoogleFonts.inter(

@@ -8,6 +8,7 @@ import '../../domain/entities/channel_registration.dart';
 import '../../domain/entities/channel_pin_status.dart';
 import 'channel_activation_screen.dart';
 import 'channel_pin_setup_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ChannelManagementScreen extends StatelessWidget {
   const ChannelManagementScreen({super.key});
@@ -54,7 +55,7 @@ class ChannelManagementScreen extends StatelessWidget {
           builder: (context, state) {
             if (state is ChannelManagementLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                child: LazerVaultLoader.small(),
               );
             }
 

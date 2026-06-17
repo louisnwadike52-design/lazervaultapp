@@ -31,9 +31,11 @@ class SprayMeChatService {
 
     final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
     final port = dotenv.env['CHAT_AGENT_PORT'] ?? '3011';
+    // Port 443 == public tunnel; uses https. Loopback dev (port 3011) stays http.
+    final scheme = port == '443' ? 'https' : 'http';
 
     final response = await _dio.post(
-      'http://$host:$port/chat',
+      '$scheme://$host:$port/chat',
       data: {
         'message': message,
         'session_id': sessionId,
@@ -79,10 +81,11 @@ class SprayMeChatService {
 
     final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
     final port = dotenv.env['CHAT_AGENT_PORT'] ?? '3011';
+    final scheme = port == '443' ? 'https' : 'http';
 
     try {
       final response = await _dio.get(
-        'http://$host:$port/chat/history',
+        '$scheme://$host:$port/chat/history',
         queryParameters: {
           'user_id': userId,
           'session_id': sessionId,

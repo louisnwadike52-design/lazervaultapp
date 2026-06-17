@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cu
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_history_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_detail_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// My Sessions Screen - shows sessions created by user and sessions they joined
 /// with tabs for "Created" and "Joined", pagination, and navigation to session details/stats
@@ -325,14 +326,7 @@ class _MySessionsScreenState extends State<MySessionsScreen>
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF7C3AED),
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : const SizedBox.shrink(),
               ),
             );

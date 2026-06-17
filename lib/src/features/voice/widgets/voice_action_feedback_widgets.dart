@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/voice_transaction_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ==============================================================================
 // Voice Action Feedback Widgets
@@ -351,14 +352,7 @@ class _ProcessingSpinnerState extends State<_ProcessingSpinner>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 48.sp,
-      height: 48.sp,
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation(widget.color),
-        strokeWidth: 3,
-      ),
-    );
+    return LazerVaultLoader(size: 48);
   }
 }
 

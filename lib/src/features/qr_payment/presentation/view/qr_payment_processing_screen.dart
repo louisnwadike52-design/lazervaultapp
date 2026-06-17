@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class QRPaymentProcessingScreen extends StatefulWidget {
   const QRPaymentProcessingScreen({super.key});
@@ -95,14 +96,7 @@ class _QRPaymentProcessingScreenState extends State<QRPaymentProcessingScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              const SizedBox(
-                width: 32,
-                height: 32,
-                child: CircularProgressIndicator(
-                  color: Color(0xFF3B82F6),
-                  strokeWidth: 3,
-                ),
-              ),
+              LazerVaultLoader(size: 32),
             ],
           ),
         ),

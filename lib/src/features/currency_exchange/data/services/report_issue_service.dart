@@ -33,7 +33,7 @@ class ReportIssueService {
   ReportIssueService({
     required Dio dio,
     required GrpcCallOptionsHelper callOptionsHelper,
-    this.baseUrl = 'http://10.0.2.2:8016',
+    this.baseUrl = 'https://api.lazervault.app/api/v1',
   })  : _dio = dio,
         _callOptionsHelper = callOptionsHelper;
 

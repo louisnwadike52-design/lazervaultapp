@@ -17,6 +17,7 @@ import '../../data/datasources/data_beneficiary_remote_datasource.dart';
 import '../widgets/rollover_preference_sheet.dart';
 import '../widgets/save_data_beneficiary_sheet.dart';
 import '../../services/data_bundles_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Data bundle purchase receipt. Mirrors the transfer send-funds receipt
 /// layout: compact success icon, amount headline, status + timestamp row,
@@ -800,14 +801,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: 16.sp,
-                  height: 16.sp,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                LazerVaultLoader.tiny()
               else if (icon != null)
                 Icon(icon, color: Colors.white, size: 18.sp),
               if (!isLoading && icon != null) SizedBox(width: 8.w),

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet showing voice chat conversation history
 class VoiceChatHistorySheet extends StatefulWidget {
@@ -120,9 +121,7 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
               builder: (context, state) {
                 if (state.isLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
-                    ),
+                    child: LazerVaultLoader.small(),
                   );
                 }
 
@@ -369,14 +368,7 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                 ),
               ),
               child: Center(
-                child: SizedBox(
-                  width: 12.w,
-                  height: 12.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.7)),
-                  ),
-                ),
+                child: LazerVaultLoader(size: 12),
               ),
             ),
           ],
@@ -401,14 +393,7 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                   if (!isAgent)
                     Padding(
                       padding: EdgeInsets.only(right: 8.w),
-                      child: SizedBox(
-                        width: 12.w,
-                        height: 12.w,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.9)),
-                        ),
-                      ),
+                      child: LazerVaultLoader(size: 12),
                     ),
                   Text(
                     text,
@@ -421,14 +406,7 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                   if (isAgent)
                     Padding(
                       padding: EdgeInsets.only(left: 8.w),
-                      child: SizedBox(
-                        width: 12.w,
-                        height: 12.w,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.7)),
-                        ),
-                      ),
+                      child: LazerVaultLoader(size: 12),
                     ),
                 ],
               ),

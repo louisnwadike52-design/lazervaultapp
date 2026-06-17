@@ -5,6 +5,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import '../../cubit/channel_management_cubit.dart';
 import '../../cubit/channel_management_state.dart';
 import 'channel_pin_setup_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ChannelActivationScreen extends StatefulWidget {
   final String channelType;
@@ -199,12 +200,7 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               _otpSent ? 'Verify' : 'Send Verification Code',
                               style: const TextStyle(

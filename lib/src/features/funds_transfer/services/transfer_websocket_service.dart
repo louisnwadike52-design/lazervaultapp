@@ -117,9 +117,13 @@ class TransferWebSocketService {
   Future<void> _connectWebSocket(String userId, String accessToken) async {
     final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
+    // Tunnel termination is TLS — when the env points at the public host
+    // (port 443) we must speak wss, not plain ws. On the loopback dev
+    // setup the gateway HTTP port stays clear-text ws as before.
+    final tlsTunnel = wsPort == 443;
 
     final wsUrl = Uri(
-      scheme: 'ws',
+      scheme: tlsTunnel ? 'wss' : 'ws',
       host: wsHost,
       port: wsPort,
       path: '/ws/transfer',
@@ -163,9 +167,10 @@ class TransferWebSocketService {
   Future<void> _connectSSE(String userId, String accessToken) async {
     final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
+    final tlsTunnel = wsPort == 443;
 
     final sseUrl = Uri(
-      scheme: 'http',
+      scheme: tlsTunnel ? 'https' : 'http',
       host: wsHost,
       port: wsPort,
       path: '/ws/transfer',

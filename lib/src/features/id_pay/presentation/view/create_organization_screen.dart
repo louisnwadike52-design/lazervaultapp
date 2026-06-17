@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateOrganizationScreen extends StatefulWidget {
   const CreateOrganizationScreen({super.key});
@@ -213,14 +214,7 @@ class _CreateOrganizationScreenState extends State<CreateOrganizationScreen> {
                           elevation: 0,
                         ),
                         child: isLoading
-                            ? SizedBox(
-                                width: 24.sp,
-                                height: 24.sp,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Text(
                                 'Create Organization',
                                 style: GoogleFonts.inter(

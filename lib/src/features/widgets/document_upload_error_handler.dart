@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Error type for document-related failures
 enum DocumentErrorType {
@@ -418,14 +419,7 @@ class DocumentUploadErrorHandler extends StatelessWidget {
                     ),
                   ),
                   icon: isLoading
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(Icons.refresh, size: 18.sp),
                   label: Text(
                     isLoading ? 'Retrying...' : 'Try Again',

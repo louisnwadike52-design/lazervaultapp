@@ -16,6 +16,11 @@ class SecureStorageService {
   static const String _keyBvn = 'kyc_bvn';
   static const String _keyNin = 'kyc_nin';
 
+  /// Last-picked chat session id for the multi-tab general chat (drawer).
+  /// Restored at app launch so users land back on the last conversation.
+  /// Wiped by `clearAll` on logout.
+  static const String _keyChatCurrentSessionId = 'chat_current_session_id';
+
   final FlutterSecureStorage _storage;
 
   SecureStorageService(this._storage);
@@ -108,6 +113,24 @@ class SecureStorageService {
   Future<void> deleteIdentityNumbers() async {
     await _storage.delete(key: _keyBvn);
     await _storage.delete(key: _keyNin);
+  }
+
+  // ─── Multi-tab chat session id ────────────────────────────────────────
+
+  /// Read the last-active general-chat session id (drawer selection).
+  /// Returns `null` if the user has never opened a multi-tab chat yet.
+  Future<String?> readChatCurrentSessionId() async {
+    return _storage.read(key: _keyChatCurrentSessionId);
+  }
+
+  /// Persist the active general-chat session id so the next launch lands
+  /// on the same conversation. Called by `ChatSessionManager.switchTo`.
+  Future<void> writeChatCurrentSessionId(String sessionId) async {
+    if (sessionId.isEmpty) {
+      await _storage.delete(key: _keyChatCurrentSessionId);
+      return;
+    }
+    await _storage.write(key: _keyChatCurrentSessionId, value: sessionId);
   }
 
   // Clear all data

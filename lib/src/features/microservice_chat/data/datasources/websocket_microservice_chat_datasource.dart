@@ -21,7 +21,7 @@ class WebSocketMicroserviceChatDataSourceImpl implements WebSocketMicroserviceCh
 
   WebSocketMicroserviceChatDataSourceImpl({
     required this.callOptionsHelper,
-    this.baseUrl = 'ws://10.0.2.2:3011', // WebSocket URL for Chat Agent Gateway (10.0.2.2 for Android emulator)
+    this.baseUrl = 'https://api.lazervault.app/chat', // WebSocket URL for Chat Agent Gateway (10.0.2.2 for Android emulator)
   });
 
   @override

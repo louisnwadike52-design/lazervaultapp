@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/plan_my_day/presentation/widgets/create_
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/weekly_summary_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/productivity_insights_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/calendar_settings_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PlanMyDayScreen extends StatefulWidget {
   const PlanMyDayScreen({super.key});
@@ -199,9 +200,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
       builder: (context, state) {
         if (state is PlanMyDayLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -336,9 +335,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
         }
 
         return const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-          ),
+          child: LazerVaultLoader.small(),
         );
       },
     );
@@ -355,9 +352,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
 
         if (state is PlanMyDayLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

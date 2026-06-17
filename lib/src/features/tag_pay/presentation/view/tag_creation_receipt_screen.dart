@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagCreationReceiptScreen extends StatefulWidget {
   const TagCreationReceiptScreen({super.key});
@@ -389,14 +390,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _isSharing ? null : () => _shareInvoice(isBatch ? tags.first : tag),
                   icon: _isSharing
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF3B82F6),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(Icons.share, size: 18.sp),
                   label: Text(
                     'Share Invoice',

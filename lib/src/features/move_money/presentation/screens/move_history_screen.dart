@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -12,6 +13,7 @@ import '../../cubit/move_money_cubit.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/move_transfer.dart';
 import '../widgets/move_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Full transfer history screen with filter chips and paginated loading.
 ///
@@ -107,8 +109,9 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -167,9 +170,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
               builder: (context, state) {
                 if (state is MoveMoneyLoading && _transfers.isEmpty) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
-                    ),
+                    child: LazerVaultLoader.small(),
                   );
                 }
 
@@ -198,10 +199,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                         return Center(
                           child: Padding(
                             padding: EdgeInsets.all(16.w),
-                            child: const CircularProgressIndicator(
-                              color: Color(0xFF3B82F6),
-                              strokeWidth: 2,
-                            ),
+                            child: LazerVaultLoader.tiny(),
                           ),
                         );
                       }
@@ -214,7 +212,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   // ---------------------------------------------------------------------------

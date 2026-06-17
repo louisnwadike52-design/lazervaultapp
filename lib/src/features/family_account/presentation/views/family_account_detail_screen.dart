@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,8 +9,10 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_account_report_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Family Account Detail Screen
 /// Shows:
@@ -37,6 +41,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   FamilyTransactionType? _transactionFilter;
   String? _memberFilter; // memberId to filter by
   bool _activityLoaded = false;
+  // Last successfully-loaded account. Kept so a transient ACTION failure
+  // (member removal, allocation, etc. — all emit the shared FamilyAccountError
+  // state) surfaces only via a snackbar and does NOT blank the whole screen.
+  FamilyAccount? _loadedAccount;
+  // Card issuance is disabled until a card provider is wired (no provider in
+  // this environment) — flip to true to re-enable the "Issue Card" action.
+  static const bool _cardIssuanceEnabled = false;
 
   @override
   void initState() {
@@ -53,7 +64,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   }
 
   void _onTabChanged() {
-    if (_tabController.index == 2 && !_activityLoaded) {
+    // Reload activity every time the Activity tab is (re)selected — not just
+    // the first time — so spends made elsewhere in the session show up when
+    // the member returns to this tab. Guard on indexIsChanging so we fire once
+    // per swipe, not on every animation frame.
+    if (_tabController.index == 2 &&
+        (_tabController.indexIsChanging || !_activityLoaded)) {
       _activityLoaded = true;
       _loadTransactions();
     }
@@ -82,6 +98,24 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     return null;
   }
 
+  /// Whether the current viewer may see ALL members' spending. Mirrors the
+  /// creator's "Spending Transparency" choice: when spending visibility is
+  /// enabled every member sees everyone's spend; when disabled only the
+  /// creator/admin retains full visibility (the rest see only their own).
+  bool _canSeeAllSpending(FamilyAccount account) {
+    return account.spendingVisibilityEnabled ||
+        account.isCurrentUserAdmin(_currentUserId);
+  }
+
+  /// Whether THIS member's spending figures should be shown to the viewer:
+  /// either visibility is on / the viewer is admin, or it's the viewer's own
+  /// row (you can always see your own spending).
+  bool _canSeeMemberSpending(FamilyAccount account, FamilyMember member) {
+    if (_canSeeAllSpending(account)) return true;
+    final uid = _currentUserId;
+    return uid != null && uid.isNotEmpty && member.userId == uid;
+  }
+
   void _showAddMemberSheet() {
     // Navigate directly to the new invite member flow screen
     Get.toNamed(AppRoutes.familyInviteMemberFlow, arguments: {
@@ -105,7 +139,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       builder: (context) => Container(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
+          // Lifted surface: lighter than the 0xFF0A0A0A page background.
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         child: Column(
@@ -127,28 +162,31 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               children: [
                 Container(
                   width: 50.w,
-                  height: 50.h,
+                  height: 50.w,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                        const Color(0xFF60A5FA).withValues(alpha: 0.1),
-                      ],
-                    ),
+                    color: _kFamilyPurple.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _kFamilyPurple.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
                   ),
-                  child: member.avatarUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(25.r),
+                  child: (member.avatarUrl?.isNotEmpty ?? false)
+                      ? ClipOval(
                           child: Image.network(
                             member.avatarUrl!,
                             fit: BoxFit.cover,
                           ),
                         )
-                      : Icon(
-                          Icons.person,
-                          size: 24.sp,
-                          color: Colors.white,
+                      : Center(
+                          child: Text(
+                            _memberInitial(member),
+                            style: GoogleFonts.inter(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: _kFamilyPurple,
+                            ),
+                          ),
                         ),
                 ),
                 SizedBox(width: 12.w),
@@ -169,7 +207,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         member.role.name.toUpperCase(),
                         style: TextStyle(
                           color: member.role == FamilyMemberRole.admin
-                              ? const Color(0xFF3B82F6)
+                              ? _kFamilyPurple
                               : Colors.white.withValues(alpha: 0.6),
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
@@ -225,7 +263,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 'See member activity',
               () {
                 Get.back();
-                _showMemberDetailSheet(member);
+                _showMemberDetailSheet(account, member);
               },
             ),
             if (viewerIsAdmin && member.role != FamilyMemberRole.admin) ...[
@@ -276,9 +314,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               decoration: InputDecoration(
                 labelText: 'Amount',
                 labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
-                prefixText: '\$ ',
+                prefixText: '${CurrencySymbols.currentSymbol} ',
                 prefixStyle: TextStyle(
-                  color: const Color(0xFF3B82F6),
+                  color: _kFamilyPurple,
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -329,7 +367,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: _kFamilyPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -344,7 +382,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
-  void _showMemberDetailSheet(FamilyMember member) {
+  void _showMemberDetailSheet(FamilyAccount account, FamilyMember member) {
+    final showSpend = _canSeeMemberSpending(account, member);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -355,7 +394,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         minChildSize: 0.5,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF0A0A0A),
+            // Lighter than the page background (0xFF0A0A0A) so the sheet reads
+            // as a distinct surface lifted above the screen.
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           ),
           child: ListView(
@@ -375,26 +416,33 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
               SizedBox(height: 20.h),
 
-              // Avatar + Name + Role
+              // Avatar + Name + Role — name-based initial when there's no photo.
               Center(
                 child: Container(
                   width: 72.w,
-                  height: 72.h,
+                  height: 72.w,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                        const Color(0xFF60A5FA).withValues(alpha: 0.1),
-                      ],
-                    ),
+                    color: _kFamilyPurple.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _kFamilyPurple.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
                   ),
-                  child: member.avatarUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(36.r),
+                  child: (member.avatarUrl?.isNotEmpty ?? false)
+                      ? ClipOval(
                           child: Image.network(member.avatarUrl!, fit: BoxFit.cover),
                         )
-                      : Icon(Icons.person, size: 36.sp, color: Colors.white),
+                      : Center(
+                          child: Text(
+                            _memberInitial(member),
+                            style: GoogleFonts.inter(
+                              fontSize: 28.sp,
+                              fontWeight: FontWeight.w600,
+                              color: _kFamilyPurple,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -415,13 +463,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   decoration: BoxDecoration(
                     color: member.isAdmin
                         ? Colors.orange.withValues(alpha: 0.2)
-                        : const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                        : _kFamilyPurple.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
                     member.role.displayName,
                     style: TextStyle(
-                      color: member.isAdmin ? Colors.orange : const Color(0xFF3B82F6),
+                      color: member.isAdmin ? Colors.orange : _kFamilyPurple,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -444,68 +492,94 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 SizedBox(height: 16.h),
               ],
 
-              // Balance Card
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                      const Color(0xFF60A5FA).withValues(alpha: 0.05),
+              // Balance Card — spend figures gated by visibility setting.
+              if (showSpend)
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        _kFamilyPurple.withValues(alpha: 0.15),
+                        const Color(0xFF60A5FA).withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: _kFamilyPurple.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDetailStat(
+                              'Allocated',
+                              '${CurrencySymbols.currentSymbol}${member.allocatedBalance.toStringAsFixed(2)}',
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildDetailStat(
+                              'Remaining',
+                              '${CurrencySymbols.currentSymbol}${member.remainingBalance.toStringAsFixed(2)}',
+                              valueColor: member.remainingBalance > 0
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFEF4444),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDetailStat(
+                              'Spent Today',
+                              '${CurrencySymbols.currentSymbol}${member.spentToday.toStringAsFixed(2)}',
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildDetailStat(
+                              'Spent This Month',
+                              '${CurrencySymbols.currentSymbol}${member.spentThisMonth.toStringAsFixed(2)}',
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                    width: 1,
+                )
+              else
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility_off_outlined,
+                          size: 18.sp, color: Colors.white.withValues(alpha: 0.5)),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          "This member's spending is hidden by the account's visibility settings.",
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildDetailStat(
-                            'Allocated',
-                            '\$${member.allocatedBalance.toStringAsFixed(2)}',
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildDetailStat(
-                            'Remaining',
-                            '\$${member.remainingBalance.toStringAsFixed(2)}',
-                            valueColor: member.remainingBalance > 0
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFEF4444),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 12.h),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildDetailStat(
-                            'Spent Today',
-                            '\$${member.spentToday.toStringAsFixed(2)}',
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildDetailStat(
-                            'Spent This Month',
-                            '\$${member.spentThisMonth.toStringAsFixed(2)}',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
               SizedBox(height: 20.h),
 
-              // Limits Section
+              // Limits Section — caps are always shown; the spend-vs-limit bars
+              // (which reveal spending) are only drawn when spend is visible.
               Text(
                 'Spending Limits',
                 style: TextStyle(
@@ -516,25 +590,37 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
               SizedBox(height: 12.h),
               if (member.hasDailyLimit)
-                _buildLimitBar(
-                  'Daily Limit',
-                  member.spentToday,
-                  member.dailySpendingLimit,
-                ),
+                showSpend
+                    ? _buildLimitBar(
+                        'Daily Limit',
+                        member.spentToday,
+                        member.dailySpendingLimit,
+                      )
+                    : _buildInfoRow(
+                        Icons.today,
+                        'Daily Limit',
+                        '${CurrencySymbols.currentSymbol}${member.dailySpendingLimit.toStringAsFixed(2)}',
+                      ),
               if (member.hasMonthlyLimit) ...[
                 SizedBox(height: 10.h),
-                _buildLimitBar(
-                  'Monthly Limit',
-                  member.spentThisMonth,
-                  member.monthlySpendingLimit,
-                ),
+                showSpend
+                    ? _buildLimitBar(
+                        'Monthly Limit',
+                        member.spentThisMonth,
+                        member.monthlySpendingLimit,
+                      )
+                    : _buildInfoRow(
+                        Icons.calendar_month,
+                        'Monthly Limit',
+                        '${CurrencySymbols.currentSymbol}${member.monthlySpendingLimit.toStringAsFixed(2)}',
+                      ),
               ],
               if (member.hasPerTransactionLimit) ...[
                 SizedBox(height: 10.h),
                 _buildInfoRow(
                   Icons.payment,
                   'Per Transaction',
-                  '\$${member.perTransactionLimit.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${member.perTransactionLimit.toStringAsFixed(2)}',
                 ),
               ],
               if (!member.hasDailyLimit && !member.hasMonthlyLimit && !member.hasPerTransactionLimit)
@@ -562,6 +648,41 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   Icons.credit_card,
                   'Card',
                   '**** ${member.cardLastFour ?? '----'}',
+                ),
+                SizedBox(height: 20.h),
+              ],
+
+              // Issue Card (M1) — admin can issue a virtual card for an accepted
+              // member who doesn't have one yet (wires the existing
+              // generateCard cubit method / GenerateMemberCard RPC).
+              if (_cardIssuanceEnabled &&
+                  !member.hasCard &&
+                  member.invitationStatus == InvitationStatus.accepted &&
+                  account.isCurrentUserAdmin(_currentUserId)) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Get.back();
+                      _cubit.generateCard(
+                        familyId: widget.familyId,
+                        memberId: member.id,
+                        cardName:
+                            member.fullName.isNotEmpty ? member.fullName : null,
+                      );
+                    },
+                    icon: Icon(Icons.add_card, size: 18.sp),
+                    label: Text('Issue Card',
+                        style: TextStyle(fontSize: 13.sp)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 20.h),
               ],
@@ -604,7 +725,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         icon: Icon(Icons.account_balance_wallet, size: 18.sp),
                         label: Text('Allocate', style: TextStyle(fontSize: 13.sp)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: _kFamilyPurple,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
@@ -671,7 +792,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             ),
             Text(
-              '\$${used.toStringAsFixed(2)} / \$${limit.toStringAsFixed(2)} ($percentText%)',
+              '${CurrencySymbols.currentSymbol}${used.toStringAsFixed(2)} / ${CurrencySymbols.currentSymbol}${limit.toStringAsFixed(2)} ($percentText%)',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 11.sp,
@@ -757,16 +878,27 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   void _showContributeDialog(FamilyAccount account) {
     final amountController = TextEditingController();
     final descriptionController = TextEditingController();
+    final symbol = CurrencySymbols.currentSymbol;
+
+    // Resolve the contributor's own member id up front — only an actual member
+    // may contribute, and the money moves from THIS user's personal account.
+    String? myMemberId;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      final uid = authState.profile.userId;
+      myMemberId =
+          account.members.where((m) => m.userId == uid).firstOrNull?.id;
+    }
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
         title: Text(
           'Contribute to Pool',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -776,19 +908,50 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Add funds to the family pool for everyone to use.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13.sp),
+              'Move money from your personal account into the shared pool for everyone to use.',
+              style: GoogleFonts.inter(
+                  color: Colors.grey[400], fontSize: 13.sp),
+            ),
+            SizedBox(height: 16.h),
+            // From → To money path so the source is unambiguous.
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Column(
+                children: [
+                  _buildContributeFlowRow(
+                    Icons.account_balance_wallet_outlined,
+                    'From',
+                    'Your Personal Account',
+                    const Color(0xFF3B82F6),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6.h),
+                    child: Icon(Icons.arrow_downward,
+                        size: 16.sp, color: Colors.grey[600]),
+                  ),
+                  _buildContributeFlowRow(
+                    Icons.family_restroom,
+                    'To',
+                    '${account.name} pool',
+                    _kFamilyPurple,
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 16.h),
             TextField(
               controller: amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: TextStyle(color: Colors.white, fontSize: 16.sp),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
                 labelText: 'Amount',
-                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
-                prefixText: '\$ ',
-                prefixStyle: TextStyle(
+                labelStyle: TextStyle(color: Colors.grey[400]),
+                prefixText: '$symbol ',
+                prefixStyle: GoogleFonts.inter(
                   color: const Color(0xFF10B981),
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -803,10 +966,10 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             SizedBox(height: 12.h),
             TextField(
               controller: descriptionController,
-              style: TextStyle(color: Colors.white, fontSize: 16.sp),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
-                labelText: 'Description (Optional)',
-                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                labelText: 'Note (Optional)',
+                labelStyle: TextStyle(color: Colors.grey[400]),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
@@ -821,50 +984,101 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             onPressed: () => Get.back(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: GoogleFonts.inter(color: Colors.grey[400]),
             ),
           ),
           ElevatedButton(
             onPressed: () {
-              final amount = double.tryParse(amountController.text) ?? 0;
-              if (amount > 0) {
-                Get.back();
-                // Find current user's member ID from auth state
-                String memberId = '';
-                final authState = context.read<AuthenticationCubit>().state;
-                if (authState is AuthenticationSuccess) {
-                  final currentUserId = authState.profile.userId;
-                  final currentMember = account.members
-                      .where((m) => m.userId == currentUserId)
-                      .firstOrNull;
-                  memberId = currentMember?.id ?? '';
-                }
-                if (memberId.isEmpty && account.members.isNotEmpty) {
-                  memberId = account.members.first.id;
-                }
-                _cubit.contributeToPool(
-                  familyId: widget.familyId,
-                  memberId: memberId,
-                  amount: amount,
-                  description: descriptionController.text.trim().isEmpty
-                      ? null
-                      : descriptionController.text.trim(),
+              final amount = double.tryParse(amountController.text.trim()) ?? 0;
+              // Validation: positive amount.
+              if (amount <= 0) {
+                Get.snackbar(
+                  'Enter an amount',
+                  'Please enter a valid amount greater than zero.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(12.w),
                 );
+                return;
               }
+              // Validation: caller must be a member (money leaves THEIR wallet).
+              if (myMemberId == null || myMemberId.isEmpty) {
+                Get.back();
+                Get.snackbar(
+                  'Not a member',
+                  'Only family members can contribute to the pool.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(12.w),
+                );
+                return;
+              }
+              Get.back();
+              // Real money move: backend debits this user's personal account and
+              // credits the family pool (insufficient-balance is rejected
+              // server-side and surfaced via the error listener).
+              _cubit.contributeToPool(
+                familyId: widget.familyId,
+                memberId: myMemberId,
+                amount: amount,
+                description: descriptionController.text.trim().isEmpty
+                    ? null
+                    : descriptionController.text.trim(),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
             ),
             child: Text(
               'Contribute',
-              style: TextStyle(color: Colors.white, fontSize: 14.sp),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// One row of the Contribute "From → To" money-path card.
+  Widget _buildContributeFlowRow(
+      IconData icon, String label, String value, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.18),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 16.sp),
+        ),
+        SizedBox(width: 10.w),
+        Text(
+          label,
+          style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp),
+        ),
+        const Spacer(),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -880,7 +1094,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       builder: (context) => Container(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
+          // Lifted surface: lighter than the 0xFF0A0A0A page background.
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         child: Column(
@@ -906,6 +1121,17 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             ),
             SizedBox(height: 20.h),
+
+            // Account statement — available to every member (read-only export).
+            _buildOption(
+              Icons.receipt_long_outlined,
+              'Account Statement',
+              'View and share a PDF statement',
+              () {
+                Get.back();
+                Get.to(() => FamilyAccountReportScreen(account: account));
+              },
+            ),
 
             // Role gating mirrors the backend RPCs:
             //   • Change distribution / freeze / unfreeze: family admin only
@@ -967,6 +1193,23 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 () {
                   Get.back();
                   _confirmDeleteAccount(account);
+                },
+                color: Colors.red,
+              ),
+            // Self-serve leave: any accepted non-creator member. Their
+            // allocation returns to the pool; the creator must delete instead.
+            if (!viewerIsCreator &&
+                _currentUserId != null &&
+                account.members.any((m) =>
+                    m.userId == _currentUserId &&
+                    m.invitationStatus == InvitationStatus.accepted))
+              _buildOption(
+                Icons.exit_to_app,
+                'Leave Family',
+                'Leave this family account',
+                () {
+                  Get.back();
+                  _confirmLeaveFamily(account);
                 },
                 color: Colors.red,
               ),
@@ -1124,8 +1367,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                           );
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                    backgroundColor: _kFamilyPurple,
+                    disabledBackgroundColor: _kFamilyPurple.withValues(alpha: 0.3),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -1182,7 +1425,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               _cubit.freezeAccount(familyId: widget.familyId);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: _kFamilyPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -1191,6 +1434,41 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               'Freeze',
               style: TextStyle(color: Colors.white, fontSize: 14.sp),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmLeaveFamily(FamilyAccount account) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          'Leave ${account.name}?',
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'You will be removed from this family account. Any funds allocated to you will return to the shared pool.',
+          style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              _cubit.leaveFamily(familyId: widget.familyId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            ),
+            child: Text('Leave', style: GoogleFonts.inter(fontSize: 14.sp)),
           ),
         ],
       ),
@@ -1277,48 +1555,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       value: _cubit,
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF0A0A0A),
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-            onPressed: () => Get.back(),
-          ),
-          title: Text(
-            'Family Account',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: [
-            BlocBuilder<FamilyAccountCubit, FamilyAccountState>(
-              bloc: _cubit,
-              builder: (context, state) {
-                if (state is FamilyAccountLoaded) {
-                  return IconButton(
-                    icon: Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
-                      size: 22.sp,
-                    ),
-                    onPressed: () => _showAccountSettings(state.familyAccount),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ],
-        ),
-        body: BlocConsumer<FamilyAccountCubit, FamilyAccountState>(
+        body: SafeArea(
+          child: BlocConsumer<FamilyAccountCubit, FamilyAccountState>(
           bloc: _cubit,
           listener: (context, state) {
-            if (state is FamilyAccountError) {
+            if (state is FamilyAccountLoaded) {
+              _loadedAccount = state.familyAccount;
+            } else if (state is FamilyAccountError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
@@ -1336,7 +1579,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             } else if (state is FamilyMemberRemoved) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Member removed. \$${state.returnedBalance.toStringAsFixed(2)} returned to pool'),
+                  content: Text('Member removed. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned to pool'),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -1345,6 +1588,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Funds allocated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              _loadFamilyAccount();
+            } else if (state is MemberCardGenerated) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      'Card issued for ${state.member.fullName.isNotEmpty ? state.member.fullName : 'member'}'),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -1384,56 +1636,53 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             } else if (state is FamilyAccountDeleted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Account deleted. \$${state.returnedBalance.toStringAsFixed(2)} returned'),
+                  content: Text('Account deleted. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned'),
                   backgroundColor: Colors.green,
                 ),
               );
               Get.back(); // Go back to previous screen
+            } else if (state is FamilyAccountLeft) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('You have left the family account'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Get.back(); // Pop back to the list
             }
           },
           builder: (context, state) {
-            if (state is FamilyAccountLoading) {
-              return Center(
-                child: CircularProgressIndicator(color: const Color(0xFF3B82F6)),
+            if (state is FamilyAccountLoading && _loadedAccount == null) {
+              return Column(
+                children: [
+                  _buildBackHeader('Family Account'),
+                  Expanded(
+                    child: Center(
+                      child: LazerVaultLoader.small(),
+                    ),
+                  ),
+                ],
               );
             }
 
-            if (state is FamilyAccountLoaded) {
-              final account = state.familyAccount;
+            // Render the loaded account from the current state OR the cached
+            // copy — so a transient action error (which emits FamilyAccountError)
+            // keeps the screen instead of blanking it (the error shows as a
+            // snackbar via the listener). Only fall through to the "Unable to
+            // load" view when nothing was ever loaded.
+            final account = state is FamilyAccountLoaded
+                ? state.familyAccount
+                : _loadedAccount;
+            if (account != null) {
               return Column(
                 children: [
-                  // Tab Bar
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      labelColor: const Color(0xFF3B82F6),
-                      unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
-                      labelStyle: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      unselectedLabelStyle: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      dividerColor: Colors.transparent,
-                      tabs: const [
-                        Tab(text: 'Overview'),
-                        Tab(text: 'Members'),
-                        Tab(text: 'Activity'),
-                      ],
-                    ),
-                  ),
-
+                  // Group-funds-style header: back + name + settings
+                  _buildFamilyHeader(account),
+                  // Purple hero with the family balance + key stats
+                  _buildFamilyHero(account),
+                  SizedBox(height: 4.h),
+                  // Purple pill tab bar (matches group details)
+                  _buildFamilyTabBar(),
                   // Tab Content
                   Expanded(
                     child: TabBarView(
@@ -1449,14 +1698,320 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               );
             }
 
-            return Center(
-              child: Text(
-                'Unable to load account',
-                style: TextStyle(color: Colors.white, fontSize: 16.sp),
-              ),
+            return Column(
+              children: [
+                _buildBackHeader('Family Account'),
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline,
+                            color: Colors.white.withValues(alpha: 0.6), size: 40.sp),
+                        SizedBox(height: 12.h),
+                        Text(
+                          'Unable to load account',
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
+                        ),
+                        SizedBox(height: 16.h),
+                        ElevatedButton.icon(
+                          onPressed: _loadFamilyAccount,
+                          icon: Icon(Icons.refresh, size: 18.sp),
+                          label: const Text('Retry'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _kFamilyPurple,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             );
           },
+          ),
         ),
+      ),
+    );
+  }
+
+  /// Brand purple shared with the group-funds (joint) UI, used across the
+  /// redesigned header, hero card, tab bar and primary actions so the Family
+  /// & Friends detail screen matches the group landing page.
+  static const Color _kFamilyPurple = Color.fromARGB(255, 78, 3, 208);
+
+  /// Minimal back header used for the loading / error states (the full header
+  /// needs a loaded account).
+  Widget _buildBackHeader(String title) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Group-funds-style header: back button in a dark rounded box, the family
+  /// name + description, and a settings affordance on the right.
+  Widget _buildFamilyHeader(FamilyAccount account) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  account.name,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (account.description != null &&
+                    account.description!.isNotEmpty)
+                  Text(
+                    account.description!,
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[400],
+                      fontSize: 13.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => _showAccountSettings(account),
+            child: Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.settings_outlined, color: Colors.white, size: 20.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Purple gradient hero mirroring the group-funds overview card: the family
+  /// balance headline plus Members / Pool / Spent-today stats and a pool
+  /// utilization bar.
+  Widget _buildFamilyHero(FamilyAccount account) {
+    final symbol = CurrencySymbols.currentSymbol;
+    final isSharedPool =
+        account.fundDistributionMode == FundDistributionMode.sharedPool;
+    final spendable =
+        isSharedPool ? account.totalPoolBalance : account.totalAllocatedBalance;
+    final spentToday =
+        account.members.fold<double>(0, (s, m) => s + m.spentToday);
+    final total = account.totalBalance > 0
+        ? account.totalBalance
+        : (account.totalPoolBalance + account.totalAllocatedBalance);
+    final usedFraction = total > 0 ? (spentToday / total).clamp(0.0, 1.0) : 0.0;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _kFamilyPurple,
+            _kFamilyPurple.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: _kFamilyPurple.withValues(alpha: 0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.family_restroom,
+                  color: Colors.white.withValues(alpha: 0.9), size: 16.sp),
+              SizedBox(width: 6.w),
+              Text(
+                isSharedPool ? 'Shared Pool Balance' : 'Family Balance',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '$symbol${spendable.toStringAsFixed(2)}',
+            style: GoogleFonts.inter(
+              fontSize: 28.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: [
+              _buildHeroStat('Members', '${account.activeMemberCount}', Icons.people),
+              Container(
+                width: 1,
+                height: 30.h,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              _buildHeroStat(
+                'Allocated',
+                '$symbol${account.totalAllocatedBalance.toStringAsFixed(0)}',
+                Icons.pie_chart,
+              ),
+              Container(
+                width: 1,
+                height: 30.h,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              _buildHeroStat(
+                'Spent Today',
+                '$symbol${spentToday.toStringAsFixed(0)}',
+                Icons.trending_up,
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            height: 5.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(3.r),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: usedFraction,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3.r),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroStat(String title, String value, IconData icon) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 14.sp),
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFamilyTabBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: _kFamilyPurple,
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey[400],
+        labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.inter(fontSize: 13.sp),
+        tabs: const [
+          Tab(text: 'Overview'),
+          Tab(text: 'Members'),
+          Tab(text: 'Activity'),
+        ],
       ),
     );
   }
@@ -1467,104 +2022,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Account Overview Card
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                  const Color(0xFF60A5FA).withValues(alpha: 0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.family_restroom,
-                      color: const Color(0xFF3B82F6),
-                      size: 24.sp,
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            account.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (account.description != null && account.description!.isNotEmpty)
-                            Text(
-                              account.description!,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        'Total Pool',
-                        '\$${account.totalPoolBalance.toStringAsFixed(2)}',
-                        Icons.account_balance_wallet,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _buildStatCard(
-                        'Allocated',
-                        '\$${account.totalAllocatedBalance.toStringAsFixed(2)}',
-                        Icons.pie_chart,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        'Total Balance',
-                        '\$${account.totalBalance.toStringAsFixed(2)}',
-                        Icons.monetization_on,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _buildStatCard(
-                        'Members',
-                        '${account.activeMemberCount}',
-                        Icons.people,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 16.h),
 
           // Account Status
           Builder(builder: (context) {
@@ -1674,45 +2132,62 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     // see the members list read-only without the Add Member CTA.
     final canInvite = account.isCurrentUserAdmin(_currentUserId) &&
         account.canAcceptMembers;
-    return Column(
-      children: [
-        // Add Member Button — admin-only and only while the account is in
-        // a state that accepts new members.
-        if (canInvite)
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-            child: SizedBox(
-              width: double.infinity,
-              height: 48.h,
-              child: ElevatedButton.icon(
-                onPressed: _showAddMemberSheet,
-                icon: Icon(Icons.add, size: 20.sp),
-                label: Text(
-                  'Add Family Member',
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+    return RefreshIndicator(
+      onRefresh: () async => _loadFamilyAccount(),
+      color: _kFamilyPurple,
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          // Group-funds-style header: "N Members" with an Add affordance.
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${account.members.length} Members',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
+                  if (canInvite)
+                    ElevatedButton.icon(
+                      onPressed: _showAddMemberSheet,
+                      icon: Icon(Icons.add, size: 16.sp),
+                      label: Text(
+                        'Add Member',
+                        style: GoogleFonts.inter(fontSize: 12.sp),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _kFamilyPurple,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
-
-        // Members List
-        Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            itemCount: account.members.length,
-            itemBuilder: (context, index) {
-              final member = account.members[index];
-              return _buildMemberCard(account, member);
-            },
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) =>
+                    _buildMemberCard(account, account.members[index]),
+                childCount: account.members.length,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1721,10 +2196,45 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         .where((m) => m.invitationStatus == InvitationStatus.accepted)
         .toList();
 
+    // Spending-visibility gate: when the viewer may not see everyone's
+    // spending, hide the per-member filter and restrict the activity list to
+    // the viewer's own transactions.
+    final canSeeAll = _canSeeAllSpending(account);
+    String? myMemberId;
+    final uid = _currentUserId;
+    if (uid != null) {
+      for (final m in account.members) {
+        if (m.userId == uid) {
+          myMemberId = m.id;
+          break;
+        }
+      }
+    }
+
     return Column(
       children: [
-        // Member filter
-        if (activeMembers.isNotEmpty)
+        if (!canSeeAll)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+            child: Row(
+              children: [
+                Icon(Icons.lock_outline,
+                    size: 13.sp, color: Colors.white.withValues(alpha: 0.5)),
+                SizedBox(width: 6.w),
+                Expanded(
+                  child: Text(
+                    'Only your activity is shown. The account owner controls spending visibility.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        // Member filter — only when the viewer can see all members' spending.
+        if (activeMembers.isNotEmpty && canSeeAll)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -1766,28 +2276,48 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             builder: (context, state) {
               if (state is FamilyAccountLoading) {
                 return Center(
-                  child: CircularProgressIndicator(color: const Color(0xFF3B82F6)),
+                  child: LazerVaultLoader.small(),
                 );
               }
               if (state is FamilyTransactionsLoaded) {
-                if (state.transactions.isEmpty) {
-                  return _buildEmptyActivityState();
+                // Restrict to own rows when visibility is gated. If we can't
+                // resolve the viewer's member id, fail closed to empty rather
+                // than leaking everyone's activity.
+                final visibleTxns = canSeeAll
+                    ? state.transactions
+                    : state.transactions
+                        .where((t) => myMemberId != null && t.memberId == myMemberId)
+                        .toList();
+                if (visibleTxns.isEmpty) {
+                  // Keep pull-to-refresh available even when empty so a member
+                  // can re-pull after spending without leaving the screen.
+                  return RefreshIndicator(
+                    onRefresh: () async => _loadTransactions(),
+                    color: _kFamilyPurple,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    child: _buildEmptyActivityState(),
+                  );
                 }
                 return RefreshIndicator(
                   onRefresh: () async => _loadTransactions(),
-                  color: const Color(0xFF3B82F6),
+                  color: _kFamilyPurple,
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    itemCount: state.transactions.length,
+                    itemCount: visibleTxns.length,
                     itemBuilder: (context, index) {
-                      return _buildTransactionCard(state.transactions[index]);
+                      return _buildTransactionCard(visibleTxns[index]);
                     },
                   ),
                 );
               }
-              return _buildEmptyActivityState();
+              return RefreshIndicator(
+                onRefresh: () async => _loadTransactions(),
+                color: _kFamilyPurple,
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: _buildEmptyActivityState(),
+              );
             },
           ),
         ),
@@ -1808,12 +2338,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+              ? _kFamilyPurple.withValues(alpha: 0.2)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF3B82F6)
+                ? _kFamilyPurple
                 : Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
@@ -1821,7 +2351,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.6),
+            color: isSelected ? _kFamilyPurple : Colors.white.withValues(alpha: 0.6),
             fontSize: 12.sp,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -1901,70 +2431,262 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         typeIcon = Icons.volunteer_activism;
     }
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40.w,
-            height: 40.h,
-            decoration: BoxDecoration(
-              color: amountColor.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+    final memberName =
+        transaction.memberName.isNotEmpty ? transaction.memberName : 'Member';
+    final subtitle = _familyTxnAction(transaction);
+
+    return GestureDetector(
+      onTap: () => _showTransactionDetail(transaction),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(typeIcon, color: amountColor, size: 20.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42.w,
+              height: 42.w,
+              decoration: BoxDecoration(
+                color: amountColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(typeIcon, color: amountColor, size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // WHO performed it
+                  Text(
+                    memberName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 2.h),
+                  // WHAT they did
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[500],
+                      fontSize: 12.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  transaction.memberName,
-                  style: TextStyle(
-                    color: Colors.white,
+                  '$amountPrefix${CurrencySymbols.currentSymbol}${transaction.amount.abs().toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: amountColor,
                     fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  transaction.description ?? transaction.type.displayName,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 12.sp,
+                  _shortDate(transaction.createdAt),
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[600],
+                    fontSize: 10.sp,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
+            SizedBox(width: 4.w),
+            Icon(Icons.chevron_right, color: Colors.grey[700], size: 18.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Human one-liner for what happened in a family transaction. Prefers the
+  /// stored (now-cleaned) description, then builds from the recipient, then a
+  /// type-based fallback — so the Activity row reads like "Sent funds to X".
+  String _familyTxnAction(FamilyTransaction t) {
+    String stripSentTo(String s) {
+      var v = s.trim();
+      final low = v.toLowerCase();
+      for (final p in ['sent funds to ', 'sent to ']) {
+        if (low.startsWith(p)) {
+          v = v.substring(p.length).trim();
+          break;
+        }
+      }
+      return v;
+    }
+
+    final desc = t.description?.trim() ?? '';
+    final merchant = t.merchantName?.trim() ?? '';
+    switch (t.type) {
+      case FamilyTransactionType.spending:
+        if (desc.isNotEmpty) return desc;
+        final who = merchant.isNotEmpty ? stripSentTo(merchant) : 'recipient';
+        return 'Sent funds to ${who.isNotEmpty ? who : 'recipient'}';
+      case FamilyTransactionType.contribution:
+        return desc.isNotEmpty ? desc : 'Contributed to the pool';
+      case FamilyTransactionType.allocation:
+        return desc.isNotEmpty ? desc : 'Allocated funds';
+      case FamilyTransactionType.refund:
+        return desc.isNotEmpty ? desc : 'Refund received';
+      case FamilyTransactionType.removal:
+        return desc.isNotEmpty ? desc : 'Returned to pool on removal';
+      case FamilyTransactionType.adjustment:
+        return desc.isNotEmpty ? desc : 'Balance adjustment';
+    }
+  }
+
+  String _shortDate(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final m = (d.month >= 1 && d.month <= 12) ? months[d.month - 1] : '';
+    return '$m ${d.day}';
+  }
+
+  /// Detail bottom sheet for a single activity item — opened by tapping the
+  /// Activity row. Lifted (0xFF1F1F1F) surface so it contrasts with the page.
+  void _showTransactionDetail(FamilyTransaction transaction) {
+    final isCredit = transaction.type == FamilyTransactionType.allocation ||
+        transaction.type == FamilyTransactionType.refund ||
+        transaction.type == FamilyTransactionType.contribution;
+    final amountColor =
+        isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final amountPrefix = isCredit ? '+' : '-';
+    final symbol = CurrencySymbols.currentSymbol;
+    final memberName =
+        transaction.memberName.isNotEmpty ? transaction.memberName : 'Member';
+    final reference = transaction.transactionId ??
+        (transaction.metadata?['payment_ref']?.toString() ?? '—');
+    final d = transaction.createdAt;
+    final dateStr = '${_shortDate(d)}, ${d.year} · '
+        '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+    IconData typeIcon;
+    switch (transaction.type) {
+      case FamilyTransactionType.allocation:
+        typeIcon = Icons.account_balance_wallet;
+      case FamilyTransactionType.spending:
+        typeIcon = Icons.shopping_cart;
+      case FamilyTransactionType.refund:
+        typeIcon = Icons.replay;
+      case FamilyTransactionType.adjustment:
+        typeIcon = Icons.tune;
+      case FamilyTransactionType.removal:
+        typeIcon = Icons.person_remove;
+      case FamilyTransactionType.contribution:
+        typeIcon = Icons.volunteer_activism;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 28.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Container(
+              width: 60.w,
+              height: 60.w,
+              decoration: BoxDecoration(
+                color: amountColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(typeIcon, color: amountColor, size: 28.sp),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              '$amountPrefix$symbol${transaction.amount.abs().toStringAsFixed(2)}',
+              style: GoogleFonts.inter(
+                color: amountColor,
+                fontSize: 26.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              _familyTxnAction(transaction),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.grey[300],
+                fontSize: 14.sp,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            _buildTxnDetailRow('Type', transaction.type.displayName),
+            _buildTxnDetailRow('By', memberName),
+            if ((transaction.merchantName?.isNotEmpty ?? false) &&
+                transaction.type == FamilyTransactionType.spending)
+              _buildTxnDetailRow('Recipient', transaction.merchantName!),
+            _buildTxnDetailRow('Date', dateStr),
+            _buildTxnDetailRow('Reference', reference),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTxnDetailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 13.sp),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$amountPrefix\$${transaction.amount.abs().toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: amountColor,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
               ),
-              SizedBox(height: 2.h),
-              Text(
-                '${transaction.createdAt.day}/${transaction.createdAt.month}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 10.sp,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -2007,49 +2729,57 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon) {
-    return Container(
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: const Color(0xFF3B82F6),
-            size: 18.sp,
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
+  /// Best display name for a member: full name, then @username, then a
+  /// generic fallback. Used for the name-based default avatar.
+  String _memberDisplayName(FamilyMember member) {
+    if (member.fullName.isNotEmpty) return member.fullName;
+    if (member.username != null && member.username!.isNotEmpty) {
+      return member.username!;
+    }
+    return 'Member';
+  }
+
+  /// First letter of the member's display name, for the photoless avatar.
+  String _memberInitial(FamilyMember member) {
+    final name = _memberDisplayName(member);
+    return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
 
   Widget _buildMemberCard(FamilyAccount account, FamilyMember member) {
-    final utilizationPercentage = member.utilizationPercentage;
-    final remainingPercentage = member.allocatedBalance > 0
-        ? ((member.remainingBalance / member.allocatedBalance) * 100)
-        : 0;
+    final isAccepted = member.invitationStatus == InvitationStatus.accepted;
+    final isShared =
+        account.fundDistributionMode == FundDistributionMode.sharedPool;
+    final canSee = _canSeeMemberSpending(account, member);
+    final symbol = CurrencySymbols.currentSymbol;
+    final displayName = member.fullName.isNotEmpty
+        ? member.fullName
+        : (member.username != null && member.username!.isNotEmpty
+            ? member.username!
+            : 'Member');
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+    final username = member.username;
+    final showUsername = username != null &&
+        username.isNotEmpty &&
+        username.toLowerCase() != displayName.toLowerCase();
+    final remainingHealthy = member.allocatedBalance <= 0 ||
+        (member.remainingBalance / member.allocatedBalance) > 0.2;
+
+    // Trailing headline figure: shared pools track each member's spend; split /
+    // custom allocations track each member's remaining allowance.
+    final trailingLabel = isShared ? 'Spent' : 'Remaining';
+    final trailingValue = isShared
+        ? '$symbol${member.spentThisMonth.toStringAsFixed(2)}'
+        : '$symbol${member.remainingBalance.toStringAsFixed(2)}';
+    final trailingColor = isShared
+        ? Colors.white
+        : (remainingHealthy
+            ? const Color(0xFF10B981)
+            : const Color(0xFFFB923C));
+
+    // Secondary one-liner under the badges.
+    final secondaryLine = isShared
+        ? 'Today $symbol${member.spentToday.toStringAsFixed(2)}'
+        : 'Allocated $symbol${member.allocatedBalance.toStringAsFixed(2)}';
 
     return GestureDetector(
       onTap: () => _showMemberOptions(account, member),
@@ -2057,256 +2787,193 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: member.invitationStatus == InvitationStatus.accepted
-                ? Colors.white.withValues(alpha: 0.1)
-                : const Color(0xFF3B82F6).withValues(alpha: 0.3),
-            width: 1,
-          ),
+          border: isAccepted
+              ? null
+              : Border.all(
+                  color: _kFamilyPurple.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            // Header
-            Row(
-              children: [
-                // Avatar
-                Container(
-                  width: 48.w,
-                  height: 48.h,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                        const Color(0xFF60A5FA).withValues(alpha: 0.1),
+            // Avatar — initial letter on a purple ring (matches group member card)
+            Container(
+              width: 48.w,
+              height: 48.w,
+              decoration: BoxDecoration(
+                color: _kFamilyPurple.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: _kFamilyPurple.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: (member.avatarUrl?.isNotEmpty ?? false)
+                  ? ClipOval(
+                      child: Image.network(member.avatarUrl!, fit: BoxFit.cover),
+                    )
+                  : Center(
+                      child: Text(
+                        initial,
+                        style: GoogleFonts.inter(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w600,
+                          color: _kFamilyPurple,
+                        ),
+                      ),
+                    ),
+            ),
+            SizedBox(width: 12.w),
+
+            // Identity + badges + a single spending summary line
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    displayName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (showUsername) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      '@${username.startsWith('@') ? username.substring(1) : username}',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  SizedBox(height: 6.h),
+                  Row(
+                    children: [
+                      _buildMemberBadge(
+                        member.role == FamilyMemberRole.admin ? 'Admin' : 'Member',
+                        member.role == FamilyMemberRole.admin
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFF10B981),
+                      ),
+                      if (!isAccepted) ...[
+                        SizedBox(width: 8.w),
+                        _buildMemberBadge(
+                          member.invitationStatus.name.toUpperCase(),
+                          _kFamilyPurple,
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (isAccepted && canSee) ...[
+                    SizedBox(height: 8.h),
+                    Text(
+                      secondaryLine,
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: Colors.grey[500],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ] else if (isAccepted && !canSee) ...[
+                    SizedBox(height: 8.h),
+                    Row(
+                      children: [
+                        Icon(Icons.visibility_off_outlined,
+                            size: 13.sp, color: Colors.grey[600]),
+                        SizedBox(width: 4.w),
+                        Text(
+                          'Spending hidden',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                       ],
                     ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: member.avatarUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(24.r),
-                          child: Image.network(
-                            member.avatarUrl!,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Icon(
-                          Icons.person,
-                          size: 24.sp,
-                          color: Colors.white,
-                        ),
-                ),
-                SizedBox(width: 12.w),
-
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              member.fullName,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          // Status Badge
-                          if (member.invitationStatus != InvitationStatus.accepted)
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                member.invitationStatus.name.toUpperCase(),
-                                style: TextStyle(
-                                  color: const Color(0xFF3B82F6),
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          // Role Badge
-                          if (member.role == FamilyMemberRole.admin)
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                'ADMIN',
-                                style: TextStyle(
-                                  color: Colors.orange,
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
+                  ] else ...[
+                    SizedBox(height: 6.h),
+                    Text(
+                      'Invitation ${member.invitationStatus.name}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: _kFamilyPurple,
                       ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        member.role == FamilyMemberRole.admin ? 'Administrator' : 'Member',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.more_vert,
-                  color: Colors.white.withValues(alpha: 0.6),
-                  size: 20.sp,
-                ),
-              ],
+                    ),
+                  ],
+                ],
+              ),
             ),
 
-            // Stats
-            if (member.invitationStatus == InvitationStatus.accepted) ...[
-              SizedBox(height: 16.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildMemberStat(
-                      'Allocated',
-                      '\$${member.allocatedBalance.toStringAsFixed(2)}',
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: _buildMemberStat(
-                      'Remaining',
-                      '\$${member.remainingBalance.toStringAsFixed(2)}',
-                      isPositive: remainingPercentage > 20,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildMemberStat(
-                      'Spent Today',
-                      '\$${member.spentToday.toStringAsFixed(2)}',
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: _buildMemberStat(
-                      'This Month',
-                      '\$${member.spentThisMonth.toStringAsFixed(2)}',
-                    ),
-                  ),
-                ],
-              ),
-
-              // Progress Bar
-              SizedBox(height: 12.h),
+            // Trailing spending figure (mirrors the group card's right column)
+            if (isAccepted && canSee) ...[
+              SizedBox(width: 8.w),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Utilization',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 11.sp,
-                        ),
-                      ),
-                      Text(
-                        '${utilizationPercentage.toStringAsFixed(1)}%',
-                        style: TextStyle(
-                          color: utilizationPercentage > 80
-                              ? Colors.red
-                              : utilizationPercentage > 50
-                                  ? Colors.orange
-                                  : Colors.green,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6.h),
-                  Container(
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(2.r),
+                  Text(
+                    trailingLabel,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.sp,
+                      color: Colors.grey[500],
                     ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: utilizationPercentage / 100,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: utilizationPercentage > 80
-                              ? Colors.red
-                              : utilizationPercentage > 50
-                                  ? Colors.orange
-                                  : Colors.green,
-                          borderRadius: BorderRadius.circular(2.r),
-                        ),
-                      ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    trailingValue,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: trailingColor,
                     ),
                   ),
                 ],
-              ),
-            ] else ...[
-              // Invitation Status Info
-              SizedBox(height: 8.h),
-              Text(
-                'Invitation ${member.invitationStatus.name}',
-                style: TextStyle(
-                  color: const Color(0xFF3B82F6),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
             ],
+            SizedBox(width: 6.w),
+            Icon(Icons.chevron_right, color: Colors.grey[600], size: 20.sp),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMemberStat(String label, String value, {bool isPositive = true}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 10.sp,
-          ),
+  /// Small rounded pill used for member role / invitation status, matching
+  /// the group-account member card badge style (0.2-alpha tint, 12.r radius).
+  Widget _buildMemberBadge(String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w600,
+          color: color,
         ),
-        SizedBox(height: 2.h),
-        Text(
-          value,
-          style: TextStyle(
-            color: isPositive ? Colors.green[300] : Colors.orange[300],
-            fontSize: 14.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+      ),
     );
   }
 

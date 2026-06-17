@@ -18,12 +18,15 @@ import 'package:lazervault/src/features/sprayme/presentation/widgets/tap_like_co
 import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_name_slide_animation.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/gift_shop_sheet.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/money_spray_sheet.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/buy_gift_credit_sheet.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/sprayme/data/gift_catalog_defaults.dart';
 import 'package:lazervault/src/features/sprayme/services/gift_sound_service.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_websocket_service.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_chat_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// The main spray room - TikTok-like full-screen immersive experience.
 /// Shows host avatar/image, real-time spray animations, gift effects,
@@ -800,7 +803,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                   Container(
                     color: Colors.black54,
                     child: const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                      child: LazerVaultLoader.small(),
                     ),
                   ),
 
@@ -1075,8 +1078,10 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
           ),
           SizedBox(width: 6.w),
 
-          // Connection + participants + likes
-          Container(
+          // Connection + participants + likes (tap → viewer list)
+          GestureDetector(
+            onTap: () => _showViewersSheet(state),
+            child: Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.4),
@@ -1109,7 +1114,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                 ),
               ],
             ),
-          ),
+          )),
         ],
       ),
     );
@@ -1521,6 +1526,10 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         gifts: mergedGifts,
         walletBalance: state.walletBalanceMajor,
         currency: state.session?.currency ?? 'NGN',
+        onBuyGifts: () {
+          Navigator.of(context).pop();
+          _showBuyGiftSheet(state);
+        },
         onSendGift: (gift, quantity) {
           context.read<SprayRoomCubit>().sendGift(gift.id, quantity: quantity);
           // Trigger local animation immediately with category for sound
@@ -1572,6 +1581,10 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
       builder: (_) => MoneySpraySheet(
         walletBalance: state.walletBalanceMajor,
         currency: state.session?.currency ?? 'NGN',
+        onBuyGifts: () {
+          Navigator.of(context).pop();
+          _showBuyGiftSheet(state);
+        },
         onConfirm: (totalAmountKobo, denominationKobo) {
           final cubit = context.read<SprayRoomCubit>();
           cubit.setSprayBudget(totalAmountKobo);
@@ -1585,14 +1598,77 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
     );
   }
 
+  void _showBuyGiftSheet(SprayRoomState state) {
+    final accountManager = serviceLocator<AccountManager>();
+    final details = accountManager.activeAccountDetails;
+    final accountId = details?.id ?? accountManager.activeAccountId ?? '';
+    if (accountId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No account found. Select an account on the home screen first.'),
+          backgroundColor: Color(0xFFFB923C),
+        ),
+      );
+      return;
+    }
+    String display = 'Personal Account';
+    double balanceMajor = 0;
+    if (details != null) {
+      final accNum = details.accountNumber;
+      final last4 = accNum.length >= 4 ? accNum.substring(accNum.length - 4) : accNum;
+      display = '${details.accountType} •••• $last4';
+      balanceMajor = details.balance / 100;
+    }
+
+    final mergedGifts = GiftCatalogDefaults.mergeWithBackend(state.gifts);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => BuyGiftCreditSheet(
+        gifts: mergedGifts,
+        accountId: accountId,
+        accountDisplay: display,
+        accountBalanceMajor: balanceMajor,
+        currency: state.session?.currency ?? 'NGN',
+        onBuy: (items, pin) => context.read<SprayRoomCubit>().buyGiftCredit(
+              items: items,
+              sourceAccountId: accountId,
+              pin: pin,
+            ),
+      ),
+    );
+  }
+
   void _showStatsSheet(SprayRoomState state) {
+    // Refresh the leaderboard so the ranking is current when the sheet opens.
+    context.read<SprayRoomCubit>().loadLeaderboard();
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
-      builder: (_) => _StatsSheet(state: state),
+      builder: (_) => BlocBuilder<SprayRoomCubit, SprayRoomState>(
+        bloc: context.read<SprayRoomCubit>(),
+        builder: (_, s) => _StatsSheet(state: s),
+      ),
+    );
+  }
+
+  void _showViewersSheet(SprayRoomState state) {
+    context.read<SprayRoomCubit>().loadParticipants();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      isScrollControlled: true,
+      builder: (_) => BlocBuilder<SprayRoomCubit, SprayRoomState>(
+        bloc: context.read<SprayRoomCubit>(),
+        builder: (_, s) => _ViewersSheet(state: s),
+      ),
     );
   }
 
@@ -2008,8 +2084,100 @@ class _StatsSheet extends StatelessWidget {
                 ),
               ],
             ),
+            SizedBox(height: 14.h),
+            _buildLeaderboard(currency),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Top-sprayer leaderboard ──
+  Widget _buildLeaderboard(String currency) {
+    if (state.topSprayers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.emoji_events, color: const Color(0xFFFFD700), size: 16.sp),
+            SizedBox(width: 6.w),
+            Text(
+              'Top Sprayers',
+              style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        ...state.topSprayers.take(10).map((s) => _leaderboardRow(s, currency)),
+      ],
+    );
+  }
+
+  Widget _leaderboardRow(dynamic s, String currency) {
+    final rank = s.rank as int;
+    final name = (s.userName as String).isNotEmpty ? s.userName as String : 'Guest';
+    final amountMajor = (s.totalAmount as int) / 100;
+    Color rankColor;
+    switch (rank) {
+      case 1:
+        rankColor = const Color(0xFFFFD700);
+        break;
+      case 2:
+        rankColor = const Color(0xFFC0C0C0);
+        break;
+      case 3:
+        rankColor = const Color(0xFFCD7F32);
+        break;
+      default:
+        rankColor = const Color(0xFF9CA3AF);
+    }
+    return Container(
+      margin: EdgeInsets.only(bottom: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D2D),
+        borderRadius: BorderRadius.circular(10.r),
+        border: rank <= 3 ? Border.all(color: rankColor.withValues(alpha: 0.5)) : null,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 24.w,
+            height: 24.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: rankColor.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Text('$rank',
+                style: TextStyle(color: rankColor, fontSize: 12.sp, fontWeight: FontWeight.bold)),
+          ),
+          SizedBox(width: 10.w),
+          CircleAvatar(
+            radius: 12.r,
+            backgroundColor: const Color(0xFF3B82F6),
+            child: Text(
+              name.isNotEmpty ? name[0].toUpperCase() : '?',
+              style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              name,
+              style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text(
+            '$currency ${_formatAmount(amountMajor)}',
+            style: TextStyle(color: const Color(0xFFFFD700), fontSize: 13.sp, fontWeight: FontWeight.w700),
+          ),
+        ],
       ),
     );
   }
@@ -2066,6 +2234,152 @@ class _StatsSheet extends StatelessWidget {
     if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
     return count.toString();
+  }
+}
+
+// ─── Viewers (participant list) Sheet ───────────────────────────
+
+class _ViewersSheet extends StatelessWidget {
+  final SprayRoomState state;
+
+  const _ViewersSheet({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = state.session?.currency ?? 'NGN';
+    // Host first, then by amount sprayed.
+    final viewers = [...state.participants]
+      ..sort((a, b) {
+        if (a.isHost != b.isHost) return a.isHost ? -1 : 1;
+        return b.totalSprayed.compareTo(a.totalSprayed);
+      });
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 12.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.people, color: const Color(0xFF3B82F6), size: 18.sp),
+                SizedBox(width: 6.w),
+                Text(
+                  'Viewers (${state.participantCount})',
+                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            if (viewers.isEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
+                child: Text('No viewers yet',
+                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+              )
+            else
+              Flexible(
+                child: ListView.separated(
+                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+                  shrinkWrap: true,
+                  itemCount: viewers.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                  itemBuilder: (_, i) => _viewerRow(viewers[i], currency),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _viewerRow(dynamic p, String currency) {
+    final name = (p.userName as String).isNotEmpty ? p.userName as String : 'Guest';
+    final isHost = p.isHost as bool;
+    final sprayedMajor = (p.totalSprayed as int) / 100;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D2D),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 16.r,
+                backgroundColor: isHost ? const Color(0xFFFFD700) : const Color(0xFF3B82F6),
+                child: Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                  style: TextStyle(
+                      color: isHost ? Colors.black : Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              if (p.isOnline as bool)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 9.w,
+                    height: 9.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF2D2D2D), width: 1.5),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    name,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w500),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isHost) ...[
+                  SizedBox(width: 6.w),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text('HOST',
+                        style: TextStyle(
+                            color: const Color(0xFFFFD700), fontSize: 9.sp, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if ((p.totalSprayed as int) > 0)
+            Text(
+              '$currency ${sprayedMajor >= 1000 ? '${(sprayedMajor / 1000).toStringAsFixed(1)}K' : sprayedMajor.toStringAsFixed(0)}',
+              style: TextStyle(color: const Color(0xFF10B981), fontSize: 12.sp, fontWeight: FontWeight.w600),
+            ),
+        ],
+      ),
+    );
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/employee_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EmployeeListScreen extends StatefulWidget {
   final String? initialSearch;
@@ -77,11 +78,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                 builder: (context, state) {
                   if (state is PayrollLoading) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFF3B82F6),
-                        ),
-                      ),
+                      child: LazerVaultLoader.small(),
                     );
                   }
 

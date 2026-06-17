@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// QuoteTimerCard renders a 15-second countdown for the active Quidax swap
 /// quotation. When the timer hits `refreshGraceSeconds` (default 2s) before
@@ -182,18 +183,7 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          SizedBox(
-            width: 56,
-            height: 56,
-            child: CircularProgressIndicator(
-              value: fraction,
-              strokeWidth: 4,
-              backgroundColor: Colors.white12,
-              valueColor: AlwaysStoppedAnimation(
-                fraction > 0.3 ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-              ),
-            ),
-          ),
+          LazerVaultLoader(size: 56),
           Text(
             secondsLeft.ceil().toString(),
             style: const TextStyle(

@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:developer' as developer;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Facial Login Camera Widget
 /// Provides real-time camera preview and face capture for login/verification
@@ -166,7 +167,7 @@ class _FacialLoginCameraState extends State<FacialLoginCamera>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.white),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
                 _statusMessage,
@@ -335,10 +336,7 @@ class _FacialLoginCameraState extends State<FacialLoginCamera>
                         ),
                         child: _isProcessing
                             ? Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                ),
+                                child: LazerVaultLoader.small(),
                               )
                             : Icon(
                                 Icons.face_retouching_natural,

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for two-factor authentication verification during login
 class TwoFactorVerificationScreen extends StatefulWidget {
@@ -308,14 +309,7 @@ class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScree
           ),
         ),
         child: _isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.h,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Verify',
                 style: GoogleFonts.inter(

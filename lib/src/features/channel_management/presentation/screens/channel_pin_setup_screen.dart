@@ -5,6 +5,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../cubit/channel_management_cubit.dart';
 import '../../cubit/channel_management_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ChannelPinSetupScreen extends StatefulWidget {
   final String channelType;
@@ -164,12 +165,7 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               _step == 2 ||
                                       (!widget.isChange && _step == 1)

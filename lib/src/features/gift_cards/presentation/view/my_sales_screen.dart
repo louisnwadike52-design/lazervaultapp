@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,7 @@ import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'widgets/sell_rejection_reasons_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MySalesScreen extends StatefulWidget {
   const MySalesScreen({super.key});
@@ -64,7 +66,7 @@ class _MySalesScreenState extends State<MySalesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: kGiftCardBgTop,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -102,7 +104,7 @@ class _MySalesScreenState extends State<MySalesScreen>
               .toList(),
         ),
       ),
-      body: BlocBuilder<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(child: BlocBuilder<GiftCardCubit, GiftCardState>(
         // Only react to states that actually describe the list. Sale-
         // detail lookups (GiftCardLoading → SellStatusLoaded) and any
         // sheet-scoped errors are owned by the bottom sheet's own
@@ -119,7 +121,7 @@ class _MySalesScreenState extends State<MySalesScreen>
         builder: (context, state) {
           if (state is GiftCardLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -137,7 +139,7 @@ class _MySalesScreenState extends State<MySalesScreen>
 
           return _buildEmptyState();
         },
-      ),
+      )),
     );
   }
 
@@ -423,14 +425,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                   if (state is GiftCardLoading) ...[
                     SizedBox(height: 16.h),
                     const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: InvoiceThemeColors.primaryPurple,
-                          strokeWidth: 2,
-                        ),
-                      ),
+                      child: LazerVaultLoader.small(),
                     ),
                   ],
                   SizedBox(height: 24.h),

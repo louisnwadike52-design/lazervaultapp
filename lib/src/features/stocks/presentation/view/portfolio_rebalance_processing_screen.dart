@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import 'portfolio_rebalance_carousel.dart';
 import 'portfolio_rebalance_confirmation_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Processing screen for portfolio rebalancing with animations
 class PortfolioRebalanceProcessingScreen extends StatefulWidget {
@@ -347,16 +348,7 @@ class _PortfolioRebalanceProcessingScreenState
               ),
               // Loading indicator for active step
               if (isActive && !isCompleted)
-                SizedBox(
-                  width: 16.w,
-                  height: 16.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF6366F1),
-                    ),
-                  ),
-                ),
+                LazerVaultLoader.tiny(),
             ],
           ),
         );

@@ -3,6 +3,8 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/account_cards_summary/data/models/account_summary_model.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
@@ -139,11 +141,20 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
 
       print('gRPC GetFamilyAccounts Response received with ${response.familyAccounts.length} items');
 
+      // Family accounts are created in the user's locale currency
+      // (family_setup_flow uses LocaleManager.currentCurrency). The proto does
+      // not yet carry a currency field, so resolve it from the active locale
+      // rather than hardcoding USD — otherwise an NGN user sees a "$" card.
+      final localeCurrency = serviceLocator<LocaleManager>().currentCurrency;
+      final familyCurrency =
+          localeCurrency.isNotEmpty ? localeCurrency : 'NGN';
       return response.familyAccounts.map((proto) {
         final status = proto.status.isNotEmpty ? proto.status : 'active';
         return AccountSummaryEntity.familyAccount(
           id: proto.id,
-          currency: 'USD', // Family accounts use the initial currency
+          // Prefer the account's real currency from the backend; fall back to
+          // the active locale currency (never hardcode USD).
+          currency: proto.currency.isNotEmpty ? proto.currency : familyCurrency,
           totalBalance: proto.totalBalance,
           memberAllocatedBalance: proto.totalAllocatedBalance,
           memberRemainingBalance: proto.totalPoolBalance,
@@ -151,6 +162,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
           allowMemberContributions: proto.allowMemberContributions,
           trendPercentage: 0.0,
           familyAccountId: proto.id,
+          virtualAccountId: proto.virtualAccountId,
           familyStatus: status,
           fundDistributionMode: _mapDistributionMode(proto.fundDistributionMode),
         );

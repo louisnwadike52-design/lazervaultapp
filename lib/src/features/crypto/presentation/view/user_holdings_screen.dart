@@ -9,6 +9,7 @@ import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../../../../../core/services/injection_container.dart';
 import 'crypto_detail_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Shows the user's crypto holdings filtered to Quidax-supported assets.
 /// Tapping a holding navigates to CryptoDetailScreen in sell-only mode.
@@ -96,7 +97,7 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
               child: BlocBuilder<CryptoCubit, CryptoState>(
                 builder: (context, state) {
                   if (state is! CryptosLoaded) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: LazerVaultLoader.small());
                   }
 
                   final supportedSymbols = state.supportedAssets

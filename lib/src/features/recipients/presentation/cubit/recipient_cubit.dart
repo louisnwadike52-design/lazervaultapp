@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
-import 'package:lazervault/core/cache/cache_config.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
@@ -68,10 +66,6 @@ class RecipientCubit extends Cubit<RecipientState> {
     return super.close();
   }
 
-  String _getCacheKey({String? countryCode, String? currency, bool? favoritesOnly, int? page}) {
-    return 'recipients:${countryCode ?? 'all'}:${currency ?? 'all'}:${favoritesOnly ?? false}:${page ?? 1}';
-  }
-
   Future<void> getRecipients({
     required String accessToken,
     String? countryCode,
@@ -91,15 +85,9 @@ class RecipientCubit extends Cubit<RecipientState> {
     // Cancel any existing subscription
     await _cacheSubscription?.cancel();
 
-    final cacheKey = _getCacheKey(
-      countryCode: countryCode,
-      currency: currency,
-      favoritesOnly: favoritesOnly,
-      page: 1,
-    );
-
-    // Use SWR cache if available (bypass for paginated queries to avoid complexity)
-    // For pagination, we'll fetch directly
+    // Note: SWR cache was bypassed for paginated queries (added
+    // complexity outweighed the win). The page-1 cache key derivation
+    // lived here previously; it's removed since nothing reads it.
     emit(RecipientLoading());
     try {
       final result = await _fetchRecipientsPaginated(
@@ -192,24 +180,6 @@ class RecipientCubit extends Cubit<RecipientState> {
       favoritesOnly: favoritesOnly,
       page: page,
       pageSize: _pageSize,
-    );
-    return result.fold(
-      (failure) => throw Exception(failure.message),
-      (recipients) => recipients,
-    );
-  }
-
-  Future<List<RecipientModel>> _fetchRecipients({
-    required String accessToken,
-    String? countryCode,
-    String? currency,
-    bool? favoritesOnly,
-  }) async {
-    final result = await _getRecipientsUseCase(
-      accessToken: accessToken,
-      countryCode: countryCode,
-      currency: currency,
-      favoritesOnly: favoritesOnly,
     );
     return result.fold(
       (failure) => throw Exception(failure.message),

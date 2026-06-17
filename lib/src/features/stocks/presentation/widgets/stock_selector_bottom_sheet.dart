@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/stocks/utils/debouncer.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Stock Selector Bottom Sheet
 /// Bamboo-style stock discovery interface with search and filtering
@@ -536,9 +537,7 @@ class _StockSelectorBottomSheetState extends State<StockSelectorBottomSheet> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: const Color(0xFF4A90E2),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             _isSearching ? 'Searching stocks...' : 'Loading stocks...',

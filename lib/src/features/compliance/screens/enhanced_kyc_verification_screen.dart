@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/document_extraction_service.dart';
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/user.pb.dart' as user_pb;
 import 'package:get/get.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Enhanced KYC Verification Screen with AI Document Extraction
 ///
@@ -280,14 +281,7 @@ class _EnhancedKYCVerificationScreenState
                       ),
                     ),
                     child: _isLoading
-                        ? SizedBox(
-                            height: 20.h,
-                            width: 20.h,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _currentStep == _getSteps().length - 1
                                 ? 'Submit'

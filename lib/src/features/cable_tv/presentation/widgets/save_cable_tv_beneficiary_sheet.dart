@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import '../../data/datasources/cable_tv_beneficiary_remote_datasource.dart';
 import '../cubit/cable_tv_beneficiary_cubit.dart';
 import '../cubit/cable_tv_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SaveCableTVBeneficiarySheet extends StatefulWidget {
   final String smartCardNumber;
@@ -253,15 +254,7 @@ class _SaveCableTVBeneficiarySheetState
                   elevation: 0,
                 ),
                 child: _saving
-                    ? SizedBox(
-                        width: 20.w,
-                        height: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         isEdit ? 'Update Smart Card' : 'Save Smart Card',
                         style: TextStyle(

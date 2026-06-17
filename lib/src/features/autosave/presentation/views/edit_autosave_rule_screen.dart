@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditAutoSaveRuleScreen extends StatefulWidget {
   const EditAutoSaveRuleScreen({super.key});
@@ -782,14 +783,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                             onTap: (isLoading || !_hasChanges) ? null : _showPreview,
                             child: Center(
                               child: isLoading
-                                  ? SizedBox(
-                                      width: 24.w,
-                                      height: 24.h,
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
+                                  ? LazerVaultLoader.small()
                                   : Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [

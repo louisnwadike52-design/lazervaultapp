@@ -215,6 +215,15 @@ class FamilyAccountDeleted extends FamilyAccountState {
   List<Object?> get props => [returnedBalance];
 }
 
+class FamilyAccountLeft extends FamilyAccountState {
+  final double returnedBalance;
+
+  const FamilyAccountLeft(this.returnedBalance);
+
+  @override
+  List<Object?> get props => [returnedBalance];
+}
+
 class MemberContributionProcessed extends FamilyAccountState {
   final FamilyAccount familyAccount;
 

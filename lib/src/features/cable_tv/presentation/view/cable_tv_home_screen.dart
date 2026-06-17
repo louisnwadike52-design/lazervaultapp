@@ -9,8 +9,7 @@ import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
 import '../widgets/cable_tv_recent_transactions_card.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Cable TV landing. Same shape as the other utility landings:
 ///   * Quick-access row: Saved / Auto-Renew / Reminders
@@ -81,24 +80,9 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
             ),
           ),
           centerTitle: true,
-          actions: [
-            // Per-bill voice + chat icons — pin every session to
-            // the cable_tv flow on chat-products-service
-            // (DIRECT_ROUTES['cable_tv'] → primary 'utility').
-            ServiceVoiceButton(
-              serviceName: 'cable_tv',
-              iconColor: const Color(0xFF3B82F6),
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            SizedBox(width: 8.w),
-            MicroserviceChatIcon(
-              serviceName: 'Cable TV',
-              sourceContext: 'cable_tv',
-              icon: Icons.chat_bubble_outline,
-              iconColor: const Color(0xFF3B82F6),
-            ),
-            SizedBox(width: 12.w),
-          ],
+          // Per-bill voice + chat icons removed — the unified utility
+          // bills landing page now hosts the single chat/mic entry point
+          // for every utility flow.
         ),
         body: SafeArea(
           child: BlocBuilder<CableTVCubit, CableTVState>(
@@ -109,7 +93,7 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
             builder: (context, state) {
               if (state is CableTVLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(color: _accent),
+                  child: LazerVaultLoader.small(),
                 );
               }
               final providers = state is CableTVProvidersLoaded

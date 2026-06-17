@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Enrollment Carousel Screen
 ///
@@ -446,16 +447,7 @@ class _VoiceEnrollmentCarouselScreenState
   }
 
   Widget _buildProcessingIndicator() {
-    return SizedBox(
-      width: 100.w,
-      height: 100.w,
-      child: const Center(
-        child: CircularProgressIndicator(
-          color: InvoiceThemeColors.primaryPurple,
-          strokeWidth: 3,
-        ),
-      ),
-    );
+    return LazerVaultLoader(size: 100);
   }
 
   Widget _buildSoundLevelBars(double level) {
@@ -628,10 +620,7 @@ class _VoiceEnrollmentCarouselScreenState
             ),
           ),
           SizedBox(height: 32.h),
-          const CircularProgressIndicator(
-            color: InvoiceThemeColors.primaryPurple,
-            strokeWidth: 3,
-          ),
+          LazerVaultLoader.small(),
         ],
       ),
     );
@@ -675,10 +664,7 @@ class _VoiceEnrollmentCarouselScreenState
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 32.h),
-          const CircularProgressIndicator(
-            color: Color(0xFF3B82F6),
-            strokeWidth: 3,
-          ),
+          LazerVaultLoader.small(),
         ],
       ),
     );

@@ -116,10 +116,18 @@ class MandateEntity extends Equatable {
       status == MandateStatus.active ||
       status == MandateStatus.readyToDebit;
 
-  /// Whether this mandate is still being set up
-  bool get isActivating =>
+  /// "Setting up" — the USER has finished their part (authorized at their bank)
+  /// and only NIBSS / bank-side activation is left before it becomes debitable.
+  /// NOT awaiting_authorization/pending: those mean the user still has to
+  /// authorize (e.g. they cancelled the Mono sheet), which is not "setting up".
+  bool get isActivating => status == MandateStatus.authorized;
+
+  /// The mandate exists but the USER hasn't authorized it yet (created, or the
+  /// auth sheet was cancelled). Direct Debit is not set up — the account behaves
+  /// as one-time until the user authorizes (resumable via "Switch to Direct Debit").
+  bool get awaitingUserAuthorization =>
       status == MandateStatus.awaitingAuthorization ||
-      status == MandateStatus.authorized;
+      status == MandateStatus.pending;
 
   /// Temporarily paused by the user — reinstate to use again.
   bool get isPaused => status == MandateStatus.paused;

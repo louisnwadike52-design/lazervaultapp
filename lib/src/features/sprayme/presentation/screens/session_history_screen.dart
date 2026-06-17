@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_transaction.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SessionHistoryScreen extends StatefulWidget {
   final String? sessionId; // if null, shows all user transactions
@@ -92,7 +93,7 @@ class _SessionHistoryScreenState extends State<SessionHistoryScreen> {
             child: BlocBuilder<SprayMeCubit, SprayMeState>(
               builder: (context, state) {
                 if (state is SprayMeLoading) {
-                  return const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
+                  return const Center(child: LazerVaultLoader.small());
                 }
                 if (state is SprayMeError) {
                   return Center(

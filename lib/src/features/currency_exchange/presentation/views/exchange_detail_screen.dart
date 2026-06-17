@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../../services/exchange_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Transaction detail for a past exchange — opened from the history list.
 /// Visually identical to the post-transaction receipt: LazerVault logo
@@ -107,8 +109,9 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
     final tx = _tx;
     if (tx == null) return _buildMissingData();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         // Flex layout fills the viewport height with Spacers so the
         // receipt feels balanced rather than crammed. No scroll — content
@@ -130,7 +133,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildTopBar() {
@@ -385,14 +388,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: 14.sp,
-                  height: 14.sp,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                LazerVaultLoader(size: 14)
               else if (icon != null)
                 Icon(icon, color: Colors.white, size: 16.sp),
               if (!isLoading && icon != null) SizedBox(width: 6.w),
@@ -524,8 +520,9 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
   }
 
   Widget _buildMissingData() {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -562,7 +559,7 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

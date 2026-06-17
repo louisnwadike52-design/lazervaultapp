@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet shown when the user swipes down on the dashboard.
 ///
@@ -70,15 +73,25 @@ class _DashboardActionSheet extends StatefulWidget {
 class _DashboardActionSheetState extends State<_DashboardActionSheet> {
   bool _busy = false;
 
-  Future<void> _runRefresh() async {
+  /// Refresh fires + the sheet closes IMMEDIATELY in the same frame.
+  /// The refresh continues in the background — the dashboard owns the
+  /// progress UI (carousel loader) so the user doesn't need to sit on
+  /// this sheet watching a spinner. Matches the AI chat / voice / go-
+  /// to-profile actions, which already dismiss-then-act.
+  void _runRefresh() {
     if (_busy) return;
-    setState(() => _busy = true);
+    Navigator.of(context).maybePop();
+    // Fire-and-forget: caller surfaces success / error via the dashboard
+    // (snackbar + carousel state). We deliberately don't await — that
+    // would block the pop and re-introduce the "loading sheet" UX.
+    unawaited(_safeRefresh());
+  }
+
+  Future<void> _safeRefresh() async {
     try {
       await widget.onRefreshAccounts();
     } catch (_) {
-      // Caller is responsible for surfacing errors. Sheet always closes.
-    } finally {
-      if (mounted) Navigator.of(context).maybePop();
+      // Swallow — dashboard is the owner of error surfacing.
     }
   }
 
@@ -154,14 +167,7 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
             label: 'Refresh accounts',
             description: 'Pull the latest balances and dashboard data.',
             trailing: _busy
-                ? SizedBox(
-                    width: 18.w,
-                    height: 18.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Color(0xFF3B82F6)),
-                    ),
-                  )
+                ? LazerVaultLoader(size: 18)
                 : null,
             onTap: _runRefresh,
             enabled: !_busy,

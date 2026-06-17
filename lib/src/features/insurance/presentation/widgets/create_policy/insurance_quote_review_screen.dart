@@ -17,6 +17,7 @@ import '../../cubit/create_policy_state.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen 3: Review quote details - premium, coverage breakdown, provider info
 class InsuranceQuoteReviewScreen extends StatefulWidget {
@@ -135,7 +136,7 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
         if (state is InsuranceQuoteLoading) {
           return Center(
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const CircularProgressIndicator(color: Color(0xFF6366F1)),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text('Getting your quote...', style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
             ]),
@@ -457,10 +458,7 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
     if (_coverageSummaryLoading) {
       return _buildInfoCard('Coverage', [
         Row(children: [
-          SizedBox(
-            width: 14.w, height: 14.w,
-            child: const CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
-          ),
+          LazerVaultLoader(size: 14),
           SizedBox(width: 10.w),
           Text('Summarising coverage…', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
         ]),
@@ -527,7 +525,7 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: Row(children: [
-              SizedBox(width: 14.w, height: 14.w, child: const CircularProgressIndicator(strokeWidth: 2)),
+              LazerVaultLoader(size: 14),
               SizedBox(width: 10.w),
               Text('Loading account…', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
             ]),

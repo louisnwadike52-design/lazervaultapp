@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Maps category names from backend to display-friendly names.
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
@@ -206,7 +207,7 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
         builder: (context, state) {
           if (state is! StatisticsLoaded) {
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: LazerVaultLoader.small(),
             );
           }
           return RefreshIndicator(
@@ -321,14 +322,7 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 18.w,
-              height: 18.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color.fromARGB(255, 78, 3, 208),
-              ),
-            ),
+            LazerVaultLoader(size: 18),
             SizedBox(width: 12.w),
             Text(
               'Analyzing spending patterns...',

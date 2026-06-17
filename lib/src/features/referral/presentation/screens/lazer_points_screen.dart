@@ -8,6 +8,7 @@ import '../../domain/entities/point_transaction_entity.dart';
 import '../../domain/entities/points_config_entity.dart';
 import '../cubit/referral_cubit.dart';
 import '../cubit/referral_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LazerPointsScreen extends StatefulWidget {
   const LazerPointsScreen({super.key});
@@ -75,7 +76,7 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
         builder: (context, state) {
           if (state is ReferralLoading && _balance == null) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             );
           }
 

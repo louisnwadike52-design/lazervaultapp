@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AirtimePaymentProcessingScreen extends StatefulWidget {
   const AirtimePaymentProcessingScreen({super.key});
@@ -351,15 +352,7 @@ class _AirtimePaymentProcessingScreenState
                 ),
                 // Status indicator
                 if (isActive && !_hasFailed)
-                  SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(step.activeColor),
-                    ),
-                  ),
+                  LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(
                     Icons.check_circle,

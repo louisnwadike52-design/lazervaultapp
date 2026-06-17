@@ -11,6 +11,7 @@ import '../cubit/group_account_cubit.dart';
 import 'contribution_type_badge.dart';
 import 'past_contribution_details_sheet.dart';
 import 'status_pill.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Tap-into bottom sheet for a past group. Mirrors the
 /// PastContributionDetailsSheet layout: drag handle + title row, then
@@ -178,7 +179,7 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
 
   Widget _buildBody(NumberFormat fmt) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: LazerVaultLoader.small());
     }
     if (_error != null) {
       return Center(

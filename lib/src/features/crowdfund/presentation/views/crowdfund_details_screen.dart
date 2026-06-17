@@ -23,6 +23,7 @@ import '../widgets/edit_crowdfund_screen.dart';
 import '../widgets/pause_confirmation_sheet.dart';
 import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CrowdfundDetailsScreen extends StatefulWidget {
   final String crowdfundId;
@@ -261,10 +262,10 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       return _buildErrorBody(state.message);
     }
     if (state is CrowdfundLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
+      return const Center(child: LazerVaultLoader.small());
     }
     return const Center(
-      child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+      child: LazerVaultLoader.small(),
     );
   }
 
@@ -683,14 +684,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         child: const Center(
-          child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              color: Color(0xFF4E03D0),
-              strokeWidth: 2,
-            ),
-          ),
+          child: LazerVaultLoader(size: 22),
         ),
       );
     }

@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/card_settings/cubit/card_settings_cubit.dart';
 import 'package:lazervault/src/features/card_settings/cubit/card_settings_state.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CardSettingsScreen extends StatelessWidget {
   const CardSettingsScreen({super.key});
@@ -117,9 +118,7 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
           builder: (context, state) {
             if (state is AccountCardsSummaryLoading) {
               return Center(
-                child: CircularProgressIndicator(
-                  color: const Color(0xFF4E03D0),
-                ),
+                child: LazerVaultLoader.small(),
               );
             } else if (state is AccountCardsSummaryError) {
               return _buildErrorView(state.message);
@@ -238,9 +237,7 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
                 Padding(
                   padding: EdgeInsets.all(16.w),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      color: const Color(0xFF4E03D0),
-                    ),
+                    child: LazerVaultLoader.small(),
                   ),
                 )
               else
@@ -330,14 +327,7 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
                 child: Row(
                   children: [
                     if (isUpdating)
-                      SizedBox(
-                        width: 14.w,
-                        height: 14.h,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                      LazerVaultLoader(size: 14)
                     else
                       Icon(
                         isFrozen ? Icons.lock : Icons.check_circle,

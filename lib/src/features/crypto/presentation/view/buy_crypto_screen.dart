@@ -19,6 +19,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
@@ -865,12 +866,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         SizedBox(height: 4.h),
         Row(
           children: [
-            SizedBox(
-              width: 14.sp,
-              height: 14.sp,
-              child: const CircularProgressIndicator(
-                  strokeWidth: 2, color: Color(0xFF9CA3AF)),
-            ),
+            LazerVaultLoader(size: 14),
             SizedBox(width: 8.w),
             Text('Fetching live rate…',
                 style: GoogleFonts.inter(
@@ -1029,16 +1025,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                                 ),
                               ),
                               if (accountState is AccountCardsSummaryLoading)
-                                SizedBox(
-                                  width: 12.w,
-                                  height: 12.w,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 1.5,
-                                    valueColor: AlwaysStoppedAnimation(
-                                      Colors.white.withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                ),
+                                LazerVaultLoader(size: 12),
                             ],
                           ),
                           SizedBox(height: 2.h),
@@ -1263,14 +1250,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ),
             child: _isTransacting
               ? Center(
-                  child: SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: CircularProgressIndicator(
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2,
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1413,7 +1393,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 child: BlocBuilder<CryptoCubit, CryptoState>(
                   builder: (context, state) {
                     if (state is CryptoLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(child: LazerVaultLoader.small());
                     } else if (state is CryptosLoaded) {
                       // Only show Quidax-supported assets for buy
                       final supported = state.supportedAssets;

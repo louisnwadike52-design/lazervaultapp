@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/linked_bank_account.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Card widget to display a linked bank account
 class LinkedAccountCard extends StatelessWidget {
@@ -221,15 +222,7 @@ class LinkedAccountCard extends StatelessWidget {
                       isRefreshing
                           ? Padding(
                               padding: EdgeInsets.all(12.w),
-                              child: SizedBox(
-                                width: 20.sp,
-                                height: 20.sp,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: const Color(0xFF3B82F6),
-                                  backgroundColor: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
-                                ),
-                              ),
+                              child: LazerVaultLoader.small(),
                             )
                           : IconButton(
                               onPressed: onRefreshBalance,

@@ -1,0 +1,152 @@
+default_platform(:android)
+
+FLUTTER_DIR = File.expand_path("../..", __dir__) # lazervaultapp/
+
+def flutter(args)
+  Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
+end
+
+# Flutter compression flags applied to every release build:
+#
+# --release                  Standard release mode (AOT compile, no debug
+#                            assertions, tree-shaking, etc.)
+# --tree-shake-icons         Strip unused glyphs from the MaterialIcons font.
+#                            Typically saves 1.5 MB on the icon font alone.
+# --obfuscate                Apply Dart name obfuscation to release symbols.
+#                            Smaller AOT binary + makes reverse engineering
+#                            harder. Pair with --split-debug-info so we can
+#                            still symbolicate crash reports.
+# --split-debug-info=DIR     Strip debug info from the AOT binary and write
+#                            it to DIR. The binary shrinks by ~30%. Keep the
+#                            DIR (per build) so crash reports stay
+#                            symbolicatable via flutter symbolize.
+# --shrink                   (Android only) tells Gradle to use R8 + resource
+#                            shrinker (we also enable these in build.gradle.kts,
+#                            this is the Flutter side of the same switch).
+COMPRESSION_FLAGS = "--release --tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android --shrink"
+
+def aab_for(flavor)
+  File.join(FLUTTER_DIR,
+    "build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab")
+end
+
+def apk_for(flavor)
+  File.join(FLUTTER_DIR,
+    "build/app/outputs/flutter-apk/app-#{flavor}-release.apk")
+end
+
+def release_notes
+  `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
+end
+
+# Resolve the Google Play Console service-account JSON path. The same SA
+# drives every Play Store upload (internal / alpha / production tracks).
+# Create it at: Google Play Console → Settings → Developer account →
+# API access → Create service account → grant "Release manager" role.
+# Then export PLAY_STORE_JSON_KEY=/abs/path/play-store-sa.json before
+# running any of these lanes.
+def play_store_json_key_path
+  ENV["PLAY_STORE_JSON_KEY"]
+end
+
+platform :android do
+  desc "Dev → Google Play Console internal testing track (AAB)"
+  # User directive: every Android build goes through Play Console — that's
+  # the canonical distribution surface. Firebase App Distribution stays
+  # available via the dev_firebase lane for ad-hoc tester distribution
+  # without a Play Console review.
+  #
+  # Internal testing track: up to 100 testers, no review, instant rollout.
+  # Equivalent to TestFlight Internal on iOS.
+  lane :dev do
+    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS}")
+    upload_to_play_store(
+      package_name:               "com.lazervault.app",
+      track:                      "internal",
+      aab:                        aab_for("dev"),
+      json_key:                   play_store_json_key_path,
+      skip_upload_apk:            true,
+      skip_upload_metadata:       true,
+      skip_upload_changelogs:     false,
+      skip_upload_images:         true,
+      skip_upload_screenshots:    true,
+      release_status:             "draft",  # tester opens listing → activates
+    )
+  end
+
+  desc "Dev fallback → Firebase App Distribution (no Play Console SA required)"
+  # When PLAY_STORE_JSON_KEY isn't set yet (early dev / first-time setup),
+  # use this lane to push to Firebase App Distribution instead. APKs install
+  # directly — no Play Console review.
+  lane :dev_firebase do
+    flutter("build apk --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS} --split-per-abi")
+    args = {
+      app: "1:961906506476:android:ec73b0375c4900043843c9",
+      android_artifact_type: "APK",
+      android_artifact_path: apk_for("dev"),
+      release_notes: release_notes,
+      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    }
+    args[:groups] = ENV["FAD_GROUPS"] if ENV["FAD_GROUPS"] && !ENV["FAD_GROUPS"].empty?
+    firebase_app_distribution(args)
+  end
+
+  desc "Staging → Play Store closed (alpha) testing track"
+  # Closed testing: invite-only tester groups, no Play review. Wider audience
+  # than internal but still gated. Devs typically promote builds from internal
+  # → closed → open → production. Each promotion is a separate lane run.
+  lane :staging do
+    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging #{COMPRESSION_FLAGS}")
+    upload_to_play_store(
+      package_name:               "com.lazervault.app",
+      track:                      "alpha",
+      aab:                        aab_for("staging"),
+      json_key:                   play_store_json_key_path,
+      skip_upload_apk:            true,
+      skip_upload_metadata:       true,
+      skip_upload_changelogs:     false,
+      skip_upload_images:         true,
+      skip_upload_screenshots:    true,
+      release_status:             "draft",
+    )
+  end
+
+  desc "Production → Play Store production track (requires Play review)"
+  # Full rollout: Play reviews + auto-rolls to all eligible users. release_status
+  # "draft" means the upload happens but the rollout is held — you flip the
+  # rollout in Play Console UI when ready (matches the no-auto-submit pattern
+  # on iOS upload_to_app_store).
+  lane :production do
+    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod #{COMPRESSION_FLAGS}")
+    upload_to_play_store(
+      package_name:               "com.lazervault.app",
+      track:                      "production",
+      aab:                        aab_for("prod"),
+      json_key:                   play_store_json_key_path,
+      skip_upload_apk:            true,
+      skip_upload_metadata:       true,
+      skip_upload_changelogs:     false,
+      skip_upload_images:         true,
+      skip_upload_screenshots:    true,
+      release_status:             "draft",  # promote in Play Console when ready
+    )
+  end
+
+  desc "Promote staging → production track (no new upload, just track switch)"
+  lane :promote_to_production do
+    upload_to_play_store(
+      package_name:               "com.lazervault.app",
+      json_key:                   play_store_json_key_path,
+      track:                      "alpha",
+      track_promote_to:           "production",
+      skip_upload_apk:            true,
+      skip_upload_aab:            true,
+      skip_upload_metadata:       true,
+      skip_upload_changelogs:     true,
+      skip_upload_images:         true,
+      skip_upload_screenshots:    true,
+      release_status:             "draft",
+    )
+  end
+end

@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/sprayme/domain/entities/session_particip
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Comprehensive session detail screen showing all activity for a past session.
 /// Displays transactions, comments, participants, and stats for both created and joined sessions.
@@ -132,7 +133,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         },
         builder: (context, state) {
           if (_isLoading && state is SprayMeLoading) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
+            return const Center(child: LazerVaultLoader.small());
           }
 
           if (_session == null) {

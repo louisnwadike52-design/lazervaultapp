@@ -11,6 +11,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'contact_picker_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AddMemberBottomSheet extends StatefulWidget {
   final GroupAccount group;
@@ -732,7 +733,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
                 'Searching...',
@@ -1362,14 +1363,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   disabledBackgroundColor: Colors.grey[800],
                 ),
                 child: _isLoading
-                    ? SizedBox(
-                        height: 20.h,
-                        width: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         buttonText,
                         style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600),

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/withdrawal.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for withdrawing funds to external bank account
 class WithdrawalScreen extends StatefulWidget {
@@ -164,7 +165,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
           final banks = context.read<OpenBankingCubit>().banks;
 
           if (banks.isEmpty && state is OpenBankingLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
 
           if (_showConfirmation) {
@@ -374,14 +375,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       suffixIcon: _isResolvingAccount
                           ? Padding(
                               padding: EdgeInsets.all(12.w),
-                              child: SizedBox(
-                                width: 20.w,
-                                height: 20.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color.fromARGB(255, 78, 3, 208),
-                                ),
-                              ),
+                              child: LazerVaultLoader.small(),
                             )
                           : _accountNumberController.text.length == 10 &&
                                   _selectedBank != null
@@ -743,14 +737,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                 ),
               ),
               child: state is OpenBankingLoading
-                  ? SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Withdraw ₦${amount.toStringAsFixed(2).replaceAllMapped(
                             RegExp(r'(\d)(?=(\d{3})+(?!\d))'),

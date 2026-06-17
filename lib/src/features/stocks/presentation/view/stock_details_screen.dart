@@ -16,6 +16,7 @@ import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/investments/presentation/models/invest_asset_hub_config.dart';
 import 'package:lazervault/src/features/investments/presentation/navigation/invest_route_args.dart';
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class StockDetailsScreen extends StatefulWidget {
   final Stock stock;
@@ -384,10 +385,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   timeframe: _selectedTimeframe,
                 );
               }
-              return SizedBox(
-                height: 300.h,
-                child: Center(child: CircularProgressIndicator(color: Colors.blue)),
-              );
+              return LazerVaultLoader(size: 300);
             },
           ),
           SizedBox(height: 16.h),

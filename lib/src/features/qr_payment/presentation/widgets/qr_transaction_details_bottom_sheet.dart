@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/qr_transaction_entity.dart';
 import '../../services/qr_pay_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class QRTransactionDetailsBottomSheet extends StatefulWidget {
   final QRTransactionEntity transaction;
@@ -207,14 +208,7 @@ class _QRTransactionDetailsBottomSheetState
                     ),
                   ),
                   icon: _isDownloadingReceipt
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF60A5FA),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(Icons.download_outlined,
                           size: 18.sp, color: const Color(0xFF60A5FA)),
                   label: Text(
@@ -242,14 +236,7 @@ class _QRTransactionDetailsBottomSheetState
                     ),
                   ),
                   icon: _isSharingReceipt
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF34D399),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(Icons.share_outlined,
                           size: 18.sp, color: const Color(0xFF34D399)),
                   label: Text(

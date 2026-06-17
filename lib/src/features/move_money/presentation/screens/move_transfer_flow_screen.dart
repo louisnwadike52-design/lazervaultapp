@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,10 +30,12 @@ import '../../cubit/move_money_state.dart';
 import '../../domain/entities/mandate_entity.dart';
 import '../../domain/entities/move_transfer.dart';
 import '../../domain/entities/move_fee_calculation.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/directpay_authorization_sheet.dart'
     as shared_auth;
 import '../widgets/mandate_activating_banner.dart';
 import '../widgets/mandate_management_bottomsheet.dart';
+import '../widgets/mandate_mode_info.dart';
 import '../widgets/mandate_status_badge.dart';
 import '../widgets/move_fee_breakdown.dart';
 import '../widgets/reauth_required_overlay.dart';
@@ -412,15 +415,23 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   /// it lights up automatically once Mono enables Direct Debit and a mandate
   /// becomes ready.
   Widget _buildDebitModeToggle() {
+    // Rebuild when the MandateCubit updates (the background Mono refresh) so this
+    // row reflects the live Direct-Debit state.
+    return BlocBuilder<MandateCubit, MandateState>(
+      builder: (context, _) => _buildDebitModeToggleBody(),
+    );
+  }
+
+  Widget _buildDebitModeToggleBody() {
     if (_sourceAccount == null) return const SizedBox.shrink();
     final mandate =
         context.read<MandateCubit>().getMandateForAccount(_sourceAccount!.id);
-    final mandateReady = mandate != null &&
-        (mandate.status == MandateStatus.readyToDebit ||
-            mandate.status == MandateStatus.active);
-    final mandateActivating = mandate != null &&
-        (mandate.status == MandateStatus.awaitingAuthorization ||
-            mandate.status == MandateStatus.authorized);
+    final mandateReady = mandate != null && mandate.isActive;
+    // "Activating" = user authorized, only NIBSS left. A cancelled / not-yet-
+    // authorized mandate (awaiting_authorization/pending) is NOT activating — it
+    // falls through to the "one-time / set up Direct Debit" path so the user can
+    // resume their authorization.
+    final mandateActivating = mandate != null && mandate.isActivating;
 
     // STATE-DRIVEN row — no switch. The system always uses the best rail for
     // the source automatically (mandate when ready, one-time DirectPay
@@ -455,47 +466,73 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       actionLabel = 'Set up Direct Debit';
     }
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: mandateReady
-              ? const Color(0xFF10B981).withValues(alpha: 0.35)
-              : const Color(0xFF2D2D2D),
-        ),
+    // Tapping the row (anywhere but the action button) opens the shared
+    // DirectPay-vs-Direct-Debit info modal — same modal Deposit uses.
+    final modeView = mandateReady
+        ? MandateModeView.directDebit
+        : mandateActivating
+            ? MandateModeView.settingUp
+            : MandateModeView.oneTime;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12.r),
+      onTap: () => showMandateModeInfoModal(
+        context,
+        current: modeView,
+        bankName: _sourceAccount!.bankName,
+        actionNoun: 'transfer',
+        switchHint: 'Use the Direct Debit action on this row to switch.',
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: accent, size: 18.sp),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    color: mandateActivating
-                        ? const Color(0xFFFB923C)
-                        : const Color(0xFF9CA3AF),
-                    fontSize: 11.sp,
-                  ),
-                ),
-              ],
-            ),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: mandateReady
+                ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                : const Color(0xFF2D2D2D),
           ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: accent, size: 18.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Icon(Icons.info_outline,
+                          color: Colors.white.withValues(alpha: 0.4), size: 13.sp),
+                    ],
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: mandateActivating
+                          ? const Color(0xFFFB923C)
+                          : const Color(0xFF9CA3AF),
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (actionLabel != null)
             TextButton(
               onPressed: () async {
@@ -524,6 +561,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
               ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -721,12 +759,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   Widget _buildTileBalance(LinkedBankAccount account) {
     if (_refreshingBalanceIds.contains(account.id)) {
       return Row(mainAxisSize: MainAxisSize.min, children: [
-        SizedBox(
-          width: 10.w,
-          height: 10.w,
-          child: const CircularProgressIndicator(
-              strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
-        ),
+        LazerVaultLoader(size: 10),
         SizedBox(width: 6.w),
         Text('Fetching balance…',
             style: GoogleFonts.inter(
@@ -748,12 +781,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
     if (!hasFigure) {
       return Row(mainAxisSize: MainAxisSize.min, children: [
-        SizedBox(
-          width: 9.w,
-          height: 9.w,
-          child: const CircularProgressIndicator(
-              strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
-        ),
+        LazerVaultLoader(size: 9),
         SizedBox(width: 5.w),
         Text('Fetching balance…',
             style: GoogleFonts.inter(
@@ -983,8 +1011,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       if (mounted) _maybeFetchPrediction();
     });
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1197,7 +1226,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           builder: (context, obState) {
             if (obState is OpenBankingLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                child: LazerVaultLoader.small(),
               );
             }
 
@@ -1398,7 +1427,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         ),
       ),
       ),
-    );
+    ));
   }
 
   // ---------------------------------------------------------------------------
@@ -1788,14 +1817,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 16.w,
-              height: 16.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFF3B82F6),
-              ),
-            ),
+            LazerVaultLoader.tiny(),
             SizedBox(width: 10.w),
             Text(
               'Calculating fees...',
@@ -1834,14 +1856,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_isCalculatingFee)
-                SizedBox(
-                  width: 14.w,
-                  height: 14.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFFFB923C),
-                  ),
-                )
+                LazerVaultLoader(size: 14)
               else
                 Icon(
                   Icons.refresh_rounded,

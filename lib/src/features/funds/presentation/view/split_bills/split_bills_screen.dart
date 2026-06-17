@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Split Bills Screen for dividing payments among multiple participants
 ///
@@ -792,7 +793,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                   child: BlocBuilder<RecipientCubit, RecipientState>(
                     builder: (context, state) {
                       if (state is RecipientLoading) {
-                        return Center(child: CircularProgressIndicator());
+                        return Center(child: LazerVaultLoader.small());
                       }
 
                       if (state is RecipientError) {

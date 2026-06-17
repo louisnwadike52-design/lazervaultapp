@@ -13,6 +13,7 @@ import '../cubit/group_account_state.dart';
 import '../widgets/contribution_type_badge.dart';
 import '../widgets/past_contribution_details_sheet.dart';
 import '../widgets/status_pill.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lists every contribution the caller has been removed from or left
 /// voluntarily. Two tabs (Removed / Left) drive the same backend RPC
@@ -244,7 +245,7 @@ class _PastContributionsListState extends State<_PastContributionsList>
             if (mounted) _load();
           });
         }
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: LazerVaultLoader.small());
       },
     );
   }

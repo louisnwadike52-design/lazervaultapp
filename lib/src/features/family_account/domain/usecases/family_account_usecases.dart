@@ -288,6 +288,7 @@ class AllocateFundsUseCase extends UseCase<FamilyMember, AllocateFundsParams> {
       memberId: params.memberId,
       amount: params.amount,
       description: params.description,
+      idempotencyKey: params.idempotencyKey,
     );
   }
 }
@@ -297,12 +298,14 @@ class AllocateFundsParams {
   final String memberId;
   final double amount;
   final String? description;
+  final String? idempotencyKey;
 
   AllocateFundsParams({
     required this.familyId,
     required this.memberId,
     required this.amount,
     this.description,
+    this.idempotencyKey,
   });
 }
 
@@ -396,6 +399,23 @@ class DeleteFamilyAccountParams {
   });
 }
 
+// Leave Family Account Use Case (self-serve member leave)
+class LeaveFamilyAccountUseCase extends UseCase<double, LeaveFamilyAccountParams> {
+  final FamilyAccountRepository repository;
+
+  LeaveFamilyAccountUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, double>> call(LeaveFamilyAccountParams params) {
+    return repository.leaveFamilyAccount(familyId: params.familyId);
+  }
+}
+
+class LeaveFamilyAccountParams {
+  final String familyId;
+  LeaveFamilyAccountParams({required this.familyId});
+}
+
 // Process Member Contribution Use Case (Hybrid Funding)
 class ProcessMemberContributionUseCase extends UseCase<FamilyAccount, ProcessMemberContributionParams> {
   final FamilyAccountRepository repository;
@@ -409,6 +429,7 @@ class ProcessMemberContributionUseCase extends UseCase<FamilyAccount, ProcessMem
       memberId: params.memberId,
       amount: params.amount,
       description: params.description,
+      idempotencyKey: params.idempotencyKey,
     );
   }
 }
@@ -418,12 +439,14 @@ class ProcessMemberContributionParams {
   final String memberId;
   final double amount;
   final String? description;
+  final String? idempotencyKey;
 
   ProcessMemberContributionParams({
     required this.familyId,
     required this.memberId,
     required this.amount,
     this.description,
+    this.idempotencyKey,
   });
 }
 

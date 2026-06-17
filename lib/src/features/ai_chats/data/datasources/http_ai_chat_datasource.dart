@@ -120,6 +120,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    Map<String, dynamic>? extraMetadata,
   }) async {
     try {
       // Get user context
@@ -153,6 +154,11 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         'metadata': {
           'response_style': responseStyle,
           'emoji_usage': emojiUsage,
+          // PIN-callback follow-up (pin_verification_token / callback_intent /
+          // callback_args / execute). The gateway copies these out of metadata
+          // into the downstream service entities so confirm_* fires with the
+          // single-use token instead of a raw PIN. Empty on normal turns.
+          if (extraMetadata != null) ...extraMetadata,
         },
       };
 

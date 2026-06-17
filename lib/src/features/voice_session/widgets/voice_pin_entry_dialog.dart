@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// PIN entry dialog for voice sessions.
 ///
@@ -39,7 +40,7 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
   static const int _maxNetworkRetries = 3;
 
   String get _transferGatewayUrl {
-    return dotenv.env['TRANSFER_GATEWAY_URL'] ?? 'http://localhost:8084';
+    return dotenv.env['TRANSFER_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1';
   }
 
   @override
@@ -244,10 +245,7 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
               if (_isProcessing)
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 20.h),
-                  child: const CircularProgressIndicator(
-                    color: Color(0xFF3B82F6),
-                    strokeWidth: 3,
-                  ),
+                  child: LazerVaultLoader.small(),
                 )
               else
                 Row(

@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_i
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_text_bubble.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_transfer_bubble.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Shows the P2P chat bottom sheet for a specific user.
 void showP2PChatBottomSheet(
@@ -371,14 +372,7 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isReconnecting)
-                SizedBox(
-                  width: 12.w,
-                  height: 12.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 1.5,
-                    color: Color(0xFFFB923C),
-                  ),
-                )
+                LazerVaultLoader(size: 12)
               else
                 Icon(Icons.cloud_off, size: 14.w, color: const Color(0xFFEF4444)),
               SizedBox(width: 6.w),
@@ -410,7 +404,7 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
       builder: (context, state) {
         if (state is P2PChatLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -492,14 +486,7 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.h),
                   child: const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFF3B82F6),
-                      ),
-                    ),
+                    child: LazerVaultLoader.small(),
                   ),
                 );
               }

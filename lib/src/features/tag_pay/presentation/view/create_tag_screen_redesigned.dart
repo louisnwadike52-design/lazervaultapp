@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_search_result_entity.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateTagScreenRedesigned extends StatefulWidget {
   const CreateTagScreenRedesigned({super.key});
@@ -261,15 +262,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
               suffixIcon: _isSearching
                   ? Padding(
                       padding: EdgeInsets.all(12.w),
-                      child: SizedBox(
-                        width: 20.w,
-                        height: 20.w,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              const Color(0xFF3B82F6)),
-                        ),
-                      ),
+                      child: LazerVaultLoader.small(),
                     )
                   : null,
               border: InputBorder.none,
@@ -288,10 +281,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
       return Padding(
         padding: EdgeInsets.only(top: 32.h),
         child: Center(
-          child: CircularProgressIndicator(
-            valueColor:
-                AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
-          ),
+          child: LazerVaultLoader.small(),
         ),
       );
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Callback invoked when the user taps "Schedule Auto-Recharge". The caller
 /// owns the cubit/repository layer and decides which fields actually reach
@@ -384,15 +385,7 @@ class _BillAutoRechargeCreateSheetState
                 elevation: 0,
               ),
               child: _loading
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       widget.ctaLabel,
                       style: TextStyle(

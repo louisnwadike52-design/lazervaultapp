@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,6 +24,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Withdraw funds to one of the user's linked bank accounts.
 ///
@@ -45,7 +49,6 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       serviceLocator<ITransactionPinService>();
 
   // Deposit dark theme palette.
-  static const _bg = Color(0xFF0A0A0A);
   static const _card = Color(0xFF1F1F1F);
   static const _divider = Color(0xFF2D2D2D);
   static const _textSecondary = Color(0xFF9CA3AF);
@@ -240,6 +243,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       _snack(err, _error);
       return;
     }
+    // Guard: a payout destination whose Mono session expired must be reconnected
+    // before we can resolve its NUBAN/bank for the NIP transfer. Route to the
+    // real reauthorization flow instead of attempting a payout that would fail.
+    if (_selected != null && _selected!.needsReauthorization) {
+      _snack('Reconnect ${_selected!.bankName} from its card to withdraw to it.', _error);
+      return;
+    }
     FocusScope.of(context).unfocus();
     final account = _selected!;
     final amount = _enteredAmount;
@@ -379,15 +389,16 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           }
         },
         child: Scaffold(
-          backgroundColor: _bg,
+          backgroundColor: AppSurfaces.pageTop,
           appBar: AppBar(
-            backgroundColor: _bg,
+            backgroundColor: AppSurfaces.pageTop,
             elevation: 0,
             title: Text('Withdraw',
                 style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
             iconTheme: const IconThemeData(color: Colors.white),
           ),
-          body: Stack(
+          body: AppGradientBackground(
+            child: Stack(
             children: [
               SafeArea(
             child: Column(
@@ -426,10 +437,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(
-                              width: 38.w, height: 38.w,
-                              child: const CircularProgressIndicator(color: _accent, strokeWidth: 3),
-                            ),
+                            LazerVaultLoader(size: 38),
                             SizedBox(height: 16.h),
                             Text('Linking your bank…',
                                 style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
@@ -444,6 +452,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                 ),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -453,11 +462,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: _divider),
-      ),
+      decoration: AppSurfaces.card(accent: _orange, accentAlpha: 0.18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -596,7 +601,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               separatorBuilder: (_, __) => SizedBox(width: 12.w),
               itemBuilder: (ctx, i) {
                 if (i == _linkedAccounts.length) return _buildAddBankCard();
-                return _buildCarouselCard(_linkedAccounts[i]);
+                // Pass the itemBuilder ctx (below the OpenBankingCubit provider)
+                // so the Reconnect flow can read the cubit from context.
+                return _buildCarouselCard(ctx, _linkedAccounts[i]);
               },
             ),
           ),
@@ -605,39 +612,29 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   }
 
   Widget _buildCarouselLoading() {
-    return SizedBox(
-      height: 150.h,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        itemCount: 2,
-        separatorBuilder: (_, __) => SizedBox(width: 12.w),
-        itemBuilder: (_, __) => Container(
-          width: 230.w,
-          decoration: BoxDecoration(
-            color: _card,
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: _divider),
-          ),
-          child: const Center(child: CircularProgressIndicator(color: _accent, strokeWidth: 2)),
-        ),
-      ),
-    );
+    return LazerVaultLoader(size: 12);
   }
 
   /// A single linked-bank card in the carousel. Tap to select; the selected card
   /// gets an accent border + check. Shows the Mono-verified holder name + account.
-  Widget _buildCarouselCard(LinkedBankAccount a) {
+  Widget _buildCarouselCard(BuildContext cardCtx, LinkedBankAccount a) {
     final selected = _selected?.id == a.id;
+    final needsReauth = a.needsReauthorization;
+    // A bank whose Mono session expired can't be paid out to until reconnected —
+    // tapping the card (or the Reconnect chip) runs the real reauthorization flow
+    // instead of selecting it. cardCtx is below the OpenBankingCubit provider.
     return GestureDetector(
-      onTap: () => _selectAccount(a),
+      onTap: () => needsReauth
+          ? startAccountReauthorization(cardCtx, a)
+          : _selectAccount(a),
       child: Container(
         width: 230.w,
         padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: selected ? _accent.withValues(alpha: 0.14) : _card,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: selected ? _accent : _divider, width: selected ? 1.5 : 1),
+        decoration: AppSurfaces.card(
+          accent: needsReauth
+              ? const Color(0xFFFB923C)
+              : (selected ? _accent : AppSurfaces.accentPurple),
+          accentAlpha: needsReauth ? 0.50 : (selected ? 0.90 : 0.22),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -646,10 +643,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               children: [
                 _bankLogoAvatar(a.bankName, size: 38),
                 const Spacer(),
-                if (selected)
+                if (needsReauth)
+                  _reconnectChip(cardCtx, a)
+                else if (selected)
                   Icon(Icons.check_circle, color: _accent, size: 22.sp)
-                else if (a.isVerified)
-                  Icon(Icons.verified_rounded, color: _success, size: 18.sp),
+                else
+                  _payoutStatusChip(a),
               ],
             ),
             const Spacer(),
@@ -682,11 +681,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                         fontWeight: FontWeight.w700));
               }
               return Row(mainAxisSize: MainAxisSize.min, children: [
-                SizedBox(
-                    width: 9.w,
-                    height: 9.w,
-                    child: const CircularProgressIndicator(
-                        strokeWidth: 1.5, color: Color(0xFF9CA3AF))),
+                LazerVaultLoader(size: 9),
                 SizedBox(width: 5.w),
                 Text('Fetching balance…',
                     style: TextStyle(
@@ -698,6 +693,98 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         ),
       ),
     );
+  }
+
+  /// Shared "Reconnect" chip for a payout account whose Mono session expired.
+  /// [cardCtx] is below the OpenBankingCubit provider so the reauth flow works.
+  Widget _reconnectChip(BuildContext cardCtx, LinkedBankAccount a) {
+    return LinkedAccountStateChip(
+      state: LinkedAccountState.reconnect,
+      onTap: () => startAccountReauthorization(cardCtx, a),
+    );
+  }
+
+  /// Verified/connected chip — tappable to explain the payout (NIP) model.
+  Widget _payoutStatusChip(LinkedBankAccount a) {
+    return LinkedAccountStateChip(
+      state: a.isVerified ? LinkedAccountState.verified : LinkedAccountState.connected,
+      onTap: () => _showPayoutInfo(a),
+      showInfoAffordance: true,
+    );
+  }
+
+  /// Explains a withdrawal destination uses NIP (no Direct Debit mandate).
+  void _showPayoutInfo(LinkedBankAccount a) {
+    final bank = a.bankName.isNotEmpty ? a.bankName : 'this bank';
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Container(
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.14), shape: BoxShape.circle),
+                  child: Icon(Icons.account_balance_outlined, color: _accent, size: 19.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text('Payout to $bank',
+                      style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                ),
+              ]),
+              SizedBox(height: 16.h),
+              Text(
+                'Withdrawals send money TO this bank over NIP (instant bank transfer). '
+                'No Direct Debit authorization is needed. That is only for pulling money IN (deposits).',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13.sp, height: 1.45),
+              ),
+              SizedBox(height: 12.h),
+              _payoutInfoRow(
+                a.isVerified ? Icons.verified_rounded : Icons.info_outline,
+                a.isVerified ? _success : const Color(0xFFFB923C),
+                a.isVerified
+                    ? 'Account name verified with your bank.'
+                    : 'Account ownership not yet verified.',
+              ),
+              if (a.needsReauthorization) ...[
+                SizedBox(height: 8.h),
+                _payoutInfoRow(Icons.refresh, const Color(0xFFFB923C),
+                    'The connection expired. Reconnect to refresh live balances.'),
+              ],
+              SizedBox(height: 18.h),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: TextButton.styleFrom(foregroundColor: _accent),
+                  child: Text('Got it', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _payoutInfoRow(IconData icon, Color color, String text) {
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Icon(icon, color: color, size: 16.sp),
+      SizedBox(width: 10.w),
+      Expanded(
+        child: Text(text,
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 12.5.sp, height: 1.4)),
+      ),
+    ]);
   }
 
   /// Trailing carousel card to link another bank.
@@ -952,7 +1039,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
       decoration: BoxDecoration(
-        color: _bg,
+        color: AppSurfaces.pageBottom,
         border: Border(top: BorderSide(color: _divider)),
       ),
       child: SizedBox(

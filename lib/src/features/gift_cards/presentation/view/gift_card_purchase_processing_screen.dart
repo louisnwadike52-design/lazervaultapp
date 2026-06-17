@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
@@ -6,13 +7,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:get_it/get_it.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
-import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import 'widgets/gift_card_error_widget.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GiftCardPurchaseProcessingScreen extends StatefulWidget {
   final GiftCardPurchaseArgs purchaseArgs;
@@ -36,44 +36,65 @@ class _GiftCardPurchaseProcessingScreenState
   IconData _errorIcon = Icons.error_outline;
   Color _errorIconColor = const Color(0xFFEF4444);
 
-  // Async-buy WebSocket plumbing. When the backend returns the row in
-  // a non-terminal state, we sit on this screen and wait for a
-  // `giftcard_purchase` event with a matching reference, then refetch.
-  // No polling timers, no hardcoded delays — backend response time is
-  // the only source of truth for processing-screen transitions.
-  StreamSubscription<BalanceUpdateEvent>? _balanceSub;
-  String? _awaitingReference;
+  // Async-buy POLLING (request/response — no WebSocket). When the backend
+  // returns the row in a non-terminal state we re-fetch GetGiftCard every few
+  // seconds; each poll lazily drives the row's OWN provider (Reloadly or
+  // Prestmit) to completion server-side, then the cubit emits Completed /
+  // Error / (still) Awaiting. An overall timeout lands the user on the receipt
+  // (with its awaiting banner) so they're never stranded on the spinner.
+  Timer? _pollTimer;
+  Timer? _timeoutTimer;
+  bool _polling = false;
   String? _awaitingGiftCardId;
+  GiftCard? _awaitingCard;
+  static const Duration _pollInterval = Duration(seconds: 3);
+  static const Duration _pollTimeout = Duration(seconds: 120);
 
   @override
   void dispose() {
-    _balanceSub?.cancel();
+    _pollTimer?.cancel();
+    _timeoutTimer?.cancel();
     super.dispose();
   }
 
-  void _ensureBalanceSubscription() {
-    if (_balanceSub != null) return;
-    try {
-      final wsService = GetIt.I<BalanceWebSocketService>();
-      _balanceSub = wsService.balanceUpdates.listen(_handleBalanceEvent);
-    } catch (_) {
-      // Service not registered — pull-to-refresh on the receipt screen
-      // is the fallback. The cubit's awaiting state stays mounted.
-    }
+  void _startPolling(GiftCard card) {
+    // Always track the freshest row so a timeout lands on the latest data.
+    _awaitingGiftCardId = card.id;
+    _awaitingCard = card;
+    if (_polling) return;
+    _polling = true;
+    _pollOnce(); // fire immediately, then on an interval
+    _pollTimer = Timer.periodic(_pollInterval, (_) => _pollOnce());
+    _timeoutTimer = Timer(_pollTimeout, _handlePollTimeout);
   }
 
-  void _handleBalanceEvent(BalanceUpdateEvent event) {
+  void _pollOnce() {
     if (!mounted) return;
-    final ref = _awaitingReference;
     final gid = _awaitingGiftCardId;
-    if (ref == null || gid == null) return;
-    if (event.eventType != 'giftcard_purchase') return;
-    if (event.reference != ref) return;
-    // Terminal event matched — refetch by id; cubit will emit
-    // GiftCardPurchaseCompleted (success), GiftCardPurchaseError
-    // (refunded/failed), or stay GiftCardPurchaseAwaitingProvider if
-    // the backend reports the row hasn't flipped yet (race).
+    if (gid == null) return;
+    // Re-fetch by id; the backend finalizes a processing row via its provider
+    // on read, then the cubit emits Completed / Error / (still) Awaiting.
     context.read<GiftCardCubit>().refreshGiftCardDetails(gid);
+  }
+
+  void _stopPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
+    _timeoutTimer?.cancel();
+    _timeoutTimer = null;
+    _polling = false;
+  }
+
+  void _handlePollTimeout() {
+    if (!mounted) return;
+    _stopPolling();
+    // Don't strand the user on the spinner: land on the receipt, which shows
+    // the "we'll notify you / pull to refresh" awaiting banner. The reconciler
+    // finishes the row in the background.
+    final card = _awaitingCard;
+    if (card != null) {
+      Get.offNamed(AppRoutes.giftCardDetails, arguments: card);
+    }
   }
 
   void _startPurchase(BuildContext context) {
@@ -116,21 +137,20 @@ class _GiftCardPurchaseProcessingScreenState
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        body: BlocListener<GiftCardCubit, GiftCardState>(
+        backgroundColor: kGiftCardBgTop,
+        body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             if (state is GiftCardPurchaseCompleted) {
+              _stopPolling();
               Get.offNamed(
                 AppRoutes.giftCardDetails,
                 arguments: state.giftCard,
               );
             } else if (state is GiftCardPurchaseAwaitingProvider) {
-              // Async path: backend returned the row but provider hasn't
-              // confirmed yet. Subscribe to the balance WebSocket and
-              // wait for a giftcard_purchase event matching this ref.
-              _awaitingReference = state.reference;
-              _awaitingGiftCardId = state.giftCard.id;
-              _ensureBalanceSubscription();
+              // Async path: backend returned the row but the provider hasn't
+              // confirmed yet. Poll GetGiftCard until it flips to terminal
+              // (request/response, no WebSocket).
+              _startPolling(state.giftCard);
             } else if (state is GiftCardPurchaseError ||
                 state is GiftCardInsufficientFunds ||
                 state is GiftCardNetworkError ||
@@ -139,6 +159,7 @@ class _GiftCardPurchaseProcessingScreenState
                 state is GiftCardServerUnavailable ||
                 state is GiftCardValidationError ||
                 state is GiftCardNotFound) {
+              _stopPolling();
               _setErrorState(state);
             }
           },
@@ -200,7 +221,7 @@ class _GiftCardPurchaseProcessingScreenState
               );
             },
           ),
-        ),
+        )),
       ),
     );
   }
@@ -219,16 +240,7 @@ class _GiftCardPurchaseProcessingScreenState
         color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
       ),
       child: Center(
-        child: SizedBox(
-          width: 72.w,
-          height: 72.w,
-          child: const CircularProgressIndicator(
-            strokeWidth: 4,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              InvoiceThemeColors.primaryPurple,
-            ),
-          ),
-        ),
+        child: LazerVaultLoader.large(),
       ),
     );
   }
@@ -316,15 +328,7 @@ class _GiftCardPurchaseProcessingScreenState
                   child: isCompleted
                       ? Icon(Icons.check, size: 16.sp, color: Colors.white)
                       : isActive
-                          ? SizedBox(
-                              width: 12.w,
-                              height: 12.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader(size: 12)
                           : Text(
                               '${index + 1}',
                               style: GoogleFonts.inter(

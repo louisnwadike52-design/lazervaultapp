@@ -232,10 +232,16 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       // (async, non-blocking). The DB figure is only a before/after
       // transaction snapshot for reconciliation; widgets render
       // "Fetching balance…" until this session's live read lands.
+      //
+      // IMPORTANT: We honour `balanceStaleAfter` (10 min) instead of
+      // forcing every account to look stale on every fetch — a previous
+      // `staleAfter: Duration.zero` caused a snackbar-loop on the Linked
+      // Banks screen (each refresh fired BalanceRefreshed, the screen
+      // re-called fetchLinkedAccounts, which re-emitted Loading, which
+      // re-fired auto-refresh, ad infinitum).
       autoRefreshStaleBalances(
         userId: userId,
         accessToken: accessToken,
-        staleAfter: Duration.zero,
       );
     } catch (e) {
       if (isClosed) return;
@@ -356,11 +362,17 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     }
   }
 
-  /// Refresh balance for a linked account
+  /// Refresh balance for a linked account.
+  ///
+  /// Pass `isManual: true` when the user explicitly tapped the Refresh
+  /// button so the UI surfaces a snackbar. Auto-sweeps via
+  /// `autoRefreshStaleBalances` leave it `false` (default) and update
+  /// silently.
   Future<void> refreshBalance({
     required String accountId,
     required String userId,
     required String accessToken,
+    bool isManual = false,
   }) async {
     if (isClosed) return;
     emit(BalanceRefreshing(accountId: accountId));
@@ -394,7 +406,11 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       }
 
       if (isClosed) return;
-      emit(BalanceRefreshed(accountId: accountId, newBalance: newBalance));
+      emit(BalanceRefreshed(
+        accountId: accountId,
+        newBalance: newBalance,
+        isManual: isManual,
+      ));
     } catch (e) {
       // If reauthorization is required, update local account status
       if (e is ReauthorizationRequiredException) {

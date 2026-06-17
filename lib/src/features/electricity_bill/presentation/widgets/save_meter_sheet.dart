@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom-sheet that saves a meter as a beneficiary inline from the
 /// payment-history actions sheet. The user only picks a nickname — every
@@ -201,15 +202,7 @@ class _SaveMeterSheetBodyState extends State<_SaveMeterSheetBody> {
                   ),
                 ),
                 child: _saving
-                    ? SizedBox(
-                        height: 20.h,
-                        width: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         'Save Meter',
                         style: GoogleFonts.inter(

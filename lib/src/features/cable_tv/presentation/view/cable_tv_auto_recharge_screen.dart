@@ -8,6 +8,7 @@ import '../../../../../core/widgets/bill_auto_recharge_item.dart';
 import '../../domain/entities/cable_tv_auto_recharge.dart';
 import '../cubit/cable_tv_auto_recharge_cubit.dart';
 import '../cubit/cable_tv_auto_recharge_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Cable TV auto-renew management. Mirrors `DataAutoRechargeScreen`.
 class CableTVAutoRechargeScreen extends StatefulWidget {
@@ -80,10 +81,7 @@ class _CableTVAutoRechargeScreenState
           if (state is CableTVAutoRechargesLoading ||
               state is CableTVAutoRechargeInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-              ),
+              child: LazerVaultLoader.tiny(),
             );
           }
           if (state is CableTVAutoRechargeError) {

@@ -22,6 +22,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    Map<String, dynamic>? extraMetadata,
   }) async {
     try {
       final response = await _dataSource.processChat(
@@ -32,6 +33,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         mediaBase64: mediaBase64,
         mediaType: mediaType,
         mediaMimeType: mediaMimeType,
+        extraMetadata: extraMetadata,
       );
 
       // Handle both gRPC proto response and HTTP JSON response
@@ -50,11 +52,19 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           protoResponse.entities['_receipt_data'] = jsonEncode(receiptData);
         }
 
+        // Pass pin_prompt through the same channel so the cubit can surface the
+        // inline ChatPinPromptCard (mirrors receipt_data; the gateway surfaces
+        // pin_prompt top-level like receipt_data).
+        final pinPrompt = response['pin_prompt'];
+        if (pinPrompt != null && pinPrompt is Map) {
+          protoResponse.entities['_pin_prompt'] = jsonEncode(pinPrompt);
+        }
+
         // Pass through other entities if present
         final entities = response['entities'];
         if (entities != null && entities is Map) {
           for (final entry in entities.entries) {
-            if (entry.key != '_receipt_data') {
+            if (entry.key != '_receipt_data' && entry.key != '_pin_prompt') {
               protoResponse.entities[entry.key.toString()] = entry.value?.toString() ?? '';
             }
           }

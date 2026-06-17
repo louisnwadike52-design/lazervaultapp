@@ -9,6 +9,7 @@ import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart' as entities;
 import '../models/crypto_transaction_models.dart';
 import 'crypto_receipt_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CryptoTransactionHistoryScreen extends StatefulWidget {
   const CryptoTransactionHistoryScreen({super.key});
@@ -181,9 +182,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                   _buildSummaryStats(),
                   Expanded(
                     child: state is CryptoLoading
-                      ? const Center(child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
-                        ))
+                      ? const Center(child: LazerVaultLoader.small())
                       : FadeTransition(
                           opacity: _fadeAnimation,
                           child: _buildTransactionList(),

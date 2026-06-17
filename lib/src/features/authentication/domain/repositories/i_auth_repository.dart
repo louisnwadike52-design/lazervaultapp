@@ -3,6 +3,7 @@ import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import '../entities/profile_entity.dart';
 import '../entities/phone_verification_entity.dart';
+import '../entities/two_factor_entity.dart';
 import '../usecases/sign_up_usecase.dart';
 
 abstract class IAuthRepository {
@@ -118,6 +119,36 @@ abstract class IAuthRepository {
     required String identityNumber,
     required String dateOfBirth, // YYYY-MM-DD format
     String? countryCode, // ISO country code (e.g., 'NG', 'US', 'GB')
+  });
+
+  // ===== Two-Factor Authentication =====
+  /// Read the current 2FA status (enabled/method/backup-code count) for the
+  /// authenticated user. JWT-derived user id; no body args needed.
+  Future<Either<Failure, TwoFactorStatus>> getTwoFactorStatus();
+
+  /// Begin 2FA enrolment for [method]. Returns the QR/secret/backup codes
+  /// payload — caller must then verify the first generated code via
+  /// [completeTwoFactorSetup] within the backend's setup-window TTL.
+  Future<Either<Failure, TwoFactorSetup>> enableTwoFactor({
+    required TwoFactorMethod method,
+  });
+
+  /// Verify the first 6-digit code and flip the account's
+  /// `two_factor_enabled` column to true.
+  Future<Either<Failure, void>> completeTwoFactorSetup({
+    required String code,
+  });
+
+  /// Disable 2FA on the account; backend requires a current valid code as
+  /// proof of possession.
+  Future<Either<Failure, void>> disableTwoFactor({
+    required String code,
+  });
+
+  /// Mint a new batch of backup codes (invalidates the previous batch).
+  /// Requires a current valid code as proof of possession.
+  Future<Either<Failure, List<String>>> regenerateBackupCodes({
+    required String code,
   });
 }
 

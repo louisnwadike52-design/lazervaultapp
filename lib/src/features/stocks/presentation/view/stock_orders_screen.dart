@@ -7,6 +7,7 @@ import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bamboo-style Orders Screen
 /// Order history with status indicators and filtering
@@ -544,16 +545,7 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 40.w,
-            height: 40.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                const Color(0xFF6366F1),
-              ),
-            ),
-          ),
+          LazerVaultLoader.medium(),
           SizedBox(height: 16.h),
           Text(
             'Loading orders...',

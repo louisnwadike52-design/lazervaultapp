@@ -6,6 +6,7 @@ import '../../domain/entities/social_account_entity.dart';
 import '../cubit/social_linking_cubit.dart';
 import '../cubit/social_linking_state.dart';
 import '../widgets/social_account_card.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for managing linked social accounts
 class LinkedAccountsScreen extends StatefulWidget {
@@ -100,9 +101,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
         builder: (context, state) {
           if (state is SocialLinkingLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF3B82F6),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 

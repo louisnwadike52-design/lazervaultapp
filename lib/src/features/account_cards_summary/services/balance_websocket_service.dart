@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
@@ -315,22 +316,56 @@ class BalanceWebSocketService {
 
   /// Connect using WebSocket protocol
   /// Token is passed via Authorization header on mobile/desktop, query param on web
-  Future<void> _connectWebSocket(String userId, String countryCode, String accessToken) async {
-    // Get WebSocket balance service host and port from environment
-    // Falls back to financial gateway if WS_BALANCE_HOST is not set
-    final wsBalanceHost = dotenv.env['WS_BALANCE_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
-    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8095') ?? 8095;
-
-    // Build WebSocket URL - only include country_code in query string
-    final wsUrl = Uri(
-      scheme: 'ws',
-      host: wsBalanceHost,
-      port: wsBalancePort,
-      path: '/ws/balance',
-      queryParameters: {
-        'country_code': countryCode,
-      },
+  /// Resolves the balance WS URL the cubit will dial. Precedence:
+  ///   1. `WS_BALANCE_HOST` / `WS_BALANCE_PORT` dotenv overrides (legacy
+  ///      local-dev workflow).
+  ///   2. `EndpointRegistry.wsBalance` — the admin-managed
+  ///      `wss://api.lazervault.app/ws/balance` URL the cubit cached on
+  ///      first launch.
+  ///   3. Hard-coded fallback (`wss://api.lazervault.app/ws/balance/ws/balance`).
+  ///
+  /// [scheme] = 'ws' for WebSocket, 'http' for SSE fallback. The
+  /// registry URL's scheme (`wss://` for production) is mapped to its
+  /// http(s) sibling when [scheme] is 'http'.
+  Uri _resolveBalanceWsUri(String countryCode, {required String scheme}) {
+    final overrideHost = dotenv.env['WS_BALANCE_HOST'];
+    final overridePort = dotenv.env['WS_BALANCE_PORT'];
+    if (overrideHost != null && overrideHost.isNotEmpty) {
+      final port = int.tryParse(overridePort ?? '8095') ?? 8095;
+      // Cloudflare's edge speaks TLS on 443 — `ws://host:443` returns HTTP
+      // 400 ("not upgraded to websocket"). Promote to the secure scheme
+      // when the override port is 443.
+      final effective = port == 443
+          ? (scheme == 'ws' ? 'wss' : 'https')
+          : scheme;
+      return Uri(
+        scheme: effective,
+        host: overrideHost,
+        port: port == 443 ? null : port, // omit default port for tidy URL
+        path: '/ws/balance',
+        queryParameters: {'country_code': countryCode},
+      );
+    }
+    final registryUrl = endpointRegistry.wsBalance;
+    final parsed = Uri.parse(registryUrl);
+    final effectiveScheme = scheme == 'ws'
+        ? (parsed.scheme == 'wss' ? 'wss' : 'ws')
+        : (parsed.scheme == 'wss' ? 'https' : 'http');
+    return Uri(
+      scheme: effectiveScheme,
+      host: parsed.host,
+      port: parsed.hasPort ? parsed.port : null,
+      path: parsed.path.isEmpty ? '/ws/balance' : parsed.path,
+      queryParameters: {'country_code': countryCode},
     );
+  }
+
+  Future<void> _connectWebSocket(String userId, String countryCode, String accessToken) async {
+    // The balance WS URL now comes from the EndpointRegistry (cached on
+    // first launch, refreshed in the background on every launch). dotenv
+    // overrides still win when set so local dev pointing at
+    // wss://api.lazervault.app/ws/balance/ws/balance keeps working without rewiring.
+    final wsUrl = _resolveBalanceWsUri(countryCode, scheme: 'ws');
 
     print('BalanceWebSocketService: Connecting via WebSocket to $wsUrl');
 
@@ -374,16 +409,11 @@ class BalanceWebSocketService {
   /// Connect using Server-Sent Events (SSE) - fallback for when WebSocket is not available
   /// SECURITY: Token is passed in Authorization header, not query string
   Future<void> _connectSSE(String userId, String countryCode, String accessToken) async {
-    // Get WebSocket balance service host and port from environment
-    final wsBalanceHost = dotenv.env['WS_BALANCE_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
-    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8095') ?? 8095;
-
-    // Build SSE URL - only non-sensitive params in query string
-    final sseUrl = Uri(
-      scheme: 'http',
-      host: wsBalanceHost,
-      port: wsBalancePort,
-      path: '/ws/balance',
+    // SSE shares the WS endpoint host; only the scheme differs (http vs ws/wss).
+    // The EndpointRegistry's wsBalance URL is converted to its http(s) sibling
+    // by [_resolveBalanceWsUri] so a single source of truth covers both
+    // transports.
+    final sseUrl = _resolveBalanceWsUri(countryCode, scheme: 'http').replace(
       queryParameters: {
         'country_code': countryCode,
         // SECURITY: Token moved to Authorization header (not logged in URLs)

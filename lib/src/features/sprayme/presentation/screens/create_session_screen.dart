@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cu
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class _OccasionType {
   final String label;
@@ -386,14 +387,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   elevation: 0,
                 ),
                 child: isLoading
-                    ? SizedBox(
-                        width: 22.w,
-                        height: 22.w,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? LazerVaultLoader(size: 22)
                     : Text(
                         'Create Session',
                         style: TextStyle(
@@ -499,14 +493,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 28.w,
-                        height: 28.w,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      ),
+                      LazerVaultLoader.medium(),
                       SizedBox(height: 8.h),
                       Text(
                         'Uploading...',

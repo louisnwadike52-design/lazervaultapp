@@ -1,7 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
@@ -113,6 +119,112 @@ class ProfileCubit extends Cubit<ProfileState> {
         }
       },
     );
+  }
+
+  /// Upload a new profile picture from either a [File] (camera/gallery
+  /// path) or raw [bytes] (already-loaded XFile). Persists the resulting
+  /// public URL on the user record and pushes the updated [User] into
+  /// the [AuthenticationCubit] so the dashboard + passcode-screen
+  /// avatars refresh immediately.
+  Future<void> uploadProfilePicture({
+    File? file,
+    Uint8List? bytes,
+    String? filename,
+  }) async {
+    if (isClosed) return;
+    final previous = state;
+    emit(const ProfilePictureUploading());
+
+    final result = await _repository.uploadProfilePicture(
+      file: file,
+      bytes: bytes,
+      filename: filename,
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) {
+        emit(ProfileError(failure.message));
+        // Re-emit the previous loaded state so the UI doesn't get stuck
+        // on the transient uploading state.
+        if (previous is ProfileLoaded) {
+          emit(previous);
+        }
+      },
+      (user) async {
+        final currentState = previous;
+        if (currentState is ProfileLoaded) {
+          emit(ProfileLoaded(
+            user: user,
+            preferences: currentState.preferences,
+          ));
+        }
+        emit(const ProfileUpdateSuccess('Profile picture updated'));
+        await _syncAvatarWithAuth(user);
+      },
+    );
+  }
+
+  /// Remove the user's profile picture. Sends the `__REMOVE__` sentinel
+  /// through UpdateProfile so auth-service clears
+  /// `users.profile_picture` (an empty string is a no-op for parity
+  /// with other partial-update fields).
+  Future<void> removeProfilePicture() async {
+    if (isClosed) return;
+    final previous = state;
+    emit(const ProfilePictureUploading());
+
+    final result = await _repository.removeProfilePicture();
+
+    if (isClosed) return;
+    result.fold(
+      (failure) {
+        emit(ProfileError(failure.message));
+        if (previous is ProfileLoaded) {
+          emit(previous);
+        }
+      },
+      (user) async {
+        // The backend may echo back the previous URL when the sentinel
+        // wasn't honoured; force-clear locally so the UI matches the
+        // user's intent and the next GetMe round-trip reconciles.
+        final cleared = user.copyWith(profilePicture: null);
+        final currentState = previous;
+        if (currentState is ProfileLoaded) {
+          emit(ProfileLoaded(
+            user: cleared,
+            preferences: currentState.preferences,
+          ));
+        }
+        emit(const ProfileUpdateSuccess('Profile picture removed'));
+        await _syncAvatarWithAuth(cleared);
+      },
+    );
+  }
+
+  /// Push the updated [user] into [AuthenticationCubit] so every other
+  /// screen (dashboard header, drawer, passcode screen via secure
+  /// storage) picks up the new avatar without a manual refresh. Also
+  /// updates the `user_avatar_url` secure-storage key the passcode
+  /// screen reads on cold start.
+  Future<void> _syncAvatarWithAuth(User user) async {
+    try {
+      if (serviceLocator.isRegistered<AuthenticationCubit>()) {
+        serviceLocator<AuthenticationCubit>().updateCurrentUser(user);
+      }
+      final storage = serviceLocator.isRegistered<FlutterSecureStorage>()
+          ? serviceLocator<FlutterSecureStorage>()
+          : const FlutterSecureStorage();
+      final pic = user.profilePicture;
+      if (pic != null && pic.isNotEmpty) {
+        await storage.write(key: 'user_avatar_url', value: pic);
+      } else {
+        await storage.delete(key: 'user_avatar_url');
+      }
+    } catch (e) {
+      // Never let a downstream cache update break the success flow.
+      print('Failed to sync avatar with AuthenticationCubit: $e');
+    }
   }
 
   Future<void> updatePassword({

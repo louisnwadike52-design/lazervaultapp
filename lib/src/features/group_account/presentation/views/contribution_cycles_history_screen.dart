@@ -8,6 +8,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/cycle_details_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lists every cycle of a contribution, oldest at the bottom (the
 /// list is rendered in cycle_index DESC server-side so the live or
@@ -72,10 +73,7 @@ class _ContributionCyclesHistoryScreenState
                 builder: (ctx, state) {
                   if (state is ContributionCyclesLoading) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color.fromARGB(255, 78, 3, 208)),
-                      ),
+                      child: LazerVaultLoader.small(),
                     );
                   }
                   if (state is ContributionCyclesLoaded &&

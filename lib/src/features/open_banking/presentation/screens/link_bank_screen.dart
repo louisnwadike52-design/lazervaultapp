@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen to link a bank account using Mono Connect
 class LinkBankScreen extends StatefulWidget {
@@ -276,9 +277,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(
-                    color: Color.fromARGB(255, 78, 3, 208),
-                  ),
+                  LazerVaultLoader.small(),
                   SizedBox(height: 16.h),
                   Text(
                     state is AccountLinkingInProgress
@@ -299,9 +298,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(
-                    color: Color.fromARGB(255, 78, 3, 208),
-                  ),
+                  LazerVaultLoader.small(),
                   SizedBox(height: 16.h),
                   Text(
                     'Preparing secure connection...',
@@ -322,9 +319,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
                 Container(
                   color: Colors.white.withValues(alpha: 0.8),
                   child: const Center(
-                    child: CircularProgressIndicator(
-                      color: Color.fromARGB(255, 78, 3, 208),
-                    ),
+                    child: LazerVaultLoader.small(),
                   ),
                 ),
             ],

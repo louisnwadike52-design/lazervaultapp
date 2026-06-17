@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Per–asset-class hub: Revolut-style pill segments (All · Portfolio · Watchlist · Orders · News).
 class InvestAssetHubScreen extends StatefulWidget {
@@ -439,10 +440,7 @@ class _InvestAssetHubScreenState extends State<InvestAssetHubScreen> {
               if (loading && stocks.isEmpty)
                 SliverFillRemaining(
                   child: Center(
-                    child: CircularProgressIndicator(
-                      color: accent,
-                      strokeWidth: 2,
-                    ),
+                    child: LazerVaultLoader.tiny(),
                   ),
                 )
               else if (!loading && stocks.isEmpty)

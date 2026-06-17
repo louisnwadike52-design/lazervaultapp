@@ -8,6 +8,7 @@ import '../../domain/entities/group_entities.dart';
 import '../../../../../core/utils/currency_formatter.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GroupLeaderboardScreen extends StatefulWidget {
   const GroupLeaderboardScreen({super.key});
@@ -168,10 +169,7 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
           // yet AND the cubit signals it's working on one.
           if (_lastLoaded == null && state is GroupAccountLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 

@@ -30,6 +30,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfe
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchRecipientItem {
   final RecipientModel recipient;
@@ -555,7 +556,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
           child: BlocBuilder<RecipientCubit, RecipientState>(
             builder: (context, state) {
               if (state is RecipientLoading) {
-                return const Center(child: CircularProgressIndicator(color: btBlue));
+                return const Center(child: LazerVaultLoader.small());
               } else if (state is RecipientLoaded) {
                 final filteredRecipients = _searchQuery.isEmpty
                   ? state.recipients
@@ -599,7 +600,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   onRetry: _retryLoadRecipients,
                 );
               }
-              return const Center(child: CircularProgressIndicator(color: btBlue));
+              return const Center(child: LazerVaultLoader.small());
             },
           ),
         ),
@@ -671,7 +672,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(color: btBlue),
+            LazerVaultLoader.small(),
             SizedBox(height: 16.h),
             Text('Searching...', style: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp)),
           ],
@@ -1070,11 +1071,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   ),
                   child: Row(
                     children: [
-                      SizedBox(
-                        width: 18.w,
-                        height: 18.w,
-                        child: const CircularProgressIndicator(strokeWidth: 2, color: btBlue),
-                      ),
+                      LazerVaultLoader.tiny(),
                       SizedBox(width: 12.w),
                       Text('Verifying account...',
                           style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
@@ -2418,14 +2415,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                 ),
                 child: _isLoading
-                  ? SizedBox(
-                      height: 20.h,
-                      width: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(btTextPrimary),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       _selectedRecipients.isEmpty
                         ? 'Add Recipients to Continue'
@@ -2457,11 +2447,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(strokeWidth: 2, color: btBlue),
-              ),
+              LazerVaultLoader.tiny(),
               SizedBox(width: 12.w),
               Text(
                 'Loading accounts...',

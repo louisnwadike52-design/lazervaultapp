@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../profile/cubit/profile_cubit.dart';
 import '../../../profile/cubit/profile_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// My QR Code Screen - displays the user's QR code for others to scan
 /// Contains user information that can be used for payments and transfers
@@ -607,9 +608,7 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            color: Color(0xFF4E03D0),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading your QR code...',

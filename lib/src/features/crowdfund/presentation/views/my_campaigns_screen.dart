@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MyCampaignsScreen extends StatefulWidget {
   const MyCampaignsScreen({super.key});
@@ -118,7 +119,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
         builder: (context, state) {
           if (state is CrowdfundLoading) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
+                child: LazerVaultLoader.small());
           }
           if (state is MyCrowdfundsLoaded) {
             return TabBarView(
@@ -153,14 +154,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           child: Center(
                             child: state.isLoadingMore
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Color(0xFF4E03D0),
-                                      strokeWidth: 2,
-                                    ),
-                                  )
+                                ? LazerVaultLoader.small()
                                 : const SizedBox.shrink(),
                           ),
                         );

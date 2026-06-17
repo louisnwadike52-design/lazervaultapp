@@ -55,7 +55,7 @@ class CoverageSummaryService {
   static String _defaultBaseUrl() {
     const fromEnv = String.fromEnvironment('CHAT_GATEWAY_URL', defaultValue: '');
     if (fromEnv.isNotEmpty) return fromEnv;
-    return 'http://10.0.2.2:3011';
+    return 'https://api.lazervault.app/chat';
   }
 
   Future<CoverageSummary> summarize({

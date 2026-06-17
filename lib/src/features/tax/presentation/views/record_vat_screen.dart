@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/tax_cubit.dart';
 import '../cubit/tax_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class RecordVATScreen extends StatefulWidget {
   const RecordVATScreen({super.key});
@@ -530,15 +531,7 @@ class _RecordVATScreenState extends State<RecordVATScreen> {
                 elevation: 0,
               ),
               child: isLoading
-                  ? SizedBox(
-                      height: 22.h,
-                      width: 22.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 22)
                   : Text(
                       'Record Transaction',
                       style: GoogleFonts.inter(

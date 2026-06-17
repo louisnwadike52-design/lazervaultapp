@@ -14,12 +14,11 @@ import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import '../../utils/meter_validation.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/electricity_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ElectricityBillHomeScreen extends StatefulWidget {
   const ElectricityBillHomeScreen({super.key});
@@ -364,21 +363,9 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               ),
             ),
           ),
-          // Per-bill voice + chat icons — pin every session to the
-          // electricity flow on chat-products-service
-          // (DIRECT_ROUTES['electricity'] → primary 'utility').
-          ServiceVoiceButton(
-            serviceName: 'electricity',
-            iconColor: const Color(0xFFFB923C),
-            backgroundColor: const Color(0xFFFB923C),
-          ),
-          SizedBox(width: 8.w),
-          MicroserviceChatIcon(
-            serviceName: 'Electricity',
-            sourceContext: 'electricity',
-            icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFFFB923C),
-          ),
+          // Per-bill voice + chat icons removed — the unified utility
+          // bills landing page is the single entry point for chat/mic
+          // across all utility bill types.
         ],
       ),
     );
@@ -805,14 +792,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 18.w,
-                    height: 18.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
+                  LazerVaultLoader(size: 18),
                   SizedBox(width: 10.w),
                   Text(
                     'Looking up...',
@@ -1009,14 +989,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                       padding: EdgeInsets.all(32.w),
                       child: Column(
                         children: [
-                          SizedBox(
-                            width: 28.w,
-                            height: 28.w,
-                            child: const CircularProgressIndicator(
-                              color: InvoiceThemeColors.primaryPurple,
-                              strokeWidth: 2.5,
-                            ),
-                          ),
+                          LazerVaultLoader.medium(),
                           SizedBox(height: 12.h),
                           Text(
                             'Loading providers...',
@@ -1274,14 +1247,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 18.w,
-                    height: 18.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
+                  LazerVaultLoader(size: 18),
                   SizedBox(width: 10.w),
                   Text(
                     'Validating...',

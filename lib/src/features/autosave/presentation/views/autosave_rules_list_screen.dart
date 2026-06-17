@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_s
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_sort_dropdown.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_swipeable_card.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/bulk_action_bottom_bar.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AutoSaveRulesListScreen extends StatefulWidget {
   const AutoSaveRulesListScreen({super.key});
@@ -486,17 +487,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
                         return Padding(
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           child: Center(
-                            child: SizedBox(
-                              width: 22.w,
-                              height: 22.w,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    const AlwaysStoppedAnimation<Color>(
-                                  Color.fromARGB(255, 78, 3, 208),
-                                ),
-                              ),
-                            ),
+                            child: LazerVaultLoader(size: 22),
                           ),
                         );
                       }

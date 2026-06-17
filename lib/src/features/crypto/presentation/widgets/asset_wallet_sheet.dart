@@ -13,6 +13,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/presentation/utils/crypto_error_messages.dart';
 import 'package:lazervault/src/generated/crypto.pb.dart' as cpb;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // AssetWalletSheet — bottom-sheet view of a single asset's wallet.
 // Renders:
@@ -357,7 +358,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
             if (_loading)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: LazerVaultLoader.small()),
               )
             else if (_error.isNotEmpty)
               // Surface the transport / RPC failure clearly with a retry
@@ -624,16 +625,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
                   ),
                   if (_refreshingMetrics) ...[
                     SizedBox(width: 8.w),
-                    SizedBox(
-                      width: 10.sp,
-                      height: 10.sp,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withValues(alpha: 0.55),
-                        ),
-                      ),
-                    ),
+                    LazerVaultLoader(size: 10),
                   ],
                 ]),
                 SizedBox(height: 6.h),
@@ -862,7 +854,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
     if (_generating) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 32.h),
-        child: const Center(child: CircularProgressIndicator()),
+        child: const Center(child: LazerVaultLoader.small()),
       );
     }
     if (_address.isEmpty) {

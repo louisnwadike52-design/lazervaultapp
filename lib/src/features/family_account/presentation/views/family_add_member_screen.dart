@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for adding a new member to a Family & Friends account
 /// Allows setting all spending limits and member details
@@ -419,14 +421,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                         borderRadius: BorderRadius.circular(28.r),
                         child: Center(
                           child: isLoading
-                              ? SizedBox(
-                                  width: 24.w,
-                                  height: 24.h,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                              ? LazerVaultLoader.small()
                               : Text(
                                   'Send Invitation',
                                   style: TextStyle(
@@ -542,7 +537,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
         fontWeight: FontWeight.bold,
       ),
       decoration: InputDecoration(
-        prefixText: '\$ ',
+        prefixText: '${CurrencySymbols.currentSymbol} ',
         prefixStyle: TextStyle(
           color: Colors.white,
           fontSize: 24.sp,
@@ -638,7 +633,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
               fontWeight: FontWeight.w600,
             ),
             decoration: InputDecoration(
-              prefixText: '\$ ',
+              prefixText: '${CurrencySymbols.currentSymbol} ',
               prefixStyle: TextStyle(
                 color: const Color(0xFF3B82F6),
                 fontSize: 16.sp,

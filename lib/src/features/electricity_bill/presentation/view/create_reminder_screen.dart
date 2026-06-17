@@ -18,6 +18,7 @@ import 'package:lazervault/src/features/electricity_bill/presentation/cubit/bene
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/electricity_bill_cubit.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_cubit.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateReminderScreen extends StatefulWidget {
   const CreateReminderScreen({super.key});
@@ -297,14 +298,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                         ),
                       ),
                       child: isLoading
-                          ? SizedBox(
-                              height: 24.h,
-                              width: 24.h,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               'Create Reminder',
                               style: GoogleFonts.inter(
@@ -596,10 +590,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-            ),
+            child: LazerVaultLoader.tiny(),
           ),
         );
       },
@@ -1052,8 +1043,7 @@ class _ReminderAddBeneficiarySheetState extends State<_ReminderAddBeneficiaryShe
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: _isLookingUp
-                    ? Center(child: SizedBox(width: 24.w, height: 24.w,
-                        child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                    ? Center(child: LazerVaultLoader.small())
                     : Text('Look Up Meter',
                         style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
                         textAlign: TextAlign.center),
@@ -1132,8 +1122,7 @@ class _ReminderAddBeneficiarySheetState extends State<_ReminderAddBeneficiaryShe
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: _isSaving
-                      ? Center(child: SizedBox(width: 24.w, height: 24.w,
-                          child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                      ? Center(child: LazerVaultLoader.small())
                       : Text('Save Beneficiary',
                           style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.center),

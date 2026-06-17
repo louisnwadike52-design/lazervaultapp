@@ -8,6 +8,7 @@ import '../../data/services/crowdfund_donor_rating_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../utils/donor_rating_calculator.dart';
 import 'donor_star_rating.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DonorCard extends StatefulWidget {
   final CrowdfundDonation donation;
@@ -580,14 +581,7 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
         ),
         child: Row(
           children: [
-            const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                color: Color(0xFF4E03D0),
-                strokeWidth: 2,
-              ),
-            ),
+            LazerVaultLoader(size: 18),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(

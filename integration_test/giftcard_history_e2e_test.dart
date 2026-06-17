@@ -251,9 +251,9 @@ void main() {
     Process.start('sh', [
       '-c',
       'for i in \$(seq 1 120); do '
-          'if adb -s emulator-5554 shell pm list packages 2>/dev/null | grep -q com.example.lazervaultapp; then '
-          'adb -s emulator-5554 shell pm grant com.example.lazervaultapp android.permission.BLUETOOTH_CONNECT >/dev/null 2>&1; '
-          'adb -s emulator-5554 shell pm grant com.example.lazervaultapp android.permission.BLUETOOTH_SCAN >/dev/null 2>&1; '
+          'if adb -s emulator-5554 shell pm list packages 2>/dev/null | grep -q com.lazervault.app; then '
+          'adb -s emulator-5554 shell pm grant com.lazervault.app android.permission.BLUETOOTH_CONNECT >/dev/null 2>&1; '
+          'adb -s emulator-5554 shell pm grant com.lazervault.app android.permission.BLUETOOTH_SCAN >/dev/null 2>&1; '
           'fi; sleep 1; done',
     ]).then((p) {
       btWatcher = p;

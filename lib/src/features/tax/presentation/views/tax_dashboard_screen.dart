@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/tax/domain/entities/tax_obligation_entit
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../cubit/tax_cubit.dart';
 import '../cubit/tax_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TaxDashboardScreen extends StatefulWidget {
   const TaxDashboardScreen({super.key});
@@ -95,10 +96,7 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
           builder: (context, state) {
             if (state is TaxLoading && _dashboardData == null) {
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 

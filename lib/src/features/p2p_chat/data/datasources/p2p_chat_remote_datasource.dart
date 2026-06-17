@@ -18,14 +18,22 @@ class P2PChatRemoteDatasource {
 
   String get _baseUrl {
     final host = dotenv.env['P2P_CHAT_HOST'] ?? '10.0.2.2';
-    final port = dotenv.env['P2P_CHAT_PORT'] ?? '8018';
-    return 'http://$host:$port/api/v1/chat';
+    final portStr = dotenv.env['P2P_CHAT_PORT'] ?? '8018';
+    final port = int.tryParse(portStr) ?? 8018;
+    // Cloudflare edge on 443 expects TLS — speak https. Loopback dev ports
+    // (8018, 7878, …) stay plain http.
+    final scheme = port == 443 ? 'https' : 'http';
+    final hostPort = port == 443 ? host : '$host:$port';
+    return '$scheme://$hostPort/api/v1/chat';
   }
 
   String get _coreGatewayUrl {
     final host = dotenv.env['CORE_GATEWAY_HOST'] ?? '10.0.2.2';
-    final port = dotenv.env['CORE_GATEWAY_PORT'] ?? '7878';
-    return 'http://$host:$port/api/v1';
+    final portStr = dotenv.env['CORE_GATEWAY_PORT'] ?? '7878';
+    final port = int.tryParse(portStr) ?? 7878;
+    final scheme = port == 443 ? 'https' : 'http';
+    final hostPort = port == 443 ? host : '$host:$port';
+    return '$scheme://$hostPort/api/v1';
   }
 
   Map<String, String> _headers(String accessToken) => {

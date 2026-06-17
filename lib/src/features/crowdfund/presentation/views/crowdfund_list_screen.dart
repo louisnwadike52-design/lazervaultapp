@@ -11,6 +11,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/crowdfund_card.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CrowdfundListScreen extends StatefulWidget {
   const CrowdfundListScreen({super.key});
@@ -570,10 +571,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   child: Center(
                     child: render.isLoadingMore
-                        ? const CircularProgressIndicator(
-                            color: Color(0xFF4E03D0),
-                            strokeWidth: 2,
-                          )
+                        ? LazerVaultLoader.tiny()
                         : const SizedBox.shrink(),
                   ),
                 );
@@ -695,10 +693,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Center(
                 child: state.isLoadingMore
-                    ? const CircularProgressIndicator(
-                        color: Color(0xFF4E03D0),
-                        strokeWidth: 2,
-                      )
+                    ? LazerVaultLoader.tiny()
                     : const SizedBox.shrink(),
               ),
             );

@@ -9,6 +9,7 @@ import '../../domain/entities/id_pay_organization_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import '../widgets/id_pay_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayOrganizationDetailsScreen extends StatefulWidget {
   const IDPayOrganizationDetailsScreen({super.key});
@@ -142,10 +143,7 @@ class _IDPayOrganizationDetailsScreenState
         builder: (context, state) {
           if (state is IDPayLoading && _lastOrg == null) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 

@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/data/app_data.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
-import 'package:lazervault/src/features/widgets/avatar_with_details.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PasscodeSignIn extends StatefulWidget {
   const PasscodeSignIn({super.key});
@@ -33,6 +34,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
 
   // Stored user data
   String? _storedFirstName;
+  String? _storedLastName;
   String? _storedAvatarUrl;
 
   @override
@@ -89,11 +91,13 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
   Future<void> _loadStoredUserData() async {
     try {
       final firstName = await _secureStorage.read(key: 'user_first_name');
+      final lastName = await _secureStorage.read(key: 'user_last_name');
       final avatarUrl = await _secureStorage.read(key: 'user_avatar_url');
 
       if (mounted) {
         setState(() {
           _storedFirstName = firstName;
+          _storedLastName = lastName;
           _storedAvatarUrl = avatarUrl;
         });
       }
@@ -198,9 +202,6 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
       displayName = 'Hey ${_storedFirstName!} 👋';
     }
 
-    // Determine avatar to use
-    String avatarPath = _storedAvatarUrl ?? AppData.dp;
-
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
@@ -217,7 +218,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
               Container(
                 color: Colors.black.withValues(alpha: 0.6),
               ),
-              const Center(child: CircularProgressIndicator(color: Colors.white)),
+              const Center(child: LazerVaultLoader.small()),
             ],
           );
         }
@@ -245,9 +246,35 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                     children: [
                       Padding(
                         padding: EdgeInsets.only(top: 45.h),
-                        child: AvatarWithDetails(
-                          title: displayName,
-                          avatar: avatarPath,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Per spec: passcode screen shows the app
+                            // logo on a brand-purple halo when no
+                            // profile picture is set (NOT initials —
+                            // we don't want to flash a stranger's
+                            // initials before they've signed in).
+                            UserAvatar(
+                              // Industry-standard sign-in avatar size
+                              // (~80px) — large enough to anchor the
+                              // screen, small enough to leave the
+                              // greeting + keypad room to breathe.
+                              size: 80.r,
+                              imageUrl: _storedAvatarUrl,
+                              firstName: _storedFirstName,
+                              lastName: _storedLastName,
+                              fallbackMode: UserAvatarFallback.appLogo,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              displayName,
+                              style: GoogleFonts.inter(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(height: 15.h),
@@ -314,7 +341,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                       isAuthenticating
                           ? Padding(
                               padding: EdgeInsets.symmetric(vertical: 20.h),
-                              child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                              child: const LazerVaultLoader.small(),
                             )
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,

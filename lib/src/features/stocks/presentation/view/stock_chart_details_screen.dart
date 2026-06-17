@@ -16,6 +16,7 @@ import '../widgets/crosshair_painter.dart';
 import 'package:flutter/services.dart';
 import '../widgets/price_overlay_indicators_painter.dart';
 import '../widgets/bottom_indicators_painter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum ChartType { line, candlestick, area, ohlc, volume, heikinAshi, hollowCandles }
 
@@ -269,7 +270,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       body: BlocBuilder<StockCubit, StockState>(
         builder: (context, state) {
           if (state is StockLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LazerVaultLoader.small());
           }
           
           final priceHistory = _generateMockPriceHistory();

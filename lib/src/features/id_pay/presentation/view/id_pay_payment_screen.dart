@@ -14,6 +14,7 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayPaymentScreen extends StatefulWidget {
   const IDPayPaymentScreen({super.key});
@@ -540,7 +541,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
 
@@ -1044,14 +1045,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
           elevation: 0,
         ),
         child: _isProcessing
-            ? SizedBox(
-                height: 22.h,
-                width: 22.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader(size: 22)
             : Text(
                 'Pay ${_idPay.isFixed ? "${_currencySymbol(_idPay.currency)}${_idPay.amount.toStringAsFixed(2)}" : ""}',
                 style: GoogleFonts.inter(

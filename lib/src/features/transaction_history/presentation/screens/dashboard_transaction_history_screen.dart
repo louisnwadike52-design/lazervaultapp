@@ -13,6 +13,8 @@ import 'package:lazervault/src/features/transaction_history/presentation/widgets
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_states.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/export_bottom_sheet.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_export_helper.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Revolut-style dashboard transaction history screen
 class DashboardTransactionHistoryScreen extends StatefulWidget {
@@ -498,7 +500,35 @@ class _DashboardTransactionHistoryScreenState
               color: Colors.white,
               size: 22.sp,
             ),
-            tooltip: 'Export',
+            tooltip: 'Quick export (this view)',
+          ),
+          // Overflow menu — keeps the in-app "share what's loaded" flow
+          // (above) AND surfaces the backend-rendered server statement
+          // for the full canonical export.
+          PopupMenuButton<String>(
+            color: const Color(0xFF1F1F1F),
+            iconColor: Colors.white,
+            onSelected: (key) {
+              if (key == 'export_server') {
+                Get.toNamed(AppRoutes.statementExport);
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem<String>(
+                value: 'export_server',
+                child: Row(
+                  children: [
+                    Icon(Icons.cloud_download_outlined,
+                        color: const Color(0xFF3B82F6), size: 18.sp),
+                    SizedBox(width: 10.w),
+                    Text(
+                      'Export… (official statement)',
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -525,9 +555,7 @@ class _DashboardTransactionHistoryScreenState
             return Padding(
               padding: EdgeInsets.all(20.w),
               child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF581CD9)),
-                ),
+                child: LazerVaultLoader.small(),
               ),
             );
           }

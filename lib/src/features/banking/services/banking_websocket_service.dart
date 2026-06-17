@@ -133,9 +133,11 @@ class BankingWebSocketService {
   Future<void> _connectWebSocket(String userId, String accessToken) async {
     final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? '8082') ?? 8082;
+    // Port 443 == tunnel termination expects TLS (wss). Other ports = loopback dev.
+    final tlsTunnel = wsPort == 443;
 
     final wsUrl = Uri(
-      scheme: 'ws',
+      scheme: tlsTunnel ? 'wss' : 'ws',
       host: wsHost,
       port: wsPort,
       path: '/ws/banking',
@@ -179,9 +181,10 @@ class BankingWebSocketService {
   Future<void> _connectSSE(String userId, String accessToken) async {
     final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? '8082') ?? 8082;
+    final tlsTunnel = wsPort == 443;
 
     final sseUrl = Uri(
-      scheme: 'http',
+      scheme: tlsTunnel ? 'https' : 'http',
       host: wsHost,
       port: wsPort,
       path: '/ws/banking',

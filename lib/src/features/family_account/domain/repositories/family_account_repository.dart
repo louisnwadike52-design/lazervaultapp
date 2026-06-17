@@ -86,6 +86,7 @@ abstract class FamilyAccountRepository {
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   });
 
   // Generate a virtual card for a family member
@@ -112,12 +113,18 @@ abstract class FamilyAccountRepository {
     required String confirmationCode,
   });
 
+  // A non-creator member leaves the family on their own.
+  Future<Either<Failure, double>> leaveFamilyAccount({
+    required String familyId,
+  });
+
   // Member contribution to family pool (hybrid funding)
   Future<Either<Failure, FamilyAccount>> processMemberContribution({
     required String familyId,
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   });
 
   // Setup family account (choose distribution mode, activate)

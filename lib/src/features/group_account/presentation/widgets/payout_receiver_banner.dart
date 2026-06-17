@@ -37,6 +37,7 @@ import 'package:lazervault/src/generated/group_account.pb.dart' as pb;
 import 'package:lazervault/src/generated/group_account.pbenum.dart' as pb_enum;
 
 import 'select_payout_receiver_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PayoutReceiverBanner extends StatefulWidget {
   final Contribution contribution;
@@ -319,11 +320,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     if (_loading) {
       return _shell(
         Row(children: [
-          SizedBox(
-            width: 16.w,
-            height: 16.w,
-            child: const CircularProgressIndicator(strokeWidth: 2),
-          ),
+          LazerVaultLoader.tiny(),
           SizedBox(width: 12.w),
           Text('Loading payout status…',
               style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
@@ -545,11 +542,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     final recipient = _resolveRecipientName(state.receiver.recipientUserId);
     return _shell(
       Row(children: [
-        SizedBox(
-          width: 18.w,
-          height: 18.w,
-          child: const CircularProgressIndicator(strokeWidth: 2),
-        ),
+        LazerVaultLoader(size: 18),
         SizedBox(width: 12.w),
         Expanded(
           child: Text('Sending payout to $recipient…',

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'voice_integration.dart';
 import 'pin_entry_workflow.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Assistant Screen with PIN Workflow Integration
 ///
@@ -266,11 +267,7 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                  LazerVaultLoader.small(),
                   const SizedBox(width: 16),
                   Text(
                     _awaitingPIN

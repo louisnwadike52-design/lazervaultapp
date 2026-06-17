@@ -10,6 +10,7 @@ import '../cubit/water_auto_recharge_cubit.dart';
 import '../cubit/water_auto_recharge_state.dart';
 import '../cubit/water_beneficiary_cubit.dart';
 import '../cubit/water_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create or edit a water-bill Auto-Pay schedule. Mirrors
 /// `CreateDataAutoRechargeScreen` but simpler — water has no variation;
@@ -253,15 +254,7 @@ class _CreateWaterAutoRechargeScreenState
                       elevation: 0,
                     ),
                     child: _saving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _editId != null
                                 ? 'Update Auto-Pay'
@@ -325,14 +318,7 @@ class _CreateWaterAutoRechargeScreenState
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: const Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-                ),
-              ),
+              child: LazerVaultLoader(size: 18),
             ),
           );
         }

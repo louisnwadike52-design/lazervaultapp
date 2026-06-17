@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoic
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_state.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class OutgoingTaggedInvoicesScreen extends StatefulWidget {
   const OutgoingTaggedInvoicesScreen({super.key});
@@ -66,11 +67,7 @@ class _OutgoingTaggedInvoicesScreenState
                 builder: (context, state) {
                   if (state is TaggedInvoiceLoading) {
                     return Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          const Color(0xFF3B82F6),
-                        ),
-                      ),
+                      child: LazerVaultLoader.small(),
                     );
                   }
 

@@ -625,16 +625,21 @@ class AccountSummary extends $pb.GeneratedMessage {
 class GetUserAccountsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserAccountsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetUserId')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeAllCurrencies')
     ..hasRequiredFields = false
   ;
 
   GetUserAccountsRequest._() : super();
   factory GetUserAccountsRequest({
     $core.String? targetUserId,
+    $core.bool? includeAllCurrencies,
   }) {
     final _result = create();
     if (targetUserId != null) {
       _result.targetUserId = targetUserId;
+    }
+    if (includeAllCurrencies != null) {
+      _result.includeAllCurrencies = includeAllCurrencies;
     }
     return _result;
   }
@@ -667,6 +672,15 @@ class GetUserAccountsRequest extends $pb.GeneratedMessage {
   $core.bool hasTargetUserId() => $_has(0);
   @$pb.TagNumber(1)
   void clearTargetUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get includeAllCurrencies => $_getBF(1);
+  @$pb.TagNumber(2)
+  set includeAllCurrencies($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIncludeAllCurrencies() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIncludeAllCurrencies() => clearField(2);
 }
 
 class GetUserAccountsResponse extends $pb.GeneratedMessage {
@@ -14840,6 +14854,11 @@ class GenerateStatementResponse extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'downloadUrl')
     ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'validUntil')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sha256')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'format')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cached')
+    ..aInt64(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionCount')
     ..hasRequiredFields = false
   ;
 
@@ -14849,6 +14868,11 @@ class GenerateStatementResponse extends $pb.GeneratedMessage {
     $core.String? downloadUrl,
     $fixnum.Int64? validUntil,
     $core.String? message,
+    $core.String? sha256,
+    $fixnum.Int64? generatedAt,
+    $core.String? format,
+    $core.bool? cached,
+    $fixnum.Int64? transactionCount,
   }) {
     final _result = create();
     if (documentId != null) {
@@ -14862,6 +14886,21 @@ class GenerateStatementResponse extends $pb.GeneratedMessage {
     }
     if (message != null) {
       _result.message = message;
+    }
+    if (sha256 != null) {
+      _result.sha256 = sha256;
+    }
+    if (generatedAt != null) {
+      _result.generatedAt = generatedAt;
+    }
+    if (format != null) {
+      _result.format = format;
+    }
+    if (cached != null) {
+      _result.cached = cached;
+    }
+    if (transactionCount != null) {
+      _result.transactionCount = transactionCount;
     }
     return _result;
   }
@@ -14921,6 +14960,51 @@ class GenerateStatementResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
   void clearMessage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get sha256 => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sha256($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSha256() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSha256() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get generatedAt => $_getI64(5);
+  @$pb.TagNumber(6)
+  set generatedAt($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasGeneratedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearGeneratedAt() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get format => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set format($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFormat() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFormat() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get cached => $_getBF(7);
+  @$pb.TagNumber(8)
+  set cached($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCached() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCached() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $fixnum.Int64 get transactionCount => $_getI64(8);
+  @$pb.TagNumber(9)
+  set transactionCount($fixnum.Int64 v) { $_setInt64(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTransactionCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTransactionCount() => clearField(9);
 }
 
 class GenerateAccountConfirmationRequest extends $pb.GeneratedMessage {

@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class RecipientInputScreen extends StatefulWidget {
   const RecipientInputScreen({super.key});
@@ -550,9 +551,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   _buildHeader(),
                   const Expanded(
                     child: Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF4E03D0),
-                      ),
+                      child: LazerVaultLoader.small(),
                     ),
                   ),
                 ],
@@ -1174,15 +1173,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
+                    LazerVaultLoader.small(),
                     SizedBox(width: 12.w),
                     Text(
                       'Validating...',
@@ -1438,9 +1429,7 @@ class _ContactSelectionBottomSheetState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading contacts...',

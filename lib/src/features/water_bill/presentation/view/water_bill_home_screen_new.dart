@@ -12,8 +12,7 @@ import '../cubit/water_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/water_history_actions_sheet.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Water Bill landing screen.
 ///
@@ -78,24 +77,8 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
             ),
           ),
           centerTitle: true,
-          actions: [
-            // Per-bill voice + chat icons — pin every session to
-            // the water flow on chat-products-service
-            // (DIRECT_ROUTES['water'] → primary 'utility').
-            ServiceVoiceButton(
-              serviceName: 'water',
-              iconColor: const Color(0xFF3B82F6),
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            SizedBox(width: 8.w),
-            MicroserviceChatIcon(
-              serviceName: 'Water',
-              sourceContext: 'water',
-              icon: Icons.chat_bubble_outline,
-              iconColor: const Color(0xFF3B82F6),
-            ),
-            SizedBox(width: 12.w),
-          ],
+          // Per-bill voice + chat icons removed — unified utility bills
+          // landing page hosts the single chat/mic entry point now.
         ),
         body: SafeArea(
           child: BlocConsumer<WaterBillCubit, WaterBillState>(
@@ -350,14 +333,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
   Widget _buildPaymentsLoading() => Padding(
         padding: EdgeInsets.symmetric(vertical: 12.h),
         child: Center(
-          child: SizedBox(
-            width: 20.w,
-            height: 20.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(_primary),
-            ),
-          ),
+          child: LazerVaultLoader.small(),
         ),
       );
 
@@ -392,12 +368,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 36.w,
-              height: 36.w,
-              child: const CircularProgressIndicator(
-                  color: _primary, strokeWidth: 3),
-            ),
+            LazerVaultLoader(size: 36),
             SizedBox(height: 16.h),
             Text('Loading water providers…',
                 style: GoogleFonts.inter(

@@ -1,17 +1,30 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
+import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
 
 /// Data source for smart OCR scanning via Chat Agent Gateway.
+///
+/// New 3-step pipeline (replaces the old inline base64 POST):
+///   1. Upload the captured/picked image to storage-service via
+///      [`BankScanUploadService`] → returns a stable public URL hosted
+///      at `${storage}/v1/storage/objects/users/<uid>/bank-scans/<uuid>.<ext>`.
+///   2. POST `${CHAT_GATEWAY_URL}/scan/bank-details` with `{image_url}`
+///      (NOT base64 — server-side fetch keeps the request body small
+///      and lets the OCR retain a stable reference to the source image
+///      for replay / audit).
+///   3. Parse the [SmartScanResult] response exactly as before.
 class BankScanDataSource {
   final Dio dio;
   final SecureStorageService secureStorage;
+  final BankScanUploadService uploadService;
 
   BankScanDataSource({
     required String baseUrl,
     required this.secureStorage,
+    required this.uploadService,
   }) : dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 30),
@@ -47,7 +60,10 @@ class BankScanDataSource {
   }) async {
     await _updateHeaders();
 
-    // 3.2: Guard file I/O with specific exception handling
+    // 3.2: Guard file I/O with specific exception handling. We still
+    // read the bytes here (rather than just passing the File path on to
+    // BankScanUploadService) so a corrupted / empty file fails with the
+    // same friendly error the previous implementation surfaced.
     final List<int> bytes;
     try {
       bytes = await imageFile.readAsBytes();
@@ -65,14 +81,35 @@ class BankScanDataSource {
       throw BankScanException('Image too large. Please use a smaller image.');
     }
 
-    final base64Image = base64Encode(bytes);
+    // Step 1: persist the image via storage-service. The chat-agent-
+    // gateway will fetch this URL server-side, so the request to
+    // /scan/bank-details stays small (just the URL, not 8MB of base64).
+    final filename = imageFile.uri.pathSegments.isNotEmpty
+        ? imageFile.uri.pathSegments.last
+        : 'bank-scan.jpg';
+    final BankScanUploadResult uploadResult;
+    try {
+      uploadResult = await uploadService.uploadBytes(
+        bytes: Uint8List.fromList(bytes),
+        filename: filename,
+        contentType: BankScanUploadService.contentTypeFor(filename),
+      );
+    } on BankScanUploadException catch (e) {
+      throw BankScanException(e.message);
+    } catch (e) {
+      throw BankScanException(
+        'Could not upload the scan image. Please try again.',
+      );
+    }
+
     final accessToken = await secureStorage.getAccessToken() ?? '';
 
     try {
       final response = await dio.post(
         '/scan/bank-details',
         data: {
-          'image_base64': base64Image,
+          'image_url': uploadResult.publicUrl,
+          'storage_key': uploadResult.storageKey,
           'user_id': userId,
           'session_id': DateTime.now().millisecondsSinceEpoch.toString(),
           'access_token': accessToken,
@@ -157,6 +194,15 @@ class SmartScanResult {
   final List<String> possibleTypes;
   final String? disambiguationHint;
 
+  // Optional pre-fill payload — when the OCR detects an invoice or
+  // payment slip with a stated amount or memo, these are non-null and
+  // flow into the send-funds amount + reference fields via the route
+  // Map. Amount is in MINOR units (kobo / pence) so it round-trips
+  // through the InitiateSendFunds amount controller without rounding
+  // drift; the OCR side is expected to emit minor units explicitly.
+  final int? amountMinor;
+  final String? description;
+
   // Metadata
   final Map<String, double> fieldConfidence;
   final List<String> missingFields;
@@ -175,6 +221,8 @@ class SmartScanResult {
     this.phoneCarrier,
     this.possibleTypes = const [],
     this.disambiguationHint,
+    this.amountMinor,
+    this.description,
     this.fieldConfidence = const {},
     this.missingFields = const [],
   });
@@ -217,6 +265,31 @@ class SmartScanResult {
         ? rawConfidence.toDouble()
         : double.tryParse(rawConfidence?.toString() ?? '') ?? 0.0;
 
+    // Optional amount / description (invoice + payment-slip extraction).
+    // Servers may emit `amount_minor` directly OR a major-units `amount`
+    // field; accept either, prefer minor. A 0 / negative amount is
+    // treated as no-prefill so a glitched extract doesn't dump junk into
+    // the amount field.
+    int? amountMinor;
+    final rawAmountMinor = data['amount_minor'] ?? data['amountMinor'];
+    if (rawAmountMinor is num && rawAmountMinor > 0) {
+      amountMinor = rawAmountMinor.toInt();
+    } else {
+      final rawAmount = data['amount'];
+      if (rawAmount is num && rawAmount > 0) {
+        amountMinor = (rawAmount * 100).round();
+      } else if (rawAmount is String) {
+        final parsed = double.tryParse(rawAmount);
+        if (parsed != null && parsed > 0) {
+          amountMinor = (parsed * 100).round();
+        }
+      }
+    }
+    final rawDescription = data['description'] ?? data['memo'] ?? data['narration'];
+    final description = rawDescription is String && rawDescription.trim().isNotEmpty
+        ? rawDescription.trim()
+        : null;
+
     return SmartScanResult(
       extractionType: json['extraction_type']?.toString() ?? 'no_data',
       confidence: confidence.clamp(0.0, 1.0),
@@ -231,6 +304,8 @@ class SmartScanResult {
       phoneCarrier: data['phone_carrier']?.toString(),
       possibleTypes: possibleTypes,
       disambiguationHint: data['disambiguation_hint']?.toString(),
+      amountMinor: amountMinor,
+      description: description,
       fieldConfidence: fieldConfidence,
       missingFields: missingFields,
     );

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/insurance_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceDocumentsScreen extends StatefulWidget {
   final Insurance insurance;
@@ -376,14 +377,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (_isSharing)
-                SizedBox(
-                  width: 20.sp,
-                  height: 20.sp,
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
+                LazerVaultLoader.small()
               else
                 Icon(
                   Icons.share,

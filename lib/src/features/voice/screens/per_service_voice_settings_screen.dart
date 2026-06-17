@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../cubit/per_service_voice_settings_cubit.dart';
 import '../models/per_service_voice_settings.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PerServiceVoiceSettingsScreen extends StatelessWidget {
   final String serviceName;
@@ -57,7 +58,7 @@ class PerServiceVoiceSettingsScreen extends StatelessWidget {
           if (state is PerServiceVoiceSettingsLoading ||
               state is PerServiceVoiceSettingsInitial) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             );
           }
           if (state is PerServiceVoiceSettingsLoaded) {
@@ -242,14 +243,7 @@ class _LoadedBodyState extends State<_LoadedBody> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   child: widget.state.saving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Text(
                           widget.state.dirty
                               ? 'Save'

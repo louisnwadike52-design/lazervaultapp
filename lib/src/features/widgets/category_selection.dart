@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Service Category Model
 /// Represents a category that can be selected for transactions
@@ -562,14 +563,7 @@ class _CategorySelectionBottomSheetState
                 ),
               ),
               child: _isCreating
-                  ? SizedBox(
-                      height: 20.h,
-                      width: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Create Category',
                       style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),

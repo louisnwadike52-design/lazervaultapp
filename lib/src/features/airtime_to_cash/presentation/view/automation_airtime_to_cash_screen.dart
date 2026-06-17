@@ -10,6 +10,7 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../domain/entities/network_rate.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// AirtimeToCash.com (OTP) airtime-to-cash input screen.
 /// Flow: Generate OTP → Verify OTP → Login with Session → Check Quota → Transfer
@@ -868,14 +869,7 @@ class _AutomationAirtimeToCashScreenState
                         elevation: 0,
                       ),
                       child: isLoading
-                          ? SizedBox(
-                              width: 18.w,
-                              height: 18.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader(size: 18)
                           : Text(
                               'Verify OTP',
                               style: TextStyle(
@@ -1371,14 +1365,7 @@ class _AutomationAirtimeToCashScreenState
                 elevation: 0,
               ),
               child: isLoading
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       buttonText,
                       style: TextStyle(

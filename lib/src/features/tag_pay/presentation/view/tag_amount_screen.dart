@@ -10,6 +10,7 @@ import '../../domain/entities/user_search_result_entity.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagAmountScreen extends StatefulWidget {
   const TagAmountScreen({super.key});
@@ -464,15 +465,7 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
               elevation: 0,
             ),
             child: isLoading
-                ? SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : Text(
                     count > 1 ? 'Create Tags' : 'Create Tag',
                     style: GoogleFonts.inter(

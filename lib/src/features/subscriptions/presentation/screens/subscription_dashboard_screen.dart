@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/subscriptions/presentation/widgets/subsc
 import 'package:lazervault/src/features/subscriptions/presentation/widgets/subscription_spending_chart.dart';
 import 'package:lazervault/src/features/subscriptions/presentation/widgets/subscription_summary_card.dart';
 import 'package:lazervault/src/features/subscriptions/presentation/widgets/subscription_type_pie_chart.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Main subscription tracker dashboard screen.
 class SubscriptionDashboardScreen extends StatelessWidget {
@@ -355,7 +356,7 @@ class _LoadingView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Color(0xFF3B82F6)),
+          LazerVaultLoader.small(),
           SizedBox(height: 16),
           Text(
             'Loading subscriptions...',

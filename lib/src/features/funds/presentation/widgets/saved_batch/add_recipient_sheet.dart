@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet that lets the user add ONE recipient to the saved batch
 /// via three add-methods:
@@ -229,7 +230,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
       builder: (context, state) {
         if (state is RecipientLoading) {
           return const Center(
-              child: CircularProgressIndicator(color: btBlue));
+              child: LazerVaultLoader.small());
         }
         if (state is RecipientError) {
           return Center(
@@ -489,11 +490,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
               SizedBox(height: 10.h),
               Row(
                 children: [
-                  SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                          strokeWidth: 2, color: btBlue)),
+                  LazerVaultLoader(size: 14),
                   SizedBox(width: 8.w),
                   Text('Verifying account...',
                       style: GoogleFonts.inter(

@@ -10,6 +10,7 @@ import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CableTVPaymentProcessingScreen extends StatefulWidget {
   const CableTVPaymentProcessingScreen({super.key});
@@ -380,15 +381,7 @@ class _CableTVPaymentProcessingScreenState
                   ),
                 ),
                 if (isActive)
-                  SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(step.activeColor),
-                    ),
-                  ),
+                  LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(Icons.check_circle,
                       color: step.activeColor, size: 20.sp),

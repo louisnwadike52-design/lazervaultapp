@@ -12,6 +12,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/cable_tv_payment_entity.dart';
 import 'cable_tv_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Top-of-landing strip: 3 most recent cable TV purchases.
 /// Mirrors `InternetRecentTransactionsCard` / `DataRecentPurchasesCard`:
@@ -125,10 +126,7 @@ class _CableTVRecentTransactionsCardState
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 child: const Center(
-                  child: CircularProgressIndicator(
-                    color: _primary,
-                    strokeWidth: 2,
-                  ),
+                  child: LazerVaultLoader.tiny(),
                 ),
               );
             }
@@ -208,17 +206,61 @@ class _CableTVRecentTransactionsCardState
   }
 
   Widget _emptyLine() {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Column(
-        children: [
-          Icon(Icons.receipt_long, color: _textSecondary, size: 30.sp),
-          SizedBox(height: 8.h),
-          Text(
-            'No cable TV purchases yet',
-            style: GoogleFonts.inter(color: _textSecondary, fontSize: 12.sp),
+    return Center(
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(vertical: 8.h),
+        padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 20.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: const Color(0xFF2D2D2D),
+            width: 1,
           ),
-        ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: _primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.tv_outlined,
+                color: _primary,
+                size: 28.sp,
+              ),
+            ),
+            SizedBox(height: 14.h),
+            Text(
+              'No cable TV purchases yet',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Pick a provider above to top up your subscription — '
+              'your recent purchases will show here.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: _textSecondary,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

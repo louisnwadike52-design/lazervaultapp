@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
 import '../../domain/entities/mandate_entity.dart';
 import 'mandate_setup_bottomsheet.dart';
 import 'mandate_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet for managing an existing mandate (pause, resume, cancel)
 /// or setting up a new one if none exists.
@@ -27,8 +29,13 @@ Future<void> showMandateManagementBottomSheet({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
+    // MandateCubit is a GetIt singleton; resolve from the service locator (not
+    // context.read) so this works even when the caller provides MandateCubit
+    // inside its own build() — e.g. the deposit screen, whose State context is
+    // above that provider and would otherwise throw "Could not find
+    // Provider<MandateCubit>". Same instance every other call site uses.
     builder: (ctx) => BlocProvider.value(
-      value: context.read<MandateCubit>(),
+      value: serviceLocator<MandateCubit>(),
       child: _MandateManagementSheet(
         linkedAccountId: linkedAccountId,
         userId: userId,
@@ -330,14 +337,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
       child: ElevatedButton.icon(
         onPressed: isLoading ? null : onPressed,
         icon: isLoading
-            ? SizedBox(
-                width: 18.w,
-                height: 18.w,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader(size: 18)
             : Icon(icon, size: 20.sp),
         label: Text(
           label,

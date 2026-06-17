@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
 
 import 'mandate_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// A card displaying a linked bank account for selection in the Move Money flow.
 ///
@@ -28,22 +30,29 @@ class MoveAccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // State-coloured accent (matches the deposit cards): selected → green,
+    // needs-reauth → amber, active Direct Debit → green, else soft purple.
+    final bool ddActive = mandate != null &&
+        (mandate!.status == MandateStatus.readyToDebit ||
+            mandate!.status == MandateStatus.active);
+    final Color accent = isSelected
+        ? const Color(0xFF10B981)
+        : account.needsReauthorization
+            ? const Color(0xFFFB923C)
+            : ddActive
+                ? const Color(0xFF10B981)
+                : AppSurfaces.accentPurple;
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 160.w,
+        width: 172.w,
         padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF10B981)
-                : const Color(0xFF2D2D2D),
-            width: isSelected ? 1.5 : 1,
-          ),
+        decoration: AppSurfaces.card(
+          accent: accent,
+          radius: 16,
+          accentAlpha: isSelected ? 0.90 : 0.30,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,12 +146,7 @@ class MoveAccountCard extends StatelessWidget {
                 );
               }
               return Row(mainAxisSize: MainAxisSize.min, children: [
-                SizedBox(
-                  width: 9.w,
-                  height: 9.w,
-                  child: const CircularProgressIndicator(
-                      strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
-                ),
+                LazerVaultLoader(size: 9),
                 SizedBox(width: 5.w),
                 Text(
                   'Fetching balance…',

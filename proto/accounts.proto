@@ -1123,6 +1123,17 @@ message GetUserAccountsRequest {
   // User ID is inferred from the auth token by default.
   // If target_user_id is set, fetch accounts for that user instead (for internal lookups).
   optional string target_user_id = 1;
+
+  // When false (default), the handler returns only accounts whose currency
+  // matches the caller's x-locale header — the dashboard-carousel default:
+  // an en-NG user sees their NGN cards, not their dormant USD/GBP wallets.
+  // Set true on flows that NEED every wallet the user holds across all
+  // currencies: currency-exchange source picker, balance validators,
+  // cross-locale dialogs. Without this opt-in those flows silently lost
+  // the user's foreign-currency balance and (for example) refused a
+  // perfectly funded USD → NGN international transfer because the
+  // response never included the USD wallet.
+  optional bool include_all_currencies = 2;
 }
 
 message GetUserAccountsResponse {

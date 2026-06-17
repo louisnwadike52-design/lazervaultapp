@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Registration Screen - Records multiple voice samples for enrollment
 /// Production-ready with comprehensive error handling
@@ -731,7 +732,7 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
+              LazerVaultLoader.small(),
               SizedBox(height: 16),
               Text('Checking enrollment status...'),
             ],
@@ -753,7 +754,7 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
+                LazerVaultLoader.small(),
                 SizedBox(height: 16),
                 Text('Processing voice enrollment...'),
                 SizedBox(height: 8),
@@ -954,15 +955,7 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 80,
-                              height: 80,
-                              child: CircularProgressIndicator(
-                                value: _recordingProgress,
-                                strokeWidth: 8,
-                                backgroundColor: Colors.grey[200],
-                              ),
-                            ),
+                            LazerVaultLoader(size: 80),
                             const SizedBox(height: 8),
                             const Text(
                               'Recording...',

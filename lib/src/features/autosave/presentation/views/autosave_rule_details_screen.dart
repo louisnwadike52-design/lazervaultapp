@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
   const AutoSaveRuleDetailsScreen({super.key});
@@ -237,15 +238,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     messenger.showSnackBar(SnackBar(
       content: Row(
         children: [
-          SizedBox(
-            width: 16.w,
-            height: 16.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ),
+          LazerVaultLoader.tiny(),
           SizedBox(width: 12.w),
           const Text('Building PDF...'),
         ],
@@ -1086,14 +1079,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           onTap: onPressed,
           child: Center(
             child: isLoading
-                ? SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

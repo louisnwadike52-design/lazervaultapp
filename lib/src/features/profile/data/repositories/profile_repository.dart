@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
@@ -5,6 +8,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/data/models/user_preferences_model.dart';
+import 'package:lazervault/src/features/profile/data/services/profile_picture_upload_service.dart';
 import 'package:lazervault/src/features/profile/domain/entities/user_preferences.dart' as domain;
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
@@ -13,18 +17,26 @@ import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_grpc;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/user.pb.dart' as user_pb;
 
+/// Sentinel value understood by auth-service.UpdateProfile to clear
+/// `users.profile_picture`. Empty-string is a no-op for parity with
+/// other partial-update fields, so we need an explicit marker.
+const String _profilePictureRemoveSentinel = '__REMOVE__';
+
 class ProfileRepositoryImpl implements IProfileRepository {
   final UserServiceClient _userServiceClient;
   final auth_grpc.AuthServiceClient _authServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
+  final ProfilePictureUploadService _profilePictureUploadService;
 
   ProfileRepositoryImpl({
     required UserServiceClient userServiceClient,
     required auth_grpc.AuthServiceClient authServiceClient,
     required GrpcCallOptionsHelper callOptionsHelper,
+    required ProfilePictureUploadService profilePictureUploadService,
   })  : _userServiceClient = userServiceClient,
         _authServiceClient = authServiceClient,
-        _callOptionsHelper = callOptionsHelper;
+        _callOptionsHelper = callOptionsHelper,
+        _profilePictureUploadService = profilePictureUploadService;
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> getUserProfile() async {
@@ -130,6 +142,49 @@ class ProfileRepositoryImpl implements IProfileRepository {
         statusCode: 500,
       ));
     }
+  }
+
+  @override
+  Future<Either<Failure, User>> uploadProfilePicture({
+    File? file,
+    Uint8List? bytes,
+    String? filename,
+  }) async {
+    if (file == null && (bytes == null || filename == null)) {
+      return Left(ServerFailure(
+        message: 'No image provided.',
+        statusCode: 400,
+      ));
+    }
+    try {
+      // 1. Upload bytes to storage via core-gateway proxy → returns
+      //    the public URL we should stamp on the user record.
+      final result = file != null
+          ? await _profilePictureUploadService.uploadFromFile(file)
+          : await _profilePictureUploadService.uploadBytes(
+              bytes: bytes!,
+              filename: filename!,
+              contentType:
+                  ProfilePictureUploadService.contentTypeFor(filename),
+            );
+      // 2. Persist the URL on auth-service.users.profile_picture.
+      return await updateUserProfile(profilePicture: result.publicUrl);
+    } on ProfilePictureUploadException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: 502));
+    } catch (e) {
+      print('Unexpected error uploading profile picture: $e');
+      return Left(ServerFailure(
+        message: 'Failed to upload profile picture.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> removeProfilePicture() async {
+    // Send the sentinel value through the existing UpdateProfile path —
+    // auth-service interprets `__REMOVE__` as "clear this field".
+    return updateUserProfile(profilePicture: _profilePictureRemoveSentinel);
   }
 
   @override

@@ -9,6 +9,7 @@ import '../../domain/entities/water_payment_entity.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
 import '../widgets/water_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class WaterBillHistoryScreen extends StatefulWidget {
   const WaterBillHistoryScreen({super.key});
@@ -91,8 +92,7 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
                   builder: (context, state) {
                     if (state is PaymentHistoryLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                            color: Color(0xFF3B82F6)),
+                        child: LazerVaultLoader.small(),
                       );
                     }
 

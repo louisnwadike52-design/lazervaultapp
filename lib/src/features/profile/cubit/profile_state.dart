@@ -58,6 +58,13 @@ class ProfileUpdateSuccess extends ProfileState {
   List<Object?> get props => [message];
 }
 
+/// Transient state emitted while a profile-picture is being uploaded.
+/// Settings UI uses this to show a spinner on top of the avatar without
+/// blocking the rest of the settings list.
+class ProfilePictureUploading extends ProfileState {
+  const ProfilePictureUploading();
+}
+
 class PasswordUpdateSuccess extends ProfileState {
   final String message;
 

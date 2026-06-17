@@ -12,6 +12,7 @@ import '../../services/airtime_pdf_service.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import 'airtime_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Local airtime receipt. Mirrors the electricity bill receipt layout 1:1
 /// (status hero → consolidated details card → BillReceiptQrBlock → action
@@ -296,6 +297,18 @@ class _AirtimePaymentConfirmationScreenState
 
   String _resolveHeroTitle() {
     if (transaction == null) return 'Payment Failed';
+    // Refund state wins over a green "Sent!" — the airtime was NOT delivered.
+    // Covers both `status == refunded` and metadata.refundStatus (e.g.
+    // refund_pending) which the backend sets when the chain supervisor
+    // auto-refunds after a provider failure (VTPass code 016, etc.).
+    if (transaction!.hasRefundActivity) {
+      final label = transaction!.refundDisplayLabel.toLowerCase();
+      if (label.contains('pending') || label.contains('processing')) {
+        return 'Refund In Progress';
+      }
+      if (label.contains('fail')) return 'Refund Failed';
+      return 'Payment Refunded';
+    }
     if (transaction!.isFailed) return 'Payment Failed';
     if (transaction!.isPending) return 'Payment Submitted';
     return 'Airtime Sent!';
@@ -304,6 +317,16 @@ class _AirtimePaymentConfirmationScreenState
   String _getStatusMessage() {
     if (transaction == null) {
       return errorMessage ?? 'Payment could not be completed';
+    }
+    if (transaction!.hasRefundActivity) {
+      final label = transaction!.refundDisplayLabel.toLowerCase();
+      if (label.contains('pending') || label.contains('processing')) {
+        return 'The network couldn’t deliver this top-up. Your money is on its way back to your wallet.';
+      }
+      if (label.contains('fail')) {
+        return 'We attempted to refund this top-up but the refund itself failed. Support has been notified.';
+      }
+      return 'The network couldn’t deliver this top-up. Your money has been refunded to your wallet.';
     }
     if (transaction!.isFailed) {
       return errorMessage ??
@@ -423,6 +446,11 @@ class _AirtimePaymentConfirmationScreenState
     if (transaction == null || transaction!.isFailed) {
       icon = Icons.cancel;
       color = const Color(0xFFEF4444);
+    } else if (transaction!.hasRefundActivity) {
+      // Refunded → grey "undo" so the user reads "money came back" rather
+      // than the green-check delivery confirmation.
+      icon = Icons.undo;
+      color = const Color(0xFF6B7280);
     } else if (transaction!.isPending) {
       icon = Icons.hourglass_top;
       color = const Color(0xFFFB923C);
@@ -605,10 +633,7 @@ class _AirtimePaymentConfirmationScreenState
                 child: busy
                     ? Padding(
                         padding: EdgeInsets.all(11.w),
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Color(0xFF4E03D0),
-                        ),
+                        child: LazerVaultLoader.tiny(),
                       )
                     : Icon(icon, color: color, size: 20.sp),
               ),

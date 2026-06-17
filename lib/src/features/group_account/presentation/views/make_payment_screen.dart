@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,6 +18,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'contribution_payment_confirmation_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MakePaymentScreen extends StatefulWidget {
   final String contributionId;
@@ -197,9 +200,9 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
       transactionId: transactionId,
       transactionType: 'group_contribution_payment',
       amount: amount,
-      currency: widget.contribution?.currency ?? 'USD',
+      currency: widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency,
       title: 'Confirm Payment',
-      message: 'Confirm group contribution payment of ${widget.contribution?.currency ?? 'USD'} ${amount.toStringAsFixed(2)}',
+      message: 'Confirm group contribution payment of ${widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency} ${amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -224,7 +227,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           contributionId: widget.contributionId,
           groupId: widget.contribution?.groupId ?? '',
           amount: amount,
-          currency: widget.contribution?.currency ?? 'USD',
+          currency: widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency,
           notes: notes.isEmpty ? null : notes,
           transactionPin: verificationToken!,
           sourceAccountId: _selectedAccountId,
@@ -555,7 +558,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             prefixIcon: Container(
               padding: EdgeInsets.all(16.w),
               child: Text(
-                widget.contribution?.currency ?? 'USD',
+                widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency,
                 style: GoogleFonts.inter(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
@@ -963,7 +966,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
 
@@ -1594,14 +1597,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  ),
+                  LazerVaultLoader.small(),
                   SizedBox(width: 12.w),
                   Text(
                     'Processing Payment...',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/family_account_entities.dart' as entities;
 
@@ -187,7 +188,7 @@ class FamilyAccountCard extends StatelessWidget {
         ),
         SizedBox(height: 4.h),
         Text(
-          '\$${balance.toStringAsFixed(2)}',
+          '${CurrencySymbols.currentSymbol}${balance.toStringAsFixed(2)}',
           style: TextStyle(
             color: Colors.white,
             fontSize: 28.sp,
@@ -231,7 +232,7 @@ class FamilyAccountCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '\$$allocated.toStringAsFixed(2)',
+                '${CurrencySymbols.currentSymbol}${allocated.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14.sp,
@@ -259,7 +260,7 @@ class FamilyAccountCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '\$$remaining.toStringAsFixed(2)',
+                '${CurrencySymbols.currentSymbol}${remaining.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: remaining > allocated * 0.2
                       ? Colors.green[300]

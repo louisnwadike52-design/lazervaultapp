@@ -12,6 +12,7 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/past_group_details_sheet.dart';
 import '../widgets/status_pill.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lists every group the caller has been removed from or left
 /// voluntarily. Mirrors PastContributionsScreen — same pill-style
@@ -236,7 +237,7 @@ class _PastGroupsListState extends State<_PastGroupsList>
             if (mounted) _load();
           });
         }
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: LazerVaultLoader.small());
       },
     );
   }

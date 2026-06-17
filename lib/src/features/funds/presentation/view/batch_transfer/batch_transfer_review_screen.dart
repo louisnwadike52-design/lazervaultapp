@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
   const BatchTransferReviewScreen({super.key});
@@ -1111,15 +1112,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                             borderRadius: BorderRadius.circular(14.r)),
                       ),
                       child: _isProcessing
-                          ? SizedBox(
-                              height: 20.h,
-                              width: 20.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(btTextPrimary),
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

@@ -8,6 +8,7 @@ import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PasscodeSetupScreen extends StatefulWidget {
   const PasscodeSetupScreen({super.key});
@@ -93,7 +94,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
         // Handle non-passcode states
         if (state is! PasscodeSetupInProgress) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: LazerVaultLoader.small()),
           );
         }
 
@@ -239,10 +240,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                           if (isRegistering)
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 20.h),
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
+                              child: LazerVaultLoader.tiny(),
                             ),
                           SizedBox(height: 24.h),
                         ],

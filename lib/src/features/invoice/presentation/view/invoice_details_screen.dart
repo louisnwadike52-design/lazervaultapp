@@ -21,6 +21,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/invoice_shimmer.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InvoiceDetailsScreen extends StatefulWidget {
   final String invoiceId;
@@ -1898,14 +1899,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         SnackBar(
           content: Row(
             children: [
-              SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
+              LazerVaultLoader.small(),
               SizedBox(width: 16.w),
               Text('Preparing QR code...'),
             ],

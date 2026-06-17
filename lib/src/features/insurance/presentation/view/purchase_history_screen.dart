@@ -18,6 +18,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../cubit/purchase_history_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PurchaseHistoryScreen extends StatefulWidget {
   const PurchaseHistoryScreen({super.key});
@@ -104,7 +105,7 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
         builder: (context, state) {
           if (state is PurchaseHistoryLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+              child: LazerVaultLoader.small(),
             );
           }
           if (state is PurchaseHistoryError) {
@@ -220,13 +221,7 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         child: const Center(
-          child: SizedBox(
-            width: 20, height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF6366F1)),
-            ),
-          ),
+          child: LazerVaultLoader.small(),
         ),
       );
     }

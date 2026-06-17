@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -118,8 +119,8 @@ class _GiftCardSellProcessingScreenState
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        body: BlocListener<GiftCardCubit, GiftCardState>(
+        backgroundColor: kGiftCardBgTop,
+        body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             if (state is GiftCardSellPaid) {
               // Route to My Sales (or a sale detail screen if you
@@ -141,7 +142,7 @@ class _GiftCardSellProcessingScreenState
               return _buildAwaitingView();
             },
           ),
-        ),
+        )),
       ),
     );
   }

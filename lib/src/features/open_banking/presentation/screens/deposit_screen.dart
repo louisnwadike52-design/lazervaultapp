@@ -9,6 +9,7 @@ import '../../domain/entities/linked_bank_account.dart';
 import '../../domain/entities/deposit.dart';
 import '../widgets/linked_account_selector.dart';
 import 'linked_accounts_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen to initiate a deposit from a linked bank account
 class DepositScreen extends StatefulWidget {
@@ -331,9 +332,7 @@ class _DepositScreenState extends State<DepositScreen> {
                         ),
                       ),
                       child: _isInitiatingDeposit
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               'Deposit',
                               style: TextStyle(

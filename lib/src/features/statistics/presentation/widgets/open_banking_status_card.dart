@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Open Banking Status Card
 /// Shows connection status and provides options to connect/sync bank accounts
@@ -207,14 +208,7 @@ class OpenBankingStatusCard extends StatelessWidget {
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            width: 16.w,
-                            height: 16.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: const Color(0xFF4E03D0).withValues(alpha: 0.5),
-                            ),
-                          ),
+                          LazerVaultLoader.tiny(),
                           SizedBox(width: 8.w),
                           Text(
                             'Syncing...',

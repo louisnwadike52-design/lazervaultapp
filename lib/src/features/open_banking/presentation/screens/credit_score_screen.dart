@@ -8,6 +8,7 @@ import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/credit_score.dart';
 import '../../domain/entities/credit_score_ai_insights.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreditScoreScreen extends StatefulWidget {
   final String userId;
@@ -139,7 +140,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
         builder: (context, state) {
           if (state is OpenBankingLoading || state is CreditScoreRefreshing) {
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -175,7 +176,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           }
 
           return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
+            child: LazerVaultLoader.small(),
           );
         },
       ),
@@ -287,7 +288,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
 
     if (displayScore == null) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: LazerVaultLoader.small(),
       );
     }
 
@@ -800,14 +801,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                     )),
                 SizedBox(height: 8.h),
                 Center(
-                  child: SizedBox(
-                    width: 20.r,
-                    height: 20.r,
-                    child: const CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
-                      strokeWidth: 2,
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 ),
               ],
             ),

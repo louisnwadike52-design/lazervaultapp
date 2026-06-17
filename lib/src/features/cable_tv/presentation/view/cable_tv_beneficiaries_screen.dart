@@ -12,6 +12,7 @@ import '../cubit/cable_tv_auto_recharge_cubit.dart';
 import '../cubit/cable_tv_auto_recharge_state.dart';
 import '../cubit/cable_tv_beneficiary_cubit.dart';
 import '../cubit/cable_tv_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Saved smart cards for cable TV. Mirrors `DataBeneficiariesScreen`.
 class CableTVBeneficiariesScreen extends StatefulWidget {
@@ -141,10 +142,7 @@ class _CableTVBeneficiariesScreenState
     }
     if (_loading && _beneficiaries == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
     }
     final list = _beneficiaries ?? const [];
@@ -625,15 +623,7 @@ class _CableTVBeneficiariesScreenState
                       }
                     },
               child: loading
-                  ? SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 14)
                   : Text('Save',
                       style: TextStyle(
                           color: const Color(0xFF4E03D0),

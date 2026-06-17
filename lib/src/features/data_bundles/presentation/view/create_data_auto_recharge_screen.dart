@@ -12,6 +12,7 @@ import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create a new data Rollover schedule. Mirrors
 /// `AirtimeAutoRechargeCreateSheet` but as a full screen since data
@@ -309,15 +310,7 @@ class _CreateDataAutoRechargeScreenState
                       elevation: 0,
                     ),
                     child: _saving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _editId != null
                                 ? 'Update Rollover'
@@ -382,14 +375,7 @@ class _CreateDataAutoRechargeScreenState
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: const Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-                ),
-              ),
+              child: LazerVaultLoader(size: 18),
             ),
           );
         }
@@ -626,10 +612,7 @@ class _PlanPickerSheet extends StatelessWidget {
               builder: (context, state) {
                 if (state is DataBundlesLoading) {
                   return const Center(
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation(Color(0xFF10B981))));
+                      child: LazerVaultLoader.tiny());
                 }
                 if (state is DataBundlesError) {
                   return Padding(

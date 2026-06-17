@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Inviter-side view: shows every invitation the current user (as a
 /// family admin) has sent. Filterable by status. When [familyId] is
@@ -101,7 +103,7 @@ class _FamilySentInvitationsScreenState extends State<FamilySentInvitationsScree
                 builder: (context, state) {
                   if (state is SentInvitationsLoading) {
                     return const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                      child: LazerVaultLoader.small(),
                     );
                   }
                   if (state is SentInvitationsLoaded) {
@@ -271,9 +273,9 @@ class _FamilySentInvitationsScreenState extends State<FamilySentInvitationsScree
           if (e.initialAllocation > 0) ...[
             SizedBox(height: 6.h),
             Text(
-              'Allocation: \$${e.initialAllocation.toStringAsFixed(2)}'
-              '${e.dailyLimit > 0 ? "  ·  Daily \$${e.dailyLimit.toStringAsFixed(2)}" : ""}'
-              '${e.monthlyLimit > 0 ? "  ·  Monthly \$${e.monthlyLimit.toStringAsFixed(2)}" : ""}',
+              'Allocation: ${CurrencySymbols.currentSymbol}${e.initialAllocation.toStringAsFixed(2)}'
+              '${e.dailyLimit > 0 ? "  ·  Daily ${CurrencySymbols.currentSymbol}${e.dailyLimit.toStringAsFixed(2)}" : ""}'
+              '${e.monthlyLimit > 0 ? "  ·  Monthly ${CurrencySymbols.currentSymbol}${e.monthlyLimit.toStringAsFixed(2)}" : ""}',
               style: TextStyle(color: const Color(0xFF10B981), fontSize: 11.sp),
             ),
           ],

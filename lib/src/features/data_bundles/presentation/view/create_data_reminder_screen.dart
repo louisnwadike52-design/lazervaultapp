@@ -11,6 +11,7 @@ import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
 import '../cubit/data_reminder_cubit.dart';
 import '../cubit/data_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum _Recurrence { daily, weekly, monthly }
 
@@ -337,15 +338,7 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
                             borderRadius: BorderRadius.circular(16.r)),
                       ),
                       child: isLoading
-                          ? SizedBox(
-                              height: 24.h,
-                              width: 24.h,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(_isEditing ? 'Update Reminder' : 'Create Reminder',
                               style: GoogleFonts.inter(
                                   fontSize: 16.sp,
@@ -544,10 +537,7 @@ class _CreateDataReminderScreenState extends State<CreateDataReminderScreen> {
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-            ),
+            child: LazerVaultLoader.tiny(),
           ),
         );
       },

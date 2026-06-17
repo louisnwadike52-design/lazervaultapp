@@ -1,6 +1,7 @@
 import 'package:grpc/grpc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/resilient_client_channel.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// Factory for creating gRPC channels for different API gateways
 ///
@@ -18,53 +19,49 @@ import 'package:lazervault/core/services/resilient_client_channel.dart';
 /// 9. Business Gateway - gRPC: 50079, HTTP: 8085 (Payroll, Business Services)
 class GrpcChannelFactory {
   /// Creates Core Gateway gRPC channel (Auth, Accounts, Users, Deposits, Withdrawals, etc.)
-  /// gRPC Port: 50070
+  /// Routed by cloudflared to core-gateway gRPC port 50070 via
+  /// /pb.AuthService/* (and the broader core-gateway service set).
   static ClientChannel createCoreChannel() {
-    final host = dotenv.env['GRPC_API_HOST'] ??
-        (throw Exception(
-            'GRPC_API_HOST not set. For Android emulator, use http://10.0.2.2'));
-    final port = int.parse(dotenv.env['GRPC_API_PORT'] ?? '50070');
-
-    // Extract host without protocol
-    final uri = Uri.parse(host);
-    final cleanHost = uri.host.isEmpty ? host : uri.host;
-
-    print("📡 Creating Core Gateway Channel → $cleanHost:$port");
-    return _createChannel(cleanHost, port, 'Core Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'GRPC_API_HOST',
+      legacyPortEnvKey: 'GRPC_API_PORT',
+      fallbackPort: 50070,
+    );
+    print("📡 Creating Core Gateway Channel → ${ep.host}:${ep.port} (tls=${ep.useTls})");
+    return _createChannel(ep.host, ep.port, 'Core Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Investment Gateway gRPC channel (Stocks, Crypto, Portfolio, Analytics)
-  /// gRPC Port: 50072
+  /// Creates Investment Gateway gRPC channel — investment-gateway port 50072.
   static ClientChannel createInvestmentChannel() {
-    final host = dotenv.env['STOCKS_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['STOCKS_GRPC_PORT'] ?? '50072');
-
-    print("📈 Creating Investment Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Investment Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'STOCKS_GRPC_HOST',
+      legacyPortEnvKey: 'STOCKS_GRPC_PORT',
+      fallbackPort: 50072,
+    );
+    print("📈 Creating Investment Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Investment Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Commerce Gateway gRPC channel (Utility Payments, Group Accounts, TagPay, Invoices, Electricity Bills)
-  /// gRPC Port: 50061
+  /// Creates Commerce Gateway gRPC channel — commerce-gateway port 50061.
   static ClientChannel createCommerceChannel() {
-    final host = dotenv.env['PAYMENT_GRPC_HOST'] ??
-        dotenv.env['INVOICE_GRPC_HOST'] ??
-        '10.0.2.2';
-    final port = int.parse(dotenv.env['PAYMENT_GRPC_PORT'] ??
-        dotenv.env['INVOICE_GRPC_PORT'] ??
-        '50061');
-
-    print("💳 Creating Commerce Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Commerce Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'PAYMENT_GRPC_HOST',
+      legacyPortEnvKey: 'PAYMENT_GRPC_PORT',
+      fallbackPort: 50061,
+    );
+    print("💳 Creating Commerce Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Commerce Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Financial Gateway gRPC channel (Currency Exchange, International Transfers, Gift Cards, Lock Funds/PiggyVault)
-  /// gRPC Port: 50071
+  /// Creates Financial Gateway gRPC channel — financial-gateway port 50071.
   static ClientChannel createFinancialChannel() {
-    final host = dotenv.env['FINANCIAL_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['FINANCIAL_GRPC_PORT'] ?? '50071');
-
-    print("💱 Creating Financial Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Financial Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'FINANCIAL_GRPC_HOST',
+      legacyPortEnvKey: 'FINANCIAL_GRPC_PORT',
+      fallbackPort: 50071,
+    );
+    print("💱 Creating Financial Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Financial Gateway', useTls: ep.useTls);
   }
 
   /// Creates Transfer Gateway gRPC channel (Payments, Transfers)
@@ -75,37 +72,44 @@ class GrpcChannelFactory {
   /// - [scripts/service-discovery.sh]: `TRANSFER_GATEWAY_GRPC_PORT`, `TRANSFER_GATEWAY_HTTP_PORT`
   /// - [start_all_local_no_docker.sh]: `transfer-gateway:8084:50076`
   static ClientChannel createTransferChannel() {
-    final host = dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['TRANSFER_GRPC_PORT'] ?? '50076');
-    print("💸 Creating Transfer/Payments Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Transfer Gateway (Payments)');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'TRANSFER_GRPC_HOST',
+      legacyPortEnvKey: 'TRANSFER_GRPC_PORT',
+      fallbackPort: 50076,
+    );
+    print("💸 Creating Transfer/Payments Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Transfer Gateway (Payments)', useTls: ep.useTls);
   }
 
-  /// Creates Banking Gateway gRPC channel (Banking, Virtual Accounts, Bank Verification)
-  /// gRPC Port: 50077
+  /// Creates Banking Gateway gRPC channel — banking-gateway port 50077.
   static ClientChannel createBankingGatewayChannel() {
-    final host = dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['BANKING_GATEWAY_GRPC_PORT'] ?? '50077');
-    return _createChannel(host, port, 'Banking Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'BANKING_GATEWAY_GRPC_HOST',
+      legacyPortEnvKey: 'BANKING_GATEWAY_GRPC_PORT',
+      fallbackPort: 50077,
+    );
+    return _createChannel(ep.host, ep.port, 'Banking Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Products Gateway gRPC channel (AutoSave, Crowdfund, Insurance)
-  /// Note: Group Accounts are routed through Commerce Gateway (50071)
-  /// gRPC Port: 50078
+  /// Creates Products Gateway gRPC channel — products-gateway port 50078.
   static ClientChannel createProductsChannel() {
-    final host = dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['PRODUCTS_GRPC_PORT'] ?? '50078');
-    return _createChannel(host, port, 'Products Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'PRODUCTS_GRPC_HOST',
+      legacyPortEnvKey: 'PRODUCTS_GRPC_PORT',
+      fallbackPort: 50078,
+    );
+    return _createChannel(ep.host, ep.port, 'Products Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Contactless Payment Gateway gRPC channel (NFC Payments, Sessions)
-  /// gRPC Port: 50075
+  /// Creates Contactless Payment Gateway gRPC channel — contactless-payment-gateway port 50075.
   static ClientChannel createContactlessChannel() {
-    final host = dotenv.env['CONTACTLESS_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['CONTACTLESS_GRPC_PORT'] ?? '50075');
-
-    print("📡 Creating Contactless Payment Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Contactless Payment Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'CONTACTLESS_GRPC_HOST',
+      legacyPortEnvKey: 'CONTACTLESS_GRPC_PORT',
+      fallbackPort: 50075,
+    );
+    print("📡 Creating Contactless Payment Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Contactless Payment Gateway', useTls: ep.useTls);
   }
 
   /// Creates Exchange Service gRPC channel (Currency Exchange, International
@@ -129,77 +133,131 @@ class GrpcChannelFactory {
   ///      matches the gateway's main config.
   ///   3. Hard-coded defaults (10.0.2.2:50071).
   static ClientChannel createExchangeChannel() {
-    final host = dotenv.env['EXCHANGE_GRPC_HOST'] ??
-        dotenv.env['FINANCIAL_GRPC_HOST'] ??
-        '10.0.2.2';
-    final port = int.parse(dotenv.env['EXCHANGE_GRPC_PORT'] ??
-        dotenv.env['FINANCIAL_GRPC_PORT'] ??
-        '50071');
-
-    print("💱 Creating Exchange Service Channel (via Financial Gateway) → $host:$port");
-    return _createChannel(host, port, 'Financial Gateway (Exchange)');
+    // Exchange shares the financial-gateway port (50071).
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'EXCHANGE_GRPC_HOST',
+      legacyPortEnvKey: 'EXCHANGE_GRPC_PORT',
+      fallbackPort: 50071,
+    );
+    print("💱 Creating Exchange Service Channel (via Financial Gateway) → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Financial Gateway (Exchange)', useTls: ep.useTls);
   }
 
-  /// Creates Business Gateway gRPC channel (Payroll, Business Services)
-  /// gRPC Port: 50079
+  /// Creates Business Gateway gRPC channel — business-gateway port 50079.
   static ClientChannel createBusinessChannel() {
-    final host = dotenv.env['BUSINESS_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['BUSINESS_GRPC_PORT'] ?? '50079');
-
-    print("💼 Creating Business Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Business Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'BUSINESS_GRPC_HOST',
+      legacyPortEnvKey: 'BUSINESS_GRPC_PORT',
+      fallbackPort: 50079,
+    );
+    print("💼 Creating Business Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Business Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Chat Proxy Gateway gRPC channel (Direct Service Chat)
-  /// gRPC Port: 50074
+  /// Creates Chat Proxy Gateway gRPC channel — chat-proxy-gateway port 50074.
   static ClientChannel createChatProxyChannel() {
-    final host = dotenv.env['CHAT_PROXY_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['CHAT_PROXY_GRPC_PORT'] ?? '50074');
-
-    print("Creating Chat Proxy Gateway Channel -> $host:$port");
-    return _createChannel(host, port, 'Chat Proxy Gateway');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'CHAT_PROXY_GRPC_HOST',
+      legacyPortEnvKey: 'CHAT_PROXY_GRPC_PORT',
+      fallbackPort: 50074,
+    );
+    print("Creating Chat Proxy Gateway Channel -> ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Chat Proxy Gateway', useTls: ep.useTls);
   }
 
-  /// Creates Banking Service gRPC channel (Transfers, Virtual Accounts, Bank Verification)
-  /// gRPC Port: 50073
+  /// Creates Banking Service gRPC channel — banking-service port 50073.
   static ClientChannel createBankingChannel() {
-    final host = dotenv.env['BANKING_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['BANKING_GRPC_PORT'] ?? '50073');
-
-    print("🏦 Creating Banking Service Channel → $host:$port");
-    return _createChannel(host, port, 'Banking Service');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'BANKING_GRPC_HOST',
+      legacyPortEnvKey: 'BANKING_GRPC_PORT',
+      fallbackPort: 50073,
+    );
+    print("🏦 Creating Banking Service Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Banking Service', useTls: ep.useTls);
   }
 
-  /// Creates Voice Biometrics Service gRPC channel (Voice enrollment and verification)
-  /// gRPC Port: 50060
-  /// Direct connection to voice-biometrics-service (not via gateway)
+  /// Creates Voice Biometrics Service gRPC channel — voice-biometrics-service port 50060.
   static ClientChannel createVoiceBiometricsChannel() {
-    final host = dotenv.env['VOICE_BIOMETRICS_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['VOICE_BIOMETRICS_PORT'] ?? '50060');
+    final ep = _resolveEndpoint(
+      legacyHostEnvKey: 'VOICE_BIOMETRICS_HOST',
+      legacyPortEnvKey: 'VOICE_BIOMETRICS_PORT',
+      fallbackPort: 50060,
+    );
+    print("🎙️ Creating Voice Biometrics Service Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Voice Biometrics Service', useTls: ep.useTls);
+  }
 
-    print("🎙️ Creating Voice Biometrics Service Channel → $host:$port");
-    return _createChannel(host, port, 'Voice Biometrics Service');
+  /// Resolves the (host, port, useTls) tuple for any gRPC channel.
+  ///
+  /// Resolution precedence is intentionally explicit so local-dev override
+  /// still works after the migration to the Cloudflare-tunneled
+  /// `EndpointRegistry`:
+  ///
+  ///   1. Legacy per-gateway `dotenv` overrides (e.g. `STOCKS_GRPC_HOST`,
+  ///      `TRANSFER_GRPC_HOST`) — when set, take precedence so a developer
+  ///      with a `.env` pointing at `10.0.2.2:50076` keeps that workflow.
+  ///   2. `EndpointRegistry.grpcBase` — the single tunnel endpoint
+  ///      (`api.lazervault.app:443`) Flutter reads on cold start from
+  ///      SharedPreferences and refreshes in the background. This is the
+  ///      production path; every channel lands on the same host:port and
+  ///      cloudflared dispatches to the right backend by gRPC path
+  ///      (`/pb.<Service>/<Method>`).
+  ///   3. Hard-coded fallback per channel, kept as a third belt for unit
+  ///      tests that don't initialise either dotenv or the registry.
+  ///
+  /// TLS is selected by port: 443 → secure (`ChannelCredentials.secure()`),
+  /// anything else → insecure cleartext (matches the old behaviour
+  /// against `10.0.2.2:50xxx`).
+  static _GrpcEndpoint _resolveEndpoint({
+    required String legacyHostEnvKey,
+    required String legacyPortEnvKey,
+    required int fallbackPort,
+  }) {
+    String host;
+    int port;
+
+    final overrideHost = dotenv.env[legacyHostEnvKey];
+    final overridePort = dotenv.env[legacyPortEnvKey];
+    if (overrideHost != null && overrideHost.isNotEmpty) {
+      // Strip any accidental scheme from the override.
+      final parsed = Uri.tryParse(overrideHost);
+      host = (parsed != null && parsed.host.isNotEmpty)
+          ? parsed.host
+          : overrideHost;
+      port = int.tryParse(overridePort ?? '') ?? fallbackPort;
+    } else {
+      // Tunnel path — single endpoint for every channel.
+      host = endpointRegistry.grpcHost;
+      port = endpointRegistry.grpcPort;
+    }
+    return _GrpcEndpoint(host: host, port: port, useTls: port == 443);
   }
 
   /// Internal method to create channel with standard production-grade options
   /// Includes gzip compression for 60-80% payload reduction on low-bandwidth networks
-  static ClientChannel _createChannel(String host, int port, String name) {
+  static ClientChannel _createChannel(String host, int port, String name, {bool useTls = false}) {
     // Self-healing wrapper: swaps in a fresh inner channel whenever the old
     // one wedges in SHUTDOWN (see ResilientClientChannel). The builder below
     // produces the raw channel each time.
     return ResilientClientChannel(
-      () => _rawChannel(host, port),
+      () => _rawChannel(host, port, useTls: useTls),
       host: host,
       name: name,
     );
   }
 
-  static ClientChannel _rawChannel(String host, int port) {
+  static ClientChannel _rawChannel(String host, int port, {bool useTls = false}) {
     return ClientChannel(
       host,
       port: port,
       options: ChannelOptions(
-        credentials: const ChannelCredentials.insecure(), // Use TLS in production
+        // Cloudflare-tunneled traffic terminates TLS at the edge; cleartext
+        // h2c is used for origin (cloudflared handles HTTP/2 negotiation),
+        // so client-side TLS is mandatory only when we hit port 443. The
+        // useTls flag keeps the local-dev cleartext path untouched.
+        credentials: useTls
+            ? const ChannelCredentials.secure()
+            : const ChannelCredentials.insecure(),
         codecRegistry: CodecRegistry(codecs: const [GzipCodec()]), // Enable gzip compression
         keepAlive: const ClientKeepAliveOptions(
           pingInterval: Duration(seconds: 30), // Keep connection alive
@@ -249,4 +307,16 @@ class GrpcChannelFactory {
     await Future.wait(futures);
     print("✅ All gRPC channels closed");
   }
+}
+
+/// Resolved gRPC endpoint tuple — the host/port the channel will dial,
+/// plus whether TLS should be negotiated. Used internally by
+/// [GrpcChannelFactory._resolveEndpoint] so every channel can pick up
+/// the live admin-managed URL via [EndpointRegistry] while still
+/// honouring per-channel dotenv overrides for local dev.
+class _GrpcEndpoint {
+  const _GrpcEndpoint({required this.host, required this.port, required this.useTls});
+  final String host;
+  final int port;
+  final bool useTls;
 }

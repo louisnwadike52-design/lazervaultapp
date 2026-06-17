@@ -3,6 +3,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ContactPickerBottomSheet extends StatefulWidget {
   final Function(String name, String identifier, ContactIdentifierType type)
@@ -153,9 +154,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
           if (_isLoading)
             Expanded(
               child: Center(
-                child: CircularProgressIndicator(
-                  color: const Color.fromARGB(255, 78, 3, 208),
-                ),
+                child: LazerVaultLoader.small(),
               ),
             )
           else if (_permissionDenied)

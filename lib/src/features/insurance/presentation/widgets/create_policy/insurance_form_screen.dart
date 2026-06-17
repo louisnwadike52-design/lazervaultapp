@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Prefixed to dodge an `ImageSource` symbol collision with
 // flutter_widget_from_html_core (which exports its own ImageSource for
 // HTML img tags). Using `picker.picker.ImageSource.camera/.gallery` is
@@ -1379,7 +1380,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                   ),
                 )),
                 if (isStaging)
-                  SizedBox(width: 16.w, height: 16.w, child: const CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1))),
+                  LazerVaultLoader.tiny(),
               ]),
             ),
           ),
@@ -1870,7 +1871,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             ? Padding(
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 child: Row(children: [
-                  SizedBox(width: 16.w, height: 16.w, child: const CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1))),
+                  LazerVaultLoader.tiny(),
                   SizedBox(width: 10.w),
                   Text('Loading options...', style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
                 ]),

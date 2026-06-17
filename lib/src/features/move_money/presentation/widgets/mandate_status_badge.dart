@@ -1,68 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/mandate_entity.dart';
+import 'linked_account_state_chip.dart';
 
-/// Small inline badge showing mandate/Direct Debit status on account cards.
-///
-/// Renders as: [colored dot] [label text]
+/// Maps a [MandateEntity] (or null) to the canonical [LinkedAccountState] used
+/// by the shared chip — the single source of truth for mandate-state display.
+LinkedAccountState linkedAccountStateForMandate(MandateEntity? mandate) {
+  if (mandate == null) return LinkedAccountState.oneTime; // no mandate → DirectPay
+  switch (mandate.status) {
+    case MandateStatus.readyToDebit:
+    case MandateStatus.active:
+      return LinkedAccountState.directDebit;
+    case MandateStatus.authorized:
+      // User authorized; only NIBSS/bank activation left → "Setting up".
+      return LinkedAccountState.settingUp;
+    case MandateStatus.awaitingAuthorization:
+    case MandateStatus.pending:
+      // User hasn't authorized yet (e.g. cancelled the sheet) → not set up.
+      return LinkedAccountState.oneTime;
+    case MandateStatus.paused:
+      return LinkedAccountState.paused;
+    case MandateStatus.expired:
+      return LinkedAccountState.expired;
+    case MandateStatus.rejected:
+      return LinkedAccountState.rejected;
+    case MandateStatus.cancelled:
+      return LinkedAccountState.cancelled;
+  }
+}
+
+/// Inline mandate/Direct-Debit status badge on account cards. Now a thin wrapper
+/// over the shared [LinkedAccountStateChip] so every screen renders the SAME
+/// pill. Public API unchanged (used by Beam, autosave, mandate management,
+/// move account card).
 class MandateStatusBadge extends StatelessWidget {
   final MandateEntity? mandate;
+  final VoidCallback? onTap;
 
-  const MandateStatusBadge({super.key, this.mandate});
+  const MandateStatusBadge({super.key, this.mandate, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final (color, label) = _resolveDisplay();
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 6.w,
-          height: 6.w,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        SizedBox(width: 4.w),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: color,
-            fontSize: 10.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+    return LinkedAccountStateChip(
+      state: linkedAccountStateForMandate(mandate),
+      onTap: onTap,
     );
-  }
-
-  (Color, String) _resolveDisplay() {
-    if (mandate == null) {
-      // No mandate → one-time DirectPay (user authorises each transfer).
-      return (const Color(0xFF6B7280), 'DirectPay');
-    }
-
-    switch (mandate!.status) {
-      case MandateStatus.readyToDebit:
-      case MandateStatus.active:
-        return (const Color(0xFF10B981), 'Direct Debit');
-      case MandateStatus.awaitingAuthorization:
-      case MandateStatus.authorized:
-        return (const Color(0xFFFB923C), 'Activating...');
-      case MandateStatus.paused:
-        return (const Color(0xFFFBBF24), 'Paused');
-      case MandateStatus.expired:
-        return (const Color(0xFFEF4444), 'Expired');
-      case MandateStatus.rejected:
-        return (const Color(0xFFEF4444), 'Rejected');
-      case MandateStatus.cancelled:
-        return (const Color(0xFF6B7280), 'Cancelled');
-      case MandateStatus.pending:
-        return (const Color(0xFFFB923C), 'Setting up...');
-    }
   }
 }

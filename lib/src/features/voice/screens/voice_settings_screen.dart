@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
     as settings_models;
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
@@ -277,9 +278,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         builder: (context, state) {
           if (state is VoiceSettingsLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF3B82F6),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -388,10 +387,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           const Center(
             child: Padding(
               padding: EdgeInsets.all(24),
-              child: CircularProgressIndicator(
-                color: Color(0xFF3B82F6),
-                strokeWidth: 2,
-              ),
+              child: LazerVaultLoader.tiny(),
             ),
           )
         else if (_voicesForLanguage.isEmpty)
@@ -427,14 +423,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 24.w,
-              height: 24.w,
-              child: const CircularProgressIndicator(
-                color: Color.fromARGB(255, 78, 3, 208),
-                strokeWidth: 2,
-              ),
-            ),
+            LazerVaultLoader.small(),
             SizedBox(width: 14.w),
             Text(
               'Checking enrollment status...',
@@ -637,14 +626,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           border: Border.all(color: const Color(0xFF2D2D2D)),
         ),
         child: const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-              strokeWidth: 2,
-            ),
-          ),
+          child: LazerVaultLoader.small(),
         ),
       );
     }
@@ -726,10 +708,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                 child: statusText == 'pending'
                     ? Padding(
                         padding: EdgeInsets.all(10.w),
-                        child: CircularProgressIndicator(
-                          color: iconColor,
-                          strokeWidth: 2,
-                        ),
+                        child: LazerVaultLoader.tiny(),
                       )
                     : Icon(icon, color: iconColor, size: 22.sp),
               ),
@@ -762,14 +741,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
               // Toggle for ready/disabled states
               if (statusText == 'ready' || statusText == 'disabled')
                 _togglingCustomVoice
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF3B82F6),
-                          strokeWidth: 2,
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Switch(
                         value: statusText == 'ready',
                         onChanged: (value) => _toggleCustomVoice(value),

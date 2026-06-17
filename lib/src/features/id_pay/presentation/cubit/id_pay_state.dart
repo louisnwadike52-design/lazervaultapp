@@ -8,6 +8,22 @@ class IDPayInitial extends IDPayState {}
 
 class IDPayLoading extends IDPayState {}
 
+/// Intermediate state while the debit + credit pair settles server-side.
+/// Rendered by `IDPayProcessingScreen` so the user sees a 4-step indicator
+/// instead of a frozen "Loading…" until the receipt screen lands.
+class IDPayProcessing extends IDPayState {
+  final String payId;
+  final double amount;
+  IDPayProcessing({required this.payId, required this.amount});
+}
+
+/// Distinct from generic IDPayError so the receipt screen can route the
+/// user to a "Top up" CTA instead of a generic retry button.
+class IDPayInsufficientFunds extends IDPayState {
+  final String message;
+  IDPayInsufficientFunds({required this.message});
+}
+
 class IDPayCreated extends IDPayState {
   final IDPayEntity idPay;
   IDPayCreated({required this.idPay});

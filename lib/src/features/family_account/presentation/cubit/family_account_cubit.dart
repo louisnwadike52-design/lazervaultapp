@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/family_account_entities.dart';
 import '../../domain/repositories/family_account_repository.dart' show MemberAllocationEntry;
 import '../../domain/usecases/family_account_usecases.dart';
@@ -20,6 +21,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   final FreezeFamilyAccountUseCase freezeFamilyAccount;
   final UnfreezeFamilyAccountUseCase unfreezeFamilyAccount;
   final DeleteFamilyAccountUseCase deleteFamilyAccount;
+  final LeaveFamilyAccountUseCase leaveFamilyAccount;
   final ProcessMemberContributionUseCase processMemberContribution;
   final SetupFamilyAccountUseCase setupFamilyAccount;
   final UpdateFundDistributionModeUseCase updateFundDistributionMode;
@@ -42,6 +44,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required this.freezeFamilyAccount,
     required this.unfreezeFamilyAccount,
     required this.deleteFamilyAccount,
+    required this.leaveFamilyAccount,
     required this.processMemberContribution,
     required this.setupFamilyAccount,
     required this.updateFundDistributionMode,
@@ -272,13 +275,18 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     emit(FundsAllocating());
+    // Money-safety: a stable per-allocation key so a retry after a network
+    // error never double-allocates (mirrors contributeToPool).
+    final key = idempotencyKey ?? const Uuid().v4();
     final result = await allocateFunds(AllocateFundsParams(
       familyId: familyId,
       memberId: memberId,
       amount: amount,
       description: description,
+      idempotencyKey: key,
     ));
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),
@@ -346,19 +354,34 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     );
   }
 
+  // Leave family account (self-serve, non-creator member)
+  Future<void> leaveFamily({required String familyId}) async {
+    emit(FamilyAccountLoading());
+    final result = await leaveFamilyAccount(LeaveFamilyAccountParams(familyId: familyId));
+    result.fold(
+      (failure) => emit(FamilyAccountError(failure.message)),
+      (returnedBalance) => emit(FamilyAccountLeft(returnedBalance)),
+    );
+  }
+
   // Process member contribution (hybrid funding)
   Future<void> contributeToPool({
     required String familyId,
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     emit(FamilyAccountLoading());
+    // Money-safety (audit H2): a stable per-contribution key so a retry after a
+    // network error never double-debits the contributor. Generated once here.
+    final key = idempotencyKey ?? const Uuid().v4();
     final result = await processMemberContribution(ProcessMemberContributionParams(
       familyId: familyId,
       memberId: memberId,
       amount: amount,
       description: description,
+      idempotencyKey: key,
     ));
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),

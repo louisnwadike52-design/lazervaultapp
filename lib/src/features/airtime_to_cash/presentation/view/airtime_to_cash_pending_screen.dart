@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Pending screen for VTU Africa airtime-to-cash conversion.
 /// Shown while waiting for webhook confirmation after airtime transfer.
@@ -181,16 +182,7 @@ class _AirtimeToCashPendingScreenState
       child: Stack(
         children: [
           // Outer ring
-          SizedBox(
-            width: 100.w,
-            height: 100.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                const Color(0xFF4E03D0).withValues(alpha: 0.3),
-              ),
-            ),
-          ),
+          LazerVaultLoader(size: 100),
           // Inner icon
           Center(
             child: Container(

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Note: voice_enrollment_state.dart is a part of voice_enrollment_cubit.dart, no need to import separately
 
 /// Voice Enrollment Screen
@@ -439,16 +440,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
           SizedBox(height: 48.h),
 
           // Loading spinner
-          SizedBox(
-            width: 80.w,
-            height: 80.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 4,
-              valueColor: AlwaysStoppedAnimation(
-                Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
+          LazerVaultLoader(size: 80),
 
           SizedBox(height: 32.h),
 
@@ -506,16 +498,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
 
           SizedBox(height: 48.h),
 
-          SizedBox(
-            width: 40.w,
-            height: 40.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation(
-                Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
+          LazerVaultLoader.medium(),
         ],
       ),
     );
@@ -562,14 +545,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
 
           SizedBox(height: 48.h),
 
-          SizedBox(
-            width: 40.w,
-            height: 40.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF3B82F6)),
-            ),
-          ),
+          LazerVaultLoader.medium(),
         ],
       ),
     );

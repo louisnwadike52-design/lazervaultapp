@@ -7,6 +7,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/data_plan_entity.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DataPaymentProcessingScreen extends StatefulWidget {
   const DataPaymentProcessingScreen({super.key});
@@ -345,15 +346,7 @@ class _DataPaymentProcessingScreenState
                   ),
                 ),
                 if (isActive && !_hasFailed)
-                  SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(step.activeColor),
-                    ),
-                  ),
+                  LazerVaultLoader.small(),
                 if (isCompleted)
                   Icon(
                     Icons.check_circle,

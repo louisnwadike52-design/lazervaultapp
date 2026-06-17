@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../domain/entities/expense_entity.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Landing screen for the Expense Tracking feature. Mirrors the
 /// customer / inventory / tax landings — same status-filter pill row,
@@ -308,7 +309,7 @@ class _ExpensesListScreenState extends State<ExpensesListScreen> {
       builder: (context, state) {
         if (state is ExpenseLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            child: LazerVaultLoader.small(),
           );
         }
         if (state is! ExpensesLoaded) {

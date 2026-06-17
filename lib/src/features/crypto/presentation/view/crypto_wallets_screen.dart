@@ -10,6 +10,7 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../data/models/crypto_wallet_model.dart';
 import '../../domain/entities/crypto_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen showing user's crypto wallets with deposit addresses and balances.
 /// Each wallet mirrors a Quidax sub-account wallet.
@@ -54,7 +55,7 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
               child: BlocBuilder<CryptoCubit, CryptoState>(
                 builder: (context, state) {
                   if (state is! CryptosLoaded) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: LazerVaultLoader.small());
                   }
 
                   final wallets = _filteredWallets(state.wallets);

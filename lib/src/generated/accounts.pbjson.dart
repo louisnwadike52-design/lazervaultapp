@@ -70,14 +70,16 @@ const GetUserAccountsRequest$json = const {
   '1': 'GetUserAccountsRequest',
   '2': const [
     const {'1': 'target_user_id', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'targetUserId', '17': true},
+    const {'1': 'include_all_currencies', '3': 2, '4': 1, '5': 8, '9': 1, '10': 'includeAllCurrencies', '17': true},
   ],
   '8': const [
     const {'1': '_target_user_id'},
+    const {'1': '_include_all_currencies'},
   ],
 };
 
 /// Descriptor for `GetUserAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcmdldFVzZXJJZIgBAUIRCg9fdGFyZ2V0X3VzZXJfaWQ=');
+final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcmdldFVzZXJJZIgBARI5ChZpbmNsdWRlX2FsbF9jdXJyZW5jaWVzGAIgASgISAFSFGluY2x1ZGVBbGxDdXJyZW5jaWVziAEBQhEKD190YXJnZXRfdXNlcl9pZEIZChdfaW5jbHVkZV9hbGxfY3VycmVuY2llcw==');
 @$core.Deprecated('Use getUserAccountsResponseDescriptor instead')
 const GetUserAccountsResponse$json = const {
   '1': 'GetUserAccountsResponse',
@@ -2061,11 +2063,16 @@ const GenerateStatementResponse$json = const {
     const {'1': 'download_url', '3': 2, '4': 1, '5': 9, '10': 'downloadUrl'},
     const {'1': 'valid_until', '3': 3, '4': 1, '5': 3, '10': 'validUntil'},
     const {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'sha256', '3': 5, '4': 1, '5': 9, '10': 'sha256'},
+    const {'1': 'generated_at', '3': 6, '4': 1, '5': 3, '10': 'generatedAt'},
+    const {'1': 'format', '3': 7, '4': 1, '5': 9, '10': 'format'},
+    const {'1': 'cached', '3': 8, '4': 1, '5': 8, '10': 'cached'},
+    const {'1': 'transaction_count', '3': 9, '4': 1, '5': 3, '10': 'transactionCount'},
   ],
 };
 
 /// Descriptor for `GenerateStatementResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List generateStatementResponseDescriptor = $convert.base64Decode('ChlHZW5lcmF0ZVN0YXRlbWVudFJlc3BvbnNlEh8KC2RvY3VtZW50X2lkGAEgASgJUgpkb2N1bWVudElkEiEKDGRvd25sb2FkX3VybBgCIAEoCVILZG93bmxvYWRVcmwSHwoLdmFsaWRfdW50aWwYAyABKANSCnZhbGlkVW50aWwSGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List generateStatementResponseDescriptor = $convert.base64Decode('ChlHZW5lcmF0ZVN0YXRlbWVudFJlc3BvbnNlEh8KC2RvY3VtZW50X2lkGAEgASgJUgpkb2N1bWVudElkEiEKDGRvd25sb2FkX3VybBgCIAEoCVILZG93bmxvYWRVcmwSHwoLdmFsaWRfdW50aWwYAyABKANSCnZhbGlkVW50aWwSGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZRIWCgZzaGEyNTYYBSABKAlSBnNoYTI1NhIhCgxnZW5lcmF0ZWRfYXQYBiABKANSC2dlbmVyYXRlZEF0EhYKBmZvcm1hdBgHIAEoCVIGZm9ybWF0EhYKBmNhY2hlZBgIIAEoCFIGY2FjaGVkEisKEXRyYW5zYWN0aW9uX2NvdW50GAkgASgDUhB0cmFuc2FjdGlvbkNvdW50');
 @$core.Deprecated('Use generateAccountConfirmationRequestDescriptor instead')
 const GenerateAccountConfirmationRequest$json = const {
   '1': 'GenerateAccountConfirmationRequest',

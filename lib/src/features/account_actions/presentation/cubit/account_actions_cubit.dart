@@ -479,15 +479,11 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
       },
       (document) {
         if (isClosed) return;
-        emit(const DocumentDownloaded(
-          DocumentEntity(
-            id: 'stmt_123',
-            title: 'Account Statement',
-            description: 'Your monthly account statement',
-            type: DocumentType.accountStatement,
-            format: DocumentFormat.pdf,
-          ),
-        ));
+        // Emit the REAL document the backend returned (URL, sha256,
+        // generatedAt, format, etc.) — earlier code emitted a hardcoded
+        // stub that dropped the download URL and metadata, breaking the
+        // share/verify flow.
+        emit(DocumentDownloaded(document));
       },
     );
   }

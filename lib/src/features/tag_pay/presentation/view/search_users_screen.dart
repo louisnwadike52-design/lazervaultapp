@@ -9,6 +9,7 @@ import '../../../../../core/utils/debouncer.dart';
 import '../../../../../core/utils/user_search_query.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SearchUsersScreen extends StatelessWidget {
   const SearchUsersScreen({super.key});
@@ -281,16 +282,7 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
           suffixIcon: _isSearching
               ? Padding(
                   padding: EdgeInsets.all(12.w),
-                  child: SizedBox(
-                    width: 20.w,
-                    height: 20.w,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color(0xFF3B82F6),
-                      ),
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 )
               : _searchController.text.isNotEmpty
                   ? IconButton(
@@ -349,9 +341,7 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
 
   Widget _buildLoadingState() {
     return Center(
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
-      ),
+      child: LazerVaultLoader.small(),
     );
   }
 

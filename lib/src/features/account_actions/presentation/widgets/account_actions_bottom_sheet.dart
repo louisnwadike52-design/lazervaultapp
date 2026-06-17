@@ -12,6 +12,7 @@ import '../widgets/spending_limits_tab.dart';
 import '../widgets/documents_tab.dart';
 import '../widgets/help_tab.dart';
 import '../widgets/account_preview_card.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Tab enum for account actions
 enum AccountActionTab {
@@ -38,12 +39,32 @@ class AccountActionsBottomSheet extends StatefulWidget {
 class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  AccountActionTab _selectedTab = AccountActionTab.manageCard;
+  late AccountActionTab _selectedTab;
+
+  /// Feature-flag the card-management surfaces. We don't ship card
+  /// issuance yet, so the "MANAGE CARD" tab + its Card Frozen /
+  /// Card Unfrozen / Card Details dialogs are hidden. Flip this to
+  /// `true` when the cards backend goes live — every card path stays
+  /// in code so the re-enable is one-flag.
+  static const bool _cardsFeatureEnabled = false;
+
+  /// Tabs surfaced in the sheet, in display order. When the cards
+  /// feature is off we drop `manageCard` from this list — the enum
+  /// value is preserved (kept in `AccountActionTab`) so the
+  /// `_buildTabContent` switch stays exhaustive without dead branches.
+  List<AccountActionTab> get _visibleTabs => [
+        if (_cardsFeatureEnabled) AccountActionTab.manageCard,
+        AccountActionTab.security,
+        AccountActionTab.limits,
+        AccountActionTab.documents,
+        AccountActionTab.help,
+      ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _selectedTab = _visibleTabs.first;
+    _tabController = TabController(length: _visibleTabs.length, vsync: this);
     _tabController.addListener(_handleTabChange);
 
     // Fetch account details on init
@@ -62,7 +83,10 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
   void _handleTabChange() {
     if (_tabController.indexIsChanging) {
       setState(() {
-        _selectedTab = AccountActionTab.values[_tabController.index];
+        // Map TabController index → the matching enum via _visibleTabs
+        // so hidden tabs (e.g. manageCard while the cards feature is
+        // off) don't get accidentally selected by an off-by-one index.
+        _selectedTab = _visibleTabs[_tabController.index];
       });
     }
   }
@@ -187,23 +211,38 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
           indicatorSize: TabBarIndicatorSize.tab,
           padding: EdgeInsets.zero,
           labelPadding: EdgeInsets.symmetric(horizontal: 12.w),
-          tabs: const [
-            Tab(text: 'MANAGE CARD'),
-            Tab(text: 'SECURITY'),
-            Tab(text: 'LIMITS'),
-            Tab(text: 'DOCUMENTS'),
-            Tab(text: 'HELP'),
+          // Tabs derived from _visibleTabs so the cards-feature flag
+          // can hide MANAGE CARD without leaving an orphaned label.
+          tabs: [
+            for (final tab in _visibleTabs) Tab(text: _tabLabel(tab)),
           ],
         ),
       ),
     );
   }
 
+  /// Display label for each tab. Pulled into a helper so the TabBar
+  /// can generate labels from `_visibleTabs` without a parallel list.
+  String _tabLabel(AccountActionTab tab) {
+    switch (tab) {
+      case AccountActionTab.manageCard:
+        return 'MANAGE CARD';
+      case AccountActionTab.security:
+        return 'SECURITY';
+      case AccountActionTab.limits:
+        return 'LIMITS';
+      case AccountActionTab.documents:
+        return 'DOCUMENTS';
+      case AccountActionTab.help:
+        return 'HELP';
+    }
+  }
+
   Widget _buildTabContent(AccountActionsState state) {
     // Show loading overlay when state is loading
     if (state is AccountActionsLoading && state is! AccountDetailsLoaded) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+        child: LazerVaultLoader.small(),
       );
     }
 
@@ -251,7 +290,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
-    } else if (state is AccountFrozen) {
+    } else if (state is AccountFrozen && _cardsFeatureEnabled) {
       Get.snackbar(
         'Card Frozen',
         state.message,
@@ -259,7 +298,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
-    } else if (state is AccountUnfrozen) {
+    } else if (state is AccountUnfrozen && _cardsFeatureEnabled) {
       Get.snackbar(
         'Card Unfrozen',
         state.message,
@@ -286,8 +325,8 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     } else if (state is PINRevealed) {
       // Show PIN dialog
       _showPINDialog(state.pin, state.expiresAt);
-    } else if (state is CardDetailsRevealed) {
-      // Show card details dialog
+    } else if (state is CardDetailsRevealed && _cardsFeatureEnabled) {
+      // Show card details dialog (gated by cards feature flag)
       _showCardDetailsDialog(state);
     } else if (state is DocumentDownloaded) {
       Get.snackbar(

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart'
     show MemberAllocationEntry;
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
@@ -267,7 +269,7 @@ class _FamilyActivationSetupScreenState
           builder: (context, state) {
             if (state is FamilyAccountLoading && _familyAccount == null) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                child: LazerVaultLoader.small(),
               );
             }
 
@@ -502,7 +504,7 @@ class _FamilyActivationSetupScreenState
             _buildInfoCard(
               Icons.group,
               'Shared Pool',
-              'All ${activeMembers.length} members will share the total balance of \$${totalBalance.toStringAsFixed(2)}. Any spending by any member reduces the shared balance.',
+              'All ${activeMembers.length} members will share the total balance of ${CurrencySymbols.currentSymbol}${totalBalance.toStringAsFixed(2)}. Any spending by any member reduces the shared balance.',
             ),
           ] else if (_selectedMode == FundDistributionMode.equalSplit) ...[
             if (activeMembers.isEmpty) ...[
@@ -515,7 +517,7 @@ class _FamilyActivationSetupScreenState
               _buildInfoCard(
                 Icons.balance,
                 'Equal Split',
-                'Each of the ${activeMembers.length} active members will receive \$${(totalBalance / activeMembers.length).toStringAsFixed(2)}.',
+                'Each of the ${activeMembers.length} active members will receive ${CurrencySymbols.currentSymbol}${(totalBalance / activeMembers.length).toStringAsFixed(2)}.',
               ),
               SizedBox(height: 16.h),
               ...activeMembers.map((member) => _buildMemberAllocationRow(
@@ -589,7 +591,7 @@ class _FamilyActivationSetupScreenState
             ),
           ),
           Text(
-            '\$${remaining.toStringAsFixed(2)}',
+            '${CurrencySymbols.currentSymbol}${remaining.toStringAsFixed(2)}',
             style: TextStyle(
               color: isOverAllocated ? const Color(0xFFEF4444) : const Color(0xFF10B981),
               fontSize: 16.sp,
@@ -655,7 +657,7 @@ class _FamilyActivationSetupScreenState
               ),
               if (readOnly)
                 Text(
-                  '\$${fixedAmount ?? '0.00'}',
+                  '${CurrencySymbols.currentSymbol}${fixedAmount ?? '0.00'}',
                   style: TextStyle(
                     color: const Color(0xFF10B981),
                     fontSize: 16.sp,
@@ -676,7 +678,7 @@ class _FamilyActivationSetupScreenState
                     ),
                     textAlign: TextAlign.right,
                     decoration: InputDecoration(
-                      prefixText: '\$ ',
+                      prefixText: '${CurrencySymbols.currentSymbol} ',
                       prefixStyle: TextStyle(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 14.sp,
@@ -771,7 +773,7 @@ class _FamilyActivationSetupScreenState
           borderRadius: BorderRadius.circular(8.r),
           borderSide: BorderSide.none,
         ),
-        prefixText: '\$ ',
+        prefixText: '${CurrencySymbols.currentSymbol} ',
         prefixStyle: TextStyle(
           color: const Color(0xFF9CA3AF),
           fontSize: 12.sp,
@@ -961,7 +963,7 @@ class _FamilyActivationSetupScreenState
                             borderRadius: BorderRadius.circular(8.r),
                             borderSide: BorderSide.none,
                           ),
-                          prefixText: '\$ ',
+                          prefixText: '${CurrencySymbols.currentSymbol} ',
                           prefixStyle: TextStyle(
                             color: const Color(0xFF9CA3AF),
                             fontSize: 13.sp,
@@ -991,7 +993,7 @@ class _FamilyActivationSetupScreenState
                             borderRadius: BorderRadius.circular(8.r),
                             borderSide: BorderSide.none,
                           ),
-                          prefixText: '\$ ',
+                          prefixText: '${CurrencySymbols.currentSymbol} ',
                           prefixStyle: TextStyle(
                             color: const Color(0xFF9CA3AF),
                             fontSize: 13.sp,
@@ -1012,14 +1014,7 @@ class _FamilyActivationSetupScreenState
                   child: ElevatedButton.icon(
                     onPressed: _isInviting ? null : _inviteMember,
                     icon: _isInviting
-                        ? SizedBox(
-                            width: 18.w,
-                            height: 18.h,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                        ? LazerVaultLoader(size: 18)
                         : Icon(Icons.person_add, size: 18.sp),
                     label: Text(
                       _isInviting ? 'Inviting...' : 'Send Invitation',
@@ -1351,7 +1346,7 @@ class _FamilyActivationSetupScreenState
                 SizedBox(height: 16.h),
                 _buildSummaryRow(
                   'Total Balance',
-                  '\$${(_familyAccount?.totalBalance ?? 0).toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${(_familyAccount?.totalBalance ?? 0).toStringAsFixed(2)}',
                 ),
                 SizedBox(height: 16.h),
                 _buildSummaryRow(
@@ -1394,14 +1389,7 @@ class _FamilyActivationSetupScreenState
                 borderRadius: BorderRadius.circular(28.r),
                 child: Center(
                   child: isLoading
-                      ? SizedBox(
-                          width: 24.w,
-                          height: 24.h,
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

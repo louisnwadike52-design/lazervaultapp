@@ -17,6 +17,7 @@ import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaymentConfirmationScreen extends StatelessWidget {
   final PaymentSessionEntity session;
@@ -532,10 +533,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Center(
-              child: CircularProgressIndicator(
-                color: const Color(0xFF6366F1),
-                strokeWidth: 2,
-              ),
+              child: LazerVaultLoader.tiny(),
             ),
           );
         }
@@ -794,15 +792,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
         ),
         child: Center(
           child: _isProcessing
-              ? SizedBox(
-                  height: 22.h,
-                  width: 22.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader(size: 22)
               : Text(
                   _isSessionExpired
                       ? 'Session Expired'

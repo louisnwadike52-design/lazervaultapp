@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
 import 'package:lazervault/core/utils/edge_case_validator.dart';
 
 /// Documents Tab - Download statements and other documents
@@ -63,14 +65,17 @@ class DocumentsTab extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // Account Statement
+          // Account Statement — backend-rendered PDF/CSV.
+          // Routes to the dedicated StatementExportScreen rather than
+          // the legacy inline date-picker dialog so the user sees the
+          // full picker + format + recents UX.
           _buildDocumentButton(
             context,
             icon: Icons.receipt_long_outlined,
-            title: 'Account Statement',
-            subtitle: 'View your transaction history',
-            trailing: 'View & Download →',
-            onTap: () => _onDownloadStatement(context),
+            title: 'Generate Statement',
+            subtitle: 'PDF or CSV for any date range',
+            trailing: 'Open →',
+            onTap: () => _onGenerateStatement(context),
           ),
           SizedBox(height: 12.h),
 
@@ -106,6 +111,62 @@ class DocumentsTab extends StatelessWidget {
             onTap: () => _onViewTransactionHistory(context),
           ),
           SizedBox(height: 32.h),
+
+          // Recent statements (in-memory list maintained by
+          // StatementExportScreen). Empty on first visit; once the user
+          // generates one, this surface mirrors the success card so they
+          // can re-open from inside the account-actions sheet.
+          if (getRecentStatements().isNotEmpty) ...[
+            Text(
+              'Recent statements',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            for (final doc in getRecentStatements().take(3)) ...[
+              Container(
+                margin: EdgeInsets.only(bottom: 8.h),
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      doc.format == DocumentFormat.csv
+                          ? Icons.table_chart_outlined
+                          : Icons.picture_as_pdf_outlined,
+                      color: const Color(0xFF3B82F6),
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(doc.title,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            '${doc.format.name.toUpperCase()} • ${doc.transactionCount ?? 0} txns',
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            SizedBox(height: 16.h),
+          ],
 
           // Help text
           Container(
@@ -213,8 +274,7 @@ class DocumentsTab extends StatelessWidget {
     );
   }
 
-  void _onDownloadStatement(BuildContext context) {
-    // Validate account ID first
+  void _onGenerateStatement(BuildContext context) {
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -224,157 +284,14 @@ class DocumentsTab extends StatelessWidget {
       );
       return;
     }
-
-    // Show date range picker dialog
-    final now = DateTime.now();
-    DateTime startDate = DateTime(now.year, now.month - 1, 1);
-    DateTime endDate = now;
-
-    Get.dialog(
-      StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            title: Text(
-              'Generate Statement',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Select date range for your statement (max 12 months):',
-                  style: TextStyle(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 13.sp,
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                _buildDateRangeRow(
-                  'Start Date',
-                  _formatDate(startDate),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: startDate,
-                      firstDate: now.subtract(const Duration(days: 365)),
-                      lastDate: now,
-                      builder: (context, child) {
-                        return Theme(
-                          data: ThemeData.dark().copyWith(
-                            colorScheme: const ColorScheme.dark(
-                              primary: Color(0xFF3B82F6),
-                              onPrimary: Colors.white,
-                              surface: Color(0xFF1E1E1E),
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (picked != null) {
-                      setDialogState(() => startDate = picked);
-                    }
-                  },
-                ),
-                SizedBox(height: 12.h),
-                _buildDateRangeRow(
-                  'End Date',
-                  _formatDate(endDate),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: endDate,
-                      firstDate: startDate,
-                      lastDate: now,
-                      builder: (context, child) {
-                        return Theme(
-                          data: ThemeData.dark().copyWith(
-                            colorScheme: const ColorScheme.dark(
-                              primary: Color(0xFF3B82F6),
-                              onPrimary: Colors.white,
-                              surface: Color(0xFF1E1E1E),
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (picked != null) {
-                      setDialogState(() => endDate = picked);
-                    }
-                  },
-                ),
-                SizedBox(height: 16.h),
-                _buildDateRangeRow('Format', 'PDF'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Get.back(),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Validate date range
-                  final validation = DateRangeValidator.validateRange(
-                    startDate,
-                    endDate,
-                    maxDaysBack: 365,
-                    maxDaysAhead: 0,
-                  );
-
-                  if (!validation.isValid) {
-                    // Show error, don't close dialog
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(validation.errorMessage ?? 'Invalid date range'),
-                        backgroundColor: const Color(0xFFEF4444),
-                      ),
-                    );
-                    return;
-                  }
-
-                  Get.back();
-                  context.read<AccountActionsCubit>().downloadAccountStatement(
-                    accountId: accountId,
-                    startDate: startDate,
-                    endDate: endDate,
-                    format: DocumentFormat.pdf,
-                  );
-                },
-                child: Text(
-                  'Download',
-                  style: TextStyle(
-                    color: const Color(0xFF3B82F6),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+    // Close the account-actions bottom sheet first so the new screen
+    // doesn't stack on top of it (Get.back closes the modal, leaving
+    // the underlying dashboard route as the parent).
+    Get.back();
+    Get.toNamed(
+      AppRoutes.statementExport,
+      arguments: {'accountId': accountId},
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 
   void _onDownloadConfirmation(BuildContext context) {

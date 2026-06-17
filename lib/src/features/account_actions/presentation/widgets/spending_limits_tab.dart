@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/utils/edge_case_validator.dart';
 
 /// Spending Limits Tab - View and edit spending limits
@@ -19,11 +21,55 @@ class SpendingLimitsTab extends StatelessWidget {
     this.isLoading = false,
   });
 
+  /// Resolve the user's KYC-tier baseline limits when the account-specific
+  /// overrides come back zero/null. We read the user's country from the
+  /// auth profile → look up the canonical
+  /// `CountryConfigs.<country>.dailyLimits[tier]` table (already used by
+  /// signup + KYC screens) → use that as the displayed limit.
+  ///
+  /// Defaults to `KycLevel.standard` (Tier 2) because that's the typical
+  /// state for a user who's past initial signup. The User entity does
+  /// not currently expose `kycTier`; when it does, branch on that here.
+  ///
+  /// Returns `(daily, monthly)` baseline pair, or `(null, null)` if we
+  /// can't determine country.
+  (double?, double?) _kycBaseline(BuildContext context) {
+    try {
+      final profile = context.read<AuthenticationCubit>().currentProfile;
+      if (profile == null) return (null, null);
+      final countryCode = profile.user.country?.toUpperCase();
+      if (countryCode == null || countryCode.isEmpty) return (null, null);
+      final country = CountryConfigs.getByCode(countryCode);
+      if (country == null) return (null, null);
+      // TODO: thread real kycTier through User entity once auth-service
+      // exposes it on LoginResponse.data.user — default to standard for
+      // now (most post-signup users are Tier 2).
+      const tier = KycLevel.standard;
+      final daily = country.dailyLimits[tier]?.toDouble();
+      // Monthly heuristic: 4× daily for basic, 8× for standard, 20× for
+      // advanced — matches the typical regulator spread. Replace when
+      // CountryConfigs exposes an explicit monthly map.
+      const multiplier = 8.0; // standard tier
+      final monthly = daily != null ? daily * multiplier : null;
+      return (daily, monthly);
+    } catch (_) {
+      return (null, null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final details = accountDetails;
-    final dailyLimit = details?.dailyLimit ?? 0.0;
-    final monthlyLimit = details?.monthlyLimit ?? 0.0;
+    // Prefer account-specific overrides; if they're zero (placeholder
+    // / unset) fall back to the user's KYC-tier baseline so the user
+    // sees their REAL limits, not a "0.00 daily limit" stub.
+    final (kycDaily, kycMonthly) = _kycBaseline(context);
+    final dailyLimit = (details?.dailyLimit ?? 0.0) > 0
+        ? details!.dailyLimit
+        : (kycDaily ?? 0.0);
+    final monthlyLimit = (details?.monthlyLimit ?? 0.0) > 0
+        ? details!.monthlyLimit
+        : (kycMonthly ?? 0.0);
     final singleLimit = details?.singleTransactionLimit;
 
     return SingleChildScrollView(

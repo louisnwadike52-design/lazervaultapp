@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Edit the editable surface of an active or paused campaign.
 ///
@@ -285,14 +286,7 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
                           const Color(0xFF4E03D0).withValues(alpha: 0.4),
                     ),
                     child: _submitting
-                        ? SizedBox(
-                            width: 18.w,
-                            height: 18.w,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                        ? LazerVaultLoader(size: 18)
                         : Text(
                             'Save changes',
                             style: GoogleFonts.inter(

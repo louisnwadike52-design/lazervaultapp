@@ -24,6 +24,7 @@ import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
 import '../widgets/electricity_rollover_preference_sheet.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
   const PaymentConfirmationScreen({super.key});
@@ -961,16 +962,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 18.sp,
-              height: 18.sp,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  InvoiceThemeColors.primaryPurple,
-                ),
-              ),
-            ),
+            LazerVaultLoader(size: 18),
             SizedBox(width: 12.w),
             Text(
               'Checking saved beneficiaries...',
@@ -1163,11 +1155,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: const Center(
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-                strokeWidth: 2,
-              ),
+              child: LazerVaultLoader.tiny(),
             ),
           );
         }
@@ -1448,15 +1436,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                 elevation: 0,
               ),
               child: _isProcessing
-                  ? SizedBox(
-                      height: 20.h,
-                      width: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

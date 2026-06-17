@@ -157,6 +157,18 @@ class AIChatCubit extends Cubit<AIChatState> {
             entitiesMap.remove('_receipt_data');
           }
 
+          // Extract pin_prompt the same way (drives the inline ChatPinPromptCard
+          // so a chat-driven money move collects the PIN in the thread).
+          Map<String, dynamic>? pinPrompt;
+          if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
+            try {
+              pinPrompt = jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
+            } catch (_) {
+              // Ignore malformed pin prompt
+            }
+            entitiesMap.remove('_pin_prompt');
+          }
+
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
             isUser: false,
@@ -170,6 +182,7 @@ class AIChatCubit extends Cubit<AIChatState> {
             conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
             sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
             receiptData: receiptData,
+            pinPrompt: pinPrompt,
           );
           _currentMessages.add(aiMessageEntity);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
@@ -178,6 +191,86 @@ class AIChatCubit extends Cubit<AIChatState> {
               errorMessage: response.msg.isNotEmpty ? response.msg : "AI service returned an error.",
               messages: List.from(_currentMessages)));
         }
+      },
+    );
+  }
+
+  /// Continue a chat-driven money move after the user enters their PIN in the
+  /// inline ChatPinPromptCard. The native modal returns a single-use
+  /// verification token (the PIN never enters chat/LLM context); we re-POST a
+  /// sentinel turn carrying the token + the bound callback_intent in metadata.
+  /// The gateway copies these into the downstream service entities, where the
+  /// deterministic PIN-callback dispatch fires the confirm tool and the agent
+  /// replies with the result (usually a ReceiptCard). No user bubble is added —
+  /// the user already acted in the modal.
+  Future<void> submitPinVerification({
+    required String verificationToken,
+    required String callbackIntent,
+    Map<String, dynamic> callbackArgs = const {},
+  }) async {
+    if (verificationToken.isEmpty) return;
+    if (isClosed) return;
+    emit(AIChatMessageLoading(messages: List.from(_currentMessages)));
+
+    if (_sessionId == null && _chatSessionManager != null) {
+      _sessionId = await _chatSessionManager!.getGeneralSessionId();
+    }
+
+    final result = await _processChatUseCase(
+      query: '__pin_verified__', // sentinel the agent's prompt recognises
+      accessToken: '', // HTTP datasource resolves the real token from storage
+      sessionId: _sessionId,
+      sourceContext: 'general',
+      language: 'en',
+      extraMetadata: {
+        'pin_verification_token': verificationToken,
+        'callback_intent': callbackIntent,
+        'callback_args': callbackArgs,
+        'execute': true,
+      },
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) {
+        emit(AIChatMessageError(errorMessage: failure.message, messages: List.from(_currentMessages)));
+      },
+      (response) {
+        if (!response.success) {
+          emit(AIChatMessageError(
+              errorMessage: response.msg.isNotEmpty ? response.msg : 'Could not complete that.',
+              messages: List.from(_currentMessages)));
+          return;
+        }
+        final entitiesMap = response.entities.isNotEmpty
+            ? Map<String, String>.from(response.entities)
+            : null;
+        Map<String, dynamic>? receiptData;
+        if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
+          try {
+            receiptData = jsonDecode(entitiesMap['_receipt_data']!) as Map<String, dynamic>;
+          } catch (_) {}
+          entitiesMap.remove('_receipt_data');
+        }
+        Map<String, dynamic>? pinPrompt;
+        if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
+          try {
+            pinPrompt = jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
+          } catch (_) {}
+          entitiesMap.remove('_pin_prompt');
+        }
+        _currentMessages.add(ChatMessageEntity(
+          text: response.response,
+          isUser: false,
+          timestamp: DateTime.now(),
+          intent: response.intent.isNotEmpty ? response.intent : null,
+          entities: entitiesMap != null && entitiesMap.isNotEmpty ? entitiesMap : null,
+          conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
+          sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
+          receiptData: receiptData,
+          pinPrompt: pinPrompt,
+        ));
+        emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
       },
     );
   }

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ============================================================================
 // MODELS
@@ -462,11 +463,7 @@ class _UniversalMicButtonState extends State<UniversalMicButton> {
   Widget build(BuildContext context) {
     return IconButton(
       icon: _isListening
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+          ? LazerVaultLoader.small()
           : Icon(Icons.mic),
       onPressed: _isListening ? null : _toggleListening,
       tooltip: 'Voice Assistant (Multi-Service)',
@@ -555,11 +552,7 @@ class _ServiceMicButtonState extends State<ServiceMicButton> {
   Widget build(BuildContext context) {
     return IconButton(
       icon: _isListening
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+          ? LazerVaultLoader.small()
           : Icon(Icons.mic),
       onPressed: _isListening ? null : _toggleListening,
       tooltip: 'Voice Assistant (${widget.service})',
@@ -709,11 +702,7 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
               padding: EdgeInsets.all(16),
               child: Row(
                 children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                  LazerVaultLoader.small(),
                   SizedBox(width: 12),
                   Text('Processing...'),
                 ],

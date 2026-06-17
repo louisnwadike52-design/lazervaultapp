@@ -23,6 +23,7 @@ import 'contribution_cycles_history_screen.dart';
 import 'edit_contribution_screen.dart';
 import 'past_contributions_screen.dart';
 import '../widgets/payment_group_widgets.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ContributionDetailsScreen extends StatefulWidget {
   final String contributionId;
@@ -211,11 +212,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              const Color.fromARGB(255, 78, 3, 208),
-            ),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading contribution details...',
@@ -2321,7 +2318,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       builder: (_) => const PopScope(
         canPop: true,
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          child: LazerVaultLoader.small(),
         ),
       ),
     ).then((_) {
@@ -3457,9 +3454,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(
-                  color: const Color.fromARGB(255, 78, 3, 208),
-                ),
+                LazerVaultLoader.small(),
                 SizedBox(height: 16.h),
                 Text(
                   'Generating Receipt...',

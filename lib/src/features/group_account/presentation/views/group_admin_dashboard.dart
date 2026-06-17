@@ -16,6 +16,7 @@ import '../view/create_contribution_carousel.dart';
 import 'activity_log_screen.dart';
 import 'edit_contribution_screen.dart';
 import 'edit_group_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GroupAdminDashboard extends StatefulWidget {
   final GroupAccount group;
@@ -517,14 +518,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                 return Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
-                    child: SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
-                      ),
-                    ),
+                    child: LazerVaultLoader.small(),
                   ),
                 );
               }

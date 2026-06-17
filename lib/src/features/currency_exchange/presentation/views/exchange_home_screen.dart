@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Pulls in TransactionTypeModeMatch so recentTransactions.where can call
 // `tx.type.matchesMode(...)` to filter the Recent list to the active tab.
 import '../../domain/entities/transaction_entity.dart';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -343,8 +345,13 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
           serviceLocator<accounts_grpc.AccountsServiceClient>();
       final callOptions =
           await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      // Cross-currency check: the validator MUST see USD/GBP/etc wallets
+      // even when the user's locale is en-NG. Default GetUserAccounts
+      // returns only the locale-currency accounts, which made the check
+      // report `bestBalance=0` for any non-locale source currency and
+      // refuse perfectly funded international transfers.
       final response = await accountsClient.getUserAccounts(
-        accounts_pb.GetUserAccountsRequest(),
+        accounts_pb.GetUserAccountsRequest(includeAllCurrencies: true),
         options: callOptions,
       );
 
@@ -387,8 +394,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
           serviceLocator<accounts_grpc.AccountsServiceClient>();
       final callOptions =
           await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      // Cross-locale dialog needs to see the foreign-currency wallet
+      // to render its real balance. Without includeAllCurrencies the
+      // user saw "USD Balance $0.00" even with a funded USD account.
       final response = await accountsClient.getUserAccounts(
-        accounts_pb.GetUserAccountsRequest(),
+        accounts_pb.GetUserAccountsRequest(includeAllCurrencies: true),
         options: callOptions,
       );
       for (final account in response.accounts) {
@@ -676,7 +686,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: AppSurfaces.pageTop,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -700,7 +710,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             const SizedBox(width: 8),
           ],
         ),
-        body: BlocConsumer<ExchangeCubit, ExchangeState>(
+        body: AppGradientBackground(
+          child: BlocConsumer<ExchangeCubit, ExchangeState>(
           listener: (context, state) {
             // Rate staleness is enforced server-side now. ExchangeRateExpired
             // events (if any older code paths still emit them) are ignored.
@@ -708,7 +719,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
           builder: (context, state) {
             if (state is ExchangeLoading) {
               return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
+                  child: LazerVaultLoader.small());
             }
 
             if (state is ExchangeError) {
@@ -721,6 +732,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
             return const SizedBox.shrink();
           },
+        ),
         ),
       ),
     );
@@ -984,14 +996,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: _isRefreshingRate
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 1.5,
-                          color: ExchangeTheme.primary,
-                        ),
-                      )
+                    ? LazerVaultLoader(size: 14)
                     : const Icon(Icons.refresh,
                         size: 14, color: ExchangeTheme.primary),
               ),

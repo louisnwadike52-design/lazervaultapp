@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_comment.dart';
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_websocket_service.dart';
@@ -68,6 +69,9 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         isLoading: false,
       ));
 
+      // Leaderboard (best-effort, non-blocking).
+      loadLeaderboard();
+
       // Only connect WebSocket if session is active
       if (!isEnded) {
         await _connectWebSocket(sessionId, accessToken);
@@ -77,6 +81,34 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         isLoading: false,
         error: e.toString().replaceAll('Exception: ', ''),
       ));
+    }
+  }
+
+  /// Loads the session leaderboard (top sprayers). Best-effort — call on room
+  /// init and when the stats sheet opens so the ranking stays fresh.
+  Future<void> loadLeaderboard() async {
+    if (state.session == null) return;
+    try {
+      final stats = await _repository.getSessionStats(state.session!.id);
+      if (!isClosed) {
+        emit(state.copyWith(topSprayers: stats.topSprayers));
+      }
+    } catch (_) {
+      // ignore — leaderboard is non-critical
+    }
+  }
+
+  /// Refreshes the participant (viewer) list. Best-effort — called on join/leave
+  /// events and when the viewer sheet opens so the list stays current.
+  Future<void> loadParticipants() async {
+    if (state.session == null) return;
+    try {
+      final participants = await _repository.getSessionParticipants(state.session!.id);
+      if (!isClosed) {
+        emit(state.copyWith(participants: participants));
+      }
+    } catch (_) {
+      // ignore — viewer list is non-critical
     }
   }
 
@@ -126,12 +158,13 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
 
     switch (event.type) {
       case 'gift_sent':
+        // amount is the PER-UNIT gift price; multiply by quantity for the value.
         final giftAmount = (event.data['amount'] as num?)?.toInt() ?? 0;
         final quantity = (event.data['quantity'] as num?)?.toInt() ?? 1;
         emit(state.copyWith(
           recentEvents: updatedEvents,
           // Only add to gift stats, NOT to totalSprayed (that's for cash sprays only)
-          totalGiftsValue: state.totalGiftsValue + giftAmount,
+          totalGiftsValue: state.totalGiftsValue + (giftAmount * quantity),
           totalGiftsCount: state.totalGiftsCount + quantity,
         ));
       case 'money_sprayed':
@@ -173,11 +206,13 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
           recentEvents: updatedEvents,
           participantCount: state.participantCount + 1,
         ));
+        loadParticipants(); // refresh the viewer list with the new joiner
       case 'participant_left':
         emit(state.copyWith(
           recentEvents: updatedEvents,
           participantCount: (state.participantCount - 1).clamp(0, 999999),
         ));
+        loadParticipants();
       case 'session_ended':
         emit(state.copyWith(
           recentEvents: updatedEvents,
@@ -363,6 +398,32 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
       if (!isClosed) {
         emit(state.copyWith(walletLoadFailed: true));
       }
+    }
+  }
+
+  /// Buy gift credit from the user's personal account. Tops up the spendable
+  /// spray balance (the "gifts to spray" the joiner can then spray). Returns the
+  /// error message on failure, or null on success.
+  Future<String?> buyGiftCredit({
+    required List<Map<String, dynamic>> items,
+    required String sourceAccountId,
+    required String pin,
+  }) async {
+    try {
+      final wallet = await _repository.buyGiftCredit(
+        items: items,
+        sourceAccountId: sourceAccountId,
+        pin: pin,
+        idempotencyKey: const Uuid().v4(),
+        sessionId: state.session?.id ?? '',
+        currency: state.session?.currency ?? 'NGN',
+      );
+      if (!isClosed) {
+        emit(state.copyWith(wallet: wallet, walletLoadFailed: false));
+      }
+      return null;
+    } catch (e) {
+      return e.toString().replaceAll('Exception: ', '');
     }
   }
 

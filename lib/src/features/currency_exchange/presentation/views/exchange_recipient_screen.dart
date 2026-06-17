@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -20,6 +21,7 @@ import '../widgets/source_currency_picker.dart';
 import '../../data/flutterwave_country_rules.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ---------------------------------------------------------------------------
 // Currency → Country config (derived, no picker)
@@ -1097,8 +1099,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             _goBackToStep1();
           }
         },
-        child: Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
+        child: AppGradientBackground(child: Scaffold(
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -1151,7 +1153,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
               ),
             ],
           ),
-        ),
+        )),
       ),
     );
   }
@@ -1334,14 +1336,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       ),
       child: const Row(
         children: [
-          SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Color(0xFF4E03D0),
-            ),
-          ),
+          LazerVaultLoader.tiny(),
           SizedBox(width: 10),
           Text(
             'Verifying account...',

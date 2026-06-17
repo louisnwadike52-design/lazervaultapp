@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet for searching and selecting LazerVault users (username, email, or phone).
 class UsernameSearchBottomSheet extends StatefulWidget {
@@ -172,7 +173,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                     ),
                     SizedBox(width: 16.w),
                     Text(
-                      'Find LazerVault user',
+                      'Find Lazervault user',
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 20.sp,
@@ -262,9 +263,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
-              color: const Color.fromARGB(255, 78, 3, 208),
-            ),
+            LazerVaultLoader.small(),
             SizedBox(height: 16.h),
             Text(
               'Searching...',

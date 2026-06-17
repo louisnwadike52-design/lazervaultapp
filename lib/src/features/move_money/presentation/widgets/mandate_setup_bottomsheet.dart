@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Bottom sheet shown after account linking to offer mandate setup.
 ///
@@ -30,8 +32,13 @@ Future<bool> showMandateSetupBottomSheet({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
+    // MandateCubit is a GetIt singleton; resolve it from the service locator
+    // rather than context.read. Callers like the deposit screen provide it
+    // INSIDE build() (so the caller's State context sits above that provider
+    // and a context.read here throws "Could not find Provider<MandateCubit>").
+    // The singleton is the same instance every other call site uses.
     builder: (ctx) => BlocProvider.value(
-      value: context.read<MandateCubit>(),
+      value: serviceLocator<MandateCubit>(),
       child: _MandateSetupSheet(
         linkedAccountId: linkedAccountId,
         userId: userId,
@@ -273,14 +280,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
                     elevation: 0,
                   ),
                   child: isLoading
-                      ? SizedBox(
-                          width: 20.w,
-                          height: 20.w,
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Text(
                           'Enable Direct Debit',
                           style: GoogleFonts.inter(

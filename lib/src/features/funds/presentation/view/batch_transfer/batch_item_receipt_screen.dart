@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/funds/cubit/batch_receipt_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchItemReceiptScreen extends StatefulWidget {
   const BatchItemReceiptScreen({super.key});
@@ -156,7 +157,7 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
 
   Widget _buildBody(BatchReceiptState state) {
     if (state is BatchReceiptLoading || state is BatchReceiptInitial) {
-      return const Center(child: CircularProgressIndicator(color: btBlue));
+      return const Center(child: LazerVaultLoader.small());
     }
     if (state is BatchReceiptError) {
       return Center(
@@ -272,11 +273,7 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
                   ),
                   child: Center(
                     child: _downloading
-                        ? SizedBox(
-                            width: 16.w,
-                            height: 16.w,
-                            child: const CircularProgressIndicator(
-                                strokeWidth: 2, color: btGreen))
+                        ? LazerVaultLoader.tiny()
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [

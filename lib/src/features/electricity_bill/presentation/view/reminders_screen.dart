@@ -8,6 +8,7 @@ import '../../domain/entities/reminder_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/reminder_cubit.dart';
 import '../cubit/reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -180,7 +181,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     final list = _cachedList;
                     if (list == null) {
                       return const Center(
-                        child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+                        child: LazerVaultLoader.small(),
                       );
                     }
                     if (list.isEmpty) {

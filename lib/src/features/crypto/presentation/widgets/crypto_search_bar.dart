@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import '../../domain/entities/crypto_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CryptoSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -209,9 +210,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
-            ),
+            LazerVaultLoader.small(),
             SizedBox(height: 16.h),
             Text(
               'Searching...',

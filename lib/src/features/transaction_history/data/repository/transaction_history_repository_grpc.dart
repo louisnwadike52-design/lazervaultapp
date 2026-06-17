@@ -30,6 +30,14 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   // Cache TTL - 5 minutes
   static const _cacheTTL = Duration(minutes: 5);
 
+  /// Composite cache key that scopes the local transaction cache per
+  /// (user, account). The cache table keys on user_id; without the account
+  /// dimension, selecting the Family & Friends card would surface the
+  /// personal account's cached rows (and vice-versa). The real user id never
+  /// contains "::", so this stays collision-free.
+  String _accountScopedKey(String userId, String accountId) =>
+      '$userId::$accountId';
+
   TransactionHistoryRepositoryGrpc({
     required this.grpcClient,
     required this.accountManager,
@@ -52,12 +60,16 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         throw Exception('No active account selected');
       }
 
-      // Try cache first (but skip if search query is present — apply locally after)
+      // Try cache first (but skip if search query is present — apply locally after).
+      // Cache is scoped per (user, account) so selecting the Family & Friends
+      // card doesn't surface the personal account's cached transactions, and
+      // vice-versa. The cache table keys on user_id, so we pass a composite key.
       final userId = await storage.read(key: 'user_id');
-      if (page == 1 && userId != null && !_shouldBypassCache(filters)) {
+      final scopedKey = userId != null ? _accountScopedKey(userId, accountId) : null;
+      if (page == 1 && scopedKey != null && !_shouldBypassCache(filters)) {
         try {
           final cached = await cacheDataSource.getCachedTransactions(
-            userId: userId,
+            userId: scopedKey,
             limit: limit,
           );
 
@@ -131,11 +143,11 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         ).toList();
       }
 
-      // Cache the results
-      if (page == 1 && transactions.isNotEmpty && userId != null) {
+      // Cache the results (scoped per account — see scopedKey above)
+      if (page == 1 && transactions.isNotEmpty && scopedKey != null) {
         try {
           await cacheDataSource.cacheTransactions(
-            userId,
+            scopedKey,
             transactions,
             _cacheTTL,
           );
@@ -174,12 +186,14 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         throw Exception('No active account selected');
       }
 
-      // Try cache first for page 1
+      // Try cache first for page 1 — scoped per (user, account) so the
+      // service-filtered list also respects the selected account card.
       final userId = await storage.read(key: 'user_id');
-      if (page == 1 && userId != null) {
+      final scopedKey = userId != null ? _accountScopedKey(userId, accountId) : null;
+      if (page == 1 && scopedKey != null) {
         try {
           final cached = await cacheDataSource.getCachedTransactions(
-            userId: userId,
+            userId: scopedKey,
             serviceType: serviceType,
             limit: limit,
           );
@@ -213,11 +227,11 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       final transactions = response.transactions.map(_convertFromProto).toList();
 
-      // Cache if first page
-      if (page == 1 && transactions.isNotEmpty && userId != null) {
+      // Cache if first page (scoped per account — see scopedKey above)
+      if (page == 1 && transactions.isNotEmpty && scopedKey != null) {
         try {
           await cacheDataSource.cacheTransactions(
-            userId,
+            scopedKey,
             transactions,
             _cacheTTL,
           );
@@ -373,10 +387,13 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         throw Exception('No active account selected');
       }
 
-      // Clear cache after refresh
+      // Clear cache after refresh — only the active account's scoped bucket,
+      // so refreshing one account doesn't wipe another account's cache.
       final userId = await storage.read(key: 'user_id');
       if (userId != null) {
-        await cacheDataSource.clearUserTransactions(userId);
+        await cacheDataSource.clearUserTransactions(
+          _accountScopedKey(userId, accountId),
+        );
       }
 
       // Note: The accounts-service doesn't have a refresh endpoint
@@ -485,6 +502,29 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     const genericAccountNames = {'Personal', 'Savings', 'Business', 'USD Wallet', 'GBP Wallet', 'GHS Wallet', 'KES Wallet', 'ZAR Wallet'};
     if (counterpartyName != null && genericAccountNames.contains(counterpartyName)) {
       counterpartyName = null;
+    }
+
+    // Client-side fallback: if the backend didn't stamp counterparty_name on
+    // this row (older rows, or providers that don't populate the field), try
+    // to recover the human-readable name from the narration. The send-funds
+    // flow's default narration is "Transfer from {Sender Name}" /
+    // "Transfer to {Recipient Name}", so a simple prefix-strip yields the
+    // name we want to show. We deliberately ignore "LazerVault" to avoid
+    // the vague "Transfer from LazerVault" string surfacing as a name.
+    if ((counterpartyName == null || counterpartyName.isEmpty)
+        && protoTx.description.isNotEmpty) {
+      final desc = protoTx.description.trim();
+      String? recovered;
+      if (desc.toLowerCase().startsWith('transfer from ')) {
+        recovered = desc.substring('transfer from '.length).trim();
+      } else if (desc.toLowerCase().startsWith('transfer to ')) {
+        recovered = desc.substring('transfer to '.length).trim();
+      }
+      if (recovered != null
+          && recovered.isNotEmpty
+          && recovered.toLowerCase() != 'lazervault') {
+        counterpartyName = recovered;
+      }
     }
 
     // Resolve bank name from bank_code if bank_name is not already set

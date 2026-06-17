@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ChangePasswordDialog extends StatefulWidget {
   const ChangePasswordDialog({super.key});
@@ -262,14 +263,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                         ),
                       ),
                       child: _isLoading
-                          ? SizedBox(
-                              width: 20.w,
-                              height: 20.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               'Update',
                               style: GoogleFonts.inter(

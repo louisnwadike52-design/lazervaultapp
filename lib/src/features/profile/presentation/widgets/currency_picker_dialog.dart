@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CurrencyPickerDialog extends StatefulWidget {
   final String currentCurrency;
@@ -232,14 +233,7 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                 ),
               ),
               child: _isSaving
-                  ? SizedBox(
-                      height: 20.h,
-                      width: 20.h,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Save',
                       style: GoogleFonts.inter(

@@ -68,6 +68,12 @@ class WalletWithdrawn extends SprayMeState {
   WalletWithdrawn({required this.wallet, required this.reference, required this.message});
 }
 
+class GiftCreditPurchased extends SprayMeState {
+  final SprayWallet wallet;
+  final String message;
+  GiftCreditPurchased({required this.wallet, required this.message});
+}
+
 // ─── Spray Action States ─────────────────────────────────────────
 
 class GiftSent extends SprayMeState {

@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'dart:convert';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// QR Code Scanner Screen for scanning recipient QR codes
 ///
@@ -297,7 +298,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
+                    LazerVaultLoader.small(),
                     SizedBox(height: 16.h),
                     Text(
                       'Processing QR code...',

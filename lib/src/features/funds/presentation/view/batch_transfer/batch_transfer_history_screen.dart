@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchTransferHistoryScreen extends StatefulWidget {
   const BatchTransferHistoryScreen({super.key});
@@ -98,7 +99,7 @@ class _BatchTransferHistoryScreenState
                   if (state is BatchTransferHistoryLoading &&
                       _batches.isEmpty) {
                     return const Center(
-                        child: CircularProgressIndicator(color: btBlue));
+                        child: LazerVaultLoader.small());
                   }
 
                   if (state is BatchTransferHistoryError &&
@@ -125,8 +126,7 @@ class _BatchTransferHistoryScreenState
                           return Padding(
                             padding: EdgeInsets.all(20.w),
                             child: const Center(
-                                child: CircularProgressIndicator(
-                                    color: btBlue, strokeWidth: 2)),
+                                child: LazerVaultLoader.tiny()),
                           );
                         }
                         return _buildBatchTile(_batches[index]);

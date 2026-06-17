@@ -10,11 +10,14 @@ import '../../../../../core/widgets/bill_auto_recharge_create_sheet.dart';
 import '../../../../../core/widgets/bill_auto_recharge_item.dart';
 import '../../domain/entities/auto_recharge_entity.dart';
 import '../../domain/entities/beneficiary_entity.dart';
+import '../../domain/entities/bill_payment_entity.dart';
+import '../../domain/entities/provider_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../cubit/auto_recharge_cubit.dart';
 import '../cubit/auto_recharge_state.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Electricity Auto-Recharge management. Mirrors `DataAutoRechargeScreen`
 /// visually: solid dark background, standard AppBar, shared
@@ -103,10 +106,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             final list = _cachedList;
             if (list == null) {
               return const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-                ),
+                child: LazerVaultLoader.tiny(),
               );
             }
             if (list.isEmpty) return _buildEmpty();
@@ -311,14 +311,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                                 _payNow(ar);
                               },
                         icon: isValidating
-                            ? SizedBox(
-                                width: 16.w,
-                                height: 16.w,
-                                child: const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
+                            ? LazerVaultLoader.tiny()
                             : const Icon(Icons.payment),
                         label: Text(isValidating ? 'Validating\u2026' : 'Pay Now'),
                         style: ElevatedButton.styleFrom(
@@ -570,12 +563,51 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
   }
 
   void _payNow(AutoRechargeEntity ar) {
-    _pendingPayAutoRecharge = ar;
-    context.read<ElectricityBillCubit>().validateMeter(
-          providerCode: ar.providerCode,
-          meterNumber: ar.meterNumber,
-          meterType: ar.meterType,
-        );
+    // Skip the redundant meter re-validation. The auto-recharge row was
+    // created from an already-validated meter, so we hand the confirmation
+    // screen everything it needs straight from the AR record. The confirm
+    // screen's arg-validation requires a full ElectricityProviderEntity —
+    // we synthesise a minimal one from the AR's stored provider fields.
+    // Earlier we routed through cubit.validateMeter and only passed
+    // providerCode/providerName, which failed the type check on
+    // `args['provider'] is ElectricityProviderEntity` and silently popped
+    // the screen back — exactly the bug being reported.
+    print('[AutoRecharge:PayNow] navigating to confirmation '
+        '(ar=${ar.id}, meter=${ar.meterNumber}, amount=${ar.amount})');
+    final validation = MeterValidationResult(
+      customerName: ar.customerName,
+      meterNumber: ar.meterNumber,
+      meterType: ar.meterType,
+      isValid: true,
+    );
+    final now = DateTime.now();
+    final synthesizedProvider = ElectricityProviderEntity(
+      id: ar.providerCode,
+      providerCode: ar.providerCode,
+      providerName: ar.providerName,
+      country: 'NG',
+      supportsPrepaid: ar.meterType == MeterType.prepaid,
+      supportsPostpaid: ar.meterType == MeterType.postpaid,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    );
+    Get.toNamed(
+      AppRoutes.electricityBillConfirmation,
+      arguments: {
+        'provider': synthesizedProvider,
+        'providerCode': ar.providerCode,
+        'providerName': ar.providerName,
+        'meterNumber': ar.meterNumber,
+        'meterType': ar.meterType,
+        'customerName': ar.customerName,
+        'customerAddress': null,
+        'validationResult': validation,
+        'amount': ar.amount,
+        'fromAutoRecharge': true,
+        'autoRechargeId': ar.id,
+      },
+    );
   }
 
   void _confirmDelete(AutoRechargeEntity ar) {
@@ -629,10 +661,14 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
   // ---------------------------------------------------------------------------
 
   void _onElectricityState(BuildContext context, ElectricityBillState state) {
-    if (state is MeterValidated && _pendingPayAutoRecharge != null) {
+    if (_pendingPayAutoRecharge == null) return;
+
+    if (state is MeterValidated) {
       final ar = _pendingPayAutoRecharge!;
       _pendingPayAutoRecharge = null;
       if (!mounted) return;
+      print('[AutoRecharge:PayNow] meter validated → confirmation '
+          '(ar=${ar.id}, meter=${ar.meterNumber}, amount=${ar.amount})');
       Get.toNamed(
         AppRoutes.electricityBillConfirmation,
         arguments: {
@@ -644,15 +680,23 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
           'customerAddress': state.validationResult.customerAddress,
           'validationResult': state.validationResult,
           'amount': ar.amount,
+          // Lets the confirmation screen know we arrived from the
+          // auto-recharge list so its "back" can return there cleanly
+          // rather than diving into the wider electricity flow.
+          'fromAutoRecharge': true,
+          'autoRechargeId': ar.id,
         },
       );
-    } else if (state is MeterValidationFailed ||
-        state is ElectricityBillError) {
+      return;
+    }
+
+    if (state is MeterValidationFailed || state is ElectricityBillError) {
       _pendingPayAutoRecharge = null;
       if (!mounted) return;
       final message = state is MeterValidationFailed
           ? state.message
           : (state as ElectricityBillError).message;
+      print('[AutoRecharge:PayNow] validation failed: $message');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),

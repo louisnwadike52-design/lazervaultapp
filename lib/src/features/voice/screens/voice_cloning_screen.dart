@@ -12,6 +12,7 @@ import 'package:record/record.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Dedicated voice cloning recording screen.
 ///
@@ -58,7 +59,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
   late AnimationController _pulseController;
 
   String get _voiceGatewayUrl =>
-      dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://localhost:3010';
+      dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'https://api.lazervault.app/voice';
 
   // Reading prompts to guide natural speech
   static const List<String> _readingPrompts = [
@@ -732,14 +733,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
             child: ElevatedButton.icon(
               onPressed: _isStartingRecording ? null : _startRecording,
               icon: _isStartingRecording
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Icon(Icons.mic_rounded, size: 22.sp),
               label: Text(
                 _isStartingRecording ? 'Preparing...' : 'Start Recording',
@@ -1032,14 +1026,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 64.w,
-              height: 64.w,
-              child: const CircularProgressIndicator(
-                color: Color(0xFF3B82F6),
-                strokeWidth: 3,
-              ),
-            ),
+            LazerVaultLoader(size: 64),
             SizedBox(height: 32.h),
             Text(
               'Creating Your Voice',
@@ -1099,10 +1086,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
             child: isPending
                 ? Padding(
                     padding: EdgeInsets.all(18.w),
-                    child: const CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
-                      strokeWidth: 3,
-                    ),
+                    child: LazerVaultLoader.small(),
                   )
                 : Icon(
                     Icons.check_circle_rounded,

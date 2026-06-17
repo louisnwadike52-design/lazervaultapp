@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/entities/notification_channel_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for managing crowdfund notification channels
 class NotificationChannelsScreen extends StatefulWidget {
@@ -136,7 +137,7 @@ class _NotificationChannelsScreenState
         builder: (context, state) {
           if (state is CrowdfundLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -1140,14 +1141,7 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
             ),
           ),
           child: _isConnecting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader.small()
               : const Text('Connect'),
         ),
       ],

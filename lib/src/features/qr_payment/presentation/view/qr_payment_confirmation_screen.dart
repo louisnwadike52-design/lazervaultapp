@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class QRPaymentConfirmationScreen extends StatefulWidget {
   const QRPaymentConfirmationScreen({super.key});
@@ -301,7 +302,7 @@ class _QRPaymentConfirmationScreenState
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                      LazerVaultLoader.small(),
                       SizedBox(height: 16),
                       Text(
                         'Loading QR details...',
@@ -519,7 +520,7 @@ class _QRPaymentConfirmationScreenState
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: LazerVaultLoader.small()),
           );
         }
 
@@ -750,14 +751,7 @@ class _QRPaymentConfirmationScreenState
           ),
         ),
         child: _isProcessing
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : const Text(
                 'Pay Now',
                 style: TextStyle(

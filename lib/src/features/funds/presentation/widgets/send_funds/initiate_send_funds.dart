@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // For serviceLocator
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -152,30 +153,43 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   void initState() {
     super.initState();
 
-    // First check if recipient was passed directly via widget parameter
+    // Resolve recipient. Constructor param wins; otherwise fall back
+    // to Get.arguments (RecipientModel or Map).
     if (widget.recipient != null) {
       _recipient = widget.recipient;
     } else {
-      // Get arguments and determine recipient details
       final args = Get.arguments;
-
       if (args is Map<String, dynamic>) {
-        _recipient = args['recipient'] as RecipientModel;
-
-        // Prefill from recipient transaction history
-        final prefillAmount = args['prefillAmount'] as int?;
-        if (prefillAmount != null && prefillAmount > 0) {
-          amount = prefillAmount.toString();
-          _amountController.text = _formatAmount();
-        }
-        _autoShowConfirm = args['autoShowConfirm'] == true;
-
-        // Check for existing recurring transfer for this recipient
-        if (args['checkRecurring'] == true && _recipient != null) {
-          _loadRecurringForRecipient(_recipient!.accountNumber);
-        }
+        _recipient = args['recipient'] as RecipientModel?;
       } else if (args is RecipientModel) {
         _recipient = args;
+      }
+    }
+
+    // Apply optional pre-fill keys regardless of whether the recipient
+    // came from widget.recipient or Get.arguments. The route handler
+    // passes the recipient via constructor param BUT preserves the
+    // original Map in Get.arguments so callsites like
+    // _launchBankDetailsScan can thread `prefillAmount` + memo +
+    // autoShowConfirm + checkRecurring through. Without checking
+    // Get.arguments here, those keys would be silently dropped when
+    // the recipient came via constructor param.
+    final routeArgs = Get.arguments;
+    if (routeArgs is Map<String, dynamic>) {
+      final prefillAmount = routeArgs['prefillAmount'] as int?;
+      if (prefillAmount != null && prefillAmount > 0) {
+        amount = prefillAmount.toString();
+        _amountController.text = _formatAmount();
+      }
+      // OCR memo / scan description pre-fills the reference field so
+      // the user only confirms instead of typing it.
+      final prefillDescription = routeArgs['prefillDescription'] as String?;
+      if (prefillDescription != null && prefillDescription.isNotEmpty) {
+        _referenceController.text = prefillDescription;
+      }
+      _autoShowConfirm = routeArgs['autoShowConfirm'] == true;
+      if (routeArgs['checkRecurring'] == true && _recipient != null) {
+        _loadRecurringForRecipient(_recipient!.accountNumber);
       }
     }
 
@@ -184,42 +198,46 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final currentState = accountCubit.state;
 
     // Only fetch if the data hasn't been loaded or isn't currently loading
-    if (currentState is AccountCardsSummaryInitial ||
-        currentState is AccountCardsSummaryError) {
+    // Always trigger a balance refresh on screen entry — stale-while-
+    // revalidate. The cached AccountCardsSummaryLoaded state stays
+    // visible while the new fetch runs (BlocBuilder retains the last
+    // payload), then swaps in the fresh balance the moment it arrives.
+    //
+    // This fixes a stale-amount bug: previously we only fetched when
+    // the state was Initial/Error, so a successful deposit or external
+    // top-up between visits would leave this screen rendering the
+    // pre-deposit balance (often ₦0.00 for newly-funded accounts).
+    // WebSocket BalanceUpdate covers live updates while the screen is
+    // open; this initState refresh handles the cold-mount case.
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      final userId = authState.profile.user.id;
+      final accessToken = authState.profile.session.accessToken;
       print(
-          "InitiateSendFunds: Account state is $currentState, fetching accounts...");
-      // Fetch account summaries only if not already loaded/loading
-      final authState = context.read<AuthenticationCubit>().state;
-      if (authState is AuthenticationSuccess) {
-        final userId = authState.profile.user.id;
-        final accessToken = authState.profile.session.accessToken;
-        accountCubit.fetchAccountSummaries(
-          userId: userId,
-          accessToken: accessToken,
-        );
-      } else {
-        // Handle case where user is not authenticated
-        print(
-            "InitiateSendFunds: User not authenticated, cannot fetch accounts.");
-        // Optionally show a snackbar or navigate away
-        // You might want to emit an error state in AccountCardsSummaryCubit or handle this differently
-      }
+          "InitiateSendFunds: refreshing account summaries on screen entry (state was $currentState).");
+      accountCubit.fetchAccountSummaries(
+        userId: userId,
+        accessToken: accessToken,
+      );
     } else {
       print(
-          "InitiateSendFunds: Accounts already loaded or loading ($currentState), skipping fetch.");
+          "InitiateSendFunds: User not authenticated, cannot fetch accounts.");
+    }
 
-      // Auto-show confirm if accounts already loaded and prefill is set
-      if (_autoShowConfirm &&
-          !_autoConfirmTriggered &&
-          amount.isNotEmpty &&
-          _recipient != null &&
-          (currentState is AccountCardsSummaryLoaded ||
-              currentState is AccountBalanceUpdated)) {
-        _autoConfirmTriggered = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _showTransferConfirmation(currentState);
-        });
-      }
+    // Auto-show confirm if accounts already loaded and prefill is set —
+    // independent of whether we re-triggered a fetch above (the cached
+    // summaries are still in `currentState`, so the confirm sheet has
+    // enough to render).
+    if (_autoShowConfirm &&
+        !_autoConfirmTriggered &&
+        amount.isNotEmpty &&
+        _recipient != null &&
+        (currentState is AccountCardsSummaryLoaded ||
+            currentState is AccountBalanceUpdated)) {
+      _autoConfirmTriggered = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showTransferConfirmation(currentState);
+      });
     }
 
     // Load categories from backend
@@ -403,7 +421,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     if (accountState is AccountCardsSummaryLoading ||
         accountState is AccountCardsSummaryInitial) {
       return const Center(
-          child: CircularProgressIndicator(color: Colors.white));
+          child: LazerVaultLoader.small());
     }
     if (accountState is AccountCardsSummaryError) {
       return Center(
@@ -434,7 +452,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       });
       // Show a loading state temporarily while index resets
       return const Center(
-          child: CircularProgressIndicator(color: Colors.white));
+          child: LazerVaultLoader.small());
     }
 
     // LOCK the source to the active dashboard account: on the first build with
@@ -443,7 +461,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // other card below.
     final activeId = _activeAccountId;
     if (!_didInitActiveSelection && activeId != null && activeId.isNotEmpty) {
-      final activeIdx = summaries.indexWhere((a) => a.id == activeId);
+      // Match on spendingAccountId so a Family & Friends card (whose id is the
+      // group id, but whose active/spendable id is the shared VA) is found.
+      // For non-family accounts spendingAccountId == id, so this is unchanged.
+      final activeIdx = summaries.indexWhere(
+          (a) => a.spendingAccountId == activeId || a.id == activeId);
       if (activeIdx >= 0 && activeIdx != selectedCardIndex) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) setState(() => selectedCardIndex = activeIdx);
@@ -452,18 +474,42 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       _didInitActiveSelection = true;
     }
 
+    // Display order: the active (locked) account always sits FIRST in the
+    // Pay-with row so the user doesn't have to scroll to find the wallet they
+    // selected on the dashboard. We only reorder the VISUAL list here — the
+    // underlying `summaries` order (and therefore selectedCardIndex, which every
+    // downstream step reads) is left untouched, so we map display position back
+    // to the original index.
+    final displayOrder = <int>[];
+    final activeOrigIdx = (activeId != null && activeId.isNotEmpty)
+        ? summaries.indexWhere(
+            (a) => a.spendingAccountId == activeId || a.id == activeId)
+        : -1;
+    if (activeOrigIdx > 0) {
+      displayOrder.add(activeOrigIdx);
+      for (var i = 0; i < summaries.length; i++) {
+        if (i != activeOrigIdx) displayOrder.add(i);
+      }
+    } else {
+      for (var i = 0; i < summaries.length; i++) {
+        displayOrder.add(i);
+      }
+    }
+
     return SizedBox(
       height: 100.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: summaries.length,
-        itemBuilder: (context, index) {
+        itemCount: displayOrder.length,
+        itemBuilder: (context, displayIndex) {
+          final index = displayOrder[displayIndex];
           final account = summaries[index];
             final isSelected = selectedCardIndex == index;
             // Disabled = not the active dashboard account. You send from the
             // wallet you're in; switch accounts on the dashboard to change it.
             final isLocked = activeId != null &&
                 activeId.isNotEmpty &&
+                account.spendingAccountId != activeId &&
                 account.id != activeId;
 
             // Determine account type display
@@ -480,6 +526,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               accountTypeDisplay = 'Investment';
               accountTypeColor = Colors.orange;
               accountIcon = Icons.trending_up;
+            } else if (accountTypeLower.contains('family')) {
+              accountTypeDisplay = 'Family & Friends';
+              accountTypeColor = const Color(0xFF7C6BF0);
+              accountIcon = Icons.family_restroom;
+            } else if (accountTypeLower.contains('business')) {
+              accountTypeDisplay = 'Business';
+              accountTypeColor = const Color(0xFFFB923C);
+              accountIcon = Icons.business_center;
             } else if (accountTypeLower.contains('personal')) {
               accountTypeDisplay = 'Personal';
               accountTypeColor = Colors.blue;
@@ -1122,11 +1176,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         children: [
                                           Text('Transfer Fee',
                                               style: TextStyle(color: Colors.white70, fontSize: 12.sp)),
-                                          SizedBox(
-                                            width: 16, height: 16,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2, color: Colors.white54),
-                                          ),
+                                          LazerVaultLoader.tiny(),
                                         ],
                                       ),
                                     );
@@ -1407,16 +1457,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 elevation: 8,
                               ),
                               child: isDialogLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                      ),
-                                    )
+                                  ? LazerVaultLoader.small()
                                   : Text(
                                       _isRecurringEnabled
                                           ? 'Set Up Recurring'
@@ -1503,7 +1544,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       throw Exception('Invalid card selected.');
     }
     final selectedAccount = summaries[selectedCardIndex];
-    final fromAccountId = selectedAccount.id;
+    // Source from spendingAccountId, not id: for a Family & Friends card the
+    // card id is the family GROUP id while the real money lives in the shared
+    // virtual account (spendingAccountId). For every other account type
+    // spendingAccountId == id, so this is a no-op there.
+    final fromAccountId = selectedAccount.spendingAccountId;
 
     // Parse amount string (minor units) and convert to major units for API
     int amountMinorUnits;
@@ -1526,6 +1571,17 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final userNarration = _referenceController.text.trim();
     // Build narration with category prefix for statistics subcategory tracking.
     // The accounts-service SQL subCategoryExpr matches "CategoryName:" prefix patterns.
+    // Default fallback stamps the SENDER's full name onto the narration so the
+    // receiver's transaction history / receipt shows "Transfer from {Name}"
+    // instead of the vague "Transfer from LazerVault".
+    final senderProfile = context.read<AuthenticationCubit>().currentProfile;
+    final String senderFullName = senderProfile != null
+        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
+        : '';
+    final String defaultNarration = senderFullName.isNotEmpty
+        ? 'Transfer from $senderFullName'
+        : 'Transfer from LazerVault';
+
     final String narration;
     if (selectedCategory != null) {
       final categoryLabel = _categoryToAnalyticsLabel(selectedCategory!.subCategoryName);
@@ -1534,7 +1590,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     } else if (userNarration.isNotEmpty) {
       narration = userNarration;
     } else {
-      narration = 'Transfer from LazerVault';
+      narration = defaultNarration;
     }
 
     // Re-validate scheduled date hasn't become stale while user was in PIN flow
@@ -2748,10 +2804,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                             child: Container(
                               color: Colors.black.withValues(alpha: 0.5),
                               child: const Center(
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
+                                child: LazerVaultLoader.small(),
                               ),
                             ),
                           ),

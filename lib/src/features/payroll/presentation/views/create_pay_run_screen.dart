@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/employee_entity.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreatePayRunScreen extends StatefulWidget {
   const CreatePayRunScreen({super.key});
@@ -406,15 +407,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                         elevation: 0,
                       ),
                       child: isLoading
-                          ? SizedBox(
-                              height: 22.h,
-                              width: 22.w,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader(size: 22)
                           : Text(
                               'Create Pay Run',
                               style: GoogleFonts.inter(
@@ -532,14 +525,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
           Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              child: SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF3B82F6),
-                ),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           )
         else if (_employees.isEmpty)

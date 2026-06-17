@@ -14,6 +14,7 @@ import '../cubit/internet_auto_recharge_cubit.dart';
 import '../cubit/internet_auto_recharge_state.dart';
 import '../cubit/internet_beneficiary_cubit.dart';
 import '../cubit/internet_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Saved ISP accounts. Mirrors `DataBeneficiariesScreen` 1:1 —
 /// list + add-by-repeat-purchase + tap-for-options + delete with
@@ -163,10 +164,7 @@ class _InternetSavedBeneficiariesScreenState
     }
     if (_loading && _beneficiaries == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
     }
     final list = _beneficiaries ?? const [];
@@ -945,15 +943,7 @@ class _InternetSavedBeneficiariesScreenState
                       }
                     },
               child: loading
-                  ? SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF4E03D0)),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 14)
                   : Text('Save',
                       style: TextStyle(
                           color: const Color(0xFF4E03D0),

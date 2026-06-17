@@ -15,6 +15,7 @@ import 'payment_method_selection_screen.dart';
 import 'invoice_details_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PayInvoiceScreen extends StatefulWidget {
   const PayInvoiceScreen({super.key});
@@ -563,10 +564,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                 ),
               ],
             ),
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
-            ),
+            child: LazerVaultLoader.tiny(),
           ),
           SizedBox(height: 16.h),
           Text(

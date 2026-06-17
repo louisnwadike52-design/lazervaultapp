@@ -19,6 +19,7 @@
 // for redemption code) but render it with the same primitives.
 
 import 'dart:async';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +37,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../services/gift_card_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GiftCardDetailsScreen extends StatefulWidget {
   final GiftCard giftCard;
@@ -144,7 +146,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: kGiftCardBgTop,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -189,7 +191,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           child: _buildActions(),
         ),
       ),
-      body: BlocListener<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
         listenWhen: (_, current) =>
             current is GiftCardPurchaseCompleted ||
             current is GiftCardDetailsLoaded ||
@@ -278,7 +280,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 
@@ -802,14 +804,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           child: OutlinedButton.icon(
             onPressed: _isSharing ? null : _shareReceipt,
             icon: _isSharing
-                ? SizedBox(
-                    width: 16.sp,
-                    height: 16.sp,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.tiny()
                 : Icon(Icons.share, size: 16.sp),
             label: Text(
               _isSharing ? 'Sharing...' : 'Share',
@@ -833,14 +828,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           child: OutlinedButton.icon(
             onPressed: _isDownloading ? null : _downloadReceipt,
             icon: _isDownloading
-                ? SizedBox(
-                    width: 16.sp,
-                    height: 16.sp,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.tiny()
                 : Icon(Icons.download, size: 16.sp),
             label: Text(
               _isDownloading ? 'Saving...' : 'Download',

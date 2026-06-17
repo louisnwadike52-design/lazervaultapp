@@ -14,6 +14,7 @@ import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_organization_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateIDPayScreen extends StatefulWidget {
   const CreateIDPayScreen({super.key});
@@ -1006,15 +1007,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                     elevation: 0,
                   ),
                   child: isLoading
-                      ? SizedBox(
-                          height: 22.h,
-                          width: 22.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 22)
                       : Text(
                           _currentStep == 3 ? 'Create' : 'Next',
                           style: GoogleFonts.inter(

@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/expense_category_helpers.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import '../../../../../core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Budget List Screen - displays all user budgets
 class BudgetListScreen extends StatelessWidget {
@@ -258,22 +259,7 @@ class _SummaryCard extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
-                  height: 100.h,
-                  width: 100.h,
-                  child: CircularProgressIndicator(
-                    value: overallPercentage / 100,
-                    strokeWidth: 8,
-                    backgroundColor: const Color(0xFF2D2D2D),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      overallPercentage >= 90
-                          ? const Color(0xFFEF4444)
-                          : overallPercentage >= 70
-                              ? const Color(0xFFFB923C)
-                              : const Color(0xFF10B981),
-                    ),
-                  ),
-                ),
+                LazerVaultLoader(size: 100),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -580,9 +566,7 @@ class _LoadingView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            color: Color(0xFF10B981),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             message ?? 'Loading...',

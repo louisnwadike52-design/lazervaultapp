@@ -6,6 +6,7 @@ import '../../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PublicGroupDetailBottomSheet extends StatefulWidget {
   final String groupId;
@@ -152,15 +153,7 @@ class _PublicGroupDetailBottomSheetState
           }
 
           // Either PublicGroupDetailLoading or initial — show spinner.
-          return SizedBox(
-            height: 300.h,
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
-            ),
-          );
+          return LazerVaultLoader(size: 300);
         },
       ),
     );
@@ -481,15 +474,7 @@ class _PublicGroupDetailBottomSheetState
             elevation: 0,
           ),
           child: _isJoining
-              ? SizedBox(
-                  width: 20.w,
-                  height: 20.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader.small()
               : Text(
                   isMember ? 'Already a Member' : 'Join Group',
                   style: GoogleFonts.inter(

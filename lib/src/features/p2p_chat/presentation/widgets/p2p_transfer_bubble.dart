@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class P2PTransferBubble extends StatelessWidget {
   final P2PMessageEntity message;
@@ -635,14 +636,7 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
       child: ElevatedButton.icon(
         onPressed: _isLoading ? null : _onTap,
         icon: _isLoading
-            ? SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
+            ? LazerVaultLoader.tiny()
             : Icon(Icons.send_rounded, size: 18.w),
         label: Text(
           _isLoading ? 'Loading...' : 'Send Again',

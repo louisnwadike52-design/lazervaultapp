@@ -9,6 +9,7 @@ import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/internet_reminder.dart';
 import '../cubit/internet_reminder_cubit.dart';
 import '../cubit/internet_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Internet subscription reminders. Mirrors `DataRemindersScreen`: due /
 /// upcoming / completed sections, mark-complete and delete actions, FAB
@@ -185,10 +186,7 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
                   if (state is InternetReminderLoading ||
                       state is InternetReminderInitial) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(_accent),
-                      ),
+                      child: LazerVaultLoader.tiny(),
                     );
                   }
                   if (state is InternetRemindersLoaded) {

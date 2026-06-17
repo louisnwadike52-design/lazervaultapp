@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum BatchProcessingStatus {
   initiated,
@@ -796,15 +797,7 @@ class _BatchTransferProcessingScreenState
             ),
           ),
           if (isCurrent && !_isCompleted)
-            SizedBox(
-              width: 16.w,
-              height: 16.h,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(accentColor),
-              ),
-            ),
+            LazerVaultLoader.tiny(),
         ],
       ),
     );

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:get/get.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class FileCreditLifeClaimScreen extends StatefulWidget {
   final String policyId;
@@ -264,12 +265,7 @@ class _FileCreditLifeClaimScreenState
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFF3B82F6))),
+                      LazerVaultLoader.tiny(),
                       SizedBox(width: 8),
                       Text('Uploading...',
                           style: TextStyle(
@@ -302,12 +298,7 @@ class _FileCreditLifeClaimScreenState
                                 BorderRadius.circular(12)),
                       ),
                       child: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2))
+                          ? LazerVaultLoader.small()
                           : const Text('Submit Claim',
                               style: TextStyle(
                                   color: Colors.white,

@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/debouncer.dart';
 import '../../domain/entities/supplier_entity.dart';
 import '../cubit/inventory_enhanced_cubit.dart';
 import '../cubit/inventory_enhanced_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SupplierListScreen extends StatefulWidget {
   const SupplierListScreen({super.key});
@@ -380,9 +381,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
       builder: (context, state) {
         if (state is InventoryEnhancedLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

@@ -14,6 +14,7 @@ import '../cubit/leaderboard_state.dart';
 import '../widgets/my_donation_detail_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CrowdfundHomeScreen extends StatefulWidget {
   const CrowdfundHomeScreen({super.key});
@@ -236,7 +237,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: _heroDecoration,
       child: const Center(
-        child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+        child: LazerVaultLoader.small(),
       ),
     );
   }
@@ -664,7 +665,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               if (state is LeaderboardLoading) {
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
-                  child: const Center(child: CircularProgressIndicator(color: Color(0xFF4E03D0))),
+                  child: const Center(child: LazerVaultLoader.small()),
                 );
               }
               if (state is LeaderboardLoaded && state.entries.isNotEmpty) {
@@ -805,7 +806,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               Center(
                 child: Padding(
                   padding: EdgeInsets.all(24.h),
-                  child: const CircularProgressIndicator(color: Color(0xFF4E03D0)),
+                  child: LazerVaultLoader.small(),
                 ),
               )
             else if (state is CrowdfundError)

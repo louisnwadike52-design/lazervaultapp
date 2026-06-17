@@ -8,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Structured receipt data from a successful transfer.
 class TransferReceiptData {
@@ -239,14 +240,7 @@ class ChatReceiptLoadingCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Center(
-                  child: SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                    ),
-                  ),
+                  child: LazerVaultLoader.tiny(),
                 ),
               ),
               const SizedBox(width: 10),
@@ -653,28 +647,14 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
           IconButton(
             onPressed: _isDownloading ? null : _downloadReceipt,
             icon: _isDownloading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : const Icon(Icons.download, color: Colors.white),
             tooltip: 'Download PDF',
           ),
           IconButton(
             onPressed: _isSharing ? null : _shareReceipt,
             icon: _isSharing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : const Icon(Icons.share, color: Colors.white),
             tooltip: 'Share',
           ),
@@ -990,14 +970,7 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLoading)
-              const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF3B82F6),
-                ),
-              )
+              LazerVaultLoader(size: 18)
             else
               Icon(icon, color: const Color(0xFF3B82F6), size: 20),
             const SizedBox(width: 8),

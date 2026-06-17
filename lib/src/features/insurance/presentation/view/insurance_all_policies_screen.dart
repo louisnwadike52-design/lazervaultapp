@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceAllPoliciesScreen extends StatefulWidget {
   const InsuranceAllPoliciesScreen({super.key});
@@ -128,7 +129,7 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
         builder: (context, state) {
           if (state is InsuranceLoading) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+                child: LazerVaultLoader.small());
           }
           if (state is InsuranceError) {
             return Center(
@@ -200,14 +201,7 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         child: const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF6366F1)),
-            ),
-          ),
+          child: LazerVaultLoader.small(),
         ),
       );
     }

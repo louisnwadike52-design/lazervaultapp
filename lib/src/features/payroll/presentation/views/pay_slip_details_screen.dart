@@ -6,6 +6,7 @@ import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/pay_slip_entity.dart';
 import '../../services/payroll_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaySlipDetailsScreen extends StatefulWidget {
   final String paySlipId;
@@ -51,10 +52,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
           builder: (context, state) {
             if (state is PayrollLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
+                child: LazerVaultLoader.small(),
               );
             }
 

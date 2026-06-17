@@ -30,34 +30,55 @@ def aab_for(flavor)
     "build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab")
 end
 
-def apk_for(flavor)
+def apk_for(flavor, build_type = "release")
   File.join(FLUTTER_DIR,
-    "build/app/outputs/flutter-apk/app-#{flavor}-release.apk")
+    "build/app/outputs/flutter-apk/app-#{flavor}-#{build_type}.apk")
+end
+
+def apk_arm64_for(flavor, build_type = "debug")
+  File.join(FLUTTER_DIR,
+    "build/app/outputs/flutter-apk/app-arm64-v8a-#{flavor}-#{build_type}.apk")
 end
 
 def release_notes
   `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
 end
 
-# Resolve the Google Play Console service-account JSON path. The same SA
-# drives every Play Store upload (internal / alpha / production tracks).
-# Create it at: Google Play Console → Settings → Developer account →
-# API access → Create service account → grant "Release manager" role.
-# Then export PLAY_STORE_JSON_KEY=/abs/path/play-store-sa.json before
-# running any of these lanes.
+# Resolve the Play Console service-account JSON path. One Play account
+# hosts one app (com.lazervault.app) across three tracks (internal /
+# alpha / production), so one SA drives every Android upload. The SA
+# lives in lazervault-28875 (prod GCP project — canonical home for the
+# production listing). Per-env Firebase routing is separate — the AAB
+# bundles the matching google-services.json from android/app/src/<env>/.
 def play_store_json_key_path
   ENV["PLAY_STORE_JSON_KEY"]
 end
 
+# Deploy model:
+#   PRIMARY (release-signed AAB → Play Console):
+#     dev        → Play Console internal track       (no review, instant rollout)
+#     staging    → Play Console closed (alpha) track (gated tester groups, no review)
+#     production → Play Console production track     (Play review, full rollout)
+#
+#   ALTERNATE (debug-signed APK → Firebase App Distribution):
+#     dev_firebase     — fast iteration; ad-hoc testers; no Play review
+#     staging_firebase — same pattern for staging Firebase project
+#
+# Signing:
+#   All Play Console uploads use the upload keystore at
+#   ~/.config/play-store/lazervault-upload-keystore.jks (Play App Signing
+#   re-signs with the prod key on Google's side).
+#   Firebase lanes use the debug keystore (no setup needed).
 platform :android do
-  desc "Dev → Google Play Console internal testing track (AAB)"
-  # User directive: every Android build goes through Play Console — that's
-  # the canonical distribution surface. Firebase App Distribution stays
-  # available via the dev_firebase lane for ad-hoc tester distribution
-  # without a Play Console review.
-  #
-  # Internal testing track: up to 100 testers, no review, instant rollout.
-  # Equivalent to TestFlight Internal on iOS.
+  # release_status policy:
+  #   internal + alpha → "completed"  (auto-rollout to internal/closed testers,
+  #                                    no Play review, mirrors TestFlight Internal
+  #                                    behaviour — uploads go straight to testers)
+  #   production       → "draft"      (uploaded but rollout HELD; flip to
+  #                                    "Start rollout to production" in Play
+  #                                    Console UI when ready — keeps a final
+  #                                    human gate before public release)
+  desc "Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)"
   lane :dev do
     flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS}")
     upload_to_play_store(
@@ -70,32 +91,11 @@ platform :android do
       skip_upload_changelogs:     false,
       skip_upload_images:         true,
       skip_upload_screenshots:    true,
-      release_status:             "draft",  # tester opens listing → activates
+      release_status:             "completed",
     )
   end
 
-  desc "Dev fallback → Firebase App Distribution (no Play Console SA required)"
-  # When PLAY_STORE_JSON_KEY isn't set yet (early dev / first-time setup),
-  # use this lane to push to Firebase App Distribution instead. APKs install
-  # directly — no Play Console review.
-  lane :dev_firebase do
-    flutter("build apk --flavor dev --dart-define=FLAVOR=dev #{COMPRESSION_FLAGS} --split-per-abi")
-    args = {
-      app: "1:961906506476:android:ec73b0375c4900043843c9",
-      android_artifact_type: "APK",
-      android_artifact_path: apk_for("dev"),
-      release_notes: release_notes,
-      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
-      firebase_cli_token: ENV["FIREBASE_TOKEN"],
-    }
-    args[:groups] = ENV["FAD_GROUPS"] if ENV["FAD_GROUPS"] && !ENV["FAD_GROUPS"].empty?
-    firebase_app_distribution(args)
-  end
-
-  desc "Staging → Play Store closed (alpha) testing track"
-  # Closed testing: invite-only tester groups, no Play review. Wider audience
-  # than internal but still gated. Devs typically promote builds from internal
-  # → closed → open → production. Each promotion is a separate lane run.
+  desc "Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)"
   lane :staging do
     flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging #{COMPRESSION_FLAGS}")
     upload_to_play_store(
@@ -108,15 +108,11 @@ platform :android do
       skip_upload_changelogs:     false,
       skip_upload_images:         true,
       skip_upload_screenshots:    true,
-      release_status:             "draft",
+      release_status:             "completed",
     )
   end
 
-  desc "Production → Play Store production track (requires Play review)"
-  # Full rollout: Play reviews + auto-rolls to all eligible users. release_status
-  # "draft" means the upload happens but the rollout is held — you flip the
-  # rollout in Play Console UI when ready (matches the no-auto-submit pattern
-  # on iOS upload_to_app_store).
+  desc "Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)"
   lane :production do
     flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod #{COMPRESSION_FLAGS}")
     upload_to_play_store(
@@ -129,11 +125,11 @@ platform :android do
       skip_upload_changelogs:     false,
       skip_upload_images:         true,
       skip_upload_screenshots:    true,
-      release_status:             "draft",  # promote in Play Console when ready
+      release_status:             "draft",  # Manual gate — flip in Play Console when ready
     )
   end
 
-  desc "Promote staging → production track (no new upload, just track switch)"
+  desc "Promote alpha → production (no rebuild, just track switch)"
   lane :promote_to_production do
     upload_to_play_store(
       package_name:               "com.lazervault.app",
@@ -148,5 +144,35 @@ platform :android do
       skip_upload_screenshots:    true,
       release_status:             "draft",
     )
+  end
+
+  desc "Dev fallback → Firebase App Distribution (debug-signed APK, no keystore needed)"
+  lane :dev_firebase do
+    flutter("build apk --flavor dev --dart-define=FLAVOR=dev --debug --split-per-abi")
+    args = {
+      app: "1:961906506476:android:ec73b0375c4900043843c9",  # lazervault-dev Android app
+      android_artifact_type: "APK",
+      android_artifact_path: apk_arm64_for("dev", "debug"),
+      release_notes: release_notes,
+      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    }
+    args[:groups] = ENV["FAD_GROUPS"] if ENV["FAD_GROUPS"] && !ENV["FAD_GROUPS"].empty?
+    firebase_app_distribution(args)
+  end
+
+  desc "Staging fallback → Firebase App Distribution (debug-signed APK)"
+  lane :staging_firebase do
+    flutter("build apk --flavor staging --dart-define=FLAVOR=staging --debug --split-per-abi")
+    args = {
+      app: "1:169699168674:android:f9025cedabdafadd4b22fb",  # lazervault-testnet Android app
+      android_artifact_type: "APK",
+      android_artifact_path: apk_arm64_for("staging", "debug"),
+      release_notes: release_notes,
+      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    }
+    args[:groups] = ENV["FAD_GROUPS"] if ENV["FAD_GROUPS"] && !ENV["FAD_GROUPS"].empty?
+    firebase_app_distribution(args)
   end
 end

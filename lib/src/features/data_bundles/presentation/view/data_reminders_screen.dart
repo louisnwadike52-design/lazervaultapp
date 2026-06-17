@@ -13,6 +13,7 @@ import '../../domain/entities/data_beneficiary.dart';
 import '../../domain/entities/data_reminder.dart';
 import '../cubit/data_reminder_cubit.dart';
 import '../cubit/data_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Data-bundle reminders. Mirrors `AirtimeRemindersScreen`: due / upcoming
 /// / completed sections, mark-complete and delete actions, FAB to create
@@ -184,11 +185,7 @@ class _DataRemindersScreenState extends State<DataRemindersScreen> {
                   if (state is DataReminderLoading ||
                       state is DataReminderInitial) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                      ),
+                      child: LazerVaultLoader.tiny(),
                     );
                   }
                   if (state is DataRemindersLoaded) {

@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -32,6 +35,20 @@ abstract class IProfileRepository {
     int limit = 10,
     String searchType = '', // "username", "name", "phone", "email", or "" for unified search
   });
+
+  /// Upload a new profile picture, persist the resulting public URL on
+  /// the user, and return the updated [User].
+  ///
+  /// Exactly one of [file] or ([bytes] + [filename]) must be provided.
+  Future<Either<Failure, User>> uploadProfilePicture({
+    File? file,
+    Uint8List? bytes,
+    String? filename,
+  });
+
+  /// Clear the user's existing profile picture (auth-service stores ""
+  /// in `users.profile_picture`).
+  Future<Either<Failure, User>> removeProfilePicture();
 
   // Update preferences
   Future<Either<Failure, UserPreferences>> updatePreferences({

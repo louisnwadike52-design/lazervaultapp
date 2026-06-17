@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/identity/presentation/view/facial_regist
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/widgets/profile_picture_picker.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class MyAccount extends StatelessWidget {
   const MyAccount({super.key});
@@ -99,7 +100,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
 
                   // Only show full screen loading on first load
                   if (state is ProfileLoading && !_hasLoadedOnce) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: LazerVaultLoader.small());
                   }
 
                   return SingleChildScrollView(

@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/widgets/app_service_builder.dart';
@@ -16,6 +17,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Quick Services carousel - 3 rows with reduced indicator spacing
 // Context-aware: switches between personal and business services based on active account
@@ -222,49 +224,61 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   ];
 
   // Family account services — active, setup complete (8 services — 1 page)
+  // Family accounts can only move money via the family-gated transfer path
+  // (core-payments SendFunds enforces per-member limits + records the spend).
+  // Non-transfer flows (bills, airtime, insurance, exchange, auto-save) are
+  // blocked server-side for a family virtual account, so only surface the
+  // transfer services that actually work from a family account.
   static const List<AppService> _familyServices = [
     AppService(
         serviceName: AppServiceName.sendFunds,
         serviceImg: AppServiceImg.sendFunds),
     AppService(
-        serviceName: AppServiceName.payBills,
-        serviceImg: AppServiceImg.payBills),
-    AppService(
-        serviceName: AppServiceName.airtime,
-        serviceImg: AppServiceImg.airtime),
-    AppService(
         serviceName: AppServiceName.tagPay,
         serviceImg: AppServiceImg.tagPay),
-    AppService(
-        serviceName: AppServiceName.autoSave,
-        serviceImg: AppServiceImg.autoSave),
-    AppService(
-        serviceName: AppServiceName.insurance,
-        serviceImg: AppServiceImg.insurance),
-    AppService(
-        serviceName: AppServiceName.qrPay,
-        serviceImg: AppServiceImg.qrPay),
-    AppService(
-        serviceName: AppServiceName.exchange,
-        serviceImg: AppServiceImg.exchange),
   ];
 
+  // Service entries to HIDE from rendering. The list constants above
+  // still carry the entry so routes/handlers + analytics keep resolving,
+  // but the user-facing grid skips them. Add a name here to hide it from
+  // both Quick Services AND the All Services bottom sheet (which reads
+  // the same source list via getAllServices()).
+  static const Set<AppServiceName> _hiddenServices = {
+    AppServiceName.invest,
+    // Airtime lives inside the Utilities hub now; the standalone Quick
+    // Services tile is duplicate surface area.
+    AppServiceName.airtime,
+  };
+
   List<AppService> get _activeServices {
-    switch (_activeAccountType) {
-      case VirtualAccountType.business:
-        return _businessServices;
-      case VirtualAccountType.savings:
-        return _savingsServices;
-      case VirtualAccountType.investment:
-        return _investmentServices;
-      case VirtualAccountType.usd:
-      case VirtualAccountType.gbp:
-      case VirtualAccountType.eur:
-        return _multiCurrencyServices;
-      case VirtualAccountType.family:
-        return _familyServices;
-      default:
-        return _personalServices;
+    final raw = switch (_activeAccountType) {
+      VirtualAccountType.business => _businessServices,
+      VirtualAccountType.savings => _savingsServices,
+      VirtualAccountType.investment => _investmentServices,
+      VirtualAccountType.usd ||
+      VirtualAccountType.gbp ||
+      VirtualAccountType.eur =>
+        _multiCurrencyServices,
+      VirtualAccountType.family => _familyServices,
+      _ => _personalServices,
+    };
+    return raw.where((s) => !_hiddenServices.contains(s.serviceName)).toList();
+  }
+
+  /// Default-account header — replaces the generic "Quick Services" with
+  /// a personalised "Hi {firstname} 👋" greeting. The wave emoji is
+  /// concatenated here (rather than as a separate widget) so the chip
+  /// row layout doesn't change. Falls back to "Hi there 👋" when the
+  /// auth cubit doesn't have a profile yet so the carousel never shows
+  /// an empty header.
+  String _personalGreeting() {
+    try {
+      final profile = context.read<AuthenticationCubit>().currentProfile;
+      final first = profile?.user.firstName.trim() ?? '';
+      if (first.isEmpty) return 'Hi there 👋';
+      return 'Hi $first 👋';
+    } catch (_) {
+      return 'Hi there 👋';
     }
   }
 
@@ -277,7 +291,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         VirtualAccountType.eur =>
           "Wallet Services",
         VirtualAccountType.family => "Family Services",
-        _ => "Quick Services",
+        _ => _personalGreeting(),
       };
 
   Color get _accentColor => switch (_activeAccountType) {
@@ -320,9 +334,16 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         final summaries = cubitState.accountSummaries;
         if (summaries.isEmpty) return;
 
+        // Match on spendingAccountId first: a Family & Friends card is
+        // activated by its shared virtual-account id (spendingAccountId), not
+        // its group id. For every other account type spendingAccountId == id,
+        // so the id fallback keeps them working.
         final activeAccount = summaries.firstWhere(
-          (a) => a.id == activeId,
-          orElse: () => summaries.first,
+          (a) => a.spendingAccountId == activeId,
+          orElse: () => summaries.firstWhere(
+            (a) => a.id == activeId,
+            orElse: () => summaries.first,
+          ),
         );
         final accountType = activeAccount.accountTypeEnum;
         final isFamily = accountType == VirtualAccountType.family;
@@ -621,10 +642,19 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                       );
                       Get.toNamed(AppRoutes.familyActivationSetup,
                           arguments: {'familyId': target.id});
+                    } else if (state is FamilyAccountsLoaded) {
+                      // The lookup succeeded but the user has no family GROUP
+                      // account yet (only the auto-provisioned "family" virtual
+                      // wallet exists, which is what surfaces this setup card).
+                      // Route them into the creation flow instead of dead-
+                      // ending on an error — they tapped "set up", so let them.
+                      Get.toNamed(AppRoutes.familySetup);
                     } else {
+                      // state is FamilyAccountError (load failed) — surface a
+                      // real retry, not a misleading "not found".
                       Get.snackbar(
                         'Error',
-                        'Could not find your family account. Please try again.',
+                        'Could not load your family account. Please try again.',
                         backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
                         colorText: Colors.white,
                         snackPosition: SnackPosition.TOP,
@@ -654,14 +684,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                 elevation: 0,
               ),
               child: _isResolvingFamilyId
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.h,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFF1A1A3E),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

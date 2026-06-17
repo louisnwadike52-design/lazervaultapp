@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/funds/data/datasources/payments_transfer
 
 import '../../cubit/wallet_transfer_cubit.dart';
 import '../../cubit/wallet_transfer_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class WalletHistoryScreen extends StatefulWidget {
   const WalletHistoryScreen({super.key});
@@ -212,9 +213,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                   if (state is WalletTransferHistoryLoading &&
                       _transfers.isEmpty) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF3B82F6),
-                      ),
+                      child: LazerVaultLoader.small(),
                     );
                   }
 
@@ -241,10 +240,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                           return Center(
                             child: Padding(
                               padding: EdgeInsets.all(16.w),
-                              child: const CircularProgressIndicator(
-                                color: Color(0xFF3B82F6),
-                                strokeWidth: 2,
-                              ),
+                              child: LazerVaultLoader.tiny(),
                             ),
                           );
                         }

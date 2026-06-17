@@ -70,7 +70,7 @@ class CreateFamilyAccountRequest {
     return CreateFamilyAccountRequest(
       name: json['name'] as String,
       description: json['description'] as String?,
-      initialCurrency: json['initial_currency'] as String? ?? 'USD',
+      initialCurrency: json['initial_currency'] as String? ?? 'NGN',
       initialFunding: (json['initial_funding'] as num?)?.toDouble() ?? 0.0,
       allowMemberContributions: json['allow_member_contributions'] as bool? ?? true,
       creatorId: json['creator_id'] as String? ?? '',

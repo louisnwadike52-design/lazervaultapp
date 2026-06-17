@@ -65,7 +65,62 @@ enum AppEnvironment {
 
   /// Whether to show debug UI elements
   bool get showDebugUI => this == AppEnvironment.development;
+
+  /// Short three-letter tier name matching the backend `ENVIRONMENT` var
+  /// (`dev` / `staging` / `prod`). Used wherever we cross to backend / DNS
+  /// concepts that don't speak the long "development" form — most notably
+  /// the path-prefix routing.
+  String get tierName {
+    switch (this) {
+      case AppEnvironment.development:
+        return 'dev';
+      case AppEnvironment.staging:
+        return 'staging';
+      case AppEnvironment.production:
+        return 'prod';
+    }
+  }
+
+  /// Sub-domain segment used by EVERY transport (HTTP, WebSocket, gRPC) to
+  /// reach the right tier's backend:
+  ///   dev      → `api.dev.lazervault.app`
+  ///   staging  → `api.staging.lazervault.app`
+  ///   prod     → `api.lazervault.app`            (no segment)
+  ///
+  /// Cloudflare DNS dispatches by sub-hostname directly to the matching
+  /// backend (cloudflared tunnel for dev + staging, k8s Istio ingress for
+  /// prod). No path prefix, no edge Worker, no rewrite.
+  ///
+  /// Used by `EndpointRegistry._tierBase` (HTTP/WS) and `grpcBase` (gRPC).
+  String get envSubdomain {
+    switch (this) {
+      case AppEnvironment.development:
+        return 'dev';
+      case AppEnvironment.staging:
+        return 'staging';
+      case AppEnvironment.production:
+        return '';
+    }
+  }
 }
+
+/// Build-time tier identity. Set via `--dart-define FLUTTER_FLAVOR=<tier>`
+/// from the Android product-flavor `dartDefines` block (build.gradle.kts).
+/// Defaults to development so a `flutter run` without a flavor still works
+/// on a developer's laptop.
+///
+/// We deliberately read this at build time (not from `dotenv.env`) so the
+/// tier is locked into the binary — operators can't accidentally swap the
+/// `.env` and have a dev build talk to production.
+const String _flutterFlavor =
+    String.fromEnvironment('FLUTTER_FLAVOR', defaultValue: 'dev');
+
+/// The tier this build was compiled for. Use this whenever you need to know
+/// whether to talk to dev / staging / prod backends; do NOT introspect
+/// `dotenv.env['ENVIRONMENT']` directly, that string is mutable at runtime
+/// and can drift from the binary's identity.
+AppEnvironment get currentAppEnvironment =>
+    AppEnvironment.fromString(_flutterFlavor);
 
 /// Application Configuration
 ///

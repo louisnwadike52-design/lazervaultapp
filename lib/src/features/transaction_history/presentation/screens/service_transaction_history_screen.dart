@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_card.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_filters.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_states.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Revolut-style service-specific transaction history
 class ServiceTransactionHistoryScreen extends StatefulWidget {
@@ -196,9 +197,7 @@ class _ServiceTransactionHistoryScreenState
             return Padding(
               padding: EdgeInsets.all(20.w),
               child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(widget.serviceType.color),
-                ),
+                child: LazerVaultLoader.small(),
               ),
             );
           }

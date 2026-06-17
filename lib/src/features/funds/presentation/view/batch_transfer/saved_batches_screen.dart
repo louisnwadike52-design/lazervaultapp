@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/funds/cubit/saved_batches_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/saved_batches_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Lists every saved-batch draft for the current user. Mirrors the
 /// electricity-bill beneficiaries-screen visual language.
@@ -110,7 +111,7 @@ class _SavedBatchesScreenState extends State<SavedBatchesScreen> {
                         children: [
                           SizedBox(height: 60.h),
                           const Center(
-                              child: CircularProgressIndicator(color: btBlue)),
+                              child: LazerVaultLoader.small()),
                         ],
                       );
                     }

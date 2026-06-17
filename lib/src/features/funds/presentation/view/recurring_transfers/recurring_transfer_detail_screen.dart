@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class RecurringTransferDetailScreen extends StatefulWidget {
   const RecurringTransferDetailScreen({super.key});
@@ -375,14 +376,7 @@ class _RecurringTransferDetailScreenState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isDisabled)
-              SizedBox(
-                width: 18.sp,
-                height: 18.sp,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: effectiveColor,
-                ),
-              )
+              LazerVaultLoader(size: 18)
             else
               Icon(icon, color: effectiveColor, size: 18.sp),
             SizedBox(width: 8.w),
@@ -455,7 +449,7 @@ class _RecurringTransferDetailScreenState
           const Center(
             child: Padding(
               padding: EdgeInsets.all(24),
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: LazerVaultLoader.small(),
             ),
           )
         else if (state is RecurringTransferExecutionsLoaded)

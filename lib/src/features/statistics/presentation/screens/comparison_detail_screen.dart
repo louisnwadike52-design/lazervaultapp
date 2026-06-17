@@ -5,6 +5,7 @@ import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ComparisonDetailScreen extends StatelessWidget {
   const ComparisonDetailScreen({super.key});
@@ -34,7 +35,7 @@ class ComparisonDetailScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is! StatisticsLoaded) {
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: LazerVaultLoader.small(),
             );
           }
           return RefreshIndicator(

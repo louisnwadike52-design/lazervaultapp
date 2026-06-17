@@ -5,6 +5,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/share_report_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen displaying AI-generated crowdfund campaign report with swipeable cards
 class CrowdfundReportScreen extends StatelessWidget {
@@ -209,9 +210,7 @@ class _LoadingView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
+              LazerVaultLoader.small(),
               const SizedBox(height: 24),
               Text(
                 message ?? 'Generating AI report...',

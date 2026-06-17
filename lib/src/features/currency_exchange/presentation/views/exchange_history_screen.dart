@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
@@ -7,6 +8,7 @@ import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
 import '../widgets/exchange_history_actions_sheet.dart';
 import '../widgets/exchange_transaction_tile.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ExchangeHistoryScreen extends StatefulWidget {
   const ExchangeHistoryScreen({super.key});
@@ -84,8 +86,9 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -160,7 +163,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
               builder: (context, state) {
                 if (state is ExchangeLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+                    child: LazerVaultLoader.small(),
                   );
                 }
 
@@ -190,7 +193,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildTransactionList(

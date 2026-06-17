@@ -16,6 +16,7 @@ import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AddBeneficiaryScreen extends StatefulWidget {
   const AddBeneficiaryScreen({super.key});
@@ -866,14 +867,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                       padding: EdgeInsets.all(40.w),
                       child: Column(
                         children: [
-                          SizedBox(
-                            width: 32.w,
-                            height: 32.w,
-                            child: const CircularProgressIndicator(
-                              color: Color(0xFF4E03D0),
-                              strokeWidth: 3,
-                            ),
-                          ),
+                          LazerVaultLoader(size: 32),
                           SizedBox(height: 16.h),
                           Text(
                             'Loading providers...',
@@ -1183,14 +1177,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
             ),
             child: isLoading
                 ? Center(
-                    child: SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    ),
+                    child: LazerVaultLoader.small(),
                   )
                 : Text(
                     _useSmartLookup ? 'Look Up Meter' : 'Validate Meter',
@@ -1708,14 +1695,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
             ),
             child: isLoading
                 ? Center(
-                    child: SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    ),
+                    child: LazerVaultLoader.small(),
                   )
                 : Text(
                     'Save Beneficiary',

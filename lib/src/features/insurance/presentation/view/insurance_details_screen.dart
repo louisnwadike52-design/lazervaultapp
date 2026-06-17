@@ -16,6 +16,7 @@ import '../widgets/insurance_terms_bottom_sheet.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/repositories/insurance_repository.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceDetailsScreen extends StatefulWidget {
   final Insurance insurance;
@@ -1143,10 +1144,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(24.r),
             ),
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF6366F1)),
-            ),
+            child: LazerVaultLoader.tiny(),
           ),
           SizedBox(height: 16.h),
           Text(

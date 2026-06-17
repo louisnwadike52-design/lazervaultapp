@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InventoryListScreen extends StatefulWidget {
   const InventoryListScreen({super.key});
@@ -243,9 +244,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
       builder: (context, state) {
         if (state is InventoryLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

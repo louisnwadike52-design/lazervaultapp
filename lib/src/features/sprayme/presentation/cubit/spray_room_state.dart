@@ -3,6 +3,7 @@ import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dar
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_participant.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_comment.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/spray_stats.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_websocket_service.dart';
 
 class SprayRoomState {
@@ -10,6 +11,7 @@ class SprayRoomState {
   final SprayWallet? wallet;
   final List<SprayGift> gifts;
   final List<SessionParticipant> participants;
+  final List<TopSprayer> topSprayers; // session leaderboard
   final List<SprayRoomEvent> recentEvents;
   final List<SprayComment> comments;
   final int totalLikes;
@@ -35,6 +37,7 @@ class SprayRoomState {
     this.wallet,
     this.gifts = const [],
     this.participants = const [],
+    this.topSprayers = const [],
     this.recentEvents = const [],
     this.comments = const [],
     this.totalLikes = 0,
@@ -59,6 +62,7 @@ class SprayRoomState {
     SprayWallet? wallet,
     List<SprayGift>? gifts,
     List<SessionParticipant>? participants,
+    List<TopSprayer>? topSprayers,
     List<SprayRoomEvent>? recentEvents,
     List<SprayComment>? comments,
     int? totalLikes,
@@ -82,6 +86,7 @@ class SprayRoomState {
       wallet: wallet ?? this.wallet,
       gifts: gifts ?? this.gifts,
       participants: participants ?? this.participants,
+      topSprayers: topSprayers ?? this.topSprayers,
       recentEvents: recentEvents ?? this.recentEvents,
       comments: comments ?? this.comments,
       totalLikes: totalLikes ?? this.totalLikes,

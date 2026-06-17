@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../services/lock_funds_pdf_service.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockWithdrawalSuccessScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -400,14 +401,7 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _isDownloading
-                            ? SizedBox(
-                                width: 20.w,
-                                height: 20.w,
-                                child: const CircularProgressIndicator(
-                                  color: Color(0xFF6366F1),
-                                  strokeWidth: 2,
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Icon(
                                 Icons.download,
                                 color: const Color(0xFF6366F1),

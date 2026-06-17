@@ -136,18 +136,27 @@ class BalanceRefreshing extends OpenBankingState {
   List<Object?> get props => [accountId];
 }
 
-/// Balance refreshed
+/// Balance refreshed.
+///
+/// `isManual` distinguishes a user-initiated tap (Refresh button) from a
+/// silent background sweep (`autoRefreshStaleBalances`). The Linked Banks
+/// screen uses this to only surface a "Balance updated" snackbar for
+/// manual refreshes — auto-sweeps update the list silently. Without
+/// this gate the screen would loop "Balance updated" on every cold
+/// fetch (every linked account fires one event).
 class BalanceRefreshed extends OpenBankingState {
   final String accountId;
   final double newBalance;
+  final bool isManual;
 
   const BalanceRefreshed({
     required this.accountId,
     required this.newBalance,
+    this.isManual = false,
   });
 
   @override
-  List<Object?> get props => [accountId, newBalance];
+  List<Object?> get props => [accountId, newBalance, isManual];
 }
 
 /// Deposit initiated

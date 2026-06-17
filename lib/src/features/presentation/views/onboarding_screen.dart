@@ -6,6 +6,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -325,14 +326,7 @@ class OnboardingCarouselItem extends StatelessWidget {
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(slide.textColor),
-              ),
+              child: LazerVaultLoader.small(),
             );
           },
           errorBuilder: (context, error, stackTrace) {

@@ -1,0 +1,120 @@
+default_platform(:ios)
+
+FLUTTER_DIR = File.expand_path("../..", __dir__) # lazervaultapp/
+IOS_DIR     = File.expand_path("..", __dir__)    # lazervaultapp/ios/
+
+def flutter(args)
+  Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
+end
+
+def swap_firebase_plist(flavor)
+  src = File.join(IOS_DIR, "config", flavor, "GoogleService-Info.plist")
+  dst = File.join(IOS_DIR, "Runner", "GoogleService-Info.plist")
+  FileUtils.cp(src, dst)
+end
+
+def release_notes
+  `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
+end
+
+platform :ios do
+  desc "Open Firebase Console pages for the APNs .p8 + VAPID upload (one-time setup)"
+  lane :setup_push_credentials do
+    UI.header "APNs + Web Push setup (one-time, per Firebase project)"
+    UI.message "1. Apple Developer Console → Keys → '+' → enable 'Apple Push Notifications service (APNs)' → download .p8"
+    UI.message "   https://developer.apple.com/account/resources/authkeys/list"
+    UI.message ""
+    UI.message "2. Upload that .p8 to EACH Firebase project (one per env):"
+    %w[lazervault-dev lazervault-testnet lazervault-28875].each do |proj|
+      UI.message "   - #{proj}: https://console.firebase.google.com/project/#{proj}/settings/cloudmessaging"
+    end
+    UI.message ""
+    UI.message "3. Web Push VAPID key — generate one PER Firebase project:"
+    %w[lazervault-dev lazervault-testnet lazervault-28875].each do |proj|
+      UI.message "   - #{proj}: https://console.firebase.google.com/project/#{proj}/settings/cloudmessaging/web-push-certs"
+    end
+    UI.message ""
+    UI.message "4. Paste the VAPID key into the corresponding firebase_options_<env>.dart's web config"
+    UI.message "   (the FCM JS SDK reads it as vapidKey: in getToken({ vapidKey, serviceWorkerRegistration }))"
+    UI.message ""
+    UI.message "5. Re-run fastlane dev / staging / production to ship the updated config."
+    sh("open https://console.firebase.google.com/project/lazervault-dev/settings/cloudmessaging")
+  end
+
+  desc "Dev → Firebase App Distribution (internal testers)"
+  lane :dev do
+    swap_firebase_plist("dev")
+    flutter("build ios --release --no-codesign --flavor dev --dart-define=FLAVOR=dev")
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "development",
+      output_directory: "build/ios/ipa",
+      output_name: "Runner-dev.ipa",
+    )
+    firebase_app_distribution(
+      app: "1:961906506476:ios:a38d37e7cf1d32a33843c9",
+      ipa_path: "build/ios/ipa/Runner-dev.ipa",
+      groups: ENV["FAD_GROUPS"] || "internal-testers",
+      release_notes: release_notes,
+      # SA JSON preferred. Same SA needs `roles/firebaseappdistro.admin`
+      # on lazervault-dev — see android/fastlane/Fastfile for the gcloud
+      # command. CLI-token path is the fallback.
+      service_credentials_file: ENV["FIREBASE_SERVICE_ACCOUNT_JSON"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    )
+  end
+
+  desc "Staging → TestFlight (internal group)"
+  lane :staging do
+    swap_firebase_plist("staging")
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true) if ENV["MATCH_GIT_URL"]
+    flutter("build ios --release --no-codesign --flavor staging --dart-define=FLAVOR=staging")
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "build/ios/ipa",
+      output_name: "Runner-staging.ipa",
+    )
+    upload_to_testflight(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      ipa: "build/ios/ipa/Runner-staging.ipa",
+      skip_waiting_for_build_processing: true,
+      groups: ["Internal"],
+    )
+  end
+
+  desc "Production → TestFlight (external) + App Store"
+  lane :production do
+    swap_firebase_plist("prod")
+    setup_ci if ENV["CI"]
+    match(type: "appstore", readonly: true) if ENV["MATCH_GIT_URL"]
+    flutter("build ios --release --no-codesign --flavor prod --dart-define=FLAVOR=prod")
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "build/ios/ipa",
+      output_name: "Runner-prod.ipa",
+    )
+    upload_to_testflight(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      ipa: "build/ios/ipa/Runner-prod.ipa",
+      skip_waiting_for_build_processing: true,
+      groups: ["External"],
+    )
+    upload_to_app_store(
+      api_key_path: ENV["APP_STORE_CONNECT_API_KEY_PATH"],
+      ipa: "build/ios/ipa/Runner-prod.ipa",
+      submit_for_review: false,
+      automatic_release: false,
+      skip_metadata: true,
+      skip_screenshots: true,
+    )
+  end
+end

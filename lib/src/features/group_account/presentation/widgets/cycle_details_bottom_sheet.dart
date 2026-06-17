@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Per-cycle detail sheet — opened by tapping a row on
 /// [ContributionCyclesHistoryScreen]. Loads the cycle details bundle
@@ -284,10 +285,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
   Widget _buildBody() {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromARGB(255, 78, 3, 208)),
-        ),
+        child: LazerVaultLoader.small(),
       );
     }
     if (_error != null) {

@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Verification Screen - Verifies user's voice before allowing access
 /// Production-ready with comprehensive error handling and retry mechanisms
@@ -854,7 +855,7 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
+              LazerVaultLoader.small(),
               const SizedBox(height: 24),
               const Text(
                 'Verifying your voice...',

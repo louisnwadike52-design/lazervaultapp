@@ -14,6 +14,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AirtimeTransferReviewScreen extends StatefulWidget {
   const AirtimeTransferReviewScreen({super.key});
@@ -434,10 +435,7 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
           elevation: 0,
         ),
         child: _isProcessing
-            ? SizedBox(
-                width: 24.w, height: 24.w,
-                child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Confirm & Transfer',
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),

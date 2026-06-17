@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/qr_payment/domain/entities/qr_transactio
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_transaction_details_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class QRPaymentsHistoryScreen extends StatefulWidget {
   const QRPaymentsHistoryScreen({super.key});
@@ -48,8 +49,7 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
                   builder: (context, state) {
                     if (state is QRPaymentLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                            color: Color(0xFF3B82F6)),
+                        child: LazerVaultLoader.small(),
                       );
                     }
 

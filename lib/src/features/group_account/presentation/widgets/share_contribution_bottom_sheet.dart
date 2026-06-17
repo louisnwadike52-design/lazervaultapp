@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_pdf_service.dart';
 import '../../utils/group_export_helper.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum SharePlatform {
   whatsapp,
@@ -394,14 +395,7 @@ class _ShareContributionBottomSheetState extends State<ShareContributionBottomSh
           ),
         ),
         child: _isGenerating
-            ? SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

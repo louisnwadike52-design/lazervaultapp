@@ -1,15 +1,116 @@
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/qr_payment_entity.dart';
 import '../../domain/entities/qr_transaction_entity.dart';
 import '../../domain/repositories/qr_payment_repository.dart';
+import '../../services/qr_pay_websocket_service.dart';
 import 'qr_payment_state.dart';
+
+/// Health of the realtime WS overlay. Mirrors `ContactlessWsHealth` —
+/// generator screen reads this to decide its polling cadence
+/// (`connecting`/`connected` ⇒ 3s, `failed` ⇒ 1s).
+enum QrPayWsHealth { connecting, connected, failed }
 
 class QRPaymentCubit extends Cubit<QRPaymentState> {
   final QRPaymentRepository repository;
+  /// Realtime WS overlay for the generator-side QR display screen. When
+  /// set, `subscribeToGeneratedQR` connects and listens for the payer's
+  /// completion event. Polling continues regardless so a WS failure is
+  /// pure speedup-loss, never a correctness issue.
+  final QrPayWebSocketService? wsService;
+  StreamSubscription<QrPayStatusEvent>? _wsSub;
+  StreamSubscription<QrPayWebSocketConnectionState>? _wsConnSub;
+  Timer? _wsTimeoutTimer;
+  bool _wsConnected = false;
+  String? _activeQrCode;
+  /// Publicly observable WS health. The display screen listens here:
+  /// `connected` → keeps the relaxed 3 s poll; `failed` → tightens to 1 s
+  /// so a permanently-dead WS still settles within ~1 s of the payer's
+  /// debit landing.
+  final ValueNotifier<QrPayWsHealth> wsHealth =
+      ValueNotifier(QrPayWsHealth.connecting);
+  static const Duration _wsConnectTimeout = Duration(seconds: 8);
 
-  QRPaymentCubit({required this.repository}) : super(QRPaymentInitial());
+  QRPaymentCubit({
+    required this.repository,
+    this.wsService,
+  }) : super(QRPaymentInitial());
+
+  /// Connect the WS overlay after a QR has been generated, so the
+  /// display screen flips to a "Paid by …" state the moment the payer's
+  /// debit lands instead of waiting for the next getQRDetails poll.
+  /// Idempotent — safe to call repeatedly on screen re-entry. Drives
+  /// `wsHealth` through every state transition so the screen can adapt
+  /// its polling cadence.
+  Future<void> subscribeToGeneratedQR({
+    required String userId,
+    required String accessToken,
+    required String qrCode,
+  }) async {
+    if (wsService == null) {
+      wsHealth.value = QrPayWsHealth.failed;
+      return;
+    }
+    _activeQrCode = qrCode;
+    wsHealth.value = QrPayWsHealth.connecting;
+    try {
+      await wsService!.connect(userId: userId, accessToken: accessToken);
+      _wsSub?.cancel();
+      _wsSub = wsService!.updates.listen(_onWsEvent);
+      _wsConnSub?.cancel();
+      _wsConnSub = wsService!.connectionState.listen((s) {
+        if (s == QrPayWebSocketConnectionState.connected) {
+          _wsConnected = true;
+          wsHealth.value = QrPayWsHealth.connected;
+        } else if (s == QrPayWebSocketConnectionState.error ||
+            s == QrPayWebSocketConnectionState.disconnected) {
+          _wsConnected = false;
+          wsHealth.value = QrPayWsHealth.failed;
+        }
+      });
+      _wsConnected = true;
+      wsHealth.value = QrPayWsHealth.connected;
+      _wsTimeoutTimer?.cancel();
+      _wsTimeoutTimer = Timer(_wsConnectTimeout, () {
+        if (!_wsConnected) {
+          wsHealth.value = QrPayWsHealth.failed;
+          // ignore: avoid_print
+          print('QRPaymentCubit: WS connect timed out — '
+              'screen should tighten polling to 1s');
+        }
+      });
+    } catch (e) {
+      wsHealth.value = QrPayWsHealth.failed;
+      // ignore: avoid_print
+      print('QRPaymentCubit: WS connect failed: $e — '
+          'screen should tighten polling to 1s');
+    }
+  }
+
+  void _onWsEvent(QrPayStatusEvent ev) {
+    if (ev.qrCode != _activeQrCode) return;
+    if (ev.eventType == 'qr.payment.completed') {
+      // Trigger the canonical getQRDetails refresh — the response
+      // payload carries the now-paid status so the existing
+      // QRDetailsLoaded -> QRPaymentSuccess transition fires naturally.
+      // ignore: discarded_futures
+      getQRDetails(qrCode: ev.qrCode);
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    _wsTimeoutTimer?.cancel();
+    await _wsSub?.cancel();
+    await _wsConnSub?.cancel();
+    wsHealth.dispose();
+    await wsService?.disconnect();
+    return super.close();
+  }
 
   Future<void> generateQR({
     required double amount,

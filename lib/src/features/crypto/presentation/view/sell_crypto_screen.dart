@@ -16,6 +16,7 @@ import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SellCryptoScreen extends StatefulWidget {
   final CryptoHolding? selectedHolding;
@@ -984,14 +985,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             ),
             child: _isTransacting
               ? Center(
-                  child: SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: CircularProgressIndicator(
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2,
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,

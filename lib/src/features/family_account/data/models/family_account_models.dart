@@ -45,8 +45,8 @@ extension FamilyAccountProtoExtension on FamilyAccountProto {
       allowMemberContributions: allowMemberContributions,
       totalBalance: totalBalance,
       status: _parseFamilyAccountStatus(status),
-      createdAt: DateTime.parse(createdAt),
-      updatedAt: DateTime.parse(updatedAt),
+      createdAt: _parseDate(createdAt),
+      updatedAt: _parseDate(updatedAt),
       members: members.map((m) => m.toDomain()).toList(),
       memberCount: memberCount,
       activeMemberCount: activeMemberCount,
@@ -85,12 +85,12 @@ extension FamilyMemberProtoExtension on FamilyMemberProto {
         orElse: () => InvitationStatus.pending,
       ),
       invitationToken: invitationToken,
-      invitationExpiresAt: DateTime.parse(invitationExpiresAt),
+      invitationExpiresAt: _parseDate(invitationExpiresAt),
       cardLastFour: cardLastFour,
       hasCard: hasCard,
-      joinedAt: joinedAt != null ? DateTime.parse(joinedAt!) : null,
-      createdAt: DateTime.parse(createdAt),
-      updatedAt: DateTime.parse(updatedAt),
+      joinedAt: _parseNullableDate(joinedAt),
+      createdAt: _parseDate(createdAt),
+      updatedAt: _parseDate(updatedAt),
     );
   }
 }
@@ -113,7 +113,7 @@ extension FamilyTransactionProtoExtension on FamilyTransactionProto {
       merchantName: merchantName,
       merchantCategory: merchantCategory,
       metadata: metadata,
-      createdAt: DateTime.parse(createdAt),
+      createdAt: _parseDate(createdAt),
     );
   }
 }
@@ -132,8 +132,8 @@ extension PendingInvitationProtoExtension on PendingInvitationProto {
       perTransactionLimit: perTransactionLimit,
       allocationPercentageCap: allocationPercentageCap,
       invitedBy: invitedBy,
-      expiresAt: DateTime.parse(expiresAt),
-      createdAt: DateTime.parse(createdAt),
+      expiresAt: _parseDate(expiresAt),
+      createdAt: _parseDate(createdAt),
     );
   }
 }
@@ -202,6 +202,18 @@ extension FamilyMemberExtension on FamilyMember {
 DateTime? _parseNullableDate(String? raw) {
   if (raw == null || raw.isEmpty) return null;
   return DateTime.tryParse(raw);
+}
+
+/// Safe parse for NON-nullable DateTime fields. proto3 strings default to ""
+/// (never null), so unset timestamps arrive as empty strings — e.g. a freshly
+/// invited member has no joinedAt / invitationExpiresAt. DateTime.parse("")
+/// throws FormatException, which previously surfaced "Invalid date format" on
+/// an otherwise-successful activation. Fall back to epoch instead of throwing.
+DateTime _parseDate(String? raw) {
+  if (raw == null || raw.isEmpty) {
+    return DateTime.fromMillisecondsSinceEpoch(0);
+  }
+  return DateTime.tryParse(raw) ?? DateTime.fromMillisecondsSinceEpoch(0);
 }
 
 InvitationStatus _parseInvitationStatus(String raw) {

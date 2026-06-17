@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/customers/domain/entities/customer_entity.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditCustomerScreen extends StatefulWidget {
   final CustomerEntity customer;
@@ -581,14 +582,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
             elevation: 0,
           ),
           child: isLoading
-              ? SizedBox(
-                  height: 22.h,
-                  width: 22.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+              ? LazerVaultLoader(size: 22)
               : Text(
                   'Save Changes',
                   style: GoogleFonts.inter(

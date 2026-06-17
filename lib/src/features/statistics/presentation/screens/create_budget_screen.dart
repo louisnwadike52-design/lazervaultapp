@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/expense_
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Create/Edit Budget Screen
 class CreateBudgetScreen extends StatefulWidget {
@@ -381,11 +382,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: const Center(
-          child: SizedBox(
-            height: 20,
-            width: 20,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
-          ),
+          child: LazerVaultLoader.small(),
         ),
       );
     }
@@ -729,14 +726,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           ),
         ),
         child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 _isEditMode ? 'Update Budget' : 'Create Budget',
                 style: const TextStyle(

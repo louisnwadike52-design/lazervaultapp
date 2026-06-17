@@ -14,6 +14,7 @@ import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_reminder_cubit.dart';
 import '../cubit/cable_tv_reminder_state.dart';
 import '../cubit/cable_tv_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum _Recurrence { daily, weekly, monthly }
 
@@ -470,15 +471,7 @@ class _CreateCableTVReminderScreenState
                           elevation: 0,
                         ),
                         child: isLoading
-                            ? SizedBox(
-                                height: 24.h,
-                                width: 24.h,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Text(
                                 _isEditing
                                     ? 'Update Reminder'
@@ -521,14 +514,7 @@ class _CreateCableTVReminderScreenState
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 18.w,
-              height: 18.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(_purple),
-              ),
-            ),
+            LazerVaultLoader(size: 18),
             SizedBox(width: 12.w),
             Text('Loading packages…',
                 style: TextStyle(color: _secondary, fontSize: 14.sp)),
@@ -614,14 +600,7 @@ class _CreateCableTVReminderScreenState
                     ),
             ),
             if (_packagesLoading)
-              SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(_purple),
-                ),
-              )
+              LazerVaultLoader.tiny()
             else
               Icon(Icons.keyboard_arrow_down,
                   color: _secondary, size: 20.sp),
@@ -830,14 +809,7 @@ class _CreateCableTVReminderScreenState
               border: Border.all(color: _border),
             ),
             child: const Center(
-              child: SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(_purple),
-                ),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           );
         }

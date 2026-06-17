@@ -22,6 +22,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/group_account/data/services/payout_assignment_service.dart';
 import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
 import 'package:lazervault/src/generated/group_account.pb.dart' as pb;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SelectPayoutReceiverBottomSheet extends StatefulWidget {
   final Contribution contribution;
@@ -322,14 +323,7 @@ class _SelectPayoutReceiverBottomSheetState
                       ),
                     ),
                     child: _isSaving
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             widget.currentReceiverUserId == null
                                 ? 'Set Receiver'

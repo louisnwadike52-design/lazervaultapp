@@ -11,7 +11,10 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Compact Linked Banks Widget for Statistics Page
 /// Shows first 2 linked banks with "View All" option
@@ -22,6 +25,13 @@ class LinkedBanksWidget extends StatelessWidget {
   final VoidCallback? onRefresh;
   final String userId;
   final String accessToken;
+  /// Parent has narrowed the budgeting scope to this bank. Highlights
+  /// the matching card so users know which bank the stats above reflect.
+  final String? selectedAccountId;
+  /// Tap on a bank card. Used by the budgeting screen to pivot the
+  /// statistics filter to a single bank (or back to all). When null the
+  /// card falls through to its default account-detail navigation.
+  final void Function(LinkedBankAccount account)? onBankTap;
 
   const LinkedBanksWidget({
     super.key,
@@ -29,6 +39,8 @@ class LinkedBanksWidget extends StatelessWidget {
     this.onRefresh,
     this.userId = '',
     this.accessToken = '',
+    this.selectedAccountId,
+    this.onBankTap,
   });
 
   @override
@@ -97,19 +109,11 @@ class LinkedBanksWidget extends StatelessWidget {
           );
         }
 
-        if (state is BalanceRefreshed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Balance updated',
-                style: GoogleFonts.inter(color: Colors.white),
-              ),
-              backgroundColor: const Color(0xFF10B981),
-              duration: const Duration(seconds: 1),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        // BalanceRefreshed used to surface a "Balance updated" snackbar,
+        // but the cubit emits it once per refreshed account, so users on
+        // multi-bank accounts saw the toast fire repeatedly. The per-card
+        // "X minutes ago" timestamp already conveys the same signal
+        // ambiently — the toast was just noise.
       },
       builder: (context, state) {
         final isSyncing = state is AllAccountsSyncing ||
@@ -173,16 +177,7 @@ class LinkedBanksWidget extends StatelessWidget {
                           ),
                         ),
                       if (hasAccounts && isSyncing)
-                        SizedBox(
-                          width: 16.sp,
-                          height: 16.sp,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFF10B981),
-                            ),
-                          ),
-                        ),
+                        LazerVaultLoader.tiny(),
                       SizedBox(width: 12.w),
                       GestureDetector(
                         onTap: hasAccounts
@@ -274,13 +269,19 @@ class LinkedBanksWidget extends StatelessWidget {
           child: _BankAccountItem(
             account: account,
             isSyncing: isSyncing && syncingAccountId == account.id,
-            onTap: () => Get.toNamed(
-              AppRoutes.linkedBanks,
-              arguments: {
-                'highlightAccountId': account.id,
-                'fromStatistics': true,
-              },
-            ),
+            isSelected: selectedAccountId == account.id,
+            // When the parent supplied a tap handler (budgeting filter
+            // pivot) we route the tap through it; otherwise fall back to
+            // the legacy "open linked banks screen" navigation.
+            onTap: onBankTap != null
+                ? () => onBankTap!(account)
+                : () => Get.toNamed(
+                      AppRoutes.linkedBanks,
+                      arguments: {
+                        'highlightAccountId': account.id,
+                        'fromStatistics': true,
+                      },
+                    ),
             onSync: () => _syncAccount(context, account.id),
           ),
         )),
@@ -366,12 +367,17 @@ class _BankAccountItem extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onSync;
   final bool isSyncing;
+  /// Parent has narrowed the budgeting filter to this account — paints a
+  /// purple ring around the card so the user can see at a glance which
+  /// bank the statistics scope is pinned to.
+  final bool isSelected;
 
   const _BankAccountItem({
     required this.account,
     this.onTap,
     this.onSync,
     this.isSyncing = false,
+    this.isSelected = false,
   });
 
   Color _getBankColor(String bankName) {
@@ -409,15 +415,31 @@ class _BankAccountItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bankColor = _getBankColor(account.bankName);
+    final needsReauth = account.needsReauthorization;
+    const amber = Color(0xFFFB923C);
 
     return GestureDetector(
-      onTap: onTap,
+      // When the data session expired, tapping anywhere runs the reconnect flow
+      // so budgeting insights refresh; otherwise the normal tap action.
+      onTap: needsReauth ? () => startAccountReauthorization(context, account) : onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: needsReauth
+              ? amber.withValues(alpha: 0.07)
+              : isSelected
+                  ? const Color(0xFF6F42C1).withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
+          border: needsReauth
+              ? Border.all(color: amber.withValues(alpha: 0.35))
+              : isSelected
+                  ? Border.all(
+                      color: const Color(0xFF6F42C1).withValues(alpha: 0.6),
+                      width: 1.5,
+                    )
+                  : null,
         ),
         child: Row(
           children: [
@@ -481,29 +503,35 @@ class _BankAccountItem extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 2.h),
-                  Text(
-                    '${account.displayAccountNumber}  ·  ${_formatSyncTime(account.balanceUpdatedAt)}',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 11.sp,
-                    ),
-                  ),
+                  needsReauth
+                      ? Text(
+                          'Session expired · Reconnect to refresh insights',
+                          style: GoogleFonts.inter(
+                            color: amber,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      : Text(
+                          '${account.displayAccountNumber}  ·  ${_formatSyncTime(account.balanceUpdatedAt)}',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF6B7280),
+                            fontSize: 11.sp,
+                          ),
+                        ),
                 ],
               ),
             ),
 
-            // Balance
-            if (isSyncing)
-              SizedBox(
-                width: 16.sp,
-                height: 16.sp,
-                child: CircularProgressIndicator(
-                  strokeWidth: 1.5,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF3B82F6),
-                  ),
-                ),
+            // Trailing: the shared Reconnect chip when the Mono data session
+            // expired (insights would otherwise silently exclude this bank).
+            if (needsReauth)
+              LinkedAccountStateChip(
+                state: LinkedAccountState.reconnect,
+                onTap: () => startAccountReauthorization(context, account),
               )
+            else if (isSyncing)
+              LazerVaultLoader.tiny()
             else
               Builder(builder: (_) {
                 // LIVE-ONLY: show a figure only when this session's Mono
@@ -524,12 +552,7 @@ class _BankAccountItem extends StatelessWidget {
                   );
                 }
                 return Row(mainAxisSize: MainAxisSize.min, children: [
-                  SizedBox(
-                    width: 10.w,
-                    height: 10.w,
-                    child: const CircularProgressIndicator(
-                        strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
-                  ),
+                  LazerVaultLoader(size: 10),
                   SizedBox(width: 6.w),
                   Text(
                     'Fetching balance…',

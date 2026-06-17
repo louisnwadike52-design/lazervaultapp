@@ -4,6 +4,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 
 import '../../data/services/report_issue_service.dart';
 import '../../domain/entities/transaction_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Dialog for submitting a support report against a failed or refunded
 /// (cancelled) exchange transaction. Four states: idle → submitting →
@@ -239,14 +240,7 @@ class _ReportIssueDialogState extends State<ReportIssueDialog> {
             ),
           ),
           child: submitting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+              ? LazerVaultLoader.tiny()
               : const Text(
                   'Submit',
                   style: TextStyle(fontWeight: FontWeight.w600),

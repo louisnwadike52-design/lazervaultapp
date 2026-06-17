@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/inventory/domain/entities/inventory_item_entity.dart';
 import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AdjustQuantityBottomSheet extends StatefulWidget {
   final InventoryItemEntity item;
@@ -313,15 +314,7 @@ class _AdjustQuantityBottomSheetState extends State<AdjustQuantityBottomSheet> {
                           elevation: 0,
                         ),
                         child: isLoading
-                            ? SizedBox(
-                                height: 22.h,
-                                width: 22.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
+                            ? LazerVaultLoader(size: 22)
                             : Text(
                                 'Adjust',
                                 style: GoogleFonts.inter(

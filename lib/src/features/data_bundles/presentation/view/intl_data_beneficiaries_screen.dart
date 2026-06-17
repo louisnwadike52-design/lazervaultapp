@@ -11,6 +11,7 @@ import '../cubit/data_auto_recharge_cubit.dart';
 import '../cubit/data_auto_recharge_state.dart';
 import '../cubit/data_beneficiary_cubit.dart';
 import '../cubit/data_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// International data contacts. Filters data_beneficiaries where
 /// country_code != 'NG'. Mirrors DataBeneficiariesScreen but scoped to
@@ -142,10 +143,7 @@ class _IntlDataBeneficiariesScreenState
     }
     if (_loading && _beneficiaries == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
     }
     final list = _beneficiaries ?? const [];

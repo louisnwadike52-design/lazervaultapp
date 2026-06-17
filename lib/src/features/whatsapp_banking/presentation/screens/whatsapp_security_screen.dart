@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/whatsapp_banking_cubit.dart';
 import '../../cubit/whatsapp_banking_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class WhatsAppSecurityScreen extends StatefulWidget {
   const WhatsAppSecurityScreen({super.key});
@@ -212,9 +213,7 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
         builder: (context, state) {
           if (state is WhatsAppBankingLoading && !_settingsLoaded) {
             return Center(
-              child: CircularProgressIndicator(
-                color: Color.fromARGB(255, 78, 3, 208),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -464,14 +463,7 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                       elevation: 4,
                     ),
                     child: isLoading
-                        ? SizedBox(
-                            height: 20.h,
-                            width: 20.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             'Save Changes',
                             style: TextStyle(

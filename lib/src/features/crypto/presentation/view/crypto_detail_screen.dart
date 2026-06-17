@@ -15,6 +15,7 @@ import 'buy_crypto_screen.dart';
 import 'sell_crypto_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Controls which action buttons appear on the detail screen.
 enum CryptoDetailEntryMode { full, buyOnly, sellOnly }
@@ -505,14 +506,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading) ...[
-                SizedBox(
-                  width: 32.sp,
-                  height: 32.sp,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: _getCryptoColor(),
-                  ),
-                ),
+                LazerVaultLoader(size: 32),
                 SizedBox(height: 12.h),
                 Text(
                   'Loading chart…',

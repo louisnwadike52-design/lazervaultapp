@@ -19,6 +19,7 @@ import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GroupAccountListScreen extends StatefulWidget {
   const GroupAccountListScreen({super.key});
@@ -517,11 +518,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color.fromARGB(255, 78, 3, 208),
-                    ),
-                  ),
+                  LazerVaultLoader.small(),
                   SizedBox(height: 16.h),
                   Text(
                     'Loading your groups...',
@@ -1233,10 +1230,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             builder: (context, state) {
               if (state is GroupAccountLoading && _tabController.index == 1) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                  ),
+                  child: LazerVaultLoader.small(),
                 );
               }
 
@@ -1465,15 +1459,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: isJoining
-            ? SizedBox(
-                width: 16.w,
-                height: 16.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.tiny()
             : Text(
                 'Join',
                 style: GoogleFonts.inter(
@@ -1564,7 +1550,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       builder: (ctx, state) {
         if (state is GroupAccountLoading && (state.message ?? '').contains('invit')) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+            child: LazerVaultLoader.small(),
           );
         }
         List<GroupInvitation> invites = const [];
@@ -1711,10 +1697,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             builder: (context, state) {
               if (state is GroupAccountLoading && _tabController.index == 2) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                  ),
+                  child: LazerVaultLoader.small(),
                 );
               }
 

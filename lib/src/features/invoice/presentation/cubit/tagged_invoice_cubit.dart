@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/invoice/data/repositories/tagged_invoice_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'tagged_invoice_state.dart';
@@ -419,7 +420,28 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         );
         if (isClosed) return;
 
-        final statistics = await repository.getIncomingStatistics();
+        // Statistics are just the header summary — a transient stats
+        // failure must NOT flash a full error over a list that loaded
+        // fine. Mirrors the same guard on InvoiceCubit.loadInvoicesPage,
+        // which fixed the Created tab earlier. The repository returns
+        // a TaggedInvoiceStatistics object; on failure we fall back to
+        // a zeroed instance so the header renders empty instead of
+        // crashing on a type mismatch.
+        TaggedInvoiceStatistics statistics;
+        try {
+          statistics = await repository.getIncomingStatistics();
+        } catch (_) {
+          statistics = const TaggedInvoiceStatistics(
+            totalInvoices: 0,
+            pendingInvoices: 0,
+            overdueInvoices: 0,
+            paidInvoices: 0,
+            totalAmount: 0.0,
+            pendingAmount: 0.0,
+            overdueAmount: 0.0,
+            paidAmount: 0.0,
+          );
+        }
         if (isClosed) return;
 
         emit(IncomingTaggedInvoicesLoaded(

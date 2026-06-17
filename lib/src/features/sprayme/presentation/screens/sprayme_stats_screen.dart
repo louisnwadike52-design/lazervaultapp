@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_stats.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SprayMeStatsScreen extends StatefulWidget {
   const SprayMeStatsScreen({super.key});
@@ -64,7 +65,7 @@ class _SprayMeStatsScreenState extends State<SprayMeStatsScreen> {
 
   Widget _buildBody() {
     if (_isLoading && _stats == null) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
+      return const Center(child: LazerVaultLoader.small());
     }
     if (_error != null && _stats == null) {
       return Center(

@@ -56,6 +56,24 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
       _dataSource.fundWallet(amount: amount, sourceAccountId: sourceAccountId, pin: pin);
 
   @override
+  Future<SprayWallet> buyGiftCredit({
+    required List<Map<String, dynamic>> items,
+    required String sourceAccountId,
+    required String pin,
+    required String idempotencyKey,
+    String sessionId = '',
+    String currency = 'NGN',
+  }) =>
+      _dataSource.buyGiftCredit(
+        items: items,
+        sourceAccountId: sourceAccountId,
+        pin: pin,
+        idempotencyKey: idempotencyKey,
+        sessionId: sessionId,
+        currency: currency,
+      );
+
+  @override
   Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String pin}) =>
       _dataSource.withdrawFromWallet(amount: amount, destinationAccountId: destinationAccountId, pin: pin);
 

@@ -8,6 +8,7 @@ import '../../../../../core/widgets/bill_auto_recharge_item.dart';
 import '../../domain/entities/data_auto_recharge.dart';
 import '../cubit/data_auto_recharge_cubit.dart';
 import '../cubit/data_auto_recharge_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// International data auto-recharge management. Filters auto-recharges linked
 /// to international (country_code != 'NG') beneficiaries. Mirrors
@@ -93,10 +94,7 @@ class _IntlDataAutoRechargeScreenState
           if (state is DataAutoRechargesLoading ||
               state is DataAutoRechargeInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-              ),
+              child: LazerVaultLoader.tiny(),
             );
           }
           if (state is DataAutoRechargeError) {

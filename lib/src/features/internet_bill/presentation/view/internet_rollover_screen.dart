@@ -9,6 +9,7 @@ import '../../../../../core/widgets/bill_auto_recharge_item.dart';
 import '../../domain/entities/internet_auto_recharge.dart';
 import '../cubit/internet_auto_recharge_cubit.dart';
 import '../cubit/internet_auto_recharge_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Internet "Rollover" (auto-recharge) management. Mirrors
 /// `DataAutoRechargeScreen`: list with pause/resume/delete + tap to
@@ -92,10 +93,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
           if (state is InternetAutoRechargesLoading ||
               state is InternetAutoRechargeInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-              ),
+              child: LazerVaultLoader.tiny(),
             );
           }
           if (state is InternetAutoRechargeError) {

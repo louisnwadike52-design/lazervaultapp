@@ -167,6 +167,13 @@ service FamilyAccountsService {
     };
   }
 
+  rpc LeaveFamilyAccount(LeaveFamilyAccountRequest) returns (LeaveFamilyAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/family-accounts/{family_id}/leave"
+      body: "*"
+    };
+  }
+
   // Process a member contribution to the family pool (hybrid funding)
   // Active members can contribute to the shared pool
   rpc ProcessMemberContribution(ProcessMemberContributionRequest) returns (ProcessMemberContributionResponse) {
@@ -586,6 +593,7 @@ message AllocateFundsRequest {
   string member_id = 2; // Required: Member ID
   double amount = 3; // Required: Amount to allocate
   string description = 4; // Optional: Description of the allocation
+  string idempotency_key = 5; // Optional: dedup key
 }
 
 message AllocateFundsResponse {
@@ -643,12 +651,22 @@ message DeleteFamilyAccountResponse {
   double returned_balance = 3; // Amount returned to creator's main account
 }
 
+message LeaveFamilyAccountRequest {
+  string family_id = 1;
+}
+message LeaveFamilyAccountResponse {
+  bool success = 1;
+  string message = 2;
+  double returned_balance = 3; // member allocation returned to the pool
+}
+
 // Process Member Contribution
 message ProcessMemberContributionRequest {
   string family_id = 1; // Required: Family account ID
   string member_id = 2; // Required: Contributing member's ID
   double amount = 3; // Required: Contribution amount
   string description = 4; // Optional: Description of the contribution
+  string idempotency_key = 5; // Required for money-safety: client-generated UUID
 }
 
 message ProcessMemberContributionResponse {
@@ -709,6 +727,8 @@ message FamilyAccount {
   FundDistributionMode fund_distribution_mode = 16;
   bool setup_completed = 17;
   bool spending_visibility_enabled = 18;
+  string currency = 19; // Account currency (e.g. NGN) — drives the UI symbol
+  string virtual_account_id = 20; // family virtual account id (real-money pool); spend FROM this
 }
 
 // Family Member

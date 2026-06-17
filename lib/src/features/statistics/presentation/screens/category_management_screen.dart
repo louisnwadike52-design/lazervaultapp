@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/src/features/statistics/cubit/category_management_cubit.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
       'transfer' => 'Transfers',
@@ -123,7 +124,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         builder: (context, state) {
           if (state is CategoryManagementLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: LazerVaultLoader.small(),
             );
           }
           if (state is CategoryManagementLoaded) {

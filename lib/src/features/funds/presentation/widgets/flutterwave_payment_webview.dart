@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Result from the Flutterwave payment WebView
 class FlutterwavePaymentResult {
@@ -250,9 +251,7 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
                   WebViewWidget(controller: _controller),
                 if (_isLoading)
                   const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                    ),
+                    child: LazerVaultLoader.small(),
                   ),
               ],
             ),

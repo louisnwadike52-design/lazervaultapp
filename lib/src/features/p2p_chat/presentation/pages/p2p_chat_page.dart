@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_i
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_text_bubble.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_transfer_bubble.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class P2PChatPage extends StatefulWidget {
   const P2PChatPage({super.key});
@@ -257,14 +258,7 @@ class _P2PChatPageState extends State<P2PChatPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 12.w,
-                  height: 12.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 1.5,
-                    color: Color(0xFFFB923C),
-                  ),
-                ),
+                LazerVaultLoader(size: 12),
                 SizedBox(width: 8.w),
                 Text(
                   'Reconnecting...',
@@ -315,7 +309,7 @@ class _P2PChatPageState extends State<P2PChatPage> {
       builder: (context, state) {
         if (state is P2PChatLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -407,14 +401,7 @@ class _P2PChatPageState extends State<P2PChatPage> {
                   return Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.h),
-                      child: SizedBox(
-                        width: 20.w,
-                        height: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Color(0xFF3B82F6),
-                        ),
-                      ),
+                      child: LazerVaultLoader.small(),
                     ),
                   );
                 }

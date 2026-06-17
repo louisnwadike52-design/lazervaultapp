@@ -7,6 +7,7 @@ import '../../domain/entities/water_provider_entity.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Water Bill Customer Input Screen - Corrected Version
 /// Handles customer number input and validation before payment
@@ -656,14 +657,7 @@ class _WaterBillCustomerInputScreenNewState extends State<WaterBillCustomerInput
           ),
         ),
         child: isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 label,
                 style: GoogleFonts.inter(

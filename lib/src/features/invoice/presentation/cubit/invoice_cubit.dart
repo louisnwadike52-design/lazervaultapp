@@ -150,7 +150,22 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       );
       if (isClosed) return;
 
-      final statistics = await repository.getInvoiceStatistics(currentUserId!);
+      // Statistics are just the header summary — a transient stats failure must
+      // NOT flash a full error over a list that loaded fine (often empty on the
+      // Created tab). Fall back to zeroed stats and still show the list.
+      Map<String, dynamic> statistics;
+      try {
+        statistics = await repository.getInvoiceStatistics(currentUserId!);
+      } catch (_) {
+        statistics = const {
+          'total_invoices': 0,
+          'paid_invoices': 0,
+          'unpaid_invoices': 0,
+          'total_amount': 0.0,
+          'total_paid': 0.0,
+          'total_unpaid': 0.0,
+        };
+      }
       if (isClosed) return;
 
       emit(InvoicesLoaded(

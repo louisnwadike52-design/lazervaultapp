@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_resu
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AddMembersToContributionDialog extends StatefulWidget {
   final Contribution contribution;
@@ -635,9 +636,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
   Widget _buildGroupMembersTab() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Color.fromARGB(255, 78, 3, 208),
-        ),
+        child: LazerVaultLoader.small(),
       );
     }
 
@@ -1041,7 +1040,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
         child: Center(
           child: Column(
             children: [
-              const CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
+              LazerVaultLoader.small(),
               SizedBox(height: 12.h),
               Text(
                 'Searching...',
@@ -1409,14 +1408,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                 disabledBackgroundColor: Colors.grey[800],
               ),
               child: _isAdding
-                  ? SizedBox(
-                      height: 18.h,
-                      width: 18.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Text(
                       totalSelected == 0
                           ? 'Add Members'

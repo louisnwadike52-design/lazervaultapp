@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PublicGroups extends StatefulWidget {
   const PublicGroups({super.key});
@@ -287,15 +288,7 @@ class _PublicGroupsState extends State<PublicGroups> {
           ),
         ),
         child: isJoining
-            ? SizedBox(
-                width: 14.w,
-                height: 14.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
-              )
+            ? LazerVaultLoader(size: 14)
             : Text(
                 'Join',
                 style: TextStyle(

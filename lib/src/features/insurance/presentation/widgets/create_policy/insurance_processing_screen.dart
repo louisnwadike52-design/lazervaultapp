@@ -12,6 +12,7 @@ import '../../cubit/create_policy_state.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../../domain/repositories/insurance_repository.dart';
 import '../../../../account_cards_summary/services/balance_websocket_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen showing insurance purchase progress with animated steps
 class InsuranceProcessingScreen extends StatefulWidget {
@@ -84,7 +85,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     if (!_hangTimedOut) {
       return const Scaffold(
         backgroundColor: Color(0xFF0A0A0A),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
+        body: Center(child: LazerVaultLoader.small()),
       );
     }
     return Scaffold(
@@ -134,8 +135,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
                 ),
               ),
               SizedBox(height: 12.h),
-              const CircularProgressIndicator(
-                color: Color(0xFF6366F1), strokeWidth: 2),
+              LazerVaultLoader.tiny(),
             ],
           ),
         ),
@@ -483,14 +483,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     } else if (isCurrent) {
       bgColor = const Color(0xFF6366F1);
       iconColor = Colors.white;
-      icon = SizedBox(
-        width: 20.sp,
-        height: 20.sp,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
-      );
+      icon = LazerVaultLoader.small();
     } else {
       bgColor = const Color(0xFF1F1F1F);
       iconColor = const Color(0xFF9CA3AF);
@@ -707,17 +700,7 @@ class _InsurancePurchaseReceiptScreenState
                 ),
                 child: confirmed
                     ? Icon(headerIcon, color: headerColor, size: 48.sp)
-                    : SizedBox(
-                        width: 28.w,
-                        height: 28.w,
-                        child: Padding(
-                          padding: EdgeInsets.all(2.w),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation(headerColor),
-                          ),
-                        ),
-                      ),
+                    : LazerVaultLoader.medium(),
               ),
               SizedBox(height: 24.h),
 

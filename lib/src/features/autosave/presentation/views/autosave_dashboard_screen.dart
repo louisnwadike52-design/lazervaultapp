@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AutoSaveDashboardScreen extends StatefulWidget {
   const AutoSaveDashboardScreen({super.key});
@@ -284,14 +285,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         body: SizedBox(
           height: 56.h,
           child: const Center(
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
+            child: LazerVaultLoader.small(),
           ),
         ),
       );
@@ -512,10 +506,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
           Center(
             child: Padding(
               padding: EdgeInsets.all(32.h),
-              child: const CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           )
         else if (_rules.isEmpty)

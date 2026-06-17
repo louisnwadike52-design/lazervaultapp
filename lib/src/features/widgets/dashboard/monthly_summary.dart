@@ -11,6 +11,7 @@ import '../../../../core/services/locale_manager.dart';
 import '../../statistics/cubit/statistics_cubit.dart';
 import '../../statistics/cubit/statistics_state.dart';
 import '../../../generated/accounts.pb.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum TimePeriod { day, week, month }
 
@@ -124,9 +125,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading expenditure data...',

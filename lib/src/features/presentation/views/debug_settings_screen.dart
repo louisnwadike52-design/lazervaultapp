@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Development utility to reset onboarding state
 /// Call this function to simulate a fresh install
@@ -148,7 +149,7 @@ class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: LazerVaultLoader.small())
           : ListView(
               padding: EdgeInsets.all(20.w),
               children: [

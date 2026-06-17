@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 
 /// Empty state widget displayed when a user has no accounts for the selected locale.
@@ -207,14 +208,7 @@ class EmptyAccountState extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isCreating)
-                  SizedBox(
-                    width: 16.sp,
-                    height: 16.sp,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: const Color.fromARGB(255, 78, 3, 208),
-                    ),
-                  )
+                  LazerVaultLoader.tiny()
                 else
                   Icon(
                     Icons.add_circle_outline_rounded,
@@ -306,10 +300,7 @@ class AccountLoadingState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
-            ),
+            LazerVaultLoader.tiny(),
             SizedBox(height: 16.h),
             Text(
               'Loading your accounts...',

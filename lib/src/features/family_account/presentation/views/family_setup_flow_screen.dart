@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Multi-step setup flow for creating a Family & Friends account
 /// Features:
@@ -650,7 +652,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
-                prefixText: '\$ ',
+                prefixText: '${CurrencySymbols.currentSymbol} ',
                 prefixStyle: TextStyle(
                   color: Colors.white,
                   fontSize: 20.sp,
@@ -692,7 +694,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 }
                 final amount = double.tryParse(value);
                 if (amount == null || amount < 100) {
-                  return 'Minimum initial funding is \$100';
+                  return 'Minimum initial funding is ${CurrencySymbols.currentSymbol}100';
                 }
                 return null;
               },
@@ -878,7 +880,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                 ],
                 _buildSummaryRow(
                   'Initial Funding',
-                  '\$${(formData['initialFunding'] as double).toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${(formData['initialFunding'] as double).toStringAsFixed(2)}',
                 ),
                 SizedBox(height: 16.h),
                 _buildSummaryRow(
@@ -895,6 +897,24 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
             bloc: cubit,
             listener: (context, state) {
               if (state is FamilyAccountCreated) {
+                // M3: the account was created; if initial funding was requested
+                // but the pool is still 0 (e.g. insufficient wallet balance),
+                // proceed anyway with a clear "unfunded" hint instead of a
+                // dead-end — the user can add funds later via a contribution.
+                final requested =
+                    (formData['initialFunding'] as double?) ?? 0.0;
+                if (requested > 0 &&
+                    state.familyAccount.totalPoolBalance == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Account created. We couldn\'t move your initial ${CurrencySymbols.currentSymbol}${requested.toStringAsFixed(2)} — add funds anytime from the account.',
+                      ),
+                      backgroundColor: const Color(0xFFFB923C),
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
+                }
                 onNext(state.familyAccount.id);
               } else if (state is FamilyAccountError) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -941,14 +961,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                     borderRadius: BorderRadius.circular(28.r),
                     child: Center(
                       child: isLoading
-                          ? SizedBox(
-                              width: 24.w,
-                              height: 24.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               'Confirm & Create',
                               style: TextStyle(

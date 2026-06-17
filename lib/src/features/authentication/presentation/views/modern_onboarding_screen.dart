@@ -21,91 +21,101 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
+  // Onboarding pages — unified dark theme.
+  //
+  // Each slide carries its own *accent* color (the icon halo + button tint
+  // change per page), but every slide shares the same deep-black-to-dark
+  // base gradient so the brand surface reads as one continuous experience
+  // rather than five abruptly different screens.
+  //
+  // The legacy `imagePath` references (`assets/images/onboarding/*.png`)
+  // pointed at files that never existed — the dir is empty — so we now
+  // render the page icon as the canonical visual inside a tinted halo.
+  // No more flickering error-builders falling back to a different style.
   final List<OnboardingPage> _pages = [
     OnboardingPage(
       title: 'Welcome to LazerVault',
-      subtitle: 'Your All-in-One Financial Super App',
-      description: 'Experience the future of banking with everything you need in one powerful platform.',
+      subtitle: 'Your all-in-one financial super app',
+      description: 'Bank, save, send and invest from one trusted home — designed for how money actually moves today.',
       icon: Icons.account_balance_wallet_rounded,
-      imagePath: 'assets/images/onboarding/welcome_banking.png',
       features: [
-        'Multi-currency wallet support',
-        'Real-time transaction tracking',
-        'Secure and encrypted data',
+        'Multi-currency wallets out of the box',
+        'Real-time transactions & receipts',
+        'Bank-grade encryption, end to end',
       ],
-      useLightTheme: true,
+      accent: const Color(0xFF6366F1),
       gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF0A0A0A), Color(0xFF111125), Color(0xFF0A0A0A)],
       ),
     ),
     OnboardingPage(
-      title: 'Global Money Transfers',
-      subtitle: 'Send & Receive Worldwide',
-      description: 'Transfer money across borders with lightning speed and minimal fees.',
+      title: 'Send money anywhere',
+      subtitle: 'Local rails. Global reach.',
+      description: 'Instant transfers within Nigeria and 50+ currencies abroad — at rates that respect your money.',
       icon: Icons.send_rounded,
-      imagePath: 'assets/images/onboarding/global_transfers.png',
       features: [
-        'Support for 50+ currencies',
-        'Best exchange rates guaranteed',
-        'Instant international transfers',
+        'Domestic & international transfers',
+        'Best-in-class FX, no hidden spread',
+        'Live status from debit to delivery',
       ],
+      accent: const Color(0xFF22D3EE),
       gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF0EA5E9), Color(0xFF06B6D4), Color(0xFF0891B2)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF0A0A0A), Color(0xFF0D1F26), Color(0xFF0A0A0A)],
       ),
     ),
     OnboardingPage(
-      title: 'Smart Investing',
-      subtitle: 'Stocks, Crypto & Portfolios',
-      description: 'Build wealth with intelligent investment tools and real-time market insights.',
+      title: 'Grow your wealth',
+      subtitle: 'Stocks, crypto and smart vaults',
+      description: 'Buy, sell and auto-invest from one dashboard — backed by analytics that show what your money is actually doing.',
       icon: Icons.trending_up_rounded,
-      imagePath: 'assets/images/onboarding/smart_investing.png',
       features: [
-        'Trade stocks & cryptocurrencies',
-        'Portfolio analytics & insights',
-        'Automated investment strategies',
+        'Stocks & vetted crypto markets',
+        'Auto-save, lock-funds, crowdfund',
+        'Portfolio insights & performance',
       ],
+      accent: const Color(0xFF34D399),
       gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF10B981), Color(0xFF059669), Color(0xFF047857)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF0A0A0A), Color(0xFF0C2018), Color(0xFF0A0A0A)],
       ),
     ),
     OnboardingPage(
-      title: 'Effortless Payments',
-      subtitle: 'Bills, Airtime & More',
-      description: 'Pay all your bills, manage subscriptions, and handle daily expenses with ease.',
+      title: 'Pay every bill',
+      subtitle: 'Airtime, data, electricity and more',
+      description: 'One tap for the bills that used to take five apps. Automatic, scheduled and reliable.',
       icon: Icons.payment_rounded,
-      imagePath: 'assets/images/onboarding/easy_payments.png',
       features: [
-        'Electricity, water & utility bills',
-        'Mobile airtime & data top-up',
-        'Split bills with friends instantly',
+        'Utilities, data, airtime & cable TV',
+        'Auto-recharge so it never lapses',
+        'Split bills & shared expenses',
       ],
+      accent: const Color(0xFFFB923C),
       gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF59E0B), Color(0xFFEF4444), Color(0xFFDC2626)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF0A0A0A), Color(0xFF1F1408), Color(0xFF0A0A0A)],
       ),
     ),
     OnboardingPage(
-      title: 'Advanced Security',
-      subtitle: 'Voice Auth & AI Protection',
-      description: 'Your security is our priority with cutting-edge authentication and fraud prevention.',
+      title: 'Yours, safely',
+      subtitle: 'AI protection that has your back',
+      description: 'Face, voice and PIN unlock — plus an AI layer watching for fraud the moment it appears.',
       icon: Icons.security_rounded,
-      imagePath: 'assets/images/onboarding/advanced_security.png',
       features: [
-        'Biometric & voice authentication',
-        'AI-powered fraud detection',
-        'End-to-end encryption',
+        'Face, voice & biometric login',
+        'AI fraud detection, 24/7',
+        'End-to-end encryption everywhere',
       ],
+      accent: const Color(0xFFEC4899),
       gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFEC4899), Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF0A0A0A), Color(0xFF1F0F1A), Color(0xFF0A0A0A)],
       ),
     ),
   ];
@@ -191,25 +201,24 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                         height: 36.h,
                       ),
                     ),
-                    // Skip button
+                    // Skip button — subtle ghost pill so it doesn't compete
+                    // with the primary CTA at the bottom.
                     TextButton(
                       onPressed: _completeOnboarding,
                       style: TextButton.styleFrom(
-                        foregroundColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
-                        backgroundColor: _pages[_currentPage].useLightTheme
-                            ? const Color(0xFF6366F1).withValues(alpha: 0.1)
-                            : Colors.white.withValues(alpha: 0.15),
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white.withValues(alpha: 0.08),
                         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.r),
+                          borderRadius: BorderRadius.circular(24.r),
                         ),
                       ),
                       child: Text(
                         'Skip',
                         style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
                         ),
                       ),
                     ),
@@ -234,53 +243,60 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
                 child: Column(
                   children: [
-                    // Page indicator
+                    // Page indicator — tinted with the current page's accent
+                    // so the eye follows the same color from indicator to
+                    // CTA below.
                     SmoothPageIndicator(
                       controller: _pageController,
                       count: _pages.length,
                       effect: ExpandingDotsEffect(
-                        activeDotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
-                        dotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.3),
-                        dotHeight: 10.h,
-                        dotWidth: 10.w,
+                        activeDotColor: _pages[_currentPage].accent,
+                        dotColor: Colors.white.withValues(alpha: 0.22),
+                        dotHeight: 8.h,
+                        dotWidth: 8.w,
                         expansionFactor: 4,
-                        spacing: 8.w,
+                        spacing: 7.w,
                       ),
                     ),
                     SizedBox(height: 28.h),
 
-                    // Next/Get Started button
+                    // Next / Get Started — pill-rounded, accent-tinted so
+                    // each slide has its own moment without breaking the
+                    // unified dark surface.
                     SizedBox(
                       width: double.infinity,
-                      height: 60.h,
+                      height: 56.h,
                       child: ElevatedButton(
                         onPressed: _nextPage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
-                          foregroundColor: _pages[_currentPage].useLightTheme ? Colors.white : _pages[_currentPage].gradient.colors.first,
-                          elevation: 8,
-                          shadowColor: Colors.black.withValues(alpha: 0.3),
+                          backgroundColor: _pages[_currentPage].accent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shadowColor:
+                              _pages[_currentPage].accent.withValues(alpha: 0.35),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.r),
+                            borderRadius: BorderRadius.circular(28.r),
                           ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              _currentPage == _pages.length - 1 ? 'Get Started' : 'Continue',
+                              _currentPage == _pages.length - 1
+                                  ? 'Get Started'
+                                  : 'Continue',
                               style: TextStyle(
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
                               ),
                             ),
-                            SizedBox(width: 12.w),
+                            SizedBox(width: 10.w),
                             Icon(
                               _currentPage == _pages.length - 1
-                                  ? Icons.check_circle_rounded
+                                  ? Icons.check_rounded
                                   : Icons.arrow_forward_rounded,
-                              size: 26.sp,
+                              size: 22.sp,
                             ),
                           ],
                         ),
@@ -330,87 +346,46 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       children: [
                         SizedBox(height: verticalSpacingMedium),
 
-                        // Icon/Image with animated container
+                        // Icon visual — accent halo + inner pill chip with
+                        // the page's themed icon. Replaces the legacy
+                        // imagePath fallback (those assets never shipped).
                         ConstrainedBox(
                           constraints: BoxConstraints(
-                            maxWidth: 200.w,
-                            maxHeight: 200.w,
+                            maxWidth: 220.w,
+                            maxHeight: 220.w,
                           ),
                           child: FittedBox(
                             fit: BoxFit.contain,
                             child: Container(
-                              width: 200.w,
-                              height: 200.w,
+                              width: 220.w,
+                              height: 220.w,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
-                                  colors: page.useLightTheme
-                                      ? [
-                                          const Color(0xFF6366F1).withValues(alpha: 0.15),
-                                          const Color(0xFF6366F1).withValues(alpha: 0.05),
-                                        ]
-                                      : [
-                                          Colors.white.withValues(alpha: 0.2),
-                                          Colors.white.withValues(alpha: 0.05),
-                                        ],
+                                  colors: [
+                                    page.accent.withValues(alpha: 0.28),
+                                    page.accent.withValues(alpha: 0.0),
+                                  ],
+                                  stops: const [0.4, 1.0],
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.15),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, 15),
-                                  ),
-                                ],
                               ),
                               child: Center(
-                                child: page.imagePath != null
-                                    ? Image.asset(
-                                        page.imagePath!,
-                                        width: 140.w,
-                                        height: 140.w,
-                                        fit: BoxFit.contain,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          // Fallback to icon if image not found
-                                          return Container(
-                                            padding: EdgeInsets.all(32.w),
-                                            decoration: BoxDecoration(
-                                              color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white,
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: page.gradient.colors.first.withValues(alpha: 0.3),
-                                                  blurRadius: 20,
-                                                  offset: const Offset(0, 10),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              page.icon,
-                                              size: 72.sp,
-                                              color: page.useLightTheme ? Colors.white : page.gradient.colors.first,
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : Container(
-                                        padding: EdgeInsets.all(32.w),
-                                        decoration: BoxDecoration(
-                                          color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: page.gradient.colors.first.withValues(alpha: 0.3),
-                                              blurRadius: 20,
-                                              offset: const Offset(0, 10),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          page.icon,
-                                          size: 72.sp,
-                                          color: page.useLightTheme ? Colors.white : page.gradient.colors.first,
-                                        ),
-                                      ),
+                                child: Container(
+                                  padding: EdgeInsets.all(34.w),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.06),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: page.accent.withValues(alpha: 0.6),
+                                      width: 1.4,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    page.icon,
+                                    size: 76.sp,
+                                    color: page.accent,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -424,89 +399,89 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 30.sp,
-                            fontWeight: FontWeight.w900,
-                            color: page.useLightTheme ? const Color(0xFF1E293B) : Colors.white,
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
                             height: 1.2,
-                            letterSpacing: -0.5,
-                            shadows: page.useLightTheme
-                                ? null
-                                : [
-                                    Shadow(
-                                      color: Colors.black.withValues(alpha: 0.2),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
+                            letterSpacing: -0.6,
                           ),
                         ),
-                        SizedBox(height: 12.h),
+                        SizedBox(height: 10.h),
 
-                        // Subtitle
+                        // Subtitle — accent-tinted to draw the eye to the
+                        // page's themed promise before the longer body.
                         Text(
                           page.subtitle,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                            color: page.useLightTheme ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.95),
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: page.accent.withValues(alpha: 0.95),
                             height: 1.3,
-                            letterSpacing: 0.3,
+                            letterSpacing: 0.4,
                           ),
                         ),
-                        SizedBox(height: 20.h),
+                        SizedBox(height: 16.h),
 
                         // Description
-                        Text(
-                          page.description,
-                          textAlign: TextAlign.center,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w400,
-                            color: page.useLightTheme ? const Color(0xFF475569) : Colors.white.withValues(alpha: 0.85),
-                            height: 1.5,
-                            letterSpacing: 0.2,
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w),
+                          child: Text(
+                            page.description,
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white.withValues(alpha: 0.78),
+                              height: 1.55,
+                              letterSpacing: 0.1,
+                            ),
                           ),
                         ),
                         SizedBox(height: verticalSpacingMedium),
 
-                        // Features list
+                        // Features list — frosted dark card with accented
+                        // check chips. Lighter border than before so it
+                        // sits on the dark surface without overpowering it.
                         Flexible(
                           child: Container(
-                            padding: EdgeInsets.all(20.w),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 18.w, vertical: 16.h),
                             decoration: BoxDecoration(
-                              color: page.useLightTheme
-                                  ? const Color(0xFFF1F5F9)
-                                  : Colors.white.withValues(alpha: 0.1),
+                              color: Colors.white.withValues(alpha: 0.04),
                               borderRadius: BorderRadius.circular(20.r),
                               border: Border.all(
-                                color: page.useLightTheme
-                                    ? const Color(0xFFE2E8F0)
-                                    : Colors.white.withValues(alpha: 0.2),
-                                width: 1.5,
+                                color: Colors.white.withValues(alpha: 0.08),
+                                width: 1,
                               ),
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: page.features.map((feature) {
                                 return Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                                  padding: EdgeInsets.symmetric(vertical: 7.h),
                                   child: Row(
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.all(6.w),
+                                        padding: EdgeInsets.all(5.w),
                                         decoration: BoxDecoration(
-                                          color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white.withValues(alpha: 0.9),
+                                          color: page.accent
+                                              .withValues(alpha: 0.22),
                                           shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: page.accent
+                                                .withValues(alpha: 0.6),
+                                            width: 1,
+                                          ),
                                         ),
                                         child: Icon(
                                           Icons.check_rounded,
-                                          size: 16.sp,
-                                          color: page.useLightTheme ? Colors.white : page.gradient.colors.first,
+                                          size: 14.sp,
+                                          color: page.accent,
                                         ),
                                       ),
                                       SizedBox(width: 12.w),
@@ -516,11 +491,12 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            fontSize: 14.sp,
-                                            fontWeight: FontWeight.w600,
-                                            color: page.useLightTheme ? const Color(0xFF334155) : Colors.white,
+                                            fontSize: 13.5.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.92),
                                             height: 1.4,
-                                            letterSpacing: 0.2,
+                                            letterSpacing: 0.1,
                                           ),
                                         ),
                                       ),
@@ -550,19 +526,20 @@ class OnboardingPage {
   final String subtitle;
   final String description;
   final IconData icon;
-  final String? imagePath;
   final List<String> features;
   final LinearGradient gradient;
-  final bool useLightTheme;
+  // Per-page accent color — drives the icon halo, indicator dots and the
+  // primary CTA. Distinguishes slides without abandoning the unified dark
+  // base. Tap-points (button + dots) use the accent; surfaces use white.
+  final Color accent;
 
   OnboardingPage({
     required this.title,
     required this.subtitle,
     required this.description,
     required this.icon,
-    this.imagePath,
     required this.features,
     required this.gradient,
-    this.useLightTheme = false,
+    required this.accent,
   });
 }

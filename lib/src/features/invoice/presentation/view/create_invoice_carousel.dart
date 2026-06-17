@@ -25,6 +25,7 @@ import '../../data/repositories/invoice_repository_grpc_impl.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Main carousel controller for invoice creation
 ///
@@ -745,14 +746,7 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (isLastPage && _isCreating)
-                          SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
+                          LazerVaultLoader.small(),
                         if (isLastPage && _isCreating) SizedBox(width: 8.w),
                         Text(
                           isLastPage

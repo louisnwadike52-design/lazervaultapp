@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/entities/group_entities.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// One-row invite card for the Invites tab. Renders the group name +
 /// inviter, an expiry countdown, the role being offered, optional
@@ -209,14 +210,7 @@ class InviteCard extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: busy
-                        ? SizedBox(
-                            width: 16.w,
-                            height: 16.w,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                        ? LazerVaultLoader.tiny()
                         : Text(
                             'Accept invite',
                             style: GoogleFonts.inter(

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../cubit/inventory_enhanced_cubit.dart';
 import '../cubit/inventory_enhanced_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InventoryValuationScreen extends StatefulWidget {
   const InventoryValuationScreen({super.key});
@@ -70,9 +71,7 @@ class _InventoryValuationScreenState extends State<InventoryValuationScreen> {
       builder: (context, state) {
         if (state is InventoryEnhancedLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart' as picker;
 import '../../../data/array_item_encoder.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import 'monetary_form_field.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Renders MyCover.ai `array`-type form fields (e.g. `item_details`
 /// for Marine cargo, `items` for Home Content) as a repeating
@@ -429,14 +430,7 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
             ),
           ),
           if (isStaging)
-            SizedBox(
-              width: 14.w,
-              height: 14.w,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFF6366F1),
-              ),
-            )
+            LazerVaultLoader(size: 14)
           else if (hasImage)
             IconButton(
               tooltip: 'Remove photo',

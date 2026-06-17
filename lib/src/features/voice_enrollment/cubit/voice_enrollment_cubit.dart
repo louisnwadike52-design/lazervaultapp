@@ -7,6 +7,14 @@ import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voi
 
 part 'voice_enrollment_state.dart';
 
+/// Auto-submit cutoff used by both the multi-step and carousel enrollment
+/// paths. Bumped from 5s after users hit `too_short` (<0.4s captured) and
+/// `too_quiet_or_silent` (RMS <0.005) at the voice-agent-gateway's quality
+/// gate — the 5s ceiling stopped recording before users finished the
+/// prompt phrase, especially on low-end devices where the recorder takes
+/// a noticeable beat to actually start capturing after `start()`.
+const Duration _kEnrollmentAutoStopAfter = Duration(seconds: 8);
+
 /// Cubit for managing voice enrollment flow
 @injectable
 class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
@@ -156,8 +164,7 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
         }
       });
 
-      // Auto-stop after 5 seconds
-      _recordingTimer = Timer(const Duration(seconds: 5), () {
+      _recordingTimer = Timer(_kEnrollmentAutoStopAfter, () {
         if (_isRecording) {
           stopRecording();
         }
@@ -491,8 +498,7 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
         }
       });
 
-      // Auto-stop after 5 seconds
-      _recordingTimer = Timer(const Duration(seconds: 5), () {
+      _recordingTimer = Timer(_kEnrollmentAutoStopAfter, () {
         if (_isRecording) {
           stopCarouselRecording(index);
         }

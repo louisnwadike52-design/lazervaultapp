@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Reusable empty state widgets for stock screens
 class StockEmptyStates {
@@ -150,16 +151,7 @@ class StockEmptyStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 60.w,
-            height: 60.w,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                const Color(0xFF3B82F6),
-              ),
-            ),
-          ),
+          LazerVaultLoader(size: 60),
           if (message != null) ...[
             SizedBox(height: 20.h),
             Text(

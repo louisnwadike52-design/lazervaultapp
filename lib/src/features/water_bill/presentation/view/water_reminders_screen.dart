@@ -9,6 +9,7 @@ import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/water_reminder.dart';
 import '../cubit/water_reminder_cubit.dart';
 import '../cubit/water_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Water bill reminders list screen.
 ///
@@ -156,10 +157,7 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
                   if (state is WaterReminderLoading ||
                       state is WaterReminderInitial) {
                     return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(_primary),
-                      ),
+                      child: LazerVaultLoader.tiny(),
                     );
                   }
                   if (state is WaterRemindersLoaded) {

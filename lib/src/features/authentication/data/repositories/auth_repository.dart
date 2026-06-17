@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/authentication/data/models/user_model.da
 import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/phone_verification_entity.dart';
 import 'package:lazervault/src/features/authentication/data/models/phone_verification_model.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' hide VirtualAccountInfo;
@@ -1039,5 +1040,177 @@ class AuthRepositoryImpl implements IAuthRepository {
     final countryCode = _getCountryCodeFromLocale(locale);
     final config = CountryConfigs.getByCode(countryCode);
     return config?.currency ?? 'NGN';
+  }
+
+  // ===== Two-Factor Authentication =====
+  //
+  // All five RPCs are JWT-authenticated; the backend extracts the user id
+  // from the access token. Each call goes through the standard
+  // GrpcCallOptionsHelper.withAuth() to attach `authorization: Bearer …`
+  // and forward locale/country metadata for audit logs.
+
+  @override
+  Future<Either<Failure, TwoFactorStatus>> getTwoFactorStatus() async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.getTwoFactorStatus(
+        auth_req_resp.GetTwoFactorStatusRequest(),
+        options: callOptions,
+      );
+      final method = response.method.isEmpty
+          ? null
+          : TwoFactorMethod.fromString(response.method);
+      return Right(TwoFactorStatus(
+        enabled: response.enabled,
+        method: method,
+        backupCodesCount: response.backupCodesCount,
+        hasBackupCodes: response.backupCodesCount > 0,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to load 2FA status'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error loading 2FA status: $e',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, TwoFactorSetup>> enableTwoFactor({
+    required TwoFactorMethod method,
+  }) async {
+    try {
+      // userId left empty — backend pulls it from the JWT. We pass it only
+      // for the proto contract; the server-side handler ignores it when
+      // the access token resolves a different user.
+      final request = auth_req_resp.EnableTwoFactorRequest(
+        method: method.value,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.enableTwoFactor(
+        request,
+        options: callOptions,
+      );
+      return Right(TwoFactorSetup(
+        secret: response.secret,
+        qrCode: response.qrCode,
+        backupCodes: response.backupCodes.toList(),
+        method: method,
+        verificationRequired: true,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to enable 2FA'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error enabling 2FA: $e',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> completeTwoFactorSetup({
+    required String code,
+  }) async {
+    try {
+      final request = auth_req_resp.CompleteTwoFactorSetupRequest(code: code);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.completeTwoFactorSetup(
+        request,
+        options: callOptions,
+      );
+      if (response.success) {
+        return const Right(null);
+      }
+      return Left(ServerFailure(
+        message: response.message.isNotEmpty
+            ? response.message
+            : 'Failed to verify 2FA code',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to verify 2FA code'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error verifying 2FA code: $e',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> disableTwoFactor({
+    required String code,
+  }) async {
+    try {
+      final request = auth_req_resp.DisableTwoFactorRequest(code: code);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.disableTwoFactor(
+        request,
+        options: callOptions,
+      );
+      if (response.success) {
+        return const Right(null);
+      }
+      return Left(ServerFailure(
+        message: response.message.isNotEmpty
+            ? response.message
+            : 'Failed to disable 2FA',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to disable 2FA'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error disabling 2FA: $e',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<String>>> regenerateBackupCodes({
+    required String code,
+  }) async {
+    try {
+      final request = auth_req_resp.RegenerateBackupCodesRequest(code: code);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.regenerateBackupCodes(
+        request,
+        options: callOptions,
+      );
+      if (response.success) {
+        return Right(response.backupCodes.toList());
+      }
+      return Left(ServerFailure(
+        message: response.message.isNotEmpty
+            ? response.message
+            : 'Failed to regenerate backup codes',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to regenerate backup codes'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error regenerating backup codes: $e',
+        statusCode: 500,
+      ));
+    }
   }
 }

@@ -25,6 +25,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
   final String? serviceName;
@@ -916,14 +917,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 ),
               ),
               child: Center(
-                child: SizedBox(
-                  width: 40.w,
-                  height: 40.w,
-                  child: CircularProgressIndicator(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.6),
-                    strokeWidth: 2.5,
-                  ),
-                ),
+                child: LazerVaultLoader.medium(),
               ),
             ),
             SizedBox(height: 32.h),
@@ -1232,14 +1226,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         width: 160.w,
         height: 160.w,
         child: Center(
-          child: SizedBox(
-            width: 80.w,
-            height: 80.w,
-            child: CircularProgressIndicator(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.7),
-              strokeWidth: 2.5,
-            ),
-          ),
+          child: LazerVaultLoader(size: 80),
         ),
       );
     }
@@ -1820,14 +1807,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       ),
                       child: Center(
                         child: _isSubmittingRating
-                            ? SizedBox(
-                                width: 20.w,
-                                height: 20.w,
-                                child: const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Text(
                                 'Submit Rating',
                                 style: GoogleFonts.inter(

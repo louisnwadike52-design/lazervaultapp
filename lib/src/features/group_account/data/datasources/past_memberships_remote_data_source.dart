@@ -88,7 +88,7 @@ class PastMembershipsRemoteDataSource {
         return v.trim().replaceAll(RegExp(r'/$'), '');
       }
     }
-    return 'http://10.0.2.2:8016';
+    return 'https://api.lazervault.app/api/v1';
   }
 
   Map<String, String> _headers(String token) => {

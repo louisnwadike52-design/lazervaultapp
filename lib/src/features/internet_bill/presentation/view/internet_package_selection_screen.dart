@@ -10,6 +10,7 @@ import '../../domain/entities/internet_account_validation_entity.dart';
 import '../../domain/entities/internet_package_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InternetPackageSelectionScreen extends StatefulWidget {
   const InternetPackageSelectionScreen({super.key});
@@ -139,11 +140,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
                   builder: (context, state) {
                     if (state is InternetBillLoading) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF3B82F6),
-                          ),
-                        ),
+                        child: LazerVaultLoader.small(),
                       );
                     }
 

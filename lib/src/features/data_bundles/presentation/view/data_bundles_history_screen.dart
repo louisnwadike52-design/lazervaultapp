@@ -11,6 +11,7 @@ import '../../domain/entities/data_purchase_entity.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import '../widgets/data_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Full-list data purchase history. Powered by DataBundlesCubit's
 /// loadDataPurchaseHistory / cachedPurchases (SWR pattern, mirrors
@@ -453,10 +454,7 @@ class _DataBundlesHistoryScreenState extends State<DataBundlesHistoryScreen> {
   }
 
   Widget _buildLoading() => Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(_primary),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
 
   Widget _buildEmpty() {

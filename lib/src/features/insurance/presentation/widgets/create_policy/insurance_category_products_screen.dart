@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen 1: Browse insurance categories and products from MyCover.ai
 class InsuranceCategoryProductsScreen extends StatefulWidget {
@@ -52,7 +53,7 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
       builder: (context, state) {
         if (state is CreatePolicyLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -86,7 +87,7 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
         }
 
         return const Center(
-          child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          child: LazerVaultLoader.small(),
         );
       },
     );
@@ -207,13 +208,7 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: const Center(
-                  child: SizedBox(
-                    width: 20, height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Color(0xFF6366F1)),
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 ),
               )
             else if (!isLoading && products.isNotEmpty && !hasMore)
@@ -494,7 +489,7 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w), height: 120.h,
       decoration: BoxDecoration(color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(12.r)),
-      child: const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2)),
+      child: const Center(child: LazerVaultLoader.tiny()),
     );
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -10,7 +9,7 @@ import 'package:lazervault/src/features/presentation/views/notification_screen.d
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
-import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -28,49 +27,71 @@ class DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     // Use user's profile picture if available, otherwise fallback to default
-    final profileImagePath = currentUser?.profilePicture ?? AppData.dp;
+    // Drive the avatar reactively from AuthenticationCubit so that an
+    // upload from Settings refreshes the dashboard immediately (without
+    // having to re-mount the dashboard). The cubit also receives the
+    // initial render via the [currentUser] prop passed by the parent —
+    // BlocBuilder takes over on subsequent emissions.
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      buildWhen: (prev, next) =>
+          next is AuthenticationSuccess ||
+          next is AuthenticationAuthenticated ||
+          prev is AuthenticationSuccess ||
+          prev is AuthenticationAuthenticated,
+      builder: (context, authState) {
+        User? user = currentUser;
+        if (authState is AuthenticationSuccess) {
+          user = authState.profile.user;
+        } else if (authState is AuthenticationAuthenticated) {
+          user = authState.profile.user;
+        }
 
-    return Row(
-      children: [
-        // Profile Picture - Clickable to open drawer
-        GestureDetector(
-          onTap: () {
-            Scaffold.of(context).openDrawer();
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 6,
-              offset: Offset(0, 2),
-            ),
-          ],
-
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.r),
-              child: UniversalImageLoader(
-                imagePath: profileImagePath,
-                height: 32.h,
-                width: 32.w,
+        return Row(
+          children: [
+            // Profile Picture - Clickable to open drawer. Renders
+            // brand-purple initials when the user hasn't set a picture.
+            GestureDetector(
+              onTap: () {
+                Scaffold.of(context).openDrawer();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: UserAvatar(
+                  size: 32.w,
+                  imageUrl: user?.profilePicture,
+                  firstName: user?.firstName,
+                  lastName: user?.lastName,
+                  fallbackMode: UserAvatarFallback.initials,
+                  // Match the frosted-white style of the notification
+                  // / mic / settings icon buttons on this purple top
+                  // bar — orange or solid brand-purple both read as
+                  // out-of-place stickers on the dashboard header.
+                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                ),
               ),
             ),
-          ),
-        ),
-        Spacer(),
-        // Country Selector
-        _buildCountrySelector(context),
-        SizedBox(width: 8.w),
-        // Action Icons
-        _buildIconButton(Icons.notifications_outlined, context),
-        SizedBox(width: 8.w),
-        _buildIconButton(Icons.mic_rounded, context),
-        SizedBox(width: 8.w),
-        _buildIconButton(Icons.settings_outlined, context),
-      ],
+            Spacer(),
+            // Country Selector
+            _buildCountrySelector(context),
+            SizedBox(width: 8.w),
+            // Action Icons
+            _buildIconButton(Icons.notifications_outlined, context),
+            SizedBox(width: 8.w),
+            _buildIconButton(Icons.mic_rounded, context),
+            SizedBox(width: 8.w),
+            _buildIconButton(Icons.settings_outlined, context),
+          ],
+        );
+      },
     );
   }
 

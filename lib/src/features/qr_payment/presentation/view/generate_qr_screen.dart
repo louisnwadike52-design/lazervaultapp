@@ -6,6 +6,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GenerateQRScreen extends StatefulWidget {
   const GenerateQRScreen({super.key});
@@ -341,14 +342,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
           ),
         ),
         child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : const Text(
                 'Generate QR Code',
                 style: TextStyle(

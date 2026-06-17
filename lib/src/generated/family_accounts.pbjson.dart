@@ -574,11 +574,12 @@ const AllocateFundsRequest$json = const {
     const {'1': 'member_id', '3': 2, '4': 1, '5': 9, '10': 'memberId'},
     const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     const {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `AllocateFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List allocateFundsRequestDescriptor = $convert.base64Decode('ChRBbGxvY2F0ZUZ1bmRzUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCGZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9u');
+final $typed_data.Uint8List allocateFundsRequestDescriptor = $convert.base64Decode('ChRBbGxvY2F0ZUZ1bmRzUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCGZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgFIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
 @$core.Deprecated('Use allocateFundsResponseDescriptor instead')
 const AllocateFundsResponse$json = const {
   '1': 'AllocateFundsResponse',
@@ -684,6 +685,28 @@ const DeleteFamilyAccountResponse$json = const {
 
 /// Descriptor for `DeleteFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List deleteFamilyAccountResponseDescriptor = $convert.base64Decode('ChtEZWxldGVGYW1pbHlBY2NvdW50UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEikKEHJldHVybmVkX2JhbGFuY2UYAyABKAFSD3JldHVybmVkQmFsYW5jZQ==');
+@$core.Deprecated('Use leaveFamilyAccountRequestDescriptor instead')
+const LeaveFamilyAccountRequest$json = const {
+  '1': 'LeaveFamilyAccountRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+  ],
+};
+
+/// Descriptor for `LeaveFamilyAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List leaveFamilyAccountRequestDescriptor = $convert.base64Decode('ChlMZWF2ZUZhbWlseUFjY291bnRSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCVIIZmFtaWx5SWQ=');
+@$core.Deprecated('Use leaveFamilyAccountResponseDescriptor instead')
+const LeaveFamilyAccountResponse$json = const {
+  '1': 'LeaveFamilyAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'returned_balance', '3': 3, '4': 1, '5': 1, '10': 'returnedBalance'},
+  ],
+};
+
+/// Descriptor for `LeaveFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List leaveFamilyAccountResponseDescriptor = $convert.base64Decode('ChpMZWF2ZUZhbWlseUFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USKQoQcmV0dXJuZWRfYmFsYW5jZRgDIAEoAVIPcmV0dXJuZWRCYWxhbmNl');
 @$core.Deprecated('Use processMemberContributionRequestDescriptor instead')
 const ProcessMemberContributionRequest$json = const {
   '1': 'ProcessMemberContributionRequest',
@@ -692,11 +715,12 @@ const ProcessMemberContributionRequest$json = const {
     const {'1': 'member_id', '3': 2, '4': 1, '5': 9, '10': 'memberId'},
     const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     const {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `ProcessMemberContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List processMemberContributionRequestDescriptor = $convert.base64Decode('CiBQcm9jZXNzTWVtYmVyQ29udHJpYnV0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCGZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9u');
+final $typed_data.Uint8List processMemberContributionRequestDescriptor = $convert.base64Decode('CiBQcm9jZXNzTWVtYmVyQ29udHJpYnV0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCGZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgFIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
 @$core.Deprecated('Use processMemberContributionResponseDescriptor instead')
 const ProcessMemberContributionResponse$json = const {
   '1': 'ProcessMemberContributionResponse',
@@ -789,11 +813,13 @@ const FamilyAccount$json = const {
     const {'1': 'fund_distribution_mode', '3': 16, '4': 1, '5': 14, '6': '.accounts.v1.FundDistributionMode', '10': 'fundDistributionMode'},
     const {'1': 'setup_completed', '3': 17, '4': 1, '5': 8, '10': 'setupCompleted'},
     const {'1': 'spending_visibility_enabled', '3': 18, '4': 1, '5': 8, '10': 'spendingVisibilityEnabled'},
+    const {'1': 'currency', '3': 19, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'virtual_account_id', '3': 20, '4': 1, '5': 9, '10': 'virtualAccountId'},
   ],
 };
 
 /// Descriptor for `FamilyAccount`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List familyAccountDescriptor = $convert.base64Decode('Cg1GYW1pbHlBY2NvdW50Eg4KAmlkGAEgASgJUgJpZBIdCgpjcmVhdG9yX2lkGAIgASgJUgljcmVhdG9ySWQSIQoMY3JlYXRvcl9uYW1lGAMgASgJUgtjcmVhdG9yTmFtZRISCgRuYW1lGAQgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAUgASgJUgtkZXNjcmlwdGlvbhI2Chd0b3RhbF9hbGxvY2F0ZWRfYmFsYW5jZRgGIAEoAVIVdG90YWxBbGxvY2F0ZWRCYWxhbmNlEiwKEnRvdGFsX3Bvb2xfYmFsYW5jZRgHIAEoAVIQdG90YWxQb29sQmFsYW5jZRIWCgZzdGF0dXMYCCABKAlSBnN0YXR1cxIdCgpjcmVhdGVkX2F0GAkgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgKIAEoCVIJdXBkYXRlZEF0EjMKB21lbWJlcnMYCyADKAsyGS5hY2NvdW50cy52MS5GYW1pbHlNZW1iZXJSB21lbWJlcnMSIQoMbWVtYmVyX2NvdW50GAwgASgFUgttZW1iZXJDb3VudBIuChNhY3RpdmVfbWVtYmVyX2NvdW50GA0gASgFUhFhY3RpdmVNZW1iZXJDb3VudBI8ChphbGxvd19tZW1iZXJfY29udHJpYnV0aW9ucxgOIAEoCFIYYWxsb3dNZW1iZXJDb250cmlidXRpb25zEiMKDXRvdGFsX2JhbGFuY2UYDyABKAFSDHRvdGFsQmFsYW5jZRJXChZmdW5kX2Rpc3RyaWJ1dGlvbl9tb2RlGBAgASgOMiEuYWNjb3VudHMudjEuRnVuZERpc3RyaWJ1dGlvbk1vZGVSFGZ1bmREaXN0cmlidXRpb25Nb2RlEicKD3NldHVwX2NvbXBsZXRlZBgRIAEoCFIOc2V0dXBDb21wbGV0ZWQSPgobc3BlbmRpbmdfdmlzaWJpbGl0eV9lbmFibGVkGBIgASgIUhlzcGVuZGluZ1Zpc2liaWxpdHlFbmFibGVk');
+final $typed_data.Uint8List familyAccountDescriptor = $convert.base64Decode('Cg1GYW1pbHlBY2NvdW50Eg4KAmlkGAEgASgJUgJpZBIdCgpjcmVhdG9yX2lkGAIgASgJUgljcmVhdG9ySWQSIQoMY3JlYXRvcl9uYW1lGAMgASgJUgtjcmVhdG9yTmFtZRISCgRuYW1lGAQgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAUgASgJUgtkZXNjcmlwdGlvbhI2Chd0b3RhbF9hbGxvY2F0ZWRfYmFsYW5jZRgGIAEoAVIVdG90YWxBbGxvY2F0ZWRCYWxhbmNlEiwKEnRvdGFsX3Bvb2xfYmFsYW5jZRgHIAEoAVIQdG90YWxQb29sQmFsYW5jZRIWCgZzdGF0dXMYCCABKAlSBnN0YXR1cxIdCgpjcmVhdGVkX2F0GAkgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgKIAEoCVIJdXBkYXRlZEF0EjMKB21lbWJlcnMYCyADKAsyGS5hY2NvdW50cy52MS5GYW1pbHlNZW1iZXJSB21lbWJlcnMSIQoMbWVtYmVyX2NvdW50GAwgASgFUgttZW1iZXJDb3VudBIuChNhY3RpdmVfbWVtYmVyX2NvdW50GA0gASgFUhFhY3RpdmVNZW1iZXJDb3VudBI8ChphbGxvd19tZW1iZXJfY29udHJpYnV0aW9ucxgOIAEoCFIYYWxsb3dNZW1iZXJDb250cmlidXRpb25zEiMKDXRvdGFsX2JhbGFuY2UYDyABKAFSDHRvdGFsQmFsYW5jZRJXChZmdW5kX2Rpc3RyaWJ1dGlvbl9tb2RlGBAgASgOMiEuYWNjb3VudHMudjEuRnVuZERpc3RyaWJ1dGlvbk1vZGVSFGZ1bmREaXN0cmlidXRpb25Nb2RlEicKD3NldHVwX2NvbXBsZXRlZBgRIAEoCFIOc2V0dXBDb21wbGV0ZWQSPgobc3BlbmRpbmdfdmlzaWJpbGl0eV9lbmFibGVkGBIgASgIUhlzcGVuZGluZ1Zpc2liaWxpdHlFbmFibGVkEhoKCGN1cnJlbmN5GBMgASgJUghjdXJyZW5jeRIsChJ2aXJ0dWFsX2FjY291bnRfaWQYFCABKAlSEHZpcnR1YWxBY2NvdW50SWQ=');
 @$core.Deprecated('Use familyMemberDescriptor instead')
 const FamilyMember$json = const {
   '1': 'FamilyMember',

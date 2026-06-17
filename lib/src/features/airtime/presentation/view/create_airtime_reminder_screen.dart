@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_state.dart'
     show AirtimeBeneficiariesLoaded, AirtimeBeneficiary, AirtimeReminder, AirtimeState;
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_cubit.dart';
@@ -341,15 +342,7 @@ class _CreateAirtimeReminderScreenState
                         ),
                       ),
                       child: isLoading
-                          ? SizedBox(
-                              height: 24.h,
-                              width: 24.h,
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Text(
                               _isEditing ? 'Update Reminder' : 'Create Reminder',
                               style: GoogleFonts.inter(
@@ -571,10 +564,7 @@ class _CreateAirtimeReminderScreenState
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-            ),
+            child: LazerVaultLoader.tiny(),
           ),
         );
       },

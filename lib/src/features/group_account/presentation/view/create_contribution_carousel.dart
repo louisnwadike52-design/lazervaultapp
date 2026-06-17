@@ -12,6 +12,7 @@ import '../widgets/contribution_steps/step2_basic_info.dart';
 import '../widgets/contribution_steps/step3_schedule.dart';
 import '../widgets/contribution_steps/step4_advanced.dart';
 import '../widgets/contribution_steps/step5_review.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Main carousel controller for contribution creation
 ///
@@ -383,15 +384,7 @@ class _CreateContributionCarouselState
                   ),
                   child: Center(
                     child: isSubmitting
-                        ? SizedBox(
-                            width: 20.w,
-                            height: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [

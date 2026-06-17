@@ -21,6 +21,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../domain/entities/mycover_management_entities.dart';
 import '../../domain/repositories/insurance_repository.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PurchaseDetailUserScreen extends StatefulWidget {
   final String purchaseId;
@@ -71,7 +72,7 @@ class _PurchaseDetailUserScreenState extends State<PurchaseDetailUserScreen> {
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+              child: LazerVaultLoader.small(),
             );
           }
           if (snap.hasError || !snap.hasData) {

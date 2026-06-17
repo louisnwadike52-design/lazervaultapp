@@ -11,6 +11,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../utils/group_validators.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditGroupScreen extends StatefulWidget {
   final GroupAccount group;
@@ -467,14 +468,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           ),
         ),
         child: _isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Save Changes',
                 style: GoogleFonts.inter(

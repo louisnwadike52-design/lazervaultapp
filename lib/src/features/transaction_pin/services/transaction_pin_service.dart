@@ -412,18 +412,27 @@ class TransactionPinService implements ITransactionPinService {
         ..deviceId = deviceId
         ..deviceName = deviceName;
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      print('[TransactionPinService] createPin for userId: $userId, deviceId: $deviceId');
-      final response = await _client.createTransactionPin(
-        request,
-        options: callOptions,
-      );
+      // Run inside the token-rotation wrapper so an expired access token
+      // doesn't permanently fail the create — the wrapper refreshes and
+      // retries once on Unauthenticated.
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        print('[TransactionPinService] createPin for userId: $userId, deviceId: $deviceId');
+        return await _client.createTransactionPin(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('[TransactionPinService] createPin response: success=${response.success}, message=${response.message}');
       return response.success;
     } on GrpcError catch (e) {
+      // RE-THROW the GrpcError unchanged so the caller can branch on
+      // e.code (AlreadyExists, InvalidArgument, Unauthenticated, …) that the
+      // backend mapped via classifyPinError in transaction_pin_server.go.
+      // Wrapping in a generic Exception here would erase that signal.
       print('[TransactionPinService] gRPC Error creating PIN: ${e.codeName} - ${e.message}');
-      throw Exception('Failed to create PIN: ${e.message ?? "Unknown error"}');
+      rethrow;
     } catch (e) {
       print('Unexpected error creating PIN: $e');
       throw Exception('An unexpected error occurred');
@@ -445,16 +454,21 @@ class TransactionPinService implements ITransactionPinService {
         ..newPin = newPin
         ..confirmNewPin = confirmNewPin;
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.changeTransactionPin(
-        request,
-        options: callOptions,
-      );
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.changeTransactionPin(
+          request,
+          options: callOptions,
+        );
+      });
 
       return response.success;
     } on GrpcError catch (e) {
-      print('gRPC Error changing PIN: $e');
-      throw Exception('Failed to change PIN: ${e.message ?? "Unknown error"}');
+      // Re-throw so callers can distinguish Unauthenticated (wrong current
+      // PIN) from PermissionDenied (locked) from InvalidArgument (format) —
+      // see classifyPinError in transaction_pin_server.go.
+      print('gRPC Error changing PIN: ${e.codeName} - ${e.message}');
+      rethrow;
     } catch (e) {
       print('Unexpected error changing PIN: $e');
       throw Exception('An unexpected error occurred');

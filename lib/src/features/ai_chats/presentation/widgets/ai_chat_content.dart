@@ -17,6 +17,7 @@ import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
@@ -81,6 +82,7 @@ class ChatMessage {
   final int? audioDurationMs;
   final String? transcript;
   final Map<String, dynamic>? receiptData;
+  final Map<String, dynamic>? pinPrompt;
 
   ChatMessage({
     required this.text,
@@ -95,6 +97,7 @@ class ChatMessage {
     this.audioDurationMs,
     this.transcript,
     this.receiptData,
+    this.pinPrompt,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -111,6 +114,7 @@ class ChatMessage {
       audioDurationMs: entity.audioDurationMs,
       transcript: entity.transcript,
       receiptData: entity.receiptData,
+      pinPrompt: entity.pinPrompt,
     );
   }
 }
@@ -1129,6 +1133,26 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             if (!isUser && message.receiptData != null)
               ChatReceiptCard(
                 receipt: TransferReceiptData.fromJson(message.receiptData!),
+              ),
+            // PIN prompt card — chat-driven money moves collect the PIN inline.
+            // "Enter PIN" opens the native modal; on success the single-use
+            // token round-trips to the agent (submitPinVerification) and the
+            // transaction continues in this same conversation.
+            if (!isUser && message.pinPrompt != null)
+              ChatPinPromptCard(
+                payload: message.pinPrompt!,
+                onPinVerified: (verificationToken) async {
+                  final payload = message.pinPrompt!;
+                  final callbackArgsRaw = payload['callback_args'];
+                  await context.read<AIChatCubit>().submitPinVerification(
+                        verificationToken: verificationToken,
+                        callbackIntent:
+                            payload['callback_intent']?.toString() ?? '',
+                        callbackArgs: callbackArgsRaw is Map
+                            ? Map<String, dynamic>.from(callbackArgsRaw)
+                            : const {},
+                      );
+                },
               ),
           ],
         ),

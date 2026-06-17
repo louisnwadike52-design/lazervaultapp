@@ -8,6 +8,7 @@ import '../../../../../core/widgets/bill_auto_recharge_item.dart';
 import '../../domain/entities/water_auto_recharge.dart';
 import '../cubit/water_auto_recharge_cubit.dart';
 import '../cubit/water_auto_recharge_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Water Auto-Pay management. Mirrors the data-bundles and airtime
 /// rollover lists: list via `BillAutoRechargeItem`, bottom-right FAB
@@ -83,10 +84,7 @@ class _WaterAutoRechargeScreenState extends State<WaterAutoRechargeScreen> {
           if (state is WaterAutoRechargesLoading ||
               state is WaterAutoRechargeInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
-              ),
+              child: LazerVaultLoader.tiny(),
             );
           }
           if (state is WaterAutoRechargeError) {

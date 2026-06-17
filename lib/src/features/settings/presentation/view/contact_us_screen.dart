@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/src/features/support/domain/repositories/i_support_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -382,14 +383,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                               ),
                             ),
                             child: _isSubmitting
-                                ? SizedBox(
-                                    height: 20.h,
-                                    width: 20.w,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  )
+                                ? LazerVaultLoader.small()
                                 : Text(
                                     'Send Message',
                                     style: GoogleFonts.inter(

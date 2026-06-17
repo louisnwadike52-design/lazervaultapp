@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Admin Dashboard Screen for Gift Card Sell Provider Management
 /// Allows administrators to toggle between manual and Prestmit automated selling
@@ -233,7 +235,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gift Card Sell Provider'),
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: kGiftCardBgTop,
         elevation: 0,
         actions: [
           IconButton(
@@ -243,7 +245,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
         ],
       ),
       backgroundColor: const Color(0xFF0A0A0A),
-      body: BlocListener<GiftCardCubit, GiftCardState>(
+      body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
         listener: (context, state) {
           if (state is SellProviderLoaded) {
             setState(() {
@@ -370,14 +372,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                             ),
                           ),
                           if (_isLoading)
-                            const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
-                              ),
-                            ),
+                            LazerVaultLoader.small(),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -588,7 +583,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 

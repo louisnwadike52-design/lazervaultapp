@@ -13,6 +13,7 @@ import 'lock_fund_topup_screen.dart';
 import 'lock_fund_autosave_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockFundDetailsScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -788,7 +789,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 // loadLockFundDetails kicks off in initState.
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 18.h),
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: const Center(child: LazerVaultLoader.tiny()),
                 ),
               ] else if (txs.isEmpty) ...[
                 Padding(

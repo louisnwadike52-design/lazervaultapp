@@ -3,22 +3,46 @@ import 'package:equatable/equatable.dart';
 
 /// Unified transaction type enum supporting all services
 enum TransactionServiceType {
+  // Utility bill family — keep all five bill types in one cluster so the
+  // user reads "those are all bills" at a glance.
   airtime('Airtime', Icons.phone_android, Color(0xFFFFCC00)),
-  giftCard('Gift Card', Icons.card_giftcard, Color(0xFF6366F1)),
+  data('Mobile Data', Icons.signal_cellular_alt, Color(0xFF06B6D4)),
   electricity('Electricity', Icons.bolt, Color(0xFF00B04F)),
   water('Water Bill', Icons.water_drop, Color(0xFF3B82F6)),
   tvSubscription('TV Subscription', Icons.tv, Color(0xFFEF4444)),
+  internet('Internet Bill', Icons.wifi, Color(0xFF0EA5E9)),
+  education('Education', Icons.school, Color(0xFFA855F7)),
+
+  // Send / receive money family — outgoing flows.
   transfer('Transfer', Icons.swap_horiz, Color.fromARGB(255, 78, 3, 208)),
+  batchTransfer('Batch Transfer', Icons.group_outlined, Color(0xFF8B5CF6)),
+  splitBill('Split Bill', Icons.receipt_outlined, Color(0xFFFB923C)),
+  tagPay('Tag Pay', Icons.local_offer, Color(0xFF14B8A6)),
+  qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
+  idPay('Pay by ID', Icons.badge_outlined, Color(0xFF6366F1)),
+  contactlessPay('Tap to Pay', Icons.contactless_outlined, Color(0xFF6F42C1)),
+
+  // Stored value / commerce.
+  invoice('Invoice', Icons.receipt_long, Color(0xFF6366F1)),
+  giftCard('Gift Card', Icons.card_giftcard, Color(0xFF6366F1)),
+
+  // Investments / savings.
   crypto('Crypto', Icons.currency_bitcoin, Color(0xFFF59E0B)),
   stocks('Stocks', Icons.trending_up, Color(0xFF10B981)),
   insurance('Insurance', Icons.security, Color(0xFF3B82F6)),
-  invoice('Invoice', Icons.receipt_long, Color(0xFF6366F1)),
-  qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
-  tagPay('Tag Pay', Icons.local_offer, Color(0xFF14B8A6)),
   crowdfund('Crowdfund', Icons.volunteer_activism, Color(0xFFF472B6)),
   autosave('AutoSave', Icons.savings, Color(0xFF22C55E)),
+  lockFunds('PiggyVault', Icons.lock_clock_outlined, Color(0xFF6366F1)),
+  groupFunds('Group Funds', Icons.groups_2_outlined, Color(0xFFA855F7)),
+  exchange('Exchange', Icons.currency_exchange, Color(0xFFFB923C)),
+
+  // Account-level money flow.
   deposit('Deposit', Icons.add_circle_outline, Color(0xFF10B981)),
   withdrawal('Withdrawal', Icons.remove_circle_outline, Color(0xFFEF4444)),
+  refund('Refund', Icons.undo_outlined, Color(0xFF6B7280)),
+  reversal('Reversal', Icons.replay_outlined, Color(0xFF6B7280)),
+  fee('Fee', Icons.receipt, Color(0xFF9CA3AF)),
+
   unknown('Unknown', Icons.help_outline, Color(0xFF9CA3AF));
 
   final String displayName;

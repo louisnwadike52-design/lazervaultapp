@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PayTaggedInvoiceDialog extends StatefulWidget {
   final TaggedInvoice invoice;
@@ -234,11 +235,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
             builder: (context, state) {
               if (state is AccountCardsSummaryLoading) {
                 return Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      const Color(0xFF3B82F6),
-                    ),
-                  ),
+                  child: LazerVaultLoader.small(),
                 );
               }
 
@@ -493,15 +490,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
                 disabledBackgroundColor: const Color(0xFF374151),
               ),
               child: _isProcessing
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.h,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Pay Now',
                       style: GoogleFonts.inter(

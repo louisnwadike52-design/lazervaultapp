@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart' as currency_forma
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockFundAutoSaveScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -276,10 +277,7 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: _isSubmitting
-                        ? SizedBox(
-                            width: 24.w, height: 24.h,
-                            child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             _isEditing ? 'Update Auto-Save' : 'Start Auto-Save',
                             style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),

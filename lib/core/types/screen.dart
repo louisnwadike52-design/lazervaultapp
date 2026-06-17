@@ -7,7 +7,6 @@ import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
@@ -175,10 +174,7 @@ class Screen {
           child: const MoveMoneyDashboardScreen(),
         );
       case ScreenName.lifeStyle:
-        return BlocProvider(
-          create: (_) => serviceLocator<LifestyleCubit>()..loadCategories(),
-          child: const NewLifestyleScreen(),
-        );
+        return const NewLifestyleScreen();
       case ScreenName.crowdfund:
         return BlocProvider(
           create: (context) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),

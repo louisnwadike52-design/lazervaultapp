@@ -8,6 +8,7 @@ import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/education_reminder.dart';
 import '../cubit/education_reminder_cubit.dart';
 import '../cubit/education_reminder_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Education exam-date reminders. Reuses the shared BillReminderItem so
 /// the row matches airtime / data / cable / internet reminder screens.
@@ -81,10 +82,7 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen> {
           if (state is EducationReminderLoading ||
               state is EducationReminderInitial) {
             return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(_accent),
-              ),
+              child: LazerVaultLoader.tiny(),
             );
           }
           if (state is EducationReminderError) {

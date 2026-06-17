@@ -105,6 +105,13 @@ extension TransactionServiceTypeMapper on TransactionServiceType {
         return null;
       case TransactionServiceType.unknown:
         return null;
+      // Cases without a 1:1 AppService landing — added so the switch
+      // stays exhaustive as the enum grows (data, internet, education,
+      // batchTransfer, splitBill, idPay, contactlessPay, etc). Returning
+      // null routes the caller into a generic "no direct service page"
+      // path.
+      default:
+        return null;
     }
   }
 

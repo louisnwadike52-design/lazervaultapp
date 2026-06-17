@@ -12,6 +12,7 @@ import '../../data/datasources/water_beneficiary_remote_datasource.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../../services/water_bill_pdf_service.dart';
 import '../widgets/save_water_beneficiary_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class WaterBillPaymentReceiptScreen extends StatefulWidget {
   const WaterBillPaymentReceiptScreen({super.key});
@@ -222,7 +223,7 @@ class _WaterBillPaymentReceiptScreenState
       return const Scaffold(
         backgroundColor: Color(0xFF0A0A0A),
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+          child: LazerVaultLoader.small(),
         ),
       );
     }
@@ -616,15 +617,7 @@ class _WaterBillPaymentReceiptScreenState
                 child: OutlinedButton.icon(
                   onPressed: _isSharing ? null : () => _shareReceipt(payment),
               icon: _isSharing
-                  ? SizedBox(
-                      width: 18.sp,
-                      height: 18.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Icon(Icons.share, size: 18.sp, color: Colors.white),
               label: Text(
                 'Share Receipt',
@@ -649,15 +642,7 @@ class _WaterBillPaymentReceiptScreenState
               onPressed:
                   _isDownloading ? null : () => _downloadPdf(payment),
               icon: _isDownloading
-                  ? SizedBox(
-                      width: 18.sp,
-                      height: 18.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Icon(Icons.download, size: 18.sp, color: Colors.white),
               label: Text(
                 'Download PDF',

@@ -10,6 +10,7 @@ import '../widgets/how_it_works_card.dart';
 import '../widgets/referral_stats_card.dart';
 import '../widgets/leaderboard_list.dart';
 import '../widgets/recent_referrals_list.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ReferralDashboardScreen extends StatefulWidget {
   const ReferralDashboardScreen({super.key});
@@ -103,7 +104,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(color: Color(0xFF3B82F6)),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading referral data...',

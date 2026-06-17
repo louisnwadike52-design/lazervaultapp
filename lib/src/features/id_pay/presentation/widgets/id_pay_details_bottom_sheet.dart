@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../services/id_pay_pdf_service.dart';
 import 'id_pay_status_badge.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayDetailsBottomSheet extends StatefulWidget {
   final IDPayEntity idPay;
@@ -289,14 +290,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                     ),
                   ),
                   icon: _isDownloadingInvoice
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF60A5FA),
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Icon(Icons.description_outlined,
                           size: 18.sp, color: const Color(0xFF60A5FA)),
                   label: Text(

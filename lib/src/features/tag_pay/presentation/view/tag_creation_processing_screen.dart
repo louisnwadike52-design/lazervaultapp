@@ -7,6 +7,7 @@ import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/user_tag_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagCreationProcessingScreen extends StatefulWidget {
   const TagCreationProcessingScreen({super.key});
@@ -279,13 +280,6 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
   }
 
   Widget _buildLoadingIndicator() {
-    return SizedBox(
-      width: 40.w,
-      height: 40.w,
-      child: CircularProgressIndicator(
-        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-        strokeWidth: 3,
-      ),
-    );
+    return LazerVaultLoader.medium();
   }
 }

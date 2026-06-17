@@ -7,6 +7,7 @@ import '../../domain/entities/cable_tv_payment_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
 import '../widgets/cable_tv_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Full cable TV payment history. Uses CableTVCubit.loadPaymentHistory.
 /// Scope toggle: All / Subscriptions.
@@ -255,10 +256,7 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
   }
 
   Widget _buildLoading() => Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(_primary),
-        ),
+        child: LazerVaultLoader.tiny(),
       );
 
   Widget _buildEmpty() {

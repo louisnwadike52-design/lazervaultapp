@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/expense_category_helpers.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import '../../../../../core/utils/currency_formatter.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Budget Detail Screen
 class BudgetDetailScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
     if (budgetId == null) {
       return const Scaffold(
         backgroundColor: Color(0xFF0A0A0A),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF10B981))),
+        body: Center(child: LazerVaultLoader.small()),
       );
     }
 
@@ -137,7 +138,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(color: Color(0xFF10B981)),
+                  LazerVaultLoader.small(),
                   SizedBox(height: 16.h),
                   Text(
                     state.message ?? 'Loading...',
@@ -185,7 +186,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
           }
 
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+            child: LazerVaultLoader.small(),
           );
         },
       ),
@@ -241,22 +242,7 @@ class _BudgetDetailView extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  SizedBox(
-                    height: 160.h,
-                    width: 160.h,
-                    child: CircularProgressIndicator(
-                      value: percentage / 100,
-                      strokeWidth: 12,
-                      backgroundColor: const Color(0xFF1F1F1F),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        percentage >= 90
-                            ? const Color(0xFFEF4444)
-                            : percentage >= 70
-                                ? const Color(0xFFFB923C)
-                                : const Color(0xFF10B981),
-                      ),
-                    ),
-                  ),
+                  LazerVaultLoader(size: 160),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

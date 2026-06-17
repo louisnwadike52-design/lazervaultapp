@@ -20,6 +20,7 @@ import '../../../stocks/presentation/widgets/price_overlay_indicators_painter.da
 import '../../../stocks/presentation/widgets/professional_candlestick_painter.dart';
 import '../../../stocks/presentation/widgets/technical_indicators_bottom_sheet.dart';
 import 'package:flutter/services.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Available indicators surfaced in the bottom-sheet picker. Order matters —
 // it's the visual order on the bottom-sheet list, kept consistent across
@@ -1188,12 +1189,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 40.sp,
-              height: 40.sp,
-              child: const CircularProgressIndicator(
-                  strokeWidth: 2.5, color: Color(0xFF3B82F6)),
-            ),
+            LazerVaultLoader.medium(),
             SizedBox(height: 16.h),
             Text(
               'Loading chart…',

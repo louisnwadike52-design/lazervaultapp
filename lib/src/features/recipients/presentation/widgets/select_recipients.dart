@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +11,9 @@ import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -31,6 +35,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversa
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
+import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -45,6 +50,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SelectRecipients extends StatefulWidget {
   const SelectRecipients({super.key});
@@ -121,6 +127,48 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     }).join(' ');
   }
 
+  StreamSubscription<AccountDetailsEntity?>? _accountSubscription;
+  StreamSubscription<String>? _localeSubscription;
+
+  /// Effective country + currency for the recipient list. Composed from the
+  /// dashboard's two centralized state managers:
+  ///   - country  ← LocaleManager.currentCountry      (where the user is)
+  ///   - currency ← active account's currency if set, else LocaleManager
+  ///                .currentCurrency                  (what they can send in)
+  ///
+  /// The active account "wins" for currency because a user on en-NG could have
+  /// a USD account selected — we want to list recipients reachable in USD, not
+  /// the locale-default NGN. Country stays locale-driven because the active
+  /// account entity doesn't carry one.
+  ({String countryCode, String currency}) _activeFilter() {
+    final lm = serviceLocator<LocaleManager>();
+    final am = serviceLocator<AccountManager>();
+    final acctCurrency = am.activeAccountDetails?.currency;
+    return (
+      countryCode: lm.currentCountry,
+      currency: (acctCurrency != null && acctCurrency.isNotEmpty)
+          ? acctCurrency
+          : lm.currentCurrency,
+    );
+  }
+
+  /// Refresh the recipient list using the latest active filter. No-op when
+  /// the user isn't authenticated yet. Used by the AccountManager + LocaleManager
+  /// stream subscriptions below so switching account or locale on the dashboard
+  /// re-loads the list automatically.
+  void _refreshRecipientsFromActiveFilter() {
+    if (!mounted) return;
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken = _getAccessTokenFromState(authState);
+    if (accessToken == null) return;
+    final f = _activeFilter();
+    context.read<RecipientCubit>().getRecipients(
+      accessToken: accessToken,
+      countryCode: f.countryCode,
+      currency: f.currency,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -128,15 +176,25 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     final authState = context.read<AuthenticationCubit>().state;
     final accessToken = _getAccessTokenFromState(authState);
     if (accessToken != null) {
-      // If already authenticated, fetch recipients immediately with locale filters
-      final localeManager = serviceLocator<LocaleManager>();
+      // If already authenticated, fetch recipients immediately scoped to the
+      // dashboard's active account + locale.
+      final f = _activeFilter();
       context.read<RecipientCubit>().getRecipients(
         accessToken: accessToken,
-        countryCode: localeManager.currentCountry,
-        currency: localeManager.currentCurrency,
+        countryCode: f.countryCode,
+        currency: f.currency,
       );
     }
     // The listener below will handle cases where auth happens later.
+
+    // Re-fetch whenever the dashboard switches account or locale — keeps this
+    // screen in lockstep without requiring a pop-and-reopen.
+    _accountSubscription = serviceLocator<AccountManager>()
+        .accountDetailsStream
+        .listen((_) => _refreshRecipientsFromActiveFilter());
+    _localeSubscription = serviceLocator<LocaleManager>()
+        .localeStream
+        .listen((_) => _refreshRecipientsFromActiveFilter());
 
     // Add scroll listener for pagination
     _recipientsScrollController.addListener(_onRecipientsScroll);
@@ -147,6 +205,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   @override
   void dispose() {
+    _accountSubscription?.cancel();
+    _localeSubscription?.cancel();
     _recipientsScrollController.dispose();
     _recurringTransferCubit?.close();
     super.dispose();
@@ -181,9 +241,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     final accessToken = _getAccessTokenFromState(authState);
     if (accessToken == null) return;
 
-    final localeManager = serviceLocator<LocaleManager>();
-    final countryCode = localeManager.currentCountry;
-    final currency = localeManager.currentCurrency;
+    final f = _activeFilter();
+    final countryCode = f.countryCode;
+    final currency = f.currency;
 
     // Apply filter based on selected type.
     //
@@ -234,11 +294,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           // Trigger fetch if needed (handles auth happening while screen is visible)
           final recipientState = context.read<RecipientCubit>().state;
           if (recipientState is RecipientInitial) {
-            final localeManager = serviceLocator<LocaleManager>();
+            final f = _activeFilter();
             context.read<RecipientCubit>().getRecipients(
               accessToken: accessToken,
-              countryCode: localeManager.currentCountry,
-              currency: localeManager.currentCurrency,
+              countryCode: f.countryCode,
+              currency: f.currency,
             );
           }
         }
@@ -459,35 +519,55 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             ),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildQuickAction(
-                              icon: Icons.qr_code_scanner_outlined,
-                              label: 'Scan QR',
-                              onTap: _launchQRScanner,
-                            ),
-                            _buildQuickAction(
-                              icon: Icons.person_add_outlined,
-                              label: 'Add User',
-                              onTap: () => Get.toNamed(AppRoutes.addRecipient),
-                            ),
-                            _buildQuickAction(
-                              icon: Icons.document_scanner_outlined,
-                              label: 'Scan Bank Details',
-                              onTap: _launchBankDetailsScan,
-                            ),
-                            _buildQuickAction(
-                              icon: Icons.group_outlined,
-                              label: 'Split Bills',
-                              onTap: _launchSplitBills,
-                            ),
-                            _buildQuickAction(
-                              icon: Icons.history,
-                              label: 'History',
-                              onTap: _showTransferHistory,
-                            ),
-                          ],
+                        child: SingleChildScrollView(
+                          // Horizontal scroll — five entries fit on most
+                          // devices but stay scrollable so labels never
+                          // crush on narrower screens. AI Scan & Pay
+                          // intentionally lives on the dashboard service
+                          // grid, NOT here — this strip is recipient-
+                          // selection actions only.
+                          //
+                          // Horizontal padding matches the search bar
+                          // above (`horizontal: 16.w`) and the filter-
+                          // chip block below (`all(16.w)`) so the
+                          // first/last tile aligns with the "All…"
+                          // chip + the search field's left edge + the
+                          // appbar arrow's right edge.
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          child: Row(
+                            children: [
+                              _buildQuickAction(
+                                icon: Icons.qr_code_scanner_outlined,
+                                label: 'Scan QR',
+                                onTap: _launchQRScanner,
+                              ),
+                              SizedBox(width: 18.w),
+                              _buildQuickAction(
+                                icon: Icons.person_add_outlined,
+                                label: 'Add User',
+                                onTap: () => Get.toNamed(AppRoutes.addRecipient),
+                              ),
+                              SizedBox(width: 18.w),
+                              _buildQuickAction(
+                                icon: Icons.document_scanner_outlined,
+                                label: 'Scan Bank Details',
+                                onTap: _launchBankDetailsScan,
+                              ),
+                              SizedBox(width: 18.w),
+                              _buildQuickAction(
+                                icon: Icons.group_outlined,
+                                label: 'Split Bills',
+                                onTap: _launchSplitBills,
+                              ),
+                              SizedBox(width: 18.w),
+                              _buildQuickAction(
+                                icon: Icons.history,
+                                label: 'History',
+                                onTap: _showTransferHistory,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
 
@@ -516,7 +596,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
+                LazerVaultLoader.small(),
                 SizedBox(height: 16),
                 Text("Waiting for authentication..."),
               ],
@@ -557,11 +637,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         onRefresh: () async {
           final authState = context.read<AuthenticationCubit>().state;
           if (authState is AuthenticationSuccess) {
-            final lm = serviceLocator<LocaleManager>();
+            final f = _activeFilter();
             await context.read<RecipientCubit>().getRecipients(
               accessToken: authState.profile.session.accessToken,
-              countryCode: lm.currentCountry,
-              currency: lm.currentCurrency,
+              countryCode: f.countryCode,
+              currency: f.currency,
             );
           }
         },
@@ -582,16 +662,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                       return Padding(
                         padding: EdgeInsets.all(16.w),
                         child: Center(
-                          child: SizedBox(
-                            width: 24.w,
-                            height: 24.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color.fromARGB(255, 78, 3, 208),
-                              ),
-                            ),
-                          ),
+                          child: LazerVaultLoader.small(),
                         ),
                       );
                     }
@@ -628,11 +699,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           onRefresh: () async {
             final authState = context.read<AuthenticationCubit>().state;
             if (authState is AuthenticationSuccess) {
-              final lm = serviceLocator<LocaleManager>();
+              final f = _activeFilter();
               await context.read<RecipientCubit>().getRecipients(
                 accessToken: authState.profile.session.accessToken,
-                countryCode: lm.currentCountry,
-                currency: lm.currentCurrency,
+                countryCode: f.countryCode,
+                currency: f.currency,
               );
             }
           },
@@ -680,8 +751,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           onRefresh: () async {
             final authState = context.read<AuthenticationCubit>().state;
             if (authState is AuthenticationSuccess) {
+              final f = _activeFilter();
               await context.read<RecipientCubit>().getRecipients(
                 accessToken: authState.profile.session.accessToken,
+                countryCode: f.countryCode,
+                currency: f.currency,
               );
             }
           },
@@ -757,11 +831,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         onRefresh: () async {
           final authState = context.read<AuthenticationCubit>().state;
           if (authState is AuthenticationSuccess) {
-            final lm = serviceLocator<LocaleManager>();
+            final f = _activeFilter();
             await context.read<RecipientCubit>().getRecipients(
               accessToken: authState.profile.session.accessToken,
-              countryCode: lm.currentCountry,
-              currency: lm.currentCurrency,
+              countryCode: f.countryCode,
+              currency: f.currency,
             );
           }
         },
@@ -1659,11 +1733,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.h),
       alignment: Alignment.center,
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(
-          Color.fromARGB(255, 78, 3, 208),
-        ),
-      ),
+      child: LazerVaultLoader.small(),
     );
   }
 
@@ -1808,6 +1878,14 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   /// Step 1: Show bank selection for contact
   void _showContactBankSelectionSheet(DeviceContact contact) {
+    // Hoist the controller + query OUTSIDE StatefulBuilder. Previously
+    // they were declared inside StatefulBuilder.builder, so every
+    // setSheetState rebuilt the text field with a fresh empty controller
+    // and reset searchQuery — the typed character was wiped on the very
+    // next frame, so the search appeared to do nothing.
+    final searchController = TextEditingController();
+    String searchQuery = '';
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1815,9 +1893,6 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       builder: (bottomSheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            final searchController = TextEditingController();
-            String searchQuery = '';
-
             return Container(
               height: MediaQuery.of(context).size.height * 0.80,
               decoration: BoxDecoration(
@@ -1958,9 +2033,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircularProgressIndicator(
-                                  color: Color.fromARGB(255, 78, 3, 208),
-                                ),
+                                LazerVaultLoader.small(),
                                 SizedBox(height: 16.h),
                                 Text(
                                   'Loading banks...',
@@ -2315,14 +2388,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    SizedBox(
-                                      width: 20.w,
-                                      height: 20.h,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
+                                    LazerVaultLoader.small(),
                                     SizedBox(width: 12.w),
                                     Text(
                                       'Verifying...',
@@ -2804,41 +2870,206 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     }
   }
 
+  /// Source picker for the bank-details scan flow. Returns the chosen
+  /// [ImageSource] or null when the sheet is dismissed without choosing.
+  ///
+  /// Two routes:
+  ///   • Camera  — `ImageSource.camera`  (take a photo right now)
+  ///   • Gallery — `ImageSource.gallery` (pick an existing image)
+  ///
+  /// Same downstream flow for both: OCR via /scan/bank-details → smart
+  /// result sheet → Paystack name verification → recipient + prefill
+  /// route into send-funds. Picking from gallery is the canonical path
+  /// when the user already saved a screenshot of the recipient's
+  /// account details.
+  Future<ImageSource?> _showScanSourcePicker() async {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: false,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) {
+        Widget option({
+          required IconData icon,
+          required String label,
+          required String hint,
+          required ImageSource value,
+        }) {
+          return InkWell(
+            onTap: () => Navigator.of(sheetCtx).pop(value),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: const Color.fromARGB(255, 78, 3, 208),
+                      size: 22.sp,
+                    ),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          hint,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.white.withValues(alpha: 0.4),
+                    size: 20.sp,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(0, 12.h, 0, 18.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Scan Bank Details',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Capture or import an image of the account '
+                        'details. We\'ll extract the recipient and (when '
+                        'the slip carries one) the amount.',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12.5.sp,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                option(
+                  icon: Icons.photo_camera_outlined,
+                  label: 'Take a Photo',
+                  hint: 'Use your camera to scan now',
+                  value: ImageSource.camera,
+                ),
+                Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+                option(
+                  icon: Icons.photo_library_outlined,
+                  label: 'Choose from Gallery',
+                  hint: 'Pick a saved screenshot or statement',
+                  value: ImageSource.gallery,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _launchBankDetailsScan() async {
     // Get auth cubit before any async operations
     final authCubit = context.read<AuthenticationCubit>();
 
-    // Step 1: Capture image from camera
+    // Step 1: Ask the user how they want to provide the image — camera
+    // (take a photo now) OR gallery (pick an existing screenshot / saved
+    // statement). Both feed into the same OCR + verify + route chain
+    // below. Returning null = user dismissed the picker sheet.
+    final source = await _showScanSourcePicker();
+    if (source == null) return;
+    if (!mounted) return;
+
+    // Step 2: Acquire the image from the chosen source. Same picker
+    // call shape (max 2048×2048, 85% quality) for both paths so the
+    // OCR backend sees consistent inputs. Permission failures show
+    // a source-appropriate error sheet ("Camera Permission Required"
+    // vs "Photo Access Required") and return early.
     final picker = ImagePicker();
     final XFile? image;
     try {
       image = await picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         maxWidth: 2048,
         maxHeight: 2048,
         imageQuality: 85,
       );
     } on PlatformException catch (e) {
-      // 2.1: Camera permission denied or other platform error
       if (!mounted) return;
       final isDenied = e.code == 'camera_access_denied' ||
           e.code == 'photo_access_denied' ||
           (e.message?.toLowerCase().contains('permission') ?? false);
       if (isDenied) {
         _showScanErrorSheet(
-          'Camera Permission Required',
-          'Please enable camera access in your device settings to scan bank details.',
+          source == ImageSource.camera
+              ? 'Camera Permission Required'
+              : 'Photo Access Required',
+          source == ImageSource.camera
+              ? 'Please enable camera access in your device settings to scan bank details.'
+              : 'Please enable photo library access in your device settings to pick an image.',
         );
       } else {
         _showScanErrorSheet(
-          'Camera Error',
-          'Could not open the camera. Please try again.',
+          source == ImageSource.camera ? 'Camera Error' : 'Gallery Error',
+          source == ImageSource.camera
+              ? 'Could not open the camera. Please try again.'
+              : 'Could not open the gallery. Please try again.',
         );
       }
       return;
     }
 
-    if (image == null) return; // User cancelled the camera
+    if (image == null) return; // User cancelled the picker
     if (!mounted) return;
 
     // Step 2: Show processing sheet
@@ -2857,10 +3088,14 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           ? authState.profile.user.id
           : '';
 
-      final gatewayUrl = dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011';
+      final gatewayUrl = dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat';
+      // BankScanDataSource now goes through storage-service first (via
+      // BankScanUploadService) and posts only the resulting public URL
+      // to /scan/bank-details — see datasource for the 3-step pipeline.
       dataSource = BankScanDataSource(
         baseUrl: gatewayUrl,
         secureStorage: GetIt.I<SecureStorageService>(),
+        uploadService: GetIt.I<BankScanUploadService>(),
       );
 
       final result = await dataSource.scanBankDetails(
@@ -2897,7 +3132,28 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       // 2.3: Mounted check after showing bottom sheet
       if (action == null || !mounted) return;
 
-      // Route based on action type
+      // Route based on action type. When the OCR captured an amount or
+      // memo (invoice / payment-slip flow), pass them through the Map
+      // argument shape the InitiateSendFunds widget recognises —
+      // `prefillAmount` (minor units) drives the amount controller's
+      // initial value, `prefillDescription` populates the reference
+      // field. The route handler unwraps both into the screen args.
+      Map<String, dynamic> buildSendFundsArgs(RecipientModel recipient) {
+        final args = <String, dynamic>{'recipient': recipient};
+        if (action.amountMinor != null && action.amountMinor! > 0) {
+          args['prefillAmount'] = action.amountMinor;
+        }
+        if (action.description != null && action.description!.isNotEmpty) {
+          args['prefillDescription'] = action.description;
+        }
+        // If we have both recipient and amount, auto-show the
+        // confirmation sheet so the user only has to tap "Send".
+        if (args.containsKey('prefillAmount')) {
+          args['autoShowConfirm'] = true;
+        }
+        return args;
+      }
+
       switch (action.type) {
         case ScanActionType.bankTransfer:
           final recipient = RecipientModel(
@@ -2910,10 +3166,17 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             isSaved: false,
             countryCode: _currentCountry,
           );
-          Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+          Get.toNamed(
+            AppRoutes.initiateSendFunds,
+            arguments: buildSendFundsArgs(recipient),
+          );
         case ScanActionType.internalTransfer:
           if (action.username != null && action.username!.isNotEmpty) {
-            _handleSmartScanUserSearch(action.username!);
+            _handleSmartScanUserSearch(
+              action.username!,
+              prefillAmountMinor: action.amountMinor,
+              prefillDescription: action.description,
+            );
           }
         case ScanActionType.phoneTransfer:
           final recipient = RecipientModel(
@@ -2927,7 +3190,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             phoneNumber: action.phoneNumber,
             countryCode: _currentCountry,
           );
-          Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+          Get.toNamed(
+            AppRoutes.initiateSendFunds,
+            arguments: buildSendFundsArgs(recipient),
+          );
         case ScanActionType.retryCapture:
           _launchBankDetailsScan();
       }
@@ -2947,7 +3213,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     }
   }
 
-  void _handleSmartScanUserSearch(String username) {
+  void _handleSmartScanUserSearch(
+    String username, {
+    int? prefillAmountMinor,
+    String? prefillDescription,
+  }) {
     final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
     final recipient = RecipientModel(
       id: '',
@@ -2961,7 +3231,17 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       currency: currency,
       type: 'internal',
     );
-    Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+    // Mirror the Map-argument shape so the prefill from the OCR
+    // scan survives the navigation hop.
+    final args = <String, dynamic>{'recipient': recipient};
+    if (prefillAmountMinor != null && prefillAmountMinor > 0) {
+      args['prefillAmount'] = prefillAmountMinor;
+      args['autoShowConfirm'] = true;
+    }
+    if (prefillDescription != null && prefillDescription.isNotEmpty) {
+      args['prefillDescription'] = prefillDescription;
+    }
+    Get.toNamed(AppRoutes.initiateSendFunds, arguments: args);
   }
 
   void _showQrVerificationLoadingSheet() {
@@ -2992,14 +3272,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: SizedBox(
-                  width: 36.w,
-                  height: 36.h,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                  ),
-                ),
+                child: LazerVaultLoader(size: 36),
               ),
             ),
             SizedBox(height: 24.h),
@@ -3166,15 +3439,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                 color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Center(
-                child: SizedBox(
-                  width: 36.w,
-                  height: 36.h,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-                  ),
-                ),
+              // Branded loader replaces the bare CircularProgressIndicator
+              // so the user sees the company logo while the OCR call is
+              // in flight. Same 36px slot — pixel-stable.
+              child: const Center(
+                child: LazerVaultLoader(size: 36),
               ),
             ),
             SizedBox(height: 24.h),
@@ -3541,11 +3810,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromARGB(255, 78, 3, 208),
-            ),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading recipients...',

@@ -271,6 +271,7 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     try {
       final member = await remoteDataSource.allocateFunds(
@@ -278,6 +279,7 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
         memberId: memberId,
         amount: amount,
         description: description,
+        idempotencyKey: idempotencyKey,
       );
       return Right(member.toDomain());
     } on ServerException catch (e) {
@@ -368,11 +370,28 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
   }
 
   @override
+  Future<Either<Failure, double>> leaveFamilyAccount({
+    required String familyId,
+  }) async {
+    try {
+      final returned = await remoteDataSource.leaveFamilyAccount(familyId: familyId);
+      return Right(returned);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
   Future<Either<Failure, FamilyAccount>> processMemberContribution({
     required String familyId,
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     try {
       final account = await remoteDataSource.processMemberContribution(
@@ -380,6 +399,7 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
         memberId: memberId,
         amount: amount,
         description: description,
+        idempotencyKey: idempotencyKey,
       );
       return Right(account.toDomain());
     } on ServerException catch (e) {

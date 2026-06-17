@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Enhanced PIN entry dialog with comprehensive edge case handling.
 ///
@@ -50,7 +51,7 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
   static const Duration _debounceDelay = Duration(milliseconds: 500);
 
   String get _transferGatewayUrl {
-    return dotenv.env['TRANSFER_GATEWAY_URL'] ?? 'http://localhost:8084';
+    return dotenv.env['TRANSFER_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1';
   }
 
   @override
@@ -399,9 +400,7 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
                   padding: EdgeInsets.symmetric(vertical: 20.h),
                   child: Column(
                     children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                      ),
+                      LazerVaultLoader.small(),
                       SizedBox(height: 16.h),
                       Text(
                         'Processing...',

@@ -11,6 +11,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/my_donation_detail_bottom_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// My Donations — view-all page for the user's crowdfund donations.
 ///
@@ -184,7 +185,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
         builder: (context, state) {
           if (state is CrowdfundLoading && _lastSeen.isEmpty) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
+                child: LazerVaultLoader.small());
           }
           if (state is UserDonationsLoaded) {
             // Trigger a back-fill the first time we see this set, OR
@@ -312,14 +313,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         child: Center(
                           child: state.isLoadingMore
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Color(0xFF4E03D0),
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                              ? LazerVaultLoader.small()
                               : const SizedBox.shrink(),
                         ),
                       );

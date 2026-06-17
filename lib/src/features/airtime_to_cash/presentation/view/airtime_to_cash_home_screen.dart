@@ -7,6 +7,7 @@ import '../../domain/entities/airtime_to_cash_conversion.dart';
 import '../../domain/entities/network_rate.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AirtimeToCashHomeScreen extends StatefulWidget {
   const AirtimeToCashHomeScreen({super.key});
@@ -496,10 +497,7 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            strokeWidth: 3,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 24.h),
           Text(
             'Loading conversion rates...',

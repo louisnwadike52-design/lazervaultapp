@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_export_helper.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ExportBottomSheet extends StatefulWidget {
   final Future<void> Function(DateTime startDate, DateTime endDate, ExportFormat format) onExport;
@@ -195,14 +196,7 @@ class _ExportBottomSheetState extends State<ExportBottomSheet> {
                 ),
               ),
               child: _isExporting
-                  ? SizedBox(
-                      width: 22.w,
-                      height: 22.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 22)
                   : Text(
                       'Export',
                       style: TextStyle(

@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/generated/crypto.pbgrpc.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ReceiveCryptoScreen (PR7) — pick an asset, pick its network, ensure the
 // deposit address exists, and render it for the user to copy / share.
@@ -142,7 +143,7 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
       ),
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: LazerVaultLoader.small())
             : ListView(
                 padding: EdgeInsets.all(16.w),
                 children: [
@@ -220,7 +221,7 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
           if (_generating)
             Padding(
               padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: const Center(child: CircularProgressIndicator()),
+              child: const Center(child: LazerVaultLoader.small()),
             )
           else if (_address.isEmpty)
             Padding(

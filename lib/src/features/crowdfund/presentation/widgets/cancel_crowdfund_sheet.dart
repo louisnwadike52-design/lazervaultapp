@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Cancel-with-refund confirmation sheet.
 ///
@@ -272,14 +273,7 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
                         const Color(0xFFEF4444).withValues(alpha: 0.4),
                   ),
                   child: _isSubmitting
-                      ? SizedBox(
-                          width: 18.w,
-                          height: 18.w,
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? LazerVaultLoader(size: 18)
                       : Text(
                           'Cancel & refund',
                           style: GoogleFonts.inter(

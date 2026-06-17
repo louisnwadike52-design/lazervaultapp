@@ -1,15 +1,36 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
+/// Settings → Security → Transaction PIN.
+///
+/// One screen that switches between SET and UPDATE flows based on whether
+/// the user already has a PIN. No OTP step — this is a direct
+/// authenticated keypad flow that talks to auth-service's
+/// `CreateTransactionPin` / `ChangeTransactionPin` RPCs.
+///
+/// Flow states (driven by `_stage`):
+///
+///   SET (no PIN yet):
+///     1. enterNew    — enter the new 4-digit PIN
+///     2. confirmNew  — re-enter to confirm
+///     3. success     — auto-dismisses back to caller
+///
+///   UPDATE (has PIN):
+///     1. enterCurrent — enter the existing PIN
+///     2. enterNew     — enter the new PIN
+///     3. confirmNew   — re-enter to confirm
+///     4. success      — auto-dismisses back to caller
+///
+/// All validation errors render inline under the keypad — never as a
+/// snackbar — so the user keeps context without losing the PIN row.
 class PinManagementScreen extends StatefulWidget {
   const PinManagementScreen({super.key});
 
@@ -17,753 +38,731 @@ class PinManagementScreen extends StatefulWidget {
   State<PinManagementScreen> createState() => _PinManagementScreenState();
 }
 
+enum _PinStage {
+  loading,
+  enterCurrent,
+  enterNew,
+  confirmNew,
+  submitting,
+  success,
+}
+
 class _PinManagementScreenState extends State<PinManagementScreen> {
-  static const Color _purpleAccent = Color(0xFF4E03D0);
   static const int _pinLength = 4;
-  static const int _otpLength = 6;
+  static const Color _bg = Color(0xFF0A0A0A);
+  static const Color _card = Color(0xFF1F1F1F);
+  static const Color _divider = Color(0xFF2D2D2D);
+  static const Color _textPrimary = Colors.white;
+  static const Color _textSecondary = Color(0xFF9CA3AF);
+  static const Color _accent = Color(0xFF3B82F6);
+  static const Color _successGreen = Color(0xFF10B981);
+  static const Color _errorRed = Color(0xFFEF4444);
 
-  late final PinManagementCubit _cubit;
+  late final TransactionPinCubit _cubit;
+  late final ITransactionPinService _pinService;
 
-  int _currentStep = 0;
+  _PinStage _stage = _PinStage.loading;
+  bool _hasExistingPin = false;
 
-  // PIN entry controllers
-  final _currentPinController = TextEditingController();
-  final _newPinController = TextEditingController();
-  final _confirmPinController = TextEditingController();
+  String _currentPin = '';
+  String _newPin = '';
+  String _confirmPin = '';
 
-  // OTP controllers
-  final List<TextEditingController> _otpControllers =
-      List.generate(_otpLength, (_) => TextEditingController());
-  final List<FocusNode> _otpFocusNodes =
-      List.generate(_otpLength, (_) => FocusNode());
-
-  // State
-  bool _hasPin = false;
-  List<OTPChannelInfo> _channels = [];
-  String _recommendedChannel = '';
-  String _selectedChannel = '';
-  String _maskedDestination = '';
-  int _cooldownSeconds = 0;
-  Timer? _cooldownTimer;
-
-  // Stored PIN values for OTP verification step
-  String _storedCurrentPin = '';
-  String _storedNewPin = '';
-  String _storedConfirmPin = '';
+  String? _inlineError;
 
   @override
   void initState() {
     super.initState();
-    _cubit = serviceLocator<PinManagementCubit>();
-    _cubit.initialize();
+    _cubit = serviceLocator<TransactionPinCubit>();
+    _pinService = serviceLocator<ITransactionPinService>();
+    _bootstrap();
   }
 
-  @override
-  void dispose() {
-    _currentPinController.dispose();
-    _newPinController.dispose();
-    _confirmPinController.dispose();
-    for (final c in _otpControllers) {
-      c.dispose();
+  Future<void> _bootstrap() async {
+    try {
+      final hasPin = await _pinService.checkUserHasPin();
+      if (!mounted) return;
+      setState(() {
+        _hasExistingPin = hasPin;
+        _stage = hasPin ? _PinStage.enterCurrent : _PinStage.enterNew;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      // Hard failure to even check status — surface inline and let user retry
+      // via the back button. We default to the SET flow so the user isn't
+      // blocked entirely; if they actually have a PIN, the backend will
+      // reject CreateTransactionPin with AlreadyExists and we'll re-route.
+      setState(() {
+        _hasExistingPin = false;
+        _stage = _PinStage.enterNew;
+        _inlineError = 'Could not check PIN status. You can still set or change your PIN.';
+      });
     }
-    for (final n in _otpFocusNodes) {
-      n.dispose();
-    }
-    _cooldownTimer?.cancel();
-    super.dispose();
   }
 
-  String get _operationType => _hasPin ? 'change' : 'create';
+  // ── Keypad input ─────────────────────────────────────────────────────────
 
-  void _onContinueFromPinEntry() {
-    final newPin = _newPinController.text.trim();
-    final confirmPin = _confirmPinController.text.trim();
-    final currentPin = _currentPinController.text.trim();
+  String get _activeBuffer {
+    switch (_stage) {
+      case _PinStage.enterCurrent:
+        return _currentPin;
+      case _PinStage.enterNew:
+        return _newPin;
+      case _PinStage.confirmNew:
+        return _confirmPin;
+      default:
+        return '';
+    }
+  }
 
-    if (_hasPin && currentPin.length != _pinLength) {
-      _showError('Please enter your current 4-digit PIN.');
-      return;
+  void _setActiveBuffer(String value) {
+    switch (_stage) {
+      case _PinStage.enterCurrent:
+        _currentPin = value;
+        break;
+      case _PinStage.enterNew:
+        _newPin = value;
+        break;
+      case _PinStage.confirmNew:
+        _confirmPin = value;
+        break;
+      default:
+        break;
     }
-    if (newPin.length != _pinLength) {
-      _showError('Please enter a 4-digit PIN.');
-      return;
-    }
-    if (confirmPin.length != _pinLength) {
-      _showError('Please confirm your PIN.');
-      return;
-    }
-    if (newPin != confirmPin) {
-      _showError('PINs do not match. Please try again.');
-      return;
-    }
+  }
 
-    _storedCurrentPin = currentPin;
-    _storedNewPin = newPin;
-    _storedConfirmPin = confirmPin;
+  bool get _isInputStage =>
+      _stage == _PinStage.enterCurrent ||
+      _stage == _PinStage.enterNew ||
+      _stage == _PinStage.confirmNew;
 
+  void _onKey(String d) {
+    if (!_isInputStage) return;
+    if (_activeBuffer.length >= _pinLength) return;
     setState(() {
-      _currentStep = 2;
+      _inlineError = null;
+      _setActiveBuffer(_activeBuffer + d);
+    });
+    if (_activeBuffer.length == _pinLength) {
+      // Slight beat so the user sees the final dot fill before we advance.
+      Future.delayed(const Duration(milliseconds: 180), _advance);
+    }
+  }
+
+  void _onBackspace() {
+    if (!_isInputStage) return;
+    final buf = _activeBuffer;
+    if (buf.isEmpty) {
+      // On empty buffer, allow stepping back through stages so the user can
+      // correct an earlier step without exiting the screen.
+      _stepBack();
+      return;
+    }
+    setState(() {
+      _inlineError = null;
+      _setActiveBuffer(buf.substring(0, buf.length - 1));
     });
   }
 
-  void _onSendCode() {
-    if (_selectedChannel.isEmpty) {
-      _showError('Please select a verification channel.');
-      return;
-    }
-    _cubit.sendOTP(
-      operationType: _operationType,
-      channel: _selectedChannel,
-    );
+  void _stepBack() {
+    setState(() {
+      _inlineError = null;
+      switch (_stage) {
+        case _PinStage.confirmNew:
+          _confirmPin = '';
+          _newPin = '';
+          _stage = _PinStage.enterNew;
+          break;
+        case _PinStage.enterNew:
+          if (_hasExistingPin) {
+            _newPin = '';
+            _currentPin = '';
+            _stage = _PinStage.enterCurrent;
+          }
+          break;
+        default:
+          break;
+      }
+    });
   }
 
-  void _onOtpDigitChanged(int index, String value) {
-    if (value.length == 1 && index < _otpLength - 1) {
-      _otpFocusNodes[index + 1].requestFocus();
-    }
+  // ── Stage progression ────────────────────────────────────────────────────
 
-    // Check if all digits filled
-    final otp = _otpControllers.map((c) => c.text).join();
-    if (otp.length == _otpLength) {
-      _cubit.verifyOTPAndExecute(
-        otpCode: otp,
-        operationType: _operationType,
-        currentPin: _hasPin ? _storedCurrentPin : null,
-        newPin: _storedNewPin,
-        confirmNewPin: _storedConfirmPin,
-      );
+  void _advance() {
+    if (!mounted) return;
+    switch (_stage) {
+      case _PinStage.enterCurrent:
+        setState(() => _stage = _PinStage.enterNew);
+        break;
+      case _PinStage.enterNew:
+        // Light client-side guard: reject obviously weak PINs (all same digit,
+        // sequential like 1234/4321) so the user gets immediate feedback
+        // without a round-trip. The backend also enforces format on its side.
+        final weakness = _weakPinReason(_newPin);
+        if (weakness != null) {
+          setState(() {
+            _inlineError = weakness;
+            _newPin = '';
+          });
+          return;
+        }
+        setState(() => _stage = _PinStage.confirmNew);
+        break;
+      case _PinStage.confirmNew:
+        if (_newPin != _confirmPin) {
+          setState(() {
+            _inlineError = 'PINs don\'t match. Try again.';
+            _confirmPin = '';
+            _newPin = '';
+            _stage = _PinStage.enterNew;
+          });
+          return;
+        }
+        _submit();
+        break;
+      default:
+        break;
     }
   }
 
-  void _onOtpKeyEvent(int index, KeyEvent event) {
-    if (event is KeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.backspace &&
-        _otpControllers[index].text.isEmpty &&
-        index > 0) {
-      _otpControllers[index - 1].clear();
-      _otpFocusNodes[index - 1].requestFocus();
+  String? _weakPinReason(String pin) {
+    if (pin.length != _pinLength) return 'PIN must be $_pinLength digits.';
+    // All same digit (1111, 9999, …)
+    if (pin.split('').toSet().length == 1) {
+      return 'PIN can\'t be all the same digit.';
     }
+    // Strictly ascending (1234, 2345) or strictly descending (9876)
+    bool ascending = true;
+    bool descending = true;
+    for (var i = 1; i < pin.length; i++) {
+      final prev = pin.codeUnitAt(i - 1);
+      final curr = pin.codeUnitAt(i);
+      if (curr != prev + 1) ascending = false;
+      if (curr != prev - 1) descending = false;
+    }
+    if (ascending || descending) {
+      return 'PIN can\'t be a simple sequence.';
+    }
+    return null;
   }
 
-  void _startCooldownTimer(int seconds) {
-    _cooldownSeconds = seconds;
-    _cooldownTimer?.cancel();
-    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
+  Future<void> _submit() async {
+    setState(() {
+      _stage = _PinStage.submitting;
+      _inlineError = null;
+    });
+
+    try {
+      bool ok;
+      if (_hasExistingPin) {
+        ok = await _cubit.changePin(
+          currentPin: _currentPin,
+          newPin: _newPin,
+          confirmNewPin: _confirmPin,
+        );
+      } else {
+        ok = await _cubit.createPin(
+          pin: _newPin,
+          confirmPin: _confirmPin,
+        );
+      }
+
+      if (!mounted) return;
+
+      if (ok) {
+        setState(() => _stage = _PinStage.success);
+        // Brief celebration beat, then auto-return to the previous screen
+        // (Settings) with `true` so callers can refresh state if needed.
+        await Future.delayed(const Duration(milliseconds: 1200));
+        if (!mounted) return;
+        Get.back(result: true);
         return;
       }
-      setState(() {
-        _cooldownSeconds--;
-        if (_cooldownSeconds <= 0) {
-          timer.cancel();
-        }
-      });
-    });
-  }
 
-  void _resendCode() {
-    _clearOtpFields();
-    _cubit.sendOTP(
-      operationType: _operationType,
-      channel: _selectedChannel,
-    );
-  }
-
-  void _clearOtpFields() {
-    for (final c in _otpControllers) {
-      c.clear();
-    }
-    if (_otpFocusNodes.isNotEmpty) {
-      _otpFocusNodes[0].requestFocus();
+      // Cubit returned false — pull the error message off its state if there
+      // is one; otherwise fall back to a generic prompt.
+      final cubitErr = _cubit.state.errorMessage;
+      _handleFailure(cubitErr ?? 'Could not save your PIN. Try again.');
+    } on GrpcError catch (e) {
+      _handleGrpcFailure(e);
+    } catch (e) {
+      _handleFailure(_friendlyErrorMessage(e.toString()));
     }
   }
 
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  void _handleGrpcFailure(GrpcError e) {
+    // Map gRPC status codes to inline UI behaviour. The backend status codes
+    // here come from `classifyPinError` in transaction_pin_server.go.
+    switch (e.code) {
+      case StatusCode.unauthenticated:
+        // Wrong current PIN — restart from the current-PIN stage.
+        setState(() {
+          _currentPin = '';
+          _newPin = '';
+          _confirmPin = '';
+          _stage = _hasExistingPin ? _PinStage.enterCurrent : _PinStage.enterNew;
+          _inlineError = 'Current PIN is incorrect.';
+        });
+        return;
+      case StatusCode.permissionDenied:
+        setState(() {
+          _currentPin = '';
+          _newPin = '';
+          _confirmPin = '';
+          _stage = _PinStage.enterCurrent;
+          _inlineError = 'PIN locked due to too many attempts. Try again later.';
+        });
+        return;
+      case StatusCode.alreadyExists:
+        // The user actually has a PIN — switch to the update flow.
+        setState(() {
+          _hasExistingPin = true;
+          _currentPin = '';
+          _newPin = '';
+          _confirmPin = '';
+          _stage = _PinStage.enterCurrent;
+          _inlineError = 'You already have a PIN. Enter it to change it.';
+        });
+        return;
+      case StatusCode.notFound:
+        // No PIN to change — switch to the create flow.
+        setState(() {
+          _hasExistingPin = false;
+          _currentPin = '';
+          _newPin = '';
+          _confirmPin = '';
+          _stage = _PinStage.enterNew;
+          _inlineError = 'You don\'t have a PIN yet. Set one now.';
+        });
+        return;
+      case StatusCode.invalidArgument:
+        _handleFailure(_friendlyErrorMessage(e.message ?? 'Invalid PIN.'));
+        return;
+      default:
+        _handleFailure(_friendlyErrorMessage(e.message ?? 'Could not save your PIN. Try again.'));
+        return;
+    }
   }
 
-  void _showSuccessAndNavigateBack(String message) {
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        Get.back();
-      }
+  void _handleFailure(String message) {
+    setState(() {
+      _newPin = '';
+      _confirmPin = '';
+      _stage = _hasExistingPin ? _PinStage.enterCurrent : _PinStage.enterNew;
+      // Don't keep an old current PIN in memory on failure restart.
+      _currentPin = '';
+      _inlineError = message;
     });
+  }
+
+  String _friendlyErrorMessage(String raw) {
+    final cleaned = raw.replaceAll('Exception:', '').trim();
+    if (cleaned.isEmpty) return 'Something went wrong. Try again.';
+    return cleaned;
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
+
+  String get _title {
+    switch (_stage) {
+      case _PinStage.enterCurrent:
+        return 'Enter Current PIN';
+      case _PinStage.enterNew:
+        return _hasExistingPin ? 'Enter New PIN' : 'Set Up Transaction PIN';
+      case _PinStage.confirmNew:
+        return 'Confirm New PIN';
+      case _PinStage.success:
+        return _hasExistingPin ? 'PIN Updated' : 'PIN Created';
+      case _PinStage.submitting:
+        return _hasExistingPin ? 'Updating PIN…' : 'Creating PIN…';
+      case _PinStage.loading:
+        return 'Transaction PIN';
+    }
+  }
+
+  String get _subtitle {
+    switch (_stage) {
+      case _PinStage.enterCurrent:
+        return 'Enter your current 4-digit PIN to continue.';
+      case _PinStage.enterNew:
+        return _hasExistingPin
+            ? 'Pick a new 4-digit PIN for your transactions.'
+            : 'Create a 4-digit PIN. You\'ll use it to approve payments and transfers.';
+      case _PinStage.confirmNew:
+        return 'Re-enter your new PIN to confirm.';
+      case _PinStage.success:
+        return _hasExistingPin
+            ? 'Use your new PIN for your next transaction.'
+            : 'You can now make secure payments and transfers.';
+      case _PinStage.submitting:
+        return 'Hang tight…';
+      case _PinStage.loading:
+        return '';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
-      child: BlocConsumer<PinManagementCubit, PinManagementState>(
-        listener: (context, state) {
-          if (state is PinManagementReady) {
-            setState(() {
-              _hasPin = state.hasPin;
-              _channels = state.channels;
-              _recommendedChannel = state.recommendedChannel;
-              _selectedChannel = state.recommendedChannel;
-              _currentStep = 1;
-            });
-          } else if (state is PinManagementOTPSent) {
-            setState(() {
-              _maskedDestination = state.maskedDestination;
-              _currentStep = 3;
-            });
-            _startCooldownTimer(state.cooldownSeconds);
-          } else if (state is PinManagementSuccess) {
-            setState(() {
-              _currentStep = 4;
-            });
-            final msg = state.operationType == 'create'
-                ? 'PIN Created Successfully'
-                : 'PIN Changed Successfully';
-            _showSuccessAndNavigateBack(msg);
-          } else if (state is PinManagementError) {
-            String msg = state.message;
-            if (state.remainingAttempts != null) {
-              msg += ' (${state.remainingAttempts} attempts remaining)';
-            }
-            _showError(msg);
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Get.back(),
-              ),
-              title: Text(
-                'Transaction PIN',
-                style: GoogleFonts.inter(
-                  color: Colors.black,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              centerTitle: true,
+      child: Scaffold(
+        backgroundColor: _bg,
+        appBar: AppBar(
+          backgroundColor: _bg,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: _textPrimary),
+            onPressed: () => Get.back(),
+          ),
+          title: Text(
+            'Transaction PIN',
+            style: GoogleFonts.inter(
+              color: _textPrimary,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w600,
             ),
-            body: SafeArea(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _buildCurrentStep(state),
-              ),
-            ),
-          );
-        },
+          ),
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: _textPrimary),
+        ),
+        body: SafeArea(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: _buildBody(),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildCurrentStep(PinManagementState state) {
-    switch (_currentStep) {
-      case 0:
-        return _buildLoadingStep();
-      case 1:
-        return _buildPinEntryStep();
-      case 2:
-        return _buildChannelSelectionStep(state);
-      case 3:
-        return _buildOtpVerificationStep(state);
-      case 4:
-        return _buildSuccessStep();
+  Widget _buildBody() {
+    switch (_stage) {
+      case _PinStage.loading:
+        return const Center(
+          key: ValueKey('loading'),
+          child: LazerVaultLoader.medium(),
+        );
+      case _PinStage.success:
+        return _buildSuccess();
       default:
-        return _buildLoadingStep();
+        return _buildEntry();
     }
   }
 
-  // ── Step 0: Loading ──
+  Widget _buildEntry() {
+    final submitting = _stage == _PinStage.submitting;
+    final buffer = _activeBuffer;
 
-  Widget _buildLoadingStep() {
-    return const Center(
-      key: ValueKey('loading'),
-      child: CircularProgressIndicator(color: _purpleAccent),
-    );
-  }
-
-  // ── Step 1: PIN Entry ──
-
-  Widget _buildPinEntryStep() {
-    final title = _hasPin
-        ? 'Change Your Transaction PIN'
-        : 'Create Your Transaction PIN';
-    final subtitle = _hasPin
-        ? 'Enter your current and new PIN'
-        : 'Set a 4-digit PIN to secure your transactions';
-
-    return SingleChildScrollView(
-      key: const ValueKey('pin_entry'),
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+    return Padding(
+      key: const ValueKey('entry'),
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            subtitle,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          SizedBox(height: 32.h),
-          if (_hasPin) ...[
-            _buildPinField(
-              label: 'Current PIN',
-              controller: _currentPinController,
-            ),
-            SizedBox(height: 20.h),
-          ],
-          _buildPinField(
-            label: 'New PIN',
-            controller: _newPinController,
-          ),
-          SizedBox(height: 20.h),
-          _buildPinField(
-            label: 'Confirm New PIN',
-            controller: _confirmPinController,
-          ),
-          SizedBox(height: 40.h),
-          SizedBox(
-            width: double.infinity,
-            height: 52.h,
-            child: ElevatedButton(
-              onPressed: _onContinueFromPinEntry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _purpleAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Continue',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPinField({
-    required String label,
-    required TextEditingController controller,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        TextField(
-          controller: controller,
-          obscureText: true,
-          keyboardType: TextInputType.number,
-          maxLength: _pinLength,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          style: GoogleFonts.inter(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 8.w,
-          ),
-          decoration: InputDecoration(
-            counterText: '',
-            hintText: '----',
-            hintStyle: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey.shade300,
-              letterSpacing: 8.w,
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-              vertical: 14.h,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: _purpleAccent, width: 2),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── Step 2: Channel Selection ──
-
-  Widget _buildChannelSelectionStep(PinManagementState state) {
-    final isLoading = state is PinManagementLoading;
-
-    return SingleChildScrollView(
-      key: const ValueKey('channel_selection'),
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Verify Your Identity',
-            style: GoogleFonts.inter(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Choose how to receive your verification code',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey.shade600,
-            ),
-          ),
           SizedBox(height: 24.h),
-          ..._channels.where((ch) => ch.isAvailable).map((channel) {
-            final isSelected = _selectedChannel == channel.type;
-            final isRecommended = _recommendedChannel == channel.type;
-            final icon =
-                channel.type == 'email' ? Icons.email_outlined : Icons.sms_outlined;
-
-            return Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedChannel = channel.type;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? _purpleAccent.withValues(alpha: 0.05)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: isSelected ? _purpleAccent : Colors.grey.shade300,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44.w,
-                        height: 44.w,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? _purpleAccent.withValues(alpha: 0.1)
-                              : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Icon(
-                          icon,
-                          color: isSelected ? _purpleAccent : Colors.grey.shade600,
-                          size: 22.sp,
-                        ),
-                      ),
-                      SizedBox(width: 14.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  channel.type == 'email' ? 'Email' : 'SMS',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                if (isRecommended) ...[
-                                  SizedBox(width: 8.w),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 8.w,
-                                      vertical: 2.h,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _purpleAccent.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4.r),
-                                    ),
-                                    child: Text(
-                                      'Recommended',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: _purpleAccent,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              channel.maskedDestination,
-                              style: GoogleFonts.inter(
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (isSelected)
-                        Icon(
-                          Icons.check_circle,
-                          color: _purpleAccent,
-                          size: 24.sp,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-          SizedBox(height: 32.h),
-          SizedBox(
-            width: double.infinity,
-            height: 52.h,
-            child: ElevatedButton(
-              onPressed: isLoading ? null : _onSendCode,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _purpleAccent,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: _purpleAccent.withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: isLoading
-                  ? SizedBox(
-                      width: 24.w,
-                      height: 24.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.5,
-                      ),
-                    )
-                  : Text(
-                      'Send Code',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Step 3: OTP Verification ──
-
-  Widget _buildOtpVerificationStep(PinManagementState state) {
-    final isLoading = state is PinManagementLoading;
-    final channelIcon =
-        _selectedChannel == 'email' ? Icons.email_outlined : Icons.sms_outlined;
-
-    return SingleChildScrollView(
-      key: const ValueKey('otp_verification'),
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-      child: Column(
-        children: [
-          SizedBox(height: 20.h),
+          // Lock icon to anchor the surface
           Container(
-            width: 72.w,
-            height: 72.w,
+            width: 56.w,
+            height: 56.w,
             decoration: BoxDecoration(
-              color: _purpleAccent.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+              color: _card,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: _divider),
             ),
-            child: Icon(
-              channelIcon,
-              color: _purpleAccent,
-              size: 32.sp,
-            ),
+            child: const Icon(Icons.lock_outline, color: _accent, size: 28),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 18.h),
           Text(
-            'Enter Verification Code',
+            _title,
             style: GoogleFonts.inter(
-              fontSize: 24.sp,
+              color: _textPrimary,
+              fontSize: 22.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'We sent a 6-digit code to $_maskedDestination',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey.shade600,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 32.h),
-          // OTP fields
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_otpLength, (index) {
-              return Container(
-                width: 46.w,
-                height: 52.h,
-                margin: EdgeInsets.symmetric(horizontal: 4.w),
-                child: KeyboardListener(
-                  focusNode: FocusNode(),
-                  onKeyEvent: (event) => _onOtpKeyEvent(index, event),
-                  child: TextField(
-                    controller: _otpControllers[index],
-                    focusNode: _otpFocusNodes[index],
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 1,
-                    enabled: !isLoading,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    style: GoogleFonts.inter(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                        borderSide:
-                            const BorderSide(color: _purpleAccent, width: 2),
-                      ),
-                    ),
-                    onChanged: (value) => _onOtpDigitChanged(index, value),
-                  ),
-                ),
-              );
-            }),
+          SizedBox(height: 8.h),
+          Text(
+            _subtitle,
+            style: GoogleFonts.inter(
+              color: _textSecondary,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w400,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 24.h),
-          if (isLoading)
-            const CircularProgressIndicator(color: _purpleAccent)
-          else if (_cooldownSeconds > 0)
-            Text(
-              'Resend code in ${_cooldownSeconds}s',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.grey.shade600,
-              ),
+          _StageBreadcrumb(
+            stage: _stage,
+            hasExistingPin: _hasExistingPin,
+          ),
+          SizedBox(height: 28.h),
+          _PinDots(
+            length: _pinLength,
+            filled: buffer.length,
+            isError: _inlineError != null,
+          ),
+          SizedBox(height: 14.h),
+          // Inline error region — fixed height so the keypad doesn't jump.
+          SizedBox(
+            height: 36.h,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: _inlineError == null
+                  ? const SizedBox.shrink()
+                  : Row(
+                      key: ValueKey(_inlineError),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: _errorRed, size: 16),
+                        SizedBox(width: 6.w),
+                        Flexible(
+                          child: Text(
+                            _inlineError!,
+                            style: GoogleFonts.inter(
+                              color: _errorRed,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          if (submitting)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: LazerVaultLoader.small(),
             )
           else
-            TextButton(
-              onPressed: _resendCode,
-              child: Text(
-                'Resend Code',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: _purpleAccent,
+            Expanded(
+              child: Center(
+                child: _Keypad(
+                  onKey: _onKey,
+                  onBackspace: _onBackspace,
+                  disabled: submitting,
                 ),
               ),
             ),
+          SizedBox(height: 8.h),
         ],
       ),
     );
   }
 
-  // ── Step 4: Success ──
-
-  Widget _buildSuccessStep() {
-    final message = _hasPin
-        ? 'PIN Changed Successfully'
-        : 'PIN Created Successfully';
-
-    return Center(
+  Widget _buildSuccess() {
+    return Padding(
       key: const ValueKey('success'),
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80.w,
-            height: 80.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE8F5E9),
+            width: 84.w,
+            height: 84.w,
+            decoration: BoxDecoration(
+              color: _successGreen.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.check,
-              color: Colors.green,
-              size: 40.sp,
-            ),
+            child: const Icon(Icons.check_rounded,
+                color: _successGreen, size: 44),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 20.h),
           Text(
-            message,
+            _title,
             style: GoogleFonts.inter(
+              color: _textPrimary,
               fontSize: 22.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
             ),
           ),
+          SizedBox(height: 8.h),
+          Text(
+            _subtitle,
+            style: GoogleFonts.inter(
+              color: _textSecondary,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w400,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _StageBreadcrumb extends StatelessWidget {
+  final _PinStage stage;
+  final bool hasExistingPin;
+
+  const _StageBreadcrumb({required this.stage, required this.hasExistingPin});
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = hasExistingPin
+        ? const [_PinStage.enterCurrent, _PinStage.enterNew, _PinStage.confirmNew]
+        : const [_PinStage.enterNew, _PinStage.confirmNew];
+
+    int currentIdx = steps.indexOf(stage);
+    if (currentIdx == -1) {
+      // Submitting or success — peg to the last step.
+      currentIdx = steps.length - 1;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(steps.length, (i) {
+        final filled = i <= currentIdx;
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          width: 28.w,
+          height: 4.h,
+          decoration: BoxDecoration(
+            color: filled
+                ? const Color(0xFF3B82F6)
+                : const Color(0xFF2D2D2D),
+            borderRadius: BorderRadius.circular(2.r),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _PinDots extends StatelessWidget {
+  final int length;
+  final int filled;
+  final bool isError;
+
+  const _PinDots({
+    required this.length,
+    required this.filled,
+    required this.isError,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(length, (i) {
+        final isOn = i < filled;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          margin: EdgeInsets.symmetric(horizontal: 10.w),
+          width: 16.w,
+          height: 16.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isError
+                ? const Color(0xFFEF4444).withValues(alpha: 0.85)
+                : isOn
+                    ? const Color(0xFF3B82F6)
+                    : Colors.white.withValues(alpha: 0.18),
+            border: Border.all(
+              color: isError
+                  ? const Color(0xFFEF4444)
+                  : Colors.white.withValues(alpha: 0.25),
+              width: 1,
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _Keypad extends StatelessWidget {
+  final void Function(String) onKey;
+  final VoidCallback onBackspace;
+  final bool disabled;
+
+  const _Keypad({
+    required this.onKey,
+    required this.onBackspace,
+    required this.disabled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final keys = const [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+      ['', '0', '⌫'],
+    ];
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 320.w),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: keys.map((row) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 6.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: row.map((k) {
+                if (k.isEmpty) {
+                  return SizedBox(width: 72.w, height: 56.h);
+                }
+                if (k == '⌫') {
+                  return _KeypadKey(
+                    onTap: disabled ? null : onBackspace,
+                    child: const Icon(Icons.backspace_outlined,
+                        color: Colors.white, size: 22),
+                  );
+                }
+                return _KeypadKey(
+                  onTap: disabled ? null : () => onKey(k),
+                  child: Text(
+                    k,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _KeypadKey extends StatelessWidget {
+  final VoidCallback? onTap;
+  final Widget child;
+  const _KeypadKey({required this.onTap, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(40),
+        child: Container(
+          width: 72.w,
+          height: 56.h,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: onTap == null ? 0.04 : 0.08),
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.06),
+              width: 1,
+            ),
+          ),
+          child: child,
+        ),
       ),
     );
   }

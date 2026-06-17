@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/authentication/cubit/face_verification_s
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'dart:developer' as developer;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Facial Registration Camera Widget
 /// Provides real-time camera preview and face capture for registration
@@ -171,7 +172,7 @@ class _FacialRegistrationCameraState extends State<FacialRegistrationCamera>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.white),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
                 _statusMessage,
@@ -330,10 +331,7 @@ class _FacialRegistrationCameraState extends State<FacialRegistrationCamera>
                         ),
                         child: _isProcessing
                             ? Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                ),
+                                child: LazerVaultLoader.small(),
                               )
                             : Icon(
                                 Icons.camera_alt,

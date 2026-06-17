@@ -19,6 +19,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart' show AuthenticationSuccess;
 import '../notifiers/invoice_refresh_notifier.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InvoicePaymentScreen extends StatefulWidget {
   final Invoice? invoice;
@@ -446,14 +447,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             iconColor: Colors.blue,
             title: 'Pay with LazerVault Wallet',
             subtitle: 'Loading wallets...',
-            trailing: SizedBox(
-              width: 16.w,
-              height: 16.h,
-              child: CircularProgressIndicator(
-                color: Color(0xFF3B82F6),
-                strokeWidth: 2,
-              ),
-            ),
+            trailing: LazerVaultLoader.tiny(),
             onTap: null,
             onChangeTap: null,
           );
@@ -985,14 +979,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          width: 20.w,
-                          height: 20.h,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
+                        LazerVaultLoader.small(),
                         SizedBox(width: 12.w),
                         Text(
                           'Processing Payment...',

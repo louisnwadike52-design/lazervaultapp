@@ -20,6 +20,7 @@ import 'create_lock_carousel.dart';
 import 'lock_fund_details_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class LockFundsListScreen extends StatefulWidget {
   const LockFundsListScreen({super.key});
@@ -1015,48 +1016,66 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   }
 
   Widget _buildEmptyLocks() {
-    return Container(
-      padding: EdgeInsets.all(40.w),
-      child: Column(
-        children: [
-          Container(
-            width: 80.w,
-            height: 80.w,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.3),
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                ],
+    return Center(
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 36.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: const Color(0xFF2D2D2D),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF6366F1).withValues(alpha: 0.25),
+                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.25),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(36.r),
               ),
-              borderRadius: BorderRadius.circular(40.r),
+              child: Icon(
+                Icons.lock_outlined,
+                size: 32.sp,
+                color: const Color(0xFF6366F1),
+              ),
             ),
-            child: Icon(
-              Icons.lock_outlined,
-              size: 40.sp,
-              color: const Color(0xFF6366F1),
+            SizedBox(height: 18.h),
+            Text(
+              'No PiggyVault Locks Yet',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            'No PiggyVault Locks Yet',
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+            SizedBox(height: 8.h),
+            Text(
+              'Start growing your savings by creating your first lock — '
+              'tap "Create Lock" below to get started.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: const Color(0xFF9CA3AF),
+                height: 1.5,
+                fontWeight: FontWeight.w400,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Start growing your savings by creating your first lock',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF),
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1154,10 +1173,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(24.r),
                   ),
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-                  ),
+                  child: LazerVaultLoader.tiny(),
                 ),
                 SizedBox(height: 16.h),
                 Text(

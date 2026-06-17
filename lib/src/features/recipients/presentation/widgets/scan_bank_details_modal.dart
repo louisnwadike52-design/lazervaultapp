@@ -8,6 +8,7 @@ import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 const Color _purple = Color.fromARGB(255, 78, 3, 208);
 
@@ -23,6 +24,13 @@ class ScanAction {
   final String? bankCode;
   final String? username;
   final String? phoneNumber;
+  // Optional pre-fill values flowed in from the OCR result when the
+  // server detects an invoice / payment slip. amountMinor is kobo
+  // (or pence) so it can be handed straight to the amount controller
+  // without rounding drift. The send-funds widget pre-fills both when
+  // present and lets the user override.
+  final int? amountMinor;
+  final String? description;
 
   const ScanAction({
     required this.type,
@@ -32,6 +40,8 @@ class ScanAction {
     this.bankCode,
     this.username,
     this.phoneNumber,
+    this.amountMinor,
+    this.description,
   });
 }
 
@@ -192,6 +202,11 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
           accountName: state.accountName,
           bankName: state.bankName,
           bankCode: state.bankCode,
+          // Carry the OCR-extracted amount + memo through so the
+          // send-funds amount + reference fields can pre-fill.
+          // amountMinor is kobo / pence — see SmartScanResult docs.
+          amountMinor: widget.scanResult.amountMinor,
+          description: widget.scanResult.description,
         ),
       );
     } else if (state is AccountVerificationFailure) {
@@ -729,14 +744,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 20.w,
-                        height: 20.h,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
+                      LazerVaultLoader.small(),
                       SizedBox(width: 12.w),
                       Text('Verifying...', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
                     ],
@@ -776,6 +784,10 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                       ScanAction(
                         type: ScanActionType.internalTransfer,
                         username: widget.scanResult.username,
+                        // Pre-fill amount/memo when OCR captured them
+                        // (invoice → internal user route).
+                        amountMinor: widget.scanResult.amountMinor,
+                        description: widget.scanResult.description,
                       ),
                     );
                   }
@@ -836,6 +848,11 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                       ScanAction(
                         type: ScanActionType.phoneTransfer,
                         phoneNumber: widget.scanResult.phoneNumber,
+                        // Carry prefill through the phone-transfer
+                        // branch too — same OCR result powers all
+                        // three actions.
+                        amountMinor: widget.scanResult.amountMinor,
+                        description: widget.scanResult.description,
                       ),
                     );
                   }

@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/statements/domain/entities/statement_ent
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class DownloadStatementsScreen extends StatefulWidget {
   const DownloadStatementsScreen({super.key});
@@ -172,7 +173,7 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      child: const Center(child: CircularProgressIndicator()),
+                      child: const Center(child: LazerVaultLoader.small()),
                     );
                   }
 
@@ -366,14 +367,7 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                         ),
                       ),
                       child: isDownloading
-                          ? SizedBox(
-                              width: 20.w,
-                              height: 20.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                          ? LazerVaultLoader.small()
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -414,7 +408,7 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                 BlocBuilder<StatementCubit, StatementState>(
                   builder: (context, state) {
                     if (state is StatementHistoryLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(child: LazerVaultLoader.small());
                     }
 
                     if (state is StatementHistoryLoaded) {

@@ -6,6 +6,7 @@ import '../widgets/a2c_step_indicator.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class A2CPinInputScreen extends StatefulWidget {
   const A2CPinInputScreen({super.key});
@@ -393,14 +394,7 @@ class _A2CPinInputScreenState extends State<A2CPinInputScreen>
           elevation: 0,
         ),
         child: _isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Continue',
                 style: TextStyle(

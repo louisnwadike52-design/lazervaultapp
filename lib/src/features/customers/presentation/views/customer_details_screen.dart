@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/customers/domain/entities/customer_finan
 import 'package:lazervault/src/features/customers/domain/entities/customer_note_entity.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CustomerDetailsScreen extends StatefulWidget {
   final CustomerEntity customer;
@@ -564,14 +565,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
-                child: SizedBox(
-                  height: 20.h,
-                  width: 20.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFF3B82F6),
-                  ),
-                ),
+                child: LazerVaultLoader.small(),
               ),
             )
           else if (_financialProfile != null) ...[
@@ -674,14 +668,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
           Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: SizedBox(
-                height: 20.h,
-                width: 20.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF3B82F6),
-                ),
-              ),
+              child: LazerVaultLoader.small(),
             ),
           )
         else if (_notes.isEmpty)

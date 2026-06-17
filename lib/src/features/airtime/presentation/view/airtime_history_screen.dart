@@ -14,6 +14,7 @@ import '../utils/airtime_navigation_utils.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/recent_transactions_card.dart' show AirtimeScope;
 import '../widgets/airtime_history_actions_sheet.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AirtimeHistoryScreen extends StatefulWidget {
   const AirtimeHistoryScreen({super.key});
@@ -544,9 +545,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading transactions...',

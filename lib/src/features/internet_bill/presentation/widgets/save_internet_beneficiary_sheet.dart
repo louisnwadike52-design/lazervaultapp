@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
 import '../cubit/internet_beneficiary_cubit.dart';
 import '../cubit/internet_beneficiary_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Save / edit an internet ISP account. Mirrors
 /// `SaveDataBeneficiarySheet` — minimal single-field (nickname) sheet
@@ -262,15 +263,7 @@ class _SaveInternetBeneficiarySheetState
                   elevation: 0,
                 ),
                 child: _saving
-                    ? SizedBox(
-                        width: 20.w,
-                        height: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
+                    ? LazerVaultLoader.small()
                     : Text(
                         isEdit ? 'Update Contact' : 'Save Contact',
                         style: TextStyle(

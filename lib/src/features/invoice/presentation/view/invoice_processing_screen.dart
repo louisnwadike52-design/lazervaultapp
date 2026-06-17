@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/invoice_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum InvoiceProcessingStatus {
   initiated,
@@ -454,15 +455,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
             ),
           ),
           if (isCurrent && !_isCompleted)
-            SizedBox(
-              width: 16.w,
-              height: 16.h,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    InvoiceThemeColors.primaryPurple),
-              ),
-            ),
+            LazerVaultLoader.tiny(),
         ],
       ),
     );

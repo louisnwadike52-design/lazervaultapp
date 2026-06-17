@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/tax_cubit.dart';
 import '../cubit/tax_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class VATScheduleScreen extends StatefulWidget {
   const VATScheduleScreen({super.key});
@@ -156,9 +157,7 @@ class _VATScheduleScreenState extends State<VATScheduleScreen> {
       builder: (context, state) {
         if (state is TaxLoading) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF3B82F6),
-            ),
+            child: LazerVaultLoader.small(),
           );
         }
 

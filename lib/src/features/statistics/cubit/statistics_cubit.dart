@@ -75,10 +75,15 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   }
 
   /// Change the money source the content reflects and reload.
+  /// Always wipes any per-bank filter so the new tab starts at "All" —
+  /// otherwise switching Bank → LazerVault → Bank would still be silently
+  /// pinned to whichever bank the user picked last time and the user
+  /// can't tell why the numbers are off.
   void changeSource(StatisticsSource source) {
     if (_source == source) return;
     _source = source;
-    _reloadKeepingRange();
+    _selectedBankAccountId = null;
+    _switchScope();
   }
 
   /// Change the external-bank scope: null = ALL linked banks, otherwise the
@@ -89,7 +94,27 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (_selectedBankAccountId == normalized) return;
     _selectedBankAccountId = normalized;
     if (_source == StatisticsSource.lazervault) return;
-    _reloadKeepingRange();
+    _switchScope();
+  }
+
+  /// Switch scope (source/bank tab). Flip the content to the shimmer skeleton
+  /// IMMEDIATELY and synchronously — a cheap rebuild — so the tab highlights and
+  /// the skeleton appear on the same frame as the tap (emitting heavy cached
+  /// content here would stall that frame and make the tab feel laggy). Then load
+  /// the new scope's data right away (no typing debounce — a tab click isn't a
+  /// keystroke); the skeleton shows until the real data lands.
+  void _switchScope() {
+    DateTime? start;
+    DateTime? end;
+    if (state is StatisticsLoaded) {
+      final s = state as StatisticsLoaded;
+      start = s.startDate;
+      end = s.endDate;
+      emit(s.copyWith(isRefreshing: true));
+    } else {
+      emit(const StatisticsLoading(loadingMessage: 'Loading statistics...'));
+    }
+    loadStatistics(startDate: start, endDate: end);
   }
 
   /// Change the analytics period (week/month/quarter/year) and reload.
@@ -98,27 +123,39 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     _reloadKeepingRange();
   }
 
-  void _reloadKeepingRange() {
+  void _reloadKeepingRange({bool silent = false}) {
     _periodDebouncer.runAsync(() async {
       if (state is StatisticsLoaded) {
         final currentState = state as StatisticsLoaded;
         await loadStatistics(
           startDate: currentState.startDate,
           endDate: currentState.endDate,
+          silent: silent,
         );
       } else {
-        await loadStatistics();
+        await loadStatistics(silent: silent);
       }
     });
   }
 
   /// Load all statistics data for the selected source + bank scope.
+  ///
+  /// [silent] keeps any already-visible data on screen (no skeleton) while the
+  /// fresh result is fetched and emitted in place — used when revisiting a
+  /// cached tab so the switch is instant.
   Future<void> loadStatistics({
     DateTime? startDate,
     DateTime? endDate,
+    bool silent = false,
   }) async {
     if (_isLoading) return;
     _isLoading = true;
+    // Snapshot the scope we're loading. A source/bank switch can land while
+    // this async load is in flight; we must emit + cache under the scope we
+    // actually fetched (not whatever _source is by the time we finish), and
+    // re-load for the new scope afterwards if it drifted.
+    final loadSource = _source;
+    final loadBank = _selectedBankAccountId;
     try {
       if (isClosed) return;
       // Non-destructive reload: when we already have loaded data (a source /
@@ -126,7 +163,11 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       // screen swaps ONLY the content region to the skeleton — header + tabs
       // stay mounted. A true first load (no data yet) still emits Loading.
       if (state is StatisticsLoaded) {
-        emit((state as StatisticsLoaded).copyWith(isRefreshing: true));
+        // silent: leave the current (cached) data on screen — no skeleton —
+        // and swap in the fresh result when it lands.
+        if (!silent) {
+          emit((state as StatisticsLoaded).copyWith(isRefreshing: true));
+        }
       } else {
         emit(const StatisticsLoading(loadingMessage: 'Loading statistics...'));
       }
@@ -135,8 +176,8 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       final start = startDate ?? now.subtract(const Duration(days: 7));
       final end = endDate ?? now;
 
-      final includesExternal = _source != StatisticsSource.lazervault;
-      final includesWallet = _source != StatisticsSource.bank;
+      final includesExternal = loadSource != StatisticsSource.lazervault;
+      final includesWallet = loadSource != StatisticsSource.bank;
 
       // Monthly trends has no source filter — load once for every source.
       final monthlyTrendsFuture = analyticsRepository.getMonthlyTrends(months: 6);
@@ -153,9 +194,9 @@ class StatisticsCubit extends Cubit<StatisticsState> {
               .syncAllAccountTransactions(userId: _userId, syncType: 'incremental')
               .timeout(const Duration(seconds: 25));
           _syncedThisSession = true;
-          final relevant = _selectedBankAccountId == null
+          final relevant = loadBank == null
               ? res.accounts
-              : res.accounts.where((a) => a.accountId == _selectedBankAccountId).toList();
+              : res.accounts.where((a) => a.accountId == loadBank).toList();
           if (relevant.isNotEmpty && relevant.every((a) => !a.success)) {
             syncFailedHard = true;
             syncError = relevant.first.error ?? 'Could not sync bank transactions.';
@@ -205,7 +246,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           try {
             final resp = await bankingDataSource!.getExternalBankAnalytics(
               userId: _userId,
-              linkedAccountId: _selectedBankAccountId,
+              linkedAccountId: loadBank,
               startDate: start,
               endDate: end,
             );
@@ -253,7 +294,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       final monthlyTrends = await monthlyTrendsFuture;
 
       if (isClosed) return;
-      emit(StatisticsLoaded(
+      final loaded = StatisticsLoaded(
         startDate: start,
         endDate: end,
         financialAnalytics: financialAnalytics,
@@ -263,19 +304,35 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         failedTransactions: failedTransactions,
         currentPeriod: _currentPeriod,
         includeExternalBanks: includesExternal,
-        source: _source,
-        selectedBankAccountId: _selectedBankAccountId,
+        source: loadSource,
+        selectedBankAccountId: loadBank,
         externalStatus: externalStatus,
         externalError: externalError,
-      ));
+      );
+      // Only paint it if the user is still on this scope; if they switched
+      // mid-load we drop this result and repaint for the new scope below.
+      if (_source == loadSource && _selectedBankAccountId == loadBank) {
+        emit(loaded);
+      }
     } catch (e, stackTrace) {
       if (isClosed) return;
+      // Don't surface a stale-scope failure over the current view: if the user
+      // already switched away from the scope this load was for, drop it.
+      if (_source != loadSource || _selectedBankAccountId != loadBank) {
+        return;
+      }
       emit(StatisticsError(
         message: 'Failed to load statistics: ${e.toString()}',
         stackTrace: stackTrace,
       ));
     } finally {
       _isLoading = false;
+      // A source/bank switch landed while this load was in flight — bring the
+      // screen up to the scope the user is actually on now.
+      if (!isClosed &&
+          (_source != loadSource || _selectedBankAccountId != loadBank)) {
+        _switchScope();
+      }
     }
   }
 

@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/funds/cubit/batch_receipt_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Drill-in detailed receipt for an executed batch — server-driven from
 /// the GetBatchReceipt RPC. Provides per-item rows that route into the
@@ -159,7 +160,7 @@ class _BatchReceiptDetailedScreenState
 
   Widget _buildBody(BatchReceiptState state) {
     if (state is BatchReceiptLoading || state is BatchReceiptInitial) {
-      return const Center(child: CircularProgressIndicator(color: btBlue));
+      return const Center(child: LazerVaultLoader.small());
     }
     if (state is BatchReceiptError) {
       return _buildError(state.message);
@@ -372,13 +373,7 @@ class _BatchReceiptDetailedScreenState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLoading)
-              SizedBox(
-                width: 14.w,
-                height: 14.w,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(color)),
-              )
+              LazerVaultLoader(size: 14)
             else
               Icon(icon, color: color, size: 15.sp),
             SizedBox(width: 5.w),

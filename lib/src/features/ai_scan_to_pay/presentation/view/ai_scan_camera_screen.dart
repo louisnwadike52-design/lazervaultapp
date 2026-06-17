@@ -10,6 +10,7 @@ import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
 import 'ai_scan_to_pay_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Removed ServiceVoiceButton import per #212 — voice icon lives on
 // the AI Scan landing only; this camera sub-screen inherits the
 // session pinned from the parent.
@@ -225,19 +226,10 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                 ));
               }
             });
-          } else if (state is AiScanPaymentProcessing) {
-            // Immediate navigation for payment processing
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                _disposeCamera();
-                Get.offAll(() => BlocProvider.value(
-                  value: context.read<AiScanCubit>(),
-                  child: const AiScanToPayScreen(),
-                ));
-              }
-            });
-          } else if (state is AiScanPaymentSuccess) {
-            // Immediate navigation for payment success
+          } else if (state is AiScanBankDetailsExtracted) {
+            // Bank-details path: hand back to the main scan screen
+            // which holds the BlocListener that opens the
+            // BankDetailsBottomSheet for confirmation + amount entry.
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 _disposeCamera();
@@ -263,8 +255,10 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             return _buildLoadingCameraView();
           }
           
-          // For navigation states, show completion view instead of loading
-          if (state is AiScanChatActive || state is AiScanPaymentProcessing || state is AiScanPaymentSuccess) {
+          // For navigation states (chat handoff or bank-details
+          // extraction completed), show the completion view instead
+          // of loading while we transition back to the main screen.
+          if (state is AiScanChatActive || state is AiScanBankDetailsExtracted) {
             return Container(
               width: double.infinity,
               height: double.infinity,
@@ -456,14 +450,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                     ],
                   ),
                   child: _isCapturing
-                      ? SizedBox(
-                          width: 24.w,
-                          height: 24.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                      ? LazerVaultLoader.small()
                       : Icon(
                           Icons.camera_alt,
                           color: Colors.white,
@@ -577,13 +564,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                 ),
               ),
               child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color.fromARGB(255, 78, 3, 208),
-                  ),
-                  value: state.progress,
-                ),
+                child: LazerVaultLoader.small(),
               ),
             ),
             SizedBox(height: 32.h),
@@ -621,11 +602,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Color.fromARGB(255, 78, 3, 208),
-              ),
-            ),
+            LazerVaultLoader.small(),
             SizedBox(height: 16.h),
             Text(
               'Initializing camera...',
@@ -652,10 +629,19 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
 
       // Capture image
       final XFile image = await _cameraController!.takePicture();
-      
-      // Process the captured image using stored cubit reference
+
+      // Route bank-details scans through the dedicated bank-details
+      // extraction pipeline (which fans out to the BankDetailsBottomSheet
+      // → PIN entry → BankDetailsProcessingScreen → BankDetailsReceiptScreen
+      // sequence). All other scan types stay on the legacy chat-driven
+      // path. Without this fork the bank-details flow is unreachable.
       final cubit = _aiScanCubit ?? context.read<AiScanCubit>();
-      cubit.captureAndProcessImage(image.path);
+      final scanType = _resolveActiveScanType(cubit);
+      if (scanType == ScanType.bankDetails) {
+        cubit.processBankDetailsImage(image.path);
+      } else {
+        cubit.captureAndProcessImage(image.path);
+      }
     } catch (e) {
       if (mounted && !_isDisposing) {
         Get.snackbar(
@@ -685,9 +671,14 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
       );
       
       if (image != null && !_isDisposing) {
-        // Use stored cubit reference
+        // Same scan-type fork as the camera capture path.
         final cubit = _aiScanCubit ?? context.read<AiScanCubit>();
-        cubit.uploadImage(image.path);
+        final scanType = _resolveActiveScanType(cubit);
+        if (scanType == ScanType.bankDetails) {
+          cubit.processBankDetailsImage(image.path);
+        } else {
+          cubit.uploadImage(image.path);
+        }
       }
     } catch (e) {
       if (mounted && !_isDisposing) {
@@ -700,6 +691,19 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
         );
       }
     }
+  }
+
+  /// Read the active scan type from whichever cubit state currently
+  /// holds it. The camera screen is opened from `AiScanCamera` but we
+  /// may already have transitioned past that state (e.g. into
+  /// AiScanProcessing) by the time the capture completes, so try the
+  /// most recent state shapes that still carry the session.
+  ScanType? _resolveActiveScanType(AiScanCubit cubit) {
+    final s = cubit.state;
+    if (s is AiScanCamera) return s.session.scanType;
+    if (s is AiScanProcessing) return s.session.scanType;
+    if (s is AiScanChatActive) return s.session.scanType;
+    return null;
   }
 
   IconData _getIconForScanType(ScanType scanType) {

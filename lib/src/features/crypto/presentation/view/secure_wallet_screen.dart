@@ -8,6 +8,7 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'crypto_wallets_screen.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Secure Wallet — opens from the LazerVault Services row on the crypto
 // landing page. Educational on the security model (licensed custody,
@@ -130,15 +131,7 @@ class SecureWalletScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                SizedBox(
-                  width: 18.w,
-                  height: 18.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.8,
-                    valueColor: AlwaysStoppedAnimation(
-                        Colors.white.withValues(alpha: 0.8)),
-                  ),
-                ),
+                LazerVaultLoader(size: 18),
                 SizedBox(width: 12.w),
                 Text(
                   'Loading your secured wallets…',

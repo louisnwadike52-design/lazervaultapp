@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 /// Transaction PIN state
@@ -63,7 +64,12 @@ class TransactionPinCubit extends Cubit<TransactionPinState> {
     }
   }
 
-  /// Create a new transaction PIN
+  /// Create a new transaction PIN.
+  ///
+  /// Returns true on success. On gRPC errors the cubit re-throws the original
+  /// [GrpcError] so callers can branch on `e.code` (Unauthenticated /
+  /// AlreadyExists / InvalidArgument / …) — see classifyPinError in the
+  /// auth-service transaction_pin_server.go for the wire contract.
   Future<bool> createPin({
     required String pin,
     required String confirmPin,
@@ -89,6 +95,12 @@ class TransactionPinCubit extends Cubit<TransactionPinState> {
         ));
         return false;
       }
+    } on GrpcError catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: e.message ?? 'Failed to create PIN',
+      ));
+      rethrow;
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,
@@ -158,7 +170,12 @@ class TransactionPinCubit extends Cubit<TransactionPinState> {
     }
   }
 
-  /// Change existing PIN
+  /// Change existing PIN.
+  ///
+  /// Returns true on success. On gRPC errors the cubit re-throws the original
+  /// [GrpcError] (Unauthenticated for wrong current PIN, PermissionDenied
+  /// for lockout, etc.) so the calling screen can render the right inline
+  /// state — see classifyPinError in auth-service.
   Future<bool> changePin({
     required String currentPin,
     required String newPin,
@@ -173,8 +190,17 @@ class TransactionPinCubit extends Cubit<TransactionPinState> {
         confirmNewPin: confirmNewPin,
       );
 
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(
+        isLoading: false,
+        hasPin: success ? true : state.hasPin,
+      ));
       return success;
+    } on GrpcError catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: e.message ?? 'Failed to change PIN',
+      ));
+      rethrow;
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,

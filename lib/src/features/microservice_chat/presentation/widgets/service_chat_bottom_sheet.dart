@@ -23,6 +23,7 @@ import '../../domain/usecases/load_microservice_chat_history_usecase.dart';
 import '../../domain/usecases/load_direct_chat_history_usecase.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Shows a scoped chat bottom sheet for a specific service.
 ///
@@ -466,7 +467,7 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
       builder: (context, state) {
         if (state is MicroserviceChatHistoryLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
+            child: LazerVaultLoader.small(),
           );
         }
 

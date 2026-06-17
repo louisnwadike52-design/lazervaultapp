@@ -6,6 +6,7 @@ import '../../domain/entities/tag_pay_entity.dart';
 import '../../domain/entities/user_tag_entity.dart' show UserTagEntity;
 import '../../../../../core/types/app_routes.dart';
 import '../../services/tag_pay_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TagPaymentReceiptScreen extends StatefulWidget {
   const TagPaymentReceiptScreen({super.key});
@@ -327,14 +328,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
             child: OutlinedButton.icon(
               onPressed: _isSharing ? null : _shareReceipt,
               icon: _isSharing
-                  ? SizedBox(
-                      width: 18.sp,
-                      height: 18.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Icon(Icons.share, size: 18.sp),
               label: Text(
                 _isSharing ? 'Sharing...' : 'Share',
@@ -358,14 +352,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
             child: OutlinedButton.icon(
               onPressed: _isDownloading ? null : _downloadReceipt,
               icon: _isDownloading
-                  ? SizedBox(
-                      width: 18.sp,
-                      height: 18.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? LazerVaultLoader(size: 18)
                   : Icon(Icons.download, size: 18.sp),
               label: Text(
                 _isDownloading ? 'Saving...' : 'Download',

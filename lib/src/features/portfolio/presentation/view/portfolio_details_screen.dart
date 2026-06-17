@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_s
 import 'package:lazervault/src/features/portfolio/domain/entities/portfolio_entity.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PortfolioDetailsScreen extends StatefulWidget {
   const PortfolioDetailsScreen({super.key});
@@ -23,6 +24,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
   late Animation<double> _fadeAnimation;
   String _selectedAssetType = 'all';
   String _selectedTimeframe = '1M';
+  bool _historyRequested = false;
   final List<String> _timeframes = ['1W', '1M', '3M', '6M', '1Y', 'ALL'];
 
   @override
@@ -73,12 +75,20 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: BlocBuilder<PortfolioCubit, PortfolioState>(
+                  child: BlocConsumer<PortfolioCubit, PortfolioState>(
+                    listener: (context, state) {
+                      // Once the portfolio lands, pull the chart history once for
+                      // the default timeframe (merged into the loaded state).
+                      if (state is PortfolioLoaded && !_historyRequested) {
+                        _historyRequested = true;
+                        context.read<PortfolioCubit>().loadHistory(_selectedTimeframe);
+                      }
+                    },
                     builder: (context, state) {
                       if (state is PortfolioLoading) {
                         return _buildLoadingState();
                       } else if (state is PortfolioLoaded) {
-                        return _buildContent(state.portfolio);
+                        return _buildContent(state);
                       } else if (state is PortfolioError) {
                         return _buildErrorState(state.message);
                       }
@@ -143,10 +153,14 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     );
   }
 
-  Widget _buildContent(Portfolio portfolio) {
+  Widget _buildContent(PortfolioLoaded state) {
+    final portfolio = state.portfolio;
     return RefreshIndicator(
       onRefresh: () async {
         await context.read<PortfolioCubit>().refreshPortfolio();
+        if (mounted) {
+          await context.read<PortfolioCubit>().loadHistory(_selectedTimeframe);
+        }
       },
       color: Color.fromARGB(255, 78, 3, 208),
       backgroundColor: Colors.white,
@@ -161,7 +175,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               SizedBox(height: 24.h),
               _buildTimeframeSelector(),
               SizedBox(height: 24.h),
-              _buildPerformanceChart(portfolio),
+              _buildPerformanceChart(state),
               SizedBox(height: 32.h),
               _buildMetricsGrid(portfolio.summary),
               SizedBox(height: 32.h),
@@ -339,11 +353,11 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
 
           return GestureDetector(
             onTap: () {
+              if (_selectedTimeframe == timeframe) return;
               setState(() {
                 _selectedTimeframe = timeframe;
               });
-              // TODO: Load portfolio history for selected timeframe
-              // context.read<PortfolioCubit>().loadHistory(_selectedTimeframe);
+              context.read<PortfolioCubit>().loadHistory(timeframe);
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
@@ -376,7 +390,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     );
   }
 
-  Widget _buildPerformanceChart(Portfolio portfolio) {
+  Widget _buildPerformanceChart(PortfolioLoaded state) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -401,104 +415,278 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
           SizedBox(height: 20.h),
           SizedBox(
             height: 200.h,
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 1,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      strokeWidth: 1,
-                    );
-                  },
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+            child: _buildChartBody(state),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartBody(PortfolioLoaded state) {
+    final points = state.history;
+
+    // Loading the first history pull → spinner.
+    if (state.historyLoading && points.isEmpty) {
+      return Center(
+        child: LazerVaultLoader.tiny(),
+      );
+    }
+
+    // Not enough snapshots yet → show the live value with an honest hint
+    // instead of a fabricated line.
+    if (points.length < 2) {
+      final s = state.portfolio.summary;
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${s.currency.isEmpty ? '' : '${s.currency} '}${s.totalValue.toStringAsFixed(2)}',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 22.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Your performance history is building.\nCheck back in a few days.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final spots = <FlSpot>[
+      for (var i = 0; i < points.length; i++)
+        FlSpot(i.toDouble(), points[i].value),
+    ];
+    final values = points.map((p) => p.value).toList();
+    final minV = values.reduce((a, b) => a < b ? a : b);
+    final maxV = values.reduce((a, b) => a > b ? a : b);
+    final pad = ((maxV - minV).abs() * 0.12) + 1;
+    final labelStep = (points.length / 4).ceil().clamp(1, points.length);
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: Colors.white.withValues(alpha: 0.05),
+            strokeWidth: 1,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles:
+              AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40.w,
+              getTitlesWidget: (value, meta) {
+                final label = value.abs() >= 1000
+                    ? '${(value / 1000).toStringAsFixed(0)}K'
+                    : value.toStringAsFixed(0);
+                return Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 10.sp,
                   ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40.w,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          '${(value / 1000).toStringAsFixed(0)}K',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 10.sp,
-                          ),
-                        );
-                      },
+                );
+              },
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30.h,
+              getTitlesWidget: (value, meta) {
+                final i = value.round();
+                if (i < 0 || i >= points.length) {
+                  return const SizedBox.shrink();
+                }
+                if (i % labelStep != 0 && i != points.length - 1) {
+                  return const SizedBox.shrink();
+                }
+                final d = points[i].date;
+                return Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: Text(
+                    '${d.day}/${d.month}',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 10.sp,
                     ),
                   ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30.h,
-                      getTitlesWidget: (value, meta) {
-                        final labels = ['W1', 'W2', 'W3', 'W4'];
-                        if (value.toInt() >= 0 &&
-                            value.toInt() < labels.length) {
-                          return Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: Text(
-                              labels[value.toInt()],
+                );
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        minX: 0,
+        maxX: (points.length - 1).toDouble(),
+        minY: (minV - pad).clamp(0, double.infinity),
+        maxY: maxV + pad,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            gradient: const LinearGradient(
+              colors: [
+                Color.fromARGB(255, 78, 3, 208),
+                Color.fromARGB(255, 107, 33, 224),
+              ],
+            ),
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Self-contained asset detail sheet — works for every asset type without
+  // depending on the stock/crypto detail screens (which need full typed models
+  // the portfolio asset doesn't carry).
+  void _showAssetDetailSheet(PortfolioAsset asset) {
+    final cur = asset.currency.trim();
+    String money(double v, {bool signed = false}) {
+      final sign = signed && v >= 0 ? '+' : '';
+      final amt = v.toStringAsFixed(2);
+      return cur.isEmpty ? '$sign$amt' : '$sign$cur $amt';
+    }
+
+    final isProfit = asset.gainLoss >= 0;
+    final glColor = isProfit ? Colors.green : Colors.red;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A3E),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: asset.iconUrl != null && asset.iconUrl!.isNotEmpty
+                        ? UniversalImageLoader(
+                            imagePath: asset.iconUrl!, height: 28.h, width: 28.w)
+                        : Icon(_getAssetIcon(asset.assetType),
+                            color: Colors.white, size: 28.sp),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(asset.name,
+                            style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700)),
+                        if (asset.symbol.isNotEmpty)
+                          Text(asset.symbol,
                               style: GoogleFonts.poppins(
-                                color: Colors.white.withValues(alpha: 0.5),
-                                fontSize: 10.sp,
-                              ),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: 3,
-                minY: 0,
-                maxY: portfolio.summary.totalValue * 1.2,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: [
-                      FlSpot(0, portfolio.summary.totalInvested * 0.9),
-                      FlSpot(1, portfolio.summary.totalInvested * 0.95),
-                      FlSpot(2, portfolio.summary.totalInvested),
-                      FlSpot(3, portfolio.summary.totalValue),
-                    ],
-                    isCurved: true,
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 78, 3, 208),
-                        Color.fromARGB(255, 107, 33, 224),
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  fontSize: 13.sp)),
                       ],
-                    ),
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                          Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.0),
-                        ],
-                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 24.h),
+              _sheetRow('Current value', money(asset.currentValue)),
+              _sheetRow(
+                'Gain / loss',
+                '${money(asset.gainLoss, signed: true)} (${isProfit ? '+' : ''}${asset.gainLossPercent.toStringAsFixed(2)}%)',
+                valueColor: glColor,
+              ),
+              if (asset.quantity > 0)
+                _sheetRow(
+                    'Quantity',
+                    asset.quantity.toStringAsFixed(
+                        asset.quantity.truncateToDouble() == asset.quantity
+                            ? 0
+                            : 4)),
+              if (asset.currentPrice > 0)
+                _sheetRow('Price', money(asset.currentPrice)),
+              if (asset.initialValue > 0)
+                _sheetRow('Invested', money(asset.initialValue)),
+              _sheetRow(
+                  'Type',
+                  asset.assetType.isEmpty
+                      ? '—'
+                      : asset.assetType[0].toUpperCase() +
+                          asset.assetType.substring(1)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetRow(String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: GoogleFonts.poppins(
+                  color: Colors.white.withValues(alpha: 0.6), fontSize: 13.sp)),
+          Flexible(
+            child: Text(value,
+                textAlign: TextAlign.end,
+                style: GoogleFonts.poppins(
+                    color: valueColor ?? Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -773,9 +961,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            // TODO: Navigate to asset details
-          },
+          onTap: () => _showAssetDetailSheet(asset),
           borderRadius: BorderRadius.circular(16.r),
           child: Padding(
             padding: EdgeInsets.all(16.w),
@@ -954,11 +1140,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromARGB(255, 78, 3, 208),
-            ),
-          ),
+          LazerVaultLoader.small(),
           SizedBox(height: 16.h),
           Text(
             'Loading portfolio...',

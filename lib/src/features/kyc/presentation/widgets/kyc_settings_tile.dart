@@ -8,6 +8,7 @@ import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/rounded_centered_image.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// KYC Settings Tile Widget
 ///
@@ -101,15 +102,7 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
                 _buildBadge(tier, verified),
                 const SizedBox(width: 8),
                 if (_loading)
-                  SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.grey.withValues(alpha: 0.5)),
-                    ),
-                  )
+                  LazerVaultLoader(size: 14)
                 else
                   const Icon(Icons.arrow_forward_ios,
                       size: 16.0, color: Colors.grey),

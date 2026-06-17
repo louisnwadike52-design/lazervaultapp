@@ -60,6 +60,10 @@ class ChatMessageEntity extends Equatable {
   final int? audioDurationMs;
   final String? transcript;
   final Map<String, dynamic>? receiptData;
+  // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
+  // inline ChatPinPromptCard so a chat-driven money move collects the PIN in
+  // the chat thread instead of telling the user to open a screen.
+  final Map<String, dynamic>? pinPrompt;
 
   const ChatMessageEntity({
     required this.text,
@@ -79,6 +83,7 @@ class ChatMessageEntity extends Equatable {
     this.audioDurationMs,
     this.transcript,
     this.receiptData,
+    this.pinPrompt,
   });
 
   ChatMessageEntity copyWith({
@@ -99,6 +104,7 @@ class ChatMessageEntity extends Equatable {
     int? audioDurationMs,
     String? transcript,
     Map<String, dynamic>? receiptData,
+    Map<String, dynamic>? pinPrompt,
   }) {
     return ChatMessageEntity(
       text: text ?? this.text,
@@ -118,6 +124,7 @@ class ChatMessageEntity extends Equatable {
       audioDurationMs: audioDurationMs ?? this.audioDurationMs,
       transcript: transcript ?? this.transcript,
       receiptData: receiptData ?? this.receiptData,
+      pinPrompt: pinPrompt ?? this.pinPrompt,
     );
   }
 
@@ -134,5 +141,6 @@ class ChatMessageEntity extends Equatable {
         mediaType,
         localMediaPath,
         receiptData,
+        pinPrompt,
       ];
 }

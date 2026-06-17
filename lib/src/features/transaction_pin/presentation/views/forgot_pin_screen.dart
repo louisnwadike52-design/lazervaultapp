@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class ForgotPinScreen extends StatefulWidget {
   const ForgotPinScreen({super.key});
@@ -247,7 +248,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                     Container(
                       color: Colors.white.withValues(alpha: 0.7),
                       child: const Center(
-                        child: CircularProgressIndicator(color: _purpleAccent),
+                        child: LazerVaultLoader.small(),
                       ),
                     ),
                 ],
@@ -281,12 +282,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   // ── Step 0: Loading ──
 
   Widget _buildLoadingStep() {
-    return SizedBox(
-      height: 400.h,
-      child: const Center(
-        child: CircularProgressIndicator(color: _purpleAccent),
-      ),
-    );
+    return LazerVaultLoader(size: 400);
   }
 
   // ── Step 1: Channel Selection ──
@@ -755,14 +751,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
               elevation: 0,
             ),
             child: isLoading
-                ? SizedBox(
-                    width: 24.w,
-                    height: 24.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : Text(
                     'Reset PIN',
                     style: GoogleFonts.inter(

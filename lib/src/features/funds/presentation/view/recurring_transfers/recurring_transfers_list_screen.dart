@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class RecurringTransfersListScreen extends StatefulWidget {
   const RecurringTransfersListScreen({super.key});
@@ -60,9 +61,7 @@ class _RecurringTransfersListScreenState
               builder: (context, state) {
                 if (state is RecurringTransferLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
-                    ),
+                    child: LazerVaultLoader.small(),
                   );
                 }
                 if (state is RecurringTransferError) {

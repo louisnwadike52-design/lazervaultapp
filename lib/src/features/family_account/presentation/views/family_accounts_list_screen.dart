@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class FamilyAccountsListScreen extends StatefulWidget {
   const FamilyAccountsListScreen({super.key});
@@ -177,9 +179,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                     if (state is FamilyAccountLoading &&
                         _allAccounts.isEmpty) {
                       return const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF3B82F6),
-                        ),
+                        child: LazerVaultLoader.small(),
                       );
                     }
                     return _buildContent();
@@ -501,7 +501,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                         ),
                         SizedBox(height: 4.h),
                         Text(
-                          '\$${account.totalBalance.toStringAsFixed(2)}',
+                          '${CurrencySymbols.currentSymbol}${account.totalBalance.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18.sp,
@@ -715,7 +715,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
             children: [
               _buildInvitationDetail(
                 'Allocation',
-                '\$${invitation.initialAllocation.toStringAsFixed(2)}',
+                '${CurrencySymbols.currentSymbol}${invitation.initialAllocation.toStringAsFixed(2)}',
               ),
               SizedBox(width: 16.w),
               _buildInvitationDetail(

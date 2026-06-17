@@ -7,6 +7,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SmartCardInputScreen extends StatefulWidget {
   const SmartCardInputScreen({super.key});
@@ -543,14 +544,7 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
           ),
         ),
         child: isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 label,
                 style: GoogleFonts.inter(

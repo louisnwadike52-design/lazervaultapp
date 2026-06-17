@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// PIN Workflow Event Types
 enum PINWorkflowEventType {
@@ -457,7 +458,7 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
                   const Center(
                     child: Column(
                       children: [
-                        CircularProgressIndicator(),
+                        LazerVaultLoader.small(),
                         SizedBox(height: 12),
                         Text('Validating PIN...'),
                       ],

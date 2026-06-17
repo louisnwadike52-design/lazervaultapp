@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart' as grpc_helper;
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Chat icon button for recipient list items.
 /// Shown for all recipients. Internal recipients open P2P chat;
@@ -182,14 +183,7 @@ class _P2PChatIconState extends State<P2PChatIcon> {
         child: Padding(
           padding: EdgeInsets.all(6.w),
           child: _resolving
-              ? SizedBox(
-                  width: 20.w,
-                  height: 20.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFF3B82F6),
-                  ),
-                )
+              ? LazerVaultLoader.small()
               : Icon(
                   Icons.chat_outlined,
                   color: const Color(0xFF3B82F6),

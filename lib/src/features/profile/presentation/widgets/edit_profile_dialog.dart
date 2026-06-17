@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditProfileDialog extends StatefulWidget {
   final User user;
@@ -281,14 +282,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                           ),
                         ),
                         child: _isLoading
-                            ? SizedBox(
-                                width: 20.w,
-                                height: 20.h,
-                                child: const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
+                            ? LazerVaultLoader.small()
                             : Text(
                                 'Save',
                                 style: GoogleFonts.inter(

@@ -31,6 +31,25 @@ class AiScanTypeSelection extends AiScanState {
   List<Object?> get props => [availableTypes];
 }
 
+/// Emitted once on cubit init when a resumable scan session exists
+/// in local storage. The UI surfaces a Resume / Discard prompt; both
+/// outcomes funnel back through the cubit (resumeStoredSession() /
+/// discardStoredSession()).
+class AiScanResumable extends AiScanState {
+  final ScanSession session;
+  final BankDetails? bankDetails;
+  final List<ScanType> availableTypes;
+
+  const AiScanResumable({
+    required this.session,
+    required this.availableTypes,
+    this.bankDetails,
+  });
+
+  @override
+  List<Object?> get props => [session, bankDetails, availableTypes];
+}
+
 // Scan session active state
 class AiScanSessionActive extends AiScanState {
   final ScanSession session;
@@ -135,33 +154,9 @@ class AiScanChatActive extends AiScanState {
   }
 }
 
-// Payment processing state
-class AiScanPaymentProcessing extends AiScanState {
-  final PaymentInstruction instruction;
-  final String status;
-
-  const AiScanPaymentProcessing({
-    required this.instruction,
-    required this.status,
-  });
-
-  @override
-  List<Object?> get props => [instruction, status];
-}
-
-// Payment success state
-class AiScanPaymentSuccess extends AiScanState {
-  final PaymentInstruction instruction;
-  final String transactionId;
-
-  const AiScanPaymentSuccess({
-    required this.instruction,
-    required this.transactionId,
-  });
-
-  @override
-  List<Object?> get props => [instruction, transactionId];
-}
+// (AiScanPaymentProcessing / AiScanPaymentSuccess removed — the legacy
+//  generic-chat payment path is gone. The canonical money path emits
+//  the AiScanBankDetails* states defined below.)
 
 // Scan history state
 class AiScanHistoryLoaded extends AiScanState {

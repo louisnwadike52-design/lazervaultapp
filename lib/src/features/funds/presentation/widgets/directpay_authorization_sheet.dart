@@ -176,9 +176,8 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   // complete" hint so the user isn't stuck on a dead button.
   int _disabledNoActionTicks = 0;
 
-  // Redirect patterns to detect completion
-  late final List<String> _successPatterns;
-  late final List<String> _failurePatterns;
+  // Outcome is classified inline in _handleRedirect from the explicit
+  // status/reason query params (success > failure > ambiguous-close-debounce).
 
   // The Mono page can fire the redirect deep-link more than once (SPA retries
   // the lazervault:// navigation until something handles it). Each unguarded
@@ -188,11 +187,17 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   // Handle the redirect exactly once.
   bool _redirectHandled = false;
 
+  // Debounce for the AMBIGUOUS "widget closed" callback. Mono fires
+  // `status=closed&reason=widget_closed` BOTH when the user cancels AND
+  // immediately BEFORE a successful `status=success&reason=payment_success`
+  // callback. So a close must not resolve the sheet on its own — we wait briefly
+  // for a success/failure to follow; only if none arrives is it a real cancel.
+  Timer? _closeDebounce;
+
   @override
   void initState() {
     super.initState();
     _currentUrl = widget.paymentUrl;
-    _initializePatterns();
     _initializeWebView();
     // Poll for (a) the Prove "can't-continue" state (disabled Grant Permission
     // with outstanding documents) and (b) a provider client-side crash. The
@@ -212,29 +217,8 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   @override
   void dispose() {
     _proveProbeTimer?.cancel();
+    _closeDebounce?.cancel();
     super.dispose();
-  }
-
-  void _initializePatterns() {
-    final scheme = widget.redirectScheme;
-    final path = widget.redirectPath;
-
-    // Patterns that indicate successful authorization
-    _successPatterns = [
-      '$scheme://$path',
-      '$scheme:/$path',
-      'success=true',
-      'status=successful',
-      'payment_status=successful',
-    ];
-
-    // Patterns that indicate failed/cancelled authorization
-    _failurePatterns = [
-      'status=failed',
-      'status=cancelled',
-      'error=',
-      'payment_status=failed',
-    ];
   }
 
   void _initializeWebView() {
@@ -579,45 +563,83 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       debugPrint('[DirectPay] Redirect already handled, ignoring: $url');
       return;
     }
-    _redirectHandled = true;
-    debugPrint('[DirectPay] Handling redirect: $url');
-    HapticFeedback.mediumImpact();
-
     final lowerUrl = url.toLowerCase();
 
-    // Check for success indicators
-    final isSuccess = _successPatterns.any((pattern) =>
-      lowerUrl.contains(pattern.toLowerCase())
-    );
+    // Classify by the EXPLICIT status/reason in the callback — NOT by the
+    // redirect path itself, which Mono sends on BOTH the close AND the success
+    // callbacks (so the path alone is not an outcome signal).
+    final isExplicitSuccess = lowerUrl.contains('status=success') ||
+        lowerUrl.contains('status=successful') ||
+        lowerUrl.contains('payment_success') ||
+        lowerUrl.contains('payment_status=successful') ||
+        lowerUrl.contains('success=true');
+    final isExplicitFailure = lowerUrl.contains('status=failed') ||
+        lowerUrl.contains('status=cancelled') ||
+        lowerUrl.contains('payment_status=failed') ||
+        lowerUrl.contains('error=');
+    // The "widget closed" callback is AMBIGUOUS: Mono fires it both on a genuine
+    // cancel AND immediately before a successful payment_success. So it must not
+    // resolve the sheet on its own.
+    final isClose = lowerUrl.contains('status=closed') ||
+        lowerUrl.contains('widget_closed') ||
+        lowerUrl.contains('reason=closed') ||
+        lowerUrl.contains('user_closed');
 
-    // Check for failure indicators
-    final isFailure = _failurePatterns.any((pattern) =>
-      lowerUrl.contains(pattern.toLowerCase())
-    );
-
-    if (isSuccess && !isFailure) {
-      // Extract any parameters from the URL
-      final uri = Uri.tryParse(url);
-      final queryParams = uri?.queryParameters ?? {};
-
+    if (isExplicitSuccess) {
+      _closeDebounce?.cancel();
+      _redirectHandled = true;
+      HapticFeedback.mediumImpact();
+      debugPrint('[DirectPay] Success redirect: $url');
+      final q = Uri.tryParse(url)?.queryParameters ?? {};
       Navigator.of(context).pop(DirectPayAuthResult.success(
-        paymentId: queryParams['payment_id'] ?? widget.paymentId,
-        reference: queryParams['reference'] ?? widget.reference,
+        paymentId: q['payment_id'] ?? widget.paymentId,
+        reference: q['reference'] ?? widget.reference,
       ));
-    } else if (isFailure) {
-      final uri = Uri.tryParse(url);
-      final errorMsg = uri?.queryParameters['error'] ??
-                       uri?.queryParameters['message'] ??
-                       'Payment authorization failed';
-
-      Navigator.of(context).pop(DirectPayAuthResult.failed(errorMsg));
-    } else {
-      // Default to success if we hit our redirect URL
-      Navigator.of(context).pop(DirectPayAuthResult.success(
-        paymentId: widget.paymentId,
-        reference: widget.reference,
-      ));
+      return;
     }
+
+    if (isExplicitFailure) {
+      _closeDebounce?.cancel();
+      _redirectHandled = true;
+      HapticFeedback.mediumImpact();
+      debugPrint('[DirectPay] Failure redirect: $url');
+      // An explicit user cancel is not an alarming error.
+      if (lowerUrl.contains('cancel') || lowerUrl.contains('dismiss')) {
+        Navigator.of(context).pop(DirectPayAuthResult.cancelled());
+      } else {
+        final q = Uri.tryParse(url)?.queryParameters ?? {};
+        Navigator.of(context).pop(DirectPayAuthResult.failed(
+          q['error'] ?? q['message'] ?? 'Payment authorization failed',
+        ));
+      }
+      return;
+    }
+
+    if (isClose) {
+      // Ambiguous close — wait briefly for a success/failure callback to follow.
+      // Do NOT set _redirectHandled, so the follow-up can still be processed; if
+      // nothing arrives within the window it was a genuine user cancel.
+      debugPrint('[DirectPay] Close callback — debouncing for a follow-up: $url');
+      _closeDebounce?.cancel();
+      _closeDebounce = Timer(const Duration(milliseconds: 2000), () {
+        if (!mounted || _redirectHandled) return;
+        _redirectHandled = true;
+        debugPrint('[DirectPay] No success/failure after close — treating as cancelled');
+        Navigator.of(context).pop(DirectPayAuthResult.cancelled());
+      });
+      return;
+    }
+
+    // Hit our redirect path with no explicit status — some providers redirect on
+    // success without a status param, so default to success.
+    _closeDebounce?.cancel();
+    _redirectHandled = true;
+    HapticFeedback.mediumImpact();
+    debugPrint('[DirectPay] Redirect (no explicit status) — default success: $url');
+    Navigator.of(context).pop(DirectPayAuthResult.success(
+      paymentId: widget.paymentId,
+      reference: widget.reference,
+    ));
   }
 
   void _handleCancel() {

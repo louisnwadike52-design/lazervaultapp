@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dar
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
@@ -991,14 +992,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: 16.sp,
-                  height: 16.sp,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                LazerVaultLoader.tiny()
               else if (icon != null)
                 Icon(icon, color: Colors.white, size: 18.sp),
               if (!isLoading && icon != null) SizedBox(width: 8.w),

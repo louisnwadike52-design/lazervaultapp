@@ -28,6 +28,7 @@ abstract class FamilyAccountRemoteDataSource {
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   });
   Future<FamilyMemberProto> generateMemberCard({
     required String familyId,
@@ -43,11 +44,13 @@ abstract class FamilyAccountRemoteDataSource {
     required String familyId,
     required String confirmationCode,
   });
+  Future<double> leaveFamilyAccount({required String familyId});
   Future<FamilyAccountProto> processMemberContribution({
     required String familyId,
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   });
   Future<FamilyAccountProto> setupFamilyAccount({
     required String familyId,
@@ -553,6 +556,7 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -764,6 +768,9 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
   }
 
   @override
+  Future<double> leaveFamilyAccount({required String familyId}) async => 0;
+
+  @override
   Future<double> deleteFamilyAccount({
     required String familyId,
     required String confirmationCode,
@@ -792,6 +799,7 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     required String memberId,
     required double amount,
     String? description,
+    String? idempotencyKey,
   }) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
