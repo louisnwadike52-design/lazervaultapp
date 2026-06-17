@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_state.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Email OTP Verification Screen
 ///
@@ -197,17 +198,25 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   }
 
   void _navigateToNextScreen() {
-    // Check if there's secondary phone verification needed
-    if (widget.secondaryPhone != null && widget.secondaryPhone!.isNotEmpty) {
+    // Phone is now captured at the bottom of signup page 2 (with country
+    // chip + SIM-hint prefill + length validation), so by the time we
+    // reach email verification a phone always exists. Go straight to OTP
+    // entry. (The standalone AddPhoneNumber screen has been removed.) If
+    // the phone is somehow missing — defensive only — fall through to
+    // passcode setup so the user isn't stranded.
+    final preExistingPhone = widget.secondaryPhone;
+    if (preExistingPhone != null && preExistingPhone.isNotEmpty) {
+      // Phone verification is skippable (parity with email verify) — the
+      // user can defer SMS OTP to Settings if their network refuses to
+      // deliver the code right now. They still proceed to passcode setup.
       Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
-        'phoneNumber': widget.secondaryPhone,
-        'codeSent': true,
+        'phoneNumber': preExistingPhone,
+        'codeSent': false, // request OTP fresh — page sends on load
         'expiresIn': 600,
-        'isRequired': false, // Secondary verification is skippable
+        'isRequired': false,
         'secondaryEmail': null,
       });
     } else {
-      // No secondary verification, go to passcode setup
       Get.offAllNamed(AppRoutes.passcodeSetup);
     }
   }
@@ -305,14 +314,14 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                         height: 100.h,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
+                            colors: [Color(0xFF4834D4), Color(0xFF7C3AED)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                              color: const Color(0xFF4834D4).withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -387,23 +396,16 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                                   context.read<EmailVerificationCubit>().verifyEmail();
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4E03D0),
+                            backgroundColor: const Color(0xFF4834D4),
                             foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                            disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16.r),
                             ),
                             elevation: 0,
                           ),
                           child: isVerifying
-                              ? SizedBox(
-                                  width: 24.w,
-                                  height: 24.h,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
+                              ? LazerVaultLoader.small()
                               : Text(
                                   'Verify Email',
                                   style: GoogleFonts.inter(
@@ -439,14 +441,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: isResending
-                                ? SizedBox(
-                                    width: 16.w,
-                                    height: 16.h,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Color(0xFF4E03D0),
-                                    ),
-                                  )
+                                ? LazerVaultLoader.tiny()
                                 : Text(
                                     _resendCooldown > 0
                                         ? 'Resend in ${_resendCooldown}s'
@@ -456,7 +451,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                                       fontWeight: FontWeight.w600,
                                       color: _resendCooldown > 0
                                           ? const Color(0xFF9CA3AF)
-                                          : const Color(0xFF4E03D0),
+                                          : const Color(0xFF4834D4),
                                     ),
                                   ),
                           ),
@@ -498,12 +493,12 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                             Container(
                               padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                                color: const Color(0xFF4834D4).withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.security_rounded,
-                                color: const Color(0xFF4E03D0),
+                                color: const Color(0xFF4834D4),
                                 size: 20.sp,
                               ),
                             ),

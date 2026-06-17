@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/datasources/ai_scan_session_store.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/exceptions/scan_exceptions.dart';
 import '../../domain/usecases/ai_scan_usecases.dart';
@@ -17,6 +18,10 @@ class AiScanCubit extends Cubit<AiScanState> {
   // Track current session for bank details flow
   ScanSession? _currentSession;
 
+  // Local journal — survives nav-away so a partial scan can resume.
+  // Injected via DI; tests can pass a fake. See K3 (session persistence).
+  final AiScanSessionStore _store;
+
   AiScanCubit({
     required this.startScanSessionUseCase,
     required this.processScanUseCase,
@@ -26,12 +31,75 @@ class AiScanCubit extends Cubit<AiScanState> {
     required this.getScanHistoryUseCase,
     required this.scanBankDetailsUseCase,
     required this.processBankDetailsPaymentUseCase,
-  }) : super(AiScanInitial());
+    AiScanSessionStore? sessionStore,
+  })  : _store = sessionStore ?? AiScanSessionStore(),
+        super(AiScanInitial());
 
-  // Initialize and show scan type selection
-  void initializeScanTypes() {
+  /// Surfaced scan types — curated subset of [ScanType.values] that have a
+  /// real end-to-end flow wired up (extraction → confirm → pay/redeem).
+  ///
+  /// Hidden (kept in the enum + proto so backend responses still deserialise,
+  /// but not offered in the UI):
+  ///   - [ScanType.accountDetails] — duplicate of [ScanType.bankDetails];
+  ///     bankDetails is the canonical one-shot "scan + pay" entry point.
+  ///   - [ScanType.barcode]        — no end-to-end integration; would dead-end
+  ///     at the "Unknown" mock data path.
+  ///   - [ScanType.receipt]        — expense-tracking artefact, not a payment
+  ///     surface. Out of scope for "Scan to Pay".
+  static const List<ScanType> _supportedScanTypes = <ScanType>[
+    ScanType.bankDetails,
+    ScanType.invoice,
+    ScanType.utilityBill,
+    ScanType.giftCard,
+    ScanType.qrCode,
+  ];
+
+  /// Public read of the curated list — exposed so tests / debug UIs can
+  /// assert the surface area without poking at private state.
+  static List<ScanType> get supportedScanTypes =>
+      List.unmodifiable(_supportedScanTypes);
+
+  // Initialize and show scan type selection. Checks for a resumable
+  // session first; when one exists the UI shows a "Resume?" prompt and
+  // can dispatch [resumeStoredSession] or [discardStoredSession].
+  Future<void> initializeScanTypes() async {
     if (isClosed) return;
-    emit(AiScanTypeSelection(ScanType.values));
+    final restored = await _store.restore();
+    if (restored != null) {
+      if (isClosed) return;
+      emit(AiScanResumable(
+        session: restored.session,
+        bankDetails: restored.bankDetails,
+        availableTypes: _supportedScanTypes,
+      ));
+      return;
+    }
+    emit(AiScanTypeSelection(_supportedScanTypes));
+  }
+
+  /// Accept the restored session — jump straight to where the user was.
+  /// If we already have extracted bank details, land on the extracted
+  /// state so the bottom-sheet pops; otherwise hand back to the camera.
+  Future<void> resumeStoredSession() async {
+    final current = state;
+    if (current is! AiScanResumable) return;
+    _currentSession = current.session;
+    if (current.bankDetails != null) {
+      emit(AiScanBankDetailsExtracted(
+        session: current.session,
+        bankDetails: current.bankDetails!,
+      ));
+    } else {
+      emit(AiScanCamera(session: current.session));
+    }
+  }
+
+  /// Decline the restore — clear the journal and reveal scan-type tiles.
+  Future<void> discardStoredSession() async {
+    await _store.clear();
+    _currentSession = null;
+    if (isClosed) return;
+    emit(AiScanTypeSelection(_supportedScanTypes));
   }
 
   // Start a new scan session with selected type
@@ -39,9 +107,16 @@ class AiScanCubit extends Cubit<AiScanState> {
     try {
       if (isClosed) return;
       emit(const AiScanLoading(message: 'Initializing scan session...'));
-      
+
       final session = await startScanSessionUseCase(scanType);
-      
+      _currentSession = session;
+
+      // Journal the freshly-created session so it can be resumed if
+      // the user navigates away before completing the scan.
+      // Fire-and-forget — a write failure must not block the scan.
+      // ignore: discarded_futures
+      _store.save(session: session);
+
       // Navigate to camera for scanning
       if (isClosed) return;
       emit(AiScanCamera(session: session));
@@ -145,43 +220,15 @@ class AiScanCubit extends Cubit<AiScanState> {
     }
   }
 
-  // Process payment based on extracted data
-  Future<void> processPayment() async {
-    final currentState = state;
-    if (currentState is! AiScanChatActive || currentState.extractedData == null) return;
-
-    try {
-      if (isClosed) return;
-      emit(const AiScanLoading(message: 'Generating payment instructions...'));
-
-      final paymentInstruction = await generatePaymentUseCase(
-        currentState.extractedData!,
-        currentState.session.scanType,
-      );
-
-      if (isClosed) return;
-      emit(AiScanPaymentProcessing(
-        instruction: paymentInstruction,
-        status: 'Processing payment...',
-      ));
-
-      final success = await processPaymentUseCase(paymentInstruction);
-
-      if (success) {
-        if (isClosed) return;
-        emit(AiScanPaymentSuccess(
-          instruction: paymentInstruction,
-          transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-        ));
-      } else {
-        if (isClosed) return;
-        emit(const AiScanError(message: 'Payment processing failed. Please try again.'));
-      }
-    } catch (e) {
-      if (isClosed) return;
-      emit(AiScanError(message: 'Payment failed: ${e.toString()}'));
-    }
-  }
+  // NOTE: the legacy processPayment / AiScanPaymentProcessing /
+  // AiScanPaymentSuccess flow was removed. It was emitted only via the
+  // generic AiScanChatActive path and never reached the canonical
+  // money path (the bank-details flow via processBankDetailsImage →
+  // initiatePayment → processPaymentWithPIN is the source of truth).
+  // The data-layer `processPaymentUseCase` / `generatePaymentUseCase`
+  // remain in place because they're independent of the UI flow; if a
+  // future "pay-via-chat" surface is rebuilt it'll wire to them
+  // directly.
 
   // Load scan history
   Future<void> loadScanHistory() async {
@@ -202,7 +249,7 @@ class AiScanCubit extends Cubit<AiScanState> {
   // Return to scan type selection
   void returnToScanTypeSelection() {
     if (isClosed) return;
-    emit(AiScanTypeSelection(ScanType.values));
+    emit(AiScanTypeSelection(_supportedScanTypes));
   }
 
   // Return to camera from chat
@@ -214,9 +261,13 @@ class AiScanCubit extends Cubit<AiScanState> {
     }
   }
 
-  // Reset to initial state
+  // Reset to initial state. Also clears the resume journal — a manual
+  // reset is the user saying "discard whatever was in flight".
   void reset() {
     if (isClosed) return;
+    _currentSession = null;
+    // ignore: discarded_futures
+    _store.clear();
     emit(AiScanInitial());
   }
 
@@ -269,6 +320,12 @@ class AiScanCubit extends Cubit<AiScanState> {
 
       // Extract bank details via OCR
       final bankDetails = await scanBankDetailsUseCase(imagePath, _currentSession!.id);
+
+      // Re-journal — the user has invested OCR work; persist both the
+      // session and the extracted details so a nav-away can resume
+      // straight back into the bottom sheet without re-scanning.
+      // ignore: discarded_futures
+      _store.save(session: _currentSession!, bankDetails: bankDetails);
 
       // Show bottomsheet for editing (confidence warnings shown in UI)
       if (isClosed) return;
@@ -406,7 +463,11 @@ class AiScanCubit extends Cubit<AiScanState> {
 
       await Future.delayed(const Duration(milliseconds: 300));
 
-      // Show receipt
+      // Show receipt. Payment landed — drop the resume journal so the
+      // next AI Scan visit starts fresh instead of offering to resume
+      // an already-paid session.
+      // ignore: discarded_futures
+      _store.clear();
       if (isClosed) return;
       emit(AiScanBankDetailsPaymentSuccess(receipt: receipt));
     } on PaymentException catch (e) {

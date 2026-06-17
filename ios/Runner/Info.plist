@@ -4,8 +4,10 @@
 	<dict>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 		<key>CFBundleDisplayName</key>
-		<string>Lazervaultapp</string>
+		<string>Lazervault</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -65,6 +67,10 @@
 		<string>LazerVault uses speech recognition to let you make payments, check your balance, and pay bills with voice commands.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>LazerVault uses your location to detect unusual sign-in activity, surface nearby agents for cash deposits, and comply with anti-fraud regulations.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>LazerVault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>LazerVault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>LazerVault uses Face ID to confirm payments, unlock the app, and authorise sensitive operations without a password.</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>
@@ -73,11 +79,21 @@
 		<string>LazerVault uses Bluetooth for contactless tap-to-pay between phones.</string>
 		<key>NSLocalNetworkUsageDescription</key>
 		<string>LazerVault discovers nearby devices on your local network for contactless tap-to-pay.</string>
+		<!-- NFC purpose string for contactless tap-to-pay. Required by iOS
+		     for any Core NFC session; without it CoreNFC throws at session
+		     start and the user sees a generic "feature unavailable" error.
+		     Paired with the NFC entitlement in Runner.entitlements. -->
+		<key>NFCReaderUsageDescription</key>
+		<string>LazerVault uses NFC to send and receive money by tapping your phone against another LazerVault user's phone.</string>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>
 			<string>remote-notification</string>
 			<string>fetch</string>
+			<!-- BLE modes so contactless tap-to-pay can finish in the
+			     background if the user backgrounds the app mid-handshake. -->
+			<string>bluetooth-central</string>
+			<string>bluetooth-peripheral</string>
 		</array>
 		<!-- Deep link URL scheme for lazervault:// -->
 		<!-- Used for DirectPay authorization callbacks and other in-app redirects -->

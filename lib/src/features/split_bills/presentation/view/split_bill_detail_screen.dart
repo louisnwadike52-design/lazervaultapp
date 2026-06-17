@@ -9,6 +9,7 @@ import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
 import '../widgets/participant_row.dart';
 import '../widgets/split_bill_progress_bar.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SplitBillDetailScreen extends StatelessWidget {
   const SplitBillDetailScreen({super.key});
@@ -118,10 +119,7 @@ class _SplitBillDetailView extends StatelessWidget {
         builder: (context, state) {
           if (state is SplitBillLoading || state is SplitBillDetailLoading || state is SplitBillPaymentProcessing) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              ),
+              child: LazerVaultLoader.small(),
             );
           }
 
@@ -134,10 +132,7 @@ class _SplitBillDetailView extends StatelessWidget {
           }
 
           return const Center(
-            child: CircularProgressIndicator(
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-            ),
+            child: LazerVaultLoader.small(),
           );
         },
       ),
@@ -159,7 +154,7 @@ class _SplitBillDetailView extends StatelessWidget {
             child: RefreshIndicator(
               onRefresh: () =>
                   context.read<SplitBillCubit>().loadBillDetail(splitBillId),
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4834D4),
               backgroundColor: const Color(0xFF1F1F1F),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -347,13 +342,13 @@ class _SplitBillDetailView extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  backgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.2),
                   child: Text(
                     bill.creatorName.isNotEmpty
                         ? bill.creatorName[0].toUpperCase()
                         : '@',
                     style: const TextStyle(
-                      color: Color(0xFF3B82F6),
+                      color: Color(0xFF4834D4),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -377,7 +372,7 @@ class _SplitBillDetailView extends StatelessWidget {
                       const Text(
                         'Creator',
                         style: TextStyle(
-                          color: Color(0xFF3B82F6),
+                          color: Color(0xFF4834D4),
                           fontSize: 12,
                         ),
                       ),
@@ -456,8 +451,8 @@ class _SplitBillDetailView extends StatelessWidget {
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF3B82F6),
-                        side: const BorderSide(color: Color(0xFF3B82F6)),
+                        foregroundColor: const Color(0xFF4834D4),
+                        side: const BorderSide(color: Color(0xFF4834D4)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -721,7 +716,7 @@ class _SplitBillDetailView extends StatelessWidget {
               onPressed: () =>
                   context.read<SplitBillCubit>().loadBillDetail(splitBillId),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF4834D4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

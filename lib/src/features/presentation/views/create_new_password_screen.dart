@@ -25,7 +25,11 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Themed body: shared purple-curve background image lives behind
+    // everything (incl. transparent AppBar) so the brand purple flows at top
+    // and bottom while the form area stays readable on the dark base.
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -44,11 +48,19 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
         ),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child: const CreateNewPassword(),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bg/up-down-curve-bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+            child: const CreateNewPassword(),
+          ),
         ),
       ),
     );

@@ -13,11 +13,13 @@ import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../cubit/tagged_invoice_cubit.dart';
 import '../cubit/tagged_invoice_state.dart';
-import '../widgets/invoice_voice_agent_button.dart';
 import '../widgets/invoice_shimmer.dart';
+import '../../../voice_session/widgets/voice_command_sheet.dart';
+import '../../../voice/guards/voice_setup_guard.dart';
+import '../../../voice/managers/voice_activation_manager.dart';
+import '../../../dashboard/managers/voice_setup_manager.dart';
 import '../widgets/invoice_pagination_bar.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:get_it/get_it.dart';
@@ -35,6 +37,20 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
   late TabController _tabController;
   late InvoiceRefreshNotifier _refreshNotifier;
   String _selectedFilter = 'All';
+
+  // Tab-level "has at least one successful load landed" flags. When false,
+  // a transient cubit Error state renders as the skeleton shimmer instead
+  // of the red "Something went wrong" card — so the brief glitch the user
+  // sees between tab/filter switch and first load doesn't surface a
+  // misleading error. Flip to true on the first Loaded emission per tab.
+  bool _receivedLoadedOnce = false;
+  bool _createdLoadedOnce = false;
+  // Single-shot silent retry guards. The pre-first-load error branch
+  // dispatches ONE retry then bails — without this, an Error state that
+  // doesn't recover would auto-loop Error → retry → Loading → Error and
+  // flicker the page forever.
+  bool _receivedRetryFired = false;
+  bool _createdRetryFired = false;
 
   static const _receivedFilters = ['All', 'Pending', 'Paid', 'Overdue', 'Cancelled'];
   static const _createdFilters = ['All', 'Pending', 'Paid', 'Partially Paid', 'Overdue', 'Cancelled'];
@@ -106,6 +122,57 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
+  }
+
+  /// Open the canonical invoice voice command bottom sheet.
+  ///
+  /// Mirrors the production opener in
+  /// `lib/src/features/widgets/service_voice_button.dart` so this entry point
+  /// inherits every guardrail the dashboard mic already has:
+  ///   * Logged-in check.
+  ///   * Voice-enrollment / biometrics check (via [VoiceSetupGuard]).
+  ///   * Mandatory voice verification gate for high-risk surfaces.
+  /// After the sheet closes (success, cancellation, agent disconnect) we
+  /// silently refresh both invoice cubits so any newly-created invoices
+  /// surface in the list without the user having to pull-to-refresh.
+  Future<void> _openInvoiceVoiceSheet() async {
+    final guard = _resolveVoiceGuard();
+    final allowed = await guard.canAccessVoiceFeature(context, 'invoices');
+    if (!allowed) return;
+    if (!mounted) return;
+
+    await Get.bottomSheet(
+      FractionallySizedBox(
+        heightFactor: 0.85,
+        child: const VoiceCommandSheet(serviceName: 'invoices'),
+      ),
+      isScrollControlled: true,
+      enableDrag: true,
+      isDismissible: true,
+      backgroundColor: Colors.transparent,
+    );
+
+    if (!mounted) return;
+    // Pick up any invoice the voice flow just created / paid.
+    context.read<InvoiceCubit>().loadInvoices();
+    context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+  }
+
+  /// Resolve the shared [VoiceSetupGuard] (lazy-construct if not in DI yet).
+  /// Identical lazy-init to `service_voice_button.dart` so any host without
+  /// an explicit DI registration still gets the same guardrail singleton.
+  VoiceSetupGuard _resolveVoiceGuard() {
+    if (GetIt.I.isRegistered<VoiceSetupGuard>()) {
+      return GetIt.I<VoiceSetupGuard>();
+    }
+    final manager = VoiceActivationManager();
+    final setupMgr = VoiceSetupManager(voiceManager: manager);
+    final guard = VoiceSetupGuard(
+      voiceManager: manager,
+      setupManager: setupMgr,
+    );
+    GetIt.I.registerSingleton<VoiceSetupGuard>(guard);
+    return guard;
   }
 
   void _onTabChanged() {
@@ -234,15 +301,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               ),
             ),
           ),
-          // Per-service voice agent (pinned to invoices). Honours
-          // VoiceSetupGuard so enrollment is required before use, and
-          // routes the agent to chat-products-service invoice tools.
-          ServiceVoiceButton(
-            serviceName: 'invoices',
-            buttonSize: 38.w,
-            iconSize: 18.sp,
-          ),
-          SizedBox(width: 8.w),
+          // Leftmost (unstyled) ServiceVoiceButton removed — the styled
+          // gradient mic farther right hosts the full invoice voice flow.
           MicroserviceChatIcon(
             serviceName: 'Invoices',
             sourceContext: 'invoices',
@@ -250,48 +310,35 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             iconColor: const Color.fromARGB(255, 78, 3, 208),
           ),
           SizedBox(width: 8.w),
-          BlocBuilder<AuthenticationCubit, AuthenticationState>(
-            builder: (context, authState) {
-              final accessToken = authState is AuthenticationSuccess
-                  ? authState.profile.session.accessToken
-                  : null;
-              return GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => Container(
-                      height: MediaQuery.of(context).size.height * 0.35,
-                      decoration: BoxDecoration(
-                        color: InvoiceThemeColors.secondaryBackground,
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-                      ),
-                      child: InvoiceVoiceAgentControl(
-                        accessToken: accessToken,
-                        onConnected: () {
-                          context.read<InvoiceCubit>().loadInvoices();
-                          context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
-                        },
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22.r),
-                  ),
-                  child: Icon(Icons.mic, color: Colors.white, size: 20.sp),
+          // Styled gradient mic — opens the canonical VoiceCommandSheet
+          // pinned to the invoices domain. The sheet uses the existing
+          // VoiceSessionCubit which:
+          //   1. POSTs /voice/session/start with `serviceName: 'invoices'`,
+          //      so the LiveKit-side voice agent routes through
+          //      chat-commerce-service's invoice tools (create / pay / send
+          //      / receipt) without any new backend wiring.
+          //   2. Renders the standard PIN bottom sheet on `request_pin_entry`.
+          //   3. Renders the success card on `transaction_result` (the
+          //      receipt's payload comes inline on that event — same shape
+          //      the sheet uses for transfers).
+          // The list-refresh side-effect from the old widget is preserved:
+          // when the voice session ends, we re-pull both invoice cubits so
+          // any new invoice the user just created via voice shows up.
+          GestureDetector(
+            onTap: () => _openInvoiceVoiceSheet(),
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              );
-            },
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(Icons.mic, color: Colors.white, size: 20.sp),
+            ),
           ),
         ],
       ),
@@ -515,12 +562,40 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
           return const InvoiceListShimmer();
         }
         if (state is TaggedInvoiceError) {
-          return _buildErrorState(
-            _friendlyErrorMessage(state.message),
-            () => context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1),
+          // Pre-first-load error AND we haven't tried a silent retry yet
+          // → kick ONE retry then bail. After that retry settles (Loaded
+          // or persistent Error), we show the real result. Without the
+          // one-shot guard the screen looped Error → retry → Loading →
+          // Error and flickered indefinitely.
+          if (!_receivedLoadedOnce && !_receivedRetryFired) {
+            _receivedRetryFired = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              final cubit = context.read<TaggedInvoiceCubit>();
+              if (!cubit.isClosed) {
+                cubit.loadIncomingInvoicesPage(page: 1);
+              }
+            });
+            return const InvoiceListShimmer();
+          }
+          // Backend is unavailable / unimplemented / errored: the Received
+          // tab gracefully degrades to the empty state instead of a noisy
+          // "Something went wrong / Try Again" card. The created tab still
+          // surfaces real errors because its data path is production-stable;
+          // this tab's tagged-invoice service is not yet GA across all
+          // markets, so an error here usually means "nothing for you yet".
+          return _buildEmptyState(
+            'No received invoices',
+            'Invoices sent to you will appear here.\nAsk someone to tag you on an invoice!',
+            icon: Icons.inbox_outlined,
           );
         }
         if (state is IncomingTaggedInvoicesLoaded) {
+          if (!_receivedLoadedOnce) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _receivedLoadedOnce = true);
+            });
+          }
           final invoices = state.invoices;
           if (invoices.isEmpty && _selectedFilter != 'All') {
             return _buildEmptyState(
@@ -586,12 +661,33 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
           return const InvoiceListShimmer();
         }
         if (state is InvoiceError) {
+          // Same single-shot retry guard as the Received tab. After one
+          // silent retry, persistent errors surface the real error UI.
+          if (!_createdLoadedOnce && !_createdRetryFired) {
+            _createdRetryFired = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              final cubit = context.read<InvoiceCubit>();
+              if (!cubit.isClosed) {
+                cubit.loadInvoicesPage(page: 1);
+              }
+            });
+            return const InvoiceListShimmer();
+          }
           return _buildErrorState(
             _friendlyErrorMessage(state.message),
-            () => context.read<InvoiceCubit>().loadInvoicesPage(page: 1),
+            () {
+              _createdRetryFired = false;
+              context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
+            },
           );
         }
         if (state is InvoicesLoaded) {
+          if (!_createdLoadedOnce) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _createdLoadedOnce = true);
+            });
+          }
           final invoices = state.invoices;
           if (invoices.isEmpty && _selectedFilter != 'All') {
             return _buildEmptyState(

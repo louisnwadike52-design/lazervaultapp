@@ -94,7 +94,10 @@ import 'package:lazervault/src/features/authentication/domain/repositories/i_fac
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/social_linking/data/datasources/social_linking_grpc_datasource.dart';
 import 'package:lazervault/src/features/social_linking/presentation/cubit/social_linking_cubit.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/profile/data/repositories/profile_repository.dart';
+import 'package:lazervault/src/features/profile/data/services/profile_picture_upload_service.dart';
+import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
@@ -218,7 +221,6 @@ import 'package:lazervault/src/features/funds/data/repositories/recurring_transf
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 
 import '../../src/features/authentication/data/datasources/authentication_remote_data_source.dart';
-import '../../src/features/presentation/views/splash_screen.dart';
 import 'package:lazervault/src/features/funds/data/repositories/deposit_repository_impl.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_usecase.dart';
@@ -280,6 +282,10 @@ import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_m
 import 'package:lazervault/src/features/microservice_chat/data/datasources/grpc_direct_chat_datasource.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_direct_chat_message_usecase.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_direct_chat_history_usecase.dart';
+
+// Multi-tab chat sessions (ChatGPT-style drawer)
+import 'package:lazervault/src/features/microservice_chat/data/datasources/chat_sessions_datasource.dart';
+import 'package:lazervault/src/features/microservice_chat/cubit/chat_sessions_cubit.dart';
 import 'package:lazervault/src/generated/direct_chat.pbgrpc.dart' as direct_chat_grpc;
 import 'package:lazervault/core/services/chat_session_manager.dart';
 // End Microservice Chat Imports
@@ -404,6 +410,8 @@ import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bil
 import 'package:lazervault/src/features/qr_payment/data/datasources/qr_payment_remote_datasource.dart';
 import 'package:lazervault/src/features/qr_payment/data/repositories/qr_payment_repository_impl.dart';
 import 'package:lazervault/src/features/qr_payment/domain/repositories/qr_payment_repository.dart';
+import 'package:lazervault/src/features/qr_payment/services/qr_pay_websocket_service.dart';
+import 'package:lazervault/src/features/id_pay/services/id_pay_websocket_service.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 // End QR Payment Imports
 
@@ -417,6 +425,7 @@ import 'package:lazervault/src/features/id_pay/presentation/cubit/id_pay_cubit.d
 // Contactless Payment (NFC) Imports
 import 'package:lazervault/src/features/contactless_payment/data/repositories/contactless_payment_repository_impl.dart';
 import 'package:lazervault/src/features/contactless_payment/domain/repositories/contactless_payment_repository.dart';
+import 'package:lazervault/src/features/contactless_payment/services/contactless_websocket_service.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/cubit/contactless_payment_cubit.dart';
 // End Contactless Payment Imports
 
@@ -708,7 +717,7 @@ Future<void> init() async {
   // Register Voice Biometrics Service
   serviceLocator.registerLazySingleton<VoiceBiometricsService>(
     () => VoiceBiometricsService(
-      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://10.0.2.2:3010',
+      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'https://api.lazervault.app/voice',
       client: serviceLocator<http.Client>(),
     ),
   );
@@ -1098,12 +1107,34 @@ Future<void> init() async {
 
   // ================== Feature: Profile ==================
 
+  // Services — profile-picture upload pipeline
+  // (Flutter → core-gateway proxy → storage-service signed-PUT).
+  serviceLocator.registerLazySingleton<ProfilePictureUploadService>(
+    () => ProfilePictureUploadService(
+      endpoints: EndpointRegistry.instance,
+      storage: serviceLocator<FlutterSecureStorage>(),
+    ),
+  );
+
+  // Services — bank-scan upload pipeline (same shape as profile-picture
+  // but lands under users/<uid>/bank-scans/* so a future audit query
+  // can scope to scans without touching profile photos). Used by the
+  // OCR flow in select-recipients → bank_scan_datasource.
+  serviceLocator.registerLazySingleton<BankScanUploadService>(
+    () => BankScanUploadService(
+      endpoints: EndpointRegistry.instance,
+      storage: serviceLocator<FlutterSecureStorage>(),
+    ),
+  );
+
   // Repositories
   serviceLocator.registerLazySingleton<IProfileRepository>(
       () => ProfileRepositoryImpl(
           userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
           authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
           callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          profilePictureUploadService:
+              serviceLocator<ProfilePictureUploadService>(),
         ));
 
   // Blocs/Cubits
@@ -1485,7 +1516,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CreditScoreAIService>(
     () => CreditScoreAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1624,11 +1655,32 @@ Future<void> init() async {
 
   // ================== Feature: AI Chat ==================
 
+  // Multi-tab chat sessions HTTP client — used by the ChatSessionManager
+  // for the ChatGPT-style drawer. Registered BEFORE ChatSessionManager
+  // so the lazy singleton can pick it up at first resolution.
+  serviceLocator.registerLazySingleton<ChatSessionsDataSource>(
+    () => ChatSessionsDataSource(
+      dio: Dio(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      secureStorageService: serviceLocator<SecureStorageService>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+    ),
+  );
+
   // Chat Session Manager (shared by AI Chat and Microservice Chat)
   serviceLocator.registerLazySingleton<ChatSessionManager>(
     () => ChatSessionManager(
       secureStorageService: serviceLocator<SecureStorageService>(),
+      sessionsDataSource: serviceLocator<ChatSessionsDataSource>(),
     ),
+  );
+
+  // ChatSessionsCubit — drives the drawer. Factory because each chat
+  // screen mounts its own provider so the cubit lifecycle matches the
+  // screen's. Manager is a singleton so all instances share the same
+  // session-list / current-id streams.
+  serviceLocator.registerFactory<ChatSessionsCubit>(
+    () => ChatSessionsCubit(manager: serviceLocator<ChatSessionManager>()),
   );
 
   // Data Sources - Use HTTP to call Chat Agent Gateway directly
@@ -1637,7 +1689,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<IAiChatDataSource>(
     () => HttpAiChatDataSource(
       dio: Dio(BaseOptions(
-        baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011', // Use 10.0.2.2 for Android emulator
+        baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat', // Use 10.0.2.2 for Android emulator
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
         sendTimeout: const Duration(seconds: 30),
@@ -1727,7 +1779,7 @@ Future<void> init() async {
           client: serviceLocator<http.Client>(),
           baseUrl: dotenv.env['STOCKS_API_URL'] ??
               dotenv.env['INVESTMENT_GATEWAY_HTTP_URL'] ??
-              'http://10.0.2.2:9090/api/v1',
+              'https://api.lazervault.app/api/v1/api/v1',
           secureStorage: serviceLocator<SecureStorageService>(),
         );
       }
@@ -1856,7 +1908,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CrowdfundDonorRatingService>(
     () => CrowdfundDonorRatingService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1868,7 +1920,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CrowdfundReportService>(
     () => CrowdfundReportService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1881,7 +1933,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<GroupAccountReportService>(
     () => GroupAccountReportService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -2056,10 +2108,15 @@ Future<void> init() async {
   );
 
   // ================== Feature: Split Bills ==================
+  // Routes to commerce-gateway (50061) — split_bill.SplitBillService is
+  // registered there alongside TagPay (see services/commerce-gateway/main.go).
+  // Previously this was wired to financial-gateway but no gateway had the
+  // service registered, producing "unknown service split_bill.SplitBillService"
+  // dispatch errors on every list/create/pay call.
 
   serviceLocator.registerLazySingleton<SplitBillRepository>(
     () => SplitBillRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2089,17 +2146,30 @@ Future<void> init() async {
     ),
   );
 
+  // Realtime WS overlay for the QR generator. Registered as a factory so
+  // each cubit instance gets a fresh stream — multiple display screens
+  // open in nav stack would otherwise share + close each other's channel.
+  serviceLocator.registerFactory<QrPayWebSocketService>(
+    () => QrPayWebSocketService(),
+  );
+
   // Blocs/Cubits
   serviceLocator.registerFactory(() => QRPaymentCubit(
     repository: serviceLocator<QRPaymentRepository>(),
+    wsService: serviceLocator<QrPayWebSocketService>(),
   ));
 
   // ================== Feature: IDPay ==================
 
   // Data Sources
+  // IDPay service is registered on commerce-gateway (port 50061), not
+  // financial-gateway. nginx-grpc-tls routes /pb.IDPayService/* to
+  // commerce_grpc. Wiring this to financialGrpcClient previously caused
+  // every ID-pay call to return UNIMPLEMENTED → "Service temporarily
+  // unavailable" → all ID-pay screens broken in production.
   serviceLocator.registerLazySingleton<IDPayRemoteDataSource>(
     () => IDPayRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2110,9 +2180,18 @@ Future<void> init() async {
     ),
   );
 
+  // WebSocket service for realtime IDPay completion notifications
+  // (creator side). Same shape as QR + contactless services. Each
+  // subscribe call mints a fresh transport so consecutive screen pushes
+  // don't reuse a stale connection.
+  serviceLocator.registerFactory<IDPayWebSocketService>(
+    () => IDPayWebSocketService(),
+  );
+
   // Blocs/Cubits
   serviceLocator.registerFactory(() => IDPayCubit(
     repository: serviceLocator<IDPayRepository>(),
+    wsService: serviceLocator<IDPayWebSocketService>(),
   ));
 
   // ================== Feature: Contactless Payment (NFC) ==================
@@ -2133,9 +2212,16 @@ Future<void> init() async {
     ),
   );
 
+  // Realtime WS overlay for the contactless receiver. Factory-scoped so
+  // each cubit gets its own channel.
+  serviceLocator.registerFactory<ContactlessWebSocketService>(
+    () => ContactlessWebSocketService(),
+  );
+
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ContactlessPaymentCubit(
     repository: serviceLocator<ContactlessPaymentRepository>(),
+    wsService: serviceLocator<ContactlessWebSocketService>(),
   ));
 
   // ================== Feature: Airtime ==================
@@ -2493,7 +2579,6 @@ Future<void> init() async {
   // ================== Screens / Presentation ==================
   // Note: ModernOnboardingScreen uses const constructor, no registration needed
   serviceLocator
-      ..registerFactory(() => SplashScreen())
       ..registerFactory(() => DashboardScreen())
       ..registerFactory(() => NewCardScreen())
       ..registerFactory(() => CameraScanScreen())
@@ -2647,7 +2732,13 @@ Future<void> init() async {
       grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       httpClient: serviceLocator<http.Client>(),
       secureStorage: serviceLocator<SecureStorageService>(),
-      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://10.0.2.2:3011',
+      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'https://api.lazervault.app/chat',
+      // Explicit core-payments REST base URL — used by
+      // processBankDetailsPayment to POST /api/v1/payments/bank-details.
+      // Previously this was derived by port-swapping the chat gateway
+      // URL ('3011' → '8080'), which broke whenever the chat gateway
+      // lived on a different port (staging tunnel on 443 etc).
+      corePaymentsBaseUrl: dotenv.env['CORE_PAYMENTS_BASE_URL'],
     ),
   );
 
@@ -2998,7 +3089,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<BudgetAIService>(
     () => BudgetAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
       secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
@@ -3177,7 +3268,7 @@ Future<void> init() async {
     () => HttpGeneralChatDataSource(
       dio: serviceLocator<Dio>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011', // Enhanced Gateway
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat', // Enhanced Gateway
     ),
   );
 
@@ -3200,6 +3291,8 @@ Future<void> init() async {
     sendMessageUseCase: serviceLocator<SendGeneralChatMessageUseCase>(),
     loadHistoryUseCase: serviceLocator<LoadMicroserviceChatHistoryUseCase>(),
     authCubit: serviceLocator<AuthenticationCubit>(),
+    // Multi-tab session manager — wires session-switching to history reload.
+    sessionManager: serviceLocator<ChatSessionManager>(),
   ));
 
   // Screens
@@ -3219,7 +3312,7 @@ Future<void> init() async {
         sendTimeout: const Duration(seconds: 30),
       )),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
     ),
   );
 
@@ -3583,7 +3676,7 @@ Future<void> init() async {
   // Repository (lazy singleton — shared HTTP client)
   serviceLocator.registerLazySingleton<IPlanMyDayRepository>(
     () => PlanMyDayRepository(
-      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'http://10.0.2.2:8097',
+      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1',
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       accountManager: serviceLocator<AccountManager>(),
       // Use the SHARED secure storage (AndroidOptions encryptedSharedPreferences:
@@ -3596,7 +3689,7 @@ Future<void> init() async {
   // Calendar Sync Service (lazy singleton — shared calendar sync state)
   serviceLocator.registerLazySingleton<CalendarSyncService>(
     () => CalendarSyncService(
-      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'http://10.0.2.2:8097',
+      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1',
       accountManager: serviceLocator<AccountManager>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       storage: serviceLocator<FlutterSecureStorage>(), // shared encrypted store
@@ -3620,7 +3713,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<SprayMeRemoteDataSource>(
     () {
       final dio = Dio(BaseOptions(
-        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'http://10.0.2.2:8088',
+        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1',
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
       ));

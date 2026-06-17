@@ -71,13 +71,28 @@ class NotificationsRemoteDataSource {
         localeManager: _localeManager,
       );
 
-  // Read the core-gateway base from dotenv with the emulator default (other
-  // dio datasources use this exact pattern). Avoids ApiConfig's late-init
-  // which isn't guaranteed to have run. On the Android emulator, host
-  // localhost must be reached via 10.0.2.2.
+  // Read the core-gateway base from dotenv with the emulator default. Avoids
+  // ApiConfig's late-init which isn't guaranteed to have run. On the Android
+  // emulator, host localhost must be reached via 10.0.2.2.
+  //
+  // Self-correcting: the request paths below already include `/api/v1/...`,
+  // but historically the default fallback and some `.env` configurations
+  // bake `/api/v1` into the URL too — producing `…/api/v1/api/v1/notifications`
+  // (404 → "Could not load notifications"). Strip the trailing `/api/v1`
+  // (and any trailing slash) so the concat is always correct regardless of
+  // which shape the env / default has.
   String get _base {
-    final raw = dotenv.env['CORE_GATEWAY_URL'] ?? 'http://10.0.2.2:7878';
-    return raw.replaceAll('localhost', '10.0.2.2').replaceAll('127.0.0.1', '10.0.2.2');
+    final raw = dotenv.env['CORE_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1';
+    var normalised = raw
+        .replaceAll('localhost', '10.0.2.2')
+        .replaceAll('127.0.0.1', '10.0.2.2');
+    while (normalised.endsWith('/')) {
+      normalised = normalised.substring(0, normalised.length - 1);
+    }
+    if (normalised.endsWith('/api/v1')) {
+      normalised = normalised.substring(0, normalised.length - '/api/v1'.length);
+    }
+    return normalised;
   }
 
   /// Fetch the user's notifications (newest first per the service). Returns the

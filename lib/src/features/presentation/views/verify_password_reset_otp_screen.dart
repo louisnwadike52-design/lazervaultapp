@@ -25,7 +25,11 @@ class _VerifyPasswordResetOTPScreenState extends State<VerifyPasswordResetOTPScr
 
   @override
   Widget build(BuildContext context) {
+    // Themed body: shared purple-curve background image flows under the
+    // transparent AppBar so the brand purple sits at top + bottom. Same
+    // visual treatment as the create-new-password screen.
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -44,11 +48,19 @@ class _VerifyPasswordResetOTPScreenState extends State<VerifyPasswordResetOTPScr
         ),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child: const VerifyPasswordResetOTP(),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bg/up-down-curve-bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+            child: const VerifyPasswordResetOTP(),
+          ),
         ),
       ),
     );

@@ -14,7 +14,7 @@ import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/change_passcode_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/passcode_flow_screen.dart';
 import 'package:lazervault/src/features/transaction_pin/presentation/views/transaction_pin_setup_screen.dart';
 import 'package:lazervault/src/features/transaction_pin/presentation/views/pin_management_screen.dart';
 import 'package:lazervault/src/features/transaction_pin/presentation/views/forgot_pin_screen.dart';
@@ -96,7 +96,6 @@ import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_c
 import '../../../core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
-import '../../../main.dart' show AuthCheckScreen;
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -581,6 +580,10 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
+import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AppRouter {
   static final routes = [
@@ -589,11 +592,10 @@ class AppRouter {
       page: () => const ModernOnboardingScreen(),
       transition: Transition.fade,
     ),
-    GetPage(
-      name: AppRoutes.authCheck,
-      page: () => const AuthCheckScreen(),
-      transition: Transition.noTransition,
-    ),
+    // No splash route — main() resolves the boot destination before
+    // runApp(), so the GetMaterialApp boots straight onto the real route
+    // while the native Android splash stays visible underneath. There is
+    // no Flutter SplashScreen widget anymore.
     GetPage(
       name: AppRoutes.dashboard,
       page: () => serviceLocator<DashboardScreen>(),
@@ -1014,7 +1016,46 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.changePasscode,
-      page: () => const ChangePasscodeScreen(),
+      // DEPRECATED ALIAS: existing call sites use AppRoutes.changePasscode.
+      // They land in the unified PasscodeFlowScreen with mode=change.
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IdentityCubit>(),
+        child: const PasscodeFlowScreen(mode: PasscodeFlowMode.change),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.passcodeFlow,
+      page: () {
+        final args = Get.arguments;
+        PasscodeFlowMode mode = PasscodeFlowMode.change;
+        String? accountPassword;
+        String? resetToken;
+        if (args is PasscodeFlowScreenArgs) {
+          mode = args.mode;
+          accountPassword = args.accountPassword;
+          resetToken = args.resetToken;
+        } else if (args is Map) {
+          final m = args['mode'];
+          if (m is PasscodeFlowMode) mode = m;
+          if (m is String) {
+            mode = PasscodeFlowMode.values.firstWhere(
+              (e) => e.name == m,
+              orElse: () => PasscodeFlowMode.change,
+            );
+          }
+          accountPassword = args['accountPassword'] as String?;
+          resetToken = args['resetToken'] as String?;
+        }
+        return BlocProvider(
+          create: (_) => serviceLocator<IdentityCubit>(),
+          child: PasscodeFlowScreen(
+            mode: mode,
+            accountPassword: accountPassword,
+            resetToken: resetToken,
+          ),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1073,6 +1114,9 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
+    // (AddPhoneNumber screen removed — phone is now captured at the
+    // bottom of signup page 2 with the same country chip + SIM-hint
+    // affordances inline. Route /auth/add-phone-number deprecated.)
     GetPage(
       name: AppRoutes.signIn,
       page: () => serviceLocator<PasscodeSignInScreen>(),
@@ -1284,6 +1328,26 @@ class AppRouter {
         return BlocProvider(
           create: (_) => serviceLocator<TransactionHistoryCubit>(),
           child: ServiceTransactionHistoryScreen(serviceType: serviceType),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    // Backend-rendered statement export. Optional `initialAccountId`
+    // passed via Get.arguments (Map<String, dynamic>{'accountId': ...})
+    // pre-selects the account when launched from the Documents tab.
+    GetPage(
+      name: AppRoutes.statementExport,
+      page: () {
+        final args = Get.arguments;
+        final initialAccountId = args is Map<String, dynamic>
+            ? args['accountId'] as String?
+            : (args is String ? args : null);
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<AccountActionsCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: StatementExportScreen(initialAccountId: initialAccountId),
         );
       },
       transition: Transition.rightToLeft,
@@ -3092,7 +3156,7 @@ GetPage(
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
+                body: Center(child: LazerVaultLoader.small()),
               );
             }
             final userId = snapshot.data ?? '';

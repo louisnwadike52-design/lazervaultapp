@@ -60,10 +60,15 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
         'name="$recipientName", account="$recipientAccountNumber"',
       );
 
-      // Use backend counterparty_account filter — the backend filters
-      // transactions WHERE counterparty_account = recipientAccountNumber.
-      // This catches both incoming and outgoing transfers with this person.
-      final response = await repository.fetchAllTransactions(
+      // Primary query — backend filters WHERE counterparty_account =
+      // recipientAccountNumber. Works for internal C2C (where the LazerVault
+      // virtual account is stored as the counterparty) but can miss EXTERNAL
+      // transfers where the backend may write the destination bank account
+      // into a different field, or write the account+name into
+      // description/reference instead. We follow up with a name-based
+      // search and merge the two result sets so the user sees transactions
+      // with this recipient regardless of which path the backend took.
+      final byAccountResp = await repository.fetchAllTransactions(
         page: 1,
         limit: 200,
         filters: TransactionFilters(
@@ -71,15 +76,57 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
         ),
       );
 
-      var transactions = response.transactions;
+      var transactions = List<UnifiedTransaction>.from(byAccountResp.transactions);
 
       developer.log(
-        '[RecipientTxHistory] Backend returned ${transactions.length} '
-        'transactions for counterparty "$recipientAccountNumber"',
+        '[RecipientTxHistory] By counterparty_account: ${transactions.length}',
       );
 
+      // Fallback / supplemental query: search by recipient name. External
+      // transfers usually store the beneficiary name on the transaction; the
+      // backend `searchQuery` filter scans description + reference + name.
+      // We always run this in addition to the account filter (not just when
+      // the first is empty) because a recipient could have BOTH internal and
+      // external transactions and we want both sets.
+      if (recipientName.trim().isNotEmpty) {
+        try {
+          final byNameResp = await repository.fetchAllTransactions(
+            page: 1,
+            limit: 200,
+            filters: TransactionFilters(searchQuery: recipientName.trim()),
+          );
+          developer.log(
+            '[RecipientTxHistory] By searchQuery name: '
+            '${byNameResp.transactions.length}',
+          );
+          // Tighten the name search to transactions that actually touch this
+          // recipient (description/counterpartyName contains the recipient
+          // name OR exact account match). Avoids surfacing unrelated rows
+          // that happened to contain the name as a substring (e.g., common
+          // first names appearing in narrations).
+          final lowerName = recipientName.trim().toLowerCase();
+          final lowerAccount = recipientAccountNumber.trim().toLowerCase();
+          for (final tx in byNameResp.transactions) {
+            final touchesAccount = (tx.counterpartyAccount ?? '')
+                .toLowerCase()
+                .contains(lowerAccount) && lowerAccount.isNotEmpty;
+            final touchesName = (tx.counterpartyName ?? '')
+                    .toLowerCase()
+                    .contains(lowerName) ||
+                (tx.description ?? '').toLowerCase().contains(lowerName);
+            if (touchesAccount || touchesName) {
+              transactions.add(tx);
+            }
+          }
+        } catch (e) {
+          developer.log('[RecipientTxHistory] Name-search fallback failed: $e');
+          // Swallow — primary set still surfaces if it had results.
+        }
+      }
+
       // Deduplicate by reference (backend creates duplicate records from
-      // TransferBalance + RecordTransaction paths). Keep the richer record.
+      // TransferBalance + RecordTransaction paths AND we may now have the
+      // same record from both queries).
       transactions = _deduplicateByReference(transactions);
 
       // Sort by date, newest first

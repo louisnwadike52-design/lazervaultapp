@@ -14,6 +14,13 @@
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <!-- Android 12+ BLE permissions for tap-to-pay device discovery +
+         advertise. `neverForLocation` on SCAN tells the OS the app does
+         not derive the user's physical location from BLE results, which
+         keeps ACCESS_FINE_LOCATION out of the runtime prompt chain. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <!-- Required permissions for screen share -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
@@ -35,7 +42,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="lazervaultapp"
+        android:label="Lazervault"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:extractNativeLibs="false"
@@ -116,7 +123,7 @@
         <service
             android:name=".QuickPayTileService"
             android:label="@string/quick_pay_tile_label"
-            android:icon="@drawable/ic_quick_pay"
+            android:icon="@mipmap/ic_launcher"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true">
             <intent-filter>

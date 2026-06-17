@@ -202,6 +202,21 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   Widget _buildHeader() {
     return Row(
       children: [
+        // Back button — restored so users can return to the previous
+        // dashboard surface from this nested page.
+        IconButton(
+          onPressed: () {
+            HapticFeedback.selectionClick();
+            Navigator.of(context).maybePop();
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(
+            minWidth: 36.w,
+            minHeight: 36.w,
+          ),
+        ),
+        SizedBox(width: 4.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +228,7 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                   end: Alignment.bottomRight,
                 ).createShader(bounds),
                 child: Text(
-                  'LazerSpray',
+                  'Lazerspray',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -307,7 +322,21 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       );
     }
 
-    final balance = (_wallet?.balance ?? 0) / 100;
+    final spendable = (_wallet?.balance ?? 0) / 100;
+    final earnings = (_wallet?.earningsBalance ?? 0) / 100;
+
+    void openWallet() {
+      HapticFeedback.lightImpact();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: context.read<SprayMeCubit>(),
+            child: const SprayMeWalletScreen(),
+          ),
+        ),
+      );
+    }
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -333,7 +362,7 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'LazerSpray Wallet',
+                'Gifts to spray',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.8),
                   fontSize: 14.sp,
@@ -347,35 +376,41 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
+          // Spendable spray credit (bought from your personal account in a session).
           Text(
-            'NGN ${_formatAmount(balance)}',
+            'NGN ${_formatAmount(spendable)}',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 32.sp,
+              fontSize: 30.sp,
               fontWeight: FontWeight.bold,
               letterSpacing: -1,
             ),
+          ),
+          SizedBox(height: 10.h),
+          // Earnings (received gifts) — withdrawable to personal.
+          Row(
+            children: [
+              Icon(Icons.savings_outlined, color: const Color(0xFF34D399), size: 15.sp),
+              SizedBox(width: 6.w),
+              Text(
+                'Earnings  NGN ${_formatAmount(earnings)}',
+                style: TextStyle(
+                  color: const Color(0xFF34D399),
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16.h),
           Row(
             children: [
               Expanded(
                 child: _buildWalletActionButton(
-                  icon: Icons.add,
-                  label: 'Fund',
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<SprayMeCubit>(),
-                          child: const SprayMeWalletScreen(),
-                        ),
-                      ),
-                    );
-                  },
+                  icon: Icons.account_balance_wallet_outlined,
+                  label: 'My Wallet',
+                  onTap: openWallet,
                 ),
               ),
               SizedBox(width: 12.w),
@@ -383,18 +418,7 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 child: _buildWalletActionButton(
                   icon: Icons.arrow_downward,
                   label: 'Withdraw',
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<SprayMeCubit>(),
-                          child: const SprayMeWalletScreen(),
-                        ),
-                      ),
-                    );
-                  },
+                  onTap: openWallet,
                 ),
               ),
             ],

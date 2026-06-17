@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for managing two-factor authentication settings
 class TwoFactorSettingsScreen extends StatefulWidget {
@@ -315,7 +316,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     if (_isLoading) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: LazerVaultLoader.small(),
         ),
       );
     }
@@ -609,14 +610,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
                 ),
               ),
               child: _isDisabling
-                  ? SizedBox(
-                      width: 20.w,
-                      height: 20.h,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Disable Two-Factor Authentication',
                       style: GoogleFonts.inter(
@@ -680,7 +674,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
               ),
               onPressed: () => Get.toNamed(AppRoutes.twoFactorSetup),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4E03D0),
+                backgroundColor: const Color(0xFF4834D4),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),

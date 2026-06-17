@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../services/split_bill_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SplitBillReceiptScreen extends StatefulWidget {
   const SplitBillReceiptScreen({super.key});
@@ -292,7 +293,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+          color: const Color(0xFF4834D4).withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -301,12 +302,12 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: const Color(0xFF4834D4).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.receipt_long,
-              color: Color(0xFF3B82F6),
+              color: Color(0xFF4834D4),
               size: 20,
             ),
           ),
@@ -406,14 +407,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _isSharing ? null : _shareReceipt,
                     icon: _isSharing
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? LazerVaultLoader(size: 18)
                         : const Icon(Icons.share, size: 18),
                     label: Text(
                       _isSharing ? 'Sharing...' : 'Share',
@@ -424,7 +418,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFF3B82F6)),
+                      side: const BorderSide(color: Color(0xFF4834D4)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -437,14 +431,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _isDownloading ? null : _downloadReceipt,
                     icon: _isDownloading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? LazerVaultLoader(size: 18)
                         : const Icon(Icons.download, size: 18),
                     label: Text(
                       _isDownloading ? 'Saving...' : 'Download',
@@ -455,7 +442,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFF3B82F6)),
+                      side: const BorderSide(color: Color(0xFF4834D4)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -471,7 +458,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
               child: ElevatedButton(
                 onPressed: () => Get.offAllNamed(AppRoutes.splitBills),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF4834D4),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

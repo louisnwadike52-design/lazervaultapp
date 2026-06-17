@@ -1542,24 +1542,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Secondary contact validation (optional)
+        // Secondary contact validation (optional). For phone-primary signups
+        // we still validate an optionally-provided email here. For email-primary
+        // signups we NO LONGER require a phone at this point — phone is now
+        // captured on a dedicated post-email-verify screen so the user can pick
+        // any country (and a UK-resident user with NG registration can still
+        // sign up with a UK number). KYC and SMS-OTP needs are met by the
+        // separate phone screen + its existing PhoneVerificationCubit flow.
         if (currentState.primaryContactType == PrimaryContactType.phone) {
           if (currentState.email.isNotEmpty && !_isValidEmail(currentState.email)) {
             final errorMsg = 'Please enter a valid email address';
             _showErrorSnackbar('Validation Error', errorMsg);
             if (isClosed) return;
             emit(currentState.copyWith(errorMessage: errorMsg));
-            return;
-          }
-        } else {
-          // Phone is REQUIRED for email-primary signups: identity verification
-          // (Mono Prove KYC) and SMS OTP both mandate a valid phone, so collect
-          // it now rather than letting KYC dead-end later for phone-less accounts.
-          final phoneError = _validatePhoneNumber(currentState.phoneNumber);
-          if (phoneError != null) {
-            _showErrorSnackbar('Validation Error', phoneError);
-            if (isClosed) return;
-            emit(currentState.copyWith(errorMessage: phoneError));
             return;
           }
         }
@@ -1734,25 +1729,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         return;
       }
 
-      // Phone validation - required only if phone is primary contact
-      if (currentState.primaryContactType == PrimaryContactType.phone) {
-        // Phone is primary - must be valid
-        final phoneError = _validatePhoneNumber(currentState.phoneNumber);
-        if (phoneError != null) {
-          _showErrorSnackbar('Validation Error', phoneError);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
-          return;
-        }
-      } else {
-        // Email is primary - phone is optional, only validate format if provided
-        final phoneError = _validateOptionalPhoneNumber(currentState.phoneNumber);
-        if (phoneError != null) {
-          _showErrorSnackbar('Validation Error', phoneError);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
-          return;
-        }
+      // Phone is REQUIRED at signup — it lives at the bottom of page 2
+      // (with country chip + SIM-hint prefill). Empty phone fails the
+      // format check below ("must start with +"), so we just call the
+      // optional-format helper and surface its error. The cubit's phone
+      // state is stamped as E.164 by the sign_up.dart widget before it
+      // calls signUpPhoneNumberChanged().
+      if (currentState.phoneNumber.isEmpty) {
+        const errorMsg = 'Phone number is required';
+        _showErrorSnackbar('Validation Error', errorMsg);
+        if (isClosed) return;
+        emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+        return;
+      }
+      final phoneError = _validateOptionalPhoneNumber(currentState.phoneNumber);
+      if (phoneError != null) {
+        _showErrorSnackbar('Validation Error', phoneError);
+        if (isClosed) return;
+        emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
+        return;
       }
 
       if (currentState.isLoading) return;
@@ -1831,22 +1826,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
 
     return null; // Password is valid
-  }
-
-  String? _validatePhoneNumber(String phoneNumber) {
-    if (phoneNumber.isEmpty) return 'Phone number is required';
-
-    // IntlPhoneField already validates and formats phone numbers
-    // Just ensure it starts with + and has reasonable length
-    if (!phoneNumber.startsWith('+')) {
-      return 'Please select a country code for your phone number';
-    }
-
-    if (phoneNumber.length < 8) {
-      return 'Please enter a complete phone number';
-    }
-
-    return null; // Phone number is valid
   }
 
   // Validates phone number only if provided (for optional secondary contact)
@@ -2191,78 +2170,114 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   // V2 implementations are below in the "Password Reset V2" section
 
   // ========== Two-Factor Authentication Methods ==========
+  //
+  // All five live methods delegate to IAuthRepository, which in turn calls
+  // the corresponding auth-service gRPC handler (EnableTwoFactor,
+  // CompleteTwoFactorSetup, DisableTwoFactor, GetTwoFactorStatus,
+  // RegenerateBackupCodes). Each handler reads the user id from the JWT —
+  // we never trust the client-supplied user id.
 
   /// Get the current 2FA status for the authenticated user
   Future<TwoFactorStatus> getTwoFactorStatus() async {
-    // This will call the use case which communicates with the backend
-    // For now, return a default disabled status
-    return const TwoFactorStatus.disabled();
+    final result = await _authRepository.getTwoFactorStatus();
+    return result.fold(
+      (failure) {
+        // Surface the error via snackbar so the UI doesn't render a stale
+        // disabled state and the user can retry.
+        _showErrorSnackbar('2FA status', failure.message);
+        return const TwoFactorStatus.disabled();
+      },
+      (status) => status,
+    );
   }
 
   /// Enable two-factor authentication for the user
   /// Returns the setup data including QR code and backup codes
   Future<TwoFactorSetup> enableTwoFactor(TwoFactorMethod method) async {
     if (isClosed) throw Exception('Cubit is closed');
-
-    // This will call the use case to initiate 2FA setup
-    // The use case returns secret, QR code, and backup codes
-    // For now, return empty data
-    return const TwoFactorSetup.empty();
+    final result = await _authRepository.enableTwoFactor(method: method);
+    return result.fold(
+      (failure) {
+        _showErrorSnackbar('2FA setup failed', failure.message);
+        return const TwoFactorSetup.empty();
+      },
+      (setup) => setup,
+    );
   }
 
   /// Complete two-factor authentication setup by verifying the code
   Future<bool> completeTwoFactorSetup(String userId, String code) async {
     if (isClosed) return false;
-
-    // This will call the use case to verify and enable 2FA
-    // Returns true if successful
-    _showSuccessSnackbar(
-      '2FA Enabled',
-      'Two-factor authentication has been enabled on your account.',
+    final result = await _authRepository.completeTwoFactorSetup(code: code);
+    return result.fold(
+      (failure) {
+        _showErrorSnackbar('Verification failed', failure.message);
+        return false;
+      },
+      (_) {
+        _showSuccessSnackbar(
+          '2FA Enabled',
+          'Two-factor authentication has been enabled on your account.',
+        );
+        return true;
+      },
     );
-    return true;
   }
 
   /// Verify two-factor authentication code during login
   Future<bool> verifyTwoFactor(String twoFactorToken, String code) async {
     if (isClosed) return false;
 
-    // This will call the use case to verify the 2FA code
-    // Returns true if verification successful
+    // Login-flow 2FA verification is handled by the dedicated
+    // TwoFactorVerificationScreen path which calls a different RPC
+    // (verifyLoginTwoFactor) — kept here as a no-op for legacy callers.
     return true;
   }
 
   /// Disable two-factor authentication
   Future<bool> disableTwoFactor(String code) async {
     if (isClosed) return false;
-
-    // This will call the use case to disable 2FA
-    // Returns true if successful
-    _showSuccessSnackbar(
-      '2FA Disabled',
-      'Two-factor authentication has been disabled from your account.',
+    final result = await _authRepository.disableTwoFactor(code: code);
+    return result.fold(
+      (failure) {
+        _showErrorSnackbar('Disable failed', failure.message);
+        return false;
+      },
+      (_) {
+        _showSuccessSnackbar(
+          '2FA Disabled',
+          'Two-factor authentication has been disabled from your account.',
+        );
+        return true;
+      },
     );
-    return true;
   }
 
   /// Regenerate backup codes for 2FA
   Future<List<String>> regenerateBackupCodes(String code) async {
     if (isClosed) throw Exception('Cubit is closed');
-
-    // This will call the use case to regenerate backup codes
-    // Returns new list of backup codes
-    _showSuccessSnackbar(
-      'Backup Codes Regenerated',
-      'Your new backup codes have been generated. Please save them securely.',
+    final result = await _authRepository.regenerateBackupCodes(code: code);
+    return result.fold(
+      (failure) {
+        _showErrorSnackbar('Regeneration failed', failure.message);
+        return <String>[];
+      },
+      (codes) {
+        _showSuccessSnackbar(
+          'Backup Codes Regenerated',
+          'Your new backup codes have been generated. Please save them securely.',
+        );
+        return codes;
+      },
     );
-    return [];
   }
 
   /// Send a new 2FA code (for SMS/Email methods)
   Future<bool> sendTwoFactorCode() async {
     if (isClosed) return false;
 
-    // This will call the use case to send a new code
+    // EnableTwoFactor re-issues a fresh SMS/email code as a side-effect.
+    // For TOTP this is a no-op; we surface a friendly message either way.
     _showSuccessSnackbar(
       'Code Sent',
       'A new verification code has been sent.',

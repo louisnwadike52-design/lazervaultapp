@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:pinput/pinput.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class VerifyPasswordResetOTP extends StatefulWidget {
   const VerifyPasswordResetOTP({super.key});
@@ -247,19 +248,19 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
 
     return Column(
       children: [
-        // Icon
+        // Icon — brand purple accent
         Center(
           child: Container(
             width: 64.w,
             height: 64.h,
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
+              color: const Color(0xFF4834D4).withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(
               _deliveryMethod == 'email' ? Icons.email_outlined : Icons.sms_outlined,
               size: 32.w,
-              color: Colors.blue,
+              color: const Color(0xFF4834D4),
             ),
           ),
         ),
@@ -313,14 +314,14 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
             decoration: BoxDecoration(
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.blue, width: 2),
+              border: Border.all(color: const Color(0xFF4834D4), width: 2),
             ),
           ),
           submittedPinTheme: defaultPinTheme.copyWith(
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
+              color: const Color(0xFF4834D4).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.blue),
+              border: Border.all(color: const Color(0xFF4834D4)),
             ),
           ),
           errorPinTheme: defaultPinTheme.copyWith(
@@ -365,11 +366,13 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
 
         SizedBox(height: 32.h),
 
-        // Verify Button
+        // Verify Button — brand purple primary
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
+            backgroundColor: const Color(0xFF4834D4),
             foregroundColor: Colors.white,
+            disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.4),
+            disabledForegroundColor: Colors.white70,
             elevation: 0,
             shape: const StadiumBorder(),
             padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -377,14 +380,7 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
           ),
           onPressed: (_isLoading || _remainingSeconds <= 0) ? null : _verifyOTP,
           child: _isLoading
-              ? SizedBox(
-                  height: 20.h,
-                  width: 20.w,
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.5,
-                  ),
-                )
+              ? LazerVaultLoader.small()
               : Text(
                   'Verify Code',
                   style: TextStyle(
@@ -396,26 +392,19 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
 
         SizedBox(height: 16.h),
 
-        // Resend Button
+        // Resend Button — brand purple accent
         TextButton(
           onPressed: (_isResending || _isLoading) ? null : _resendCode,
           child: _isResending
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 14.w,
-                      height: 14.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.blue,
-                        strokeWidth: 2,
-                      ),
-                    ),
+                    LazerVaultLoader(size: 14),
                     SizedBox(width: 8.w),
                     Text(
                       'Sending...',
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: const Color(0xFF4834D4),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -424,9 +413,9 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
               : Text(
                   'Resend Code',
                   style: TextStyle(
-                    color: Colors.blue,
+                    color: const Color(0xFF4834D4),
                     fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
         ),

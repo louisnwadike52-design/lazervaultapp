@@ -14,6 +14,7 @@ import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
 import '../../domain/repositories/split_bill_repository.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateSplitBillScreen extends StatefulWidget {
   const CreateSplitBillScreen({super.key});
@@ -394,7 +395,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+          borderSide: const BorderSide(color: Color(0xFF4834D4)),
         ),
       ),
     );
@@ -441,12 +442,12 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6)
+              ? const Color(0xFF4834D4)
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF3B82F6)
+                ? const Color(0xFF4834D4)
                 : const Color(0xFF2D2D2D),
           ),
         ),
@@ -474,7 +475,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.person, color: Color(0xFF3B82F6)),
+          const Icon(Icons.person, color: Color(0xFF4834D4)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -505,7 +506,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               setState(() => _includeMyself = value);
               _calculateSplits();
             },
-            activeTrackColor: const Color(0xFF3B82F6),
+            activeTrackColor: const Color(0xFF4834D4),
           ),
         ],
       ),
@@ -532,7 +533,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               icon: const Icon(Icons.add, size: 20),
               label: const Text('Add'),
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF3B82F6),
+                foregroundColor: const Color(0xFF4834D4),
               ),
             ),
           ],
@@ -592,13 +593,13 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           CircleAvatar(
             radius: 18,
             backgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                const Color(0xFF4834D4).withValues(alpha: 0.2),
             child: Text(
               participant.displayName.isNotEmpty
                   ? participant.displayName[0].toUpperCase()
                   : participant.username[0].toUpperCase(),
               style: const TextStyle(
-                color: Color(0xFF3B82F6),
+                color: Color(0xFF4834D4),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -720,10 +721,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+        color: const Color(0xFF4834D4).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+          color: const Color(0xFF4834D4).withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -784,9 +785,9 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           child: ElevatedButton(
             onPressed: _isCreating ? null : _createSplitBill,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4834D4),
               disabledBackgroundColor:
-                  const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                  const Color(0xFF4834D4).withValues(alpha: 0.5),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -794,15 +795,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               elevation: 0,
             ),
             child: _isCreating
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : const Text(
                     'Create Split Bill',
                     style: TextStyle(
@@ -940,10 +933,7 @@ class _SearchUsersSheetState extends State<_SearchUsersSheet> {
             builder: (context, state) {
               if (state is TagPayLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                  ),
+                  child: LazerVaultLoader.small(),
                 );
               }
 
@@ -971,13 +961,13 @@ class _SearchUsersSheetState extends State<_SearchUsersSheet> {
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                            const Color(0xFF4834D4).withValues(alpha: 0.2),
                         child: Text(
                           user.displayName.isNotEmpty
                               ? user.displayName[0].toUpperCase()
                               : user.tagPay[0].toUpperCase(),
                           style: const TextStyle(
-                            color: Color(0xFF3B82F6),
+                            color: Color(0xFF4834D4),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1000,7 +990,7 @@ class _SearchUsersSheetState extends State<_SearchUsersSheet> {
                           : null,
                       trailing: const Icon(
                         Icons.add_circle_outline,
-                        color: Color(0xFF3B82F6),
+                        color: Color(0xFF4834D4),
                       ),
                       onTap: () => widget.onUserSelected(user),
                     );

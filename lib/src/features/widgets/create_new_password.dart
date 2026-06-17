@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CreateNewPassword extends StatefulWidget {
   const CreateNewPassword({super.key});
@@ -213,16 +214,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
       },
       child: Column(
         children: [
-          // Title
-          Text(
-            'Reset Password',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16.sp,
-              color: AppColors.primaryFont,
-            ),
-          ),
-          SizedBox(height: 8.h),
+          // Subtitle — the page title is in the AppBar already; this line
+          // gives the user context on what to enter.
           Text(
             _requireToken
                 ? 'Enter the reset token from your ${_deliveryMethod == 'sms' ? 'SMS' : 'email'} below, then create your new password.'
@@ -414,11 +407,13 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
 
           SizedBox(height: 32.h),
 
-          // Submit Button
+          // Submit Button — brand purple primary
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: const Color(0xFF4834D4),
               foregroundColor: Colors.white,
+              disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.4),
+              disabledForegroundColor: Colors.white70,
               elevation: 0,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(
@@ -429,14 +424,7 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
             ),
             onPressed: _isLoading ? null : _submitResetPassword,
             child: _isLoading
-                ? SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
+                ? LazerVaultLoader.small()
                 : Text(
                     "Reset Password",
                     style: TextStyle(

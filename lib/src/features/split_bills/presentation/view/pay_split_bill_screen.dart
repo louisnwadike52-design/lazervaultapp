@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PaySplitBillScreen extends StatelessWidget {
   const PaySplitBillScreen({super.key});
@@ -314,12 +315,12 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.account_balance_wallet,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF4834D4),
                   size: 18,
                 ),
               ),
@@ -446,14 +447,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
           elevation: 0,
         ),
         child: _isProcessing
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Pay $_formattedAmount',
                 style: const TextStyle(

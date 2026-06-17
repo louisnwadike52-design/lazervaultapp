@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for setting up two-factor authentication
 class TwoFactorSetupScreen extends StatefulWidget {
@@ -768,7 +769,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
             child: ElevatedButton(
               onPressed: _isVerifying ? null : _completeSetup,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4E03D0),
+                backgroundColor: const Color(0xFF4834D4),
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.blue.shade700.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
@@ -776,14 +777,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                 ),
               ),
               child: _isVerifying
-                  ? SizedBox(
-                      width: 24.w,
-                      height: 24.h,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.5,
-                      ),
-                    )
+                  ? LazerVaultLoader.small()
                   : Text(
                       'Verify and Enable',
                       style: GoogleFonts.inter(
@@ -935,7 +929,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4E03D0),
+                    color: const Color(0xFF4834D4),
                   ),
                 ),
               ),
@@ -947,7 +941,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
   }
 
   Widget _buildEnableButton() {
-    final primaryColor = const Color(0xFF4E03D0);
+    final primaryColor = const Color(0xFF4834D4);
     return SizedBox(
       width: double.infinity,
       height: 50.h,
@@ -962,14 +956,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
           ),
         ),
         child: _isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.h,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
+            ? LazerVaultLoader.small()
             : Text(
                 'Enable ${_selectedMethod.displayName}',
                 style: GoogleFonts.inter(
@@ -983,7 +970,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
 
   Widget _buildLoadingIndicator() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: LazerVaultLoader.small(),
     );
   }
 }

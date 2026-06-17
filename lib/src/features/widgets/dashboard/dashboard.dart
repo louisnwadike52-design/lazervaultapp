@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/dashboard_rates_cubit.dart';
 import 'package:lazervault/src/features/widgets/dashboard/exchange_rates.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/widgets/dashboard/generate_bank_card.dart';
 import 'package:lazervault/src/features/widgets/dashboard/invite_friends.dart';
 import 'package:lazervault/src/features/widgets/dashboard/monthly_summary.dart';
@@ -31,6 +32,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/dashboard/widgets/dashboard_action_sheet.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class Dashboard extends StatefulWidget {
   /// Switches the bottom-nav to the AI Chat tab (index 2).
@@ -242,8 +244,19 @@ class _DashboardState extends State<Dashboard> {
                           value: serviceLocator<GroupAccountCubit>(),
                           child: const PublicGroups(),
                         ),
-                        SizedBox(height: 16.0.h),
-                        GenerateBankCard(),
+                        // Cards section: force-hidden in the view layer
+                        // regardless of the admin flag. The widget + its
+                        // routes/repository + `FeatureFlags.dashboardCardsVisible`
+                        // stay wired — to re-enable, just delete the `false &&`
+                        // guard below. (Hidden because the Cards product surface
+                        // isn't ready for testers yet; keeping the flag wiring
+                        // intact means the admin toggle resumes working when
+                        // the guard is lifted.)
+                        // ignore: dead_code
+                        if (false && FeatureFlags.dashboardCardsVisible) ...[
+                          SizedBox(height: 16.0.h),
+                          GenerateBankCard(),
+                        ],
                         SizedBox(height: 16.0.h),
                         Portfolio(),
                         SizedBox(height: 16.0.h),
@@ -659,14 +672,7 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     ),
                     child: isCreating
-                        ? SizedBox(
-                            width: 24.w,
-                            height: 24.w,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                        ? LazerVaultLoader.small()
                         : Text(
                             'Create Account',
                             style: TextStyle(
@@ -826,14 +832,7 @@ class _DashboardState extends State<Dashboard> {
                         elevation: 0,
                       ),
                       child: isProcessing
-                          ? SizedBox(
-                              width: 18.w,
-                              height: 18.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                          ? LazerVaultLoader(size: 18)
                           : Text(
                               'Accept',
                               style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),

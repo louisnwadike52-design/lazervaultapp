@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
@@ -119,6 +120,26 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   break;
                 }
 
+                // Resume from any incomplete signup step — the backend
+                // is source of truth (users.current_signup_step + users.
+                // signup_status). If the user logged in mid-signup
+                // (e.g. they signed up, didn't verify their phone, and
+                // came back days later), drop them at the right resume
+                // route instead of the dashboard. `null` / empty / the
+                // "complete" status means signup is done → fall through
+                // to the usual dashboard-or-passcode-setup branch.
+                final resumeRoute = _signupResumeRoute(
+                  profile.user.currentSignupStep,
+                  profile.user.signupStatus,
+                  email: profile.user.email,
+                  phone: profile.user.phoneNumber,
+                  hasTransactionPin: profile.user.hasTransactionPin,
+                );
+                if (resumeRoute != null) {
+                  Get.offAllNamed(resumeRoute.name, arguments: resumeRoute.args);
+                  break;
+                }
+
                 // Backend is source of truth — use login response data
                 if (profile.user.hasPasscode) {
                   // Passcode already set — persist login method and go to dashboard
@@ -197,25 +218,32 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                         _buildSignInForm(context),
                       SizedBox(height: 24.0.h),
                       isLoading
-                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                          : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 12.0.h,
-                                  horizontal: _responsiveController.screenWidth * 0.35.w,
+                          ? const Center(child: LazerVaultLoader.small())
+                          : SizedBox(
+                              width: double.infinity,
+                              height: 54.h,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4834D4),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  // Pill-rounded edges — half-height radius
+                                  // gives a true capsule shape regardless of
+                                  // device scale.
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(32.r),
+                                  ),
                                 ),
-                              ),
-                              onPressed: () {
-                                  context.read<AuthenticationCubit>().loginUser(
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text.trim(),
-                                  );
-                              },
-                              child: Text(
-                                "Sign In",
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+                                onPressed: () {
+                                    context.read<AuthenticationCubit>().loginUser(
+                                      email: _emailController.text.trim(),
+                                      password: _passwordController.text.trim(),
+                                    );
+                                },
+                                child: Text(
+                                  "Sign In",
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+                                ),
                               ),
                             ),
                       SizedBox(height: 12.0.h),
@@ -365,4 +393,80 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         ],
     );
   }
+}
+
+/// Resolve where to send a user who logs in mid-signup, based on the
+/// server-tracked `users.current_signup_step` and `users.signup_status`.
+///
+/// Step names mirror the backend `models.Step*` constants
+/// (account_created / email_verify / phone_verify / passcode_setup /
+/// identity_verify). Returns `null` for a fully-complete signup so
+/// the caller's normal post-login routing runs.
+///
+/// **MUST stay in sync with `_getRouteForSignupStep` in main.dart** —
+/// both files resolve the same set of step strings to GetX routes; one
+/// for cold-start resume, the other for post-login resume.
+({String name, Map<String, dynamic> args})? _signupResumeRoute(
+  String? step,
+  String? status, {
+  required String email,
+  String? phone,
+  bool hasTransactionPin = false,
+}) {
+  // Backend treats "complete" as the terminal status; anything else is
+  // either explicit-incomplete or null (legacy users predating the
+  // tracking table — fall through to default routing).
+  if (status == null || status.isEmpty) return null;
+  if (status == 'complete') return null;
+  if (step == null || step.isEmpty) return null;
+
+  switch (step) {
+    case 'email_verify':
+      return (
+        name: AppRoutes.emailVerification,
+        args: <String, dynamic>{
+          'email': email,
+          'codeSent': false,
+          'isRequired': true,
+          'secondaryPhone': phone,
+        },
+      );
+    case 'phone_verify':
+      if (phone == null || phone.isEmpty) {
+        // No phone on file but backend expects phone verify — defensive
+        // fallback to passcode setup; user can add phone in Settings.
+        return (
+          name: AppRoutes.passcodeSetup,
+          args: <String, dynamic>{
+            'fromLoginFlow': true,
+            'hasTransactionPin': hasTransactionPin,
+          },
+        );
+      }
+      return (
+        name: AppRoutes.phoneVerification,
+        args: <String, dynamic>{
+          'phoneNumber': phone,
+          'codeSent': false,
+          'isRequired': false,
+          'expiresIn': 600,
+        },
+      );
+    case 'identity_verify':
+      // BVN/NIN flow — KYC entry point.
+      return (
+        name: AppRoutes.kycBVNVerification,
+        args: <String, dynamic>{'fromSignup': true},
+      );
+    case 'passcode_setup':
+    case 'account_created': // user signed up but bailed before any verify
+      return (
+        name: AppRoutes.passcodeSetup,
+        args: <String, dynamic>{
+          'fromLoginFlow': true,
+          'hasTransactionPin': hasTransactionPin,
+        },
+      );
+  }
+  return null;
 }

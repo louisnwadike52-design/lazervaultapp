@@ -1,6 +1,8 @@
 abstract class AppRoutes {
   static const String root = '/';
-  static const String authCheck = '/auth-check';
+  // No splash/auth-check route — boot destination is resolved in main()
+  // before runApp(), so the GetMaterialApp opens directly on the real
+  // destination route while the native Android splash stays up behind.
   static const String onboarding = '/onboarding';
   static const String dashboard = '/dashboard';
   static const String home = '/home';
@@ -166,6 +168,11 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // New Transaction History Routes (Redesigned)
   static const String dashboardTransactionHistory = '/transactions/dashboard';
   static const String serviceTransactionHistory = '/transactions/service';
+  // Backend-rendered account statement export (PDF / CSV uploaded to
+  // storage-service; user gets a download URL). Distinct from the
+  // existing local export sheet which renders client-side and shares
+  // immediately.
+  static const String statementExport = '/transactions/statement-export';
 
   // WhatsApp Integration Routes
   static const String whatsappBanking = '/whatsapp-banking';
@@ -208,8 +215,17 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String pinManagement = '/settings/pin-management';
   static const String forgotPin = '/pin/forgot';
   static const String changePasscode = '/auth/change-passcode';
+  // Unified passcode entry point (setup / change / reset) used by the
+  // settings accordion. `changePasscode` is kept as a deprecated alias so
+  // existing callers continue to work — both resolve to PasscodeFlowScreen
+  // in app_router.dart, with `changePasscode` defaulting to mode=change.
+  static const String passcodeFlow = '/auth/passcode-flow';
   static const String emailVerification = '/auth/email-verification';
   static const String phoneVerification = '/auth/phone-verification';
+  // Inserted between email verification and passcode setup. Lets the user
+  // pick a phone-number country independent of their registration locale,
+  // and pre-fills via SIM autofill on Android. Skippable — user can defer.
+  // addPhoneNumber removed — phone is captured inline on signup page 2.
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
   static const String passwordRecovery = '/auth/password-recovery';

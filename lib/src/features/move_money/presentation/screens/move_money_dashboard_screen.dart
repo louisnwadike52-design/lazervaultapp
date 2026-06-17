@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -34,6 +35,7 @@ import '../widgets/move_account_card.dart';
 import '../widgets/move_status_badge.dart';
 import '../../services/move_transfer_pdf_service.dart';
 import '../../services/wallet_transfer_pdf_service.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Dashboard screen for the Move Money feature.
 ///
@@ -253,7 +255,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(sheetCtx).pop(useDirectDebit),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4834D4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   ),
                   child: Text('Continue to link',
@@ -300,8 +302,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -324,15 +327,15 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           // DIRECT_ROUTES['transfers']. Canonical pattern.
           ServiceVoiceButton(
             serviceName: 'transfers',
-            iconColor: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF3B82F6),
+            iconColor: const Color(0xFF4834D4),
+            backgroundColor: const Color(0xFF4834D4),
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Beam',
             sourceContext: 'transfers',
             icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF3B82F6),
+            iconColor: const Color(0xFF4834D4),
           ),
           SizedBox(width: 12.w),
         ],
@@ -482,7 +485,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           ],
         ),
       ),
-    );
+    ));
   }
 
   // ---------------------------------------------------------------------------
@@ -490,30 +493,47 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   // ---------------------------------------------------------------------------
 
   Widget _buildTabBar() {
+    // Brand purple = dashboard's account-carousel gradient stop. Higher
+    // contrast against the dark surface than the legacy `#3B82F6` blue,
+    // and the indicator shadow + brighter unselected label make the
+    // segmented control read as actively selectable rather than disabled.
+    const brandPurple = Color(0xFF4834D4);
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(4.r),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF3B82F6),
+          color: brandPurple,
           borderRadius: BorderRadius.circular(10.r),
+          boxShadow: [
+            BoxShadow(
+              color: brandPurple.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF9CA3AF),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
         labelStyle: GoogleFonts.inter(
           fontSize: 14.sp,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
         unselectedLabelStyle: GoogleFonts.inter(
           fontSize: 14.sp,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
         dividerColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+        overlayColor:
+            WidgetStateProperty.all(brandPurple.withValues(alpha: 0.08)),
         tabs: const [
           Tab(text: 'External Banks'),
           Tab(text: 'LazerVault Wallet'),
@@ -529,7 +549,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   Widget _buildExternalBanksTab() {
     return RefreshIndicator(
       onRefresh: () async => _loadData(),
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF4834D4),
       backgroundColor: const Color(0xFF1F1F1F),
       child: BlocBuilder<OpenBankingCubit, OpenBankingState>(
         builder: (context, obState) {
@@ -562,36 +582,79 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               SizedBox(height: 10.h),
               _buildAccountsList(accounts),
               SizedBox(height: 24.h),
-              // Move Money Now CTA
+              // Move Money CTA — a prominent, obviously-tappable action box.
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56.h,
-                  child: ElevatedButton(
-                    onPressed: () => Get.toNamed('/move-money/transfer'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.swap_horiz_rounded,
-                            color: Colors.white, size: 22.sp),
-                        SizedBox(width: 10.w),
-                        Text(
-                          'Move Money',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(18.r),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(18.r),
+                    onTap: () => Get.toNamed('/move-money/transfer'),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [Color(0xFF10B981), Color(0xFF059669)],
                         ),
-                      ],
+                        borderRadius: BorderRadius.circular(18.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 42.w,
+                              height: 42.w,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Icon(Icons.swap_horiz_rounded,
+                                  color: Colors.white, size: 24.sp),
+                            ),
+                            SizedBox(width: 14.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Move Money',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 17.sp,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2.h),
+                                  Text(
+                                    'Send to any bank or LazerVault wallet',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white.withValues(alpha: 0.85),
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            Icon(Icons.arrow_forward_rounded,
+                                color: Colors.white, size: 22.sp),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -665,7 +728,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
 
         return RefreshIndicator(
           onRefresh: () async => _loadData(),
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF4834D4),
           backgroundColor: const Color(0xFF1F1F1F),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -729,9 +792,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   child: ElevatedButton(
                     onPressed: _walletCanContinue ? _continueWalletTransfer : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF4834D4),
                       disabledBackgroundColor:
-                          const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                          const Color(0xFF4834D4).withValues(alpha: 0.3),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14.r),
                       ),
@@ -813,7 +876,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 Icons.swap_vert_rounded,
                 color:
                     (_walletSourceAccount != null || _walletDestinationAccount != null)
-                        ? const Color(0xFF3B82F6)
+                        ? const Color(0xFF4834D4)
                         : const Color(0xFF6B7280),
                 size: 22.sp,
               ),
@@ -913,9 +976,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: highlight
-                ? const Color(0xFF3B82F6)
+                ? const Color(0xFF4834D4)
                 : account != null
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.5)
+                    ? const Color(0xFF4834D4).withValues(alpha: 0.5)
                     : const Color(0xFF2D2D2D),
             width: highlight ? 2 : 1,
           ),
@@ -938,11 +1001,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(Icons.add,
-                    color: const Color(0xFF3B82F6), size: 20.sp),
+                    color: const Color(0xFF4834D4), size: 20.sp),
               ),
             SizedBox(width: 12.w),
             Expanded(
@@ -978,14 +1041,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                             padding: EdgeInsets.symmetric(
                                 horizontal: 6.w, vertical: 1.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6)
+                              color: const Color(0xFF4834D4)
                                   .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
                               'Primary',
                               style: GoogleFonts.inter(
-                                color: const Color(0xFF3B82F6),
+                                color: const Color(0xFF4834D4),
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1079,14 +1142,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                             padding: EdgeInsets.symmetric(
                                 horizontal: 6.w, vertical: 1.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6)
+                              color: const Color(0xFF4834D4)
                                   .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
                               'Primary',
                               style: GoogleFonts.inter(
-                                color: const Color(0xFF3B82F6),
+                                color: const Color(0xFF4834D4),
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1150,7 +1213,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         color = const Color(0xFFFBBF24);
       default:
         icon = Icons.account_balance_wallet_outlined;
-        color = const Color(0xFF3B82F6);
+        color = const Color(0xFF4834D4);
     }
 
     return Container(
@@ -1177,7 +1240,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 width: 80.w,
                 height: 80.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.account_balance_wallet_outlined,
@@ -1265,8 +1328,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               Center(
                 child: Padding(
                   padding: EdgeInsets.all(32.w),
-                  child: const CircularProgressIndicator(
-                      color: Color(0xFF3B82F6)),
+                  child: LazerVaultLoader.small(),
                 ),
               )
             else if (transfers.isEmpty)
@@ -1342,7 +1404,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                color: const Color(0xFF4834D4).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(Icons.account_balance_wallet_outlined,
@@ -1412,8 +1474,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
       textColor = const Color(0xFFEF4444);
       label = 'Failed';
     } else {
-      bgColor = const Color(0xFF3B82F6);
-      textColor = const Color(0xFF3B82F6);
+      bgColor = const Color(0xFF4834D4);
+      textColor = const Color(0xFF4834D4);
       label = 'Processing';
     }
 
@@ -1491,7 +1553,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         Center(
           child: Column(
             children: [
-              const CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
                 'Loading your accounts...',
@@ -1565,7 +1627,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                         fontSize: 14.sp, fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4834D4),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -1593,7 +1655,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF10B981), Color(0xFF3B82F6)],
+            colors: [Color(0xFF10B981), Color(0xFF4834D4)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1713,28 +1775,32 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     // Show the most recently linked account first, so a bank you just added
     // via "Link New" appears at the front of the carousel.
     final sorted = [...accounts]..sort((a, b) => b.linkedAt.compareTo(a.linkedAt));
-    return SizedBox(
-      height: 168.h, // fits the live balance line on each account card
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: sorted.length + 1,
-        separatorBuilder: (_, __) => SizedBox(width: 12.w),
-        itemBuilder: (context, index) {
-          if (index == sorted.length) {
-            return _buildAddAccountCard();
-          }
-          final account = sorted[index];
-          final mandate =
-              context.read<MandateCubit>().getMandateForAccount(account.id);
-          return MoveAccountCard(
-            account: account,
-            isSelected: false,
-            mandate: mandate,
-            onTap: () => _showAccountDetailSheet(account),
-            onLongPress: () => _showMandateManagement(account, mandate),
-          );
-        },
+    // Rebuild when the MandateCubit updates (the background Mono refresh) so the
+    // card badges correct themselves on display.
+    return BlocBuilder<MandateCubit, MandateState>(
+      builder: (context, _) => SizedBox(
+        height: 182.h, // fits the balance line + mandate badge with headroom
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          itemCount: sorted.length + 1,
+          separatorBuilder: (_, __) => SizedBox(width: 12.w),
+          itemBuilder: (context, index) {
+            if (index == sorted.length) {
+              return _buildAddAccountCard();
+            }
+            final account = sorted[index];
+            final mandate =
+                context.read<MandateCubit>().getMandateForAccount(account.id);
+            return MoveAccountCard(
+              account: account,
+              isSelected: false,
+              mandate: mandate,
+              onTap: () => _showAccountDetailSheet(account),
+              onLongPress: () => _showMandateManagement(account, mandate),
+            );
+          },
+        ),
       ),
     );
   }
@@ -1765,7 +1831,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     if (name.contains('opay')) return const Color(0xFF1BB066);
     if (name.contains('palmpay')) return const Color(0xFF6F42C1);
     if (name.contains('moniepoint')) return const Color(0xFF2F3292);
-    return const Color(0xFF3B82F6);
+    return const Color(0xFF4834D4);
   }
 
   void _showAccountDetailSheet(LinkedBankAccount account) {
@@ -1869,7 +1935,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                       if (account.isDefault) ...[
                         _buildSheetDivider(),
                         _buildDetailRow('Default', 'Yes',
-                            valueColor: const Color(0xFF3B82F6)),
+                            valueColor: const Color(0xFF4834D4)),
                       ],
                       _buildSheetDivider(),
                       _buildDetailRow(
@@ -1912,8 +1978,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF3B82F6),
-                            side: const BorderSide(color: Color(0xFF3B82F6)),
+                            foregroundColor: const Color(0xFF4834D4),
+                            side: const BorderSide(color: Color(0xFF4834D4)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
                             ),
@@ -2080,17 +2146,17 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                color: const Color(0xFF4834D4).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.add,
-                  color: const Color(0xFF3B82F6), size: 24.sp),
+                  color: const Color(0xFF4834D4), size: 24.sp),
             ),
             SizedBox(height: 12.h),
             Text(
               'Link Account',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4834D4),
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -2149,8 +2215,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               Center(
                 child: Padding(
                   padding: EdgeInsets.all(32.w),
-                  child: const CircularProgressIndicator(
-                      color: Color(0xFF3B82F6)),
+                  child: LazerVaultLoader.small(),
                 ),
               )
             else if (transfers.isEmpty)
@@ -2220,7 +2285,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(Icons.swap_horiz_rounded,
@@ -2292,7 +2357,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 width: 80.w,
                 height: 80.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.account_balance_outlined,
@@ -2342,7 +2407,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                         fontSize: 14.sp, fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4834D4),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -2382,7 +2447,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                               width: 40.w,
                               height: 40.w,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6)
+                                color: const Color(0xFF4834D4)
                                     .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
@@ -2807,7 +2872,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4834D4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),
               ),
@@ -2902,7 +2967,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4834D4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),
               ),
@@ -2933,7 +2998,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
       case MoveTransferStatus.payoutProcessing:
         return const Color(0xFFFB923C);
       default:
-        return const Color(0xFF3B82F6);
+        return const Color(0xFF4834D4);
     }
   }
 
@@ -2959,14 +3024,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   // ---------------------------------------------------------------------------
 
   Color _statusColorForWalletTransfer(String? status) {
-    if (status == null) return const Color(0xFF3B82F6);
+    if (status == null) return const Color(0xFF4834D4);
     final lower = status.toLowerCase();
     if (lower == 'completed' || lower == 'success') {
       return const Color(0xFF10B981);
     } else if (lower == 'failed' || lower == 'error') {
       return const Color(0xFFEF4444);
     }
-    return const Color(0xFF3B82F6);
+    return const Color(0xFF4834D4);
   }
 
   IconData _statusIconForWalletTransfer(String? status) {

@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_state.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Phone OTP Verification Screen
 ///
@@ -305,14 +306,14 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                         height: 100.h,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
+                            colors: [Color(0xFF4834D4), Color(0xFF7C3AED)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                              color: const Color(0xFF4834D4).withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -459,23 +460,16 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4E03D0),
+                            backgroundColor: const Color(0xFF4834D4),
                             foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                            disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16.r),
                             ),
                             elevation: 0,
                           ),
                           child: isVerifying
-                              ? SizedBox(
-                                  width: 24.w,
-                                  height: 24.h,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
+                              ? LazerVaultLoader.small()
                               : Text(
                                   'Verify Phone Number',
                                   style: GoogleFonts.inter(
@@ -509,14 +503,7 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: isSending
-                                ? SizedBox(
-                                    width: 16.w,
-                                    height: 16.h,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Color(0xFF4E03D0),
-                                    ),
-                                  )
+                                ? LazerVaultLoader.tiny()
                                 : Text(
                                     _resendCooldown > 0
                                         ? 'Resend in ${_resendCooldown}s'
@@ -526,7 +513,7 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                                       fontWeight: FontWeight.w600,
                                       color: _resendCooldown > 0
                                           ? const Color(0xFF9CA3AF)
-                                          : const Color(0xFF4E03D0),
+                                          : const Color(0xFF4834D4),
                                     ),
                                   ),
                           ),
@@ -568,12 +555,12 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                             Container(
                               padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                                color: const Color(0xFF4834D4).withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.security_rounded,
-                                color: const Color(0xFF4E03D0),
+                                color: const Color(0xFF4834D4),
                                 size: 20.sp,
                               ),
                             ),
