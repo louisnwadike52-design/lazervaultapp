@@ -59,7 +59,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   String _selectedBank = '';
   bool _isListening = false;
   String _recognizedText = '';
-  bool _isVoiceEnabled = false;
 
   // Dynamic bank list loaded from Mono supported banks
   List<Map<String, dynamic>> _banks = [];
@@ -285,27 +284,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     await _flutterTts.setPitch(1.0);
   }
 
-  void _startListening() async {
-    if (!_isListening) {
-      bool available = await _speech.initialize();
-      if (available) {
-        setState(() => _isListening = true);
-        _speech.listen(
-          onResult: (result) {
-            setState(() {
-              _recognizedText = result.recognizedWords;
-              _processVoiceCommand(_recognizedText);
-            });
-          },
-        );
-      }
-    }
-  }
-
-  void _stopListening() {
-    _speech.stop();
-    setState(() => _isListening = false);
-  }
 
   void _processVoiceCommand(String command) {
     command = command.toLowerCase();
@@ -2788,22 +2766,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         ),
       ),
       actions: [
-        IconButton(
-          icon: Icon(
-            _isVoiceEnabled ? Icons.mic : Icons.mic_off,
-            color: _isVoiceEnabled ? const Color(0xFF3498DB) : Colors.white,
-          ),
-          onPressed: () {
-            setState(() {
-              _isVoiceEnabled = !_isVoiceEnabled;
-              if (_isVoiceEnabled) {
-                _startListening();
-              } else {
-                _stopListening();
-              }
-            });
-          },
-        ),
+            // Single integrated voice surface: ServiceVoiceButton drives the
+            // production voice agent (the old local speech_to_text Icons.mic
+            // toggle was a duplicate and has been removed).
             // serviceName='deposits' so the voice agent routes to the
             // deposit-funds tools (the previous 'loans' string was a
             // copy-paste leftover that sent the agent to the wrong
