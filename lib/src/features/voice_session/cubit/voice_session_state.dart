@@ -54,9 +54,17 @@ class VoiceSessionConnectingToRoom extends VoiceSessionState {}
 
 class VoiceSessionConnected extends VoiceSessionState {
   final Room room;
-  const VoiceSessionConnected(this.room);
+
+  /// Monotonic rebuild nonce. Live caption updates (interim user words /
+  /// streaming agent text) re-emit the SAME logical "connected" state many
+  /// times per second; because [VoiceSessionState] is Equatable, bloc drops an
+  /// emit equal to the current state — which would freeze the live transcript.
+  /// Bumping [seq] on each caption tick makes the re-emit non-equal so the UI
+  /// rebuilds and the in-progress bubble grows "as the user speaks".
+  final int seq;
+  const VoiceSessionConnected(this.room, {this.seq = 0});
   @override
-  List<Object?> get props => [room];
+  List<Object?> get props => [room, seq];
 }
 
 class VoiceSessionDisconnected extends VoiceSessionState {}
@@ -98,9 +106,14 @@ class VoiceSessionMicPermissionGranted extends VoiceSessionState {}
 
 class VoiceSessionLocalUserSpeaking extends VoiceSessionState {
   final Room room;
-  const VoiceSessionLocalUserSpeaking(this.room);
+
+  /// Rebuild nonce — see [VoiceSessionConnected.seq]. Bumped on each interim
+  /// user-caption tick so the user's growing words rebuild live while they're
+  /// still mid-utterance (the speaking state itself doesn't change per word).
+  final int seq;
+  const VoiceSessionLocalUserSpeaking(this.room, {this.seq = 0});
   @override
-  List<Object?> get props => [room];
+  List<Object?> get props => [room, seq];
 }
 
 class VoiceSessionLocalUserNotSpeaking extends VoiceSessionState {
@@ -112,9 +125,14 @@ class VoiceSessionLocalUserNotSpeaking extends VoiceSessionState {
 
 class VoiceSessionAgentProcessing extends VoiceSessionState {
   final Room room;
-  const VoiceSessionAgentProcessing(this.room);
+
+  /// Rebuild nonce — see [VoiceSessionConnected.seq]. Bumped on each streaming
+  /// agent-caption chunk so Nova's reply grows live ("typing as it speaks")
+  /// while the processing state stays the same.
+  final int seq;
+  const VoiceSessionAgentProcessing(this.room, {this.seq = 0});
   @override
-  List<Object?> get props => [room];
+  List<Object?> get props => [room, seq];
 }
 
 class VoiceSessionTransferCompleted extends VoiceSessionState {

@@ -168,8 +168,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Chat history cubit for tracking conversation messages
   VoiceChatHistoryCubit get chatHistoryCubit => _chatHistoryCubit;
 
-  /// Get recent conversation messages for the current session
-  /// Returns list of VoiceMessage (up to 10 most recent)
+  /// Get the FULL conversation transcript for the current session, oldest →
+  /// newest. The UI renders this as a scrollable running transcript that
+  /// ACCUMULATES across turns (user complaint #1: history must not disappear
+  /// each turn and must be scrollable). The backing store
+  /// (VoiceChatHistoryCubit) already caps each conversation at 500 messages
+  /// for memory safety, so we return the whole list here rather than the old
+  /// last-10 window which prevented scrollback.
   /// Edge cases handled:
   /// - Null session ID
   /// - Missing conversation
@@ -193,14 +198,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         return [];
       }
 
-      // Edge case: Filter out invalid messages and limit to 10
+      // Edge case: Filter out invalid messages. Return the WHOLE transcript
+      // (no take(10) cap) so the user can scroll back through the full
+      // session; memory is already bounded by the history cubit's 500-msg cap.
       final validMessages = messages.where((msg) {
         // Validate message has required fields
         return msg != null &&
                msg.text != null &&
                msg.text.trim().isNotEmpty &&
                msg.timestamp != null;
-      }).take(10).toList();
+      }).toList();
 
       return validMessages;
     } catch (e) {
@@ -857,51 +864,56 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           }
           break;
         case 'user_caption_final':
-          // Final transcription - complete sentence/phrase
+          // Final transcription — the user's turn is complete. Commit it to
+          // the persistent transcript (so it stays in the scrollable history)
+          // and clear the live interim bubble so the finalized history bubble
+          // takes over WITHOUT a gap. We do NOT time-clear the interim caption
+          // any more (the old 5s YouTube-style timer wiped the user's words
+          // mid-conversation — user complaint #1/#2). Clearing only on finalize
+          // means there's no flicker: the persisted bubble is appended in the
+          // same frame the interim bubble is dropped.
           if (_room != null) {
             final text = eventData['text'] as String?;
             if (text != null && text.isNotEmpty) {
               // Validate and sanitize
               final sanitized = _sanitizeCaptionText(text);
               if (sanitized.isNotEmpty) {
-                _currentUserCaption = sanitized;
-                _emitCaptionUpdate();
-                // Add to chat history
+                // Commit the finalized turn to the persistent transcript first,
+                // then drop the interim live bubble so the history bubble is
+                // already present when the live one disappears (no flicker).
                 if (_currentSessionId != null) {
                   _chatHistoryCubit.addUserMessage(_currentSessionId!, sanitized);
                 }
-                // Auto-clear user caption after 5 seconds (YouTube-style)
-                Future.delayed(const Duration(seconds: 5), () {
-                  if (!isClosed && _currentUserCaption != null) {
-                    _currentUserCaption = null;
-                    _emitCaptionUpdate();
-                  }
-                });
+                _currentUserCaption = null;
+                _emitCaptionUpdate();
               }
+            } else {
+              // Empty final (e.g. VAD closed the utterance) — just drop the
+              // interim bubble; nothing to persist.
+              _currentUserCaption = null;
+              _emitCaptionUpdate();
             }
           }
           break;
         case 'agent_caption_start':
-          // AI agent started speaking - show what will be said
+          // AI agent started its turn. Clear any lingering interim USER caption
+          // (their turn is over) and begin streaming the agent's text live. We
+          // do NOT persist here — the full agent text is only known once
+          // streaming completes, so we commit to history on agent_caption_end
+          // (committing the partial start text would store a truncated turn).
           if (_room != null) {
+            _currentUserCaption = null;
             final text = eventData['text'] as String?;
-            if (text != null && text.isNotEmpty) {
-              // Validate and sanitize
-              final sanitized = _sanitizeCaptionText(text);
-              if (sanitized.isNotEmpty) {
-                _currentAgentCaption = sanitized;
-                _isAgentSpeaking = true;
-                _emitCaptionUpdate();
-                // Add to chat history when we have the full text
-                if (_currentSessionId != null) {
-                  _chatHistoryCubit.addAgentMessage(_currentSessionId!, sanitized);
-                }
-              }
-            }
+            final sanitized =
+                text != null ? _sanitizeCaptionText(text) : '';
+            _currentAgentCaption = sanitized.isNotEmpty ? sanitized : null;
+            _isAgentSpeaking = true;
+            _emitCaptionUpdate();
           }
           break;
         case 'agent_caption_text':
-          // Streaming chunk of text as AI speaks (for word-by-word effect)
+          // Streaming chunk of text as the AI speaks (grows the live bubble so
+          // it reads as the agent "typing" in realtime).
           if (_room != null) {
             final text = eventData['text'] as String?;
             if (text != null && text.isNotEmpty) {
@@ -915,8 +927,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           }
           break;
         case 'agent_caption_end':
-          // AI agent finished speaking - clear caption
+          // AI agent finished its turn. Commit the final streamed text to the
+          // persistent transcript (so the agent's reply stays in the scrollable
+          // history), then drop the live bubble so the history bubble takes
+          // over with no gap. Prefer the explicit end-text if provided, else
+          // the last streamed caption.
           if (_room != null) {
+            final endText = eventData['text'] as String?;
+            final finalText = (endText != null && endText.trim().isNotEmpty)
+                ? _sanitizeCaptionText(endText)
+                : (_currentAgentCaption ?? '');
+            if (finalText.isNotEmpty && _currentSessionId != null) {
+              _chatHistoryCubit.addAgentMessage(_currentSessionId!, finalText);
+            }
             _isAgentSpeaking = false;
             _currentAgentCaption = null;
             _emitCaptionUpdate();
@@ -964,13 +987,32 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   // ── Caption helper methods ──
 
-  /// Emits a caption-only state change.
-  /// The UI reads caption data separately via getters, so this just triggers a rebuild.
+  /// Monotonic counter that forces a distinct emit for every caption tick.
+  /// Without it, re-emitting the current (Equatable) state is a no-op and the
+  /// live transcript would not grow as the user/agent speaks.
+  int _captionSeq = 0;
+
+  /// Emits a caption-only state change so the UI rebuilds and reads the latest
+  /// caption getters (`currentUserCaption` / `currentAgentCaption` /
+  /// `isAgentSpeaking`). The active session states carry a [seq] nonce; we bump
+  /// it here so each interim word/chunk produces a NON-equal state and bloc
+  /// doesn't drop the emit (which would freeze the live "typing as you speak"
+  /// bubble). For non-active states we fall back to a plain re-emit.
   void _emitCaptionUpdate() {
     if (isClosed) return;
-    // Emit current state again to trigger UI rebuild with new caption data
-    // The UI will read _currentUserCaption, _currentAgentCaption, _isAgentSpeaking via getters
-    emit(state);
+    final s = state;
+    final next = ++_captionSeq;
+    if (s is VoiceSessionConnected) {
+      emit(VoiceSessionConnected(s.room, seq: next));
+    } else if (s is VoiceSessionLocalUserSpeaking) {
+      emit(VoiceSessionLocalUserSpeaking(s.room, seq: next));
+    } else if (s is VoiceSessionAgentProcessing) {
+      emit(VoiceSessionAgentProcessing(s.room, seq: next));
+    } else {
+      // Other states (e.g. transfer-confirmation, PIN) already change on their
+      // own events; a plain re-emit is enough for the rare caption tick there.
+      emit(s);
+    }
   }
 
   /// Clears all caption state and timers

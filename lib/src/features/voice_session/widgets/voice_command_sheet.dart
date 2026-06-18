@@ -79,11 +79,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // fullscreen toggle). Drives the DraggableScrollableController. Defaults to
   // TRUE — the sheet opens fullscreen and can only minimise to 90%.
   bool _isFullScreen = false;
-  // Tiny-CTA toggles for the conversation surface. Captions default ON (the
-  // live transcript is the primary feedback); the full conversation history is
-  // collapsed behind its chip until expanded.
+  // Tiny-CTA toggle for the live captions overlay. Captions default ON (the
+  // in-progress "speaking…" bubble is the primary realtime feedback). The
+  // running transcript history is ALWAYS shown (it accumulates + scrolls); the
+  // forum chip is a shortcut to the fuller standalone history sheet, not a
+  // show/hide toggle, so there is no _showHistory flag any more.
   bool _showCaptions = true;
-  bool _showHistory = false;
   final DraggableScrollableController _dragController =
       DraggableScrollableController();
   final ScrollController _conversationScrollController = ScrollController();
@@ -404,16 +405,34 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     }
   }
 
+  /// Coalesces rapid auto-scroll requests so the stream of interim caption
+  /// rebuilds (one per word) doesn't queue a new animation on every frame.
+  bool _autoScrollScheduled = false;
+
   /// Auto-scroll the conversation area to the newest message/caption.
+  ///
+  /// Called both on new finalized turns and on every live-caption growth. To
+  /// avoid fighting the rapid interim rebuilds (which emit many times per
+  /// second), we schedule at most one post-frame scroll at a time and jump
+  /// instantly while content is still streaming in — animating per chunk would
+  /// stutter. The single post-frame callback runs AFTER the new content is laid
+  /// out, so maxScrollExtent already includes the latest bubble.
   void _scrollConversationToBottom() {
+    if (_autoScrollScheduled) return;
+    _autoScrollScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_conversationScrollController.hasClients) {
-        _conversationScrollController.animateTo(
-          _conversationScrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
-      }
+      _autoScrollScheduled = false;
+      if (!_conversationScrollController.hasClients) return;
+      final target = _conversationScrollController.position.maxScrollExtent;
+      // Already pinned to (near) the bottom — nothing to do. This also lets a
+      // user who has scrolled UP to read older turns stay put instead of being
+      // yanked down on every interim caption tick.
+      final offset = _conversationScrollController.offset;
+      if ((target - offset).abs() < 4) return;
+      // If the user has deliberately scrolled up more than ~120px from the
+      // bottom, respect that and don't auto-follow; otherwise keep pinned.
+      if (target - offset > 120) return;
+      _conversationScrollController.jumpTo(target);
     });
   }
 
@@ -758,14 +777,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                     onTap: () => setState(() => _showCaptions = !_showCaptions),
                   ),
                   SizedBox(width: 5.w),
+                  // The inline transcript is now always shown (it accumulates +
+                  // scrolls), so this chip is a shortcut to the fuller
+                  // standalone conversation-history sheet rather than a
+                  // show/hide toggle. Tap OR long-press opens that sheet.
                   _buildTinyToggleChip(
                     icon: Icons.forum_rounded,
-                    active: _showHistory,
+                    active: false,
                     activeColor: const Color(0xFF3B82F6),
-                    onTap: () => setState(() => _showHistory = !_showHistory),
-                    // Long-press opens the full conversation-history sheet (the
-                    // older surface), so both the condensed inline list and the
-                    // full sheet stay reachable from one tiny chip.
+                    onTap: _showChatHistorySheet,
                     onLongPress: _showChatHistorySheet,
                   ),
                   SizedBox(width: 6.w),
@@ -982,6 +1002,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     }
 
     // ── NO ACTIVE TRANSFER ── large centred avatar header + transcript.
+    //
+    // The persisted transcript is ALWAYS rendered (it accumulates across turns
+    // and scrolls — user complaint #1: history must not disappear each turn).
+    // The tiny history CTA no longer gates visibility; it instead opens the
+    // fuller standalone history sheet on long-press. The live interim caption
+    // is appended as the latest in-progress bubble while the user/agent is
+    // mid-utterance, then replaced by its finalized history bubble with no gap.
     return ListView(
       controller: _conversationScrollController,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -991,11 +1018,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         Center(child: _buildNovaAvatar(state, compact: false)),
         SizedBox(height: 16.h),
 
-        // History is collapsed behind its tiny CTA by default — show the
-        // persisted turns only when the user expands them.
-        if (_showHistory) ...messages.map(_buildConversationBubble),
+        // Full running transcript — accumulates, scrollable, never cleared.
+        ...messages.map(_buildConversationBubble),
 
         // Live realtime caption inline as the latest bubble (when captions on).
+        // Rendered as interim (italic + lower opacity) so it reads as
+        // in-progress "typing as they speak"; it's dropped once the turn is
+        // committed to the transcript above.
         if (_showCaptions) ...[
           if (userCaption != null && userCaption.isNotEmpty)
             _buildLiveCaptionBubble(userCaption, isUser: true),
@@ -1024,20 +1053,23 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         // THE single transfer surface — sci-fi HUD, prime real estate.
         VoiceTransferHud(context: transfer),
 
-        // Condensed live caption directly under the HUD so the user still sees
-        // what Nova is saying while reviewing/authorizing (captions on only).
+        // Running transcript condensed under the HUD so older turns stay
+        // visible and scrollable while a transfer is in flight (accumulates —
+        // user complaint #1). Always rendered when there's history.
+        if (messages.isNotEmpty) ...[
+          SizedBox(height: 14.h),
+          ...messages.map(_buildConversationBubble),
+        ],
+
+        // Condensed live caption below the transcript so the user still sees
+        // what they / Nova are saying while reviewing/authorizing (captions on
+        // only). Shown as the latest in-progress bubble.
         if (_showCaptions && hasLiveCaption) ...[
           SizedBox(height: 14.h),
           if (userCaption != null && userCaption.isNotEmpty)
             _buildLiveCaptionBubble(userCaption, isUser: true),
           if (agentCaption != null && agentCaption.isNotEmpty)
             _buildLiveCaptionBubble(agentCaption, isUser: false),
-        ],
-
-        // Collapsible conversation history (tiny CTA in the header toggles it).
-        if (_showHistory && messages.isNotEmpty) ...[
-          SizedBox(height: 14.h),
-          ...messages.map(_buildConversationBubble),
         ],
       ],
     );
@@ -1087,8 +1119,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Live caption bubble — interim/streaming text rendered greyed; we treat
-  /// any active caption as the latest in-progress bubble.
+  /// Live caption bubble — the in-progress (interim) turn. Rendered visually
+  /// distinct from finalized history bubbles (lower opacity + italic + a
+  /// "speaking…" label) so it reads as the user/agent "typing as they speak".
+  /// Replaced by its solid finalized [_buildConversationBubble] once the turn
+  /// is committed to history.
   Widget _buildLiveCaptionBubble(String text, {required bool isUser}) {
     final accent = isUser ? const Color(0xFF10B981) : const Color(0xFF5B45C9);
     return Align(
@@ -1112,23 +1147,54 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           crossAxisAlignment:
               isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Text(
-              isUser ? 'You' : 'Nova',
-              style: GoogleFonts.inter(
-                color: accent,
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.4,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isUser ? 'You' : 'Nova',
+                  style: GoogleFonts.inter(
+                    color: accent,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                // Pulsing dot + "speaking…" to signal this bubble is still
+                // being spoken (interim), distinguishing it from finalized
+                // history turns.
+                FadeTransition(
+                  opacity: _pulseController.drive(
+                    Tween<double>(begin: 0.35, end: 1.0),
+                  ),
+                  child: Container(
+                    width: 5.w,
+                    height: 5.w,
+                    decoration:
+                        BoxDecoration(color: accent, shape: BoxShape.circle),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  'speaking…',
+                  style: GoogleFonts.inter(
+                    color: accent.withValues(alpha: 0.7),
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 4.h),
             Text(
               text,
               style: GoogleFonts.inter(
-                // Interim/streaming = greyed; reads as in-progress.
-                color: Colors.white.withValues(alpha: 0.65),
+                // Interim/streaming = greyed + italic; reads as in-progress.
+                color: Colors.white.withValues(alpha: 0.68),
                 fontSize: 14.sp,
                 height: 1.4,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
