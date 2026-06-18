@@ -17,9 +17,10 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_language_pic
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_dialog.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
-import 'package:lazervault/src/features/voice_session/widgets/voice_caption_box.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_chat_history_sheet.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_hud.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
+import 'package:lazervault/src/features/voice_session/models/voice_transfer_context.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
@@ -70,8 +71,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   bool _isMuted = false;
   bool _isClosing = false;
   // Expand the sheet to full screen (mirrors the ai_chat send-funds chatbot
-  // fullscreen toggle). Drives the DraggableScrollableController.
-  bool _isFullScreen = false;
+  // fullscreen toggle). Drives the DraggableScrollableController. Defaults to
+  // TRUE — the sheet opens fullscreen and can only minimise to 90%.
+  bool _isFullScreen = true;
+  // Tiny-CTA toggles for the conversation surface. Captions default ON (the
+  // live transcript is the primary feedback); the full conversation history is
+  // collapsed behind its chip until expanded.
+  bool _showCaptions = true;
+  bool _showHistory = false;
   final DraggableScrollableController _dragController =
       DraggableScrollableController();
   final ScrollController _conversationScrollController = ScrollController();
@@ -443,12 +450,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     super.dispose();
   }
 
-  /// Wrap the static (non-draggable) sub-views at 90% screen height so they
-  /// match the main session sheet's initial size instead of jumping to full
-  /// screen now that the openers no longer impose a FractionallySizedBox.
+  /// Wrap the static (non-draggable) sub-views at full screen height so they
+  /// match the main session sheet, which now opens FULLSCREEN by default
+  /// (the draggable sheet only minimises to 90%).
   Widget _sizedSheet(Widget child) {
     return FractionallySizedBox(
-      heightFactor: 0.9,
+      heightFactor: 1.0,
       child: child,
     );
   }
@@ -612,8 +619,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         //   BOTTOM = action bar (mute / end)
         return DraggableScrollableSheet(
           controller: _dragController,
-          initialChildSize: 0.9,
-          minChildSize: 0.6,
+          // Opens FULLSCREEN by default; can only minimise to 90% (snaps
+          // between 0.9 and 1.0 — the sheet owns its own height).
+          initialChildSize: 1.0,
+          minChildSize: 0.9,
           maxChildSize: 1.0,
           expand: false,
           snap: true,
@@ -713,14 +722,34 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ],
             ),
           ),
+          // Tiny CTAs: show/hide live captions + conversation history. Kept
+          // genuinely small (~22.w) so they fit alongside the control cluster.
+          _buildTinyToggleChip(
+            icon: _showCaptions
+                ? Icons.closed_caption_rounded
+                : Icons.closed_caption_off_rounded,
+            active: _showCaptions,
+            activeColor: const Color(0xFF10B981),
+            onTap: () => setState(() => _showCaptions = !_showCaptions),
+          ),
+          SizedBox(width: 5.w),
+          _buildTinyToggleChip(
+            icon: Icons.forum_rounded,
+            active: _showHistory,
+            activeColor: const Color(0xFF3B82F6),
+            onTap: () => setState(() => _showHistory = !_showHistory),
+            // Long-press opens the full conversation-history sheet (the older
+            // surface), so both the condensed inline list and the full sheet
+            // stay reachable from one tiny chip.
+            onLongPress: _showChatHistorySheet,
+          ),
+          SizedBox(width: 6.w),
           // Control cluster
           _buildSettingsButton(),
           SizedBox(width: 6.w),
           _buildLanguagePillCompact(),
           SizedBox(width: 6.w),
           _buildFullScreenButton(),
-          SizedBox(width: 6.w),
-          _buildChatHistoryButton(state),
           SizedBox(width: 6.w),
           GestureDetector(
             onTap: _closeSheet,
@@ -878,6 +907,23 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       );
     }
 
+    // ── ACTIVE TRANSFER LAYOUT ──
+    // When a transfer is in flight, the screen has a lot going on: give the
+    // sci-fi HUD the prime central space, the (already-compact) Nova avatar
+    // lives in the header, and the conversation is condensed below it. This is
+    // the SINGLE transfer surface — the old inline progress stepper is gone.
+    final transfer = cubit.transferContext;
+    if (transfer.isActive) {
+      return _buildActiveTransferArea(
+        state: state,
+        transfer: transfer,
+        messages: messages,
+        userCaption: userCaption,
+        agentCaption: agentCaption,
+        hasLiveCaption: hasLiveCaption,
+      );
+    }
+
     // Empty state — show the big avatar + a friendly prompt.
     if (messages.isEmpty && !hasLiveCaption) {
       return Center(
@@ -907,6 +953,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       );
     }
 
+    // ── NO ACTIVE TRANSFER ── large centred avatar header + transcript.
     return ListView(
       controller: _conversationScrollController,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -916,18 +963,54 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         Center(child: _buildNovaAvatar(state, compact: false)),
         SizedBox(height: 16.h),
 
-        // Persisted conversation turns as chat bubbles.
-        ...messages.map(_buildConversationBubble),
+        // History is collapsed behind its tiny CTA by default — show the
+        // persisted turns only when the user expands them.
+        if (_showHistory) ...messages.map(_buildConversationBubble),
 
-        // Live realtime caption inline as the latest bubble.
-        if (userCaption != null && userCaption.isNotEmpty)
-          _buildLiveCaptionBubble(userCaption, isUser: true),
-        if (agentCaption != null && agentCaption.isNotEmpty)
-          _buildLiveCaptionBubble(agentCaption, isUser: false),
+        // Live realtime caption inline as the latest bubble (when captions on).
+        if (_showCaptions) ...[
+          if (userCaption != null && userCaption.isNotEmpty)
+            _buildLiveCaptionBubble(userCaption, isUser: true),
+          if (agentCaption != null && agentCaption.isNotEmpty)
+            _buildLiveCaptionBubble(agentCaption, isUser: false),
+        ],
+      ],
+    );
+  }
 
-        // Transfer visual feedback (summary / progress) rendered inline,
-        // cleanly at the bottom of the transcript — no free-floating overlay.
-        VoiceTransferVisualFeedback(state: state),
+  /// Active-transfer layout: HUD takes the prime central space; captions +
+  /// (collapsible) conversation history are condensed below it. The Nova avatar
+  /// stays compact in the header (built by [_buildSessionHeader]).
+  Widget _buildActiveTransferArea({
+    required VoiceSessionState state,
+    required VoiceTransferContext transfer,
+    required List<VoiceConversationMessage> messages,
+    required String? userCaption,
+    required String? agentCaption,
+    required bool hasLiveCaption,
+  }) {
+    return ListView(
+      controller: _conversationScrollController,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      children: [
+        // THE single transfer surface — sci-fi HUD, prime real estate.
+        VoiceTransferHud(context: transfer),
+
+        // Condensed live caption directly under the HUD so the user still sees
+        // what Nova is saying while reviewing/authorizing (captions on only).
+        if (_showCaptions && hasLiveCaption) ...[
+          SizedBox(height: 14.h),
+          if (userCaption != null && userCaption.isNotEmpty)
+            _buildLiveCaptionBubble(userCaption, isUser: true),
+          if (agentCaption != null && agentCaption.isNotEmpty)
+            _buildLiveCaptionBubble(agentCaption, isUser: false),
+        ],
+
+        // Collapsible conversation history (tiny CTA in the header toggles it).
+        if (_showHistory && messages.isNotEmpty) ...[
+          SizedBox(height: 14.h),
+          ...messages.map(_buildConversationBubble),
+        ],
       ],
     );
   }
@@ -1076,54 +1159,39 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Chat history button - shows conversation history of current voice session
-  Widget _buildChatHistoryButton(VoiceSessionState state) {
-    final cubit = context.read<VoiceSessionCubit>();
-    final hasHistory = cubit.currentUserCaption != null || cubit.currentAgentCaption != null;
-
+  /// Tiny toggle chip (~22.w) used in the header for the captions / history
+  /// CTAs. Small enough to sit alongside settings / language / fullscreen /
+  /// close without crowding. [active] tints it with [activeColor].
+  Widget _buildTinyToggleChip({
+    required IconData icon,
+    required bool active,
+    required Color activeColor,
+    required VoidCallback onTap,
+    VoidCallback? onLongPress,
+  }) {
     return GestureDetector(
-      onTap: () => _showChatHistorySheet(),
-      child: Container(
-        width: 36.w,
-        height: 36.w,
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 24.w,
+        height: 24.w,
         decoration: BoxDecoration(
-          color: hasHistory
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.06),
+          color: active
+              ? activeColor.withValues(alpha: 0.16)
+              : Colors.white.withValues(alpha: 0.05),
           shape: BoxShape.circle,
-          border: hasHistory
-              ? Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                  width: 1,
-                )
-              : null,
+          border: Border.all(
+            color: active
+                ? activeColor.withValues(alpha: 0.45)
+                : Colors.white.withValues(alpha: 0.08),
+            width: 1,
+          ),
         ),
-        child: Stack(
-          children: [
-            Center(
-              child: Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: hasHistory
-                    ? const Color(0xFF3B82F6)
-                    : Colors.white.withValues(alpha: 0.5),
-                size: 18.sp,
-              ),
-            ),
-            // Badge showing message count if there's history
-            if (hasHistory)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Container(
-                  width: 8.r,
-                  height: 8.r,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF3B82F6),
-                  ),
-                ),
-              ),
-          ],
+        child: Icon(
+          icon,
+          color: active ? activeColor : Colors.white.withValues(alpha: 0.4),
+          size: 13.sp,
         ),
       ),
     );

@@ -11,6 +11,7 @@ import 'package:web_socket_channel/io.dart';
 import 'voice_session_state.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
+import 'package:lazervault/src/features/voice_session/models/voice_transfer_context.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
@@ -112,6 +113,23 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// The base state before adding caption overlay (used to restore when captions clear)
   VoiceSessionState? _baseStateBeforeCaption;
+
+  // ── Transfer HUD context (accumulated across chunked transfer events) ──
+
+  /// Lightweight value object the sci-fi transfer HUD renders. Updated
+  /// incrementally as the (chunked) transfer states arrive — recipient on
+  /// selection, amount/account/fee/total on the summary, status transitions on
+  /// PIN / result / error / cancel. The state objects only carry partial data
+  /// per turn, so we ACCUMULATE here and the UI reads [transferContext].
+  VoiceTransferContext _transferContext = VoiceTransferContext.idle;
+
+  /// The most recent recipient candidates from a `show_user_search` event,
+  /// kept so [selectUser] can resolve the chosen user's name / avatar / initials
+  /// for the HUD (the user_selected round-trip only carries userId + username).
+  List<Map<String, dynamic>> _lastSearchCandidates = const [];
+
+  /// Current accumulated transfer context for the sci-fi HUD.
+  VoiceTransferContext get transferContext => _transferContext;
 
   VoiceSessionCubit() : super(VoiceSessionInitial());
 
@@ -687,6 +705,14 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             final users = (eventData['users'] as List?)
                 ?.map((u) => Map<String, dynamic>.from(u as Map))
                 .toList() ?? [];
+            // Keep the candidates so selectUser() can resolve the chosen
+            // user's name / avatar for the HUD. If we are searching again
+            // after a prior failure, reset the stale result fields.
+            _lastSearchCandidates = users;
+            if (_transferContext.status == VoiceTransferStatus.failed ||
+                _transferContext.status == VoiceTransferStatus.cancelled) {
+              _updateTransferContext(VoiceTransferContext.idle);
+            }
             emit(VoiceSessionUserSearchRequired(
               _room!,
               users,
@@ -697,18 +723,23 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         case 'show_transfer_summary':
           if (_room != null) {
             _setVisualFeedbackActive(true);
+            _applyTransferSummary(eventData);
             emit(VoiceSessionTransferConfirmation(_room!, eventData));
           }
           break;
         case 'request_pin_entry':
           if (_room != null) {
             _setVisualFeedbackActive(true);
+            // A PIN request implies a confirmed amount even if the summary
+            // event was skipped — backfill the money fields from the payload.
+            _applyPinPayload(eventData);
             emit(VoiceSessionPinRequired(_room!, eventData));
           }
           break;
         case 'transaction_result':
           if (_room != null) {
             _setVisualFeedbackActive(false);
+            _applyTransactionResult(eventData);
             emit(VoiceSessionTransactionSuccess(_room!, eventData));
           }
           break;
@@ -727,6 +758,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             } else if (status == 'error') {
               // Voice verification failed or other error
               _setVisualFeedbackActive(false);
+              // If a transfer was mid-flight, mark the HUD failed with the
+              // reason rather than leaving it stuck on review/PIN.
+              if (_transferContext.isActive && !_transferContext.isTerminal) {
+                _updateTransferContext(_transferContext.copyWith(
+                  status: VoiceTransferStatus.failed,
+                  failureReason:
+                      message ?? 'Voice verification failed. Please try again.',
+                ));
+              }
               emit(VoiceSessionVerificationFailed(
                 message ?? 'Voice verification failed. Please try again.',
               ));
@@ -761,6 +801,14 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           if (_room != null) {
             _setVisualFeedbackActive(false);
             final errorMsg = eventData['message'] as String? ?? 'Transaction failed';
+            // Reflect the rejection on the HUD (failed + reason) so it stays
+            // in sync instead of stalling on the review/PIN step.
+            if (_transferContext.isActive) {
+              _updateTransferContext(_transferContext.copyWith(
+                status: VoiceTransferStatus.failed,
+                failureReason: _rejectReason(eventType, errorMsg),
+              ));
+            }
             emit(VoiceSessionTransactionError(_room!, errorMsg, eventType ?? 'error'));
           }
           break;
@@ -904,6 +952,164 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _baseStateBeforeCaption = null;
   }
 
+  // ── Transfer HUD context helpers ──
+
+  /// Replace the accumulated transfer context. Does NOT emit on its own — the
+  /// caller emits a session state right after, which rebuilds the HUD (the UI
+  /// reads [transferContext] via the getter, same pattern as captions).
+  void _updateTransferContext(VoiceTransferContext next) {
+    _transferContext = next;
+  }
+
+  /// Reset the HUD back to idle (cancel / end / new session / disconnect).
+  void _resetTransferContext() {
+    _transferContext = VoiceTransferContext.idle;
+    _lastSearchCandidates = const [];
+  }
+
+  /// Pull a usable display name out of a user-search candidate map.
+  String _candidateName(Map<String, dynamic> u) {
+    final full = (u['full_name'] ?? u['fullName'] ?? '').toString().trim();
+    if (full.isNotEmpty) return full;
+    final user = (u['username'] ?? '').toString().trim();
+    return user;
+  }
+
+  /// Pull a profile-picture URL out of a candidate map, tolerating the several
+  /// key shapes the backend may use. Returns null when none is present (HUD
+  /// then renders initials).
+  String? _candidateAvatar(Map<String, dynamic> u) {
+    for (final key in const [
+      'profile_picture',
+      'profile_pic',
+      'profile_image_url',
+      'profile_picture_url',
+      'avatar_url',
+      'avatarUrl',
+      'profilePicture',
+      'photo_url',
+    ]) {
+      final v = u[key];
+      if (v is String && v.trim().isNotEmpty) return v.trim();
+    }
+    return null;
+  }
+
+  /// Map a backend `transfer_type` to a short HUD label.
+  String _transferTypeLabel(String type) {
+    switch (type) {
+      case 'internal':
+        return 'LazerVault';
+      case 'domestic':
+        return 'Bank Transfer';
+      case 'international':
+        return 'International';
+      case 'phone':
+        return 'Phone';
+      default:
+        return type.isEmpty ? 'Transfer' : type;
+    }
+  }
+
+  /// Tolerantly parse a Naira (major-unit) amount from a dynamic JSON value.
+  double? _parseNaira(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    final s = v.toString().replaceAll(',', '').trim();
+    if (s.isEmpty) return null;
+    return double.tryParse(s);
+  }
+
+  /// Fold a `show_transfer_summary` payload into the HUD context → reviewing.
+  /// Amounts are NAIRA (major units) — do NOT divide.
+  void _applyTransferSummary(Map<String, dynamic> d) {
+    final amount = _parseNaira(d['amount']);
+    final fee = _parseNaira(d['fee']);
+    final total = _parseNaira(d['total']) ??
+        ((amount ?? 0) + (fee ?? 0) > 0 ? (amount ?? 0) + (fee ?? 0) : null);
+    final currency = (d['currency'] ?? 'NGN').toString();
+    final recipient = (d['recipient'] ?? '').toString().trim();
+    final username = (d['username'] ?? '').toString().trim();
+    final bank = (d['beneficiary_bank'] ?? d['bank_name'] ?? '').toString().trim();
+    final account =
+        (d['account_number'] ?? d['recipient_account_number'] ?? '')
+            .toString()
+            .trim();
+    final type = (d['transfer_type'] ?? 'internal').toString();
+
+    _updateTransferContext(_transferContext.copyWith(
+      status: VoiceTransferStatus.reviewing,
+      recipientName: recipient.isEmpty ? null : recipient,
+      recipientUsername: username.isEmpty ? null : username,
+      amountNaira: amount,
+      feeNaira: fee,
+      totalNaira: total,
+      currency: currency.isEmpty ? 'NGN' : currency,
+      bankName: bank.isEmpty ? null : bank,
+      accountDetail: account.isEmpty ? null : account,
+      transferTypeLabel: _transferTypeLabel(type),
+    ));
+  }
+
+  /// Backfill money fields from a `request_pin_entry` payload (in case the
+  /// summary event was skipped) and flip the HUD to awaitingPin.
+  void _applyPinPayload(Map<String, dynamic> d) {
+    final amount = _parseNaira(d['amount']);
+    final fee = _parseNaira(d['fee']);
+    final total = _parseNaira(d['total_amount']) ?? _parseNaira(d['total']);
+    final currency = (d['currency'] ?? '').toString();
+    final summary = (d['recipient_summary'] ?? '').toString().trim();
+
+    _updateTransferContext(_transferContext.copyWith(
+      status: VoiceTransferStatus.awaitingPin,
+      amountNaira: amount,
+      feeNaira: fee,
+      totalNaira: total,
+      currency: currency.isEmpty ? null : currency,
+      // Only adopt the summary as a name if we never resolved a recipient.
+      recipientName: _transferContext.recipientName == null && summary.isNotEmpty
+          ? summary
+          : null,
+    ));
+  }
+
+  /// Fold a `transaction_result` payload into the HUD context. Backend marks
+  /// success/failure inline (`success: false` + `error`).
+  void _applyTransactionResult(Map<String, dynamic> d) {
+    final success = d['success'] as bool? ?? true;
+    if (success) {
+      final ref = (d['reference'] ?? d['transaction_reference'] ?? '')
+          .toString()
+          .trim();
+      final balance = (d['new_balance'] ?? d['balance'] ?? '').toString().trim();
+      _updateTransferContext(_transferContext.copyWith(
+        status: VoiceTransferStatus.success,
+        reference: ref.isEmpty ? null : ref,
+        newBalance: balance.isEmpty ? null : balance,
+      ));
+    } else {
+      final reason = (d['error'] ?? d['message'] ?? 'Transfer failed').toString();
+      _updateTransferContext(_transferContext.copyWith(
+        status: VoiceTransferStatus.failed,
+        failureReason: reason,
+      ));
+    }
+  }
+
+  /// Human-friendly reason for a transfer-rejection event family.
+  String _rejectReason(String? eventType, String fallback) {
+    switch (eventType) {
+      case 'insufficient_funds':
+        return 'Insufficient funds';
+      case 'daily_limit_exceeded':
+        return 'Daily limit exceeded';
+      case 'invalid_beneficiary':
+        return 'Invalid beneficiary';
+      default:
+        return fallback;
+    }
+  }
+
   // ── Send events to voice agent via WebSocket ──
 
   /// Send a structured event to the voice agent through the WebSocket service.
@@ -921,6 +1127,30 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// User selected a recipient from the search results dialog.
   Future<void> selectUser(String userId, String username) async {
     _setVisualFeedbackActive(false);
+
+    // Resolve the chosen candidate (name / avatar / initials) from the last
+    // search results and fold it into the HUD context → recipientSelected.
+    Map<String, dynamic>? chosen;
+    for (final u in _lastSearchCandidates) {
+      final uid = (u['user_id'] ?? u['userId'] ?? '').toString();
+      final uname = (u['username'] ?? '').toString();
+      if ((userId.isNotEmpty && uid == userId) ||
+          (username.isNotEmpty && uname == username)) {
+        chosen = u;
+        break;
+      }
+    }
+    final name = chosen != null ? _candidateName(chosen) : username;
+    final avatar = chosen != null ? _candidateAvatar(chosen) : null;
+    // Fresh recipient selection resets any prior result fields (e.g. retry
+    // after a failure) while keeping the new recipient details.
+    _updateTransferContext(VoiceTransferContext(
+      status: VoiceTransferStatus.recipientSelected,
+      recipientName: name.isEmpty ? username : name,
+      recipientUsername: username.isEmpty ? null : username,
+      recipientAvatarUrl: avatar,
+    ));
+
     await sendToVoiceAgent('user_selected', {
       'user_id': userId,
       'username': username,
@@ -943,6 +1173,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// User cancelled the current voice action.
   Future<void> cancelVoiceAction() async {
     _setVisualFeedbackActive(false);
+    // Reflect the cancellation on the HUD (muted state) before clearing it.
+    if (_transferContext.isActive && !_transferContext.isTerminal) {
+      _updateTransferContext(
+          _transferContext.copyWith(status: VoiceTransferStatus.cancelled));
+    } else {
+      _resetTransferContext();
+    }
     await sendToVoiceAgent('transfer_cancelled', {});
     if (_room != null && !isClosed) {
       emit(VoiceSessionConnected(_room!));
@@ -994,6 +1231,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _disconnectWebSocket();
     _setVisualFeedbackActive(false);
     _clearCaptions();
+    _resetTransferContext();
     await _disposeRoomResources();
     if (isClosed) return;
     emit(VoiceSessionDisconnected());
@@ -1014,6 +1252,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _disconnectWebSocket();
     _setVisualFeedbackActive(false);
     _clearCaptions();
+    _resetTransferContext();
 
     // End chat history tracking
     if (sessionId.isNotEmpty) {
@@ -1071,6 +1310,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _currentAccessToken = null;
     _isMuted = false;
     _setVisualFeedbackActive(false);
+    _resetTransferContext();
     if (!isClosed) emit(VoiceSessionInitial());
     // Small delay to let UI rebuild, then start
     await Future.delayed(const Duration(milliseconds: 100));
@@ -1092,6 +1332,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _setVisualFeedbackActive(false);
     _isMuted = false;
     _clearCaptions();
+    _resetTransferContext();
     if (!isClosed) {
       emit(VoiceSessionInitial());
     }
