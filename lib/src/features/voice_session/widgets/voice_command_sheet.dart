@@ -85,6 +85,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // forum chip is a shortcut to the fuller standalone history sheet, not a
   // show/hide toggle, so there is no _showHistory flag any more.
   bool _showCaptions = true;
+  // Conversation display mode, toggled by the chat (forum) chip:
+  //  • true  = CONTINUOUS — the whole session transcript shows + scrolls in realtime.
+  //  • false = EPHEMERAL  — only the current user→AI cycle is shown; it's replaced
+  //    by the next cycle (older turns disappear).
+  bool _continuousChat = true;
   final DraggableScrollableController _dragController =
       DraggableScrollableController();
   final ScrollController _conversationScrollController = ScrollController();
@@ -777,15 +782,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                     onTap: () => setState(() => _showCaptions = !_showCaptions),
                   ),
                   SizedBox(width: 5.w),
-                  // The inline transcript is now always shown (it accumulates +
-                  // scrolls), so this chip is a shortcut to the fuller
-                  // standalone conversation-history sheet rather than a
-                  // show/hide toggle. Tap OR long-press opens that sheet.
+                  // Chat-mode chip: TAP toggles the transcript between
+                  // continuous (whole session, scrolls in realtime) and
+                  // ephemeral (only the current user→AI cycle, disappears after).
+                  // LONG-PRESS opens the fuller standalone history sheet.
                   _buildTinyToggleChip(
-                    icon: Icons.forum_rounded,
-                    active: false,
+                    icon: _continuousChat
+                        ? Icons.forum_rounded
+                        : Icons.chat_bubble_outline_rounded,
+                    active: _continuousChat,
                     activeColor: const Color(0xFF3B82F6),
-                    onTap: _showChatHistorySheet,
+                    onTap: () =>
+                        setState(() => _continuousChat = !_continuousChat),
                     onLongPress: _showChatHistorySheet,
                   ),
                   SizedBox(width: 6.w),
@@ -1018,8 +1026,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         Center(child: _buildNovaAvatar(state, compact: false)),
         SizedBox(height: 16.h),
 
-        // Full running transcript — accumulates, scrollable, never cleared.
-        ...messages.map(_buildConversationBubble),
+        // Transcript per chat mode (continuous = all + scroll; ephemeral =
+        // only the current cycle). Accumulates + scrollable in continuous mode.
+        ..._displayedMessages(messages).map(_buildConversationBubble),
 
         // Live realtime caption inline as the latest bubble (when captions on).
         // Rendered as interim (italic + lower opacity) so it reads as
@@ -1058,7 +1067,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         // user complaint #1). Always rendered when there's history.
         if (messages.isNotEmpty) ...[
           SizedBox(height: 14.h),
-          ...messages.map(_buildConversationBubble),
+          ..._displayedMessages(messages).map(_buildConversationBubble),
         ],
 
         // Condensed live caption below the transcript so the user still sees
@@ -1073,6 +1082,17 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         ],
       ],
     );
+  }
+
+  /// Messages to render given the current chat display mode.
+  ///  • continuous → the whole accumulating transcript.
+  ///  • ephemeral  → only the current user→AI cycle (the latest exchange), so
+  ///    older turns disappear once the next cycle begins.
+  List<VoiceConversationMessage> _displayedMessages(
+    List<VoiceConversationMessage> all,
+  ) {
+    if (_continuousChat || all.length <= 2) return all;
+    return all.sublist(all.length - 2);
   }
 
   /// Chat bubble for a persisted conversation turn.
