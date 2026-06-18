@@ -2033,6 +2033,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _dismissActiveDialog();
     _isDialogShowing = true;
 
+    // Capture the cubit before showing so the post-dismissal callback (which
+    // runs after an async gap) doesn't reach through `context`.
+    final voiceCubit = context.read<VoiceSessionCubit>();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2052,8 +2056,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         },
       ),
     ).whenComplete(() {
-      // Handle dismissal via back button or swipe
+      // Handle dismissal via back button or swipe (this modal bottom sheet is
+      // swipe-dismissible, unlike the barrierDismissible:false dialogs). If the
+      // user swiped it away without tapping a button, no resolving event clears
+      // the cubit's visual-feedback flag — tell the cubit the dialog is gone so
+      // stale-event suppression stops. Idempotent if a button already cleared it.
       _isDialogShowing = false;
+      voiceCubit.onVisualFeedbackDismissed();
     });
   }
 

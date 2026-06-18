@@ -58,6 +58,44 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// When true, SpeakingChangedEvent should NOT overwrite the state.
   bool _isVisualFeedbackActive = false;
 
+  /// Safety timeout guarding [_isVisualFeedbackActive]. If the terminal
+  /// `transaction_result` (or equivalent resolving) event is dropped, the flag
+  /// would otherwise stay true forever and suppress all subsequent
+  /// status/processing updates — freezing the UI on a stale dialog. This timer
+  /// force-clears the flag after [_visualFeedbackTimeout] as a last resort.
+  Timer? _visualFeedbackTimer;
+  static const Duration _visualFeedbackTimeout = Duration(seconds: 90);
+
+  /// Set the visual-feedback suppression flag with a safety timeout.
+  ///
+  /// When [active] is true the flag is set and a watchdog timer is (re)started;
+  /// if it fires while the flag is still set, the flag is cleared so a dropped
+  /// terminal event can't freeze the UI indefinitely. When [active] is false
+  /// the flag is cleared and the watchdog cancelled.
+  void _setVisualFeedbackActive(bool active) {
+    _isVisualFeedbackActive = active;
+    _visualFeedbackTimer?.cancel();
+    if (active) {
+      _visualFeedbackTimer = Timer(_visualFeedbackTimeout, () {
+        if (_isVisualFeedbackActive) {
+          _isVisualFeedbackActive = false;
+          AppLogger.warning(
+            'VoiceSessionCubit: visual-feedback safety timeout fired — '
+            'force-clearing stale dialog flag (terminal event likely dropped)',
+          );
+        }
+      });
+    }
+  }
+
+  /// Called by the UI when the user dismisses/closes a transfer-summary card,
+  /// user-search dialog, or PIN sheet WITHOUT a terminal event resolving it
+  /// (e.g. they swiped the sheet away). Stops stale-event suppression so the
+  /// agent's subsequent status/processing updates render normally.
+  void onVisualFeedbackDismissed() {
+    _setVisualFeedbackActive(false);
+  }
+
   /// Whether the local microphone is muted.
   bool _isMuted = false;
 
@@ -376,7 +414,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       print('VoiceSessionCubit: restarting — disposing existing room before new session');
       _disconnectWebSocket();
       await _disposeRoomResources();
-      _isVisualFeedbackActive = false;
+      _setVisualFeedbackActive(false);
       _clearCaptions();
     }
 
@@ -645,7 +683,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           break;
         case 'show_user_search':
           if (_room != null) {
-            _isVisualFeedbackActive = true;
+            _setVisualFeedbackActive(true);
             final users = (eventData['users'] as List?)
                 ?.map((u) => Map<String, dynamic>.from(u as Map))
                 .toList() ?? [];
@@ -658,19 +696,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           break;
         case 'show_transfer_summary':
           if (_room != null) {
-            _isVisualFeedbackActive = true;
+            _setVisualFeedbackActive(true);
             emit(VoiceSessionTransferConfirmation(_room!, eventData));
           }
           break;
         case 'request_pin_entry':
           if (_room != null) {
-            _isVisualFeedbackActive = true;
+            _setVisualFeedbackActive(true);
             emit(VoiceSessionPinRequired(_room!, eventData));
           }
           break;
         case 'transaction_result':
           if (_room != null) {
-            _isVisualFeedbackActive = false;
+            _setVisualFeedbackActive(false);
             emit(VoiceSessionTransactionSuccess(_room!, eventData));
           }
           break;
@@ -684,17 +722,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 emit(VoiceSessionAgentProcessing(_room!));
               }
             } else if (status == 'listening') {
-              _isVisualFeedbackActive = false;
+              _setVisualFeedbackActive(false);
               emit(VoiceSessionConnected(_room!));
             } else if (status == 'error') {
               // Voice verification failed or other error
-              _isVisualFeedbackActive = false;
+              _setVisualFeedbackActive(false);
               emit(VoiceSessionVerificationFailed(
                 message ?? 'Voice verification failed. Please try again.',
               ));
             } else if (status == 'disconnected') {
               // Agent signaled session end
-              _isVisualFeedbackActive = false;
+              _setVisualFeedbackActive(false);
               _disconnectWebSocket();
               emit(VoiceSessionDisconnected());
             }
@@ -721,7 +759,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         case 'daily_limit_exceeded':
         case 'invalid_beneficiary':
           if (_room != null) {
-            _isVisualFeedbackActive = false;
+            _setVisualFeedbackActive(false);
             final errorMsg = eventData['message'] as String? ?? 'Transaction failed';
             emit(VoiceSessionTransactionError(_room!, errorMsg, eventType ?? 'error'));
           }
@@ -820,7 +858,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           }
           break;
         case 'error':
-          _isVisualFeedbackActive = false;
+          _setVisualFeedbackActive(false);
           print('VoiceSessionCubit: WS error event: ${eventData['message']}');
           if (_room != null) {
             final errorMsg = eventData['message'] as String? ?? 'An error occurred';
@@ -882,7 +920,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// User selected a recipient from the search results dialog.
   Future<void> selectUser(String userId, String username) async {
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     await sendToVoiceAgent('user_selected', {
       'user_id': userId,
       'username': username,
@@ -895,7 +933,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// User confirmed the transfer summary.
   Future<void> confirmTransfer() async {
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     await sendToVoiceAgent('transfer_confirmed', {});
     if (_room != null && !isClosed) {
       emit(VoiceSessionAgentProcessing(_room!));
@@ -904,7 +942,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// User cancelled the current voice action.
   Future<void> cancelVoiceAction() async {
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     await sendToVoiceAgent('transfer_cancelled', {});
     if (_room != null && !isClosed) {
       emit(VoiceSessionConnected(_room!));
@@ -913,7 +951,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// PIN entry completed — notify voice agent of the result.
   Future<void> notifyPinCompleted(bool success, {String? reference, String? error}) async {
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     await sendToVoiceAgent('pin_completed', {
       'success': success,
       if (reference != null) 'reference': reference,
@@ -939,7 +977,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     required String callbackIntent,
     Map<String, dynamic>? callbackArgs,
   }) async {
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     await sendToVoiceAgent('pin_verified', {
       'verification_token': verificationToken,
       'callback_intent': callbackIntent,
@@ -954,7 +992,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Future<void> disconnectFromLiveKitRoom({bool fullCleanup = false}) async {
     print('VoiceSessionCubit: disconnectFromLiveKitRoom called, fullCleanup=$fullCleanup');
     _disconnectWebSocket();
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     _clearCaptions();
     await _disposeRoomResources();
     if (isClosed) return;
@@ -974,7 +1012,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     final sessionId = _currentSessionId ?? '';
     print('VoiceSessionCubit: endSession called, sessionId=$sessionId');
     _disconnectWebSocket();
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     _clearCaptions();
 
     // End chat history tracking
@@ -1032,7 +1070,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _currentSessionId = null;
     _currentAccessToken = null;
     _isMuted = false;
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     if (!isClosed) emit(VoiceSessionInitial());
     // Small delay to let UI rebuild, then start
     await Future.delayed(const Duration(milliseconds: 100));
@@ -1051,7 +1089,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     print('VoiceSessionCubit: resetSessionState called');
     _disconnectWebSocket();
     await _disposeRoomResources();
-    _isVisualFeedbackActive = false;
+    _setVisualFeedbackActive(false);
     _isMuted = false;
     _clearCaptions();
     if (!isClosed) {
@@ -1061,6 +1099,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   @override
   Future<void> close() async {
+    _visualFeedbackTimer?.cancel();
+    _visualFeedbackTimer = null;
     _disconnectWebSocket();
     await _disposeRoomResources();
     return super.close();
