@@ -55,6 +55,7 @@ class EndpointRegistry {
   /// for app-wide runtime knobs that must be admin-tunable without a release.
   static const Set<String> _persistedNonUrlKeys = {
     'session_inactivity_logout_seconds',
+    'splitbill_external_receiver_enabled',
   };
 
   /// Single source of truth for the admin endpoint Flutter polls. The
@@ -354,6 +355,15 @@ class EndpointRegistry {
             45;
     return n.clamp(15, 600);
   }
+
+  /// Whether a split bill may be paid to an external bank account (each
+  /// co-payer pays the bank directly via the send-funds flow). Admin-tunable
+  /// via the `splitbill_external_receiver_enabled` system setting (single
+  /// source of truth); defaults to OFF so the bank-receiver option only shows
+  /// once an operator explicitly enables it.
+  bool get splitBillExternalReceiverEnabled =>
+      _get('splitbill_external_receiver_enabled', 'false').trim().toLowerCase() ==
+          'true';
 
   /// Raw read for any registered key — for places that store/read a key
   /// the typed accessors don't (yet) cover.

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
@@ -63,6 +64,13 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     final acctDetails = GetIt.I<AccountManager>().activeAccountDetails;
     return acctDetails?.currency ?? 'NGN';
   }
+
+  /// Admin-controlled feature flag (cached/refreshed in the background by
+  /// [EndpointRegistry], so this is a synchronous, cheap read). When false the
+  /// external-bank receiver option is hidden entirely and the receiver step
+  /// looks exactly like it did before the bank option existed.
+  bool get _externalReceiverEnabled =>
+      endpointRegistry.splitBillExternalReceiverEnabled;
 
   /// Country used for the external-bank picker. Derived from the active
   /// account currency (same source as [_currency]); defaults to NG. The bank
@@ -239,7 +247,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     }
 
     // External-bank receiver must have a verified account before we create.
-    if (_receiverMode == _ReceiverMode.bankAccount && !_isBankReceiverReady) {
+    if (_bankReceiverActive && !_isBankReceiverReady) {
       Get.snackbar(
         'Bank Account Required',
         'Select a bank and verify a 10-digit account number to be paid to.',
@@ -281,7 +289,9 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     final SplitBillReceiverInput? receiver = switch (_receiverMode) {
       _ReceiverMode.lazerVaultUser when _receiverUsername != null =>
         SplitBillReceiverInput.internalUser(_receiverUsername!),
-      _ReceiverMode.bankAccount when _isBankReceiverReady =>
+      // Gated on the admin flag via [_bankReceiverActive]: when the feature is
+      // off this falls through to `null` (creator collects / internal default).
+      _ReceiverMode.bankAccount when _bankReceiverActive && _isBankReceiverReady =>
         SplitBillReceiverInput.externalBank(
           bankCode: _receiverBankCode!,
           accountNumber: _receiverAccountNumber!,
@@ -478,6 +488,13 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     );
   }
 
+  /// Defensive: the bank-receiver mode only counts as active while the admin
+  /// flag is on. If the flag flips off after a selection (or via a stale
+  /// state), every gate below treats the receiver as the no-receiver/internal
+  /// default so a disabled feature can never be submitted.
+  bool get _bankReceiverActive =>
+      _externalReceiverEnabled && _receiverMode == _ReceiverMode.bankAccount;
+
   /// True once a bank + a verified 10-digit account are selected.
   bool get _isBankReceiverReady =>
       _receiverBankCode != null &&
@@ -492,7 +509,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           : '@$_receiverUsername';
       return name;
     }
-    if (_receiverMode == _ReceiverMode.bankAccount && _isBankReceiverReady) {
+    if (_bankReceiverActive && _isBankReceiverReady) {
       // Prefer the verified holder name; fall back to "<bank> ••••<last4>".
       if (_receiverBankAccountName?.isNotEmpty ?? false) {
         return _receiverBankAccountName!;
@@ -544,18 +561,24 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                 subtitle: 'Pick a recipient',
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildReceiverModeCard(
-                mode: _ReceiverMode.bankAccount,
-                icon: Icons.account_balance_outlined,
-                title: 'Bank account',
-                subtitle: 'Pay to a bank',
+            // External-bank receiver is admin-gated. When the flag is off the
+            // option card (and its bank-entry section below) are not rendered,
+            // so the step looks exactly like the internal-only version.
+            if (_externalReceiverEnabled) ...[
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildReceiverModeCard(
+                  mode: _ReceiverMode.bankAccount,
+                  icon: Icons.account_balance_outlined,
+                  title: 'Bank account',
+                  subtitle: 'Pay to a bank',
+                ),
               ),
-            ),
+            ],
           ],
         ),
-        if (_receiverMode == _ReceiverMode.bankAccount) ...[
+        if (_externalReceiverEnabled &&
+            _receiverMode == _ReceiverMode.bankAccount) ...[
           const SizedBox(height: 12),
           _buildBankReceiverSection(),
         ],
@@ -1508,8 +1531,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_receiverMode == _ReceiverMode.bankAccount &&
-                !_isBankReceiverReady) ...[
+            if (_bankReceiverActive && !_isBankReceiverReady) ...[
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -1529,8 +1551,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: (_isCreating ||
-                    (_receiverMode == _ReceiverMode.bankAccount &&
-                        !_isBankReceiverReady))
+                    (_bankReceiverActive && !_isBankReceiverReady))
                 ? null
                 : _createSplitBill,
             style: ElevatedButton.styleFrom(
