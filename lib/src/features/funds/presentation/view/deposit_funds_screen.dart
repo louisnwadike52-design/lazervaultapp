@@ -2028,13 +2028,24 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
     if (!mounted) return;
     if (!result.success) {
-      // Cancelled / failed on the checkout side. The webhook never credits,
-      // so just surface it; no balance moved.
+      // Cancelled / failed on the checkout side. The webhook never credits
+      // (we only credit on a VERIFIED Flutterwave success), so just surface it;
+      // no balance moved. The deposit row stays pending until the reconciler
+      // confirms with Flutterwave (it won't credit a charge the user abandoned).
       _showDepositFailure(result.errorMessage ?? 'Payment was not completed');
+      return;
     }
-    // On success the banking webhook credits and the WebSocket emits
-    // DepositWebSocketCompleted, which the listener turns into the dashboard
-    // redirect + success snackbar.
+    // SUCCESS on the checkout side. The banking webhook is the primary credit
+    // path (charge.completed → verify → CreditBalance) and the WebSocket emits
+    // DepositWebSocketCompleted → dashboard redirect. As a BACKSTOP for a
+    // missed/delayed webhook, also poll GetDepositStatus, which hits the
+    // backend verify-on-return (re-verifies with Flutterwave + credits on read).
+    // The credit is idempotent (deposit-{id}), so webhook + poll can't
+    // double-credit.
+    _currentDepositId = depositId;
+    if (mounted) {
+      _pollDepositSettlement(context);
+    }
   }
 
   /// Shared "How Mono Direct Debit Works" info block.

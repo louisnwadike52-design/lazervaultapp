@@ -459,7 +459,17 @@ class _P2PChatPageState extends State<P2PChatPage> {
                 final msgIndex =
                     state.isLoadingMore ? index - 1 : index;
                 final message = state.messages[msgIndex];
-                final isMe = message.senderId == _currentUserId;
+                // Align on the SAME authoritative id the cubit stamps onto
+                // outgoing messages' senderId (and that the backend echoes as
+                // sender_id), so a user's own messages always render right on
+                // BOTH the creator's and the receiver's device. Fall back to
+                // the page's auth-derived id only if the cubit hasn't resolved
+                // one yet.
+                final alignId =
+                    context.read<P2PChatCubit>().currentUserId.isNotEmpty
+                        ? context.read<P2PChatCubit>().currentUserId
+                        : _currentUserId;
+                final isMe = message.senderId == alignId;
 
                 // Date separator
                 Widget? dateSeparator;

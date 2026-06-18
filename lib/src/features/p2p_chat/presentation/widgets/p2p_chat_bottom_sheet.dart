@@ -52,7 +52,7 @@ void showP2PChatBottomSheet(
         accountManager: serviceLocator<AccountManager>(),
         localeManager: serviceLocator<LocaleManager>(),
         currentUserId: currentUserId,
-      )..initializeChat(otherUserId),
+      )..initializeChat(otherUserId, currentUserId: currentUserId),
       child: P2PChatBottomSheet(
         otherUserId: otherUserId,
         otherUserName: otherUserName,

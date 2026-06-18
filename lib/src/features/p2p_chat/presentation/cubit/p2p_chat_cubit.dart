@@ -27,6 +27,14 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       P2PChatMediaUploadService();
   String _currentUserId;
 
+  /// The authoritative current-user id used to stamp outgoing messages'
+  /// `senderId`. The UI MUST align bubbles on THIS value (not a separately
+  /// derived id) so optimistic + server-echoed messages render on the same
+  /// side. This is the JWT/profile identity (the same id the backend stamps
+  /// onto `sender_id`); it only falls back to secure storage when the caller
+  /// constructed the cubit without one.
+  String get currentUserId => _currentUserId;
+
   StreamSubscription? _messageSubscription;
   StreamSubscription? _deliverySubscription;
   StreamSubscription? _readReceiptSubscription;
@@ -60,6 +68,14 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   }
 
   /// Initialize chat with another user.
+  ///
+  /// [currentUserId] is the caller's authoritative JWT/profile identity
+  /// (`profile.userId`). When provided it is used to stamp outgoing messages'
+  /// `senderId` AND should be the value the UI aligns bubbles on (via
+  /// [currentUserId] getter) — guaranteeing optimistic + server-echoed
+  /// messages render on the same side on BOTH participants' devices. It must
+  /// match the JWT id the backend stamps onto `sender_id`. Falls back to
+  /// secure storage only when neither the constructor nor this param supply one.
   Future<void> initializeChat(
     String otherUserId, {
     String? otherUserName,
@@ -67,9 +83,18 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     String? myName,
     String? myAvatar,
     bool isSavedRecipient = false,
+    String? currentUserId,
   }) async {
-    // If currentUserId wasn't available at construction time (e.g. factory DI),
-    // fetch it from secure storage.
+    // Prefer the authoritative JWT/profile id passed by the caller so the id we
+    // stamp on outgoing messages is identical to the one the UI aligns on (and
+    // to the one the backend echoes as sender_id). Never let a possibly-stale
+    // secure-storage value win over it.
+    if (currentUserId != null && currentUserId.isNotEmpty) {
+      _currentUserId = currentUserId;
+    }
+
+    // If currentUserId still wasn't available (e.g. factory DI with no caller
+    // value), fall back to secure storage as a last resort.
     if (_currentUserId.isEmpty) {
       final storedUserId = await _secureStorage.getUserId();
       if (storedUserId != null && storedUserId.isNotEmpty) {

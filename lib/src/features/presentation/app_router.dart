@@ -4454,6 +4454,7 @@ GetPage(
               myName: currentUserName.isNotEmpty ? currentUserName : null,
               isSavedRecipient:
                   (Get.arguments as Map<String, dynamic>?)?['isSavedRecipient'] == true,
+              currentUserId: currentUserId,
             ),
           child: const P2PChatPage(),
         );

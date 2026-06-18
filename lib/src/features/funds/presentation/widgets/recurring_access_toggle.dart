@@ -56,13 +56,31 @@ class RecurringAccessToggle extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Set up Direct Debit',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  'Set up Direct Debit',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              // Info (i): explains Direct Debit vs Direct Pay
+                              // so the user knows exactly what the switch does.
+                              GestureDetector(
+                                onTap: () => _showDirectDebitInfo(context),
+                                behavior: HitTestBehavior.opaque,
+                                child: Icon(
+                                  Icons.info_outline,
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  size: 16.sp,
+                                ),
+                              ),
+                            ],
                           ),
                           SizedBox(height: 2.h),
                           Text(
@@ -125,6 +143,136 @@ class RecurringAccessToggle extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  /// Explains the two deposit modes the switch toggles between, in plain
+  /// user language. Styled to the app's dark theme + brand purple.
+  void _showDirectDebitInfo(BuildContext context) {
+    const purple = Color.fromARGB(255, 78, 3, 208);
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        insetPadding: EdgeInsets.symmetric(horizontal: 28.w),
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.account_balance_outlined, color: purple, size: 22.sp),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'Direct Debit vs Direct Pay',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 18.h),
+              _infoRow(
+                icon: Icons.link,
+                title: 'Direct Debit (switch ON)',
+                body: 'You approve a recurring mandate with your bank just '
+                    'once. After that, future deposits happen automatically — '
+                    'no bank approval each time. You can revoke it anytime in '
+                    'Settings.',
+                accent: purple,
+              ),
+              SizedBox(height: 14.h),
+              _infoRow(
+                icon: Icons.looks_one,
+                title: 'Direct Pay (switch OFF)',
+                body: 'A one-time bank payment with no saved mandate. You '
+                    'authorise each deposit at your bank, every time. Nothing '
+                    'is stored for future use.',
+                accent: Colors.white.withValues(alpha: 0.7),
+              ),
+              SizedBox(height: 22.h),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: TextButton.styleFrom(
+                    backgroundColor: purple,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Got it',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow({
+    required IconData icon,
+    required String title,
+    required String body,
+    required Color accent,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(icon, color: accent, size: 16.sp),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                body,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 12.sp,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
