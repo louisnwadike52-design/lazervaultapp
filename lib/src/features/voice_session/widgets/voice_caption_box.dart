@@ -338,10 +338,16 @@ class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedbac
 
   @override
   Widget build(BuildContext context) {
-    // Only show for transfer-related states
+    // Only show for transfer-related states.
+    //
+    // NOTE: VoiceSessionPinRequired is intentionally EXCLUDED here. The PIN
+    // entry is owned by exactly ONE path — the canonical TransactionPinMixin
+    // bottom sheet driven from VoiceCommandSheet (`_showPinEntrySheet`). This
+    // widget previously also reacted to the PIN state, which competed with /
+    // obscured that single path. It now only renders the transfer PROGRESS
+    // stepper and stays out of the PIN flow entirely.
     final isTransferState = widget.state is VoiceSessionUserSearchRequired ||
         widget.state is VoiceSessionTransferConfirmation ||
-        widget.state is VoiceSessionPinRequired ||
         widget.state is VoiceSessionTransactionSuccess ||
         widget.state is VoiceSessionTransactionError ||
         widget.state is VoiceSessionAgentProcessing;
@@ -362,10 +368,10 @@ class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedbac
       return const SizedBox.shrink();
     }
 
-    return Positioned(
-      top: 170.h, // Below caption box
-      left: 16.w,
-      right: 16.w,
+    // Rendered INLINE inside the conversation ListView (no longer a free-
+    // floating Stack overlay), so it must not be Positioned.
+    return Padding(
+      padding: EdgeInsets.only(top: 8.h, bottom: 8.h),
       child: _buildTransferProgress(steps),
     );
   }

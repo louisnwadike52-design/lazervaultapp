@@ -239,12 +239,11 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
       'Send money to Japan',
     ];
     
+    // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
     Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: VoiceCommandSheet(),
-      ),
+      VoiceCommandSheet(),
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
     );
   }

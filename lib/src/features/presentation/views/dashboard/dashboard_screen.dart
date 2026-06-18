@@ -119,11 +119,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Open the voice command bottom sheet directly (enrollment already verified)
   void _openVoiceCommandSheet() {
+    // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
     Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: VoiceCommandSheet(skipActivationCheck: true),
-      ),
+      VoiceCommandSheet(skipActivationCheck: true),
       isScrollControlled: true,
       enableDrag: false,
       isDismissible: false,

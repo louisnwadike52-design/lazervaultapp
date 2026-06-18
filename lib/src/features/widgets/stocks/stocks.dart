@@ -269,12 +269,11 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       'View my watchlist',
     ];
     
+    // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
     Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: VoiceCommandSheet(),
-      ),
+      VoiceCommandSheet(),
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
     );
   }

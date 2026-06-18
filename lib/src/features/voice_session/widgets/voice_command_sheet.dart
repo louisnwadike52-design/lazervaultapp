@@ -2,7 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -15,10 +17,11 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_language_pic
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_dialog.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
-import 'package:lazervault/src/features/voice_session/widgets/voice_pin_sheet_launcher.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_caption_box.dart';
-import 'package:lazervault/src/features/voice_session/widgets/voice_conversation_context_bar.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_chat_history_sheet.dart';
+import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -42,16 +45,36 @@ class VoiceCommandSheet extends StatefulWidget {
 }
 
 class _VoiceCommandSheetState extends State<VoiceCommandSheet>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver, TransactionPinMixin {
   late AnimationController _pulseController;
   late AnimationController _waveController;
   late AnimationController _glowController;
+  // Avatar speaking/listening pulse — drives the glow ring + gentle scale
+  // around the Nova customer-rep avatar.
+  late AnimationController _avatarController;
   final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
 
+  /// Canonical PIN service for [TransactionPinMixin]. Same instance the chat
+  /// path uses, so voice + chat share lockout counters + single-use tokens.
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   bool _isDialogShowing = false;
+  // Guards against re-entrant PIN sheet launches. The PIN bottom sheet
+  // (TransactionPinMixin) presents its own modal route; this flag keeps a
+  // second VoiceSessionPinRequired emit (e.g. a caption re-emit) from
+  // stacking a duplicate sheet.
+  bool _isPinSheetShowing = false;
   bool _isCheckingEnrollment = true;
   bool _isMuted = false;
   bool _isClosing = false;
+  // Expand the sheet to full screen (mirrors the ai_chat send-funds chatbot
+  // fullscreen toggle). Drives the DraggableScrollableController.
+  bool _isFullScreen = false;
+  final DraggableScrollableController _dragController =
+      DraggableScrollableController();
+  final ScrollController _conversationScrollController = ScrollController();
   int _selectedRating = 0;
   bool _isSubmittingRating = false;
   bool _ratingSubmitted = false;
@@ -78,6 +101,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     _glowController = AnimationController(
       duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    // Avatar pulse — repeats while the agent speaks / user listens. Started/
+    // stopped from the BlocConsumer alongside the orb animations.
+    _avatarController = AnimationController(
+      duration: const Duration(milliseconds: 1100),
       vsync: this,
     );
 
@@ -335,15 +365,44 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   void _startAnimations() {
-    _pulseController.repeat(reverse: true);
-    _waveController.repeat();
-    _glowController.repeat(reverse: true);
+    if (!_pulseController.isAnimating) _pulseController.repeat(reverse: true);
+    if (!_waveController.isAnimating) _waveController.repeat();
+    if (!_glowController.isAnimating) _glowController.repeat(reverse: true);
+    if (!_avatarController.isAnimating) _avatarController.repeat(reverse: true);
   }
 
   void _stopAnimations() {
     _pulseController.stop();
     _waveController.stop();
     _glowController.stop();
+    _avatarController.stop();
+  }
+
+  /// Toggle the sheet between 90% height and full screen, mirroring the
+  /// send-funds chatbot's fullscreen toggle.
+  void _toggleFullScreen() {
+    setState(() => _isFullScreen = !_isFullScreen);
+    final target = _isFullScreen ? 1.0 : 0.9;
+    if (_dragController.isAttached) {
+      _dragController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  /// Auto-scroll the conversation area to the newest message/caption.
+  void _scrollConversationToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_conversationScrollController.hasClients) {
+        _conversationScrollController.animateTo(
+          _conversationScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   /// Handle app lifecycle changes — mute mic when backgrounded, end session if killed
@@ -374,6 +433,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _pulseController.dispose();
     _waveController.dispose();
     _glowController.dispose();
+    _avatarController.dispose();
+    _dragController.dispose();
+    _conversationScrollController.dispose();
     // Only disconnect if not already closing (avoids double disconnect)
     if (!_isClosing) {
       context.read<VoiceSessionCubit>().disconnectFromLiveKitRoom(fullCleanup: true);
@@ -381,11 +443,21 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     super.dispose();
   }
 
+  /// Wrap the static (non-draggable) sub-views at 90% screen height so they
+  /// match the main session sheet's initial size instead of jumping to full
+  /// screen now that the openers no longer impose a FractionallySizedBox.
+  Widget _sizedSheet(Widget child) {
+    return FractionallySizedBox(
+      heightFactor: 0.9,
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Show enrollment check screen while verifying voice registration
     if (_isCheckingEnrollment) {
-      return _buildEnrollmentCheckView();
+      return _sizedSheet(_buildEnrollmentCheckView());
     }
 
     return BlocConsumer<VoiceSessionCubit, VoiceSessionState>(
@@ -438,7 +510,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         } else if (state is VoiceSessionTransferConfirmation) {
           _showTransferSummaryDialog(context, state.transferDetails);
         } else if (state is VoiceSessionPinRequired) {
-          _showPinEntryDialog(context, state.transactionPayload);
+          _showPinEntrySheet(state.transactionPayload);
         } else if (state is VoiceSessionTransactionSuccess) {
           final ref = state.result['reference'] as String? ?? '';
           final success = state.result['success'] as bool? ?? true;
@@ -499,6 +571,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           }
         }
 
+        // Keep the inline conversation pinned to the newest message/caption.
+        _scrollConversationToBottom();
+
         // Manage animations based on state
         if (state is VoiceSessionConnected ||
             state is VoiceSessionLocalUserSpeaking ||
@@ -522,114 +597,432 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       builder: (context, state) {
         // Language selection screen
         if (state is VoiceSessionLanguageSelection) {
-          return _buildLanguageSelectionView(state);
+          return _sizedSheet(_buildLanguageSelectionView(state));
         }
 
         // Call ended / rating screen
         if (state is VoiceSessionEnded) {
-          return _buildCallEndedView(state);
+          return _sizedSheet(_buildCallEndedView(state));
         }
 
-        // Main voice session UI with caption overlay
-        return Stack(
-          children: [
-            // Main content
-            Container(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF0D0D0F),
-                Color(0xFF0A0A0C),
-                Color(0xFF050507),
-              ],
-            ),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                // Drag handle
-                Container(
-                  width: 36.w,
-                  height: 4.h,
-                  margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
+        // Main voice session UI — self-sizing draggable sheet (90% → full
+        // screen), mirroring the send-funds chatbot. Clean vertical layout:
+        //   TOP    = compact header (avatar + Nova + status + controls)
+        //   MIDDLE = single scrollable conversation/transcript + live caption
+        //   BOTTOM = action bar (mute / end)
+        return DraggableScrollableSheet(
+          controller: _dragController,
+          initialChildSize: 0.9,
+          minChildSize: 0.6,
+          maxChildSize: 1.0,
+          expand: false,
+          snap: true,
+          snapSizes: const [0.9, 1.0],
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF15121F),
+                    Color(0xFF0D0D0F),
+                    Color(0xFF050507),
+                  ],
                 ),
-
-                // Top bar: settings + language indicator + chat history + close button
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Row(
-                    children: [
-                      // Settings button (opens voice settings)
-                      _buildSettingsButton(),
-                      SizedBox(width: 8.w),
-                      // Language indicator
-                      _buildLanguageIndicator(),
-                      const Spacer(),
-                      // Chat history button
-                      _buildChatHistoryButton(state),
-                      SizedBox(width: 8.w),
-                      GestureDetector(
-                        onTap: _closeSheet,
-                        child: Container(
-                          width: 36.w,
-                          height: 36.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.06),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white.withValues(alpha: 0.5),
-                            size: 18.sp,
-                          ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+                border: Border.all(
+                  color: const Color(0xFF3D2F8B).withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    // Drag handle — also the implicit drag target for the sheet
+                    SingleChildScrollView(
+                      controller: scrollController,
+                      physics: const ClampingScrollPhysics(),
+                      child: Container(
+                        width: 36.w,
+                        height: 4.h,
+                        margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
-                    ],
+                    ),
+
+                    // Compact header: avatar + Nova + live status + controls
+                    _buildSessionHeader(state),
+
+                    Divider(
+                      color: const Color(0xFF2D2D2D),
+                      height: 1,
+                      thickness: 1,
+                    ),
+
+                    // Conversation / transcript area (scrollable, fills space)
+                    Expanded(
+                      child: _buildConversationArea(state),
+                    ),
+
+                    // Bottom action bar
+                    _buildBottomBar(state),
+
+                    SizedBox(height: 12.h),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Compact session header: Nova avatar (flashing while speaking) + name +
+  /// live status (Listening… / Thinking… / Speaking) + control cluster
+  /// (settings, language, full-screen, history, close).
+  Widget _buildSessionHeader(VoiceSessionState state) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 10.h),
+      child: Row(
+        children: [
+          // Nova avatar (small, flashing)
+          _buildNovaAvatar(state, compact: true),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Nova',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
                   ),
                 ),
-
-                const Spacer(flex: 2),
-
-                // Central voice orb
-                _buildVoiceOrb(state),
-
-                SizedBox(height: 32.h),
-
-                // Status text
-                _buildStatusSection(state),
-
-                const Spacer(flex: 3),
-
-                // Bottom action bar
-                _buildBottomBar(state),
-
-                SizedBox(height: 12.h),
+                SizedBox(height: 2.h),
+                _buildHeaderStatusRow(state),
               ],
             ),
           ),
+          // Control cluster
+          _buildSettingsButton(),
+          SizedBox(width: 6.w),
+          _buildLanguagePillCompact(),
+          SizedBox(width: 6.w),
+          _buildFullScreenButton(),
+          SizedBox(width: 6.w),
+          _buildChatHistoryButton(state),
+          SizedBox(width: 6.w),
+          GestureDetector(
+            onTap: _closeSheet,
+            child: Container(
+              width: 34.w,
+              height: 34.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.06),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.white.withValues(alpha: 0.55),
+                size: 17.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Live status text + dot used in the compact header.
+  Widget _buildHeaderStatusRow(VoiceSessionState state) {
+    final cubit = context.read<VoiceSessionCubit>();
+    String label;
+    Color color;
+
+    if (cubit.isAgentSpeaking) {
+      label = 'Speaking…';
+      color = const Color(0xFF5B45C9);
+    } else if (state is VoiceSessionLocalUserSpeaking) {
+      label = 'Listening…';
+      color = const Color(0xFF10B981);
+    } else if (state is VoiceSessionAgentProcessing) {
+      label = 'Thinking…';
+      color = const Color(0xFF5B45C9);
+    } else if (state is VoiceSessionLoadingCredentials ||
+        state is VoiceSessionConnectingToRoom ||
+        state is VoiceSessionMicPermissionGranted) {
+      label = 'Connecting…';
+      color = const Color(0xFF3B82F6);
+    } else if (state is VoiceSessionPinRequired) {
+      label = 'Enter PIN';
+      color = const Color(0xFF3B82F6);
+    } else if (state is VoiceSessionError ||
+        state is VoiceSessionCredentialsError) {
+      label = 'Connection error';
+      color = const Color(0xFFEF4444);
+    } else {
+      label = 'Online';
+      color = const Color(0xFF10B981);
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 7.w,
+          height: 7.w,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        // Caption overlay (always on top)
-        const VoiceCaptionBox(),
-        // In-session conversation context bar (shows recent messages)
-        VoiceConversationContextBar(
-          recentMessages: context.read<VoiceSessionCubit>().recentConversationMessages
-              .map((msg) => ChatMessage.fromVoiceMessage(msg))
-              .toList(),
-          onShowFullHistory: () => _showChatHistorySheet(),
+        SizedBox(width: 6.w),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: color,
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        // Visual feedback for transfer flow
+      ],
+    );
+  }
+
+  /// Full-screen toggle button (fullscreen / fullscreen_exit).
+  Widget _buildFullScreenButton() {
+    return GestureDetector(
+      onTap: _toggleFullScreen,
+      child: Container(
+        width: 34.w,
+        height: 34.w,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          _isFullScreen
+              ? Icons.fullscreen_exit_rounded
+              : Icons.fullscreen_rounded,
+          color: Colors.white.withValues(alpha: 0.55),
+          size: 18.sp,
+        ),
+      ),
+    );
+  }
+
+  /// Compact language pill for the header (tap = language picker).
+  Widget _buildLanguagePillCompact() {
+    final cubit = context.read<VoiceSessionCubit>();
+    final lang = cubit.selectedLanguage;
+    if (lang == null) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: _showLanguagePicker,
+      child: Container(
+        width: 34.w,
+        height: 34.w,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.translate_rounded,
+          color: const Color(0xFF5B45C9),
+          size: 17.sp,
+        ),
+      ),
+    );
+  }
+
+  /// Single scrollable conversation/transcript area. Renders the persisted
+  /// turn history as chat bubbles, with the live realtime caption appended
+  /// inline as the latest bubble (interim greyed, final solid). The transfer
+  /// summary card / progress is rendered inline at the bottom so it no longer
+  /// floats over the captions.
+  Widget _buildConversationArea(VoiceSessionState state) {
+    final cubit = context.read<VoiceSessionCubit>();
+
+    // Loading / error / mic-denied orb takes over the whole area when there's
+    // no active conversation yet (keeps the connecting/error UX intact).
+    final isPreSession = state is VoiceSessionLoadingCredentials ||
+        state is VoiceSessionConnectingToRoom ||
+        state is VoiceSessionMicPermissionGranted ||
+        state is VoiceSessionMicPermissionDenied ||
+        state is VoiceSessionCredentialsError ||
+        state is VoiceSessionError;
+
+    final messages = cubit.recentConversationMessages;
+    final userCaption = cubit.currentUserCaption;
+    final agentCaption = cubit.currentAgentCaption;
+    final hasLiveCaption =
+        (userCaption != null && userCaption.isNotEmpty) ||
+            (agentCaption != null && agentCaption.isNotEmpty);
+
+    if (isPreSession) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildNovaAvatar(state, compact: false),
+            SizedBox(height: 28.h),
+            _buildStatusSection(state),
+          ],
+        ),
+      );
+    }
+
+    // Empty state — show the big avatar + a friendly prompt.
+    if (messages.isEmpty && !hasLiveCaption) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildNovaAvatar(state, compact: false),
+            SizedBox(height: 24.h),
+            Text(
+              'How can I help you?',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Speak naturally — I\'m listening',
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.45),
+                fontSize: 13.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      controller: _conversationScrollController,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      children: [
+        // A compact avatar header bubble at the top of the transcript so the
+        // rep stays present without dominating the conversation.
+        Center(child: _buildNovaAvatar(state, compact: false)),
+        SizedBox(height: 16.h),
+
+        // Persisted conversation turns as chat bubbles.
+        ...messages.map(_buildConversationBubble),
+
+        // Live realtime caption inline as the latest bubble.
+        if (userCaption != null && userCaption.isNotEmpty)
+          _buildLiveCaptionBubble(userCaption, isUser: true),
+        if (agentCaption != null && agentCaption.isNotEmpty)
+          _buildLiveCaptionBubble(agentCaption, isUser: false),
+
+        // Transfer visual feedback (summary / progress) rendered inline,
+        // cleanly at the bottom of the transcript — no free-floating overlay.
         VoiceTransferVisualFeedback(state: state),
       ],
     );
-      },
+  }
+
+  /// Chat bubble for a persisted conversation turn.
+  Widget _buildConversationBubble(VoiceConversationMessage msg) {
+    final isUser = msg.sender == VoiceConversationSender.user;
+    final text = msg.text.trim();
+    if (text.isEmpty) return const SizedBox.shrink();
+
+    final bubbleColor = isUser
+        ? const Color(0xFF5B45C9).withValues(alpha: 0.18)
+        : const Color(0xFF1F1F1F);
+    final borderColor = isUser
+        ? const Color(0xFF5B45C9).withValues(alpha: 0.35)
+        : const Color(0xFF2D2D2D);
+
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(
+          bottom: 12.h,
+          left: isUser ? 48.w : 0,
+          right: isUser ? 0 : 48.w,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: bubbleColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(isUser ? 16.r : 4.r),
+            bottomRight: Radius.circular(isUser ? 4.r : 16.r),
+          ),
+          border: Border.all(color: borderColor, width: 1),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.92),
+            fontSize: 14.sp,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Live caption bubble — interim/streaming text rendered greyed; we treat
+  /// any active caption as the latest in-progress bubble.
+  Widget _buildLiveCaptionBubble(String text, {required bool isUser}) {
+    final accent = isUser ? const Color(0xFF10B981) : const Color(0xFF5B45C9);
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(
+          bottom: 12.h,
+          left: isUser ? 48.w : 0,
+          right: isUser ? 0 : 48.w,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: accent.withValues(alpha: 0.30),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment:
+              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              isUser ? 'You' : 'Nova',
+              style: GoogleFonts.inter(
+                color: accent,
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.4,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              text,
+              style: GoogleFonts.inter(
+                // Interim/streaming = greyed; reads as in-progress.
+                color: Colors.white.withValues(alpha: 0.65),
+                fontSize: 14.sp,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1197,6 +1590,147 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           ],
         ),
       ),
+    );
+  }
+
+  /// Nova customer-rep avatar inside a circular frame. While the agent is
+  /// SPEAKING it pulses a purple glow ring + gentle scale and shows an active
+  /// mic indicator (reads as "the rep is talking with their mic on"). While
+  /// the user is LISTENING it pulses a softer blue. Idle/thinking = calm.
+  ///
+  /// [compact] = small header variant; otherwise the large central variant.
+  Widget _buildNovaAvatar(VoiceSessionState state, {required bool compact}) {
+    final cubit = context.read<VoiceSessionCubit>();
+    final isSpeaking = cubit.isAgentSpeaking;
+    final isListening = state is VoiceSessionLocalUserSpeaking;
+    final isThinking = state is VoiceSessionAgentProcessing;
+
+    // Loading / error / mic-denied keep the existing orb treatment in the big
+    // (central) variant so those UX paths are unchanged.
+    if (!compact) {
+      final isLoading = state is VoiceSessionLoadingCredentials ||
+          state is VoiceSessionConnectingToRoom ||
+          state is VoiceSessionMicPermissionGranted;
+      final isError = state is VoiceSessionCredentialsError ||
+          state is VoiceSessionError ||
+          state is VoiceSessionMicPermissionDenied;
+      if (isLoading || isError) {
+        return _buildVoiceOrb(state);
+      }
+    }
+
+    final double size = compact ? 44.w : 132.w;
+    final Color glowColor = isSpeaking
+        ? const Color(0xFF5B45C9)
+        : isListening
+            ? const Color(0xFF10B981)
+            : isThinking
+                ? const Color(0xFF3D2F8B)
+                : const Color(0xFF3D2F8B);
+    final bool animate = isSpeaking || isListening;
+
+    return AnimatedBuilder(
+      animation: _avatarController,
+      builder: (context, child) {
+        final t = _avatarController.value; // 0..1 (reverses)
+        final scale = animate ? 1.0 + (t * (isSpeaking ? 0.06 : 0.04)) : 1.0;
+        final glowAlpha = animate
+            ? 0.18 + (t * (isSpeaking ? 0.4 : 0.25))
+            : 0.12;
+        final ringAlpha = animate ? 0.25 + (t * 0.45) : 0.2;
+
+        return SizedBox(
+          width: size * (compact ? 1.0 : 1.5),
+          height: size * (compact ? 1.0 : 1.5),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Pulsing glow ring (behind the avatar).
+              if (animate)
+                Container(
+                  width: size * 1.32,
+                  height: size * 1.32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: glowColor.withValues(alpha: ringAlpha),
+                      width: compact ? 1.5 : 2.5,
+                    ),
+                  ),
+                ),
+
+              // Avatar with glow + gentle scale.
+              Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: glowColor.withValues(alpha: 0.55),
+                      width: compact ? 1.5 : 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: glowColor.withValues(alpha: glowAlpha),
+                        blurRadius: compact ? 14 : 32,
+                        spreadRadius: compact ? 1 : 4,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: SvgPicture.asset(
+                      'assets/images/nova_rep.svg',
+                      fit: BoxFit.cover,
+                      placeholderBuilder: (_) => Container(
+                        color: const Color(0xFF1F1F1F),
+                        child: Icon(
+                          Icons.support_agent_rounded,
+                          color: glowColor,
+                          size: size * 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Active mic indicator — glows while the rep is speaking.
+              if (isSpeaking)
+                Positioned(
+                  bottom: 0,
+                  right: compact ? 0 : size * 0.12,
+                  child: Container(
+                    width: compact ? 16.w : 32.w,
+                    height: compact ? 16.w : 32.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF5B45C9),
+                      border: Border.all(
+                        color: const Color(0xFF0A0A0A),
+                        width: compact ? 1.5 : 2.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF5B45C9)
+                              .withValues(alpha: 0.35 + t * 0.45),
+                          blurRadius: compact ? 6 : 14,
+                          spreadRadius: compact ? 0 : 2,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.mic_rounded,
+                      color: Colors.white,
+                      size: compact ? 9.sp : 16.sp,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -2091,59 +2625,116 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     });
   }
 
-  void _showPinEntryDialog(BuildContext context, Map<String, dynamic> payload) {
-    _dismissActiveDialog();
-    _isDialogShowing = true;
+  /// Show the transaction-PIN bottom sheet for a voice money-move.
+  ///
+  /// ROOT-CAUSE FIX: the old path wrapped an invisible `VoicePinSheetLauncher`
+  /// (`SizedBox.shrink`) in a `showDialog`, which then nested ANOTHER modal
+  /// route (`showModalBottomSheet`) via the mixin — three stacked routes under
+  /// the GetX bottom sheet, fronted by an invisible `barrierDismissible:false`
+  /// barrier. The launcher also awaited a network `checkUserHasPin()` before
+  /// presenting, so any slowness/teardown during that await left the user
+  /// staring at the invisible barrier with no PIN UI. We now drive the
+  /// canonical `TransactionPinMixin` sheet DIRECTLY from this State (one route,
+  /// same as the chat path) so it reliably appears on `VoiceSessionPinRequired`.
+  Future<void> _showPinEntrySheet(Map<String, dynamic> payload) async {
+    if (_isPinSheetShowing || !mounted) return;
+    _isPinSheetShowing = true;
 
-    final authState = context.read<AuthenticationCubit>().state;
-    final token = authState is AuthenticationSuccess
-        ? authState.profile.session.accessToken
-        : '';
+    // Amounts in the payload are already MAJOR units (Naira) — do NOT divide.
+    final amount = double.tryParse(payload['amount']?.toString() ?? '0') ?? 0.0;
+    final fee = double.tryParse(payload['fee']?.toString() ?? '0') ?? 0.0;
+    final total =
+        double.tryParse(payload['total_amount']?.toString() ?? '') ??
+            (amount + fee);
+    final currency = (payload['currency'] ?? 'NGN').toString();
+    final transactionId = (payload['transaction_id'] ?? '').toString();
+    final transactionType =
+        (payload['transaction_type'] ?? 'transfer').toString();
+    final recipientSummary =
+        (payload['recipient_summary'] ?? '').toString().trim();
 
-    // Voice + chat share the SAME canonical PIN bottom sheet via
-    // TransactionPinMixin. The launcher auto-opens the sheet on mount
-    // and surfaces the single-use verification_token on success so the
-    // voice agent can resume the original PinPromptIntent.callback_intent
-    // through the same round-trip the chat path uses.
-    final callbackIntent =
-        (payload['callback_intent'] ?? '').toString();
-    final callbackArgs =
-        payload['callback_args'] is Map<String, dynamic>
-            ? Map<String, dynamic>.from(payload['callback_args'] as Map)
-            : <String, dynamic>{};
+    // Round-trip context for resuming the agent's PinPromptIntent.
+    final callbackIntent = (payload['callback_intent'] ?? '').toString();
+    final callbackArgs = payload['callback_args'] is Map
+        ? Map<String, dynamic>.from(payload['callback_args'] as Map)
+        : <String, dynamic>{};
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => VoicePinSheetLauncher(
-        transactionPayload: payload,
-        accessToken: token,
-        onPinVerified: (verificationToken) async {
-          _isDialogShowing = false;
+    final cubit = context.read<VoiceSessionCubit>();
+
+    print(
+      'VoiceCommandSheet: showing transaction-PIN sheet '
+      '(type=$transactionType, amount=$currency $amount, '
+      'callbackIntent=${callbackIntent.isEmpty ? "<legacy>" : callbackIntent})',
+    );
+
+    bool verified = false;
+    try {
+      final success = await validateTransactionPin(
+        context: context,
+        transactionId: transactionId,
+        transactionType: transactionType,
+        amount: amount,
+        currency: currency,
+        title: _pinTitleForType(transactionType),
+        message: recipientSummary.isEmpty
+            ? 'Enter your PIN to continue.'
+            : recipientSummary,
+        fee: fee,
+        totalAmount: total,
+        onPinValidated: (verificationToken) async {
+          verified = true;
+          // Modern callback_intent path — single-use token round-trips to the
+          // agent so it can resume the original tool call. Legacy payloads
+          // (no callback_intent) fall back to the binary pin_completed signal.
           if (callbackIntent.isNotEmpty) {
-            await context.read<VoiceSessionCubit>().submitPinVerification(
-                  verificationToken: verificationToken,
-                  callbackIntent: callbackIntent,
-                  callbackArgs: callbackArgs,
-                );
+            await cubit.submitPinVerification(
+              verificationToken: verificationToken,
+              callbackIntent: callbackIntent,
+              callbackArgs: callbackArgs,
+            );
           } else {
-            // Legacy payload without callback intent — fall back to
-            // the old binary success signal so existing voice flows
-            // that don't yet send PinPromptIntent still resume.
-            await context.read<VoiceSessionCubit>().notifyPinCompleted(true);
+            await cubit.notifyPinCompleted(true, reference: verificationToken);
           }
         },
-        onCancelled: () {
-          _isDialogShowing = false;
-          context.read<VoiceSessionCubit>().notifyPinCompleted(
-                false,
-                error: 'pin_entry_cancelled',
-              );
-        },
-      ),
-    ).whenComplete(() {
-      _isDialogShowing = false;
-    });
+      );
+
+      // Cancelled / exhausted / locked WITHOUT a validated PIN — tell the
+      // agent to cancel the in-flight voice action cleanly.
+      if (!success && !verified) {
+        await cubit.notifyPinCompleted(false, error: 'pin_entry_cancelled');
+      }
+    } finally {
+      _isPinSheetShowing = false;
+    }
+  }
+
+  String _pinTitleForType(String t) {
+    switch (t) {
+      case 'transfer':
+        return 'Confirm transfer';
+      case 'transfer_intl':
+        return 'Confirm international transfer';
+      case 'batch_transfer':
+        return 'Confirm batch transfer';
+      case 'crypto_buy':
+        return 'Confirm crypto purchase';
+      case 'crypto_sell':
+        return 'Confirm crypto sale';
+      case 'crypto_swap':
+        return 'Confirm crypto swap';
+      case 'crypto_send':
+        return 'Confirm crypto send';
+      case 'insurance_buy':
+        return 'Confirm insurance purchase';
+      case 'insurance_claim':
+        return 'Submit insurance claim';
+      case 'exchange_convert':
+        return 'Confirm currency conversion';
+      case 'split_bill_pay':
+        return 'Confirm split-bill payment';
+      default:
+        return 'Confirm payment';
+    }
   }
 
   Widget _buildProviderBadge(String provider) {

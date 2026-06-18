@@ -130,15 +130,15 @@ class ServiceVoiceButton extends StatelessWidget {
     if (!allowed) return;
     if (!context.mounted) return;
 
+    // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
+    // enableDrag must be false so the outer Get sheet doesn't fight the
+    // DraggableScrollableSheet's own drag-to-resize gesture.
     Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: VoiceCommandSheet(
-          serviceName: serviceName,
-        ),
+      VoiceCommandSheet(
+        serviceName: serviceName,
       ),
       isScrollControlled: true,
-      enableDrag: true,
+      enableDrag: false,
       isDismissible: true,
       backgroundColor: Colors.transparent,
     );

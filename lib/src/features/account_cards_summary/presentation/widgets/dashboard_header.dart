@@ -327,12 +327,11 @@ class DashboardHeader extends StatelessWidget {
       if (!activated || !context.mounted) return;
     }
 
-    // Only open the bottom sheet after enrollment is confirmed
+    // Only open the bottom sheet after enrollment is confirmed.
+    // The sheet self-sizes via DraggableScrollableSheet (90% → full screen),
+    // so no fixed FractionallySizedBox wrapper here.
     Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: VoiceCommandSheet(skipActivationCheck: true),
-      ),
+      VoiceCommandSheet(skipActivationCheck: true),
       isScrollControlled: true,
       enableDrag: false,
       isDismissible: false,

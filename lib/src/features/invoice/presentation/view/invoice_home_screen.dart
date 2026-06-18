@@ -141,13 +141,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     if (!allowed) return;
     if (!mounted) return;
 
+    // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
     await Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: const VoiceCommandSheet(serviceName: 'invoices'),
-      ),
+      const VoiceCommandSheet(serviceName: 'invoices'),
       isScrollControlled: true,
-      enableDrag: true,
+      enableDrag: false,
       isDismissible: true,
       backgroundColor: Colors.transparent,
     );
