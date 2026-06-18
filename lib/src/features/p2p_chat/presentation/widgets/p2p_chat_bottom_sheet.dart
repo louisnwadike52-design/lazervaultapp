@@ -298,7 +298,7 @@ class _P2PChatBottomSheetState extends State<P2PChatBottomSheet>
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      _otherUserTyping ? 'Typing...' : 'LazerVault User',
+                      _otherUserTyping ? 'Typing...' : 'Lazervault User',
                       style: GoogleFonts.inter(
                         color: _otherUserTyping
                             ? const Color(0xFF3B82F6)

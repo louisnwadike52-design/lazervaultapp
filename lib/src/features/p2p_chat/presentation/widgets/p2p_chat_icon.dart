@@ -144,7 +144,7 @@ class _P2PChatIconState extends State<P2PChatIcon> {
           ],
         ),
         content: Text(
-          'P2P messaging is only available between LazerVault users. '
+          'P2P messaging is only available between Lazervault users. '
           'Since ${widget.otherUserName} is an external recipient, '
           'direct chat is not supported for this contact.',
           style: TextStyle(

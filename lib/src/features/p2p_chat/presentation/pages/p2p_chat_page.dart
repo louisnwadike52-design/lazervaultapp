@@ -171,7 +171,7 @@ class _P2PChatPageState extends State<P2PChatPage> {
                 ),
               ),
               Text(
-                _otherUserTyping ? 'Typing...' : 'LazerVault User',
+                _otherUserTyping ? 'Typing...' : 'Lazervault User',
                 style: GoogleFonts.inter(
                   color: _otherUserTyping
                       ? const Color(0xFF3B82F6)

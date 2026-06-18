@@ -14,12 +14,6 @@ class BillsHubScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bills = <_BillType>[
       _BillType(
-        icon: Icons.electric_bolt,
-        title: 'Electricity',
-        description: 'Prepaid & postpaid bills',
-        route: AppRoutes.electricityBillHome,
-      ),
-      _BillType(
         icon: Icons.phone_android,
         title: 'Airtime',
         description: 'Top up any network',
@@ -30,6 +24,12 @@ class BillsHubScreen extends StatelessWidget {
         title: 'Data Bundles',
         description: 'MTN, Airtel, Glo, 9mobile',
         route: AppRoutes.dataBundlesHome,
+      ),
+      _BillType(
+        icon: Icons.electric_bolt,
+        title: 'Electricity',
+        description: 'Prepaid & postpaid bills',
+        route: AppRoutes.electricityBillHome,
       ),
       _BillType(
         icon: Icons.tv,
