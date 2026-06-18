@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
@@ -10,6 +11,9 @@ import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_state.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/tag_pay_entity.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
@@ -45,9 +49,41 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   String? _receiverUsername;
   String? _receiverDisplayName;
 
+  // External-bank receiver state. Bank list + account-name verification reuse
+  // the app-wide AccountVerificationCubit (PaymentsService.VerifyBankAccount via
+  // Paystack) — the same mechanism the Add-Recipient / send-funds flow uses.
+  String? _receiverBankCode;
+  String? _receiverBankName;
+  String? _receiverAccountNumber;
+  String? _receiverBankAccountName; // resolved holder name once verified
+  bool _isVerifyingReceiverBank = false;
+  final _receiverAccountNumberController = TextEditingController();
+
   String get _currency {
     final acctDetails = GetIt.I<AccountManager>().activeAccountDetails;
     return acctDetails?.currency ?? 'NGN';
+  }
+
+  /// Country used for the external-bank picker. Derived from the active
+  /// account currency (same source as [_currency]); defaults to NG. The bank
+  /// list comes from [BanksData] for this country.
+  String get _bankCountry {
+    switch (_currency.toUpperCase()) {
+      case 'NGN':
+        return 'NG';
+      case 'GBP':
+        return 'GB';
+      case 'USD':
+        return 'US';
+      case 'GHS':
+        return 'GH';
+      case 'KES':
+        return 'KE';
+      case 'ZAR':
+        return 'ZA';
+      default:
+        return 'NG';
+    }
   }
 
   String get _currencySymbol {
@@ -72,6 +108,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     _totalAmountController.dispose();
     _descriptionController.dispose();
     _searchController.dispose();
+    _receiverAccountNumberController.dispose();
     _debouncer.dispose();
     super.dispose();
   }
@@ -201,6 +238,19 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       return;
     }
 
+    // External-bank receiver must have a verified account before we create.
+    if (_receiverMode == _ReceiverMode.bankAccount && !_isBankReceiverReady) {
+      Get.snackbar(
+        'Bank Account Required',
+        'Select a bank and verify a 10-digit account number to be paid to.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
     // Verify total splits equal total amount
     double totalSplits =
         _customAmounts.values.fold(0.0, (sum, amt) => sum + amt) + _myShare;
@@ -228,11 +278,16 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       );
     }).toList();
 
-    final SplitBillReceiverInput? receiver =
-        _receiverMode == _ReceiverMode.lazerVaultUser &&
-                _receiverUsername != null
-            ? SplitBillReceiverInput.internalUser(_receiverUsername!)
-            : null;
+    final SplitBillReceiverInput? receiver = switch (_receiverMode) {
+      _ReceiverMode.lazerVaultUser when _receiverUsername != null =>
+        SplitBillReceiverInput.internalUser(_receiverUsername!),
+      _ReceiverMode.bankAccount when _isBankReceiverReady =>
+        SplitBillReceiverInput.externalBank(
+          bankCode: _receiverBankCode!,
+          accountNumber: _receiverAccountNumber!,
+        ),
+      _ => null,
+    };
 
     context.read<SplitBillCubit>().createSplitBill(
           totalAmount: _totalAmount,
@@ -269,8 +324,13 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         ),
         centerTitle: true,
       ),
-      body: BlocListener<SplitBillCubit, SplitBillState>(
-        listener: (context, state) {
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<AccountVerificationCubit, AccountVerificationState>(
+            listener: _onAccountVerificationStateChanged,
+          ),
+          BlocListener<SplitBillCubit, SplitBillState>(
+            listener: (context, state) {
           if (!mounted) return;
           if (state is SplitBillCreated) {
             setState(() => _isCreating = false);
@@ -297,6 +357,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
             );
           }
         },
+          ),
+        ],
         child: SafeArea(
           child: Column(
             children: [
@@ -416,6 +478,12 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     );
   }
 
+  /// True once a bank + a verified 10-digit account are selected.
+  bool get _isBankReceiverReady =>
+      _receiverBankCode != null &&
+      (_receiverAccountNumber?.length == 10) &&
+      (_receiverBankAccountName?.isNotEmpty ?? false);
+
   String get _receiverSummaryLabel {
     if (_receiverMode == _ReceiverMode.lazerVaultUser &&
         _receiverUsername != null) {
@@ -423,6 +491,15 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           ? _receiverDisplayName!
           : '@$_receiverUsername';
       return name;
+    }
+    if (_receiverMode == _ReceiverMode.bankAccount && _isBankReceiverReady) {
+      // Prefer the verified holder name; fall back to "<bank> ••••<last4>".
+      if (_receiverBankAccountName?.isNotEmpty ?? false) {
+        return _receiverBankAccountName!;
+      }
+      final acct = _receiverAccountNumber!;
+      final last4 = acct.length >= 4 ? acct.substring(acct.length - 4) : acct;
+      return '${_receiverBankName ?? 'Bank'} ••••$last4';
     }
     return 'You';
   }
@@ -467,8 +544,21 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                 subtitle: 'Pick a recipient',
               ),
             ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildReceiverModeCard(
+                mode: _ReceiverMode.bankAccount,
+                icon: Icons.account_balance_outlined,
+                title: 'Bank account',
+                subtitle: 'Pay to a bank',
+              ),
+            ),
           ],
         ),
+        if (_receiverMode == _ReceiverMode.bankAccount) ...[
+          const SizedBox(height: 12),
+          _buildBankReceiverSection(),
+        ],
         if (_receiverMode == _ReceiverMode.lazerVaultUser) ...[
           const SizedBox(height: 12),
           if (pickedUser)
@@ -637,6 +727,367 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
         ],
       ),
     );
+  }
+
+  // ===========================================================================
+  // External-bank receiver UI + verification
+  // ===========================================================================
+
+  /// Reacts to the app-wide [AccountVerificationCubit] used by the send-funds /
+  /// add-recipient flow. We only consume results while the bank-account
+  /// receiver mode is active so we don't react to verifications triggered by
+  /// other screens that share this global cubit.
+  void _onAccountVerificationStateChanged(
+      BuildContext context, AccountVerificationState state) {
+    if (!mounted) return;
+    if (_receiverMode != _ReceiverMode.bankAccount) return;
+
+    if (state is AccountVerificationLoading) {
+      setState(() => _isVerifyingReceiverBank = true);
+    } else if (state is AccountVerificationSuccess) {
+      setState(() {
+        _isVerifyingReceiverBank = false;
+        _receiverBankCode = state.bankCode;
+        _receiverAccountNumber = state.accountNumber;
+        _receiverBankAccountName = state.accountName;
+        if (state.bankName.isNotEmpty) _receiverBankName = state.bankName;
+      });
+    } else if (state is AccountVerificationFailure) {
+      setState(() {
+        _isVerifyingReceiverBank = false;
+        _receiverBankAccountName = null;
+      });
+      Get.snackbar(
+        'Verification Failed',
+        state.userMessage,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  void _verifyReceiverBankAccount() {
+    final bankCode = _receiverBankCode;
+    final acct = _receiverAccountNumberController.text.trim();
+    if (bankCode == null) {
+      Get.snackbar(
+        'Bank Required',
+        'Please select a bank first',
+        backgroundColor: const Color(0xFFFB923C),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+    if (acct.length != 10 || !RegExp(r'^\d{10}$').hasMatch(acct)) {
+      Get.snackbar(
+        'Invalid Account Number',
+        'Account number must be exactly 10 digits',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+    context.read<AccountVerificationCubit>().verifyAccount(
+          bankCode: bankCode,
+          accountNumber: acct,
+          bankName: _receiverBankName ?? '',
+          country: _bankCountry,
+        );
+  }
+
+  Widget _buildBankReceiverSection() {
+    final verified = _isBankReceiverReady;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Bank picker
+        GestureDetector(
+          onTap: _showBankPickerBottomSheet,
+          child: Container(
+            width: double.infinity,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _receiverBankCode != null
+                    ? const Color(0xFF4834D4)
+                    : const Color(0xFF2D2D2D),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.account_balance,
+                    color: Color(0xFF4834D4), size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _receiverBankName ?? 'Select bank',
+                    style: TextStyle(
+                      color: _receiverBankName != null
+                          ? Colors.white
+                          : const Color(0xFF9CA3AF),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.keyboard_arrow_down,
+                    color: Color(0xFF9CA3AF), size: 20),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        // Account number field
+        TextField(
+          controller: _receiverAccountNumberController,
+          keyboardType: TextInputType.number,
+          maxLength: 10,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+          onChanged: (value) {
+            // Any change invalidates a previous verification.
+            if (_receiverBankAccountName != null ||
+                _receiverAccountNumber != null) {
+              setState(() {
+                _receiverBankAccountName = null;
+                _receiverAccountNumber = null;
+              });
+            }
+            if (value.length == 10) {
+              _verifyReceiverBankAccount();
+            }
+          },
+          decoration: InputDecoration(
+            counterText: '',
+            hintText: 'Enter 10-digit account number',
+            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+            prefixIcon:
+                const Icon(Icons.numbers, color: Color(0xFF6B7280)),
+            suffixIcon: _isVerifyingReceiverBank
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: LazerVaultLoader.small(),
+                    ),
+                  )
+                : (verified
+                    ? const Icon(Icons.check_circle,
+                        color: Color(0xFF10B981))
+                    : null),
+            filled: true,
+            fillColor: const Color(0xFF1F1F1F),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF4834D4)),
+            ),
+          ),
+        ),
+        // Verified account holder name (read-only confirmation)
+        if (verified) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle,
+                    color: Color(0xFF10B981), size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Account verified',
+                        style: TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        _receiverBankAccountName!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 8),
+        // Fee disclosure
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Icon(Icons.info_outline, color: Color(0xFF9CA3AF), size: 14),
+            SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                'A bank transfer fee may be deducted from the payout.',
+                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showBankPickerBottomSheet() {
+    final banks = BanksData.getBanksForCountry(_bankCountry);
+    final searchController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        var filtered = List<Map<String, String>>.from(banks);
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4B5563),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Select Bank',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextField(
+                        controller: searchController,
+                        autofocus: true,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Search banks...',
+                          hintStyle:
+                              const TextStyle(color: Color(0xFF6B7280)),
+                          prefixIcon: const Icon(Icons.search,
+                              color: Color(0xFF6B7280)),
+                          filled: true,
+                          fillColor: const Color(0xFF2D2D2D),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (q) {
+                          final query = q.trim().toLowerCase();
+                          setSheetState(() {
+                            filtered = query.isEmpty
+                                ? List<Map<String, String>>.from(banks)
+                                : banks
+                                    .where((b) => (b['name'] ?? '')
+                                        .toLowerCase()
+                                        .contains(query))
+                                    .toList();
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final bank = filtered[index];
+                          return ListTile(
+                            leading: const Icon(Icons.account_balance,
+                                color: Color(0xFF4834D4)),
+                            title: Text(
+                              bank['name'] ?? '',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _receiverBankCode = bank['code'];
+                                _receiverBankName = bank['name'];
+                                // Re-verify against the newly chosen bank.
+                                _receiverBankAccountName = null;
+                                _receiverAccountNumber = null;
+                              });
+                              Navigator.pop(sheetContext);
+                              if (_receiverAccountNumberController.text
+                                      .trim()
+                                      .length ==
+                                  10) {
+                                _verifyReceiverBankAccount();
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    ).whenComplete(searchController.dispose);
   }
 
   void _showReceiverSearchBottomSheet(BuildContext context) {
@@ -1054,10 +1505,34 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_receiverMode == _ReceiverMode.bankAccount &&
+                !_isBankReceiverReady) ...[
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline,
+                      color: Color(0xFFFB923C), size: 14),
+                  SizedBox(width: 6),
+                  Text(
+                    'Select a bank and verify the account number',
+                    style:
+                        TextStyle(color: Color(0xFFFB923C), fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+            SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isCreating ? null : _createSplitBill,
+            onPressed: (_isCreating ||
+                    (_receiverMode == _ReceiverMode.bankAccount &&
+                        !_isBankReceiverReady))
+                ? null
+                : _createSplitBill,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4834D4),
               disabledBackgroundColor:
@@ -1079,6 +1554,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                     ),
                   ),
           ),
+        ),
+          ],
         ),
       ),
     );
@@ -1307,4 +1784,4 @@ class _SelectedParticipant {
 
 enum _SplitMethod { equal, custom, percentage }
 
-enum _ReceiverMode { collectMyself, lazerVaultUser }
+enum _ReceiverMode { collectMyself, lazerVaultUser, bankAccount }
