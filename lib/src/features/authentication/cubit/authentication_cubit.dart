@@ -169,6 +169,37 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Re-fetch the authenticated profile from the backend so the app reflects
+  /// any server-side changes (e.g. a KYC tier that was just upgraded). Used by
+  /// flows that detour to KYC mid-action and need the refreshed standing on
+  /// return so a retry doesn't fail again with the same gate. Best-effort: a
+  /// failure leaves the existing profile untouched and the caller can proceed
+  /// (the backend re-checks KYC authoritatively at the operation boundary).
+  Future<void> refreshProfile() async {
+    try {
+      final accessToken =
+          _currentProfile?.session.accessToken ??
+              await _storage.read(key: _accessTokenKey);
+      if (accessToken == null || accessToken.isEmpty) return;
+
+      final result = await _validateTokenUseCase(accessToken: accessToken);
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          // Token still valid locally; just couldn't refresh. Keep the
+          // current profile and let the caller proceed.
+          print('refreshProfile failed: ${failure.message}');
+        },
+        (profile) {
+          _currentProfile = profile;
+          emit(AuthenticationSuccess(profile));
+        },
+      );
+    } catch (e) {
+      print('refreshProfile failed: $e');
+    }
+  }
+
   Future<void> _saveSession(ProfileEntity profile) async {
     try {
       await _storage.write(

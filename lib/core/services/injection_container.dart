@@ -112,6 +112,7 @@ import 'package:lazervault/src/features/recipients/domain/usecases/delete_recipi
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/data/repositories/withdrawal_repository_impl.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_withdrawal_repository.dart';
+import 'package:lazervault/src/features/funds/domain/services/pending_deposit.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdraw_funds_screen.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/recipient_repository_impl.dart';
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
@@ -1499,6 +1500,11 @@ Future<void> init() async {
     serviceLocator<InitiateDepositUseCase>(),
     bankingWebSocketService: serviceLocator<BankingWebSocketService>(),
   ));
+
+  // Holds the in-flight deposit context across a KYC detour so a no-KYC user
+  // who must verify mid-deposit returns and resumes the deposit. Singleton so
+  // it survives the deposit-screen -> KYC -> deposit-screen route churn.
+  serviceLocator.registerLazySingleton(() => PendingDeposit());
 
   // ================== Feature: Open Banking (Mono) ==================
 

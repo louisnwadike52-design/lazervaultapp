@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/deposit.dart';
 import 'package:lazervault/src/features/funds/data/services/mono_institutions_service.dart';
+import 'package:lazervault/src/features/funds/domain/services/pending_deposit.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/pay_by_transfer_card.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/flutterwave_payment_webview.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/recurring_access_toggle.dart';
@@ -101,6 +102,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   final DirectPayProgressController _progressController = DirectPayProgressController();
   bool _isProgressSheetShown = false;
 
+  // Guards a single resume after the KYC detour. The deposit screen is
+  // re-created when KYC routes back to it (Get.offNamed), so this prevents the
+  // resumed link/deposit from launching twice (e.g. a rebuild re-entering the
+  // resume path). Cleared once the resumed flow has been kicked off.
+  bool _isResuming = false;
+
   // Watchdog: if linking/initiating stalls (e.g. a provider call hangs), flip the
   // progress sheet to a retryable failure instead of spinning on "Linking Account"
   // forever. Cancelled as soon as the flow advances to authorizing/processing.
@@ -179,7 +186,119 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     }
     // Listen to amount changes to update button state
     _amountController.addListener(_onAmountChanged);
+
+    // KYC-detour resume: when this screen is re-created after the user
+    // completed identity verification mid-deposit, restore the in-flight
+    // context and continue the deposit. Detected via the `resumePending`
+    // marker carried through navigation arguments AND a saved PendingDeposit.
+    // Deferred to a post-frame callback so the BlocProviders in build() exist
+    // before we re-open the progress sheet / re-launch the link.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeResumeAfterKyc());
   }
+
+  /// If we returned from a KYC detour with a saved PendingDeposit, restore the
+  /// amount/currency/recurring toggle and continue the deposit (re-link via
+  /// Mono if no account was linked yet, otherwise redeposit from the already-
+  /// linked account). Guarded so it only runs once.
+  void _maybeResumeAfterKyc() {
+    if (!mounted || _isResuming) return;
+
+    final resumeRequested = widget.selectedCard['resumePending'] == true;
+    final pending = serviceLocator<PendingDeposit>();
+    if (!resumeRequested || !pending.pending) return;
+
+    _isResuming = true;
+
+    // Restore the form context the user had before the KYC gate.
+    if (pending.amount > 0) {
+      // Trim a trailing ".0" so the field reads as the user typed it.
+      final a = pending.amount;
+      _amountController.text =
+          a == a.roundToDouble() ? a.toStringAsFixed(0) : a.toString();
+    }
+    _useRecurringAccess = pending.useRecurringAccess;
+    if ((pending.linkedBankName ?? '').isNotEmpty) {
+      _selectedBank = pending.linkedBankName!;
+    }
+    if ((pending.linkedAccountId ?? '').isNotEmpty) {
+      _linkedAccountId = pending.linkedAccountId;
+    }
+    if (mounted) setState(() {});
+
+    final amount = pending.amount;
+    final hadLinkedAccount = (pending.linkedAccountId ?? '').isNotEmpty;
+
+    // Consume the pending context now that we've restored it — a second
+    // entry must not resume again.
+    pending.clear();
+
+    Get.snackbar(
+      'Identity verified',
+      'Continuing your deposit…',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.95),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
+
+    if (hadLinkedAccount) {
+      // The bank was already linked before the gate — resume the DEPOSIT,
+      // not the link. Re-open the progress sheet at "Preparing Deposit" and
+      // re-fire from the linked account.
+      _progressController.show(
+        bankName: _selectedBank.isNotEmpty ? _selectedBank : 'your bank',
+        amount: amount,
+        currency: _currency,
+        flow: DirectPayProgressFlow.redeposit,
+      );
+      _showProgressBottomsheet(context);
+      _progressController.updateStage(DirectPayStage.initiating);
+      _redepositFromLinkedAccountId();
+    } else {
+      // No account linked yet — re-run the full Link & Deposit now that KYC
+      // is satisfied. _launchNGNMonoBottomsheet shows the progress sheet
+      // itself once Mono Connect returns a code.
+      _launchNGNMonoBottomsheet(context);
+    }
+  }
+
+  /// Re-fire a deposit from the account that was already linked before the KYC
+  /// gate fired. Mirrors _depositFromLinkedAccount but works from the saved
+  /// _linkedAccountId (we don't keep the full LinkedBankAccount across the
+  /// detour — the id + bank name are enough to re-initiate). The recurring
+  /// path is honoured exactly as the user chose: with the toggle on the
+  /// backend tries the mandate first and falls back to DirectPay.
+  void _redepositFromLinkedAccountId() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final linkedId = _linkedAccountId;
+    if (linkedId == null || linkedId.isEmpty) return;
+    final amount = double.tryParse(_amountController.text.trim()) ?? 0;
+    if (amount <= 0) return;
+    final destId = widget.selectedCard['id']?.toString() ?? '';
+    if (destId.isEmpty) {
+      Get.snackbar('Error', 'Missing destination account.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          colorText: Colors.white);
+      return;
+    }
+    final bankLabel = _selectedBank.isNotEmpty ? _selectedBank : 'your bank';
+    // Arm "Try Again" so a failed resume redeposit re-fires this same path.
+    _retryDeposit = _redepositFromLinkedAccountId;
+    serviceLocator<OpenBankingCubit>().initiateDeposit(
+      userId: authState.profile.user.id,
+      linkedAccountId: linkedId,
+      destinationAccountId: destId,
+      amount: amount,
+      narration: 'Deposit from $bankLabel to LazerVault',
+      accessToken: authState.profile.session.accessToken,
+      currency: _currency,
+      countryCode: _countryCodeForCurrency(_currency),
+      useRecurringAccess: _useRecurringAccess,
+    );
+  }
+
 
   /// Fetch the user's previously-linked bank accounts for the carousel.
   void _loadLinkedAccounts() {
@@ -2305,16 +2424,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     if (lower.contains('kyc_required') ||
         lower.contains('kyc required') ||
         lower.contains('verify your identity')) {
-      // Close the progress sheet, then send the user to KYC.
-      if (Get.isBottomSheetOpen ?? false) {
-        Get.back();
-      }
-      Get.snackbar(
-        'Verify your identity',
-        'Complete a quick BVN verification to deposit from your bank account.',
-        snackPosition: SnackPosition.BOTTOM,
+      _goToKycThenResume(
+        snackbarMessage:
+            'Complete a quick BVN verification to deposit from your bank account.',
       );
-      Get.toNamed(AppRoutes.kycBVNVerification);
       return;
     }
 
@@ -2324,6 +2437,47 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       errorTitle: info.title,
       errorMessage: info.message,
       retryable: info.retryable,
+    );
+  }
+
+  /// Save the in-flight deposit context and route the user into KYC, marking
+  /// the navigation so the BVN screen routes BACK to this deposit screen
+  /// (rather than `Get.back` into a dead stack) and we resume on return.
+  ///
+  /// Carries any account already linked before the gate so the resume
+  /// re-deposits from it instead of re-linking. The progress sheet is closed
+  /// first so the user lands cleanly on KYC.
+  void _goToKycThenResume({required String snackbarMessage}) {
+    final amount = double.tryParse(_amountController.text.trim()) ?? 0;
+
+    serviceLocator<PendingDeposit>().save(
+      selectedCard: widget.selectedCard,
+      amount: amount,
+      currency: _currency,
+      useRecurringAccess: _useRecurringAccess,
+      linkedAccountId: _linkedAccountId,
+      linkedBankName: _selectedBank.isNotEmpty ? _selectedBank : null,
+    );
+
+    // Close the progress sheet (and any other open bottom sheet) so the user
+    // lands on KYC, not on a stale "Linking…" sheet.
+    _isProgressSheetShown = false;
+    _cancelLinkWatchdog();
+    if (Get.isBottomSheetOpen ?? false) {
+      Get.back();
+    }
+
+    Get.snackbar(
+      'Verify your identity',
+      snackbarMessage,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+
+    // Marker tells the BVN screen to route back to the deposit screen on
+    // success (and to refresh the KYC tier) instead of popping into nothing.
+    Get.toNamed(
+      AppRoutes.kycBVNVerification,
+      arguments: {'returnTo': 'deposit'},
     );
   }
 
@@ -2955,6 +3109,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     final userId = authState is AuthenticationSuccess ? authState.profile.user.id : '';
     final user = authState is AuthenticationSuccess ? authState.profile.user : null;
 
+    // Set when the mandate sheet's KYC gate fires. In that case we DON'T fall
+    // through to re-show the progress sheet / deposit here — we've detoured the
+    // user into KYC (saving the in-flight deposit, which includes the
+    // already-linked account, so the resume redeposits without re-linking).
+    bool kycDetour = false;
+
     bool enabled = false;
     try {
       enabled = await showMandateSetupBottomSheet(
@@ -2969,13 +3129,24 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             : null,
         // phone is captured by the backend MonoCustomer record on first
         // mandate creation; we don't ship one from Flutter today.
+        onKycRequired: () {
+          kycDetour = true;
+          // The account is already linked here — carry it so the resume
+          // redeposits from it instead of re-opening Mono Connect.
+          _linkedAccountId = state.account.id;
+          _selectedBank = state.account.bankName;
+          _goToKycThenResume(
+            snackbarMessage:
+                'Complete a quick BVN verification to set up Direct Debit.',
+          );
+        },
       );
     } catch (e) {
       debugPrint('[Deposit] MandateSetupBottomsheet error: $e');
     }
     debugPrint('[Deposit] MandateSetupBottomsheet returned: enabled=$enabled');
 
-    if (!mounted) return;
+    if (!mounted || kycDetour) return;
 
     // Re-show the progress sheet for the (now-resumed) deposit flow. The
     // account is already linked at this point, so the rail resumes at

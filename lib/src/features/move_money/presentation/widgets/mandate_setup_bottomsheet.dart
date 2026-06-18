@@ -24,6 +24,7 @@ Future<bool> showMandateSetupBottomSheet({
   String? userEmail,
   String? userName,
   String? userPhone,
+  VoidCallback? onKycRequired,
 }) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
@@ -47,6 +48,7 @@ Future<bool> showMandateSetupBottomSheet({
         userEmail: userEmail,
         userName: userName,
         userPhone: userPhone,
+        onKycRequired: onKycRequired,
       ),
     ),
   );
@@ -61,6 +63,7 @@ class _MandateSetupSheet extends StatefulWidget {
   final String? userEmail;
   final String? userName;
   final String? userPhone;
+  final VoidCallback? onKycRequired;
 
   const _MandateSetupSheet({
     required this.linkedAccountId,
@@ -70,6 +73,7 @@ class _MandateSetupSheet extends StatefulWidget {
     this.userEmail,
     this.userName,
     this.userPhone,
+    this.onKycRequired,
   });
 
   @override
@@ -121,7 +125,17 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
           if (lower.contains('kyc_required') ||
               lower.contains('verify your identity') ||
               lower.contains('verify') && lower.contains('bvn')) {
+            // Close the sheet first.
             Navigator.of(context).pop(false);
+            // When a caller (e.g. the deposit screen) supplies a handler, let
+            // IT own the KYC detour so it can save the in-flight deposit
+            // context and route back to resume afterwards. Otherwise fall back
+            // to the standalone behaviour (Beam mandate management): just send
+            // the user to KYC.
+            if (widget.onKycRequired != null) {
+              widget.onKycRequired!();
+              return;
+            }
             Get.snackbar(
               'Verify your identity',
               'Complete a quick BVN verification to set up Direct Debit.',

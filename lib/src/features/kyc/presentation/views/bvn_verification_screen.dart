@@ -12,6 +12,7 @@ import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../../core/shared_widgets/app_loading_button.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../funds/domain/services/pending_deposit.dart';
 import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
 import '../../domain/repositories/kyc_repository.dart';
@@ -135,7 +136,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: _textPrimary),
-          onPressed: () => Get.back(),
+          onPressed: _onBack,
         ),
       ),
       body: SafeArea(
@@ -646,13 +647,76 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// Finish a successful/complete verification: clear the onboarding flag and
   /// route to the right place (dashboard when at the onboarding root, otherwise
   /// back to wherever the user came from, e.g. Settings).
+  ///
+  /// Deposit-resume: when this screen was reached MID-DEPOSIT (the deposit
+  /// screen routed here with `{'returnTo': 'deposit'}` and saved a
+  /// PendingDeposit), we don't pop into a dead stack — we refresh the KYC tier
+  /// / auth profile and route forward to a FRESH deposit screen with
+  /// `resumePending: true` so it restores the context and continues the
+  /// deposit. Carries the saved selected card the deposit route requires.
   Future<void> _finishVerified() async {
+    // Capture the cubit BEFORE any await so we don't touch BuildContext across
+    // an async gap (the _deleteFlag await below).
+    final auth = context.read<AuthenticationCubit>();
+
     await _deleteFlag('kyc_onboarding_pending');
+
+    final returnTo = (Get.arguments is Map)
+        ? (Get.arguments as Map)['returnTo']
+        : null;
+    final pending = serviceLocator<PendingDeposit>();
+
+    // Resume a deposit only when we were sent here from a deposit AND there is
+    // a saved context to resume into, and this screen isn't the onboarding
+    // root (signup must still land on the dashboard).
+    if (returnTo == 'deposit' && pending.pending && !_isOnboardingRoot) {
+      // Refresh the auth profile so the app reflects the just-passed KYC and a
+      // second attempt won't fail again with KYC_REQUIRED. Best-effort.
+      try {
+        await auth.refreshProfile();
+      } catch (_) {/* non-blocking — backend re-checks KYC authoritatively */}
+      if (!mounted) return;
+
+      // Rebuild the deposit screen fresh and ask it to resume. The deposit
+      // route resolves the card from `args['selectedCard']` (a Map), so the
+      // resume marker must live INSIDE that map to survive the resolution —
+      // we embed it in the card copy. The PendingDeposit.pending flag is the
+      // real source of truth; the marker is the explicit nav signal.
+      // offNamed replaces THIS (KYC) route.
+      final card = Map<String, dynamic>.from(
+        pending.selectedCard ?? const <String, dynamic>{},
+      )..['resumePending'] = true;
+      Get.offNamed(
+        AppRoutes.depositFunds,
+        arguments: {
+          ...card,
+          'selectedCard': card,
+        },
+      );
+      return;
+    }
+
     if (_isOnboardingRoot) {
       Get.offAllNamed(AppRoutes.dashboard);
     } else {
       Get.back(result: true);
     }
+  }
+
+  /// Back from KYC without verifying. When we were sent here mid-deposit, the
+  /// deposit screen is still alive UNDER this route, so popping returns the
+  /// user to the form cleanly. We DROP the saved PendingDeposit so the deposit
+  /// never auto-resumes the link without a completed verification — the user
+  /// just sees the form again and can retry (where the gate will re-fire if
+  /// they're still unverified). Never strands them on KYC.
+  void _onBack() {
+    final returnTo = (Get.arguments is Map)
+        ? (Get.arguments as Map)['returnTo']
+        : null;
+    if (returnTo == 'deposit') {
+      serviceLocator<PendingDeposit>().clear();
+    }
+    Get.back();
   }
 
   /// Skip KYC for now. From onboarding we smartly continue to the dashboard and
@@ -688,6 +752,14 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       await _deleteFlag('kyc_onboarding_pending');
       Get.offAllNamed(AppRoutes.dashboard);
     } else {
+      // Skipping mid-deposit: drop the pending so the deposit doesn't
+      // auto-resume the link without a completed verification.
+      final returnTo = (Get.arguments is Map)
+          ? (Get.arguments as Map)['returnTo']
+          : null;
+      if (returnTo == 'deposit') {
+        serviceLocator<PendingDeposit>().clear();
+      }
       Get.back(result: false);
     }
   }
