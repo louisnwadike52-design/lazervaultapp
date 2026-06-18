@@ -20,10 +20,59 @@ import 'package:lazervault/src/features/widgets/country_locale_bottom_sheet.dart
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 
 // Dashboard header with notifications bottomsheet - clean white background
-class DashboardHeader extends StatelessWidget {
+class DashboardHeader extends StatefulWidget {
   final User? currentUser; // Accept optional user data
 
   const DashboardHeader({super.key, this.currentUser});
+
+  @override
+  State<DashboardHeader> createState() => _DashboardHeaderState();
+}
+
+class _DashboardHeaderState extends State<DashboardHeader>
+    with SingleTickerProviderStateMixin {
+  /// One-time, once-per-app-launch guard so the voice-mic "bling" only
+  /// fires the first time the dashboard appears after login — NOT on
+  /// every dashboard rebuild (BlocBuilder rebuilds, tab switches, etc.).
+  /// In-memory static is acceptable here: a fresh app launch (cold start
+  /// → login) resets it, which is exactly the "notice voice on login"
+  /// moment we want.
+  static bool _voiceGlowShownThisSession = false;
+
+  /// Drives the ~5s attention glow/halo around the voice mic icon.
+  AnimationController? _voiceGlowController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_voiceGlowShownThisSession) {
+      _voiceGlowShownThisSession = true;
+      // Gentle ~1.25s pulse repeated (reverse) for ~5s total, then stop
+      // and settle back to the normal (no-glow) state.
+      _voiceGlowController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1250),
+      );
+      // Kick it off after first frame so the dashboard is visible.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _voiceGlowController?.repeat(reverse: true);
+        // Auto-stop after ~5 seconds and settle to normal.
+        Future.delayed(const Duration(seconds: 5), () {
+          if (!mounted) return;
+          _voiceGlowController?.stop();
+          _voiceGlowController?.animateTo(0.0,
+              duration: const Duration(milliseconds: 350));
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _voiceGlowController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +88,7 @@ class DashboardHeader extends StatelessWidget {
           prev is AuthenticationSuccess ||
           prev is AuthenticationAuthenticated,
       builder: (context, authState) {
-        User? user = currentUser;
+        User? user = widget.currentUser;
         if (authState is AuthenticationSuccess) {
           user = authState.profile.user;
         } else if (authState is AuthenticationAuthenticated) {
@@ -216,7 +265,7 @@ class DashboardHeader extends StatelessWidget {
   }
 
   Widget _buildIconButton(IconData icon, BuildContext context) {
-    return Container(
+    final button = Container(
       width: 32.w,
       height: 32.h,
       decoration: BoxDecoration(
@@ -237,6 +286,47 @@ class DashboardHeader extends StatelessWidget {
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),
       ),
+    );
+
+    // Only the voice mic icon gets the one-time "bling" attention glow on
+    // first login. The icon stays fully functional (the IconButton above
+    // is untouched) — we just wrap it in a pulsing halo.
+    if (icon == Icons.mic_rounded && _voiceGlowController != null) {
+      return _buildVoiceGlow(button);
+    }
+    return button;
+  }
+
+  /// Wraps the voice mic button in a soft, pulsing brand-purple halo for
+  /// ~5s after login (see initState). After the controller settles to 0
+  /// the glow fades to nothing and the icon looks normal again.
+  Widget _buildVoiceGlow(Widget child) {
+    const glowColor = Color(0xFF5B45C9); // voice accent purple
+    final controller = _voiceGlowController!;
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, inner) {
+        // CurvedAnimation-free gentle ease: value 0..1..0 from repeat(reverse).
+        final t = Curves.easeInOut.transform(controller.value);
+        final spread = 1.0 + (3.0 * t); // 1 → 4
+        final blur = 4.0 + (12.0 * t); // 4 → 16
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: t <= 0.001
+                ? const []
+                : [
+                    BoxShadow(
+                      color: glowColor.withValues(alpha: 0.55 * t),
+                      blurRadius: blur,
+                      spreadRadius: spread,
+                    ),
+                  ],
+          ),
+          child: inner,
+        );
+      },
+      child: child,
     );
   }
 

@@ -805,17 +805,35 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                   SizedBox(width: 6.w),
                   GestureDetector(
                     onTap: _closeSheet,
+                    behavior: HitTestBehavior.opaque,
+                    // Larger circular tappable background (matches the
+                    // dashboard top-right icon style) so the cancel/close
+                    // control is easy to tap. A transparent 44x44 minimum
+                    // hit target wraps the 40.w visual circle for
+                    // accessibility. Behaviour is unchanged (_closeSheet
+                    // cancels the connection + closes the bottomsheet).
                     child: Container(
-                      width: 34.w,
-                      height: 34.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        shape: BoxShape.circle,
+                      constraints: BoxConstraints(
+                        minWidth: 44.w,
+                        minHeight: 44.w,
                       ),
-                      child: Icon(
-                        Icons.close_rounded,
-                        color: Colors.white.withValues(alpha: 0.55),
-                        size: 17.sp,
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.22),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          size: 19.sp,
+                        ),
                       ),
                     ),
                   ),
