@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
@@ -32,6 +38,10 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
   late TextEditingController _bankNameController;
   late TextEditingController _amountController;
   late TextEditingController _descriptionController;
+
+  // Off-screen renderer for the branded "share as image" card.
+  final ScreenshotController _shareController = ScreenshotController();
+  bool _isSharing = false;
 
   @override
   void initState() {
@@ -101,6 +111,10 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
                     // Account Name (validated via Paystack)
                     _buildAccountNameField(),
                     SizedBox(height: 16.h),
+
+                    // Copy-all + branded Share of the resolved details.
+                    _buildCopyShareActions(),
+                    SizedBox(height: 4.h),
 
                     // Routing Number (if available)
                     if (widget.extractedDetails.routingNumber != null)
@@ -251,6 +265,9 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
           readOnly: true,
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.business, size: 20.r, color: const Color(0xFF6B7280)),
+            suffixIcon: _copyFieldButton(
+              () => _copyValue(_bankName, 'Bank name'),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -297,6 +314,9 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
           decoration: InputDecoration(
             hintText: 'Enter account number',
             prefixIcon: Icon(Icons.numbers, size: 20.r, color: const Color(0xFF6B7280)),
+            suffixIcon: _copyFieldButton(
+              () => _copyValue(_accountNumber, 'Account number'),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -372,6 +392,9 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
           readOnly: true, // Validated via Paystack, not editable
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.person_outline, size: 20.r, color: const Color(0xFF6B7280)),
+            suffixIcon: _copyFieldButton(
+              () => _copyValue(_accountName, 'Account name'),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -606,6 +629,264 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
           ),
         ),
       ),
+    );
+  }
+
+  // ===== Copy / Share of the resolved bank details =====
+
+  String get _bankName => _bankNameController.text.trim();
+  String get _accountNumber => _accountNumberController.text.trim();
+  String get _accountName => _accountNameController.text.trim();
+
+  void _snack(String message) {
+    Get.snackbar(
+      'Copied',
+      message,
+      backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.95),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+      margin: EdgeInsets.all(16.w),
+    );
+  }
+
+  void _copyValue(String value, String label) {
+    if (value.trim().isEmpty) return;
+    Clipboard.setData(ClipboardData(text: value.trim()));
+    _snack('$label copied to clipboard');
+  }
+
+  /// Small per-field copy affordance aligned to the right of a detail field.
+  Widget _copyFieldButton(VoidCallback onTap) {
+    return IconButton(
+      onPressed: onTap,
+      tooltip: 'Copy',
+      splashRadius: 20.r,
+      icon: Icon(
+        Icons.copy_rounded,
+        size: 18.r,
+        color: const Color(0xFF4E03D0),
+      ),
+    );
+  }
+
+  /// Clean, multi-line block of all the resolved details. Empty fields are
+  /// omitted so the copied/shared text never carries a blank or "null" line.
+  String _buildDetailsBlock() {
+    final lines = <String>[
+      if (_bankName.isNotEmpty) 'Bank: $_bankName',
+      if (_accountNumber.isNotEmpty) 'Account Number: $_accountNumber',
+      if (_accountName.isNotEmpty) 'Account Name: $_accountName',
+    ];
+    return lines.join('\n');
+  }
+
+  void _copyAllDetails() {
+    final block = _buildDetailsBlock();
+    if (block.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: block));
+    _snack('Bank details copied to clipboard');
+  }
+
+  /// A small branded card (the details + the LazerVault logo) rendered to an
+  /// image and shared. The image carries the branding; the text body is the
+  /// clean details block with a brand header so recipients see it inline too.
+  Future<void> _shareDetails() async {
+    if (_isSharing) return;
+    final block = _buildDetailsBlock();
+    if (block.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No bank details to share yet')),
+      );
+      return;
+    }
+    setState(() => _isSharing = true);
+    try {
+      Uint8List? imageBytes;
+      try {
+        imageBytes = await _shareController.captureFromWidget(
+          _buildBrandedShareCard(),
+          pixelRatio: 3.0,
+          delay: const Duration(milliseconds: 80),
+          context: context,
+        );
+      } catch (_) {
+        imageBytes = null; // Fall back to text-only share below.
+      }
+
+      final shareText = 'LazerVault • Bank Details\n\n$block';
+      if (imageBytes != null) {
+        final tempDir = await getTemporaryDirectory();
+        final fileName =
+            'LazerVault_BankDetails_${DateTime.now().millisecondsSinceEpoch}.png';
+        final file = File('${tempDir.path}/$fileName');
+        await file.writeAsBytes(imageBytes);
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+            text: shareText,
+            subject: 'LazerVault Bank Details',
+          ),
+        );
+      } else {
+        await SharePlus.instance.share(
+          ShareParams(text: shareText, subject: 'LazerVault Bank Details'),
+        );
+      }
+    } catch (e) {
+      // Share cancelled by the user surfaces as a normal completion on most
+      // platforms; only genuine errors land here. Keep it quiet + non-fatal.
+      debugPrint('[BankDetailsBottomSheet] share error: $e');
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  /// The branded card captured to an image for sharing: LazerVault logo +
+  /// brand header over the resolved bank-detail rows.
+  Widget _buildBrandedShareCard() {
+    Widget row(String label, String value) {
+      if (value.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        width: 360,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Brand header — logo + wordmark.
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    'assets/images/app_icon_with_bg.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'LazerVault',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF4E03D0),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Bank Details',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+              ),
+            ),
+            const Divider(height: 24, color: Color(0xFFE5E7EB)),
+            row('Bank', _bankName),
+            row('Account Number', _accountNumber),
+            row('Account Name', _accountName),
+            const SizedBox(height: 8),
+            const Text(
+              'Shared via LazerVault',
+              style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Footer row with "Copy all" + "Share" actions for the resolved details.
+  Widget _buildCopyShareActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _copyAllDetails,
+            icon: Icon(Icons.copy_all_rounded, size: 18.r),
+            label: Text(
+              'Copy all',
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF4E03D0),
+              side: const BorderSide(color: Color(0xFF4E03D0)),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _isSharing ? null : _shareDetails,
+            icon: _isSharing
+                ? SizedBox(
+                    width: 16.r,
+                    height: 16.r,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : Icon(Icons.ios_share_rounded, size: 18.r),
+            label: Text(
+              'Share',
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4E03D0),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

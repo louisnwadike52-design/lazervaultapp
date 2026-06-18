@@ -287,15 +287,17 @@ class ProfileRepositoryImpl implements IProfileRepository {
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
+    int offset = 0,
     String searchType = '', // Empty for unified search across username, name, phone, email
   }) async {
     try {
       final request = auth_pb.UserSearchRequest()
         ..query = query
         ..limit = limit
+        ..offset = offset
         ..searchType = searchType;
 
-      print('[ProfileRepository] searchUsers: query="$query", limit=$limit, searchType="$searchType"');
+      print('[ProfileRepository] searchUsers: query="$query", limit=$limit, offset=$offset, searchType="$searchType"');
       final options = await _callOptionsHelper.withAuth();
       final response = await _authServiceClient.searchUsers(
         request,

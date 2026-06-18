@@ -2348,6 +2348,194 @@ class GetMeResponse extends $pb.GeneratedMessage {
   User ensureUser() => $_ensure(0);
 }
 
+class GetMyInsurancePrefillRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyInsurancePrefillRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyInsurancePrefillRequest._() : super();
+  factory GetMyInsurancePrefillRequest() => create();
+  factory GetMyInsurancePrefillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyInsurancePrefillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyInsurancePrefillRequest clone() => GetMyInsurancePrefillRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyInsurancePrefillRequest copyWith(void Function(GetMyInsurancePrefillRequest) updates) => super.copyWith((message) => updates(message as GetMyInsurancePrefillRequest)) as GetMyInsurancePrefillRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetMyInsurancePrefillRequest create() => GetMyInsurancePrefillRequest._();
+  GetMyInsurancePrefillRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMyInsurancePrefillRequest> createRepeated() => $pb.PbList<GetMyInsurancePrefillRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyInsurancePrefillRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyInsurancePrefillRequest>(create);
+  static GetMyInsurancePrefillRequest? _defaultInstance;
+}
+
+class GetMyInsurancePrefillResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyInsurancePrefillResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nin')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityType')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityVerified')
+    ..hasRequiredFields = false
+  ;
+
+  GetMyInsurancePrefillResponse._() : super();
+  factory GetMyInsurancePrefillResponse({
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? email,
+    $core.String? phone,
+    $core.String? dateOfBirth,
+    $core.String? nin,
+    $core.String? bvn,
+    $core.String? identityType,
+    $core.bool? identityVerified,
+  }) {
+    final _result = create();
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (email != null) {
+      _result.email = email;
+    }
+    if (phone != null) {
+      _result.phone = phone;
+    }
+    if (dateOfBirth != null) {
+      _result.dateOfBirth = dateOfBirth;
+    }
+    if (nin != null) {
+      _result.nin = nin;
+    }
+    if (bvn != null) {
+      _result.bvn = bvn;
+    }
+    if (identityType != null) {
+      _result.identityType = identityType;
+    }
+    if (identityVerified != null) {
+      _result.identityVerified = identityVerified;
+    }
+    return _result;
+  }
+  factory GetMyInsurancePrefillResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyInsurancePrefillResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyInsurancePrefillResponse clone() => GetMyInsurancePrefillResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyInsurancePrefillResponse copyWith(void Function(GetMyInsurancePrefillResponse) updates) => super.copyWith((message) => updates(message as GetMyInsurancePrefillResponse)) as GetMyInsurancePrefillResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetMyInsurancePrefillResponse create() => GetMyInsurancePrefillResponse._();
+  GetMyInsurancePrefillResponse createEmptyInstance() => create();
+  static $pb.PbList<GetMyInsurancePrefillResponse> createRepeated() => $pb.PbList<GetMyInsurancePrefillResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyInsurancePrefillResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyInsurancePrefillResponse>(create);
+  static GetMyInsurancePrefillResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get firstName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set firstName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFirstName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFirstName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get lastName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set lastName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLastName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLastName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get email => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set email($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEmail() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEmail() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get phone => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set phone($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPhone() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPhone() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get dateOfBirth => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set dateOfBirth($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDateOfBirth() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDateOfBirth() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get nin => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set nin($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasNin() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearNin() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get bvn => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set bvn($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBvn() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBvn() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get identityType => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set identityType($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasIdentityType() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIdentityType() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get identityVerified => $_getBF(8);
+  @$pb.TagNumber(9)
+  set identityVerified($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIdentityVerified() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIdentityVerified() => clearField(9);
+}
+
 class UpdateProfileRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProfileRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
@@ -8451,6 +8639,7 @@ class UserSearchRequest extends $pb.GeneratedMessage {
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'searchType')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -8460,6 +8649,7 @@ class UserSearchRequest extends $pb.GeneratedMessage {
     $core.int? limit,
     $core.String? searchType,
     $core.String? countryCode,
+    $core.int? offset,
   }) {
     final _result = create();
     if (query != null) {
@@ -8473,6 +8663,9 @@ class UserSearchRequest extends $pb.GeneratedMessage {
     }
     if (countryCode != null) {
       _result.countryCode = countryCode;
+    }
+    if (offset != null) {
+      _result.offset = offset;
     }
     return _result;
   }
@@ -8532,6 +8725,15 @@ class UserSearchRequest extends $pb.GeneratedMessage {
   $core.bool hasCountryCode() => $_has(3);
   @$pb.TagNumber(4)
   void clearCountryCode() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get offset => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set offset($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasOffset() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOffset() => clearField(5);
 }
 
 class UserSearchResponse extends $pb.GeneratedMessage {
@@ -9020,156 +9222,6 @@ class SkipKYCUpgradeRequest extends $pb.GeneratedMessage {
   $core.bool hasSkipTier3() => $_has(1);
   @$pb.TagNumber(2)
   void clearSkipTier3() => clearField(2);
-}
-
-class SyncVerifiedKYCTierRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SyncVerifiedKYCTierRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..e<KYCTier>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source')
-    ..hasRequiredFields = false
-  ;
-
-  SyncVerifiedKYCTierRequest._() : super();
-  factory SyncVerifiedKYCTierRequest({
-    $core.String? userId,
-    KYCTier? tier,
-    $core.String? source,
-  }) {
-    final _result = create();
-    if (userId != null) {
-      _result.userId = userId;
-    }
-    if (tier != null) {
-      _result.tier = tier;
-    }
-    if (source != null) {
-      _result.source = source;
-    }
-    return _result;
-  }
-  factory SyncVerifiedKYCTierRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SyncVerifiedKYCTierRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SyncVerifiedKYCTierRequest clone() => SyncVerifiedKYCTierRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SyncVerifiedKYCTierRequest copyWith(void Function(SyncVerifiedKYCTierRequest) updates) => super.copyWith((message) => updates(message as SyncVerifiedKYCTierRequest)) as SyncVerifiedKYCTierRequest; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static SyncVerifiedKYCTierRequest create() => SyncVerifiedKYCTierRequest._();
-  SyncVerifiedKYCTierRequest createEmptyInstance() => create();
-  static $pb.PbList<SyncVerifiedKYCTierRequest> createRepeated() => $pb.PbList<SyncVerifiedKYCTierRequest>();
-  @$core.pragma('dart2js:noInline')
-  static SyncVerifiedKYCTierRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SyncVerifiedKYCTierRequest>(create);
-  static SyncVerifiedKYCTierRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get userId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasUserId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  KYCTier get tier => $_getN(1);
-  @$pb.TagNumber(2)
-  set tier(KYCTier v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasTier() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearTier() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get source => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set source($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasSource() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearSource() => clearField(3);
-}
-
-class SyncVerifiedKYCTierResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SyncVerifiedKYCTierResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..e<KYCTier>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  SyncVerifiedKYCTierResponse._() : super();
-  factory SyncVerifiedKYCTierResponse({
-    $core.bool? success,
-    KYCTier? currentTier,
-    $core.String? message,
-  }) {
-    final _result = create();
-    if (success != null) {
-      _result.success = success;
-    }
-    if (currentTier != null) {
-      _result.currentTier = currentTier;
-    }
-    if (message != null) {
-      _result.message = message;
-    }
-    return _result;
-  }
-  factory SyncVerifiedKYCTierResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SyncVerifiedKYCTierResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SyncVerifiedKYCTierResponse clone() => SyncVerifiedKYCTierResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SyncVerifiedKYCTierResponse copyWith(void Function(SyncVerifiedKYCTierResponse) updates) => super.copyWith((message) => updates(message as SyncVerifiedKYCTierResponse)) as SyncVerifiedKYCTierResponse; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static SyncVerifiedKYCTierResponse create() => SyncVerifiedKYCTierResponse._();
-  SyncVerifiedKYCTierResponse createEmptyInstance() => create();
-  static $pb.PbList<SyncVerifiedKYCTierResponse> createRepeated() => $pb.PbList<SyncVerifiedKYCTierResponse>();
-  @$core.pragma('dart2js:noInline')
-  static SyncVerifiedKYCTierResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SyncVerifiedKYCTierResponse>(create);
-  static SyncVerifiedKYCTierResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.bool get success => $_getBF(0);
-  @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasSuccess() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
-
-  @$pb.TagNumber(2)
-  KYCTier get currentTier => $_getN(1);
-  @$pb.TagNumber(2)
-  set currentTier(KYCTier v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasCurrentTier() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearCurrentTier() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get message => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set message($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasMessage() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearMessage() => clearField(3);
 }
 
 class SkipKYCUpgradeResponse extends $pb.GeneratedMessage {

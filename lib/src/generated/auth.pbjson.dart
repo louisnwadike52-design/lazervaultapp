@@ -511,6 +511,31 @@ const GetMeResponse$json = const {
 
 /// Descriptor for `GetMeResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getMeResponseDescriptor = $convert.base64Decode('Cg1HZXRNZVJlc3BvbnNlEhwKBHVzZXIYASABKAsyCC5wYi5Vc2VyUgR1c2Vy');
+@$core.Deprecated('Use getMyInsurancePrefillRequestDescriptor instead')
+const GetMyInsurancePrefillRequest$json = const {
+  '1': 'GetMyInsurancePrefillRequest',
+};
+
+/// Descriptor for `GetMyInsurancePrefillRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyInsurancePrefillRequestDescriptor = $convert.base64Decode('ChxHZXRNeUluc3VyYW5jZVByZWZpbGxSZXF1ZXN0');
+@$core.Deprecated('Use getMyInsurancePrefillResponseDescriptor instead')
+const GetMyInsurancePrefillResponse$json = const {
+  '1': 'GetMyInsurancePrefillResponse',
+  '2': const [
+    const {'1': 'first_name', '3': 1, '4': 1, '5': 9, '10': 'firstName'},
+    const {'1': 'last_name', '3': 2, '4': 1, '5': 9, '10': 'lastName'},
+    const {'1': 'email', '3': 3, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'phone', '3': 4, '4': 1, '5': 9, '10': 'phone'},
+    const {'1': 'date_of_birth', '3': 5, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    const {'1': 'nin', '3': 6, '4': 1, '5': 9, '10': 'nin'},
+    const {'1': 'bvn', '3': 7, '4': 1, '5': 9, '10': 'bvn'},
+    const {'1': 'identity_type', '3': 8, '4': 1, '5': 9, '10': 'identityType'},
+    const {'1': 'identity_verified', '3': 9, '4': 1, '5': 8, '10': 'identityVerified'},
+  ],
+};
+
+/// Descriptor for `GetMyInsurancePrefillResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyInsurancePrefillResponseDescriptor = $convert.base64Decode('Ch1HZXRNeUluc3VyYW5jZVByZWZpbGxSZXNwb25zZRIdCgpmaXJzdF9uYW1lGAEgASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAIgASgJUghsYXN0TmFtZRIUCgVlbWFpbBgDIAEoCVIFZW1haWwSFAoFcGhvbmUYBCABKAlSBXBob25lEiIKDWRhdGVfb2ZfYmlydGgYBSABKAlSC2RhdGVPZkJpcnRoEhAKA25pbhgGIAEoCVIDbmluEhAKA2J2bhgHIAEoCVIDYnZuEiMKDWlkZW50aXR5X3R5cGUYCCABKAlSDGlkZW50aXR5VHlwZRIrChFpZGVudGl0eV92ZXJpZmllZBgJIAEoCFIQaWRlbnRpdHlWZXJpZmllZA==');
 @$core.Deprecated('Use updateProfileRequestDescriptor instead')
 const UpdateProfileRequest$json = const {
   '1': 'UpdateProfileRequest',
@@ -1428,11 +1453,12 @@ const UserSearchRequest$json = const {
     const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
     const {'1': 'search_type', '3': 3, '4': 1, '5': 9, '10': 'searchType'},
     const {'1': 'country_code', '3': 4, '4': 1, '5': 9, '10': 'countryCode'},
+    const {'1': 'offset', '3': 5, '4': 1, '5': 5, '10': 'offset'},
   ],
 };
 
 /// Descriptor for `UserSearchRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List userSearchRequestDescriptor = $convert.base64Decode('ChFVc2VyU2VhcmNoUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSFAoFbGltaXQYAiABKAVSBWxpbWl0Eh8KC3NlYXJjaF90eXBlGAMgASgJUgpzZWFyY2hUeXBlEiEKDGNvdW50cnlfY29kZRgEIAEoCVILY291bnRyeUNvZGU=');
+final $typed_data.Uint8List userSearchRequestDescriptor = $convert.base64Decode('ChFVc2VyU2VhcmNoUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSFAoFbGltaXQYAiABKAVSBWxpbWl0Eh8KC3NlYXJjaF90eXBlGAMgASgJUgpzZWFyY2hUeXBlEiEKDGNvdW50cnlfY29kZRgEIAEoCVILY291bnRyeUNvZGUSFgoGb2Zmc2V0GAUgASgFUgZvZmZzZXQ=');
 @$core.Deprecated('Use userSearchResponseDescriptor instead')
 const UserSearchResponse$json = const {
   '1': 'UserSearchResponse',
@@ -1509,30 +1535,6 @@ const SkipKYCUpgradeRequest$json = const {
 
 /// Descriptor for `SkipKYCUpgradeRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List skipKYCUpgradeRequestDescriptor = $convert.base64Decode('ChVTa2lwS1lDVXBncmFkZVJlcXVlc3QSHgoLc2tpcF90aWVyXzIYASABKAhSCXNraXBUaWVyMhIeCgtza2lwX3RpZXJfMxgCIAEoCFIJc2tpcFRpZXIz');
-@$core.Deprecated('Use syncVerifiedKYCTierRequestDescriptor instead')
-const SyncVerifiedKYCTierRequest$json = const {
-  '1': 'SyncVerifiedKYCTierRequest',
-  '2': const [
-    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    const {'1': 'tier', '3': 2, '4': 1, '5': 14, '6': '.pb.KYCTier', '10': 'tier'},
-    const {'1': 'source', '3': 3, '4': 1, '5': 9, '10': 'source'},
-  ],
-};
-
-/// Descriptor for `SyncVerifiedKYCTierRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List syncVerifiedKYCTierRequestDescriptor = $convert.base64Decode('ChpTeW5jVmVyaWZpZWRLWUNUaWVyUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSHwoEdGllchgCIAEoDjILLnBiLktZQ1RpZXJSBHRpZXISFgoGc291cmNlGAMgASgJUgZzb3VyY2U=');
-@$core.Deprecated('Use syncVerifiedKYCTierResponseDescriptor instead')
-const SyncVerifiedKYCTierResponse$json = const {
-  '1': 'SyncVerifiedKYCTierResponse',
-  '2': const [
-    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    const {'1': 'current_tier', '3': 2, '4': 1, '5': 14, '6': '.pb.KYCTier', '10': 'currentTier'},
-    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
-  ],
-};
-
-/// Descriptor for `SyncVerifiedKYCTierResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List syncVerifiedKYCTierResponseDescriptor = $convert.base64Decode('ChtTeW5jVmVyaWZpZWRLWUNUaWVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIuCgxjdXJyZW50X3RpZXIYAiABKA4yCy5wYi5LWUNUaWVyUgtjdXJyZW50VGllchIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
 @$core.Deprecated('Use skipKYCUpgradeResponseDescriptor instead')
 const SkipKYCUpgradeResponse$json = const {
   '1': 'SkipKYCUpgradeResponse',

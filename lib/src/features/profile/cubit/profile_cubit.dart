@@ -329,12 +329,16 @@ class ProfileCubit extends Cubit<ProfileState> {
     await updatePreferences(activeCountry: countryCode);
   }
 
-  Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
+  Future<List<UserSearchResultEntity>> searchUsers(
+    String query, {
+    int limit = 10,
+    int offset = 0,
+  }) async {
     final q = normalizeLazerVaultUserSearchQuery(query);
     if (q.length < 2) {
       return [];
     }
-    return _repository.searchUsers(query: q, limit: limit);
+    return _repository.searchUsers(query: q, limit: limit, offset: offset);
   }
 
   void resetState() {

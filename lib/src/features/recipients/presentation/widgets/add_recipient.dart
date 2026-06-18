@@ -277,7 +277,7 @@ class _AddRecipientState extends State<AddRecipient> {
                             child: _buildMethodCard(
                               method: AddRecipientMethod.lazervaultUser,
                               icon: Icons.person_search_outlined,
-                              title: 'LazerVault user',
+                              title: 'Lazervault user',
                               isSelected: _selectedMethod == AddRecipientMethod.lazervaultUser,
                             ),
                           ),
@@ -644,7 +644,7 @@ class _AddRecipientState extends State<AddRecipient> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'LazerVault user',
+          'Lazervault user',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18.sp,
@@ -1473,7 +1473,7 @@ class _AddRecipientState extends State<AddRecipient> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'LazerVault needs access to your contacts to find people you can send money to.',
+                'Lazervault needs access to your contacts to find people you can send money to.',
                 style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
@@ -1755,7 +1755,7 @@ class _AddRecipientState extends State<AddRecipient> {
               LazerVaultLoader.small(),
               SizedBox(height: 16.h),
               Text(
-                'Checking if ${contact.name} is on LazerVault...',
+                'Checking if ${contact.name} is on Lazervault...',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14.sp,
@@ -1866,7 +1866,7 @@ class _AddRecipientState extends State<AddRecipient> {
               SizedBox(height: 24.h),
 
               Text(
-                '${contact.name} is on LazerVault!',
+                '${contact.name} is on Lazervault!',
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
@@ -2025,7 +2025,7 @@ class _AddRecipientState extends State<AddRecipient> {
                         ),
                       ),
                       child: Text(
-                        'Send to LazerVault',
+                        'Send to Lazervault',
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

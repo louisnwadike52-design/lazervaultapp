@@ -1239,6 +1239,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               maxLength: 30,
               autocorrect: false,
               enableSuggestions: false,
+              // Usernames are ALWAYS lowercase — force it at the keystroke so the
+              // field display matches what's stored/sent (the backend lowercases
+              // on create + lookup; a case mismatch could miss a transfer-by-tag).
+              inputFormatters: const [_LowercaseTextFormatter()],
               onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
               validator: (value) {
                 if (value != null && value.trim().isNotEmpty) {
@@ -1678,5 +1682,21 @@ class _PhoneCountryPickerSheetState extends State<_PhoneCountryPickerSheet> {
         );
       },
     );
+  }
+}
+
+/// Forces all typed input to lowercase as the user types. Used on the username
+/// / LazerTag field so the on-screen handle matches the lowercased value the
+/// backend stores and looks up — a case mismatch on a @tag transfer could
+/// otherwise miss the recipient.
+class _LowercaseTextFormatter extends TextInputFormatter {
+  const _LowercaseTextFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return newValue.copyWith(text: newValue.text.toLowerCase());
   }
 }

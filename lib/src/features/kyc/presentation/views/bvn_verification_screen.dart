@@ -696,6 +696,15 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       return;
     }
 
+    // Refresh the auth profile on EVERY successful completion (not just the
+    // deposit-resume branch) so the app reflects the just-upgraded tier the
+    // moment the user lands back — the KYC settings tile listens for this and
+    // re-reads the fresh tier, so Settings never shows a stale Tier 1.
+    try {
+      await auth.refreshProfile();
+    } catch (_) {/* non-blocking — backend re-checks KYC authoritatively */}
+    if (!mounted) return;
+
     if (_isOnboardingRoot) {
       Get.offAllNamed(AppRoutes.dashboard);
     } else {

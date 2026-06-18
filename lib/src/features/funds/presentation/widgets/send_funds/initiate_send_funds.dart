@@ -842,18 +842,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final accountCurrency = selectedAccount.currency;
     final currencySymbol = _getCurrencySymbol(accountCurrency);
 
-    // 5. Validate maximum transfer amount (e.g., ₦10,000 per transaction)
-    const double maxTransferAmount = 10000.00;
-    if (transferAmountMajor > maxTransferAmount) {
-      Get.snackbar(
-        'Amount Too Large',
-        'Maximum transfer amount is $currencySymbol${NumberFormat('#,###.00').format(maxTransferAmount)}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withValues(alpha: 0.7),
-        colorText: Colors.white,
-      );
-      return;
-    }
+    // 5. Per-transaction + daily limits are enforced by the BACKEND per the
+    //    user's KYC tier (Tier 1/2/3). Do NOT hardcode a client cap here — the
+    //    old `maxTransferAmount = 10000` placeholder wrongly blocked every
+    //    transfer over ₦10,000 regardless of tier or balance (a Tier-3 user
+    //    with ₦600k could only send ₦10k). Balance is still validated below;
+    //    the saga rejects an over-limit transfer with a clear daily-limit error
+    //    the UI surfaces (transfer_error_bottomsheet).
 
     // 6. CRITICAL: Validate sufficient balance
     // Note: Backend uses AvailableBalance for the CanDebit check.

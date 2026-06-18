@@ -30,9 +30,11 @@ abstract class IProfileRepository {
   });
 
   // Search users by name, username, email, or phone (unified search when searchType is empty)
+  // offset enables load-more pagination (skip already-fetched rows); 0 = first page.
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
+    int offset = 0,
     String searchType = '', // "username", "name", "phone", "email", or "" for unified search
   });
 

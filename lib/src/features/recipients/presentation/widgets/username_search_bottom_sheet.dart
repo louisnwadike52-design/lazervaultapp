@@ -46,18 +46,32 @@ class UsernameSearchBottomSheet extends StatefulWidget {
 }
 
 class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
+  // Page size for the user search. Each load-more fetch appends another page.
+  static const int _pageSize = 20;
+
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   // snappy() = 250ms; on 80-150ms Nigerian 4G this makes results feel
   // near-instant while still consolidating bursty keypresses.
   final Debouncer _debouncer = Debouncer.snappy();
   List<UserSearchResultEntity> _searchResults = [];
-  bool _isSearching = false;
+  final Set<String> _seenUserIds = <String>{};
+  bool _isSearching = false; // first-page load
+  bool _isLoadingMore = false; // appending a subsequent page
+  bool _hasMore = false; // more pages may exist on the backend
   String? _errorMessage;
+  // The query the current result set belongs to; guards against stale appends.
+  String _activeQuery = '';
+  // Raw rows fetched so far for the active query == the next backend offset.
+  // Tracked separately from _searchResults.length so client-side dedupe never
+  // shifts the offset (which would re-fetch / skip rows on the backend).
+  int _fetchedCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     // Auto-focus the search field when sheet opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -66,10 +80,22 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.dispose();
     _focusNode.dispose();
     _debouncer.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    // Trigger when within 300px of the bottom so the next page is ready by
+    // the time the user reaches it.
+    if (position.pixels >= position.maxScrollExtent - 300) {
+      _loadMore();
+    }
   }
 
   void _onSearchChanged(String query) {
@@ -78,58 +104,111 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
 
     final normalized = normalizeLazerVaultUserSearchQuery(query);
 
-    if (normalized.isEmpty) {
+    if (normalized.isEmpty || normalized.length < 2) {
+      // Reset everything (covers empty + below-minimum-length).
       setState(() {
         _searchResults = [];
+        _seenUserIds.clear();
         _isSearching = false;
+        _isLoadingMore = false;
+        _hasMore = false;
+        _activeQuery = '';
+        _fetchedCount = 0;
         _errorMessage = null;
       });
       return;
     }
 
-    // Minimum 2 characters (after normalizing leading @ / $)
-    if (normalized.length < 2) {
-      setState(() {
-        _searchResults = [];
-        _isSearching = false;
-        _errorMessage = null;
-      });
-      return;
-    }
-
-    // Start searching indicator
+    // New query: reset pagination state before starting the first page.
     setState(() {
       _isSearching = true;
+      _isLoadingMore = false;
+      _hasMore = false;
+      _searchResults = [];
+      _seenUserIds.clear();
+      _fetchedCount = 0;
       _errorMessage = null;
     });
 
-    // Debounce the search - wait 500ms after user stops typing
+    // Debounce the search - wait until the user pauses typing.
     _debouncer.run(() => _performSearch(query));
   }
 
   Future<void> _performSearch(String query) async {
+    final normalized = normalizeLazerVaultUserSearchQuery(query);
+    _activeQuery = normalized;
     try {
       print('[UsernameSearch] Searching for: "$query"');
       final cubit = serviceLocator<ProfileCubit>();
-      final results = await cubit.searchUsers(query);
+      final results = await cubit.searchUsers(query, limit: _pageSize, offset: 0);
       print('[UsernameSearch] Got ${results.length} results');
-      if (mounted) {
-        setState(() {
-          _searchResults = results;
-          _isSearching = false;
-          _errorMessage = results.isEmpty ? 'No users found' : null;
-        });
-      }
+      // Ignore if the query changed while this request was in flight.
+      if (!mounted || normalized != _activeQuery) return;
+      final deduped = _dedupe(results);
+      setState(() {
+        _searchResults = deduped;
+        _isSearching = false;
+        _fetchedCount = results.length;
+        // A full page back implies there may be more to fetch.
+        _hasMore = results.length >= _pageSize;
+        _errorMessage = deduped.isEmpty ? 'No users found' : null;
+      });
     } catch (e) {
       print('[UsernameSearch] Error: $e');
-      if (mounted) {
-        setState(() {
-          _searchResults = [];
-          _isSearching = false;
-          _errorMessage = 'Failed to search users';
-        });
+      if (!mounted || normalized != _activeQuery) return;
+      setState(() {
+        _searchResults = [];
+        _seenUserIds.clear();
+        _isSearching = false;
+        _fetchedCount = 0;
+        _hasMore = false;
+        _errorMessage = 'Failed to search users';
+      });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    // Guard: only page when idle, more exists, and a query is active.
+    if (_isLoadingMore || _isSearching || !_hasMore) return;
+    if (_activeQuery.length < 2) return;
+
+    final queryAtRequest = _activeQuery;
+    setState(() => _isLoadingMore = true);
+    try {
+      final cubit = serviceLocator<ProfileCubit>();
+      final results = await cubit.searchUsers(
+        _activeQuery,
+        limit: _pageSize,
+        offset: _fetchedCount,
+      );
+      if (!mounted || queryAtRequest != _activeQuery) return;
+      final newItems = _dedupe(results);
+      setState(() {
+        _searchResults = [..._searchResults, ...newItems];
+        _isLoadingMore = false;
+        _fetchedCount += results.length;
+        // Stop when the backend returns a short page (end reached). A full page
+        // of all-duplicates also stops paging to avoid an infinite loop.
+        _hasMore = results.length >= _pageSize && newItems.isNotEmpty;
+      });
+    } catch (e) {
+      print('[UsernameSearch] Load-more error: $e');
+      if (!mounted || queryAtRequest != _activeQuery) return;
+      // Keep existing results; allow a retry on the next scroll.
+      setState(() => _isLoadingMore = false);
+    }
+  }
+
+  /// Filters out users already shown (by userId) and records the new ones.
+  List<UserSearchResultEntity> _dedupe(List<UserSearchResultEntity> incoming) {
+    final out = <UserSearchResultEntity>[];
+    for (final u in incoming) {
+      final id = u.userId;
+      if (id.isEmpty || _seenUserIds.add(id)) {
+        out.add(u);
       }
     }
+    return out;
   }
 
   @override
@@ -295,11 +374,19 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
       );
     }
 
-    // Results list
+    // Results list with load-more-on-scroll. A trailing footer cell shows the
+    // pagination spinner while the next page is being fetched.
     return ListView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.symmetric(horizontal: 24.w),
-      itemCount: _searchResults.length,
+      itemCount: _searchResults.length + (_isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index >= _searchResults.length) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: Center(child: LazerVaultLoader.small()),
+          );
+        }
         final user = _searchResults[index];
         return _buildUserResultCard(user);
       },

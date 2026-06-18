@@ -12,6 +12,8 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
@@ -202,6 +204,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   Future<void> _saveSession(ProfileEntity profile) async {
     try {
+      // CROSS-USER CACHE GUARD: if the profile we're about to store belongs to a
+      // DIFFERENT user than the one currently cached on this device (e.g. logout
+      // / inactivity-logout then signup or login as another person), purge every
+      // per-user cache FIRST so the new user never inherits the previous user's
+      // passcode, avatar, KYC tier, cached API data, or in-memory cubit state.
+      // Same-user re-login (the legitimate "remember last email for passcode"
+      // UX) is a no-op here — the ids/emails match.
+      final prevUserId = await _storage.read(key: _userIdKey);
+      final prevEmail = await _storage.read(key: 'stored_email');
+      final isUserSwitch = (prevUserId != null &&
+              prevUserId.isNotEmpty &&
+              prevUserId != profile.user.id) ||
+          (prevEmail != null &&
+              prevEmail.isNotEmpty &&
+              prevEmail.toLowerCase() != profile.user.email.toLowerCase());
+      if (isUserSwitch) {
+        await _purgeStaleUserCache();
+      }
+
       await _storage.write(
         key: _accessTokenKey,
         value: profile.session.accessToken,
@@ -232,12 +253,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         key: 'user_last_name',
         value: profile.user.lastName,
       );
-      // Store profile picture if available
+      // Store profile picture if available; otherwise DELETE the key so a new
+      // user without an avatar can never show the previous user's picture on
+      // the passcode screen (writing nothing would leave the stale value).
       if (profile.user.profilePicture != null && profile.user.profilePicture!.isNotEmpty) {
         await _storage.write(
           key: 'user_avatar_url',
           value: profile.user.profilePicture!,
         );
+      } else {
+        await _storage.delete(key: 'user_avatar_url');
       }
 
       // Reset locale/currency from registration country (in-memory, derived)
@@ -251,6 +276,70 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } catch (e) {
       print('Error saving session: $e');
     }
+  }
+
+  /// Purge every PER-USER cache that survives a logout, so a different user
+  /// signing in on the same device never sees the previous user's data. This
+  /// covers three classes of stale state the cross-user leak came from:
+  ///   1. Secure-storage keys the passcode/login screens read directly
+  ///      (passcode credential, avatar, names, login method, KYC flags, cached
+  ///      BVN/NIN, last chat session).
+  ///   2. The SWR API cache (profile, accounts, KYC tier + limits, balances) —
+  ///      a persisted+in-memory cache that would otherwise replay the previous
+  ///      user's responses for the new user.
+  ///   3. Long-lived singleton cubits / managers whose in-memory state outlives
+  ///      the session (active account, group accounts).
+  /// Best-effort: any individual failure is swallowed so a partial purge can
+  /// never block (or crash) the new user's sign-in.
+  Future<void> _purgeStaleUserCache() async {
+    // 1. Per-user secure-storage keys. `_clearSession` deliberately KEEPS some
+    // of these for the same-user "remember last email" UX; on a confirmed user
+    // SWITCH they are stale and must go before the new user's keys are written.
+    for (final key in const [
+      'user_passcode',
+      'user_avatar_url',
+      'user_first_name',
+      'user_last_name',
+      'login_method',
+      'has_passcode',
+      'kyc_onboarding_pending',
+      'has_skipped_kyc',
+      'chat_current_session_id',
+    ]) {
+      try {
+        await _storage.delete(key: key);
+      } catch (_) {/* best-effort */}
+    }
+    // Cached identity numbers (BVN/NIN) are PII keyed to the prior user.
+    try {
+      if (serviceLocator.isRegistered<SecureStorageService>()) {
+        await serviceLocator<SecureStorageService>().deleteIdentityNumbers();
+      }
+    } catch (_) {/* best-effort */}
+
+    // 2. SWR API cache (per-user profile/accounts/tier/limits/balances).
+    try {
+      if (serviceLocator.isRegistered<SWRCacheManager>()) {
+        await serviceLocator<SWRCacheManager>().invalidateAll();
+      }
+    } catch (_) {/* best-effort */}
+
+    // 3. In-memory singleton state.
+    try {
+      _accountManager.clearActiveAccount();
+    } catch (_) {/* best-effort */}
+    try {
+      _currencySyncService.clear();
+    } catch (_) {/* best-effort */}
+    try {
+      if (serviceLocator.isRegistered<GroupAccountCubit>()) {
+        serviceLocator<GroupAccountCubit>().clearOnLogout();
+      }
+    } catch (_) {/* best-effort */}
+
+    // Drop the previous user's profile so no getter returns stale identity
+    // between the purge and the new session write.
+    _currentProfile = null;
   }
 
   Future<void> _clearSession() async {
@@ -674,7 +763,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         referralCode: draft.referralCode ?? '',
         selectedDate: draft.dateOfBirth,
         phoneNumber: draft.phone ?? '',
-        currentPage: draft.currentPage,
+        // Always START on the first page even when a draft is restored, so a
+        // previously-started signup never drops the user mid-flow on page 1/2
+        // (confusing — they see later fields with no context). The draft FIELDS
+        // are still restored above so nothing they typed is lost.
+        currentPage: 0,
         primaryContactType: _stringToPrimaryContactType(draft.primaryContactType),
         countryCode: countryCode,
         countryName: countryName,
@@ -804,7 +897,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   void signUpUsernameChanged(String value) {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
-      emit(currentState.copyWith(username: value, clearErrorMessage: true, isLoading: false));
+      // Usernames are ALWAYS lowercase (money-safety: the backend lowercases on
+      // create + lookup, so the @handle the user sees, stores, and sends must
+      // match case-for-case — otherwise a transfer-by-username could miss).
+      emit(currentState.copyWith(username: value.toLowerCase(), clearErrorMessage: true, isLoading: false));
       _scheduleDraftSave(); // Auto-save draft
     }
   }
@@ -1610,7 +1706,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
         // Validate username if provided (optional field)
         if (currentState.username.isNotEmpty) {
-          final cleanUsername = currentState.username.trim().replaceAll(RegExp(r'^@'), '');
+          final cleanUsername = currentState.username.trim().replaceAll(RegExp(r'^@'), '').toLowerCase();
           if (cleanUsername.length < 3) {
             const errorMsg = 'Username must be at least 3 characters';
             _showErrorSnackbar('Validation Error', errorMsg);
@@ -1650,7 +1746,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
         // Clean username: strip @ prefix before sending to API (backend also does this)
         final cleanedUsername = currentState.username.isNotEmpty
-            ? currentState.username.trim().replaceAll(RegExp(r'^@'), '')
+            ? currentState.username.trim().replaceAll(RegExp(r'^@'), '').toLowerCase()
             : null;
 
         final signupResult = await _signUpUseCase(

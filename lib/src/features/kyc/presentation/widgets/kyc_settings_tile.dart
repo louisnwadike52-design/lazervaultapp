@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -60,6 +63,27 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
     // Avatar tint: green once verified, amber while basic/unverified.
     final avatarColor = verified ? '#4CAF50' : '#FF9800';
 
+    // Re-read the live tier whenever the auth profile is refreshed (e.g. the
+    // KYC flow calls AuthenticationCubit.refreshProfile() on completion, which
+    // emits AuthenticationSuccess). This keeps the tile current even when the
+    // Settings screen stayed mounted while KYC completed on another route, so
+    // it never shows a stale Tier 1 after an upgrade.
+    return BlocListener<AuthenticationCubit, AuthenticationState>(
+      listenWhen: (_, current) =>
+          current is AuthenticationSuccess ||
+          current is AuthenticationAuthenticated,
+      listener: (_, __) => _load(),
+      child: _buildTile(responsiveController, tier, verified, isMax, avatarColor),
+    );
+  }
+
+  Widget _buildTile(
+    ResponsiveController responsiveController,
+    int tier,
+    bool verified,
+    bool isMax,
+    String avatarColor,
+  ) {
     return Row(
       children: [
         Stack(

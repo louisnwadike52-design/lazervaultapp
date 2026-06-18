@@ -13,6 +13,12 @@ String normalizeLazerVaultUserSearchQuery(String raw) {
   // Emails: collapse internal whitespace and lowercase so search matches DB LOWER(TRIM(...)).
   if (q.contains('@')) {
     q = q.replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
+  } else {
+    // Usernames are stored + looked up lowercase on the backend, so a @handle
+    // typed in mixed case must be lowercased before the lookup/compare (a case
+    // mismatch could otherwise miss a transfer-by-username recipient). Phone
+    // input is digits/+, so lowercasing it is a harmless no-op.
+    q = q.toLowerCase();
   }
   return q;
 }

@@ -189,7 +189,7 @@ class UsernameRecipientConfirmationSheetState
               Icon(Icons.verified, color: const Color(0xFF10B981), size: 15.sp),
               SizedBox(width: 4.w),
               Text(
-                'LazerVault User',
+                'Lazervault User',
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: const Color(0xFF10B981),
@@ -251,7 +251,7 @@ class UsernameRecipientConfirmationSheetState
               ),
               SizedBox(width: 10.w),
               Text(
-                'LazerVault',
+                'Lazervault',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14.sp,

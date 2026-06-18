@@ -54,7 +54,7 @@ class EndpointRegistry {
   /// refreshed in the background exactly like the URLs). Keep this tiny — it's
   /// for app-wide runtime knobs that must be admin-tunable without a release.
   static const Set<String> _persistedNonUrlKeys = {
-    'inactivity_timeout_seconds',
+    'session_inactivity_logout_seconds',
   };
 
   /// Single source of truth for the admin endpoint Flutter polls. The
@@ -343,13 +343,16 @@ class EndpointRegistry {
   String get wsBalance       => _get('url_ws_balance',          '${_tierBase('wss')}/ws/balance');
   String get wsContactless   => _get('url_ws_contactless',      '${_tierBase('wss')}/ws/contactless');
 
-  /// App-wide inactivity auto-logout threshold, in seconds. Admin-tunable via
-  /// the `inactivity_timeout_seconds` system setting (single source of truth);
-  /// defaults to 60s (1 minute) and is clamped to a sane [5, 3600] range so a
-  /// bad admin value can never lock users out instantly or disable the feature.
+  /// App-wide screen-inactivity auto-logout threshold, in seconds. Admin-tunable
+  /// via the `session_inactivity_logout_seconds` system setting (single source of
+  /// truth); defaults to 45s and is clamped to a sane [15, 600] range so a bad
+  /// admin value (or a failed/offline fetch) can never lock users out instantly
+  /// or disable the feature.
   int get inactivityTimeoutSeconds {
-    final n = int.tryParse(_get('inactivity_timeout_seconds', '60').trim()) ?? 60;
-    return n.clamp(5, 3600);
+    final n =
+        int.tryParse(_get('session_inactivity_logout_seconds', '45').trim()) ??
+            45;
+    return n.clamp(15, 600);
   }
 
   /// Raw read for any registered key — for places that store/read a key

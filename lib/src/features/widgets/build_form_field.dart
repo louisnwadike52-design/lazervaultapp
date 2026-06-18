@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
 
@@ -54,6 +55,7 @@ class BuildFormField extends StatefulWidget {
     this.enableIMEPersonalizedLearning = true,
     this.initialValue,
     this.hintStyle,
+    this.inputFormatters,
   });
 
   final String name;
@@ -105,6 +107,7 @@ class BuildFormField extends StatefulWidget {
   final bool enableIMEPersonalizedLearning;
   final String? initialValue;
   final TextStyle? hintStyle;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<BuildFormField> createState() => BuildFormFieldState();
@@ -280,6 +283,7 @@ class BuildFormFieldState extends State<BuildFormField> {
                         maxLines: widget.maxLines,
                         minLines: widget.minLines,
                         maxLength: widget.maxLength,
+                        inputFormatters: widget.inputFormatters,
                         onChanged: widget.onChanged,
                         onSubmitted: widget.onSubmitted,
                         onEditingComplete: widget.onEditingComplete,

@@ -69,6 +69,12 @@ class AuthServiceClient extends $grpc.Client {
       '/pb.AuthService/GetMe',
       ($0.GetMeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetMeResponse.fromBuffer(value));
+  static final _$getMyInsurancePrefill = $grpc.ClientMethod<
+          $0.GetMyInsurancePrefillRequest, $0.GetMyInsurancePrefillResponse>(
+      '/pb.AuthService/GetMyInsurancePrefill',
+      ($0.GetMyInsurancePrefillRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetMyInsurancePrefillResponse.fromBuffer(value));
   static final _$updateProfile =
       $grpc.ClientMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
           '/pb.AuthService/UpdateProfile',
@@ -285,12 +291,6 @@ class AuthServiceClient extends $grpc.Client {
           ($0.SkipKYCUpgradeRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.SkipKYCUpgradeResponse.fromBuffer(value));
-  static final _$syncVerifiedKYCTier = $grpc.ClientMethod<
-          $0.SyncVerifiedKYCTierRequest, $0.SyncVerifiedKYCTierResponse>(
-      '/pb.AuthService/SyncVerifiedKYCTier',
-      ($0.SyncVerifiedKYCTierRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $0.SyncVerifiedKYCTierResponse.fromBuffer(value));
   static final _$getUserDocuments = $grpc.ClientMethod<
           $0.GetUserDocumentsRequest, $0.GetUserDocumentsResponse>(
       '/pb.AuthService/GetUserDocuments',
@@ -453,6 +453,12 @@ class AuthServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$0.GetMeResponse> getMe($0.GetMeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getMe, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill(
+      $0.GetMyInsurancePrefillRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMyInsurancePrefill, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.UpdateProfileResponse> updateProfile(
@@ -676,12 +682,6 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$skipKYCUpgrade, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.SyncVerifiedKYCTierResponse> syncVerifiedKYCTier(
-      $0.SyncVerifiedKYCTierRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$syncVerifiedKYCTier, request, options: options);
-  }
-
   $grpc.ResponseFuture<$0.GetUserDocumentsResponse> getUserDocuments(
       $0.GetUserDocumentsRequest request,
       {$grpc.CallOptions? options}) {
@@ -871,6 +871,15 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetMeRequest.fromBuffer(value),
         ($0.GetMeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyInsurancePrefillRequest,
+            $0.GetMyInsurancePrefillResponse>(
+        'GetMyInsurancePrefill',
+        getMyInsurancePrefill_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetMyInsurancePrefillRequest.fromBuffer(value),
+        ($0.GetMyInsurancePrefillResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
             'UpdateProfile',
@@ -1187,15 +1196,6 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.SkipKYCUpgradeRequest.fromBuffer(value),
         ($0.SkipKYCUpgradeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SyncVerifiedKYCTierRequest,
-            $0.SyncVerifiedKYCTierResponse>(
-        'SyncVerifiedKYCTier',
-        syncVerifiedKYCTier_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.SyncVerifiedKYCTierRequest.fromBuffer(value),
-        ($0.SyncVerifiedKYCTierResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetUserDocumentsRequest,
             $0.GetUserDocumentsResponse>(
         'GetUserDocuments',
@@ -1392,6 +1392,12 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.GetMeResponse> getMe_Pre(
       $grpc.ServiceCall call, $async.Future<$0.GetMeRequest> request) async {
     return getMe(call, await request);
+  }
+
+  $async.Future<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetMyInsurancePrefillRequest> request) async {
+    return getMyInsurancePrefill(call, await request);
   }
 
   $async.Future<$0.UpdateProfileResponse> updateProfile_Pre(
@@ -1602,12 +1608,6 @@ abstract class AuthServiceBase extends $grpc.Service {
     return skipKYCUpgrade(call, await request);
   }
 
-  $async.Future<$0.SyncVerifiedKYCTierResponse> syncVerifiedKYCTier_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$0.SyncVerifiedKYCTierRequest> request) async {
-    return syncVerifiedKYCTier(call, await request);
-  }
-
   $async.Future<$0.GetUserDocumentsResponse> getUserDocuments_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetUserDocumentsRequest> request) async {
@@ -1723,6 +1723,8 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.ResetPasswordRequest request);
   $async.Future<$0.GetMeResponse> getMe(
       $grpc.ServiceCall call, $0.GetMeRequest request);
+  $async.Future<$0.GetMyInsurancePrefillResponse> getMyInsurancePrefill(
+      $grpc.ServiceCall call, $0.GetMyInsurancePrefillRequest request);
   $async.Future<$0.UpdateProfileResponse> updateProfile(
       $grpc.ServiceCall call, $0.UpdateProfileRequest request);
   $async.Future<$0.FacialLoginResponse> facialLogin(
@@ -1794,8 +1796,6 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.UploadDocumentRequest request);
   $async.Future<$0.SkipKYCUpgradeResponse> skipKYCUpgrade(
       $grpc.ServiceCall call, $0.SkipKYCUpgradeRequest request);
-  $async.Future<$0.SyncVerifiedKYCTierResponse> syncVerifiedKYCTier(
-      $grpc.ServiceCall call, $0.SyncVerifiedKYCTierRequest request);
   $async.Future<$0.GetUserDocumentsResponse> getUserDocuments(
       $grpc.ServiceCall call, $0.GetUserDocumentsRequest request);
   $async.Future<$0.GetKYCStatusResponse> getKYCStatus(

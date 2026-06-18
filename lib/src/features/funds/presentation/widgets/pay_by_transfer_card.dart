@@ -46,6 +46,26 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     );
   }
 
+  /// Build a clean, multi-line block of all the account details. Empty fields
+  /// are omitted entirely so the clipboard never carries a "null"/blank line.
+  String _buildDetailsBlock() {
+    final lines = <String>[
+      if (widget.bankName.trim().isNotEmpty) 'Bank: ${widget.bankName.trim()}',
+      if (widget.accountNumber.trim().isNotEmpty)
+        'Account Number: ${widget.accountNumber.trim()}',
+      if (widget.accountName.trim().isNotEmpty)
+        'Account Name: ${widget.accountName.trim()}',
+    ];
+    return lines.join('\n');
+  }
+
+  /// Copy ALL the account details (bank, number, name) as one formatted string.
+  void _copyAllDetails(BuildContext context) {
+    final block = _buildDetailsBlock();
+    if (block.isEmpty) return;
+    _copyToClipboard(context, block, 'Bank details');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -98,6 +118,18 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              // Copy ALL details (bank + account number + name) in one tap.
+              IconButton(
+                onPressed: () => _copyAllDetails(context),
+                tooltip: 'Copy all details',
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.w),
+                icon: Icon(
+                  Icons.copy_rounded,
+                  color: const Color(0xFF00D09C),
+                  size: 20.sp,
                 ),
               ),
             ],
