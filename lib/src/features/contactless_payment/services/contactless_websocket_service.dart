@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// Wire shape from `services/contactless-payment-gateway/websocket/contactless_websocket.go`.
 /// Keep keys in sync with `ContactlessUpdateEvent`.
@@ -86,31 +87,85 @@ class ContactlessWebSocketService {
       _connectionController.stream;
   bool get isConnected => _isConnected;
 
-  /// Connect to /ws/contactless on the contactless-payment-gateway. Host
-  /// + port come from `.env` (CONTACTLESS_WS_HOST / CONTACTLESS_WS_PORT)
-  /// with sensible fallbacks. Port 443 implies cloudflared TLS termination
-  /// → `wss://`. Loopback dev ports stay `ws://`.
+  /// Resolve the `/ws/contactless` URL the SAME way the voice + balance
+  /// WebSockets do (host-only base, path appended exactly once), so a real
+  /// phone connects through cloudflared instead of the emulator loopback.
+  ///
+  /// Precedence (mirrors balance_websocket_service `_resolveBalanceWsUri`):
+  ///   1. `CONTACTLESS_WS_URL` dotenv override — host-only base (e.g.
+  ///      `wss://dev.lazervault.app`), matching how `VOICE_WS_URL` is set.
+  ///   2. Legacy `CONTACTLESS_WS_HOST` / `CONTACTLESS_WS_PORT` (and the
+  ///      `CONTACTLESS_GRPC_HOST` fallback) — kept so a local-dev `.env`
+  ///      pointing at `10.0.2.2` still works.
+  ///   3. `EndpointRegistry.wsContactless` — the admin-managed, cloudflared
+  ///      `wss://<tier>.lazervault.app/ws/contactless` base.
+  ///
+  /// In every case the host is taken host-only and `/ws/contactless` is
+  /// appended exactly once, so we never get the doubled-path bug
+  /// (`/ws/contactless/ws/contactless`). Port 443 → `wss://` (cloudflared
+  /// TLS termination); loopback dev ports stay `ws://`.
+  Uri _resolveContactlessWsUri({
+    required String userId,
+    required String accessToken,
+  }) {
+    final query = {
+      'user_id': userId,
+      'access_token': accessToken,
+    };
+
+    // 1. Host-only override (preferred, matches VOICE_WS_URL).
+    final overrideUrl = (dotenv.env['CONTACTLESS_WS_URL'] ?? '').trim();
+    if (overrideUrl.isNotEmpty) {
+      final parsed = Uri.parse(overrideUrl);
+      final scheme = parsed.scheme == 'ws' ? 'ws' : 'wss';
+      return Uri(
+        scheme: scheme,
+        host: parsed.host,
+        port: parsed.hasPort ? parsed.port : null,
+        path: '/ws/contactless',
+        queryParameters: query,
+      );
+    }
+
+    // 2. Legacy host/port override (local-dev 10.0.2.2 workflow).
+    final overrideHost = (dotenv.env['CONTACTLESS_WS_HOST'] ??
+            dotenv.env['CONTACTLESS_GRPC_HOST'] ??
+            '')
+        .trim();
+    if (overrideHost.isNotEmpty) {
+      final port =
+          int.tryParse(dotenv.env['CONTACTLESS_WS_PORT'] ?? '8086') ?? 8086;
+      final tlsTunnel = port == 443;
+      return Uri(
+        scheme: tlsTunnel ? 'wss' : 'ws',
+        host: overrideHost,
+        port: tlsTunnel ? null : port,
+        path: '/ws/contactless',
+        queryParameters: query,
+      );
+    }
+
+    // 3. EndpointRegistry (admin-managed, cloudflared) — host-only base.
+    final parsed = Uri.parse(endpointRegistry.wsContactless);
+    return Uri(
+      scheme: parsed.scheme == 'ws' ? 'ws' : 'wss',
+      host: parsed.host,
+      port: parsed.hasPort ? parsed.port : null,
+      path: parsed.path.isEmpty ? '/ws/contactless' : parsed.path,
+      queryParameters: query,
+    );
+  }
+
+  /// Connect to `/ws/contactless` on the contactless-payment-gateway. URL is
+  /// resolved by [_resolveContactlessWsUri] — env-driven, cloudflared-first,
+  /// mirroring the voice + balance WebSockets.
   Future<void> connect({
     required String userId,
     required String accessToken,
   }) async {
     if (_isConnected) return;
-    final wsHost = dotenv.env['CONTACTLESS_WS_HOST'] ??
-        dotenv.env['CONTACTLESS_GRPC_HOST'] ??
-        '10.0.2.2';
-    final portStr = dotenv.env['CONTACTLESS_WS_PORT'] ?? '8086';
-    final port = int.tryParse(portStr) ?? 8086;
-    final tlsTunnel = port == 443;
-    final uri = Uri(
-      scheme: tlsTunnel ? 'wss' : 'ws',
-      host: wsHost,
-      port: tlsTunnel ? null : port,
-      path: '/ws/contactless',
-      queryParameters: {
-        'user_id': userId,
-        'access_token': accessToken,
-      },
-    );
+    final uri =
+        _resolveContactlessWsUri(userId: userId, accessToken: accessToken);
     print('ContactlessWebSocketService: connecting to $uri');
     final headers = {
       'Authorization': 'Bearer $accessToken',

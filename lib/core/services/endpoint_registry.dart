@@ -50,6 +50,13 @@ class EndpointRegistry {
   /// collide with any pre-existing key the app already stores.
   static const String _prefix = 'lv.endpoint.';
 
+  /// Non-`url_` admin keys that the registry also caches (read at startup and
+  /// refreshed in the background exactly like the URLs). Keep this tiny — it's
+  /// for app-wide runtime knobs that must be admin-tunable without a release.
+  static const Set<String> _persistedNonUrlKeys = {
+    'inactivity_timeout_seconds',
+  };
+
   /// Single source of truth for the admin endpoint Flutter polls. The
   /// tier is selected by sub-hostname:
   ///
@@ -172,6 +179,12 @@ class EndpointRegistry {
       'url_voice_language_api':   '$httpsBase/voice/languages',
       'url_ws_voice':             '$wssBase/ws/voice',
       'url_ws_balance':           '$wssBase/ws/balance',
+      // Contactless (tap-to-pay) realtime WS — host-only base, exactly like
+      // wsVoice. The receiver phone subscribes here right after creating a
+      // session; the gateway fans the completion event back. MUST be the
+      // cloudflared host (dev.lazervault.app), never 10.0.2.2, so a real
+      // phone (not just the Android emulator) can connect.
+      'url_ws_contactless':       '$wssBase/ws/contactless',
       'url_storage':              '$httpsBase/v1/storage',
       'url_webhook_base':         '$httpsBase/webhooks',
     };
@@ -218,7 +231,7 @@ class EndpointRegistry {
         final key = raw['key'];
         final value = raw['value'];
         if (key is! String || value is! String) continue;
-        if (!key.startsWith('url_')) continue;
+        if (!key.startsWith('url_') && !_persistedNonUrlKeys.contains(key)) continue;
         if (_cache[key] == value) continue;
         _cache[key] = value;
         await prefs.setString(_prefix + key, value);
@@ -328,6 +341,16 @@ class EndpointRegistry {
 
   String get wsVoice         => _get('url_ws_voice',            '${_tierBase('wss')}/ws/voice');
   String get wsBalance       => _get('url_ws_balance',          '${_tierBase('wss')}/ws/balance');
+  String get wsContactless   => _get('url_ws_contactless',      '${_tierBase('wss')}/ws/contactless');
+
+  /// App-wide inactivity auto-logout threshold, in seconds. Admin-tunable via
+  /// the `inactivity_timeout_seconds` system setting (single source of truth);
+  /// defaults to 30s and is clamped to a sane [5, 3600] range so a bad admin
+  /// value can never lock users out instantly or disable the feature outright.
+  int get inactivityTimeoutSeconds {
+    final n = int.tryParse(_get('inactivity_timeout_seconds', '30').trim()) ?? 30;
+    return n.clamp(5, 3600);
+  }
 
   /// Raw read for any registered key — for places that store/read a key
   /// the typed accessors don't (yet) cover.
