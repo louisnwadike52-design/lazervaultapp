@@ -25,6 +25,14 @@ class SplitBillEntity extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // Receiver (the third-party payee co-payers pay TO). receiverType: '' (legacy →
+  // creator), 'internal_user', or 'external_bank'.
+  final String receiverType;
+  final String receiverName;
+  final String receiverAccountMasked;
+  final String settlementStatus;
+  final double withdrawalFee;
+
   const SplitBillEntity({
     required this.id,
     required this.creatorId,
@@ -43,10 +51,34 @@ class SplitBillEntity extends Equatable {
     required this.participants,
     required this.createdAt,
     required this.updatedAt,
+    this.receiverType = '',
+    this.receiverName = '',
+    this.receiverAccountMasked = '',
+    this.settlementStatus = 'not_applicable',
+    this.withdrawalFee = 0.0,
   });
 
   bool get isCompleted => status == SplitBillStatus.completed;
   bool get isActive => status == SplitBillStatus.active;
+
+  /// True when the bill pays an explicit third-party receiver (not the creator).
+  bool get hasExternalReceiver => receiverType == 'external_bank';
+  bool get hasReceiver => receiverType.isNotEmpty;
+
+  /// Human label for who collects the money ("the receiver").
+  String get receiverDisplay {
+    if (receiverName.isNotEmpty) return receiverName;
+    if (!hasReceiver) return creatorName.isNotEmpty ? creatorName : '@$creatorUsername';
+    return receiverAccountMasked;
+  }
+
+  /// Co-payers who have paid (for the "who's paid" sheet).
+  List<SplitBillParticipantEntity> get paidParticipants =>
+      participants.where((p) => p.isPaid).toList();
+
+  /// Co-payers still owing.
+  List<SplitBillParticipantEntity> get pendingParticipants =>
+      participants.where((p) => p.isPending).toList();
 
   double get progressPercent =>
       totalParticipants > 0
@@ -115,6 +147,7 @@ class SplitBillParticipantEntity extends Equatable {
   final SplitBillParticipantStatus status;
   final String? transactionReference;
   final DateTime? paidAt;
+  final bool isCreator;
 
   const SplitBillParticipantEntity({
     required this.id,
@@ -127,6 +160,7 @@ class SplitBillParticipantEntity extends Equatable {
     required this.status,
     this.transactionReference,
     this.paidAt,
+    this.isCreator = false,
   });
 
   bool get isPending => status == SplitBillParticipantStatus.pending;

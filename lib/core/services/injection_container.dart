@@ -406,6 +406,7 @@ import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit
 import 'package:lazervault/src/features/split_bills/data/repositories/split_bill_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/split_bills/domain/repositories/split_bill_repository.dart';
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_cubit.dart';
+import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
 // End Split Bills Imports
 
 // QR Payment Imports
@@ -2138,6 +2139,14 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => SplitBillCubit(
     repository: serviceLocator<SplitBillRepository>(),
   ));
+
+  // Singleton count cubit backing the "Split Bills" quick-action badge. Counts
+  // incoming active split bills where the current user is a pending co-payer.
+  serviceLocator.registerLazySingleton<SplitBillCountCubit>(
+    () => SplitBillCountCubit(
+      repository: serviceLocator<SplitBillRepository>(),
+    ),
+  );
 
   // ================== Feature: Wallet Transfer (own accounts) ==================
 

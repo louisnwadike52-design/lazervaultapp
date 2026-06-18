@@ -40,6 +40,11 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   double _myShare = 0.0;
   bool _isCreating = false;
 
+  // Receiver: who actually gets paid. null => creator collects (legacy default).
+  _ReceiverMode _receiverMode = _ReceiverMode.collectMyself;
+  String? _receiverUsername;
+  String? _receiverDisplayName;
+
   String get _currency {
     final acctDetails = GetIt.I<AccountManager>().activeAccountDetails;
     return acctDetails?.currency ?? 'NGN';
@@ -137,7 +142,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     if (_selectedParticipants.length >= _maxParticipants) {
       Get.snackbar(
         'Limit Reached',
-        'Maximum $_maxParticipants participants allowed',
+        'Maximum $_maxParticipants co-payers allowed',
         backgroundColor: const Color(0xFFFB923C),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -187,8 +192,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
 
     if (_selectedParticipants.isEmpty) {
       Get.snackbar(
-        'No Participants',
-        'Please select at least one participant',
+        'No Co-payers',
+        'Please select at least one co-payer',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -223,6 +228,12 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       );
     }).toList();
 
+    final SplitBillReceiverInput? receiver =
+        _receiverMode == _ReceiverMode.lazerVaultUser &&
+                _receiverUsername != null
+            ? SplitBillReceiverInput.internalUser(_receiverUsername!)
+            : null;
+
     context.read<SplitBillCubit>().createSplitBill(
           totalAmount: _totalAmount,
           currency: _currency,
@@ -232,6 +243,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           splitMethod: _toSplitMethodType(),
           creatorShare: _myShare,
           participants: participants,
+          receiver: receiver,
+          includeSelfAsCopayer: _includeMyself,
         );
   }
 
@@ -297,6 +310,8 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                       _buildAmountInput(),
                       const SizedBox(height: 16),
                       _buildDescriptionInput(),
+                      const SizedBox(height: 24),
+                      _buildReceiverSection(),
                       const SizedBox(height: 24),
                       _buildSplitMethodSelector(),
                       const SizedBox(height: 16),
@@ -401,6 +416,263 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     );
   }
 
+  String get _receiverSummaryLabel {
+    if (_receiverMode == _ReceiverMode.lazerVaultUser &&
+        _receiverUsername != null) {
+      final name = (_receiverDisplayName?.isNotEmpty ?? false)
+          ? _receiverDisplayName!
+          : '@$_receiverUsername';
+      return name;
+    }
+    return 'You';
+  }
+
+  Widget _buildReceiverSection() {
+    final pickedUser = _receiverMode == _ReceiverMode.lazerVaultUser &&
+        _receiverUsername != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Who's getting paid?",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Co-payers each pay their share to this receiver.',
+          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildReceiverModeCard(
+                mode: _ReceiverMode.collectMyself,
+                icon: Icons.account_balance_wallet_outlined,
+                title: "I'll collect it",
+                subtitle: 'Paid to you',
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildReceiverModeCard(
+                mode: _ReceiverMode.lazerVaultUser,
+                icon: Icons.person_outline,
+                title: 'Another LazerVault user',
+                subtitle: 'Pick a recipient',
+              ),
+            ),
+          ],
+        ),
+        if (_receiverMode == _ReceiverMode.lazerVaultUser) ...[
+          const SizedBox(height: 12),
+          if (pickedUser)
+            _buildSelectedReceiverChip()
+          else
+            GestureDetector(
+              onTap: () => _showReceiverSearchBottomSheet(context),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF2D2D2D)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.search, color: Color(0xFF4834D4), size: 20),
+                    SizedBox(width: 12),
+                    Text(
+                      'Select a LazerVault user',
+                      style: TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildReceiverModeCard({
+    required _ReceiverMode mode,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    final isSelected = _receiverMode == mode;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _receiverMode = mode);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF4834D4).withValues(alpha: 0.12)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF4834D4)
+                : const Color(0xFF2D2D2D),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? const Color(0xFF4834D4)
+                  : const Color(0xFF9CA3AF),
+              size: 22,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedReceiverChip() {
+    final displayName = (_receiverDisplayName?.isNotEmpty ?? false)
+        ? _receiverDisplayName!
+        : '@$_receiverUsername';
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF4834D4)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.2),
+            child: Text(
+              displayName.replaceAll('@', '').isNotEmpty
+                  ? displayName.replaceAll('@', '')[0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                color: Color(0xFF4834D4),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  '@$_receiverUsername',
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => _showReceiverSearchBottomSheet(context),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF4834D4),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(0, 0),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('Change'),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _receiverUsername = null;
+                _receiverDisplayName = null;
+              });
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(left: 4),
+              child:
+                  Icon(Icons.close, color: Color(0xFFEF4444), size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReceiverSearchBottomSheet(BuildContext context) {
+    final tagPayCubit = context.read<TagPayCubit>();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) => BlocProvider.value(
+        value: tagPayCubit,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return _SearchUsersSheet(
+              scrollController: scrollController,
+              selectedUsernames: const {},
+              onUserSelected: (user) {
+                setState(() {
+                  _receiverUsername = user.tagPay;
+                  _receiverDisplayName = user.displayName;
+                });
+                Navigator.pop(bottomSheetContext);
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildSplitMethodSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,7 +754,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Include Myself',
+                  "I'm also a co-payer",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -521,7 +793,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Participants (${_selectedParticipants.length})',
+              'Co-payers (${_selectedParticipants.length})',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -559,7 +831,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'No participants added',
+                  'No co-payers added',
                   style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                 ),
                 const SizedBox(height: 8),
@@ -732,7 +1004,9 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
           _buildSummaryRow('Total Amount',
               '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)}'),
           const SizedBox(height: 8),
-          _buildSummaryRow('Participants', '$_totalParticipants'),
+          _buildSummaryRow('Paying to', _receiverSummaryLabel),
+          const SizedBox(height: 8),
+          _buildSummaryRow('Co-payers', '$_totalParticipants'),
           if (_splitMethod == _SplitMethod.equal) ...[
             const SizedBox(height: 8),
             _buildSummaryRow('Per Person',
@@ -1032,3 +1306,5 @@ class _SelectedParticipant {
 }
 
 enum _SplitMethod { equal, custom, percentage }
+
+enum _ReceiverMode { collectMyself, lazerVaultUser }

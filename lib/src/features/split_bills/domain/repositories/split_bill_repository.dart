@@ -8,6 +8,8 @@ abstract class SplitBillRepository {
     required SplitMethodType splitMethod,
     required double creatorShare,
     required List<SplitBillParticipantInput> participants,
+    SplitBillReceiverInput? receiver,
+    bool includeSelfAsCopayer = false,
   });
 
   Future<SplitBillEntity> getSplitBill({required String splitBillId});
@@ -50,6 +52,26 @@ class SplitBillParticipantInput {
     required this.amount,
     this.percentage = 0.0,
   });
+}
+
+/// Where co-payers' money goes. type: 'internal_user' or 'external_bank'.
+/// A null receiver means the receiver is the creator (legacy behaviour).
+class SplitBillReceiverInput {
+  final String type;
+  final String username; // internal_user
+  final String bankCode; // external_bank
+  final String accountNumber; // external_bank
+
+  const SplitBillReceiverInput.internalUser(this.username)
+      : type = 'internal_user',
+        bankCode = '',
+        accountNumber = '';
+
+  const SplitBillReceiverInput.externalBank({
+    required this.bankCode,
+    required this.accountNumber,
+  })  : type = 'external_bank',
+        username = '';
 }
 
 class PaySplitBillResult {

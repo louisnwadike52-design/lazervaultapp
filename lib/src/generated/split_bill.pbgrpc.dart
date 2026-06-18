@@ -1,264 +1,296 @@
-///
-//  Generated code. Do not modify.
-//  source: split_bill.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from split_bill.proto.
+
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:async' as $async;
-
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'split_bill.pb.dart' as $34;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'split_bill.pb.dart' as $0;
+
 export 'split_bill.pb.dart';
 
+/// SplitBillService - Split bills among multiple participants
+@$pb.GrpcServiceName('split_bill.SplitBillService')
 class SplitBillServiceClient extends $grpc.Client {
-  static final _$createSplitBill = $grpc.ClientMethod<
-          $34.CreateSplitBillRequest, $34.CreateSplitBillResponse>(
-      '/split_bill.SplitBillService/CreateSplitBill',
-      ($34.CreateSplitBillRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.CreateSplitBillResponse.fromBuffer(value));
-  static final _$getSplitBill =
-      $grpc.ClientMethod<$34.GetSplitBillRequest, $34.GetSplitBillResponse>(
-          '/split_bill.SplitBillService/GetSplitBill',
-          ($34.GetSplitBillRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $34.GetSplitBillResponse.fromBuffer(value));
-  static final _$getMyCreatedSplitBills =
-      $grpc.ClientMethod<$34.GetMySplitBillsRequest, $34.GetSplitBillsResponse>(
-          '/split_bill.SplitBillService/GetMyCreatedSplitBills',
-          ($34.GetMySplitBillsRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $34.GetSplitBillsResponse.fromBuffer(value));
-  static final _$getMyIncomingSplitBills =
-      $grpc.ClientMethod<$34.GetMySplitBillsRequest, $34.GetSplitBillsResponse>(
-          '/split_bill.SplitBillService/GetMyIncomingSplitBills',
-          ($34.GetMySplitBillsRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $34.GetSplitBillsResponse.fromBuffer(value));
-  static final _$paySplitBillShare = $grpc.ClientMethod<
-          $34.PaySplitBillShareRequest, $34.PaySplitBillShareResponse>(
-      '/split_bill.SplitBillService/PaySplitBillShare',
-      ($34.PaySplitBillShareRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.PaySplitBillShareResponse.fromBuffer(value));
-  static final _$cancelSplitBill = $grpc.ClientMethod<
-          $34.CancelSplitBillRequest, $34.CancelSplitBillResponse>(
-      '/split_bill.SplitBillService/CancelSplitBill',
-      ($34.CancelSplitBillRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.CancelSplitBillResponse.fromBuffer(value));
-  static final _$declineSplitBillShare = $grpc.ClientMethod<
-          $34.DeclineSplitBillShareRequest, $34.DeclineSplitBillShareResponse>(
-      '/split_bill.SplitBillService/DeclineSplitBillShare',
-      ($34.DeclineSplitBillShareRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.DeclineSplitBillShareResponse.fromBuffer(value));
-  static final _$sendSplitBillReminder = $grpc.ClientMethod<
-          $34.SendSplitBillReminderRequest, $34.SendSplitBillReminderResponse>(
-      '/split_bill.SplitBillService/SendSplitBillReminder',
-      ($34.SendSplitBillReminderRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.SendSplitBillReminderResponse.fromBuffer(value));
+  /// The hostname for this service.
+  static const $core.String defaultHost = '';
 
-  SplitBillServiceClient($grpc.ClientChannel channel,
-      {$grpc.CallOptions? options,
-      $core.Iterable<$grpc.ClientInterceptor>? interceptors})
-      : super(channel, options: options, interceptors: interceptors);
+  /// OAuth scopes needed for the client.
+  static const $core.List<$core.String> oauthScopes = [
+    '',
+  ];
 
-  $grpc.ResponseFuture<$34.CreateSplitBillResponse> createSplitBill(
-      $34.CreateSplitBillRequest request,
-      {$grpc.CallOptions? options}) {
+  SplitBillServiceClient(super.channel, {super.options, super.interceptors});
+
+  /// Create a split bill among multiple participants
+  $grpc.ResponseFuture<$0.CreateSplitBillResponse> createSplitBill(
+    $0.CreateSplitBillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$createSplitBill, request, options: options);
   }
 
-  $grpc.ResponseFuture<$34.GetSplitBillResponse> getSplitBill(
-      $34.GetSplitBillRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get a specific split bill by ID
+  $grpc.ResponseFuture<$0.GetSplitBillResponse> getSplitBill(
+    $0.GetSplitBillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getSplitBill, request, options: options);
   }
 
-  $grpc.ResponseFuture<$34.GetSplitBillsResponse> getMyCreatedSplitBills(
-      $34.GetMySplitBillsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get split bills I created
+  $grpc.ResponseFuture<$0.GetSplitBillsResponse> getMyCreatedSplitBills(
+    $0.GetMySplitBillsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCreatedSplitBills, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$34.GetSplitBillsResponse> getMyIncomingSplitBills(
-      $34.GetMySplitBillsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get split bills where I am a participant
+  $grpc.ResponseFuture<$0.GetSplitBillsResponse> getMyIncomingSplitBills(
+    $0.GetMySplitBillsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyIncomingSplitBills, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$34.PaySplitBillShareResponse> paySplitBillShare(
-      $34.PaySplitBillShareRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Pay my share of a split bill
+  $grpc.ResponseFuture<$0.PaySplitBillShareResponse> paySplitBillShare(
+    $0.PaySplitBillShareRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$paySplitBillShare, request, options: options);
   }
 
-  $grpc.ResponseFuture<$34.CancelSplitBillResponse> cancelSplitBill(
-      $34.CancelSplitBillRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Cancel a split bill (creator only)
+  $grpc.ResponseFuture<$0.CancelSplitBillResponse> cancelSplitBill(
+    $0.CancelSplitBillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$cancelSplitBill, request, options: options);
   }
 
-  $grpc.ResponseFuture<$34.DeclineSplitBillShareResponse> declineSplitBillShare(
-      $34.DeclineSplitBillShareRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Decline my share of a split bill
+  $grpc.ResponseFuture<$0.DeclineSplitBillShareResponse> declineSplitBillShare(
+    $0.DeclineSplitBillShareRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$declineSplitBillShare, request, options: options);
   }
 
-  $grpc.ResponseFuture<$34.SendSplitBillReminderResponse> sendSplitBillReminder(
-      $34.SendSplitBillReminderRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Send reminder to unpaid participants
+  $grpc.ResponseFuture<$0.SendSplitBillReminderResponse> sendSplitBillReminder(
+    $0.SendSplitBillReminderRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$sendSplitBillReminder, request, options: options);
   }
+
+  // method descriptors
+
+  static final _$createSplitBill =
+      $grpc.ClientMethod<$0.CreateSplitBillRequest, $0.CreateSplitBillResponse>(
+          '/split_bill.SplitBillService/CreateSplitBill',
+          ($0.CreateSplitBillRequest value) => value.writeToBuffer(),
+          $0.CreateSplitBillResponse.fromBuffer);
+  static final _$getSplitBill =
+      $grpc.ClientMethod<$0.GetSplitBillRequest, $0.GetSplitBillResponse>(
+          '/split_bill.SplitBillService/GetSplitBill',
+          ($0.GetSplitBillRequest value) => value.writeToBuffer(),
+          $0.GetSplitBillResponse.fromBuffer);
+  static final _$getMyCreatedSplitBills =
+      $grpc.ClientMethod<$0.GetMySplitBillsRequest, $0.GetSplitBillsResponse>(
+          '/split_bill.SplitBillService/GetMyCreatedSplitBills',
+          ($0.GetMySplitBillsRequest value) => value.writeToBuffer(),
+          $0.GetSplitBillsResponse.fromBuffer);
+  static final _$getMyIncomingSplitBills =
+      $grpc.ClientMethod<$0.GetMySplitBillsRequest, $0.GetSplitBillsResponse>(
+          '/split_bill.SplitBillService/GetMyIncomingSplitBills',
+          ($0.GetMySplitBillsRequest value) => value.writeToBuffer(),
+          $0.GetSplitBillsResponse.fromBuffer);
+  static final _$paySplitBillShare = $grpc.ClientMethod<
+          $0.PaySplitBillShareRequest, $0.PaySplitBillShareResponse>(
+      '/split_bill.SplitBillService/PaySplitBillShare',
+      ($0.PaySplitBillShareRequest value) => value.writeToBuffer(),
+      $0.PaySplitBillShareResponse.fromBuffer);
+  static final _$cancelSplitBill =
+      $grpc.ClientMethod<$0.CancelSplitBillRequest, $0.CancelSplitBillResponse>(
+          '/split_bill.SplitBillService/CancelSplitBill',
+          ($0.CancelSplitBillRequest value) => value.writeToBuffer(),
+          $0.CancelSplitBillResponse.fromBuffer);
+  static final _$declineSplitBillShare = $grpc.ClientMethod<
+          $0.DeclineSplitBillShareRequest, $0.DeclineSplitBillShareResponse>(
+      '/split_bill.SplitBillService/DeclineSplitBillShare',
+      ($0.DeclineSplitBillShareRequest value) => value.writeToBuffer(),
+      $0.DeclineSplitBillShareResponse.fromBuffer);
+  static final _$sendSplitBillReminder = $grpc.ClientMethod<
+          $0.SendSplitBillReminderRequest, $0.SendSplitBillReminderResponse>(
+      '/split_bill.SplitBillService/SendSplitBillReminder',
+      ($0.SendSplitBillReminderRequest value) => value.writeToBuffer(),
+      $0.SendSplitBillReminderResponse.fromBuffer);
 }
 
+@$pb.GrpcServiceName('split_bill.SplitBillService')
 abstract class SplitBillServiceBase extends $grpc.Service {
   $core.String get $name => 'split_bill.SplitBillService';
 
   SplitBillServiceBase() {
-    $addMethod($grpc.ServiceMethod<$34.CreateSplitBillRequest,
-            $34.CreateSplitBillResponse>(
+    $addMethod($grpc.ServiceMethod<$0.CreateSplitBillRequest,
+            $0.CreateSplitBillResponse>(
         'CreateSplitBill',
         createSplitBill_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.CreateSplitBillRequest.fromBuffer(value),
-        ($34.CreateSplitBillResponse value) => value.writeToBuffer()));
+            $0.CreateSplitBillRequest.fromBuffer(value),
+        ($0.CreateSplitBillResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$34.GetSplitBillRequest, $34.GetSplitBillResponse>(
+        $grpc.ServiceMethod<$0.GetSplitBillRequest, $0.GetSplitBillResponse>(
             'GetSplitBill',
             getSplitBill_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $34.GetSplitBillRequest.fromBuffer(value),
-            ($34.GetSplitBillResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.GetMySplitBillsRequest,
-            $34.GetSplitBillsResponse>(
+                $0.GetSplitBillRequest.fromBuffer(value),
+            ($0.GetSplitBillResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMySplitBillsRequest,
+            $0.GetSplitBillsResponse>(
         'GetMyCreatedSplitBills',
         getMyCreatedSplitBills_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.GetMySplitBillsRequest.fromBuffer(value),
-        ($34.GetSplitBillsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.GetMySplitBillsRequest,
-            $34.GetSplitBillsResponse>(
+            $0.GetMySplitBillsRequest.fromBuffer(value),
+        ($0.GetSplitBillsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMySplitBillsRequest,
+            $0.GetSplitBillsResponse>(
         'GetMyIncomingSplitBills',
         getMyIncomingSplitBills_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.GetMySplitBillsRequest.fromBuffer(value),
-        ($34.GetSplitBillsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.PaySplitBillShareRequest,
-            $34.PaySplitBillShareResponse>(
+            $0.GetMySplitBillsRequest.fromBuffer(value),
+        ($0.GetSplitBillsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PaySplitBillShareRequest,
+            $0.PaySplitBillShareResponse>(
         'PaySplitBillShare',
         paySplitBillShare_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.PaySplitBillShareRequest.fromBuffer(value),
-        ($34.PaySplitBillShareResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.CancelSplitBillRequest,
-            $34.CancelSplitBillResponse>(
+            $0.PaySplitBillShareRequest.fromBuffer(value),
+        ($0.PaySplitBillShareResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelSplitBillRequest,
+            $0.CancelSplitBillResponse>(
         'CancelSplitBill',
         cancelSplitBill_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.CancelSplitBillRequest.fromBuffer(value),
-        ($34.CancelSplitBillResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.DeclineSplitBillShareRequest,
-            $34.DeclineSplitBillShareResponse>(
+            $0.CancelSplitBillRequest.fromBuffer(value),
+        ($0.CancelSplitBillResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeclineSplitBillShareRequest,
+            $0.DeclineSplitBillShareResponse>(
         'DeclineSplitBillShare',
         declineSplitBillShare_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.DeclineSplitBillShareRequest.fromBuffer(value),
-        ($34.DeclineSplitBillShareResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.SendSplitBillReminderRequest,
-            $34.SendSplitBillReminderResponse>(
+            $0.DeclineSplitBillShareRequest.fromBuffer(value),
+        ($0.DeclineSplitBillShareResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SendSplitBillReminderRequest,
+            $0.SendSplitBillReminderResponse>(
         'SendSplitBillReminder',
         sendSplitBillReminder_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $34.SendSplitBillReminderRequest.fromBuffer(value),
-        ($34.SendSplitBillReminderResponse value) => value.writeToBuffer()));
+            $0.SendSplitBillReminderRequest.fromBuffer(value),
+        ($0.SendSplitBillReminderResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$34.CreateSplitBillResponse> createSplitBill_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.CreateSplitBillRequest> request) async {
-    return createSplitBill(call, await request);
+  $async.Future<$0.CreateSplitBillResponse> createSplitBill_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateSplitBillRequest> $request) async {
+    return createSplitBill($call, await $request);
   }
 
-  $async.Future<$34.GetSplitBillResponse> getSplitBill_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.GetSplitBillRequest> request) async {
-    return getSplitBill(call, await request);
+  $async.Future<$0.CreateSplitBillResponse> createSplitBill(
+      $grpc.ServiceCall call, $0.CreateSplitBillRequest request);
+
+  $async.Future<$0.GetSplitBillResponse> getSplitBill_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetSplitBillRequest> $request) async {
+    return getSplitBill($call, await $request);
   }
 
-  $async.Future<$34.GetSplitBillsResponse> getMyCreatedSplitBills_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.GetMySplitBillsRequest> request) async {
-    return getMyCreatedSplitBills(call, await request);
+  $async.Future<$0.GetSplitBillResponse> getSplitBill(
+      $grpc.ServiceCall call, $0.GetSplitBillRequest request);
+
+  $async.Future<$0.GetSplitBillsResponse> getMyCreatedSplitBills_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMySplitBillsRequest> $request) async {
+    return getMyCreatedSplitBills($call, await $request);
   }
 
-  $async.Future<$34.GetSplitBillsResponse> getMyIncomingSplitBills_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.GetMySplitBillsRequest> request) async {
-    return getMyIncomingSplitBills(call, await request);
+  $async.Future<$0.GetSplitBillsResponse> getMyCreatedSplitBills(
+      $grpc.ServiceCall call, $0.GetMySplitBillsRequest request);
+
+  $async.Future<$0.GetSplitBillsResponse> getMyIncomingSplitBills_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMySplitBillsRequest> $request) async {
+    return getMyIncomingSplitBills($call, await $request);
   }
 
-  $async.Future<$34.PaySplitBillShareResponse> paySplitBillShare_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.PaySplitBillShareRequest> request) async {
-    return paySplitBillShare(call, await request);
+  $async.Future<$0.GetSplitBillsResponse> getMyIncomingSplitBills(
+      $grpc.ServiceCall call, $0.GetMySplitBillsRequest request);
+
+  $async.Future<$0.PaySplitBillShareResponse> paySplitBillShare_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.PaySplitBillShareRequest> $request) async {
+    return paySplitBillShare($call, await $request);
   }
 
-  $async.Future<$34.CancelSplitBillResponse> cancelSplitBill_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.CancelSplitBillRequest> request) async {
-    return cancelSplitBill(call, await request);
+  $async.Future<$0.PaySplitBillShareResponse> paySplitBillShare(
+      $grpc.ServiceCall call, $0.PaySplitBillShareRequest request);
+
+  $async.Future<$0.CancelSplitBillResponse> cancelSplitBill_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CancelSplitBillRequest> $request) async {
+    return cancelSplitBill($call, await $request);
   }
 
-  $async.Future<$34.DeclineSplitBillShareResponse> declineSplitBillShare_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.DeclineSplitBillShareRequest> request) async {
-    return declineSplitBillShare(call, await request);
+  $async.Future<$0.CancelSplitBillResponse> cancelSplitBill(
+      $grpc.ServiceCall call, $0.CancelSplitBillRequest request);
+
+  $async.Future<$0.DeclineSplitBillShareResponse> declineSplitBillShare_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DeclineSplitBillShareRequest> $request) async {
+    return declineSplitBillShare($call, await $request);
   }
 
-  $async.Future<$34.SendSplitBillReminderResponse> sendSplitBillReminder_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.SendSplitBillReminderRequest> request) async {
-    return sendSplitBillReminder(call, await request);
+  $async.Future<$0.DeclineSplitBillShareResponse> declineSplitBillShare(
+      $grpc.ServiceCall call, $0.DeclineSplitBillShareRequest request);
+
+  $async.Future<$0.SendSplitBillReminderResponse> sendSplitBillReminder_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SendSplitBillReminderRequest> $request) async {
+    return sendSplitBillReminder($call, await $request);
   }
 
-  $async.Future<$34.CreateSplitBillResponse> createSplitBill(
-      $grpc.ServiceCall call, $34.CreateSplitBillRequest request);
-  $async.Future<$34.GetSplitBillResponse> getSplitBill(
-      $grpc.ServiceCall call, $34.GetSplitBillRequest request);
-  $async.Future<$34.GetSplitBillsResponse> getMyCreatedSplitBills(
-      $grpc.ServiceCall call, $34.GetMySplitBillsRequest request);
-  $async.Future<$34.GetSplitBillsResponse> getMyIncomingSplitBills(
-      $grpc.ServiceCall call, $34.GetMySplitBillsRequest request);
-  $async.Future<$34.PaySplitBillShareResponse> paySplitBillShare(
-      $grpc.ServiceCall call, $34.PaySplitBillShareRequest request);
-  $async.Future<$34.CancelSplitBillResponse> cancelSplitBill(
-      $grpc.ServiceCall call, $34.CancelSplitBillRequest request);
-  $async.Future<$34.DeclineSplitBillShareResponse> declineSplitBillShare(
-      $grpc.ServiceCall call, $34.DeclineSplitBillShareRequest request);
-  $async.Future<$34.SendSplitBillReminderResponse> sendSplitBillReminder(
-      $grpc.ServiceCall call, $34.SendSplitBillReminderRequest request);
+  $async.Future<$0.SendSplitBillReminderResponse> sendSplitBillReminder(
+      $grpc.ServiceCall call, $0.SendSplitBillReminderRequest request);
 }

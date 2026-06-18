@@ -92,6 +92,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
     required SplitMethodType splitMethod,
     required double creatorShare,
     required List<SplitBillParticipantInput> participants,
+    SplitBillReceiverInput? receiver,
+    bool includeSelfAsCopayer = false,
   }) async {
     try {
       if (isClosed) return;
@@ -103,6 +105,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
         splitMethod: splitMethod,
         creatorShare: creatorShare,
         participants: participants,
+        receiver: receiver,
+        includeSelfAsCopayer: includeSelfAsCopayer,
       );
       if (isClosed) return;
       emit(SplitBillCreated(

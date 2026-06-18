@@ -17,11 +17,18 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   late final double amount;
   late final String currency;
   late final String creatorName;
+  late final String receiverName;
   late final String description;
   late final int paidCount;
   late final int totalParticipants;
   bool _isDownloading = false;
   bool _isSharing = false;
+
+  /// Who the payment went to. Prefer an explicit receiver name passed from the
+  /// pay screen; fall back to the creator for legacy bills where the creator
+  /// collects.
+  String get _paidToName =>
+      receiverName.isNotEmpty ? receiverName : creatorName;
 
   @override
   void initState() {
@@ -31,6 +38,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     amount = (args['amount'] as num?)?.toDouble() ?? 0.0;
     currency = args['currency'] as String? ?? 'NGN';
     creatorName = args['creatorName'] as String? ?? 'Unknown';
+    receiverName = args['receiverName'] as String? ?? '';
     description = args['description'] as String? ?? '';
     paidCount = args['paidCount'] as int? ?? 0;
     totalParticipants = args['totalParticipants'] as int? ?? 0;
@@ -271,7 +279,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildDetailRow('Paid to', creatorName),
+          _buildDetailRow('Paid to', _paidToName),
           const SizedBox(height: 12),
           _buildDetailRow('Reference', transactionReference),
           const SizedBox(height: 12),

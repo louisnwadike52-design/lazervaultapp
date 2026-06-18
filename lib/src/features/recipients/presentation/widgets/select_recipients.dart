@@ -32,6 +32,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_icon.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
+import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
@@ -201,6 +202,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
     // Load P2P conversations so the badge shows unread count
     serviceLocator<P2PConversationsCubit>().loadConversations();
+
+    // Load pending co-payer count so the Split Bills badge shows
+    serviceLocator<SplitBillCountCubit>().refresh();
   }
 
   @override
@@ -555,10 +559,48 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                 onTap: _launchBankDetailsScan,
                               ),
                               SizedBox(width: 18.w),
-                              _buildQuickAction(
-                                icon: Icons.group_outlined,
-                                label: 'Split Bills',
-                                onTap: _launchSplitBills,
+                              // Split Bills quick action with pending co-payer badge
+                              BlocBuilder<SplitBillCountCubit, int>(
+                                bloc: serviceLocator<SplitBillCountCubit>(),
+                                builder: (context, pendingCount) {
+                                  return Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      _buildQuickAction(
+                                        icon: Icons.group_outlined,
+                                        label: 'Split Bills',
+                                        onTap: _launchSplitBills,
+                                      ),
+                                      if (pendingCount > 0)
+                                        Positioned(
+                                          right: -4,
+                                          top: -4,
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: pendingCount > 9 ? 4.w : 0,
+                                            ),
+                                            constraints: BoxConstraints(
+                                              minWidth: 18.w,
+                                              minHeight: 18.w,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFEF4444),
+                                              borderRadius: BorderRadius.circular(9.r),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              pendingCount > 99 ? '99+' : '$pendingCount',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10.sp,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                               SizedBox(width: 18.w),
                               _buildQuickAction(
@@ -3584,7 +3626,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   }
 
   Future<void> _launchSplitBills() async {
-    Get.toNamed(AppRoutes.splitBills);
+    Get.toNamed(AppRoutes.splitBills)?.then((_) {
+      // Refresh pending co-payer count after returning (user may have paid/declined)
+      serviceLocator<SplitBillCountCubit>().refresh();
+    });
   }
 
   void _showTransferHistory() {

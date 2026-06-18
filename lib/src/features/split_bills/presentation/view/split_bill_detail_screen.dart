@@ -164,7 +164,7 @@ class _SplitBillDetailView extends StatelessWidget {
                   children: [
                     _buildHeaderCard(bill),
                     const SizedBox(height: 20),
-                    _buildProgressSection(bill),
+                    _buildProgressSection(context, bill),
                     const SizedBox(height: 20),
                     _buildParticipantsList(bill),
                     const SizedBox(height: 24),
@@ -219,6 +219,10 @@ class _SplitBillDetailView extends StatelessWidget {
           _buildInfoRow('Created by', bill.creatorName.isNotEmpty
               ? bill.creatorName
               : '@${bill.creatorUsername}'),
+          if (bill.hasReceiver) ...[
+            const SizedBox(height: 10),
+            _buildReceiverRow(bill),
+          ],
           const SizedBox(height: 10),
           _buildInfoRow('Reference', bill.reference),
           const SizedBox(height: 10),
@@ -259,58 +263,348 @@ class _SplitBillDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressSection(SplitBillEntity bill) {
-    final participantTotal = bill.totalAmount - bill.creatorShare;
+  /// "Paying to" row showing the third-party receiver (restaurant / @user),
+  /// plus a settlement-status chip for external bank receivers.
+  Widget _buildReceiverRow(SplitBillEntity bill) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Paying to',
+          style: TextStyle(
+            color: Color(0xFF9CA3AF),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    bill.hasExternalReceiver
+                        ? Icons.storefront
+                        : Icons.person,
+                    size: 14,
+                    color: const Color(0xFF4834D4),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      bill.receiverDisplay,
+                      textAlign: TextAlign.right,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (bill.hasExternalReceiver) ...[
+                const SizedBox(height: 6),
+                _buildSettlementChip(bill.settlementStatus),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Maps the raw settlement status to a labelled, colour-coded chip.
+  /// Returns an empty widget for not_applicable (no payout pipeline).
+  Widget _buildSettlementChip(String status) {
+    final (label, color) = switch (status) {
+      'pending' => ('Collecting', const Color(0xFFFB923C)),
+      'settling' => ('Paying out', const Color(0xFF4834D4)),
+      'settled' => ('Settled', const Color(0xFF10B981)),
+      'failed' => ('Refund failed', const Color(0xFFEF4444)),
+      _ => ('', const Color(0xFF9CA3AF)),
+    };
+    if (label.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Payment Progress',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressSection(BuildContext context, SplitBillEntity bill) {
+    final participantTotal = bill.totalAmount - bill.creatorShare;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showWhoPaidSheet(context, bill),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
-          const SizedBox(height: 12),
-          SplitBillProgressBar(
-            paidCount: bill.paidCount,
-            totalParticipants: bill.totalParticipants,
-            paidAmount: bill.paidAmount,
-            totalAmount: participantTotal,
-            currency: bill.currency,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Collected: ${bill.formattedPaidAmount}',
-                style: const TextStyle(
-                  color: Color(0xFF10B981),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Payment Progress',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'Tap to see who\'s paid',
+                        style: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF9CA3AF),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SplitBillProgressBar(
+                paidCount: bill.paidCount,
+                totalParticipants: bill.totalParticipants,
+                paidAmount: bill.paidAmount,
+                totalAmount: participantTotal,
+                currency: bill.currency,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Collected: ${bill.formattedPaidAmount}',
+                    style: const TextStyle(
+                      color: Color(0xFF10B981),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    'Total: ${bill.formattedTotal}',
+                    style: const TextStyle(
+                      color: Color(0xFF9CA3AF),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "Who's paid" modal: lists co-payers with their payment status, amount,
+  /// and contextual tags ("(You)" for the current user, "Organizer" for the
+  /// bill creator).
+  void _showWhoPaidSheet(BuildContext context, SplitBillEntity bill) {
+    final currentUserId = _getCurrentUserId(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetContext).size.height * 0.75,
+          ),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4B5563),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
+              const SizedBox(height: 16),
+              const Text(
+                'Who\'s paid',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
               Text(
-                'Total: ${bill.formattedTotal}',
+                bill.progressLabel,
                 style: const TextStyle(
                   color: Color(0xFF9CA3AF),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              const SizedBox(height: 12),
+              const Divider(color: Color(0xFF2D2D2D), height: 1),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
+                  children: bill.participants
+                      .map((p) => _buildWhoPaidRow(p, bill, currentUserId))
+                      .toList(),
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(sheetContext).padding.bottom + 16),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWhoPaidRow(
+    SplitBillParticipantEntity p,
+    SplitBillEntity bill,
+    String? currentUserId,
+  ) {
+    final (icon, statusColor, statusLabel) = switch (p.status) {
+      SplitBillParticipantStatus.paid => (
+          Icons.check_circle,
+          const Color(0xFF10B981),
+          p.paidAt != null ? 'Paid ${_formatDate(p.paidAt!)}' : 'Paid',
+        ),
+      SplitBillParticipantStatus.pending => (
+          Icons.schedule,
+          const Color(0xFFFB923C),
+          'Pending',
+        ),
+      SplitBillParticipantStatus.declined => (
+          Icons.cancel,
+          const Color(0xFFEF4444),
+          'Declined',
+        ),
+    };
+    final isYou = currentUserId != null && p.userId == currentUserId;
+
+    final name = p.displayName.isNotEmpty
+        ? p.displayName
+        : '@${p.username}';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: statusColor.withValues(alpha: 0.18),
+            child: Icon(icon, size: 18, color: statusColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (isYou) _buildTag('You', const Color(0xFF4834D4)),
+                    if (p.isCreator)
+                      _buildTag('Organizer', const Color(0xFF9CA3AF)),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  statusLabel,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            p.formattedAmount(bill.currency),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTag(String label, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -327,7 +621,7 @@ class _SplitBillDetailView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Participants (${bill.totalParticipants})',
+            'Co-payers (${bill.totalParticipants})',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -370,7 +664,7 @@ class _SplitBillDetailView extends StatelessWidget {
                         ),
                       ),
                       const Text(
-                        'Creator',
+                        'Organizer',
                         style: TextStyle(
                           color: Color(0xFF4834D4),
                           fontSize: 12,
@@ -515,6 +809,8 @@ class _SplitBillDetailView extends StatelessWidget {
                             'creatorName': bill.creatorName.isNotEmpty
                                 ? bill.creatorName
                                 : '@${bill.creatorUsername}',
+                            'receiverName':
+                                bill.hasReceiver ? bill.receiverDisplay : '',
                             'description': bill.description,
                           },
                         );

@@ -72,6 +72,31 @@ class SplitBillCard extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
+                      if (bill.hasReceiver) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.south_east,
+                              size: 11,
+                              color: Color(0xFF4834D4),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                'Paying ${bill.receiverDisplay}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFF4834D4),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

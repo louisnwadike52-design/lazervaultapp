@@ -20,6 +20,8 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
     required SplitMethodType splitMethod,
     required double creatorShare,
     required List<SplitBillParticipantInput> participants,
+    SplitBillReceiverInput? receiver,
+    bool includeSelfAsCopayer = false,
   }) async {
     return retryWithBackoff(
       operation: () async {
@@ -28,7 +30,16 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           ..currency = currency
           ..description = description
           ..splitMethod = _splitMethodToProto(splitMethod)
-          ..creatorShare = creatorShare;
+          ..creatorShare = creatorShare
+          ..includeSelfAsCopayer = includeSelfAsCopayer;
+
+        if (receiver != null) {
+          request.receiver = pb.ReceiverInput()
+            ..type = receiver.type
+            ..username = receiver.username
+            ..bankCode = receiver.bankCode
+            ..accountNumber = receiver.accountNumber;
+        }
 
         for (final p in participants) {
           request.participants.add(pb.SplitBillParticipantInput()
@@ -324,6 +335,11 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           proto.participants.map(_participantFromProto).toList(),
       createdAt: proto.createdAt.toDateTime(),
       updatedAt: proto.updatedAt.toDateTime(),
+      receiverType: proto.receiverType,
+      receiverName: proto.receiverName,
+      receiverAccountMasked: proto.receiverAccountMasked,
+      settlementStatus: proto.settlementStatus,
+      withdrawalFee: proto.withdrawalFee,
     );
   }
 
@@ -342,6 +358,7 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           ? null
           : proto.transactionReference,
       paidAt: proto.hasPaidAt() ? proto.paidAt.toDateTime() : null,
+      isCreator: proto.isCreator,
     );
   }
 

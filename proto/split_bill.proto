@@ -111,6 +111,14 @@ message SplitBill {
   repeated SplitBillParticipant participants = 15;
   google.protobuf.Timestamp created_at = 16;
   google.protobuf.Timestamp updated_at = 17;
+
+  // Receiver (third-party payee). receiver_type: "" (legacy → creator),
+  // "internal_user", or "external_bank". co-payers pay their share TO this receiver.
+  string receiver_type = 18;
+  string receiver_name = 19;            // receiver display name / verified bank account name
+  string receiver_account_masked = 20;  // masked account no. (external) or @username (internal)
+  string settlement_status = 21;        // not_applicable|pending|settling|settled|failed
+  double withdrawal_fee = 22;           // external payout fee (major units), folded into the split
 }
 
 message SplitBillParticipant {
@@ -124,12 +132,22 @@ message SplitBillParticipant {
   SplitBillParticipantStatus status = 8;
   string transaction_reference = 9;
   google.protobuf.Timestamp paid_at = 10;
+  bool is_creator = 11;  // true for the organizer's own co-payer row
 }
 
 message SplitBillParticipantInput {
   string username = 1;
   double amount = 2;
   double percentage = 3;
+}
+
+// ReceiverInput selects where co-payers' money goes. When absent, the receiver
+// defaults to the creator (legacy behaviour).
+message ReceiverInput {
+  string type = 1;            // "internal_user" | "external_bank"
+  string username = 2;        // internal_user: resolved to user_id + primary account
+  string bank_code = 3;       // external_bank
+  string account_number = 4;  // external_bank
 }
 
 message SplitBillTransaction {
@@ -156,8 +174,10 @@ message CreateSplitBillRequest {
   string currency = 2;
   string description = 3;
   SplitMethod split_method = 4;
-  double creator_share = 5;
+  double creator_share = 5;  // deprecated: superseded by include_self_as_copayer (kept 1 release for back-compat)
   repeated SplitBillParticipantInput participants = 6;
+  ReceiverInput receiver = 7;        // where co-payers pay; absent → creator (legacy)
+  bool include_self_as_copayer = 8;  // organizer is also a co-payer (creates an is_creator row)
 }
 
 message CreateSplitBillResponse {
