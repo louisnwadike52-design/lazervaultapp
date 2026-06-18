@@ -78,7 +78,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // Expand the sheet to full screen (mirrors the ai_chat send-funds chatbot
   // fullscreen toggle). Drives the DraggableScrollableController. Defaults to
   // TRUE — the sheet opens fullscreen and can only minimise to 90%.
-  bool _isFullScreen = true;
+  bool _isFullScreen = false;
   // Tiny-CTA toggles for the conversation surface. Captions default ON (the
   // live transcript is the primary feedback); the full conversation history is
   // collapsed behind its chip until expanded.
@@ -461,7 +461,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// (the draggable sheet only minimises to 90%).
   Widget _sizedSheet(Widget child) {
     return FractionallySizedBox(
-      heightFactor: 1.0,
+      heightFactor: 0.9,
       child: child,
     );
   }
@@ -631,7 +631,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           controller: _dragController,
           // Opens FULLSCREEN by default; can only minimise to 90% (snaps
           // between 0.9 and 1.0 — the sheet owns its own height).
-          initialChildSize: 1.0,
+          initialChildSize: 0.9,
           minChildSize: 0.9,
           maxChildSize: 1.0,
           expand: false,
@@ -1269,9 +1269,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.translate_rounded,
+                  Icons.language_rounded,
                   color: const Color(0xFF3B82F6),
-                  size: 14.sp,
+                  size: 15.sp,
                 ),
                 SizedBox(width: 6.w),
                 Text(
