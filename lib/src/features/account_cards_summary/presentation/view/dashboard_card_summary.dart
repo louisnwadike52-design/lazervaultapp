@@ -191,8 +191,16 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     : 'New funds received',
               );
             }
-            // Clear consumed update so it doesn't re-fire on widget rebuild
-            context.read<BalanceWebSocketCubit>().clearLastUpdate();
+            // NOTE: intentionally do NOT clearLastUpdate() here.
+            //
+            // The AccountCarousel (a descendant) ALSO listens to this same
+            // cubit to drive the card count-up animation. Clearing the
+            // event here (emitting lastUpdate=null) could race ahead of the
+            // carousel's listener and make it miss the money-in event — the
+            // balance would never animate. Each listener now de-dupes the
+            // event by identity on its own side (this one via listenWhen,
+            // the carousel via _lastAnimatedEvent), so no shared clear is
+            // needed and the carousel reliably animates on EVERY event.
           },
         ),
       ],

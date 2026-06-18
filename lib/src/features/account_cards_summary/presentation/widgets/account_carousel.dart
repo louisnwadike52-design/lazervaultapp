@@ -51,6 +51,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // Track which accounts are currently animating a balance update (for "Updating..." indicator)
   final Set<String> _animatingAccounts = {};
 
+  // Last WebSocket event this carousel already animated. Used to de-dupe
+  // so a single money-in event animates exactly once even though the
+  // BlocListener can be invoked again on unrelated rebuilds. Replaces the
+  // old shared BalanceWebSocketCubit.clearLastUpdate() consumption, which
+  // raced with the dashboard listener and could swallow the event before
+  // the carousel ever saw it.
+  BalanceUpdateEvent? _lastAnimatedEvent;
+
   // Per-account trend period — controls the rolling window the
   // dashboard percentage chip is computed against (day / week / month /
   // year). Stored client-side because the API returns the trend itself
@@ -285,8 +293,17 @@ class _AccountCarouselState extends State<AccountCarousel> {
         );
      }
 
-    // Wrap with BlocListener to handle real-time balance updates
+    // Wrap with BlocListener to handle real-time balance updates.
+    //
+    // listenWhen ensures we react to every DISTINCT money event exactly
+    // once: only when lastUpdate is non-null AND differs from the previous
+    // state's lastUpdate. _handleBalanceUpdate additionally guards against
+    // re-processing the same event instance (_lastAnimatedEvent) so the
+    // card animates reliably on EVERY credit and never double-animates.
     return BlocListener<BalanceWebSocketCubit, BalanceWebSocketState>(
+      listenWhen: (previous, current) =>
+          current.lastUpdate != null &&
+          current.lastUpdate != previous.lastUpdate,
       listener: (context, state) {
         if (state.lastUpdate != null) {
           _handleBalanceUpdate(state.lastUpdate!);
@@ -326,6 +343,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
     final newBalance = event.newBalance;
 
     if (!mounted) return;
+
+    // De-dupe: never animate the same event instance twice (the listener
+    // can fire again on unrelated rebuilds). This replaces the old shared
+    // clearLastUpdate() and makes each money-in event animate exactly once.
+    if (identical(_lastAnimatedEvent, event)) return;
+    _lastAnimatedEvent = event;
+
+    // Lifecycle/non-balance events (insurance, claims, etc.) carry no
+    // account balance snapshot — skip them so we don't animate a card to 0.
+    if (accountId.isEmpty) return;
 
     // Check if dashboard is the current visible route
     final isVisible = ModalRoute.of(context)?.isCurrent ?? false;
