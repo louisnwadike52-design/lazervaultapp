@@ -160,8 +160,9 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
   }
 
   String _subtitle(int tier, bool verified, bool isMax) {
-    if (isMax) return 'Fully verified - Tier 3, full access';
-    if (verified) return 'Verified - Tier $tier. Upgrade for higher limits';
+    if (isMax) return 'Fully verified - Tier 3, highest limits';
+    // Tier 2: one step (NIN + liveness) from the top — point them at Tier 3.
+    if (verified) return 'Verified - Tier $tier. Upgrade to Tier 3 for unlimited limits';
     if (tier == 1) return 'Tier 1 - add your second ID to raise limits';
     return 'Verify your identity to unlock higher limits';
   }

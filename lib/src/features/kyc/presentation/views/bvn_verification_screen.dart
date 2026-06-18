@@ -164,7 +164,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               if (status != null && status.tier > 0) _buildTierCard(status),
               if (!isMaxTier) ...[
                 _buildInfoCard(
-                  'You will be guided through a secure check by our verification partner. Have your BVN and NIN handy and allow camera access for a quick liveness check. Your information is encrypted and only used for CBN compliance.',
+                  'You will be guided through a secure check by our verification partner. Have your BVN and NIN handy and allow camera access for a quick liveness check — completing your BVN, NIN and the liveness check reaches Tier 3, the highest tier with unlimited limits. Your information is encrypted and only used for CBN compliance.',
                 ),
                 SizedBox(height: 24.h),
                 _buildBenefitsSection(status),
@@ -179,12 +179,16 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                       : (isMaxTier ? _finishVerified : _startVerification),
                   isLoading: _isSubmitting,
                   // Tier 3 is the final tier — show a terminal "Done", not a
-                  // "Continue" that implies there's a further step.
+                  // "Continue" that implies there's a further step. A Tier-2 user
+                  // is one liveness/NIN step away from the top, so frame their CTA
+                  // explicitly as the upgrade to Tier 3.
                   text: isMaxTier
                       ? 'Done'
-                      : (status != null && status.tier > 0
-                          ? 'Continue Verification'
-                          : 'Verify Identity'),
+                      : (status != null && status.tier >= 2
+                          ? 'Upgrade to Tier 3'
+                          : (status != null && status.tier > 0
+                              ? 'Continue Verification'
+                              : 'Verify Identity')),
                   backgroundColor: _accent,
                   textColor: Colors.white,
                 ),
@@ -320,6 +324,29 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               status.message,
               style: GoogleFonts.inter(
                   color: _textSecondary, fontSize: 12.5.sp, height: 1.4),
+            ),
+          ],
+          // A Tier-2 user is one step (NIN + liveness) from the top — surface an
+          // explicit "Upgrade to Tier 3" hint so they know it's reachable from
+          // here. (isMaxTier users never see this card with this branch.)
+          if (status.tier >= 2 && !status.isMaxTier) ...[
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                Icon(Icons.workspace_premium, size: 16.sp, color: _success),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    'Upgrade to Tier 3 for the highest, unlimited limits — '
+                    'add your second ID (NIN) and complete the liveness check.',
+                    style: GoogleFonts.inter(
+                      color: _textPrimary.withValues(alpha: 0.85),
+                      fontSize: 12.5.sp,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],

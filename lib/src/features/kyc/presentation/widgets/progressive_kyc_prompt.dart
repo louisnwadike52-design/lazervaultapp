@@ -171,7 +171,7 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
 
               // Description
               Text(
-                'Complete identity verification to unlock higher transaction limits and access all features.',
+                'Complete identity verification to unlock higher transaction limits and access all features. Reach Tier 3 by adding your second ID (NIN) plus a quick liveness check for the highest, unlimited limits.',
                 style: TextStyle(
                   fontSize: 16.sp,
                   color: Colors.black54,
@@ -272,41 +272,51 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
   }
 
   Widget _buildTierComparisonCard(Map<String, dynamic> tierLimits) {
+    // Vertical 3-tier ladder (Tier 1 -> Tier 2 -> Tier 3). A vertical list scales
+    // safely on small screens where three side-by-side columns + arrows would
+    // overflow. Tier 3 is the premium/unlimited tier and is highlighted as the
+    // goal of the ladder.
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildTierItem(
-                  'Tier 1',
-                  tierLimits['tier1'],
-                  'Basic',
-                  Colors.grey,
-                  false,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Icon(Icons.arrow_forward, color: Colors.grey, size: 20.sp),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildTierItem(
-                  'Tier 2',
-                  tierLimits['tier2'],
-                  'Verified',
-                  Colors.blue,
-                  true,
-                ),
-              ),
-            ],
+          _buildTierItem(
+            'Tier 1',
+            tierLimits['tier1'],
+            'Basic',
+            Colors.grey,
+            false,
+          ),
+          _buildLadderArrow(),
+          _buildTierItem(
+            'Tier 2',
+            tierLimits['tier2'],
+            'Verified',
+            Colors.blue,
+            false,
+          ),
+          _buildLadderArrow(),
+          _buildTierItem(
+            'Tier 3',
+            tierLimits['tier3'],
+            'Premium',
+            Colors.green,
+            true,
           ),
         ],
       ),
+    );
+  }
+
+  /// Downward arrow connecting one rung of the tier ladder to the next.
+  Widget _buildLadderArrow() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Icon(Icons.arrow_downward, color: Colors.grey, size: 20.sp),
     );
   }
 
@@ -318,7 +328,8 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
     bool isHighlighted,
   ) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isHighlighted ? color.withValues(alpha: 0.1) : Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -327,39 +338,53 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
-              color: color,
+          // Tier name + subtitle on the left.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 4.h),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            limit,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          Text(
-            '/day',
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: Colors.grey.shade500,
-            ),
+          SizedBox(width: 12.w),
+          // Limit on the right.
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                limit,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                '/day',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -397,6 +422,11 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
         _buildBenefitItem(
           Icons.verified,
           'Full access to all platform features',
+        ),
+        SizedBox(height: 12.h),
+        _buildBenefitItem(
+          Icons.workspace_premium,
+          'Tier 3 — add your second ID (NIN) + a quick liveness check for the highest, unlimited limits',
         ),
       ],
     );
