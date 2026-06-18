@@ -350,20 +350,48 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: 52.w,
-              height: 52.w,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+            // Gradient icon with a small "+" badge so it clearly reads as a
+            // tappable "add" affordance, not just a decorative image.
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 52.w,
+                  height: 52.w,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                    ),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Icon(
+                    Icons.add_shopping_cart_rounded,
+                    color: Colors.white,
+                    size: 26.sp,
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Icon(
-                Icons.add_shopping_cart_rounded,
-                color: Colors.white,
-                size: 26.sp,
-              ),
+                Positioned(
+                  top: -4.h,
+                  right: -4.w,
+                  child: Container(
+                    width: 22.w,
+                    height: 22.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF1F1F1F),
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 14.sp,
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 12.h),
             Text(

@@ -301,26 +301,35 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    // Keyboard height — modal bottom sheets don't auto-resize, so we lift the
+    // whole sheet content up by the keyboard inset to keep the input visible.
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
     return AnimatedBuilder(
       animation: _expandAnimation,
       builder: (context, child) {
-        return Container(
-          height: screenHeight * _expandAnimation.value,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: _isExpanded && _expandAnimation.value >= 0.99
-                ? BorderRadius.zero
-                : BorderRadius.only(
-                    topLeft: Radius.circular(24.r),
-                    topRight: Radius.circular(24.r),
-                  ),
-          ),
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(child: _buildMessageList()),
-              _buildInputArea(),
-            ],
+        return Padding(
+          padding: EdgeInsets.only(bottom: keyboardInset),
+          child: Container(
+            // Cap height so the sheet + keyboard never exceed the screen
+            // (otherwise the header would be pushed off the top).
+            height: (screenHeight * _expandAnimation.value)
+                .clamp(0.0, screenHeight - keyboardInset),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: _isExpanded && _expandAnimation.value >= 0.99
+                  ? BorderRadius.zero
+                  : BorderRadius.only(
+                      topLeft: Radius.circular(24.r),
+                      topRight: Radius.circular(24.r),
+                    ),
+            ),
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(child: _buildMessageList()),
+                _buildInputArea(),
+              ],
+            ),
           ),
         );
       },
@@ -478,16 +487,21 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
           return _buildEmptyState();
         }
 
-        return ListView.builder(
-          controller: _scrollController,
-          padding: EdgeInsets.all(20.w),
-          itemCount: messages.length + (isTyping ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == messages.length && isTyping) {
-              return _buildTypingIndicator();
-            }
-            return _buildMessageBubble(messages[index]);
-          },
+        // Tap anywhere on the message list to dismiss the keyboard.
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.all(20.w),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            itemCount: messages.length + (isTyping ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == messages.length && isTyping) {
+                return _buildTypingIndicator();
+              }
+              return _buildMessageBubble(messages[index]);
+            },
+          ),
         );
       },
     );

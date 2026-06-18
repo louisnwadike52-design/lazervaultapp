@@ -49,65 +49,6 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // Track selected index per category
-  int _selectedCryptoIndex = 0;
-  int _selectedOtherIndex = 0;
-
-  final List<Map<String, dynamic>> _cryptoOptions = [
-    {
-      "name": "Bitcoin",
-      "symbol": "BTC",
-      "icon": "\u20bf",
-      "color": Colors.orange,
-      "rate": "0.00005",
-    },
-    {
-      "name": "Ethereum",
-      "symbol": "ETH",
-      "icon": "\u039e",
-      "color": Colors.indigo,
-      "rate": "0.0018",
-    },
-    {
-      "name": "USDC",
-      "symbol": "USDC",
-      "icon": "\$",
-      "color": Colors.blue,
-      "rate": "99.99",
-    },
-  ];
-
-  final List<Map<String, dynamic>> _otherOptions = [
-    {
-      "name": "Credit/Debit Card",
-      "description": "Visa, Mastercard, American Express",
-      "icon": Icons.credit_card,
-      "color": Colors.teal,
-      "id": "card",
-    },
-    {
-      "name": "PayPal",
-      "description": "Pay with your PayPal account",
-      "icon": Icons.payment,
-      "color": Colors.blue[700],
-      "id": "paypal",
-    },
-    {
-      "name": "Apple Pay",
-      "description": "Touch ID or Face ID",
-      "icon": Icons.phone_iphone,
-      "color": Colors.black,
-      "id": "apple_pay",
-    },
-    {
-      "name": "Google Pay",
-      "description": "Pay with Google",
-      "icon": Icons.account_circle,
-      "color": Colors.red,
-      "id": "google_pay",
-    },
-  ];
-
   String get _currencySymbol => _getCurrencySymbol(widget.invoice?.currency ?? 'NGN');
 
   String _getCurrencySymbol(String currency) {
@@ -418,11 +359,9 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           ),
         ),
         SizedBox(height: 16.h),
+        // Invoice service fee is always paid from the active LazerVault wallet.
+        // Crypto and other payment methods are intentionally not offered here.
         _buildWalletPaymentCard(),
-        SizedBox(height: 12.h),
-        _buildCryptoPaymentCard(),
-        SizedBox(height: 12.h),
-        _buildOtherPaymentCard(),
       ],
     );
   }
@@ -430,7 +369,6 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
   // --- LazerVault Wallet ---
 
   Widget _buildWalletPaymentCard() {
-    final isSelected = _selectedPaymentMethod.startsWith('account_');
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       builder: (context, state) {
         List<AccountSummaryEntity> accounts = [];
@@ -466,226 +404,34 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           );
         }
 
-        // Find the currently selected account, or default to first
+        // Always pay from the ACTIVE dashboard wallet — auto-filled and
+        // non-changeable (no account picker / no "Change" action).
+        final activeId =
+            GetIt.I<AccountManager>().activeAccountId ?? _selectedAccountId;
         AccountSummaryEntity displayAccount = accounts.first;
-        if (_selectedAccountId.isNotEmpty) {
-          final match = accounts.where((a) => a.id == _selectedAccountId);
-          if (match.isNotEmpty) displayAccount = match.first;
-        }
+        final match = accounts.where((a) => a.id == activeId);
+        if (match.isNotEmpty) displayAccount = match.first;
+
+        // Auto-select this wallet as the payment method. Safe to assign during
+        // build — no rebuild is needed; these feed the same build pass and the
+        // confirm/pay handler reads them.
+        _selectedAccountId = displayAccount.id;
+        _selectedPaymentMethod = 'account_${displayAccount.id}';
 
         final hasEnough = displayAccount.availableBalance >= widget.serviceFee;
 
         return _buildPaymentCategoryCard(
-          isSelected: isSelected,
+          isSelected: true,
           icon: _getAccountIcon(displayAccount.accountType),
           iconColor: _getAccountColor(displayAccount.accountType),
           title: 'Pay with LazerVault Wallet',
           subtitle: '${displayAccount.accountType} Account  •  $_currencySymbol${displayAccount.availableBalance.toStringAsFixed(2)}',
-          insufficientFunds: isSelected && !hasEnough,
-          trailing: isSelected
-              ? Icon(Icons.check_circle, color: Color(0xFF3B82F6), size: 22.sp)
-              : null,
-          onTap: () {
-            setState(() {
-              _selectedPaymentMethod = 'account_${displayAccount.id}';
-              _selectedAccountId = displayAccount.id;
-            });
-          },
-          onChangeTap: accounts.length > 1 ? () => _showWalletBottomSheet(accounts) : null,
+          insufficientFunds: !hasEnough,
+          trailing: Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 22.sp),
+          onTap: null,
+          onChangeTap: null,
         );
       },
-    );
-  }
-
-  void _showWalletBottomSheet(List<AccountSummaryEntity> accounts) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _buildBottomSheetContainer(
-        title: 'Select LazerVault Wallet',
-        children: accounts.map((account) {
-          final isCurrent = _selectedAccountId == account.id;
-          final hasEnough = account.availableBalance >= widget.serviceFee;
-          final color = _getAccountColor(account.accountType);
-          return _buildBottomSheetOption(
-            icon: _getAccountIcon(account.accountType),
-            iconColor: color,
-            title: '${account.accountType} Account',
-            subtitle: '\u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
-            trailing: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '$_currencySymbol${account.availableBalance.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    color: hasEnough ? Colors.white : Colors.red[400],
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (!hasEnough)
-                  Text(
-                    'Insufficient',
-                    style: GoogleFonts.inter(color: Colors.red[400], fontSize: 11.sp),
-                  ),
-              ],
-            ),
-            isSelected: isCurrent,
-            onTap: () {
-              setState(() {
-                _selectedPaymentMethod = 'account_${account.id}';
-                _selectedAccountId = account.id;
-              });
-              Navigator.pop(ctx);
-            },
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  // --- Cryptocurrency ---
-
-  Widget _buildCryptoPaymentCard() {
-    final crypto = _cryptoOptions[_selectedCryptoIndex];
-    final isSelected = _selectedPaymentMethod.startsWith('crypto_');
-
-    return _buildPaymentCategoryCard(
-      isSelected: isSelected,
-      iconWidget: Container(
-        width: 36.w,
-        height: 36.h,
-        decoration: BoxDecoration(
-          color: (crypto["color"] as Color).withValues(alpha: 0.15),
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: Text(
-            crypto["icon"],
-            style: GoogleFonts.inter(
-              color: crypto["color"],
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-      title: 'Pay with Cryptocurrency',
-      subtitle: '${crypto["name"]} (${crypto["symbol"]})  •  ${crypto["rate"]} ${crypto["symbol"]}',
-      trailing: isSelected
-          ? Icon(Icons.check_circle, color: Color(0xFF3B82F6), size: 22.sp)
-          : null,
-      onTap: () {
-        setState(() {
-          _selectedPaymentMethod = 'crypto_${crypto["symbol"]}';
-          _selectedAccountId = '';
-        });
-      },
-      onChangeTap: () => _showCryptoBottomSheet(),
-    );
-  }
-
-  void _showCryptoBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _buildBottomSheetContainer(
-        title: 'Select Cryptocurrency',
-        children: _cryptoOptions.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final crypto = entry.value;
-          final isCurrent = _selectedCryptoIndex == idx &&
-              _selectedPaymentMethod == 'crypto_${crypto["symbol"]}';
-          return _buildBottomSheetOption(
-            iconWidget: Container(
-              width: 36.w,
-              height: 36.h,
-              decoration: BoxDecoration(
-                color: (crypto["color"] as Color).withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  crypto["icon"],
-                  style: GoogleFonts.inter(
-                    color: crypto["color"],
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            title: crypto["name"],
-            subtitle: '${crypto["rate"]} ${crypto["symbol"]}  \u2248  $_currencySymbol${widget.serviceFee.toStringAsFixed(2)}',
-            isSelected: isCurrent,
-            onTap: () {
-              setState(() {
-                _selectedCryptoIndex = idx;
-                _selectedPaymentMethod = 'crypto_${crypto["symbol"]}';
-                _selectedAccountId = '';
-              });
-              Navigator.pop(ctx);
-            },
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  // --- Other Payment Methods ---
-
-  Widget _buildOtherPaymentCard() {
-    final option = _otherOptions[_selectedOtherIndex];
-    final isSelected = _selectedPaymentMethod == option["id"];
-
-    return _buildPaymentCategoryCard(
-      isSelected: isSelected,
-      icon: option["icon"],
-      iconColor: option["color"],
-      title: 'Other Payment Methods',
-      subtitle: '${option["name"]}  •  ${option["description"]}',
-      trailing: isSelected
-          ? Icon(Icons.check_circle, color: Color(0xFF3B82F6), size: 22.sp)
-          : null,
-      onTap: () {
-        setState(() {
-          _selectedPaymentMethod = option["id"];
-          _selectedAccountId = '';
-        });
-      },
-      onChangeTap: () => _showOtherMethodsBottomSheet(),
-    );
-  }
-
-  void _showOtherMethodsBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _buildBottomSheetContainer(
-        title: 'Select Payment Method',
-        children: _otherOptions.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final option = entry.value;
-          final isCurrent = _selectedOtherIndex == idx &&
-              _selectedPaymentMethod == option["id"];
-          return _buildBottomSheetOption(
-            icon: option["icon"],
-            iconColor: option["color"],
-            title: option["name"],
-            subtitle: option["description"],
-            isSelected: isCurrent,
-            onTap: () {
-              setState(() {
-                _selectedOtherIndex = idx;
-                _selectedPaymentMethod = option["id"];
-                _selectedAccountId = '';
-              });
-              Navigator.pop(ctx);
-            },
-          );
-        }).toList(),
-      ),
     );
   }
 
@@ -806,114 +552,6 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ),
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomSheetContainer({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: InvoiceThemeColors.secondaryBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 12.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[600],
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          ...children,
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 16.h),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomSheetOption({
-    IconData? icon,
-    Color? iconColor,
-    Widget? iconWidget,
-    required String title,
-    required String subtitle,
-    Widget? trailing,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Color(0xFF3B82F6).withValues(alpha: 0.12)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12.r),
-          border: isSelected
-              ? Border.all(color: Color(0xFF3B82F6).withValues(alpha: 0.4))
-              : null,
-        ),
-        child: Row(
-          children: [
-            iconWidget ??
-                Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: (iconColor ?? Colors.blue).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 22.sp),
-                ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 13.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (trailing != null) trailing,
-            if (isSelected)
-              Padding(
-                padding: EdgeInsets.only(left: 8.w),
-                child: Icon(Icons.check_circle, color: Color(0xFF3B82F6), size: 22.sp),
-              ),
           ],
         ),
       ),

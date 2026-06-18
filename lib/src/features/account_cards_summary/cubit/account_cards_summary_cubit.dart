@@ -23,6 +23,12 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   // Track the user ID for whom the data was loaded
   String? _currentUserId;
 
+  // Currently-selected trend window for the dashboard %-change chip. Persisted
+  // here (not just in the widget) so the period bottom-sheet reflects the active
+  // option on reopen and refetches keep the same window. Defaults to 30 days.
+  String _trendPeriod = 'month';
+  String get trendPeriod => _trendPeriod;
+
   // Stores the entity balance before the first WebSocket update per account (for animation "from" value)
   final Map<String, double> _preAnimationBalances = {};
 
@@ -110,6 +116,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     required String userId,
     String? accessToken,
     String? country,
+    String? period,
   }) async {
     if (isClosed) return;
 
@@ -119,12 +126,19 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       reset();
     }
 
+    // Persist the chosen trend window so the bottom-sheet reflects the active
+    // selection on reopen and subsequent refetches keep the same window.
+    if (period != null && period.isNotEmpty) {
+      _trendPeriod = period;
+    }
+
     _currentUserId = userId;
     emit(AccountCardsSummaryLoading());
     final result = await _getAccountSummariesUseCase.call(
       userId: userId,
       accessToken: accessToken,
       country: country,
+      period: _trendPeriod,
     );
     if (isClosed) return;
     result.fold(

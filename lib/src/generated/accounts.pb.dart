@@ -448,6 +448,8 @@ class AccountSummary extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'availableBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reservedBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountName')
+    ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'trendPercentage', $pb.PbFieldType.OD)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'trendPeriod')
     ..hasRequiredFields = false
   ;
 
@@ -464,6 +466,8 @@ class AccountSummary extends $pb.GeneratedMessage {
     $fixnum.Int64? availableBalance,
     $fixnum.Int64? reservedBalance,
     $core.String? accountName,
+    $core.double? trendPercentage,
+    $core.String? trendPeriod,
   }) {
     final _result = create();
     if (id != null) {
@@ -498,6 +502,12 @@ class AccountSummary extends $pb.GeneratedMessage {
     }
     if (accountName != null) {
       _result.accountName = accountName;
+    }
+    if (trendPercentage != null) {
+      _result.trendPercentage = trendPercentage;
+    }
+    if (trendPeriod != null) {
+      _result.trendPeriod = trendPeriod;
     }
     return _result;
   }
@@ -620,12 +630,31 @@ class AccountSummary extends $pb.GeneratedMessage {
   $core.bool hasAccountName() => $_has(10);
   @$pb.TagNumber(11)
   void clearAccountName() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.double get trendPercentage => $_getN(11);
+  @$pb.TagNumber(12)
+  set trendPercentage($core.double v) { $_setDouble(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasTrendPercentage() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearTrendPercentage() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get trendPeriod => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set trendPeriod($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasTrendPeriod() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearTrendPeriod() => clearField(13);
 }
 
 class GetUserAccountsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserAccountsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetUserId')
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeAllCurrencies')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period')
     ..hasRequiredFields = false
   ;
 
@@ -633,6 +662,7 @@ class GetUserAccountsRequest extends $pb.GeneratedMessage {
   factory GetUserAccountsRequest({
     $core.String? targetUserId,
     $core.bool? includeAllCurrencies,
+    $core.String? period,
   }) {
     final _result = create();
     if (targetUserId != null) {
@@ -640,6 +670,9 @@ class GetUserAccountsRequest extends $pb.GeneratedMessage {
     }
     if (includeAllCurrencies != null) {
       _result.includeAllCurrencies = includeAllCurrencies;
+    }
+    if (period != null) {
+      _result.period = period;
     }
     return _result;
   }
@@ -681,6 +714,15 @@ class GetUserAccountsRequest extends $pb.GeneratedMessage {
   $core.bool hasIncludeAllCurrencies() => $_has(1);
   @$pb.TagNumber(2)
   void clearIncludeAllCurrencies() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get period => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set period($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPeriod() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPeriod() => clearField(3);
 }
 
 class GetUserAccountsResponse extends $pb.GeneratedMessage {

@@ -76,7 +76,9 @@ class AccountSummaryModel extends AccountSummaryEntity {
       accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       accountName: proto.accountName.isNotEmpty ? proto.accountName : null,
       accountLabel: proto.accountName.isNotEmpty ? proto.accountName : null,
-      // trendPercentage: proto.trendPercentage, // Field missing in proto
+      // Real balance %-change over the requested window (signed). The card's
+      // trend chip themes green/red off `isUp` (derived from this value).
+      trendPercentage: proto.trendPercentage,
       // clearingEstimate: null — will be populated when backend adds clearing time fields
     );
   }

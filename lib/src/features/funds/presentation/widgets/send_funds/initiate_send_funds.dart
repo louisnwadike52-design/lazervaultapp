@@ -2404,7 +2404,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
             return Scaffold(
               backgroundColor: const Color(0xFF121212),
-              body: SafeArea(
+              // Tap anywhere outside the inputs to dismiss the system keyboard.
+              body: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 4.0),
@@ -2784,7 +2788,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 crossAxisSpacing: 16.w,
                                 childAspectRatio:
                                     2.5, // Adjust aspect ratio for better spacing
-                                padding: EdgeInsets.zero,
+                                // Bottom padding so the last row (0 / ⌫) isn't
+                                // clipped by the device nav bar on phones.
+                                padding: EdgeInsets.only(bottom: 24.h),
                                 physics: const NeverScrollableScrollPhysics(),
                                 children: [
                                   for (var i = 1; i <= 9; i++)
@@ -2812,6 +2818,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                     ),
                   ),
                 ),
+              ),
               ),
             );
           },

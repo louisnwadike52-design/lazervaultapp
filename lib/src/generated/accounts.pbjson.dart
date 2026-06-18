@@ -60,26 +60,30 @@ const AccountSummary$json = const {
     const {'1': 'available_balance', '3': 9, '4': 1, '5': 4, '10': 'availableBalance'},
     const {'1': 'reserved_balance', '3': 10, '4': 1, '5': 4, '10': 'reservedBalance'},
     const {'1': 'account_name', '3': 11, '4': 1, '5': 9, '10': 'accountName'},
+    const {'1': 'trend_percentage', '3': 12, '4': 1, '5': 1, '10': 'trendPercentage'},
+    const {'1': 'trend_period', '3': 13, '4': 1, '5': 9, '10': 'trendPeriod'},
   ],
 };
 
 /// Descriptor for `AccountSummary`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode('Cg5BY2NvdW50U3VtbWFyeRIOCgJpZBgBIAEoBFICaWQSIQoMYWNjb3VudF90eXBlGAIgASgJUgthY2NvdW50VHlwZRIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSGAoHYmFsYW5jZRgEIAEoBFIHYmFsYW5jZRIyChVtYXNrZWRfYWNjb3VudF9udW1iZXIYBSABKAlSE21hc2tlZEFjY291bnROdW1iZXISFgoGc3RhdHVzGAYgASgJUgZzdGF0dXMSEgoEdXVpZBgHIAEoCVIEdXVpZBIlCg5hY2NvdW50X251bWJlchgIIAEoCVINYWNjb3VudE51bWJlchIrChFhdmFpbGFibGVfYmFsYW5jZRgJIAEoBFIQYXZhaWxhYmxlQmFsYW5jZRIpChByZXNlcnZlZF9iYWxhbmNlGAogASgEUg9yZXNlcnZlZEJhbGFuY2USIQoMYWNjb3VudF9uYW1lGAsgASgJUgthY2NvdW50TmFtZQ==');
+final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode('Cg5BY2NvdW50U3VtbWFyeRIOCgJpZBgBIAEoBFICaWQSIQoMYWNjb3VudF90eXBlGAIgASgJUgthY2NvdW50VHlwZRIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSGAoHYmFsYW5jZRgEIAEoBFIHYmFsYW5jZRIyChVtYXNrZWRfYWNjb3VudF9udW1iZXIYBSABKAlSE21hc2tlZEFjY291bnROdW1iZXISFgoGc3RhdHVzGAYgASgJUgZzdGF0dXMSEgoEdXVpZBgHIAEoCVIEdXVpZBIlCg5hY2NvdW50X251bWJlchgIIAEoCVINYWNjb3VudE51bWJlchIrChFhdmFpbGFibGVfYmFsYW5jZRgJIAEoBFIQYXZhaWxhYmxlQmFsYW5jZRIpChByZXNlcnZlZF9iYWxhbmNlGAogASgEUg9yZXNlcnZlZEJhbGFuY2USIQoMYWNjb3VudF9uYW1lGAsgASgJUgthY2NvdW50TmFtZRIpChB0cmVuZF9wZXJjZW50YWdlGAwgASgBUg90cmVuZFBlcmNlbnRhZ2USIQoMdHJlbmRfcGVyaW9kGA0gASgJUgt0cmVuZFBlcmlvZA==');
 @$core.Deprecated('Use getUserAccountsRequestDescriptor instead')
 const GetUserAccountsRequest$json = const {
   '1': 'GetUserAccountsRequest',
   '2': const [
     const {'1': 'target_user_id', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'targetUserId', '17': true},
     const {'1': 'include_all_currencies', '3': 2, '4': 1, '5': 8, '9': 1, '10': 'includeAllCurrencies', '17': true},
+    const {'1': 'period', '3': 3, '4': 1, '5': 9, '9': 2, '10': 'period', '17': true},
   ],
   '8': const [
     const {'1': '_target_user_id'},
     const {'1': '_include_all_currencies'},
+    const {'1': '_period'},
   ],
 };
 
 /// Descriptor for `GetUserAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcmdldFVzZXJJZIgBARI5ChZpbmNsdWRlX2FsbF9jdXJyZW5jaWVzGAIgASgISAFSFGluY2x1ZGVBbGxDdXJyZW5jaWVziAEBQhEKD190YXJnZXRfdXNlcl9pZEIZChdfaW5jbHVkZV9hbGxfY3VycmVuY2llcw==');
+final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcmdldFVzZXJJZIgBARI5ChZpbmNsdWRlX2FsbF9jdXJyZW5jaWVzGAIgASgISAFSFGluY2x1ZGVBbGxDdXJyZW5jaWVziAEBEhsKBnBlcmlvZBgDIAEoCUgCUgZwZXJpb2SIAQFCEQoPX3RhcmdldF91c2VyX2lkQhkKF19pbmNsdWRlX2FsbF9jdXJyZW5jaWVzQgkKB19wZXJpb2Q=');
 @$core.Deprecated('Use getUserAccountsResponseDescriptor instead')
 const GetUserAccountsResponse$json = const {
   '1': 'GetUserAccountsResponse',

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
@@ -9,8 +8,6 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
-import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_prediction_alert.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_repository.dart';
@@ -48,12 +45,6 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   DateTime? _scheduledDate;
   TimeOfDay? _scheduledTime;
 
-  // Informational, READ-ONLY success prediction for the batch's external items.
-  // Non-blocking; we surface a single batch-level note keyed on the first
-  // external recipient (representative of the destination-bank network signal).
-  final TransferPredictionCubit _predictionCubit =
-      serviceLocator<TransferPredictionCubit>();
-
   @override
   void initState() {
     super.initState();
@@ -68,20 +59,6 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
         batchCurrencySymbol(_currency);
 
     _setupAnimations();
-    _maybeFetchBatchPrediction();
-  }
-
-  /// Fetch the success prediction for the FIRST external recipient as a
-  /// representative batch-level network signal. Best-effort and non-blocking.
-  void _maybeFetchBatchPrediction() {
-    final recipients =
-        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
-    final firstExternal = recipients.where((r) => r.isExternal).firstOrNull;
-    if (firstExternal == null) return; // all-internal batch: nothing to show
-    _predictionCubit.fetch(
-      bankCode: firstExternal.destinationBankCode ?? '',
-      accountNumber: firstExternal.toAccountNumber,
-    );
   }
 
   void _setupAnimations() {
@@ -105,7 +82,6 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    _predictionCubit.close();
     super.dispose();
   }
 
@@ -301,26 +277,23 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<TransferPredictionCubit>.value(
-      value: _predictionCubit,
-      child: Scaffold(
-        backgroundColor: btBackground,
-        body: SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: _buildReviewContent(),
-                    ),
-                  ),
+    return Scaffold(
+      backgroundColor: btBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: _buildReviewContent(),
                 ),
-                _buildConfirmButton(),
-              ],
+              ),
             ),
+            _buildConfirmButton(),
+          ],
         ),
       ),
     );
@@ -421,25 +394,6 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           _buildRecipientsCard(recipients),
 
           SizedBox(height: 20.h),
-
-          // Informational, READ-ONLY success prediction for the batch's external
-          // items. Batch-level note keyed on the first external recipient.
-          // Shown BEFORE Confirm; never blocks or moves money.
-          if (recipients.any((r) => r.isExternal)) ...[
-            Padding(
-              padding: EdgeInsets.only(left: 4.w, bottom: 6.h),
-              child: Text(
-                'External recipients',
-                style: GoogleFonts.inter(
-                  color: btTextSecondary,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const TransferPredictionAlert(margin: EdgeInsets.zero),
-            SizedBox(height: 20.h),
-          ],
 
           // Payment breakdown card
           _buildPaymentBreakdownCard(totalAmount, fee, grandTotal),

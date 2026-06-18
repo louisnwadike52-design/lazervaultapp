@@ -268,7 +268,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(top: 45.h),
+                        // Smaller top inset so the whole stack sits higher and
+                        // the bottom "Sign Up" row is never clipped on shorter
+                        // screens (was 45.h, which pushed the bottom off-screen).
+                        padding: EdgeInsets.only(top: 16.h),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -375,6 +378,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                       SizedBox(height: 10.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             "Don't have an account?",
@@ -382,8 +386,16 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                               color: Colors.white.withValues(alpha: 0.7),
                             ),
                           ),
+                          SizedBox(width: 4.w),
                           TextButton(
                             onPressed: isAuthenticating ? null : () => Get.offAllNamed(AppRoutes.signUp),
+                            // Shrink the tap padding so "Sign Up" sits inline
+                            // with the question text instead of floating high.
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             child: Text(
                               "Sign Up",
                               style: textTheme.bodyMedium?.copyWith(
@@ -391,10 +403,14 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
-                      SizedBox(height: 24.h),
+                      // Bottom breathing room so the signup row clears the
+                      // device gesture bar / screen edge (outer SafeArea
+                      // already accounts for the system inset). Kept modest so
+                      // it doesn't push the row off the bottom on small screens.
+                      SizedBox(height: 16.h),
                     ],
                   ),
                 ),

@@ -97,6 +97,13 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   String? _selectedBankCode;
   String? _selectedBankName;
   String? _verifiedBeneficiaryName;
+  // Bank code/name as returned by the account-verification backend. This is the
+  // AUTHORITATIVE code Flutterwave expects for account_bank — the locally-picked
+  // _selectedBankCode (static bank list) can differ for some banks and causes a
+  // Flutterwave 400. We mirror the working single-transfer path which stores the
+  // VERIFIED code (see add_recipient.dart: `sortCode: result.bankCode`).
+  String? _verifiedBankCode;
+  String? _verifiedBankName;
   bool _isBankSelected = false;
   final TextEditingController _bankAmountController = TextEditingController();
 
@@ -487,8 +494,13 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   child: ElevatedButton(
                     onPressed: _tempSelectedRecipients.isEmpty ? null : () {
                       if (_saveAsBeneficiaries) _persistNewBeneficiaries();
-                      widget.onRecipientsSelected(_tempSelectedRecipients);
+                      final selected = List<RecipientModel>.from(_tempSelectedRecipients);
+                      // Close THIS sheet first. The callback may itself open a
+                      // dialog (e.g. bulk-amount when >1 recipient); if we popped
+                      // after, Navigator.pop would close that new dialog instead
+                      // and leave this sheet open.
                       Navigator.pop(context);
+                      widget.onRecipientsSelected(selected);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _tempSelectedRecipients.isEmpty ? btBorder : btBlue,
@@ -1031,6 +1043,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 } else {
                   setState(() {
                     _verifiedBeneficiaryName = null;
+                    _verifiedBankCode = null;
+                    _verifiedBankName = null;
                   });
                 }
               },
@@ -1082,6 +1096,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
 
               if (state is AccountVerificationSuccess) {
                 _verifiedBeneficiaryName = state.accountName;
+                // Capture the verified (authoritative) bank code/name to send to
+                // the backend, not the locally-picked static code.
+                _verifiedBankCode = state.bankCode;
+                _verifiedBankName = state.bankName;
                 return Column(
                   children: [
                     // Verified beneficiary name
@@ -1259,6 +1277,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                               _selectedBankName = name;
                               _isBankSelected = true;
                               _verifiedBeneficiaryName = null;
+                              _verifiedBankCode = null;
+                              _verifiedBankName = null;
                             });
                             // Reset verification
                             try {
@@ -1334,12 +1354,22 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   void _addBankAccountRecipient() {
     if (_verifiedBeneficiaryName == null || _selectedBankCode == null) return;
 
+    // Prefer the VERIFIED bank code/name (what Flutterwave's account_bank
+    // expects); fall back to the locally-picked values only if verification
+    // didn't return them.
+    final effectiveBankCode = (_verifiedBankCode != null && _verifiedBankCode!.isNotEmpty)
+        ? _verifiedBankCode!
+        : (_selectedBankCode ?? '');
+    final effectiveBankName = (_verifiedBankName != null && _verifiedBankName!.isNotEmpty)
+        ? _verifiedBankName!
+        : (_selectedBankName ?? '');
+
     final recipient = RecipientModel(
-      id: '${_selectedBankCode}_${_bankAccountController.text}',
+      id: '${effectiveBankCode}_${_bankAccountController.text}',
       name: _verifiedBeneficiaryName!,
       accountNumber: _bankAccountController.text,
-      bankName: _selectedBankName ?? '',
-      sortCode: _selectedBankCode ?? '',
+      bankName: effectiveBankName,
+      sortCode: effectiveBankCode,
       isFavorite: false,
       isSaved: false,
       type: 'external',
@@ -1365,6 +1395,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
       // Reset form for next entry
       _bankAccountController.clear();
       _verifiedBeneficiaryName = null;
+      _verifiedBankCode = null;
+      _verifiedBankName = null;
     });
 
     try {
@@ -1741,10 +1773,18 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
             bankName: recipientData['bankName'] ?? 'Bank',
             sortCode: recipientData['sortCode'] ?? '',
             isFavorite: recipientData['isFavorite'] ?? false,
+            type: recipientData['type'] ?? (((recipientData['sortCode'] ?? '') as String).isNotEmpty ? 'external' : 'internal'),
           );
 
+          // Carry the bank code/name through for external recipients, otherwise
+          // destinationBankCode arrives empty at the backend and the external
+          // payout silently fails (or mis-routes).
+          final isExternal = recipient.type == 'external';
           final recipientItem = BatchRecipientItem(
             recipient: recipient,
+            bankCode: isExternal ? recipient.sortCode : null,
+            bankName: isExternal ? recipient.bankName : null,
+            beneficiaryName: recipient.name,
             initialAmount: recipientData['amount']?.toString() ?? '',
             initialReference: recipientData['reference'] ?? '',
           );

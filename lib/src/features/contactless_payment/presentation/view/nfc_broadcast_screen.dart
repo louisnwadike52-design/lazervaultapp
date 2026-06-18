@@ -138,7 +138,10 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     if (started) {
       setState(() {
         _sessionIdMode = false;
-        _statusText = 'Hold the payer’s phone to the back of yours';
+        // Mention the Session ID fallback even in tap mode: if the payer is on
+        // iPhone or can't tap, they can still pay by entering the Session ID.
+        _statusText = 'Hold the payer’s phone to the back of yours — '
+            'or share your Session ID below';
       });
     } else {
       // NFC off or device without HCE → Session ID is the only way to receive.

@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/presentation/app_router.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'core/services/endpoint_registry.dart';
+import 'core/services/inactivity_watcher.dart';
 import 'src/core/config/app_environment.dart' show currentAppEnvironment;
 import 'core/services/injection_container.dart';
 import 'core/services/push_notifications_service.dart';
@@ -180,7 +181,27 @@ Future<String> _determineInitialRoute() async {
       return AppRoutes.root; // Show onboarding for first-time users
     }
 
-    // Check for incomplete signup (local draft)
+    // Read stored auth/session state up front.
+    final loginMethod = await storage.read(key: 'login_method');
+    final storedEmail = await storage.read(key: 'stored_email');
+    final userId = await storage.read(key: 'user_id');
+
+    // HIGHEST PRIORITY (after onboarding): a user who has a passcode credential
+    // has, by definition, already completed signup. Always send them to passcode
+    // login — even if a stale `has_incomplete_signup` draft flag was left behind
+    // — so a returning, logged-in user is never bounced back into the signup
+    // flow (the bug this guards against).
+    // Note: userId may be null after logout (cleared by _clearSession), but
+    // passcode login only needs stored_email + passcode to authenticate.
+    if (loginMethod == 'passcode' &&
+        storedEmail != null &&
+        storedEmail.isNotEmpty) {
+      print('🔐 User has passcode login configured, redirecting to passcode login');
+      return AppRoutes.passcodeLogin;
+    }
+
+    // Check for incomplete signup (local draft) — only reached for users who
+    // have NOT yet established a passcode credential.
     final hasIncompleteSignup = await storage.read(key: 'has_incomplete_signup');
     final currentSignupStep = await storage.read(key: 'current_signup_step');
 
@@ -191,21 +212,6 @@ Future<String> _determineInitialRoute() async {
       if (route != null) {
         return route;
       }
-    }
-
-    // Check if user has a stored login method
-    final loginMethod = await storage.read(key: 'login_method');
-    final storedEmail = await storage.read(key: 'stored_email');
-    final userId = await storage.read(key: 'user_id');
-
-    // If user has passcode login set up, require passcode authentication
-    // Note: userId may be null after logout (cleared by _clearSession),
-    // but passcode login only needs stored_email + passcode to authenticate
-    if (loginMethod == 'passcode' &&
-        storedEmail != null &&
-        storedEmail.isNotEmpty) {
-      print('🔐 User has passcode login configured, redirecting to passcode login');
-      return AppRoutes.passcodeLogin;
     }
 
     // If user was previously logged in but no passcode, go to email sign in
@@ -387,7 +393,8 @@ class _MyAppState extends State<MyApp> {
         designSize: const Size(414, 896),
         minTextAdapt: true,
         splitScreenMode: true,
-        builder: (context, child) => GetMaterialApp(
+        builder: (context, child) => InactivityWatcher(
+          child: GetMaterialApp(
           enableLog: true,
           logWriterCallback: localLogWriter,
           translations: CMSData(),
@@ -424,6 +431,7 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           getPages: AppRouter.routes,
+          ),
         ),
       ),
     );

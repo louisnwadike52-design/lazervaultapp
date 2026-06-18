@@ -403,18 +403,23 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       return _buildEmptyState();
     }
 
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: messages.length + (isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= messages.length) {
-          return _buildTypingIndicator();
-        }
+    // Tap anywhere on the message list to dismiss the keyboard.
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        itemCount: messages.length + (isLoading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= messages.length) {
+            return _buildTypingIndicator();
+          }
 
-        final message = messages[index];
-        return _buildMessageBubble(message);
-      },
+          final message = messages[index];
+          return _buildMessageBubble(message);
+        },
+      ),
     );
   }
 

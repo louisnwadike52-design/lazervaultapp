@@ -58,7 +58,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // picked, so subsequent fetches request the matching window.
   // Defaults to month (matches the existing API default).
   final Map<String, _TrendPeriod> _trendPeriodByAccount = {};
-  static const _TrendPeriod _defaultTrendPeriod = _TrendPeriod.month;
 
   // Whether we're currently resolving a family account ID for setup navigation
   bool _isResolvingFamilyId = false;
@@ -1294,8 +1293,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // shows up immediately. The bottom sheet is dark + brand-purple to
   // match the rest of the app shell.
   void _openTrendPeriodPicker(AccountSummaryEntity account) {
-    final current =
-        _trendPeriodByAccount[account.id] ?? _defaultTrendPeriod;
+    // Source of truth is the cubit's persisted period, so reopening the sheet
+    // always reflects the currently-active selection.
+    final current = _TrendPeriod.fromApi(_cubit.trendPeriod);
     showModalBottomSheet<_TrendPeriod>(
       context: context,
       // Match the dashboard account-card gradient so the sheet reads as
@@ -1382,11 +1382,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
       setState(() {
         _trendPeriodByAccount[account.id] = picked;
       });
-      // Ask the cubit to refresh trend for this account against the
-      // newly-chosen window. The cubit's existing fetcher takes a period
-      // string ("day" / "week" / "month" / "year"); if the API doesn't
-      // already accept this, the value is still stored locally so the
-      // chip subtitle and next refresh window pick up correctly.
+      // Refresh trends against the newly-chosen window. The period is passed to
+      // the backend (GetUserAccounts.period) and persisted in the cubit so it
+      // applies to every card and survives reopening the sheet.
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
         final userId = authState.profile.user.id;
@@ -1394,6 +1392,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
         _cubit.fetchAccountSummaries(
           userId: userId,
           accessToken: accessToken,
+          period: picked.api,
         );
       }
     });
@@ -1403,12 +1402,17 @@ class _AccountCarouselState extends State<AccountCarousel> {
 /// Time windows offered in the trend-period picker. Order matters — the
 /// bottom sheet renders them in declaration order.
 enum _TrendPeriod {
-  day('Last 24 hours', 'Day-on-day change'),
-  week('Last 7 days', 'Week-on-week change'),
-  month('Last 30 days', 'Month-on-month change'),
-  year('Last 12 months', 'Year-on-year change');
+  day('Last 24 hours', 'Day-on-day change', 'day'),
+  week('Last 7 days', 'Week-on-week change', 'week'),
+  month('Last 30 days', 'Month-on-month change', 'month'),
+  year('Last 12 months', 'Year-on-year change', 'year');
 
   final String label;
   final String subtitle;
-  const _TrendPeriod(this.label, this.subtitle);
+  // Backend period token sent to GetUserAccounts / persisted in the cubit.
+  final String api;
+  const _TrendPeriod(this.label, this.subtitle, this.api);
+
+  static _TrendPeriod fromApi(String api) => _TrendPeriod.values
+      .firstWhere((p) => p.api == api, orElse: () => _TrendPeriod.month);
 }

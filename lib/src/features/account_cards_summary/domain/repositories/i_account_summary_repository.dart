@@ -7,5 +7,6 @@ abstract class IAccountSummaryRepository {
     required String userId, // User ID needed to fetch specific accounts
     String? accessToken, // Authentication token for API requests
     String? country, // Country code to filter accounts by country
+    String? period, // Trend window for %-change: day | week | month | year
   });
 } 

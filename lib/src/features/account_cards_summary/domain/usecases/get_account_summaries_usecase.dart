@@ -13,11 +13,13 @@ class GetAccountSummariesUseCase {
     required String userId,
     String? accessToken,
     String? country,
+    String? period,
   }) async {
     return await _repository.getAccountSummaries(
       userId: userId,
       accessToken: accessToken,
       country: country,
+      period: period,
     );
   }
 } 

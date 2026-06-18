@@ -29,11 +29,16 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
     required String userId,
     String? accessToken,
     String? country,
+    String? period,
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = req_resp.GetUserAccountsRequest();
+        // Trend window for the dashboard %-change chip (day/week/month/year).
+        if (period != null && period.isNotEmpty) {
+          request.period = period;
+        }
 
         print('Sending gRPC GetUserAccounts Request for user: $userId${country != null ? ', country: $country' : ''}');
 

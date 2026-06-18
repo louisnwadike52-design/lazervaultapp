@@ -345,10 +345,10 @@ class EndpointRegistry {
 
   /// App-wide inactivity auto-logout threshold, in seconds. Admin-tunable via
   /// the `inactivity_timeout_seconds` system setting (single source of truth);
-  /// defaults to 30s and is clamped to a sane [5, 3600] range so a bad admin
-  /// value can never lock users out instantly or disable the feature outright.
+  /// defaults to 60s (1 minute) and is clamped to a sane [5, 3600] range so a
+  /// bad admin value can never lock users out instantly or disable the feature.
   int get inactivityTimeoutSeconds {
-    final n = int.tryParse(_get('inactivity_timeout_seconds', '30').trim()) ?? 30;
+    final n = int.tryParse(_get('inactivity_timeout_seconds', '60').trim()) ?? 60;
     return n.clamp(5, 3600);
   }
 
