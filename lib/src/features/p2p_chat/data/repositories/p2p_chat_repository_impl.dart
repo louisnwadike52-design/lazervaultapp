@@ -93,10 +93,12 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
 
   @override
   Future<P2PMessageEntity> sendMessage(String conversationId, String content,
-      {String? clientMessageId}) async {
+      {String? clientMessageId, String? mediaUrl, String? mediaType}) async {
     final token = await _getToken();
     return _remoteDatasource.sendMessage(conversationId, content, token,
-        clientMessageId: clientMessageId);
+        clientMessageId: clientMessageId,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType);
   }
 
   @override

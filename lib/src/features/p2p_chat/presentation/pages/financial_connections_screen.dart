@@ -751,10 +751,10 @@ class _FinancialConnectionsScreenState
   }
 
   Widget _buildContactTile(RecipientModel recipient) {
-    final name = recipient.alias?.isNotEmpty == true
-        ? recipient.alias!
-        : recipient.name;
-    final displayName = name.isNotEmpty ? name : 'Unknown';
+    // displayName already prefers alias, then a real name, and falls back to
+    // email/masked-account — never surfacing an account-TYPE token (e.g.
+    // "personal") that legacy connection records stored in `name`.
+    final displayName = recipient.displayName;
 
     return InkWell(
       onTap: () => _openContactChat(recipient),
@@ -863,15 +863,11 @@ class _FinancialConnectionsScreenState
     final userId = recipient.internalUserId;
     if (userId == null || userId.isEmpty) return;
 
-    final name = recipient.alias?.isNotEmpty == true
-        ? recipient.alias!
-        : recipient.name;
-
     Get.toNamed(
       AppRoutes.p2pChat,
       arguments: {
         'otherUserId': userId,
-        'otherUserName': name.isNotEmpty ? name : 'Unknown',
+        'otherUserName': recipient.displayName,
         'isSavedRecipient': true,
       },
     )?.then((_) {

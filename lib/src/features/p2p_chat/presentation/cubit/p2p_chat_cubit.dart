@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
+import 'package:lazervault/src/features/p2p_chat/data/services/p2p_chat_media_upload_service.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_state.dart';
@@ -22,6 +23,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   final AccountsGrpcClient _accountsClient;
   final AccountManager _accountManager;
   final LocaleManager _localeManager;
+  final P2PChatMediaUploadService _mediaUploadService =
+      P2PChatMediaUploadService();
   String _currentUserId;
 
   StreamSubscription? _messageSubscription;
@@ -359,6 +362,141 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       } catch (e) {
         _updateMessageByClientId(clientMessageId, deliveryStatus: 'failed');
       }
+    }
+  }
+
+  /// Send a media message (image or voice note).
+  ///
+  /// Flow: optimistically add the message with the LOCAL file path so the
+  /// user sees their picture / voice note instantly, upload the file to
+  /// storage to obtain the canonical `media_url`, then send the message
+  /// (with the URL) via WebSocket (or REST fallback). On upload failure the
+  /// optimistic message is marked `failed` and NO broken message is sent.
+  Future<void> sendMediaMessage({
+    required String mediaType, // 'image' | 'voice'
+    required String localFilePath,
+    String? contentType,
+    int? voiceDurationMs,
+  }) async {
+    if (_conversationId == null || _currentUserId.isEmpty) return;
+    if (mediaType != 'image' && mediaType != 'voice') return;
+
+    final clientMessageId = const Uuid().v4();
+
+    // Optimistic: show the local file immediately while we upload.
+    final optimisticMsg = P2PMessageEntity(
+      id: clientMessageId,
+      conversationId: _conversationId!,
+      senderId: _currentUserId,
+      messageType: mediaType,
+      mediaType: mediaType,
+      localMediaPath: localFilePath,
+      deliveryStatus: 'sending',
+      clientMessageId: clientMessageId,
+      createdAt: DateTime.now(),
+    );
+    _addMessage(optimisticMsg);
+
+    // Upload the file to storage. On any failure, mark failed and bail —
+    // never send a message with a missing/broken media URL.
+    String mediaUrl;
+    try {
+      final result = await _mediaUploadService.uploadFromFile(
+        File(localFilePath),
+        contentType: contentType,
+      );
+      mediaUrl = result.publicUrl;
+    } catch (e) {
+      debugPrint('P2PChatCubit: media upload failed: $e');
+      _updateMessageByClientId(clientMessageId, deliveryStatus: 'failed');
+      return;
+    }
+
+    // Attach the resolved URL to the optimistic message.
+    _attachMediaUrl(clientMessageId, mediaUrl);
+
+    // Send via WebSocket (real-time), else REST fallback.
+    if (_wsService.isConnected) {
+      _wsService.sendMessage(
+        _conversationId!,
+        '',
+        clientMessageId,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+      );
+      // Same pending-connection 1-message limit handling as text.
+      final current = state;
+      if (current is P2PChatLoaded &&
+          current.connectionStatus == 'pending' &&
+          current.initiatedBy == _currentUserId) {
+        _safeEmit(current.copyWith(canSendMessage: false));
+      }
+    } else {
+      try {
+        await _repository.sendMessage(
+          _conversationId!,
+          '',
+          clientMessageId: clientMessageId,
+          mediaUrl: mediaUrl,
+          mediaType: mediaType,
+        );
+        _updateMessageByClientId(clientMessageId, deliveryStatus: 'sent');
+      } on HttpException catch (e) {
+        if (e.message == 'CONNECTION_PENDING') {
+          _updateMessageByClientId(clientMessageId, deliveryStatus: 'failed');
+          final current = state;
+          if (current is P2PChatLoaded) {
+            _safeEmit(current.copyWith(canSendMessage: false));
+          }
+        } else {
+          _updateMessageByClientId(clientMessageId, deliveryStatus: 'failed');
+        }
+      } catch (e) {
+        _updateMessageByClientId(clientMessageId, deliveryStatus: 'failed');
+      }
+    }
+  }
+
+  /// Retry a failed media message by re-uploading its local file and
+  /// re-sending. Removes the failed optimistic message first, then runs the
+  /// full media send flow again with a fresh client message id.
+  Future<void> retryMediaMessage(String clientMessageId) async {
+    final currentState = state;
+    if (currentState is! P2PChatLoaded) return;
+
+    final msg = currentState.messages
+        .where((m) => m.clientMessageId == clientMessageId)
+        .firstOrNull;
+    if (msg == null ||
+        !msg.isMedia ||
+        msg.localMediaPath == null ||
+        msg.localMediaPath!.isEmpty) {
+      return;
+    }
+
+    // Drop the old failed message, then re-run the send flow.
+    final remaining = currentState.messages
+        .where((m) => m.clientMessageId != clientMessageId)
+        .toList();
+    _safeEmit(currentState.copyWith(messages: remaining));
+
+    await sendMediaMessage(
+      mediaType: msg.mediaType ?? 'image',
+      localFilePath: msg.localMediaPath!,
+    );
+  }
+
+  /// Attach the uploaded media URL to a pending optimistic message.
+  void _attachMediaUrl(String clientMessageId, String mediaUrl) {
+    final currentState = state;
+    if (currentState is P2PChatLoaded) {
+      final messages = currentState.messages.map((m) {
+        if (m.clientMessageId == clientMessageId) {
+          return m.copyWith(mediaUrl: mediaUrl);
+        }
+        return m;
+      }).toList();
+      _safeEmit(currentState.copyWith(messages: messages));
     }
   }
 

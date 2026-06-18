@@ -46,10 +46,55 @@ class RecipientModel {
   /// payout provider; the user only ever sees the name.
   String get displayBankName => BanksData.displayName(bankName, sortCode);
 
+  /// Account-TYPE tokens that must NEVER be shown as a person's display name.
+  /// Some legacy/internal connection records were saved with the account type
+  /// (e.g. "personal") in the `name` field instead of a real name.
+  static const Set<String> _accountTypeTokens = {
+    'personal',
+    'business',
+    'savings',
+    'current',
+    'checking',
+    'investment',
+    'family',
+    'family & friends',
+    'campaign',
+  };
+
+  /// True when [value] is empty or is just an account-TYPE token, meaning it
+  /// must not be surfaced as a human display name.
+  static bool _isUnusableName(String? value) {
+    if (value == null) return true;
+    final v = value.trim();
+    if (v.isEmpty) return true;
+    return _accountTypeTokens.contains(v.toLowerCase());
+  }
+
+  /// Safe display name for the recipient. Prefers the user-defined [alias],
+  /// then the stored [name] (unless it's empty or an account-TYPE token like
+  /// "personal"), then falls back to the email local-part or a masked account
+  /// number so the UI never renders an account type where a name belongs.
+  String get displayName {
+    if (alias != null && alias!.trim().isNotEmpty) return alias!.trim();
+    if (!_isUnusableName(name)) return name.trim();
+    if (email != null && email!.contains('@')) {
+      final local = email!.split('@').first.trim();
+      if (local.isNotEmpty) return local;
+    }
+    if (accountNumber.isNotEmpty) {
+      final acct = accountNumber.startsWith('@')
+          ? accountNumber
+          : (accountNumber.length >= 4
+              ? '••••${accountNumber.substring(accountNumber.length - 4)}'
+              : accountNumber);
+      return acct;
+    }
+    return 'Unknown';
+  }
+
   factory RecipientModel.fromProto(proto.Recipient recipient) {
     // Determine type: LazerVault bank recipients are internal, not external
     String? resolvedType = recipient.type.isNotEmpty ? recipient.type : null;
-    print("DEBUG RecipientModel.fromProto: name: ${recipient.name}, bank: ${recipient.bankName}, proto.type: '${recipient.type}', resolvedType: $resolvedType");
     if (recipient.bankName.toLowerCase() == 'lazervault') {
       resolvedType = 'internal';
     }

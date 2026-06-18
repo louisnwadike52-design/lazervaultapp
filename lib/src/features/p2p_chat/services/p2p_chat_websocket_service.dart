@@ -170,16 +170,28 @@ class P2PChatWebSocketService {
     }
   }
 
-  /// Send a text message via WebSocket.
+  /// Send a text or media message via WebSocket.
+  /// For media messages, pass [mediaUrl] (the uploaded storage object URL) and
+  /// [mediaType] ('image' | 'voice'); [content] may be empty.
   void sendMessage(
-      String conversationId, String content, String clientMessageId) {
+    String conversationId,
+    String content,
+    String clientMessageId, {
+    String? mediaUrl,
+    String? mediaType,
+  }) {
+    final payload = <String, dynamic>{
+      'conversation_id': conversationId,
+      'content': content,
+      'client_message_id': clientMessageId,
+    };
+    if (mediaUrl != null && mediaUrl.isNotEmpty) {
+      payload['media_url'] = mediaUrl;
+      payload['media_type'] = mediaType;
+    }
     _send({
       'type': 'message',
-      'payload': {
-        'conversation_id': conversationId,
-        'content': content,
-        'client_message_id': clientMessageId,
-      },
+      'payload': payload,
     });
   }
 

@@ -7,7 +7,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
@@ -155,28 +157,7 @@ class _P2PChatPageState extends State<P2PChatPage> {
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 34.w,
-            height: 34.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF3B82F6).withOpacity(0.2),
-              border: Border.all(
-                color: const Color(0xFF3B82F6).withOpacity(0.5),
-                width: 1.5,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
+          _buildAvatar(initials),
           SizedBox(width: 10.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,7 +183,73 @@ class _P2PChatPageState extends State<P2PChatPage> {
           ),
         ],
       ),
+      actions: [
+        IconButton(
+          tooltip: 'Send money',
+          onPressed: _openSendMoney,
+          icon: const Icon(Icons.attach_money, color: Color(0xFF10B981)),
+        ),
+      ],
     );
+  }
+
+  /// Circular peer avatar from [_otherUserAvatar] with an initials fallback
+  /// on null URL or load error.
+  Widget _buildAvatar(String initials) {
+    final fallback = Container(
+      width: 34.w,
+      height: 34.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFF3B82F6).withOpacity(0.2),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withOpacity(0.5),
+          width: 1.5,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: GoogleFonts.inter(
+            color: const Color(0xFF3B82F6),
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+
+    final avatarUrl = _otherUserAvatar;
+    if (avatarUrl == null || avatarUrl.isEmpty) {
+      return fallback;
+    }
+
+    return ClipOval(
+      child: Image.network(
+        avatarUrl,
+        width: 34.w,
+        height: 34.w,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => fallback,
+      ),
+    );
+  }
+
+  /// Route to the send-funds amounts page with this peer pre-filled as the
+  /// recipient, returning cleanly back to the chat afterwards.
+  void _openSendMoney() {
+    if (_otherUserId.isEmpty) return;
+    final recipient = RecipientModel(
+      id: _otherUserId,
+      name: _otherUserName,
+      accountNumber: '',
+      bankName: 'LazerVault',
+      sortCode: '',
+      isFavorite: false,
+      internalUserId: _otherUserId,
+      type: 'internal',
+    );
+    Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
   }
 
   Widget _buildConnectionBanner() {
@@ -389,7 +436,10 @@ class _P2PChatPageState extends State<P2PChatPage> {
           );
         }
 
-        return Stack(
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
           children: [
             ListView.builder(
               controller: _scrollController,
@@ -440,6 +490,16 @@ class _P2PChatPageState extends State<P2PChatPage> {
                         otherUserName: _otherUserName,
                         otherUserId: _otherUserId,
                       ),
+                    ],
+                  );
+                }
+
+                // Media message (image or voice note)
+                if (message.isMedia) {
+                  return Column(
+                    children: [
+                      if (dateSeparator != null) dateSeparator,
+                      _buildMediaBubble(message, isMe),
                     ],
                   );
                 }
@@ -497,8 +557,99 @@ class _P2PChatPageState extends State<P2PChatPage> {
                 ),
               ),
           ],
+          ),
         );
       },
+    );
+  }
+
+  /// Render an image or voice-note message bubble, aligned by sender. Reuses
+  /// the shared [ChatMediaBubble] (image thumbnail + just_audio player).
+  Widget _buildMediaBubble(P2PMessageEntity message, bool isMe) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: GestureDetector(
+        onLongPress: message.deliveryStatus == 'failed' &&
+                message.clientMessageId != null
+            ? () => context
+                .read<P2PChatCubit>()
+                .retryMediaMessage(message.clientMessageId!)
+            : null,
+        onTap: message.isImage &&
+                (message.mediaUrl != null && message.mediaUrl!.isNotEmpty)
+            ? () => _openFullImage(message.mediaUrl!)
+            : null,
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
+          padding: EdgeInsets.all(6.w),
+          constraints: BoxConstraints(maxWidth: 260.w),
+          decoration: BoxDecoration(
+            color: isMe
+                ? const Color(0xFF3B82F6).withOpacity(0.18)
+                : const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: const Color(0xFF2D2D2D), width: 0.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ChatMediaBubble(
+                mediaType: message.mediaType,
+                mediaUrl: message.mediaUrl,
+                localMediaPath: message.localMediaPath,
+                isUser: isMe,
+              ),
+              if (message.deliveryStatus == 'sending')
+                Padding(
+                  padding: EdgeInsets.only(top: 4.h, left: 2.w),
+                  child: Text(
+                    'Uploading...',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 10.sp,
+                    ),
+                  ),
+                )
+              else if (message.deliveryStatus == 'failed')
+                Padding(
+                  padding: EdgeInsets.only(top: 4.h, left: 2.w),
+                  child: Text(
+                    'Failed — long-press to retry',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFEF4444),
+                      fontSize: 10.sp,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Open a full-screen view of an image message.
+  void _openFullImage(String url) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black,
+      builder: (ctx) => GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        child: InteractiveViewer(
+          child: Center(
+            child: Image.network(
+              url,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.broken_image,
+                color: const Color(0xFF9CA3AF),
+                size: 64.w,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -537,6 +688,14 @@ class _P2PChatPageState extends State<P2PChatPage> {
           enabled: isLoaded && canSend,
           onSend: (content) {
             context.read<P2PChatCubit>().sendMessage(content);
+            _scrollToBottom(force: true);
+          },
+          onSendMedia: (mediaType, localFilePath, contentType) {
+            context.read<P2PChatCubit>().sendMediaMessage(
+                  mediaType: mediaType,
+                  localFilePath: localFilePath,
+                  contentType: contentType,
+                );
             _scrollToBottom(force: true);
           },
           onTypingChanged: (isTyping) {

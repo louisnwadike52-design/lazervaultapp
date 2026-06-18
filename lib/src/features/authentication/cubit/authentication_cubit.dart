@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart' hide State;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -63,6 +63,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   ProfileEntity? _currentProfile;
   Timer? _draftSaveTimer;
+
+  /// True while an intentional logout is in flight. In-flight background ops
+  /// (profile refresh / websocket reconnect / token validation) will start
+  /// failing the moment the session is cleared and would otherwise surface a
+  /// noisy auth-error snackbar on top of the "come back soon" message. This
+  /// flag lets us suppress those self-inflicted errors WITHOUT suppressing
+  /// legitimate auth errors during login. Cleared on the next login attempt.
+  bool _isLoggingOut = false;
+
+  /// Whether an intentional logout is currently in progress. Listeners can
+  /// read this to avoid reacting to the transient AuthenticationError that a
+  /// background request may emit while the session is being torn down.
+  bool get isLoggingOut => _isLoggingOut;
 
   AuthenticationCubit({
     required LoginUseCase login,
@@ -232,6 +245,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }) async {
     print('🔐 Login attempt with email: $email (length: ${email.length})');
     if (isClosed) return;
+    _isLoggingOut = false; // genuine login attempt — re-enable error surfacing
     emit(AuthenticationLoading());
 
     final result = await _loginUseCase(email: email, password: password);
@@ -264,6 +278,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String passcode,
   }) async {
     if (isClosed) return;
+    _isLoggingOut = false; // genuine login attempt — re-enable error surfacing
     emit(const AuthenticationLoading());
 
     final result = await _loginWithPasscodeUseCase(
@@ -283,7 +298,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await _saveSession(profile);
       await _storage.write(key: 'login_method', value: 'passcode');
       await _storage.write(key: 'stored_email', value: email);
-      _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
       emit(AuthenticationSuccess(profile));
     }
   }
@@ -339,7 +353,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } else {
       final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
       await _saveSession(profile);
-      _showSuccessSnackbar('Welcome!', 'Signed in with Google');
       emit(AuthenticationSuccess(profile));
     }
   }
@@ -363,7 +376,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } else {
       final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
       await _saveSession(profile);
-      _showSuccessSnackbar('Welcome!', 'Signed in with Apple');
       emit(AuthenticationSuccess(profile));
     }
   }
@@ -583,6 +595,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // --- Logout ---
   Future<void> logout() async {
+    // Mark the logout window so any background op (profile refresh, websocket
+    // reconnect, token validation) that fails on the just-cleared session is
+    // suppressed instead of popping a noisy auth-error snackbar. Cleared on the
+    // next login attempt (startPasscodeLogin / loginWithPasscode / login).
+    _isLoggingOut = true;
+
     // Snapshot current user's email to stored_email before clearing session,
     // so passcode login screen shows the correct user after logout.
     final currentEmail = _currentProfile?.user.email;
@@ -598,7 +616,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (serviceLocator.isRegistered<GroupAccountCubit>()) {
       serviceLocator<GroupAccountCubit>().clearOnLogout();
     }
-    _showInfoSnackbar('Logged Out', 'Come back soon!');
+    // No logout snackbar (removed per request).
     // Emit PasscodeLoginInProgress instead of AuthenticationInitial
     // to prevent infinite loading spinner on passcode screen
     emit(const PasscodeLoginInProgress());
@@ -1920,6 +1938,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   void _showErrorSnackbar(String title, String message) {
+    // Suppress auth-error snackbars triggered by an intentional logout — a
+    // background op failing on the just-cleared session must not pop an error
+    // over the "come back soon" message. Legitimate login errors still show
+    // because _isLoggingOut is only ever true during logout().
+    if (_isLoggingOut) return;
     Get.snackbar(
       title,
       message,
@@ -1935,22 +1958,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
-  void _showInfoSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.blue.withValues(alpha: 0.9),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(15),
-      borderRadius: 10,
-      icon: const Icon(Icons.info, color: Colors.white),
-      duration: const Duration(seconds: 3),
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
-  }
-
+  /// Dedicated, themed "come back soon" snackbar shown only on intentional
+  /// logout. Matches the dashboard account-cards-summary look: dark card
+  /// (#1F1F1F) with the brand-purple gradient (#5B45C9 -> #3D2F8B) accent and
+  /// an animated fade/slide-in on the message. Kept brief (2.5s).
   // --- Passcode Setup Flow Methods ---
   void startPasscodeSetup() {
     emit(const PasscodeSetupInProgress());
@@ -2087,6 +2098,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   void passcodeLoginDigitEntered(String digit) {
+    // The user is actively logging back in — re-enable auth-error snackbars so
+    // a genuine wrong-passcode / login failure surfaces normally.
+    _isLoggingOut = false;
     if (state is PasscodeLoginInProgress) {
       final currentState = state as PasscodeLoginInProgress;
       if (currentState.enteredPasscode.length < 6 && !currentState.isAuthenticating) {
@@ -2160,7 +2174,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await _saveSession(profile);
         await _storage.write(key: 'login_method', value: 'passcode');
         await _storage.write(key: 'stored_email', value: email);
-        _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
         emit(AuthenticationSuccess(profile));
       },
     );

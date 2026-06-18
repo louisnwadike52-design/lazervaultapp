@@ -17,7 +17,7 @@ abstract class P2PChatRepository {
   Future<void> declineRequest(String conversationId);
   Future<List<Map<String, dynamic>>> searchUsers(String query);
   Future<List<P2PMessageEntity>> getMessages(String conversationId, {int page = 1, int limit = 50});
-  Future<P2PMessageEntity> sendMessage(String conversationId, String content, {String? clientMessageId});
+  Future<P2PMessageEntity> sendMessage(String conversationId, String content, {String? clientMessageId, String? mediaUrl, String? mediaType});
   Future<void> markRead(String conversationId, String messageId);
   Future<int> getUnreadCount();
 }

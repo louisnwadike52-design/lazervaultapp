@@ -223,7 +223,7 @@ class P2PChatRemoteDatasource {
 
   Future<P2PMessageModel> sendMessage(
       String conversationId, String content, String accessToken,
-      {String? clientMessageId}) async {
+      {String? clientMessageId, String? mediaUrl, String? mediaType}) async {
     final response = await _client
         .post(
           Uri.parse('$_baseUrl/conversations/$conversationId/messages'),
@@ -231,6 +231,8 @@ class P2PChatRemoteDatasource {
           body: jsonEncode({
             'content': content,
             if (clientMessageId != null) 'client_message_id': clientMessageId,
+            if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_url': mediaUrl,
+            if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_type': mediaType,
           }),
         )
         .timeout(_timeout);
