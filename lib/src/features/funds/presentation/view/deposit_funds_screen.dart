@@ -3527,7 +3527,7 @@ extension _DepositMethodMeta on _DepositMethod {
   String get label {
     switch (this) {
       case _DepositMethod.linkAccount:
-        return 'Link Account';
+        return 'Link Bank';
       case _DepositMethod.applePay:
         return 'Apple Pay';
       case _DepositMethod.bankTransfer:
