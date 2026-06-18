@@ -46,8 +46,13 @@ class AddRecipient extends StatefulWidget {
   State<AddRecipient> createState() => _AddRecipientState();
 }
 
-class _AddRecipientState extends State<AddRecipient> {
+class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver {
   AddRecipientMethod _selectedMethod = AddRecipientMethod.bankDetails;
+
+  /// When the contact sheet sends the user to system settings (permanently
+  /// denied), it registers a callback here so we can re-check permission the
+  /// moment the app is resumed and proceed automatically if it was granted.
+  VoidCallback? _onResumeContactPermissionCheck;
 
   // Bank Details Form Controllers
   final TextEditingController _nameController = TextEditingController();
@@ -85,7 +90,18 @@ class _AddRecipientState extends State<AddRecipient> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeCountryAndLoadBanks();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // User may have just toggled the Contacts permission in system settings.
+    // Re-check and proceed automatically if the contact sheet is waiting on it.
+    if (state == AppLifecycleState.resumed) {
+      _onResumeContactPermissionCheck?.call();
+    }
   }
 
   Future<void> _initializeCountryAndLoadBanks() async {
@@ -117,6 +133,8 @@ class _AddRecipientState extends State<AddRecipient> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _onResumeContactPermissionCheck = null;
     _nameController.dispose();
     _accountController.dispose();
     _sortCodeController.dispose();
@@ -1168,6 +1186,10 @@ class _AddRecipientState extends State<AddRecipient> {
     bool initialLoadTriggered = false;
     final searchController = TextEditingController();
 
+    // Tracks whether we just deep-linked the user into system settings, so the
+    // app-resume handler only auto-rechecks when it's actually relevant.
+    bool awaitingSettingsReturn = false;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1223,6 +1245,56 @@ class _AddRecipientState extends State<AddRecipient> {
               );
             }
 
+            // Explicitly (re)request the OS permission, then branch on the
+            // precise outcome. This is what the "Grant Permission" CTA invokes —
+            // it must actually trigger the system prompt (not just reload the
+            // gate), and escalate to the settings screen when the OS will no
+            // longer prompt (permanently denied / restricted).
+            Future<void> requestAndLoad() async {
+              setSheetState(() {
+                isLoading = true;
+                permissionDenied = false;
+                permissionPermanentlyDenied = false;
+                errorMessage = null;
+              });
+
+              final result = await contactService.requestPermissionDetailed();
+              if (!bottomSheetContext.mounted) return;
+
+              switch (result) {
+                case ContactPermissionResult.granted:
+                  loadContacts();
+                  break;
+                case ContactPermissionResult.denied:
+                  setSheetState(() {
+                    isLoading = false;
+                    permissionDenied = true;
+                  });
+                  break;
+                case ContactPermissionResult.permanentlyDenied:
+                  setSheetState(() {
+                    isLoading = false;
+                    permissionPermanentlyDenied = true;
+                  });
+                  break;
+              }
+            }
+
+            // Deep-link to system settings and arm the app-resume re-check so we
+            // proceed automatically when the user comes back having granted it.
+            Future<void> openSettingsAndAwaitReturn() async {
+              awaitingSettingsReturn = true;
+              _onResumeContactPermissionCheck = () async {
+                if (!awaitingSettingsReturn) return;
+                final granted = await contactService.hasPermission();
+                if (granted && bottomSheetContext.mounted) {
+                  awaitingSettingsReturn = false;
+                  loadContacts();
+                }
+              };
+              await contactService.openSettings();
+            }
+
             // Trigger initial load once
             if (!initialLoadTriggered) {
               initialLoadTriggered = true;
@@ -1239,9 +1311,10 @@ class _AddRecipientState extends State<AddRecipient> {
               permissionDenied: permissionDenied,
               permissionPermanentlyDenied: permissionPermanentlyDenied,
               errorMessage: errorMessage,
-              contactService: contactService,
               searchController: searchController,
               onRetry: loadContacts,
+              onGrantPermission: requestAndLoad,
+              onOpenSettings: openSettingsAndAwaitReturn,
               onSearchChanged: (query) {
                 searchDebounce?.cancel();
                 searchDebounce = Timer(const Duration(milliseconds: 300), () {
@@ -1268,6 +1341,7 @@ class _AddRecipientState extends State<AddRecipient> {
     ).whenComplete(() {
       searchDebounce?.cancel();
       searchController.dispose();
+      _onResumeContactPermissionCheck = null;
     });
   }
 
@@ -1281,22 +1355,18 @@ class _AddRecipientState extends State<AddRecipient> {
     try {
       final status = await contactService.getPermissionStatus();
 
-      if (status.isPermanentlyDenied) {
-        onPermissionPermanentlyDenied();
-        return;
-      }
-
+      // Already granted — go straight to loading, skipping the gate.
       if (!status.isGranted) {
-        final granted = await contactService.requestPermission();
-        if (!granted) {
-          // Check again to distinguish permanent denial
-          final newStatus = await contactService.getPermissionStatus();
-          if (newStatus.isPermanentlyDenied) {
-            onPermissionPermanentlyDenied();
-          } else {
+        final result = await contactService.requestPermissionDetailed();
+        switch (result) {
+          case ContactPermissionResult.granted:
+            break; // fall through to load
+          case ContactPermissionResult.denied:
             onPermissionDenied();
-          }
-          return;
+            return;
+          case ContactPermissionResult.permanentlyDenied:
+            onPermissionPermanentlyDenied();
+            return;
         }
       }
 
@@ -1316,9 +1386,10 @@ class _AddRecipientState extends State<AddRecipient> {
     required bool permissionDenied,
     required bool permissionPermanentlyDenied,
     required String? errorMessage,
-    required ContactService contactService,
     required TextEditingController searchController,
     required VoidCallback onRetry,
+    required VoidCallback onGrantPermission,
+    required VoidCallback onOpenSettings,
     required void Function(String) onSearchChanged,
     required void Function(DeviceContact) onContactTap,
   }) {
@@ -1412,9 +1483,10 @@ class _AddRecipientState extends State<AddRecipient> {
               permissionDenied: permissionDenied,
               permissionPermanentlyDenied: permissionPermanentlyDenied,
               errorMessage: errorMessage,
-              contactService: contactService,
               allContactsEmpty: allContacts.isEmpty,
               onRetry: onRetry,
+              onGrantPermission: onGrantPermission,
+              onOpenSettings: onOpenSettings,
               onContactTap: onContactTap,
             ),
           ),
@@ -1430,9 +1502,10 @@ class _AddRecipientState extends State<AddRecipient> {
     required bool permissionDenied,
     required bool permissionPermanentlyDenied,
     required String? errorMessage,
-    required ContactService contactService,
     required bool allContactsEmpty,
     required VoidCallback onRetry,
+    required VoidCallback onGrantPermission,
+    required VoidCallback onOpenSettings,
     required void Function(DeviceContact) onContactTap,
   }) {
     // Loading state
@@ -1479,7 +1552,7 @@ class _AddRecipientState extends State<AddRecipient> {
               ),
               SizedBox(height: 24.h),
               ElevatedButton.icon(
-                onPressed: onRetry,
+                onPressed: onGrantPermission,
                 icon: Icon(Icons.lock_open, size: 18.sp),
                 label: const Text('Grant Permission'),
                 style: ElevatedButton.styleFrom(
@@ -1488,6 +1561,20 @@ class _AddRecipientState extends State<AddRecipient> {
                   padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              // Escape hatch: if the OS has stopped showing the prompt, the user
+              // can still enable access from system settings.
+              TextButton(
+                onPressed: onOpenSettings,
+                child: Text(
+                  'Open Settings instead',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Color.fromARGB(255, 78, 3, 208),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -1524,7 +1611,7 @@ class _AddRecipientState extends State<AddRecipient> {
               ),
               SizedBox(height: 24.h),
               ElevatedButton.icon(
-                onPressed: () => contactService.openSettings(),
+                onPressed: onOpenSettings,
                 icon: Icon(Icons.settings, size: 18.sp),
                 label: const Text('Open Settings'),
                 style: ElevatedButton.styleFrom(

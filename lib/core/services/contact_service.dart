@@ -3,6 +3,19 @@ import 'package:flutter_contacts/flutter_contacts.dart' as fc;
 import 'package:permission_handler/permission_handler.dart';
 import '../models/device_contact.dart';
 
+/// Outcome of a contacts permission request.
+///
+/// Distinguishes the three states the UI must branch on:
+/// - [granted]: permission is available, contacts can be loaded
+/// - [denied]: user declined but can be asked again (show retry)
+/// - [permanentlyDenied]: user declined permanently / restricted — the OS
+///   will no longer show a prompt, the only path forward is app settings
+enum ContactPermissionResult {
+  granted,
+  denied,
+  permanentlyDenied,
+}
+
 /// Service for managing device contacts
 ///
 /// Handles permission requests, contact loading, searching, and caching
@@ -29,10 +42,65 @@ class ContactService {
 
   /// Requests contact permission from the user
   ///
-  /// Returns true if permission is granted, false otherwise
+  /// Returns true if permission is granted, false otherwise.
+  /// Prefer [requestPermissionDetailed] when the caller needs to distinguish
+  /// a temporary denial (can ask again) from a permanent one (settings only).
   Future<bool> requestPermission() async {
+    final result = await requestPermissionDetailed();
+    return result == ContactPermissionResult.granted;
+  }
+
+  /// Requests contact permission and reports the precise outcome.
+  ///
+  /// This bridges BOTH permission backends used in the app:
+  /// - `permission_handler` (`Permission.contacts`) — drives the OS prompt and
+  ///   reports the granular permanently-denied / restricted state the UI needs.
+  /// - `flutter_contacts` (`FlutterContacts.requestPermission`) — the contact
+  ///   loader (`FlutterContacts.getContacts`) gates on the plugin's own
+  ///   permission cache, so it must be requested too or loads return empty even
+  ///   after the OS grant.
+  ///
+  /// Returns one of [ContactPermissionResult]. Callers branch:
+  /// granted → load contacts, denied → allow retry, permanentlyDenied → settings.
+  Future<ContactPermissionResult> requestPermissionDetailed() async {
+    // If already granted, short-circuit (still sync flutter_contacts cache).
+    final current = await Permission.contacts.status;
+    if (current.isGranted) {
+      await _syncFlutterContactsPermission();
+      return ContactPermissionResult.granted;
+    }
+
+    // A permanently-denied / restricted permission will NOT show a prompt — the
+    // OS resolves request() immediately, so route straight to settings.
+    if (current.isPermanentlyDenied || current.isRestricted) {
+      return ContactPermissionResult.permanentlyDenied;
+    }
+
+    // Show the OS prompt via permission_handler.
     final status = await Permission.contacts.request();
-    return status.isGranted;
+
+    if (status.isGranted) {
+      await _syncFlutterContactsPermission();
+      return ContactPermissionResult.granted;
+    }
+
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      return ContactPermissionResult.permanentlyDenied;
+    }
+
+    return ContactPermissionResult.denied;
+  }
+
+  /// Ensures the flutter_contacts plugin also holds permission once the OS
+  /// grant is in place, so [getContacts] doesn't return an empty list.
+  Future<void> _syncFlutterContactsPermission() async {
+    try {
+      await fc.FlutterContacts.requestPermission(readonly: true);
+    } catch (e) {
+      // Non-fatal: permission_handler already confirmed the OS grant; the
+      // flutter_contacts read will surface any genuine failure on its own.
+      print('[ContactService] flutter_contacts permission sync failed: $e');
+    }
   }
 
   /// Gets all contacts from the device
