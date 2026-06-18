@@ -47,6 +47,14 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   String? _currentSessionId;
   String? _currentAccessToken;
 
+  /// Re-entrancy guard: true while a startVoiceSession() call is in flight.
+  /// A single user action (sheet-open + language-selected + enrollment-proceed)
+  /// can fire startVoiceSession() more than once; without this guard each call
+  /// POSTs /voice/session/start and (server-dedupe aside) the client would race
+  /// two LiveKit connects. We refuse a re-entrant start while one is already
+  /// running so a single user action starts exactly one session.
+  bool _isStartingSession = false;
+
   /// Get the current session ID
   String? get currentSessionId => _currentSessionId;
 
@@ -414,9 +422,23 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     String? currency,
   }) async {
     if (isClosed) return;
+
+    // Re-entrancy guard: a single user action can dispatch startVoiceSession()
+    // more than once (sheet-open path + language-selected + enrollment-proceed).
+    // Refuse a second start while one is already in flight so exactly one
+    // LiveKit room/agent is created. The legitimate restart path (startNewSession)
+    // tears the old room down and awaits before reaching here, so it is not
+    // blocked. Cleared in the finally below.
+    if (_isStartingSession) {
+      print('VoiceSessionCubit: startVoiceSession ignored — a start is already in flight');
+      return;
+    }
+    _isStartingSession = true;
+
     emit(VoiceSessionLoadingCredentials());
 
     if (accessToken == null || accessToken.isEmpty) {
+      _isStartingSession = false;
       if (isClosed) return;
       emit(const VoiceSessionCredentialsError('Authentication token is invalid or user not logged in.'));
       return;
@@ -536,9 +558,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         emit(VoiceSessionCredentialsError('Failed to get voice session credentials: ${response.statusCode} ${response.body}'));
       }
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) {
+        _isStartingSession = false;
+        return;
+      }
       print('VoiceSessionCubit: Exception: $e');
       emit(VoiceSessionCredentialsError('Error processing voice session credentials: $e'));
+    } finally {
+      // Release the re-entrancy guard. Credentials are loaded (or failed) by
+      // now; the LiveKit connect itself runs in connectToLiveKitRoom().
+      _isStartingSession = false;
     }
   }
 
