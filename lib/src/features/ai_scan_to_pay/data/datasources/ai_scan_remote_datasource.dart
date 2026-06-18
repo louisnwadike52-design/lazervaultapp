@@ -280,7 +280,11 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
       });
 
       // Send POST request to chat gateway with timeout
-      final uri = Uri.parse('$chatGatewayBaseUrl/scan/bank-details');
+      // The OCR route lives at the gateway ROOT (`/scan/bank-details`), not under
+      // `/chat` — strip a trailing `/chat` so a base like `.../chat` can't double
+      // the path into `/chat/scan/bank-details` (was a 404).
+      final scanBase = chatGatewayBaseUrl.replaceAll(RegExp(r'/chat/?$'), '');
+      final uri = Uri.parse('$scanBase/scan/bank-details');
       final headers = await _getHeaders(overrideAccessToken: accessToken);
       final response = await httpClient
           .post(

@@ -2741,7 +2741,14 @@ Future<void> init() async {
       grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       httpClient: serviceLocator<http.Client>(),
       secureStorage: serviceLocator<SecureStorageService>(),
-      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'https://api.lazervault.app/chat',
+      // Host-only base: the bank-scan OCR route is `/scan/bank-details` at the
+      // ROOT of the chat-agent-gateway (cloudflared routes ^/scan -> 3011), NOT
+      // under /chat. Prefer host-only CHAT_GATEWAY_URL / HTTP_API_HOST so we
+      // don't produce a doubled `/chat/scan/...` (was 404).
+      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ??
+          dotenv.env['CHAT_GATEWAY_URL'] ??
+          dotenv.env['HTTP_API_HOST'] ??
+          'https://dev.lazervault.app',
       // Explicit core-payments REST base URL — used by
       // processBankDetailsPayment to POST /api/v1/payments/bank-details.
       // Previously this was derived by port-swapping the chat gateway
