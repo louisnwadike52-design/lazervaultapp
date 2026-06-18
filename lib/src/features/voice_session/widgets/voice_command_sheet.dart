@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,6 +68,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // second VoiceSessionPinRequired emit (e.g. a caption re-emit) from
   // stacking a duplicate sheet.
   bool _isPinSheetShowing = false;
+  // Safety net for [_isPinSheetShowing]: if a PIN sheet's await stalls (or a
+  // stale VoiceSessionPinRequired arrives while one is showing), this timer
+  // force-clears the re-entrancy flag so future PIN sheets are never blocked.
+  Timer? _pinSheetTimeoutTimer;
   bool _isCheckingEnrollment = true;
   bool _isMuted = false;
   bool _isClosing = false;
@@ -435,6 +440,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _pinSheetTimeoutTimer?.cancel();
     _dismissActiveDialog();
     _feedbackController.dispose();
     _pulseController.dispose();
@@ -595,7 +601,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             state is VoiceSessionWebSocketFailed ||
             state is VoiceSessionLowConfidenceWarning) {
           _startAnimations();
-        } else if (state is VoiceSessionEnded) {
+        } else if (state is VoiceSessionEnded ||
+            state is VoiceSessionDisconnected) {
+          // Stop on teardown/disconnect so the avatar + pulse controllers don't
+          // keep spinning across reconnect loops. _startAnimations re-arms them
+          // cleanly on the next connected/active state.
           _stopAnimations();
         } else if (state is! VoiceSessionLanguageSelection) {
           _stopAnimations();
@@ -710,6 +720,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               children: [
                 Text(
                   'Nova',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -722,48 +734,64 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ],
             ),
           ),
-          // Tiny CTAs: show/hide live captions + conversation history. Kept
-          // genuinely small (~22.w) so they fit alongside the control cluster.
-          _buildTinyToggleChip(
-            icon: _showCaptions
-                ? Icons.closed_caption_rounded
-                : Icons.closed_caption_off_rounded,
-            active: _showCaptions,
-            activeColor: const Color(0xFF10B981),
-            onTap: () => setState(() => _showCaptions = !_showCaptions),
-          ),
-          SizedBox(width: 5.w),
-          _buildTinyToggleChip(
-            icon: Icons.forum_rounded,
-            active: _showHistory,
-            activeColor: const Color(0xFF3B82F6),
-            onTap: () => setState(() => _showHistory = !_showHistory),
-            // Long-press opens the full conversation-history sheet (the older
-            // surface), so both the condensed inline list and the full sheet
-            // stay reachable from one tiny chip.
-            onLongPress: _showChatHistorySheet,
-          ),
-          SizedBox(width: 6.w),
-          // Control cluster
-          _buildSettingsButton(),
-          SizedBox(width: 6.w),
-          _buildLanguagePillCompact(),
-          SizedBox(width: 6.w),
-          _buildFullScreenButton(),
-          SizedBox(width: 6.w),
-          GestureDetector(
-            onTap: _closeSheet,
-            child: Container(
-              width: 34.w,
-              height: 34.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.close_rounded,
-                color: Colors.white.withValues(alpha: 0.55),
-                size: 17.sp,
+          // Control cluster. Wrapped in a Flexible + horizontal scroll so it can
+          // shrink (and scroll) instead of overflowing the Row on very narrow
+          // (<340px) screens. On normal phones it has room and never scrolls,
+          // so the look is unchanged.
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              physics: const ClampingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Tiny CTAs: show/hide live captions + conversation history.
+                  // Kept genuinely small (~22.w) so they fit alongside the
+                  // control cluster.
+                  _buildTinyToggleChip(
+                    icon: _showCaptions
+                        ? Icons.closed_caption_rounded
+                        : Icons.closed_caption_off_rounded,
+                    active: _showCaptions,
+                    activeColor: const Color(0xFF10B981),
+                    onTap: () => setState(() => _showCaptions = !_showCaptions),
+                  ),
+                  SizedBox(width: 5.w),
+                  _buildTinyToggleChip(
+                    icon: Icons.forum_rounded,
+                    active: _showHistory,
+                    activeColor: const Color(0xFF3B82F6),
+                    onTap: () => setState(() => _showHistory = !_showHistory),
+                    // Long-press opens the full conversation-history sheet (the
+                    // older surface), so both the condensed inline list and the
+                    // full sheet stay reachable from one tiny chip.
+                    onLongPress: _showChatHistorySheet,
+                  ),
+                  SizedBox(width: 6.w),
+                  _buildSettingsButton(),
+                  SizedBox(width: 6.w),
+                  _buildLanguagePillCompact(),
+                  SizedBox(width: 6.w),
+                  _buildFullScreenButton(),
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    onTap: _closeSheet,
+                    child: Container(
+                      width: 34.w,
+                      height: 34.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Colors.white.withValues(alpha: 0.55),
+                        size: 17.sp,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -2707,6 +2735,19 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   Future<void> _showPinEntrySheet(Map<String, dynamic> payload) async {
     if (_isPinSheetShowing || !mounted) return;
     _isPinSheetShowing = true;
+    // Force-release the re-entrancy guard if the PIN flow never completes
+    // (stalled await / dropped sheet) — otherwise the flag stays true and
+    // blocks every future PIN sheet for the rest of the session.
+    _pinSheetTimeoutTimer?.cancel();
+    _pinSheetTimeoutTimer = Timer(const Duration(seconds: 60), () {
+      if (_isPinSheetShowing) {
+        print(
+          'VoiceCommandSheet: PIN sheet guard timed out after 60s — '
+          'force-clearing _isPinSheetShowing',
+        );
+        _isPinSheetShowing = false;
+      }
+    });
 
     // Amounts in the payload are already MAJOR units (Naira) — do NOT divide.
     final amount = double.tryParse(payload['amount']?.toString() ?? '0') ?? 0.0;
@@ -2772,6 +2813,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         await cubit.notifyPinCompleted(false, error: 'pin_entry_cancelled');
       }
     } finally {
+      _pinSheetTimeoutTimer?.cancel();
+      _pinSheetTimeoutTimer = null;
       _isPinSheetShowing = false;
     }
   }

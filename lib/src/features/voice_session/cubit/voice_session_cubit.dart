@@ -1173,13 +1173,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// User cancelled the current voice action.
   Future<void> cancelVoiceAction() async {
     _setVisualFeedbackActive(false);
-    // Reflect the cancellation on the HUD (muted state) before clearing it.
-    if (_transferContext.isActive && !_transferContext.isTerminal) {
-      _updateTransferContext(
-          _transferContext.copyWith(status: VoiceTransferStatus.cancelled));
-    } else {
-      _resetTransferContext();
-    }
+    // Fully reset the transfer context on cancel so the NEXT transfer starts
+    // clean (no stale recipient/amount flashing on the HUD). The HUD simply
+    // disappears on abort, which is the correct behaviour for a cancellation.
+    _resetTransferContext();
     await sendToVoiceAgent('transfer_cancelled', {});
     if (_room != null && !isClosed) {
       emit(VoiceSessionConnected(_room!));
