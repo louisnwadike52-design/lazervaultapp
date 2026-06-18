@@ -918,7 +918,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.translate_rounded,
+          Icons.language,
           color: const Color(0xFF5B45C9),
           size: 17.sp,
         ),
@@ -1386,41 +1386,47 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         // Custom Voice button for English
         if (lang.code == 'en') ...[
           SizedBox(width: 6.w),
-          GestureDetector(
-            onTap: () => Get.toNamed(AppRoutes.voiceSettings),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.record_voice_over_rounded,
-                    color: const Color(0xFF10B981),
-                    size: 12.sp,
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'Custom Voice',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF10B981),
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildCustomVoiceButton(),
         ],
       ],
+    );
+  }
+
+  /// Reusable "Custom Voice" pill that routes to the voice-settings screen.
+  /// Used in the language indicator (call-end) and the OTP/PIN entry sheet.
+  Widget _buildCustomVoiceButton() {
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.voiceSettings),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.record_voice_over_rounded,
+              color: const Color(0xFF10B981),
+              size: 12.sp,
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              'Custom Voice',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF10B981),
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1680,7 +1686,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
               child: Center(
                 child: Icon(
-                  Icons.translate_rounded,
+                  Icons.language,
                   color: const Color(0xFF3B82F6),
                   size: 22.sp,
                 ),
@@ -2862,10 +2868,17 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       'callbackIntent=${callbackIntent.isEmpty ? "<legacy>" : callbackIntent})',
     );
 
+    // Surface the "Custom Voice" shortcut at the OTP/PIN step too (same
+    // English-only condition the call-end indicator uses), so the user can jump
+    // to custom-voice setup without leaving the PIN flow.
+    final pinHeaderAction =
+        cubit.selectedLanguage?.code == 'en' ? _buildCustomVoiceButton() : null;
+
     bool verified = false;
     try {
       final success = await validateTransactionPin(
         context: context,
+        headerAction: pinHeaderAction,
         transactionId: transactionId,
         transactionType: transactionType,
         amount: amount,

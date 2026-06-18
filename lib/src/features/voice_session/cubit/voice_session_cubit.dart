@@ -784,11 +784,28 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             final status = eventData['status'] as String? ?? '';
             final message = eventData['message'] as String?;
             if (status == 'processing') {
+              // The user's turn just ended and the agent is now thinking. If a
+              // `user_caption_final` already arrived it cleared the interim; but
+              // if the turn closed WITHOUT a usable final (VAD cut, empty
+              // result), drop the rough live partial here so inaccurate
+              // partial text never persists on screen (req: final wins, rough
+              // partials never linger). The committed history bubble — if the
+              // final landed — is untouched.
+              if (_currentUserCaption != null) {
+                _currentUserCaption = null;
+                _emitCaptionUpdate();
+              }
               // Only emit processing if no dialog is active
               if (!_isVisualFeedbackActive) {
                 emit(VoiceSessionAgentProcessing(_room!));
               }
             } else if (status == 'listening') {
+              // Back to listening for a fresh utterance — clear any stale rough
+              // interim from a prior turn that never finalized.
+              if (_currentUserCaption != null) {
+                _currentUserCaption = null;
+                _emitCaptionUpdate();
+              }
               _setVisualFeedbackActive(false);
               emit(VoiceSessionConnected(_room!));
             } else if (status == 'error') {
@@ -850,14 +867,29 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           break;
         // ── Caption events for real-time transcription ──
         case 'user_caption_interim':
-          // Partial transcription - update while user is speaking
+          // Partial transcription — a transient LIVE PREVIEW only. This is the
+          // rough, inaccurate text from gpt-4o-transcribe partials; it is NEVER
+          // committed to VoiceChatHistoryCubit. It is shown as a faded
+          // "speaking…" bubble and is REPLACED by the accurate
+          // `user_caption_final` (or cleared if the turn ends without one).
+          //
+          // Accuracy-first flicker guard: ignore very-early/very-short partials
+          // (a stray character or two) so the preview doesn't flash garbage
+          // before there's enough signal. We only START showing once the
+          // partial has a few characters; once a preview is already showing we
+          // keep updating it (including shrinking) so corrections still render.
+          // The final always overwrites whatever the preview last held.
           if (_room != null) {
             final text = eventData['text'] as String?;
             if (text != null && text.isNotEmpty) {
               // Validate and sanitize
               final sanitized = _sanitizeCaptionText(text);
-              if (sanitized.isNotEmpty) {
-                _currentUserCaption = sanitized;
+              const minInterimChars = 3;
+              final hasPreview = _currentUserCaption != null &&
+                  _currentUserCaption!.isNotEmpty;
+              if (sanitized.length >= minInterimChars || hasPreview) {
+                _currentUserCaption =
+                    sanitized.isNotEmpty ? sanitized : _currentUserCaption;
                 _emitCaptionUpdate();
               }
             }

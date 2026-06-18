@@ -25,6 +25,11 @@ class TransactionPinModal extends StatefulWidget {
   final String? errorMessage;
   final bool isLoading;
 
+  /// Optional action rendered near the top of the PIN-entry sheet (e.g. a
+  /// "Custom Voice" pill from the voice flow). Backward-compatible: defaults to
+  /// null so existing callers render unchanged.
+  final Widget? headerAction;
+
   const TransactionPinModal({
     super.key,
     this.title,
@@ -41,6 +46,7 @@ class TransactionPinModal extends StatefulWidget {
     this.currentAttempt = 1,
     this.errorMessage,
     this.isLoading = false,
+    this.headerAction,
   });
 
   @override
@@ -292,6 +298,12 @@ class TransactionPinModalState extends State<TransactionPinModal>
               ),
               textAlign: TextAlign.center,
             ),
+
+          // Optional caller-supplied action (e.g. voice "Custom Voice" pill)
+          if (widget.headerAction != null) ...[
+            SizedBox(height: 12.h),
+            widget.headerAction!,
+          ],
 
           // Amount display (shows total including fee)
           if (widget.amount != null) ...[

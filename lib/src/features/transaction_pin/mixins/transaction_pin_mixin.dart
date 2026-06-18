@@ -42,6 +42,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     double? totalAmount,
     int maxAttempts = 3,
     bool showProcessingPhase = true,
+    Widget? headerAction,
   }) async {
     try {
       // Check if user has PIN set up
@@ -90,6 +91,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           maxAttempts: maxAttempts,
           currentAttempt: currentAttempt,
           errorMessage: errorMessage,
+          headerAction: headerAction,
           onPinSubmitted: (pin) {
             if (!completerRef.value.isCompleted) {
               completerRef.value.complete(pin);
