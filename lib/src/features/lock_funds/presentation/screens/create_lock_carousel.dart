@@ -145,7 +145,10 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     final amount = createCubit.amount!;
     final currency = createCubit.currency;
     final lockDurationDays = createCubit.lockDurationDays ?? 0;
-    final autoRenew = createCubit.autoRenew;
+    // Final guard: never submit auto-renew for a plan that doesn't support it
+    // (e.g. the Year lock) — the backend rejects it with INVALID_ARGUMENT.
+    final autoRenew =
+        createCubit.autoRenew && createCubit.getSupportsAutoRenew(lockType);
     final goalName = createCubit.goalName;
     final goalDescription = createCubit.goalDescription;
     final paymentMethod = createCubit.paymentMethod!;

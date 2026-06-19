@@ -737,7 +737,6 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           break;
         case 'show_user_search':
           if (_room != null) {
-            _setVisualFeedbackActive(true);
             final users = (eventData['users'] as List?)
                 ?.map((u) => Map<String, dynamic>.from(u as Map))
                 .toList() ?? [];
@@ -749,6 +748,28 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 _transferContext.status == VoiceTransferStatus.cancelled) {
               _updateTransferContext(VoiceTransferContext.idle);
             }
+
+            // Single match auto-resolved by the agent (e.g. "send 500 to obinna"
+            // when there's exactly one Obinna). The backend already stored the
+            // recipient, so we DON'T show a picker — we render the recipient widget
+            // PRE-SELECTED so the user visually sees Obinna selected and the flow
+            // continues straight to amount/summary.
+            final autoSelected = eventData['auto_selected'] == true;
+            if (autoSelected && users.isNotEmpty) {
+              _setVisualFeedbackActive(false);
+              final u = users.first;
+              final uname = (u['username'] ?? '').toString();
+              final name = _candidateName(u);
+              _updateTransferContext(VoiceTransferContext(
+                status: VoiceTransferStatus.recipientSelected,
+                recipientName: name.isEmpty ? uname : name,
+                recipientUsername: uname.isEmpty ? null : uname,
+                recipientAvatarUrl: _candidateAvatar(u),
+              ));
+              break;
+            }
+
+            _setVisualFeedbackActive(true);
             emit(VoiceSessionUserSearchRequired(
               _room!,
               users,

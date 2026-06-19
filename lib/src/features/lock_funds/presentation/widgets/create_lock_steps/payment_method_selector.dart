@@ -140,8 +140,14 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 SizedBox(height: 16.h),
                 _buildInterestDestinationSelector(currency, cubit),
               ],
-              SizedBox(height: 16.h),
-              _buildAutoRenewRow(cubit),
+              // Only offer auto-renew for plans that actually support it (the Year
+              // lock does not) — showing it otherwise lets the user submit an
+              // auto-renew the backend rejects.
+              if (cubit.lockType != null &&
+                  cubit.getSupportsAutoRenew(cubit.lockType!)) ...[
+                SizedBox(height: 16.h),
+                _buildAutoRenewRow(cubit),
+              ],
               SizedBox(height: 16.h),
               _buildImportantNotes(cubit),
             ],

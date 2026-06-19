@@ -216,6 +216,13 @@ class CreateLockCubit extends Cubit<CreateLockState> {
 
   void updateLockType(LockType type) {
     _lockType = type;
+    // Drop a stale auto-renew flag when the newly-selected plan doesn't support
+    // auto-renewal (e.g. switching to the Year lock). Otherwise a `true` carried
+    // over from a previous plan reaches the backend, which rejects with
+    // "<plan> does not support auto-renewal" (INVALID_ARGUMENT).
+    if (!getSupportsAutoRenew(type)) {
+      _autoRenew = false;
+    }
     if (isClosed) return;
     emit(CreateLockState());
   }
@@ -247,7 +254,9 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   }
 
   void updateAutoRenew(bool value) {
-    _autoRenew = value;
+    // Never allow auto-renew on a plan that doesn't support it (defensive — the
+    // toggle is also hidden for those plans).
+    _autoRenew = value && _lockType != null && getSupportsAutoRenew(_lockType!);
     if (isClosed) return;
     emit(CreateLockState());
   }
