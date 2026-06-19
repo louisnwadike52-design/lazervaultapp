@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../domain/repositories/lock_funds_repository.dart';
+import '../../data/lock_funds_error.dart';
 import 'lock_funds_state.dart';
 
 class LockFundsCubit extends Cubit<LockFundsState> {
@@ -71,7 +72,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -93,7 +94,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -135,7 +136,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       loadLockFunds();
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -163,7 +164,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       loadLockFunds();
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -183,7 +184,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       emit(InterestCalculated(calculation));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -213,7 +214,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       loadLockFunds();
       return lockFund;
     } catch (e) {
-      if (!isClosed) emit(LockFundsError(e.toString()));
+      if (!isClosed) emit(LockFundsError(friendlyLockError(e)));
       rethrow;
     }
   }
@@ -247,7 +248,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       loadLockFunds();
       return result;
     } catch (e) {
-      if (!isClosed) emit(LockFundsError(e.toString()));
+      if (!isClosed) emit(LockFundsError(friendlyLockError(e)));
       rethrow;
     }
   }
@@ -278,7 +279,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -323,7 +324,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       emit(AutoSaveCreated(autoSave));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -362,7 +363,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       emit(AutoSaveCreated(autoSave));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 
@@ -375,7 +376,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       emit(AutoSaveLoaded(null));
     } catch (e) {
       if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      emit(LockFundsError(friendlyLockError(e)));
     }
   }
 

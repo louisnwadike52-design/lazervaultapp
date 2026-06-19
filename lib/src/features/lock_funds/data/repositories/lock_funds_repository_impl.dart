@@ -3,6 +3,7 @@ import 'package:lazervault/src/generated/lock_funds.pbgrpc.dart' as pb;
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../domain/repositories/lock_funds_repository.dart';
+import '../lock_funds_error.dart';
 import '../models/lock_fund_model.dart';
 
 const _uuid = Uuid();
@@ -37,7 +38,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
           .map((proto) => LockFundModel.fromProto(proto))
           .toList();
     } catch (e) {
-      throw Exception('Failed to fetch lock funds: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -57,7 +58,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
 
       return LockFundModel.fromProto(response.lockFund);
     } catch (e) {
-      throw Exception('Failed to fetch lock fund: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -103,7 +104,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
 
       return LockFundModel.fromProto(response.lockFund);
     } catch (e) {
-      throw Exception('Failed to create lock fund: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -133,7 +134,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         updatedLockFund: LockFundModel.fromProto(response.updatedLockFund),
       );
     } catch (e) {
-      throw Exception('Failed to unlock fund: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -162,7 +163,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
           .map((proto) => LockFundModel.transactionFromProto(proto))
           .toList();
     } catch (e) {
-      throw Exception('Failed to fetch transactions: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -190,7 +191,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         lockDurationDays: lockDurationDays,
       );
     } catch (e) {
-      throw Exception('Failed to calculate interest: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -216,7 +217,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
 
       return LockFundModel.fromProto(response.renewedLockFund);
     } catch (e) {
-      throw Exception('Failed to renew lock fund: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -242,7 +243,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         refundAmount: response.refundAmount,
       );
     } catch (e) {
-      throw Exception('Failed to cancel lock fund: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -265,7 +266,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         totalCount: response.totalCount,
       );
     } catch (e) {
-      throw Exception('Failed to fetch statistics: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -295,7 +296,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         message: response.message,
       );
     } catch (e) {
-      throw Exception('Failed to top up: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -343,7 +344,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         description: c.description,
       )).toList();
     } catch (e) {
-      throw Exception('Failed to fetch configs: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -368,7 +369,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
 
       return _mapAutoSaveProto(response.autosave);
     } catch (e) {
-      throw Exception('Failed to create auto-save: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -411,7 +412,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
 
       return _mapAutoSaveProto(response.autosave);
     } catch (e) {
-      throw Exception('Failed to update auto-save: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
@@ -426,7 +427,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         options: await _grpcClient.callOptions,
       );
     } catch (e) {
-      throw Exception('Failed to delete auto-save: $e');
+      throw Exception(friendlyLockError(e));
     }
   }
 
