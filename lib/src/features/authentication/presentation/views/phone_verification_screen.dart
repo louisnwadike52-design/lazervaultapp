@@ -294,7 +294,10 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
               final isVerifying = state is PhoneVerificationVerifying;
               final isSending = state is PhoneVerificationSending;
 
-              return SafeArea(
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SafeArea(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
                   child: Column(
@@ -523,16 +526,43 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                       ),
 
                       // Skip Button — always available; advances onboarding
-                      // without marking the phone verified.
-                      SizedBox(height: 16.h),
-                      TextButton(
-                        onPressed: _skipVerification,
-                        child: Text(
-                          'Skip for now',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
+                      // without marking the phone verified. Styled as a clearly
+                      // afforded bordered button so users can find it easily.
+                      SizedBox(height: 20.h),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52.h,
+                        child: OutlinedButton(
+                          onPressed: _skipVerification,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF4834D4),
+                            side: const BorderSide(
+                              color: Color(0xFF4834D4),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Skip for now',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4834D4),
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 18.sp,
+                                color: const Color(0xFF4834D4),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -596,6 +626,7 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                       SizedBox(height: 32.h),
                     ],
                   ),
+                ),
                 ),
               );
             },

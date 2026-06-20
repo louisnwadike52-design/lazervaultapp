@@ -165,8 +165,164 @@ class BankScanDataSource {
     }
   }
 
+  /// Fetch the user's past smart-scan results (newest-first).
+  ///
+  /// Calls `GET /scan/history` on the same gateway ROOT that
+  /// [scanBankDetails] posts to. Returns a (possibly empty) list of
+  /// [ScanHistoryItem]; throws [BankScanException] on transport / server
+  /// error so the caller can show a retry state.
+  ///
+  /// Auth is dual-tracked the same way as the live scan: the bearer token
+  /// goes on the `Authorization` header (via [_updateHeaders]) AND the
+  /// `access_token` query param, mirroring how the gateway scan routes
+  /// accept it. `user_id` is sent so the gateway can scope the lookup.
+  Future<List<ScanHistoryItem>> getScanHistory({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    await _updateHeaders();
+
+    final userId = await secureStorage.getUserId() ?? '';
+    final accessToken = await secureStorage.getAccessToken() ?? '';
+
+    try {
+      final response = await dio.get(
+        '/scan/history',
+        queryParameters: {
+          'user_id': userId,
+          'access_token': accessToken,
+          'limit': limit,
+          'offset': offset,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw BankScanException(
+          'Could not load scan history (${response.statusCode}). Please try again.',
+        );
+      }
+
+      final responseData = response.data;
+      if (responseData is! Map<String, dynamic>) {
+        throw BankScanException('Unexpected server response. Please try again.');
+      }
+
+      final rawScans = responseData['scans'];
+      if (rawScans is! List) {
+        // No scans key / null → treat as empty history, not an error.
+        return const [];
+      }
+
+      final items = <ScanHistoryItem>[];
+      for (final raw in rawScans) {
+        if (raw is Map<String, dynamic>) {
+          final parsed = ScanHistoryItem.tryFromJson(raw);
+          if (parsed != null) items.add(parsed);
+        }
+      }
+      return items;
+    } on BankScanException {
+      rethrow;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw BankScanException(
+          'Request timed out. Please check your connection and try again.',
+        );
+      }
+      if (e.type == DioExceptionType.connectionError) {
+        throw BankScanException(
+          'Could not connect to the server. Please check your internet connection.',
+        );
+      }
+      throw BankScanException(
+        'Network error loading scan history. Please try again.',
+      );
+    } catch (e) {
+      if (e is BankScanException) rethrow;
+      throw BankScanException(
+        'Something went wrong loading scan history. Please try again.',
+      );
+    }
+  }
+
   void dispose() {
     dio.close();
+  }
+}
+
+/// A single past smart-scan, as returned by `GET /scan/history`.
+///
+/// Deliberately lean: the history sheet only needs enough to render a
+/// summary row and to re-build a [SmartScanResult] for re-applying. The
+/// [data] map is kept raw so [toSmartScanResult] can hand it straight to
+/// [SmartScanResult.fromJson] — reusing the exact same field-parsing the
+/// live scan uses (account_number, amount_minor, possible_types, …).
+class ScanHistoryItem {
+  final int id;
+  final String? imageUrl;
+  final String extractionType;
+  final double confidence;
+  final Map<String, dynamic> data;
+  final DateTime? createdAt;
+
+  const ScanHistoryItem({
+    required this.id,
+    required this.imageUrl,
+    required this.extractionType,
+    required this.confidence,
+    required this.data,
+    required this.createdAt,
+  });
+
+  /// Parse one history entry. Returns null only if the row is so malformed
+  /// it can't be rendered (no id at all). A missing image_url is fine —
+  /// the row is driven by the extracted text, not the image.
+  static ScanHistoryItem? tryFromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    final int? id = rawId is int
+        ? rawId
+        : (rawId is num ? rawId.toInt() : int.tryParse(rawId?.toString() ?? ''));
+    if (id == null) return null;
+
+    final rawData = json['data'];
+    final data = rawData is Map<String, dynamic> ? rawData : <String, dynamic>{};
+
+    final rawConfidence = json['confidence'];
+    final confidence = rawConfidence is num
+        ? rawConfidence.toDouble()
+        : double.tryParse(rawConfidence?.toString() ?? '') ?? 0.0;
+
+    final rawImage = json['image_url'];
+    final imageUrl =
+        rawImage is String && rawImage.trim().isNotEmpty ? rawImage.trim() : null;
+
+    DateTime? createdAt;
+    final rawCreated = json['created_at'];
+    if (rawCreated is String && rawCreated.isNotEmpty) {
+      createdAt = DateTime.tryParse(rawCreated)?.toLocal();
+    }
+
+    return ScanHistoryItem(
+      id: id,
+      imageUrl: imageUrl,
+      extractionType: json['extraction_type']?.toString() ?? 'no_data',
+      confidence: confidence.clamp(0.0, 1.0),
+      data: data,
+      createdAt: createdAt,
+    );
+  }
+
+  /// Re-hydrate a [SmartScanResult] from this stored scan so a past
+  /// extraction can flow through the exact same result-sheet / routing
+  /// path the live scan uses. Reuses [SmartScanResult.fromJson] so the
+  /// field parsing (amount_minor, possible_types, etc.) stays identical.
+  SmartScanResult toSmartScanResult() {
+    return SmartScanResult.fromJson({
+      'extraction_type': extractionType,
+      'confidence': confidence,
+      'data': data,
+    });
   }
 }
 

@@ -2280,6 +2280,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           // so no explicit pop needed.
           _navigateToDashboard();
         },
+        onKycVerify: () {
+          // KYC-required terminal state: the sheet has already hidden itself.
+          // Pop the modal route, then save the in-flight deposit + route into
+          // BVN verification. The sheet is gone, so backing out of KYC without
+          // completing returns the user to a clean deposit screen (no spinner).
+          _isProgressSheetShown = false;
+          _cancelLinkWatchdog();
+          if (Navigator.of(sheetContext).canPop()) {
+            Navigator.of(sheetContext).pop();
+          }
+          _saveAndGoToKyc();
+        },
       ),
     ).whenComplete(() {
       _isProgressSheetShown = false;
@@ -2459,14 +2471,51 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
-  /// Save the in-flight deposit context and route the user into KYC, marking
-  /// the navigation so the BVN screen routes BACK to this deposit screen
-  /// (rather than `Get.back` into a dead stack) and we resume on return.
-  ///
-  /// Carries any account already linked before the gate so the resume
-  /// re-deposits from it instead of re-linking. The progress sheet is closed
-  /// first so the user lands cleanly on KYC.
+  /// The backend gated this deposit/mandate on identity verification. Instead
+  /// of auto-navigating to KYC (which used to leave the dark progress sheet
+  /// orphaned and stuck-spinning underneath the BVN screen — `Get.back` never
+  /// pops a `showModalBottomSheet`/Navigator sheet because `isBottomSheetOpen`
+  /// is false for it), drive the progress sheet into a clear KYC-required
+  /// TERMINAL state. The user then chooses:
+  ///   - "Verify Now"  → [_saveAndGoToKyc] (saves context + routes to BVN)
+  ///   - "Close"       → dismisses to the deposit form, no stuck spinner.
+  /// The navigation now only happens on an explicit tap, so backing out of KYC
+  /// without completing it can never reveal a frozen sheet.
   void _goToKycThenResume({required String snackbarMessage}) {
+    // Stop the watchdog from flipping this into a generic "Taking too long"
+    // failure — this is a deliberate KYC terminal state, not a stall.
+    _cancelLinkWatchdog();
+
+    // If the progress sheet isn't currently mounted (e.g. the mandate-setup
+    // KYC gate fired after the sheet was popped for the mandate sheet),
+    // re-show it so the KYC-required state has somewhere to render.
+    if (!_isProgressSheetShown) {
+      final amount = double.tryParse(_amountController.text.trim()) ?? 0;
+      _progressController.show(
+        bankName: _selectedBank.isNotEmpty ? _selectedBank : 'your bank',
+        amount: amount,
+        currency: _currency,
+        flow: _useRecurringAccess
+            ? DirectPayProgressFlow.mandateSetup
+            : DirectPayProgressFlow.redeposit,
+      );
+      _showProgressBottomsheet(context);
+    }
+
+    _progressController.failKyc(
+      title: 'Verification required',
+      message: snackbarMessage,
+    );
+  }
+
+  /// Persist the in-flight deposit context and route the user into KYC. Invoked
+  /// when the user taps "Verify Now" on the KYC-required terminal state. The
+  /// `returnTo` marker tells the BVN screen to route BACK to this deposit
+  /// screen on success (and to refresh the KYC tier) instead of popping into a
+  /// dead stack — [_maybeResumeAfterKyc] then resumes the deposit. Carries any
+  /// account already linked before the gate so the resume re-deposits from it
+  /// instead of re-linking.
+  void _saveAndGoToKyc() {
     final amount = double.tryParse(_amountController.text.trim()) ?? 0;
 
     serviceLocator<PendingDeposit>().save(
@@ -2478,22 +2527,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       linkedBankName: _selectedBank.isNotEmpty ? _selectedBank : null,
     );
 
-    // Close the progress sheet (and any other open bottom sheet) so the user
-    // lands on KYC, not on a stale "Linking…" sheet.
-    _isProgressSheetShown = false;
-    _cancelLinkWatchdog();
-    if (Get.isBottomSheetOpen ?? false) {
-      Get.back();
-    }
-
-    Get.snackbar(
-      'Verify your identity',
-      snackbarMessage,
-      snackPosition: SnackPosition.BOTTOM,
-    );
-
-    // Marker tells the BVN screen to route back to the deposit screen on
-    // success (and to refresh the KYC tier) instead of popping into nothing.
     Get.toNamed(
       AppRoutes.kycBVNVerification,
       arguments: {'returnTo': 'deposit'},

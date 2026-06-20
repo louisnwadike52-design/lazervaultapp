@@ -171,6 +171,11 @@ class DirectPayProgressController extends ChangeNotifier {
   String? _errorMessage;
   String? _errorTitle;
   bool _retryable = true;
+  // A failure that the user can only clear by completing identity verification
+  // (BVN). Distinct from a normal retryable failure: instead of "Try Again" we
+  // show a "Verify Now" CTA that routes into KYC. Never set alongside a normal
+  // retry — these are mutually-exclusive terminal failure shapes.
+  bool _kycRequired = false;
   String? _bankName;
   double? _amount;
   String? _currency;
@@ -182,6 +187,7 @@ class DirectPayProgressController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get errorTitle => _errorTitle;
   bool get retryable => _retryable;
+  bool get kycRequired => _kycRequired;
   String? get bankName => _bankName;
   double? get amount => _amount;
   String? get currency => _currency;
@@ -204,6 +210,7 @@ class DirectPayProgressController extends ChangeNotifier {
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
+    _kycRequired = false;
     _isVisible = true;
     notifyListeners();
   }
@@ -227,6 +234,29 @@ class DirectPayProgressController extends ChangeNotifier {
     _errorMessage = errorMessage;
     _errorTitle = errorTitle;
     _retryable = retryable;
+    // A plain stage update is never a KYC gate — clear any prior KYC flag so a
+    // later retryable/transient failure renders the normal Retry CTA.
+    _kycRequired = false;
+    notifyListeners();
+  }
+
+  /// Drive the sheet into the KYC-required terminal state. Renders a "Verify
+  /// Now" primary CTA (routes into BVN) instead of "Try Again", so the user is
+  /// never left staring at a stuck spinner when the backend gates on identity.
+  void failKyc({
+    String? title,
+    String? message,
+  }) {
+    if (_stage != DirectPayStage.failed && _stage != DirectPayStage.success) {
+      _failedAtStage = _stage;
+    }
+    _stage = DirectPayStage.failed;
+    _errorTitle = title ?? 'Verification required';
+    _errorMessage = message ??
+        'Complete a quick BVN verification to set up Direct Debit / deposit from your bank.';
+    // KYC failures are not retryable in-place — the user must verify first.
+    _retryable = false;
+    _kycRequired = true;
     notifyListeners();
   }
 
@@ -242,6 +272,7 @@ class DirectPayProgressController extends ChangeNotifier {
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
+    _kycRequired = false;
     _bankName = null;
     _amount = null;
     _currency = null;
@@ -264,6 +295,12 @@ class DirectPayProgressBottomsheet extends StatefulWidget {
   /// action on any failure.
   final VoidCallback? onExit;
 
+  /// Route the user into BVN/identity verification. Shown as the PRIMARY
+  /// action ("Verify Now") only on the KYC-required terminal state
+  /// ([DirectPayProgressController.kycRequired]). The host wires this to save
+  /// the pending deposit + navigate to the KYC screen.
+  final VoidCallback? onKycVerify;
+
   const DirectPayProgressBottomsheet({
     super.key,
     required this.controller,
@@ -271,6 +308,7 @@ class DirectPayProgressBottomsheet extends StatefulWidget {
     this.onSuccess,
     this.onRetry,
     this.onExit,
+    this.onKycVerify,
   });
 
   @override
@@ -540,7 +578,54 @@ class _DirectPayProgressBottomsheetState
                     if (widget.onSuccess != null) widget.onSuccess!();
                   },
                 )
-              else if (stage == DirectPayStage.failed) ...[
+              else if (stage == DirectPayStage.failed &&
+                  widget.controller.kycRequired) ...[
+                // KYC gate: the deposit/mandate can't proceed until the user
+                // verifies their BVN. Primary CTA routes into verification;
+                // secondary just dismisses (no stuck spinner left behind).
+                _buildPrimaryButton(
+                  label: 'Verify Now',
+                  color: const Color.fromARGB(255, 78, 3, 208),
+                  onPressed: () {
+                    widget.controller.hide();
+                    if (widget.onKycVerify != null) {
+                      widget.onKycVerify!();
+                    } else if (widget.onDismiss != null) {
+                      widget.onDismiss!();
+                    }
+                  },
+                ),
+                SizedBox(height: 8.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {
+                        widget.controller.hide();
+                        // Mirror the success "Go to Dashboard"/close path: just
+                        // dismiss cleanly without launching anything.
+                        if (widget.onExit != null) {
+                          widget.onExit!();
+                        } else if (widget.onDismiss != null) {
+                          widget.onDismiss!();
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white.withValues(alpha: 0.7),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                      ),
+                      child: Text(
+                        'Close',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ] else if (stage == DirectPayStage.failed) ...[
                 // Primary recovery action depends on whether retrying the
                 // exact same deposit can plausibly succeed. Transient errors
                 // (network, provider down, timeout, cancelled auth) → re-run

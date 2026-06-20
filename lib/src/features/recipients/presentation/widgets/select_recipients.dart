@@ -36,6 +36,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversa
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/scan_history_sheet.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
 import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -558,6 +559,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                 icon: Icons.document_scanner_outlined,
                                 label: 'Scan Bank Details',
                                 onTap: _launchBankDetailsScan,
+                              ),
+                              SizedBox(width: 18.w),
+                              _buildQuickAction(
+                                icon: Icons.manage_search_outlined,
+                                label: 'Scan History',
+                                onTap: _showScanHistory,
                               ),
                               SizedBox(width: 18.w),
                               // Split Bills quick action with pending co-payer badge
@@ -3061,6 +3068,120 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     );
   }
 
+  /// Build a [BankScanDataSource] pointed at the gateway ROOT.
+  ///
+  /// The OCR + history routes live at the gateway ROOT (`/scan/bank-details`,
+  /// `/scan/history`), NOT under `/chat`. CHAT_GATEWAY_URL ends in `/chat`, so
+  /// we MUST strip it — otherwise the datasource posts to `/chat/scan/...`
+  /// which 404s. Shared by the live scan and the history sheet so both hit the
+  /// same base.
+  BankScanDataSource _buildBankScanDataSource() {
+    final gatewayUrl =
+        (dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent)
+            .replaceAll(RegExp(r'/chat/?$'), '');
+    return BankScanDataSource(
+      baseUrl: gatewayUrl,
+      secureStorage: GetIt.I<SecureStorageService>(),
+      uploadService: GetIt.I<BankScanUploadService>(),
+    );
+  }
+
+  /// Open the Scan History bottom sheet. Lists past smart-scans newest-first;
+  /// tapping one re-applies it through the same routing the live scan uses.
+  Future<void> _showScanHistory() async {
+    await ScanHistorySheet.show(
+      context,
+      dataSourceBuilder: _buildBankScanDataSource,
+      onSelectScan: _applyScanHistoryItem,
+    );
+  }
+
+  /// Re-apply a stored scan. Rebuilds a [SmartScanResult] from the history
+  /// row and feeds it through the SAME result-sheet + routing path as the
+  /// live scan, so verification + prefill behave identically. No-data /
+  /// ambiguous-with-nothing rows just surface an info sheet.
+  Future<void> _applyScanHistoryItem(ScanHistoryItem item) async {
+    if (!mounted) return;
+
+    final result = item.toSmartScanResult();
+
+    if (result.extractionType == 'no_data') {
+      _showScanErrorSheet(
+        'No Details Found',
+        'This scan did not capture any payment details. Try scanning again.',
+      );
+      return;
+    }
+
+    // Reuse the live-scan result sheet so the user can review / verify the
+    // stored extraction before it routes into send-funds.
+    final action = await SmartScanResultSheet.show(
+      context,
+      scanResult: result,
+      country: _currentCountry,
+    );
+    if (action == null || !mounted) return;
+
+    Map<String, dynamic> buildSendFundsArgs(RecipientModel recipient) {
+      final args = <String, dynamic>{'recipient': recipient};
+      if (action.amountMinor != null && action.amountMinor! > 0) {
+        args['prefillAmount'] = action.amountMinor;
+      }
+      if (action.description != null && action.description!.isNotEmpty) {
+        args['prefillDescription'] = action.description;
+      }
+      if (args.containsKey('prefillAmount')) {
+        args['autoShowConfirm'] = true;
+      }
+      return args;
+    }
+
+    switch (action.type) {
+      case ScanActionType.bankTransfer:
+        final recipient = RecipientModel(
+          id: '',
+          name: action.accountName ?? '',
+          accountNumber: action.accountNumber ?? '',
+          bankName: action.bankName ?? '',
+          sortCode: action.bankCode ?? '',
+          isFavorite: false,
+          isSaved: false,
+          countryCode: _currentCountry,
+        );
+        Get.toNamed(
+          AppRoutes.initiateSendFunds,
+          arguments: buildSendFundsArgs(recipient),
+        );
+      case ScanActionType.internalTransfer:
+        if (action.username != null && action.username!.isNotEmpty) {
+          _handleSmartScanUserSearch(
+            action.username!,
+            prefillAmountMinor: action.amountMinor,
+            prefillDescription: action.description,
+          );
+        }
+      case ScanActionType.phoneTransfer:
+        final recipient = RecipientModel(
+          id: '',
+          name: '',
+          accountNumber: action.phoneNumber ?? '',
+          bankName: '',
+          sortCode: '',
+          isFavorite: false,
+          isSaved: false,
+          phoneNumber: action.phoneNumber,
+          countryCode: _currentCountry,
+        );
+        Get.toNamed(
+          AppRoutes.initiateSendFunds,
+          arguments: buildSendFundsArgs(recipient),
+        );
+      case ScanActionType.retryCapture:
+        // From history, "Scan Again" means start a fresh live capture.
+        _launchBankDetailsScan();
+    }
+  }
+
   Future<void> _launchBankDetailsScan() async {
     // Get auth cubit before any async operations
     final authCubit = context.read<AuthenticationCubit>();
@@ -3131,20 +3252,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           ? authState.profile.user.id
           : '';
 
-      // The OCR route lives at the gateway ROOT (`/scan/bank-details`), NOT under
-      // `/chat`. CHAT_GATEWAY_URL ends in `/chat`, so we MUST strip it — otherwise the
-      // datasource posts to `/chat/scan/bank-details` which 404s and the scan "keeps
-      // failing". This mirrors the working ai_scan_to_pay flow, which strips it too.
-      final gatewayUrl = (dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent)
-          .replaceAll(RegExp(r'/chat/?$'), '');
       // BankScanDataSource goes through storage-service first (via
       // BankScanUploadService) and posts only the resulting public URL
       // to /scan/bank-details — see datasource for the 3-step pipeline.
-      dataSource = BankScanDataSource(
-        baseUrl: gatewayUrl,
-        secureStorage: GetIt.I<SecureStorageService>(),
-        uploadService: GetIt.I<BankScanUploadService>(),
-      );
+      // Gateway-root resolution is shared with the history sheet via
+      // _buildBankScanDataSource so both hit the same base.
+      dataSource = _buildBankScanDataSource();
 
       final result = await dataSource.scanBankDetails(
         imageFile: File(image.path),

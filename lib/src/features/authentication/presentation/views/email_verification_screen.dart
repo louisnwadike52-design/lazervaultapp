@@ -300,7 +300,10 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
               final isVerifying = state is EmailVerificationInProgress && state.isLoading;
               final isResending = state is EmailVerificationInProgress && state.isResending;
 
-              return SafeArea(
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SafeArea(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
                   child: Column(
@@ -459,16 +462,43 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                       ),
 
                       // Skip Button — always available; advances onboarding
-                      // without marking the email verified.
-                      SizedBox(height: 16.h),
-                      TextButton(
-                        onPressed: _skipVerification,
-                        child: Text(
-                          'Skip for now',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
+                      // without marking the email verified. Styled as a clearly
+                      // afforded bordered button so users can find it easily.
+                      SizedBox(height: 20.h),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52.h,
+                        child: OutlinedButton(
+                          onPressed: _skipVerification,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF4834D4),
+                            side: const BorderSide(
+                              color: Color(0xFF4834D4),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Skip for now',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4834D4),
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 18.sp,
+                                color: const Color(0xFF4834D4),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -532,6 +562,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                       SizedBox(height: 32.h),
                     ],
                   ),
+                ),
                 ),
               );
             },
