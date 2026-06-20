@@ -13,6 +13,9 @@ import 'package:lazervault/src/features/voice_session/models/voice_language.dart
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_transfer_context.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
+import 'package:flutter/foundation.dart' show ValueNotifier;
+import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
+    show CustomVoiceLiveState;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -57,6 +60,20 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// Get the current session ID
   String? get currentSessionId => _currentSessionId;
+
+  /// Live custom-voice clone state pushed by the agent over the active WS
+  /// (`custom_voice_state` event). Widgets (e.g. the voice settings custom-voice
+  /// card) can watch this to re-render in real time as a clone is created,
+  /// processed, toggled, enabled or fails — without waiting for the 10s status
+  /// poll. Null until the first push of a session. Outlives `emit`/state so it
+  /// is exposed as a [ValueNotifier] rather than a cubit state (clone changes
+  /// must not disturb the live-call state machine).
+  final ValueNotifier<CustomVoiceLiveState?> customVoiceLive =
+      ValueNotifier<CustomVoiceLiveState?>(null);
+
+  /// Whether a voice WS is currently connected (used by the cloning screen to
+  /// decide whether pause/resume events are worth sending).
+  bool get hasActiveVoiceSession => _wsChannel != null;
 
   // Language & voice selection
   String? _selectedLanguageCode;
@@ -852,6 +869,21 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             }
           }
           break;
+        case 'custom_voice_state':
+          // The agent pushes this on ANY clone state change (created, processing
+          // progress tick, ready, failed, enable/disable toggle). We expose it on
+          // [customVoiceLive] so the voice settings custom-voice card re-renders
+          // live. It does NOT touch the call's session state — voice cloning is a
+          // side channel that must never disturb the active conversation UI.
+          try {
+            customVoiceLive.value = CustomVoiceLiveState.fromJson(eventData);
+            print('VoiceSessionCubit: custom_voice_state '
+                'status=${eventData['status']} enabled=${eventData['enabled']} '
+                'progress=${eventData['progress']} score=${eventData['score']}');
+          } catch (e) {
+            print('VoiceSessionCubit: bad custom_voice_state payload: $e');
+          }
+          break;
         case 'voice_verification':
           if (_room != null) {
             final verificationStatus = eventData['status'] as String? ?? '';
@@ -1369,6 +1401,32 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
   }
 
+  /// User flipped the custom-voice toggle in voice settings DURING a live call.
+  /// Notify the agent so it swaps its TTS live (clone when enabled+ready, default
+  /// otherwise) and the NEXT reply uses the new voice. When there is NO active
+  /// session (`_wsChannel == null`, the toggle was flipped outside a call),
+  /// sendToVoiceAgent returns silently and the next session picks up the new flag
+  /// at start. Does not emit/transition session state — voice swap is silent.
+  Future<void> notifyCustomVoiceChanged(bool enabled) async {
+    await sendToVoiceAgent('custom_voice_changed', {'enabled': enabled});
+  }
+
+  /// The user opened the voice-cloning setup flow while a voice call is live.
+  /// Tell the agent to PAUSE (stop listening / talking) so the mic isn't fought
+  /// over while the user records their cloning sample. No-op when there is no
+  /// active session (`sendToVoiceAgent` returns early). Does not change session
+  /// state — the call stays connected, just muted on the agent side.
+  Future<void> notifyCustomVoiceSetupStarted() async {
+    await sendToVoiceAgent('custom_voice_setup_started', {});
+  }
+
+  /// The user finished, cancelled or left the voice-cloning setup flow. Tell the
+  /// agent to RESUME the paused call. Safe to call unconditionally — it pairs
+  /// with [notifyCustomVoiceSetupStarted] and no-ops when no session is active.
+  Future<void> notifyCustomVoiceSetupFinished() async {
+    await sendToVoiceAgent('custom_voice_setup_finished', {});
+  }
+
   Future<void> disconnectFromLiveKitRoom({bool fullCleanup = false}) async {
     print('VoiceSessionCubit: disconnectFromLiveKitRoom called, fullCleanup=$fullCleanup');
     _disconnectWebSocket();
@@ -1486,6 +1544,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _visualFeedbackTimer?.cancel();
     _visualFeedbackTimer = null;
     _disconnectWebSocket();
+    // Guard against a double-dispose (a screen may already be tearing down and
+    // racing this close()); listeners on the other side guard removeListener.
+    try {
+      customVoiceLive.dispose();
+    } catch (_) {}
     await _disposeRoomResources();
     return super.close();
   }

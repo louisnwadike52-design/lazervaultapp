@@ -15,6 +15,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
     as settings_models;
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 
 /// Voice Settings Screen
 ///
@@ -40,13 +41,63 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   bool _togglingCustomVoice = false;
   Timer? _pendingStatusTimer;
 
+  /// Live clone progress (0-100) / score (0-1) from the active voice session's
+  /// `custom_voice_state` push. Shown on the custom-voice card in real time.
+  int? _liveProgress;
+  double? _liveScore;
+
+  /// The voice session cubit whose `customVoiceLive` notifier we watch (when
+  /// registered) so the custom-voice card re-renders the moment a clone state
+  /// changes — without waiting for the 10s poll. Null if no session is wired.
+  VoiceSessionCubit? _voiceSession;
+
   static const String _prefKeyLanguage = 'voice_selected_language';
   static const String _prefKeyVoice = 'voice_selected_voice_id';
 
   @override
   void initState() {
     super.initState();
+    // Watch the active voice session (if any) for live clone-state pushes so the
+    // custom-voice card reflects toggling / cloning / failure immediately.
+    try {
+      if (GetIt.I.isRegistered<VoiceSessionCubit>()) {
+        _voiceSession = GetIt.I<VoiceSessionCubit>();
+        _voiceSession!.customVoiceLive.addListener(_onLiveCustomVoiceState);
+      }
+    } catch (_) {}
     _loadPreferences();
+  }
+
+  /// A `custom_voice_state` event arrived over the active voice WS. Fold it into
+  /// the local status so the custom-voice card re-renders live (status/enabled/
+  /// progress/score) without a manual refresh or waiting on the poll.
+  void _onLiveCustomVoiceState() {
+    final live = _voiceSession?.customVoiceLive.value;
+    if (live == null || !mounted) return;
+    // Ignore live pushes while a toggle request is in flight: an older/concurrent
+    // push (e.g. enabled=false) could clobber the user's optimistic toggle and
+    // flip the card back momentarily. The post-toggle reload/poll reconciles the
+    // true state once the request completes.
+    if (_togglingCustomVoice) return;
+    final prev = _customVoiceStatus;
+    setState(() {
+      _liveProgress = live.progress ?? _liveProgress;
+      _liveScore = live.score ?? _liveScore;
+      _customVoiceStatus = settings_models.CustomVoiceStatus(
+        hasCustomVoice: live.status == 'ready' ||
+            live.status == 'disabled' ||
+            live.status == 'pending' ||
+            (prev?.hasCustomVoice ?? false),
+        customVoiceId: prev?.customVoiceId,
+        customVoiceProvider: prev?.customVoiceProvider,
+        customVoiceStatus: live.status,
+        customVoiceCreatedAt: prev?.customVoiceCreatedAt,
+        customVoiceError: live.error ?? prev?.customVoiceError,
+        enabled: live.enabled,
+      );
+    });
+    // Keep the poll in sync with the pushed status (start/stop as needed).
+    _managePendingPoll();
   }
 
   Future<void> _loadPreferences() async {
@@ -79,6 +130,11 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   @override
   void dispose() {
     _pendingStatusTimer?.cancel();
+    // removeListener can touch an already-disposed ValueNotifier if the cubit
+    // closed before this screen disposes — guard it (no-op if already disposed).
+    try {
+      _voiceSession?.customVoiceLive.removeListener(_onLiveCustomVoiceState);
+    } catch (_) {}
     super.dispose();
   }
 
@@ -650,7 +706,9 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         icon = Icons.hourglass_top_rounded;
         iconColor = const Color(0xFFFB923C);
         title = 'Cloning In Progress';
-        subtitle = 'Your voice is being cloned...';
+        subtitle = _liveProgress != null
+            ? 'Your voice is being cloned... $_liveProgress%'
+            : 'Your voice is being cloned...';
       case 'failed':
         icon = Icons.error_outline_rounded;
         iconColor = const Color(0xFFEF4444);
@@ -752,6 +810,29 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                       ),
             ],
           ),
+          // Live processing progress bar (driven by the WS push / poll).
+          if (statusText == 'pending') ...[
+            SizedBox(height: 12.h),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4.r),
+              child: LinearProgressIndicator(
+                value: _liveProgress != null
+                    ? (_liveProgress!.clamp(0, 100)) / 100
+                    : null,
+                minHeight: 5.h,
+                backgroundColor: const Color(0xFF2D2D2D),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFFFB923C),
+                ),
+              ),
+            ),
+          ],
+          // Readiness/quality chip from the score (0-1) once available.
+          if ((statusText == 'ready' || statusText == 'pending') &&
+              _liveScore != null) ...[
+            SizedBox(height: 12.h),
+            _buildCloneScoreChip(_liveScore!),
+          ],
           // Start cloning button for 'none' state
           if (statusText == 'none') ...[
             SizedBox(height: 12.h),
@@ -1115,6 +1196,50 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   String _capitalize(String s) {
     if (s.isEmpty) return s;
     return s[0].toUpperCase() + s.substring(1);
+  }
+
+  /// Compact clone readiness/quality chip from a 0-1 score (Good/Fair/Poor).
+  Widget _buildCloneScoreChip(double score) {
+    final pct = (score * 100).round();
+    Color color;
+    String label;
+    IconData icon;
+    if (score >= 0.8) {
+      color = const Color(0xFF10B981);
+      label = 'Good';
+      icon = Icons.check_circle_rounded;
+    } else if (score >= 0.6) {
+      color = const Color(0xFFFB923C);
+      label = 'Fair';
+      icon = Icons.info_rounded;
+    } else {
+      color = const Color(0xFFEF4444);
+      label = 'Poor';
+      icon = Icons.warning_rounded;
+    }
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14.sp),
+          SizedBox(width: 6.w),
+          Text(
+            'Voice quality: $label ($pct%)',
+            style: GoogleFonts.inter(
+              color: color,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Build color-coded quality score indicator with production-ready feedback

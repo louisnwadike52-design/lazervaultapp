@@ -155,3 +155,43 @@ class CustomVoiceStatus {
   bool get isNone => customVoiceStatus == 'none';
 }
 
+/// Live custom-voice clone state pushed by the voice agent over the active
+/// voice-session WebSocket (`custom_voice_state` event). Lets the voice
+/// settings screen re-render the custom-voice card in real time without
+/// waiting for the 10s status poll. Carries the same status/enabled fields as
+/// [CustomVoiceStatus] plus clone progress (0-100) and readiness score (0-1).
+class CustomVoiceLiveState {
+  /// none / pending / ready / failed / disabled
+  final String status;
+  final bool enabled;
+
+  /// Cloning progress 0-100 (only meaningful while [status] == 'pending').
+  final int? progress;
+
+  /// Voice readiness/quality score 0.0-1.0 (available once processed).
+  final double? score;
+
+  /// Optional provider error string (when [status] == 'failed').
+  final String? error;
+
+  const CustomVoiceLiveState({
+    required this.status,
+    required this.enabled,
+    this.progress,
+    this.score,
+    this.error,
+  });
+
+  factory CustomVoiceLiveState.fromJson(Map<String, dynamic> json) {
+    final rawScore = json['score'];
+    final rawProgress = json['progress'];
+    return CustomVoiceLiveState(
+      status: json['status'] as String? ?? 'none',
+      enabled: json['enabled'] as bool? ?? false,
+      progress: rawProgress is num ? rawProgress.toInt() : null,
+      score: rawScore is num ? rawScore.toDouble() : null,
+      error: json['error'] as String?,
+    );
+  }
+}
+

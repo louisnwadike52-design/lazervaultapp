@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../models/voice_settings_models.dart';
+import '../../voice_session/cubit/voice_session_cubit.dart';
 
 /// Voice Settings API Service
 /// Handles fetching languages, voices, and managing user voice preferences
@@ -141,7 +142,23 @@ class VoiceSettingsService {
           if (token != null) 'Authorization': 'Bearer $token',
         },
       ).timeout(const Duration(seconds: 8));
-      return response.statusCode == 200;
+      final ok = response.statusCode == 200;
+      if (ok) {
+        // The enabled flag is now persisted server-side. If a voice call is live,
+        // also signal the active session so it swaps its TTS mid-conversation
+        // (clone ON / default OFF). When no session is active the cubit's
+        // sendToVoiceAgent no-ops silently and the next session picks up the flag
+        // at start (Fix 1 background clone resolve). Never break the toggle on
+        // a signalling failure — the HTTP result is the source of truth.
+        try {
+          if (_getIt.isRegistered<VoiceSessionCubit>()) {
+            await _getIt<VoiceSessionCubit>().notifyCustomVoiceChanged(enabled);
+          }
+        } catch (e) {
+          AppLogger.error('Failed to signal active voice session of custom voice change', error: e);
+        }
+      }
+      return ok;
     } catch (e) {
       AppLogger.error('Error setting custom voice enabled', error: e);
       return false;

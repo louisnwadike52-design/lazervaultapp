@@ -30,6 +30,12 @@ class ChatMediaBubble extends StatelessWidget {
     } else if (mediaType == 'voice') {
       return _buildVoiceBubble();
     }
+    // Gracefully render nothing for an unknown media type, but surface a debug
+    // log when it's a non-null unexpected value so the drift is diagnosable
+    // (a null mediaType is a normal text bubble and stays silent).
+    if (mediaType != null) {
+      debugPrint('[ChatMediaBubble] unexpected mediaType: "$mediaType" — rendering nothing');
+    }
     return const SizedBox.shrink();
   }
 
@@ -198,7 +204,16 @@ class _VoiceNotePlayerState extends State<_VoiceNotePlayer> {
           _loadError = true;
         }
       } else if (widget.mediaUrl != null && widget.mediaUrl!.isNotEmpty) {
-        await _player.setUrl(widget.mediaUrl!);
+        // Guard the URL scheme the same way the image bubble does — an
+        // expired tunnel URL, a relative path, or a non-http reference can
+        // never be played, so treat it as a load error up front instead of
+        // letting setUrl throw an opaque failure.
+        final url = widget.mediaUrl!;
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          await _player.setUrl(url);
+        } else {
+          _loadError = true;
+        }
       }
 
       if (_disposed) return;
@@ -302,15 +317,41 @@ class _VoiceNotePlayerState extends State<_VoiceNotePlayer> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    _isPlaying
-                        ? _formatDuration(_position)
-                        : _formatDuration(_duration),
-                    style: TextStyle(
-                      color: widget.isUser ? Colors.white70 : const Color(0xFF9CA3AF),
-                      fontSize: 11,
+                  if (_loadError)
+                    // Tell the user WHY the (disabled) play control won't
+                    // respond — without this the duration still shows and the
+                    // greyed button reads as "not yet tapped" rather than failed.
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.cloud_off_outlined,
+                          color: Color(0xFFEF4444),
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Audio unavailable',
+                          style: TextStyle(
+                            color: widget.isUser
+                                ? Colors.white70
+                                : const Color(0xFFEF4444),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Text(
+                      _isPlaying
+                          ? _formatDuration(_position)
+                          : _formatDuration(_duration),
+                      style: TextStyle(
+                        color: widget.isUser ? Colors.white70 : const Color(0xFF9CA3AF),
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

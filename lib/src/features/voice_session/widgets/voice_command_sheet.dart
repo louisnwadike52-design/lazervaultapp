@@ -32,6 +32,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
   final String? serviceName;
@@ -346,17 +347,86 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
+  /// Resolve whether to offer the "Your Voice" (cloned voice) row for the given
+  /// language, and the user's identity to render it. Eligible only when the
+  /// language supports cloning (English at minimum) AND the user has a
+  /// ready+enabled custom voice. Returns null when not eligible (the row is
+  /// hidden). Network/registration failures fail closed (no row) — never throws.
+  Future<_YourVoiceInfo?> _resolveYourVoice(VoiceLanguage language) async {
+    if (!language.supportsVoiceCloning) return null;
+
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return null;
+    final user = authState.profile.user;
+
+    try {
+      if (!serviceLocator.isRegistered<VoiceSettingsService>()) return null;
+      final status = await serviceLocator<VoiceSettingsService>()
+          .getCustomVoiceStatus(user.id);
+      // Usable only when ready AND enabled.
+      if (status == null || !status.isReady || !status.enabled) return null;
+    } catch (_) {
+      return null;
+    }
+
+    final name = '${user.firstName} ${user.lastName}'.trim();
+    return _YourVoiceInfo(
+      name: name,
+      username: user.username,
+      avatarUrl: user.profilePicture,
+    );
+  }
+
+  /// If the saved voice selection is the "Your Voice" sentinel but it is no
+  /// longer offered (clone gone / language doesn't support cloning), fall back
+  /// to the language's default voice so we never send a stale `my_voice`.
+  Future<void> _reconcileYourVoiceSelection(
+    VoiceSessionCubit cubit,
+    VoiceLanguage language,
+    bool yourVoiceAvailable,
+  ) async {
+    if (cubit.selectedVoiceId == kMyVoiceSentinelId && !yourVoiceAvailable) {
+      final fallback = language.defaultVoiceOption?.id ??
+          (language.availableVoices.isNotEmpty
+              ? language.availableVoices.first.id
+              : null);
+      if (fallback != null) {
+        await cubit.setVoice(fallback);
+      } else {
+        // No fallback voice for this language (no presets AND no clone support):
+        // clear the stale `my_voice` selection so it's never sent to the backend
+        // for a non-cloning language (which would resolve to a wrong/fallback
+        // voice). An empty selection lets the backend pick its own default.
+        debugPrint(
+          'VoiceCommandSheet: clearing stale my_voice selection for '
+          'language ${language.code} (no fallback voice available)',
+        );
+        await cubit.setVoice('');
+      }
+    }
+  }
+
   void _onLanguageSelected(VoiceLanguage language) async {
     final cubit = context.read<VoiceSessionCubit>();
     await cubit.setLanguage(language.code);
 
-    // Show voice picker if language has voices to choose from
-    if (language.availableVoices.isNotEmpty && mounted) {
+    final yourVoice = await _resolveYourVoice(language);
+    if (!mounted) return;
+    await _reconcileYourVoiceSelection(cubit, language, yourVoice != null);
+    if (!mounted) return;
+
+    // Show voice picker if language has voices to choose from OR the user can
+    // pick their own cloned voice.
+    if ((language.availableVoices.isNotEmpty || yourVoice != null) && mounted) {
       final selected = await VoiceCustomizationSheet.show(
         context,
         voices: language.availableVoices,
         selectedVoiceId: cubit.selectedVoiceId,
         provider: language.provider,
+        showYourVoice: yourVoice != null,
+        yourVoiceName: yourVoice?.name,
+        yourVoiceUsername: yourVoice?.username,
+        yourVoiceAvatarUrl: yourVoice?.avatarUrl,
       );
       if (selected != null && mounted) {
         await cubit.setVoice(selected.id);
@@ -386,14 +456,31 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final lang = cubit.selectedLanguage;
     if (lang == null || !lang.supportsVoiceCustomization) return;
 
+    final yourVoice = await _resolveYourVoice(lang);
+    if (!mounted) return;
+    await _reconcileYourVoiceSelection(cubit, lang, yourVoice != null);
+    if (!mounted) return;
+
     final selected = await VoiceCustomizationSheet.show(
       context,
       voices: lang.availableVoices,
       selectedVoiceId: cubit.selectedVoiceId,
       provider: lang.provider,
+      showYourVoice: yourVoice != null,
+      yourVoiceName: yourVoice?.name,
+      yourVoiceUsername: yourVoice?.username,
+      yourVoiceAvatarUrl: yourVoice?.avatarUrl,
     );
     if (selected != null && mounted) {
       await cubit.setVoice(selected.id);
+      // If a call is live, swap the agent to the cloned voice immediately when
+      // "Your Voice" was picked (reuses the existing custom_voice_changed path).
+      // Preset selections during a live call keep their existing behaviour (the
+      // new STT/TTS choice is applied on the deterministic session restart).
+      if (selected.id == kMyVoiceSentinelId &&
+          cubit.hasActiveVoiceSession) {
+        await cubit.notifyCustomVoiceChanged(true);
+      }
     }
   }
 
@@ -3185,4 +3272,17 @@ class _TypingDotsState extends State<_TypingDots>
       },
     );
   }
+}
+
+/// Identity for the "Your Voice" (cloned voice) row in the voice picker.
+class _YourVoiceInfo {
+  final String name;
+  final String? username;
+  final String? avatarUrl;
+
+  const _YourVoiceInfo({
+    required this.name,
+    this.username,
+    this.avatarUrl,
+  });
 }

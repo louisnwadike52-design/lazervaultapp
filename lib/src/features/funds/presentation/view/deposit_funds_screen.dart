@@ -215,28 +215,34 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
     _isResuming = true;
 
-    // Restore the form context the user had before the KYC gate.
-    if (pending.amount > 0) {
+    // ATOMIC CONSUME: snapshot EVERY field we need into locals, then clear the
+    // PendingDeposit IMMEDIATELY — before any restore / snackbar / sheet work.
+    // The pending context must be consumed exactly once: if the user backs out
+    // during the resume, a later screen re-creation must never re-resume a
+    // stale deposit (wrong amount/account from hours ago). All restore below
+    // reads from these locals, never from `pending`.
+    final amount = pending.amount;
+    final useRecurringAccess = pending.useRecurringAccess;
+    final linkedBankName = pending.linkedBankName ?? '';
+    final linkedAccountId = pending.linkedAccountId ?? '';
+    final hadLinkedAccount = linkedAccountId.isNotEmpty;
+    pending.clear();
+
+    // Restore the form context the user had before the KYC gate (from locals).
+    if (amount > 0) {
       // Trim a trailing ".0" so the field reads as the user typed it.
-      final a = pending.amount;
-      _amountController.text =
-          a == a.roundToDouble() ? a.toStringAsFixed(0) : a.toString();
+      _amountController.text = amount == amount.roundToDouble()
+          ? amount.toStringAsFixed(0)
+          : amount.toString();
     }
-    _useRecurringAccess = pending.useRecurringAccess;
-    if ((pending.linkedBankName ?? '').isNotEmpty) {
-      _selectedBank = pending.linkedBankName!;
+    _useRecurringAccess = useRecurringAccess;
+    if (linkedBankName.isNotEmpty) {
+      _selectedBank = linkedBankName;
     }
-    if ((pending.linkedAccountId ?? '').isNotEmpty) {
-      _linkedAccountId = pending.linkedAccountId;
+    if (linkedAccountId.isNotEmpty) {
+      _linkedAccountId = linkedAccountId;
     }
     if (mounted) setState(() {});
-
-    final amount = pending.amount;
-    final hadLinkedAccount = (pending.linkedAccountId ?? '').isNotEmpty;
-
-    // Consume the pending context now that we've restored it — a second
-    // entry must not resume again.
-    pending.clear();
 
     Get.snackbar(
       'Identity verified',
