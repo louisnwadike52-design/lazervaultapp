@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// Flutterwave Configuration
 ///
@@ -36,7 +37,7 @@ class FlutterwaveConfig {
   static String get bankingApiUrl =>
       dotenv.env['BANKING_API_URL'] ??
       dotenv.env['CHAT_GATEWAY_URL'] ??
-      'https://api.lazervault.com/v1';
+      endpointRegistry.httpBanking;
 
   /// Current environment
   static String get environment =>

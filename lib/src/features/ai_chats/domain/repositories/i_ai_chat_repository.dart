@@ -15,6 +15,7 @@ abstract class IAiChatRepository {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    int? mediaDurationMs,
     Map<String, dynamic>? extraMetadata,
   });
 

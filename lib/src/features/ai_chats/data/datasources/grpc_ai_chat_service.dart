@@ -12,6 +12,7 @@ abstract class IAiChatDataSource {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    int? mediaDurationMs,
     Map<String, dynamic>? extraMetadata,
   });
   Future<dynamic> getChatHistory({String? sessionId, String? sourceContext});
@@ -36,6 +37,7 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    int? mediaDurationMs, // unused on the gRPC path (HTTP carries media duration)
     Map<String, dynamic>? extraMetadata, // unused on the gRPC path (HTTP carries PIN-callback metadata)
   }) async {
     final request = ProcessChatRequest()..query = query;

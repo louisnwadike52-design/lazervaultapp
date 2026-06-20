@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 
 // Define models
@@ -140,8 +141,8 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
   HttpMicroserviceChatDataSource({
     required this.dio,
     required this.callOptionsHelper,
-    this.baseUrl = 'https://api.lazervault.app/chat', // Chat Agent Gateway (10.0.2.2 for Android emulator)
-  });
+    String? baseUrl,
+  }) : baseUrl = baseUrl ?? endpointRegistry.httpChatAgent;
 
   @override
   Future<ChatResponse> processChat(ChatRequest request) async {

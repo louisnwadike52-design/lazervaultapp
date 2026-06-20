@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// Wire shape from `services/commerce-gateway/websocket/id_pay_websocket.go`.
 /// Keep keys in sync with the Go `IDPayUpdateEvent`.
@@ -94,7 +95,7 @@ class IDPayWebSocketService {
     // the scheme automatically.
     final wsHost = dotenv.env['ID_PAY_WS_HOST'] ??
         dotenv.env['COMMERCE_WS_HOST'] ??
-        '10.0.2.2';
+        endpointRegistry.grpcHost;
     final portStr = dotenv.env['ID_PAY_WS_PORT'] ??
         dotenv.env['COMMERCE_WS_PORT'] ??
         '8080';

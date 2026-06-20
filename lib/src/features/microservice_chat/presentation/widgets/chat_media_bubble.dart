@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 
 /// Renders media content (image or voice note) inside a chat bubble.
 class ChatMediaBubble extends StatelessWidget {
@@ -25,23 +26,42 @@ class ChatMediaBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (mediaType == 'image') {
-      return _buildImageBubble();
+      return _buildImageBubble(context);
     } else if (mediaType == 'voice') {
       return _buildVoiceBubble();
     }
     return const SizedBox.shrink();
   }
 
-  Widget _buildImageBubble() {
+  /// Stable Hero tag so the bubble image and the full-screen viewer animate
+  /// as one element. Prefers the canonical remote URL; falls back to the
+  /// local path.
+  Object get _heroTag {
+    final remote = mediaUrl;
+    if (remote != null && remote.isNotEmpty) return 'chat-image-$remote';
+    final local = localMediaPath;
+    if (local != null && local.isNotEmpty) return 'chat-image-$local';
+    return 'chat-image-${identityHashCode(this)}';
+  }
+
+  Widget _buildImageBubble(BuildContext context) {
     // RepaintBoundary isolates this bubble's painting so unrelated chat
     // state emits (e.g. the next typed message) don't repaint the image
     // — a major source of the previously-visible flicker.
-    return RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 220, maxHeight: 220),
-          child: _buildImage(),
+    return GestureDetector(
+      onTap: () => FullScreenImageViewer.open(
+        context,
+        mediaUrl: mediaUrl,
+        localPath: localMediaPath,
+        heroTag: _heroTag,
+      ),
+      child: RepaintBoundary(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220, maxHeight: 220),
+            child: Hero(tag: _heroTag, child: _buildImage()),
+          ),
         ),
       ),
     );

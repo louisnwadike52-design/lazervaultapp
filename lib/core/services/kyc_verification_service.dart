@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../config/country_config.dart'
     show
         CountryConfigs,
@@ -105,7 +106,7 @@ class KycVerificationService {
   static String get _defaultApiUrl =>
       dotenv.env['KYC_API_URL'] ??
       dotenv.env['CHAT_GATEWAY_URL'] ??
-      'https://api.lazervault.com/v1';
+      endpointRegistry.httpCore;
 
   static String get _defaultApiKey =>
       dotenv.env['KYC_API_KEY'] ??

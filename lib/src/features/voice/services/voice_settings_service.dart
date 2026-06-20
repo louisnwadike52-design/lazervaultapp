@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/services/injection_container.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../core/utils/logger.dart';
 import '../models/voice_settings_models.dart';
@@ -20,8 +21,8 @@ class VoiceSettingsService {
     GetIt? getIt,
   ])  : _client = client ?? http.Client(),
         _getIt = getIt ?? serviceLocator,
-        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? 'https://api.lazervault.app/voice/languages',
-        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'https://api.lazervault.app/voice';
+        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? endpointRegistry.httpVoiceLang,
+        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent;
 
   Future<List<VoiceLanguage>> getSupportedLanguages({String country = 'NG'}) async {
     try {

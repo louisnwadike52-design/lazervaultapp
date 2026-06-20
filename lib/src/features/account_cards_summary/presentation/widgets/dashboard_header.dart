@@ -31,41 +31,26 @@ class DashboardHeader extends StatefulWidget {
 
 class _DashboardHeaderState extends State<DashboardHeader>
     with SingleTickerProviderStateMixin {
-  /// One-time, once-per-app-launch guard so the voice-mic "bling" only
-  /// fires the first time the dashboard appears after login — NOT on
-  /// every dashboard rebuild (BlocBuilder rebuilds, tab switches, etc.).
-  /// In-memory static is acceptable here: a fresh app launch (cold start
-  /// → login) resets it, which is exactly the "notice voice on login"
-  /// moment we want.
-  static bool _voiceGlowShownThisSession = false;
-
-  /// Drives the ~5s attention glow/halo around the voice mic icon.
+  /// Drives the continuous "breathing" glow/halo around the voice mic icon, so
+  /// users always notice there's an AI assistant they can talk to.
   AnimationController? _voiceGlowController;
 
   @override
   void initState() {
     super.initState();
-    if (!_voiceGlowShownThisSession) {
-      _voiceGlowShownThisSession = true;
-      // Gentle ~1.25s pulse repeated (reverse) for ~5s total, then stop
-      // and settle back to the normal (no-glow) state.
-      _voiceGlowController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1250),
-      );
-      // Kick it off after first frame so the dashboard is visible.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _voiceGlowController?.repeat(reverse: true);
-        // Auto-stop after ~5 seconds and settle to normal.
-        Future.delayed(const Duration(seconds: 5), () {
-          if (!mounted) return;
-          _voiceGlowController?.stop();
-          _voiceGlowController?.animateTo(0.0,
-              duration: const Duration(milliseconds: 350));
-        });
-      });
-    }
+    // Continuous, gentle pulsing glow around the voice mic — NOT a one-time
+    // bling. A soft ~1.6s "breathe" repeated forever signals "there's a live AI
+    // here" without being distracting (the halo never fully disappears, so the
+    // icon always looks alive). Driven by a single lightweight AnimatedBuilder.
+    _voiceGlowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    );
+    // Kick it off after first frame so the dashboard is visible, then loop.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _voiceGlowController?.repeat(reverse: true);
+    });
   }
 
   @override
@@ -288,40 +273,41 @@ class _DashboardHeaderState extends State<DashboardHeader>
       ),
     );
 
-    // Only the voice mic icon gets the one-time "bling" attention glow on
-    // first login. The icon stays fully functional (the IconButton above
-    // is untouched) — we just wrap it in a pulsing halo.
+    // The voice mic icon gets a continuous, gentle glowing "breathe" so users
+    // always know there's an AI assistant available. The icon stays fully
+    // functional (the IconButton above is untouched) — we just wrap it in a
+    // softly pulsing halo.
     if (icon == Icons.mic_rounded && _voiceGlowController != null) {
       return _buildVoiceGlow(button);
     }
     return button;
   }
 
-  /// Wraps the voice mic button in a soft, pulsing brand-purple halo for
-  /// ~5s after login (see initState). After the controller settles to 0
-  /// the glow fades to nothing and the icon looks normal again.
+  /// Wraps the voice mic button in a soft, continuously pulsing brand-purple
+  /// halo (see initState). The glow "breathes" between a faint base and a
+  /// brighter peak and never fully disappears, so the AI indicator always looks
+  /// alive.
   Widget _buildVoiceGlow(Widget child) {
-    const glowColor = Color(0xFF5B45C9); // voice accent purple
+    const glowColor = Color(0xFF7C5CFF); // bright voice accent purple
     final controller = _voiceGlowController!;
     return AnimatedBuilder(
       animation: controller,
       builder: (context, inner) {
-        // CurvedAnimation-free gentle ease: value 0..1..0 from repeat(reverse).
+        // Gentle ease, value 0..1..0 from repeat(reverse).
         final t = Curves.easeInOut.transform(controller.value);
-        final spread = 1.0 + (3.0 * t); // 1 → 4
-        final blur = 4.0 + (12.0 * t); // 4 → 16
+        // Base + pulse so the halo is always visible (never 0) and breathes.
+        final spread = 1.5 + (3.5 * t); // 1.5 → 5
+        final blur = 6.0 + (12.0 * t); // 6 → 18
         return Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            boxShadow: t <= 0.001
-                ? const []
-                : [
-                    BoxShadow(
-                      color: glowColor.withValues(alpha: 0.55 * t),
-                      blurRadius: blur,
-                      spreadRadius: spread,
-                    ),
-                  ],
+            boxShadow: [
+              BoxShadow(
+                color: glowColor.withValues(alpha: 0.35 + (0.40 * t)), // 0.35 → 0.75
+                blurRadius: blur,
+                spreadRadius: spread,
+              ),
+            ],
           ),
           child: inner,
         );

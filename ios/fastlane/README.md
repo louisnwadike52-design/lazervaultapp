@@ -61,7 +61,7 @@ Open Firebase Console pages for the APNs .p8 + VAPID upload (one-time setup)
 [bundle exec] fastlane ios dev
 ```
 
-Dev → Firebase App Distribution (internal testers)
+Dev → TestFlight (internal group) — dev flavor, cloudflared tunnel backend
 
 ### ios staging
 

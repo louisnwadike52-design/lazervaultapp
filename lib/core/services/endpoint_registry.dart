@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/src/core/config/app_environment.dart'
     show currentAppEnvironment;
@@ -57,6 +58,12 @@ class EndpointRegistry {
     'session_inactivity_logout_seconds',
     'splitbill_external_receiver_enabled',
   };
+
+  /// SharedPreferences key (under [_prefix]) holding the `version+build` of the
+  /// last launch. A change means a fresh install or an app update — both must
+  /// drop the endpoint cache so a prior build's (possibly cross-env) URLs never
+  /// stick. Excluded from the cache wipe so the comparison survives the reset.
+  static const String _appBuildKey = 'app_build';
 
   /// Single source of truth for the admin endpoint Flutter polls. The
   /// tier is selected by sub-hostname:
@@ -117,9 +124,72 @@ class EndpointRegistry {
       }
     }
 
-    // 2. Cold path — if cache was empty, seed from `dotenv` so the
-    //    first frame still has something to dial. Every key the
-    //    runtime cares about lives in `.env`/`.env.prod` already.
+    // 1b. INSTALL / UPDATE / FLAVOR GUARD — the cache must never be inherited
+    //     across a fresh install, an app update (build-number change), or a
+    //     flavor switch. Two independent staleness signals force a reset:
+    //
+    //       * Install/update — a new `version+build` vs the recorded one means
+    //         the binary changed; a prior version's URLs (or a different env's
+    //         URLs left in SharedPreferences after a same-package-id reinstall)
+    //         must not stick. This is the "refresh cache on every install" rule.
+    //       * Flavor mismatch — cached URLs point at a DIFFERENT tier than this
+    //         build's flavor (e.g. a dev build reusing a prod app's prefs). That
+    //         sends HTTP to the wrong backend (prod 404s) while gRPC correctly
+    //         uses the dev host — exactly the "scan 404 on dev" bug.
+    //
+    //     Either condition wipes the endpoint cache and falls through to re-seed
+    //     from THIS flavor's `.env`, after which the background refresh pulls the
+    //     env-scoped `url_*` keys from the admin dashboard (the source of truth).
+    var resetReason = '';
+    String? currentBuild;
+    try {
+      final info = await PackageInfo.fromPlatform();
+      currentBuild = '${info.version}+${info.buildNumber}';
+    } catch (e) {
+      // PackageInfo can fail under unit tests / unusual platforms — never block
+      // startup on it; we simply skip the install-detection signal this launch.
+      debugPrint('[EndpointRegistry] build-number check skipped: $e');
+    }
+    if (loadedFromCache > 0) {
+      final storedBuild = prefs.getString(_prefix + _appBuildKey) ?? '';
+      if (currentBuild != null &&
+          storedBuild.isNotEmpty &&
+          storedBuild != currentBuild) {
+        resetReason = 'install/update ($storedBuild → $currentBuild)';
+      }
+      if (resetReason.isEmpty) {
+        final expectedHost = Uri.tryParse(_tierBase('https'))?.host ?? '';
+        final cachedCore = _cache['url_core_gateway'] ?? '';
+        final cachedHost =
+            cachedCore.isNotEmpty ? (Uri.tryParse(cachedCore)?.host ?? '') : '';
+        if (expectedHost.isNotEmpty &&
+            cachedHost.isNotEmpty &&
+            cachedHost != expectedHost) {
+          resetReason =
+              'flavor mismatch (cached=$cachedHost, expected=$expectedHost)';
+        }
+      }
+      if (resetReason.isNotEmpty) {
+        debugPrint('[EndpointRegistry] $resetReason — resetting endpoint cache');
+        _cache.clear();
+        final stale = prefs
+            .getKeys()
+            .where((k) => k.startsWith(_prefix) && k != _prefix + _appBuildKey)
+            .toList();
+        for (final k in stale) {
+          await prefs.remove(k);
+        }
+        loadedFromCache = 0; // fall through to re-seed from this flavor's .env
+      }
+    }
+    // Record the current build so the NEXT launch can detect install/update.
+    if (currentBuild != null) {
+      await prefs.setString(_prefix + _appBuildKey, currentBuild);
+    }
+
+    // 2. Cold path — if cache was empty (or just reset above), seed from `dotenv`
+    //    so the first frame still has something to dial. Every key the runtime
+    //    cares about lives in `.env`/`.env.prod` already.
     if (loadedFromCache == 0) {
       _seedFromDotenv(prefs);
     } else {
@@ -165,6 +235,11 @@ class EndpointRegistry {
       'url_business_gateway':     '$httpsBase/api/v1',
       'url_products_gateway':     '$httpsBase/api/v1',
       'url_statistics_gateway':   '$httpsBase/api/v1',
+      // Lifestyle + planning gateways share the same per-tier REST base (the
+      // env sub-hostname dispatches by path). Dedicated keys so an operator can
+      // repoint just these later without touching the others.
+      'url_lifestyle_gateway':    '$httpsBase/api/v1',
+      'url_planning_gateway':     '$httpsBase/api/v1',
       'url_admin_gateway':        '$httpsBase/api/v1/admin',
       // Chat + voice gateway BASE URLs — the host only. Every voice/chat
       // client appends the `/voice/...` or `/chat/...` prefix itself
@@ -208,8 +283,16 @@ class EndpointRegistry {
     if (_backgroundRefreshKicked) return;
     _backgroundRefreshKicked = true;
     try {
+      // Make env-scoping EXPLICIT. The admin-gateway resolves the settings tier
+      // by precedence ?env > X-Env-Hint header > its own ENVIRONMENT var > "prod"
+      // fallback. Relying on the deployment's ENVIRONMENT is fragile (an unset
+      // var silently serves PROD URLs to a dev app). Sending the hint guarantees
+      // the app always receives ITS OWN tier's `url_*` values regardless of which
+      // admin-gateway instance answers behind the sub-hostname.
+      final sub = currentAppEnvironment.envSubdomain;
+      final envHint = sub.isEmpty ? 'prod' : sub; // '' → prod, 'dev', 'staging'
       final resp = await http
-          .get(Uri.parse(_settingsRefreshUrl))
+          .get(Uri.parse(_settingsRefreshUrl), headers: {'X-Env-Hint': envHint})
           .timeout(_refreshTimeout);
       if (resp.statusCode != 200) {
         debugPrint('[EndpointRegistry] refresh HTTP ${resp.statusCode}; '
@@ -333,6 +416,8 @@ class EndpointRegistry {
   String get httpBusiness    => _get('url_business_gateway',    '${_tierBase('https')}/api/v1');
   String get httpProducts    => _get('url_products_gateway',    '${_tierBase('https')}/api/v1');
   String get httpStatistics  => _get('url_statistics_gateway',  '${_tierBase('https')}/api/v1');
+  String get httpLifestyle   => _get('url_lifestyle_gateway',   '${_tierBase('https')}/api/v1');
+  String get httpPlanning    => _get('url_planning_gateway',    '${_tierBase('https')}/api/v1');
   String get httpAdmin       => _get('url_admin_gateway',       '${_tierBase('https')}/api/v1/admin');
   String get httpChatAgent   => _get('url_chat_agent_gateway',  _tierBase('https'));
   String get httpVoiceAgent  => _get('url_voice_agent_gateway', _tierBase('https'));

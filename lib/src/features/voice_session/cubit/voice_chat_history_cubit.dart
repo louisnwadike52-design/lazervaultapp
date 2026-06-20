@@ -113,6 +113,41 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
     _schedulePersist();
   }
 
+  /// Replace the text of the most recent USER message in place. Used when a voice
+  /// turn is a continuation/merge of the previous one (e.g. "send 500 to Obinna" then
+  /// "actually make it 600"), so the conversation shows ONE coherent message instead
+  /// of two. Falls back to adding a fresh user message if there's none to replace.
+  void replaceLastUserMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
+    if (sessionId.isEmpty || text.trim().isEmpty) return;
+
+    final conversation = _conversations[sessionId];
+    if (conversation == null || conversation.messages.isEmpty) {
+      addUserMessage(sessionId, text, metadata: metadata);
+      return;
+    }
+
+    final messages = List<VoiceConversationMessage>.from(conversation.messages);
+    final idx = messages.lastIndexWhere(
+      (m) => m.sender == VoiceConversationSender.user,
+    );
+    if (idx < 0) {
+      addUserMessage(sessionId, text, metadata: metadata);
+      return;
+    }
+
+    messages[idx] = messages[idx].copyWith(
+      text: text,
+      metadata: metadata ?? messages[idx].metadata,
+    );
+    final updated = conversation.copyWith(messages: messages);
+    _conversations[sessionId] = updated;
+
+    if (state.conversation?.sessionId == sessionId) {
+      emit(VoiceChatHistoryState(conversation: updated));
+    }
+    _schedulePersist();
+  }
+
   /// Add an agent message to the conversation
   void addAgentMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
     if (sessionId.isEmpty || text.trim().isEmpty) return;

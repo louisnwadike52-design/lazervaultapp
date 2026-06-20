@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -655,10 +656,37 @@ class TagPayPdfService {
     }
   }
 
+  // ── iOS share-sheet anchor ────────────────────────────────────────────
+  //
+  // share_plus on iOS REQUIRES a non-zero `sharePositionOrigin` (the rect the
+  // share popover anchors to). An unset/zero rect throws
+  // PlatformException("sharePositionOrigin: argument must be set, {{0,0},{0,0}}
+  // must be non-zero …") — the "Failed to share invoice/receipt" the user hit.
+  // Callers pass the tapped widget's global rect via [shareOriginFromContext];
+  // when unavailable we fall back to a small valid rect so the sheet still opens.
+  static Rect _resolveShareOrigin(Rect? origin) {
+    if (origin != null && origin.width > 0 && origin.height > 0) {
+      return origin;
+    }
+    return const Rect.fromLTWH(0, 0, 1, 1);
+  }
+
+  /// Build a share-sheet anchor rect from a widget's [context] (its global
+  /// bounds). Returns null when the render box isn't ready; the share methods
+  /// then fall back to a safe default.
+  static Rect? shareOriginFromContext(BuildContext context) {
+    final obj = context.findRenderObject();
+    if (obj is RenderBox && obj.hasSize) {
+      return obj.localToGlobal(Offset.zero) & obj.size;
+    }
+    return null;
+  }
+
   /// Share the invoice via system share sheet
   static Future<void> shareInvoice({
     required UserTagEntity tag,
     required bool isOutgoing,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generateTagInvoice(tag: tag, isOutgoing: isOutgoing);
@@ -671,6 +699,7 @@ class TagPayPdfService {
         files: [XFile(file.path)],
         text: 'TagPay Invoice - $currencySymbol$amount ${isOutgoing ? "to" : "from"} ${recipientName.isNotEmpty ? recipientName : "@$recipientTag"}',
         subject: 'LazerVault TagPay Invoice',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share invoice: $e');
@@ -722,6 +751,7 @@ class TagPayPdfService {
     required TagPayTransactionEntity transaction,
     required UserTagEntity tag,
     String? senderAccountNumber,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generateTagPayReceipt(
@@ -738,6 +768,7 @@ class TagPayPdfService {
         text:
             'TagPay Transfer Receipt - $currencySymbol$amount to @${transaction.receiverTagPay}',
         subject: 'LazerVault TagPay Transfer Confirmation',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
@@ -893,6 +924,7 @@ class TagPayPdfService {
   static Future<void> sharePaidTagReceipt({
     required UserTagEntity tag,
     required bool isOutgoing,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
@@ -905,6 +937,7 @@ class TagPayPdfService {
         files: [XFile(file.path)],
         text: 'TagPay Receipt - $currencySymbol$amount ${isOutgoing ? "to" : "from"} @$recipientTag',
         subject: 'LazerVault TagPay Receipt',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
@@ -1126,6 +1159,7 @@ class TagPayPdfService {
   /// Share transfer receipt from map details
   static Future<void> shareTransferReceipt({
     required Map<String, dynamic> transferDetails,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file =
@@ -1142,6 +1176,7 @@ class TagPayPdfService {
         text:
             'LazerVault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
         subject: 'LazerVault Transfer Receipt',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share transfer receipt: $e');
@@ -1186,6 +1221,7 @@ class TagPayPdfService {
   /// Share transfer receipt from UnifiedTransaction (for transaction history)
   static Future<void> shareUnifiedTransferReceipt({
     required UnifiedTransaction transaction,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generateUnifiedTransferReceipt(transaction: transaction);
@@ -1199,6 +1235,7 @@ class TagPayPdfService {
         files: [XFile(file.path)],
         text: 'LazerVault Transfer Receipt - $currencySymbol$amount to $recipient',
         subject: 'LazerVault Transfer Receipt',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share transfer receipt: $e');

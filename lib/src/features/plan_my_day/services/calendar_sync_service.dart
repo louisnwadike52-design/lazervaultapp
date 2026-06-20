@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 
 /// Service for syncing with external calendars (Google, Outlook, etc.)
@@ -14,12 +15,22 @@ class CalendarSyncService {
 
   static const String _accessTokenKey = 'access_token';
 
+  /// The request paths below already carry the `/api/v1` prefix
+  /// (`/api/v1/planning/calendar/...`). Both `PLANNING_GATEWAY_URL` and
+  /// `endpointRegistry.httpPlanning` ALSO end in `/api/v1`, so without this the
+  /// URL doubled to `.../api/v1/api/v1/planning/...` and 404'd. Strip a trailing
+  /// `/api/v1` (and any trailing slash) so the final URL has exactly one.
+  static String _normalizeBase(String base) {
+    final trimmed = base.replaceAll(RegExp(r'/+$'), '');
+    return trimmed.replaceAll(RegExp(r'/api/v1$'), '');
+  }
+
   CalendarSyncService({
-    String baseUrl = 'http://127.0.0.1:8097',
+    String? baseUrl,
     required AccountManager accountManager,
     required GrpcCallOptionsHelper callOptionsHelper,
     FlutterSecureStorage? storage,
-  })  : _baseUrl = baseUrl,
+  })  : _baseUrl = _normalizeBase(baseUrl ?? endpointRegistry.httpPlanning),
         _accountManager = accountManager,
         _callOptionsHelper = callOptionsHelper,
         _storage = storage ?? const FlutterSecureStorage();

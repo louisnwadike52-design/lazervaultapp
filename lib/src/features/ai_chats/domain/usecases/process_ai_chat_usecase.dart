@@ -17,6 +17,7 @@ class ProcessChatUseCase {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    int? mediaDurationMs,
     Map<String, dynamic>? extraMetadata,
   }) async {
     return await _repository.processChat(
@@ -28,6 +29,7 @@ class ProcessChatUseCase {
       mediaBase64: mediaBase64,
       mediaType: mediaType,
       mediaMimeType: mediaMimeType,
+      mediaDurationMs: mediaDurationMs,
       extraMetadata: extraMetadata,
     );
   }

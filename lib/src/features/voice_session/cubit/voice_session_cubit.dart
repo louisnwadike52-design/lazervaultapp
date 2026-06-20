@@ -927,6 +927,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // same frame the interim bubble is dropped.
           if (_room != null) {
             final text = eventData['text'] as String?;
+            // `replace` = this turn continues/merges the previous one (an interrupted
+            // input), so it should REPLACE the last user bubble rather than add a new
+            // one — keeping "send 500 … actually 600" as a single message.
+            final replace = eventData['replace'] == true;
             if (text != null && text.isNotEmpty) {
               // Validate and sanitize
               final sanitized = _sanitizeCaptionText(text);
@@ -935,7 +939,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 // then drop the interim live bubble so the history bubble is
                 // already present when the live one disappears (no flicker).
                 if (_currentSessionId != null) {
-                  _chatHistoryCubit.addUserMessage(_currentSessionId!, sanitized);
+                  if (replace) {
+                    _chatHistoryCubit.replaceLastUserMessage(
+                        _currentSessionId!, sanitized);
+                  } else {
+                    _chatHistoryCubit.addUserMessage(_currentSessionId!, sanitized);
+                  }
                 }
                 _currentUserCaption = null;
                 _emitCaptionUpdate();
@@ -1009,6 +1018,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               emit(VoiceSessionLanguageChanged(_room!, newLang, newLocale ?? newLang));
             }
           }
+          break;
+        case 'voice_session_ended':
+          // The AGENT ended the call (user said goodbye, idle timeout, etc.) and asked
+          // the app to CLOSE the voice screen. Tear down + emit a close state the sheet
+          // listens for to pop itself.
+          final reason = eventData['reason'] as String? ?? 'ended';
+          print('VoiceSessionCubit: agent ended session (reason=$reason) — closing screen');
+          _setVisualFeedbackActive(false);
+          _clearCaptions();
+          // Backend already disconnected the LiveKit room; clean up locally (stop
+          // recording / WS) fire-and-forget, then emit the close state for the sheet.
+          unawaited(disconnectFromLiveKitRoom(fullCleanup: true));
+          if (!isClosed) emit(VoiceSessionClosedByAgent(reason));
           break;
         case 'error':
           _setVisualFeedbackActive(false);

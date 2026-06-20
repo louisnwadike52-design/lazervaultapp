@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/compliance/kyc_service.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'dart:io';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -438,7 +439,7 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
 
       // Submit verification
       final kycService = KYCService(
-        baseUrl: 'https://api.lazervault.com',
+        baseUrl: endpointRegistry.httpCore,
         apiKey: 'your-api-key',
       );
 

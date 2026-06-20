@@ -58,6 +58,7 @@ class ChatMessageEntity extends Equatable {
   final String? mediaUrl;
   final String? localMediaPath;
   final int? audioDurationMs;
+  final String? mime;
   final String? transcript;
   final Map<String, dynamic>? receiptData;
   // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
@@ -81,6 +82,7 @@ class ChatMessageEntity extends Equatable {
     this.mediaUrl,
     this.localMediaPath,
     this.audioDurationMs,
+    this.mime,
     this.transcript,
     this.receiptData,
     this.pinPrompt,
@@ -102,6 +104,7 @@ class ChatMessageEntity extends Equatable {
     String? mediaUrl,
     String? localMediaPath,
     int? audioDurationMs,
+    String? mime,
     String? transcript,
     Map<String, dynamic>? receiptData,
     Map<String, dynamic>? pinPrompt,
@@ -122,6 +125,7 @@ class ChatMessageEntity extends Equatable {
       mediaUrl: mediaUrl ?? this.mediaUrl,
       localMediaPath: localMediaPath ?? this.localMediaPath,
       audioDurationMs: audioDurationMs ?? this.audioDurationMs,
+      mime: mime ?? this.mime,
       transcript: transcript ?? this.transcript,
       receiptData: receiptData ?? this.receiptData,
       pinPrompt: pinPrompt ?? this.pinPrompt,

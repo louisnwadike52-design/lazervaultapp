@@ -373,6 +373,7 @@ class AIChatCubit extends Cubit<AIChatState> {
       mediaBase64: base64Data,
       mediaType: mediaType,
       mediaMimeType: mimeType,
+      mediaDurationMs: audioDurationMs,
     );
 
     if (isClosed) return;

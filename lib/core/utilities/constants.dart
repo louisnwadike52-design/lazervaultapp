@@ -1,11 +1,12 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// API base URL - configured via environment variable
 /// Uses HTTP_API_HOST, CHAT_GATEWAY_URL, or defaults to production API
 String get kBaseUrl =>
     dotenv.env['HTTP_API_HOST'] ??
     dotenv.env['CHAT_GATEWAY_URL'] ??
-    'api.lazervault.com';
+    Uri.parse(endpointRegistry.httpCore).host;
 
 /// Create user endpoint
 const kCreateUserEndpoint = '/api/v1/users';

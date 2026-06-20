@@ -22,6 +22,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    int? mediaDurationMs,
     Map<String, dynamic>? extraMetadata,
   }) async {
     try {
@@ -33,6 +34,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         mediaBase64: mediaBase64,
         mediaType: mediaType,
         mediaMimeType: mediaMimeType,
+        mediaDurationMs: mediaDurationMs,
         extraMetadata: extraMetadata,
       );
 
@@ -143,44 +145,86 @@ class AiChatRepositoryImpl implements IAiChatRepository {
 
             // Add user message if present
             if (entry['query'] != null || entry['content'] != null) {
-              final content = entry['content'] ?? entry['query'] ?? '';
+              final content = (entry['content'] ?? entry['query'] ?? '').toString();
               final role = entry['role'] ?? 'user';
 
-              // Extract receipt_data from metadata for assistant messages
-              Map<String, dynamic>? receiptData;
-              if (role == 'assistant') {
-                final metadata = entry['metadata'];
-
-                // Parse metadata if it's a JSON string (stored as string in DB)
-                Map<String, dynamic>? parsedMetadata;
-                if (metadata is Map) {
-                  parsedMetadata = Map<String, dynamic>.from(metadata);
-                } else if (metadata is String && metadata.isNotEmpty) {
-                  try {
-                    parsedMetadata = jsonDecode(metadata) as Map<String, dynamic>;
-                  } catch (_) {
-                    parsedMetadata = null;
-                  }
-                }
-
-                // Extract receipt_data from parsed metadata
-                if (parsedMetadata != null && parsedMetadata.containsKey('receipt_data')) {
-                  final rd = parsedMetadata['receipt_data'];
-                  if (rd is Map) {
-                    receiptData = Map<String, dynamic>.from(rd);
-                  } else if (rd is String) {
-                    try {
-                      receiptData = jsonDecode(rd) as Map<String, dynamic>;
-                    } catch (_) {}
-                  }
+              // Parse metadata once (stored as a Map or a JSON string in history).
+              final rawMetadata = entry['metadata'];
+              Map<String, dynamic>? parsedMetadata;
+              if (rawMetadata is Map) {
+                parsedMetadata = Map<String, dynamic>.from(rawMetadata);
+              } else if (rawMetadata is String && rawMetadata.isNotEmpty) {
+                try {
+                  parsedMetadata = jsonDecode(rawMetadata) as Map<String, dynamic>;
+                } catch (_) {
+                  parsedMetadata = null;
                 }
               }
 
+              // Receipt cards (assistant turns).
+              Map<String, dynamic>? receiptData;
+              if (role == 'assistant' &&
+                  parsedMetadata != null &&
+                  parsedMetadata.containsKey('receipt_data')) {
+                final rd = parsedMetadata['receipt_data'];
+                if (rd is Map) {
+                  receiptData = Map<String, dynamic>.from(rd);
+                } else if (rd is String) {
+                  try {
+                    receiptData = jsonDecode(rd) as Map<String, dynamic>;
+                  } catch (_) {}
+                }
+              }
+
+              // Media (image / voice) — re-render reloaded history as an image
+              // preview or a playable voice note instead of plain text. The
+              // gateway persists this under metadata.media {type,url,transcript}.
+              String? mediaType;
+              String? mediaUrl;
+              String? transcript;
+              int? mediaDurationMs;
+              String? mediaMime;
+              if (parsedMetadata != null && parsedMetadata['media'] is Map) {
+                final media =
+                    Map<String, dynamic>.from(parsedMetadata['media'] as Map);
+                mediaType = media['type'] as String?;
+                mediaUrl = media['url'] as String?;
+                transcript = media['transcript'] as String?;
+                mediaMime = media['mime'] as String?;
+                // duration_ms may arrive as int, double, or numeric string.
+                final rawDuration = media['duration_ms'];
+                if (rawDuration is int) {
+                  mediaDurationMs = rawDuration;
+                } else if (rawDuration is double) {
+                  mediaDurationMs = rawDuration.round();
+                } else if (rawDuration is String && rawDuration.isNotEmpty) {
+                  mediaDurationMs =
+                      int.tryParse(rawDuration) ?? double.tryParse(rawDuration)?.round();
+                }
+              }
+
+              // Match the live display (see AIChatCubit.sendMediaMessage): voice
+              // shows "Sent a voice note" with the transcript inside the player;
+              // image shows the caption or "Sent an image". The persisted voice
+              // `content` IS the transcript, so route it into [transcript].
+              String displayText = content;
+              if (mediaType == 'voice') {
+                transcript ??= content.isNotEmpty ? content : null;
+                displayText = 'Sent a voice note';
+              } else if (mediaType == 'image') {
+                displayText = content.isNotEmpty ? content : 'Sent an image';
+              }
+
               chatEntities.add(ChatMessageEntity(
-                text: content.toString(),
+                text: displayText,
                 isUser: role == 'user',
                 timestamp: timestamp,
                 receiptData: receiptData,
+                mediaType: mediaType,
+                mediaUrl: mediaUrl,
+                audioDurationMs: mediaDurationMs,
+                mime: mediaMime,
+                transcript: transcript,
               ));
             }
           }

@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane android dev
 ```
 
-Dev → Play Console internal track (release-signed AAB)
+Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)
 
 ### android staging
 
@@ -29,7 +29,7 @@ Dev → Play Console internal track (release-signed AAB)
 [bundle exec] fastlane android staging
 ```
 
-Staging → Play Console closed (alpha) track (release-signed AAB)
+Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)
 
 ### android production
 
@@ -37,7 +37,7 @@ Staging → Play Console closed (alpha) track (release-signed AAB)
 [bundle exec] fastlane android production
 ```
 
-Production → Play Console production track (release-signed AAB)
+Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)
 
 ### android promote_to_production
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:lazervault/core/error/error_handler.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// PaymentService demonstrates error recovery integration for Flutter app
 class PaymentService {
@@ -268,7 +269,7 @@ class PaymentInterceptor extends Interceptor {
 /// Setup Dio with error recovery
 Dio createDioWithRecovery() {
   final dio = Dio(BaseOptions(
-    baseUrl: 'https://api.lazervault.com',
+    baseUrl: endpointRegistry.httpCore,
     connectTimeout: Duration(seconds: 10),
     receiveTimeout: Duration(seconds: 30),
     sendTimeout: Duration(seconds: 10),

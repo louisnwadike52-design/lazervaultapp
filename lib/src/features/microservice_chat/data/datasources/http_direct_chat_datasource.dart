@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'http_microservice_chat_datasource.dart';
 
@@ -89,8 +90,8 @@ class HttpDirectChatDataSource implements MicroserviceChatDataSource {
   HttpDirectChatDataSource({
     required this.dio,
     required this.callOptionsHelper,
-    this.baseUrl = 'https://api.lazervault.app/chat', // Go Chat Proxy Gateway — overridden by dotenv CHAT_GATEWAY_URL in production
-  });
+    String? baseUrl,
+  }) : baseUrl = baseUrl ?? endpointRegistry.httpChatAgent;
 
   /// Send a direct chat message with entity round-tripping.
   Future<DirectChatResponse> processDirectChat(DirectChatRequest request) async {

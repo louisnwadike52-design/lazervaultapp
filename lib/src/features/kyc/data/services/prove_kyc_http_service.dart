@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Result of starting a Mono Prove session.
@@ -94,9 +95,20 @@ class ProveKycHttpService {
     if (host != null && host.isNotEmpty) {
       return '${host.replaceAll(RegExp(r'/+$'), '')}/api/v1/kyc/prove';
     }
-    // Local-dev fallback (Android emulator) when no runtime host is configured.
-    const h = String.fromEnvironment('TEST_BACKEND_HOST', defaultValue: '10.0.2.2');
-    return 'http://$h:8073/api/v1/kyc/prove';
+    // Test-only override (compile-time): a non-empty TEST_BACKEND_HOST pins the
+    // legacy host:port shape so harnesses can target a local gateway.
+    const testHost = String.fromEnvironment('TEST_BACKEND_HOST');
+    if (testHost.isNotEmpty) {
+      return 'http://$testHost:8073/api/v1/kyc/prove';
+    }
+    // Otherwise route through the central registry's BANKING gateway base
+    // (already ends in /api/v1) — no hardcoded host/port. /api/v1/kyc/prove/*
+    // is served by banking-service (see banking.pb.gw.go InitiateProveKYC /
+    // CompleteProveKYC / GetProveKYCStatus), NOT the core gateway, so use
+    // httpBanking so a local/dev build (distinct host:port) and any admin
+    // repoint of the banking URL resolve to the right backend.
+    final banking = endpointRegistry.httpBanking.replaceAll(RegExp(r'/+$'), '');
+    return '$banking/kyc/prove';
   }
 
   Future<Map<String, String>> _headers() async {

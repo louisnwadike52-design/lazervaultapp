@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -87,7 +88,7 @@ class SprayMeWebSocketService {
     _reconnectAttempts = 0;
     _currentAccessToken = accessToken;
 
-    final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
+    final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final port = int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088') ?? 8088;
     // Port 443 == public tunnel which terminates TLS → must speak wss.
     // Loopback dev (port 8088) keeps plain ws as before.

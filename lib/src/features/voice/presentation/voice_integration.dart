@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // ============================================================================
@@ -65,7 +66,9 @@ class VoiceResponse {
 // ============================================================================
 
 class UniversalVoiceMode {
-  static const String gatewayUrl = 'wss://api.lazervault.com/voice-gateway';
+  // Live voice-agent WebSocket gateway URL, sourced from the central
+  // EndpointRegistry (wss host + voice path) instead of a hardcoded literal.
+  static String get gatewayUrl => endpointRegistry.wsVoice;
   static const int gatewayPort = 3010;
 
   WebSocketChannel? _channel;
@@ -281,7 +284,14 @@ class ServiceSpecificVoiceMode {
     'financial_products': 3026,
   };
 
-  static const String baseUrl = 'wss://api.lazervault.com';
+  // Bare wss://host base (no path) derived from the central EndpointRegistry's
+  // voice WS URL. This mode interpolates `:$port` directly onto the base
+  // (`'$baseUrl:$port?...'`), so any path segment must be stripped — we keep
+  // only scheme + authority of the live voice-agent host.
+  static String get baseUrl {
+    final uri = Uri.parse(endpointRegistry.wsVoice);
+    return '${uri.scheme}://${uri.host}';
+  }
 
   WebSocketChannel? _channel;
   VoiceSession? _session;

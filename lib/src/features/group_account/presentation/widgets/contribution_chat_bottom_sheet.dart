@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -103,10 +104,10 @@ class _ContributionChatBottomSheetState
   // ./start_all_local_no_docker.sh workflow zero-config.
   late final String _financialBase = _resolveBase(
       keys: const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL'],
-      fallback: 'https://api.lazervault.app/api/v1');
+      fallback: endpointRegistry.httpFinancial);
   late final String _mediaBase = _resolveBase(
       keys: const ['GROUP_ACCOUNTS_HTTP', 'GROUP_ACCOUNTS_HTTP_URL'],
-      fallback: 'https://api.lazervault.app/api/v1');
+      fallback: endpointRegistry.httpFinancial);
 
   String _resolveBase({required List<String> keys, required String fallback}) {
     for (final k in keys) {

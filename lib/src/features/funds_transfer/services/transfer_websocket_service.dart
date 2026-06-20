@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Transfer status event received from WebSocket
@@ -115,7 +116,7 @@ class TransferWebSocketService {
   /// Connect using WebSocket protocol
   /// Uses transfer-gateway **HTTP** port (default 8084), not gRPC 50076 — see PORTS_CONFIG.json / service-discovery.sh.
   Future<void> _connectWebSocket(String userId, String accessToken) async {
-    final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
+    final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
     // Tunnel termination is TLS — when the env points at the public host
     // (port 443) we must speak wss, not plain ws. On the loopback dev
@@ -165,7 +166,7 @@ class TransferWebSocketService {
 
   /// Connect using Server-Sent Events (SSE) - fallback (same host/port as WebSocket: transfer-gateway HTTP).
   Future<void> _connectSSE(String userId, String accessToken) async {
-    final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
+    final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
     final tlsTunnel = wsPort == 443;
 

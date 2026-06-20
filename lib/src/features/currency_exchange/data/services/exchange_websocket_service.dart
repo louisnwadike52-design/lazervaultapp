@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
@@ -119,9 +120,10 @@ class ExchangeWebSocketService {
     }
     _userId = userId;
 
-    // Android emulator uses 10.0.2.2 to reach the host's
-    // financial-gateway :8016. Web/desktop override to 127.0.0.1.
-    final host = kIsWeb ? '127.0.0.1' : '10.0.2.2';
+    // Host resolved via the central EndpointRegistry (env-aware:
+    // dev.lazervault.app / api.lazervault.app; loopback in local dev).
+    // financial-gateway HTTP port 8016 stays local-dev infra.
+    final host = endpointRegistry.grpcHost;
     final uri = Uri.parse(
       'ws://$host:8016/ws/exchange'
       '?user_id=${Uri.encodeComponent(userId)}'

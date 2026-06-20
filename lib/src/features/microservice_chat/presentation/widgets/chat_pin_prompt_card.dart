@@ -27,6 +27,32 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 /// `onPinVerified` callback is wired by the parent (see
 /// general_chat_content.dart). Keeps the widget testable in isolation.
 class ChatPinPromptCard extends StatefulWidget {
+  /// Resolve (and lazily create) the stable [GlobalKey] used to drive a
+  /// rendered card's PIN modal from outside the widget tree — e.g. the
+  /// AI-chat listener that AUTO-opens the sheet the moment a `pin_prompt`
+  /// arrives. Keyed by the prompt's `transaction_id` so the same card
+  /// instance is targeted across rebuilds and there is exactly ONE code
+  /// path into the modal (the card's own [_openPinModal]).
+  static GlobalKey<ChatPinPromptCardState> keyFor(String transactionId) {
+    return _cardKeys.putIfAbsent(
+      transactionId,
+      () => GlobalKey<ChatPinPromptCardState>(
+        debugLabel: 'pin_prompt_$transactionId',
+      ),
+    );
+  }
+
+  static final Map<String, GlobalKey<ChatPinPromptCardState>> _cardKeys = {};
+
+  /// Auto-open the PIN modal for an already-rendered card identified by
+  /// [transactionId]. No-op if the card isn't mounted yet, is already open,
+  /// or has already completed. Reuses the card's own [_openPinModal] so the
+  /// auto-open and the manual "Enter PIN" tap share one implementation.
+  static void autoOpenFor(String transactionId) {
+    final state = _cardKeys[transactionId]?.currentState;
+    state?.openModal();
+  }
+
   final Map<String, dynamic> payload;
 
   /// Called with the single-use verification token once the user
@@ -49,13 +75,18 @@ class ChatPinPromptCard extends StatefulWidget {
   });
 
   @override
-  State<ChatPinPromptCard> createState() => _ChatPinPromptCardState();
+  State<ChatPinPromptCard> createState() => ChatPinPromptCardState();
 }
 
-class _ChatPinPromptCardState extends State<ChatPinPromptCard>
+class ChatPinPromptCardState extends State<ChatPinPromptCard>
     with TransactionPinMixin {
   bool _isOpen = false;
   bool _completed = false;
+
+  /// Public entry point used by both the in-card "Enter PIN" tap and the
+  /// AI-chat auto-open listener. Guards (`_isOpen` / `_completed` / mounted)
+  /// live inside [_openPinModal] so repeated calls are safe.
+  Future<void> openModal() => _openPinModal();
 
   @override
   ITransactionPinService get transactionPinService =>
@@ -124,7 +155,7 @@ class _ChatPinPromptCardState extends State<ChatPinPromptCard>
   }
 
   Future<void> _openPinModal() async {
-    if (_isOpen || _completed) return;
+    if (!mounted || _isOpen || _completed || _isExpired) return;
     final transactionId = _s('transaction_id');
     final amountRaw = double.tryParse(_s('amount')) ?? 0.0;
     final feeRaw = double.tryParse(_s('fee')) ?? 0.0;

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:http/http.dart' as http;
 
 /// Uploads crowdfund campaign images to the products-gateway.
@@ -46,7 +47,7 @@ class CrowdfundImageUploadService {
 
     final host = (dotenv.env['PRODUCTS_HTTP_HOST'] ??
             dotenv.env['PRODUCTS_GRPC_HOST'] ??
-            '10.0.2.2')
+            endpointRegistry.grpcHost)
         .trim();
     final port = (dotenv.env['PRODUCTS_HTTP_PORT'] ??
             dotenv.env['PRODUCTS_WS_PORT'] ??

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../config/country_config.dart';
 
 /// Result of document extraction
@@ -67,7 +68,7 @@ class DocumentExtractionService {
   static String get _defaultApiUrl =>
       dotenv.env['DOCUMENT_EXTRACTION_API_URL'] ??
       dotenv.env['CHAT_GATEWAY_URL'] ??
-      'https://api.lazervault.com/v1';
+      endpointRegistry.httpChatAgent;
 
   static String get _defaultApiKey =>
       dotenv.env['DOCUMENT_EXTRACTION_API_KEY'] ??

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Service for connecting SprayMe AI chat to the chat-agent-gateway
@@ -29,7 +30,7 @@ class SprayMeChatService {
       throw Exception('User ID not found');
     }
 
-    final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
+    final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final port = dotenv.env['CHAT_AGENT_PORT'] ?? '3011';
     // Port 443 == public tunnel; uses https. Loopback dev (port 3011) stays http.
     final scheme = port == '443' ? 'https' : 'http';
@@ -79,7 +80,7 @@ class SprayMeChatService {
       throw Exception('User ID not found');
     }
 
-    final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
+    final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final port = dotenv.env['CHAT_AGENT_PORT'] ?? '3011';
     final scheme = port == '443' ? 'https' : 'http';
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_conversation_model.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_message_model.dart';
 
@@ -17,7 +18,7 @@ class P2PChatRemoteDatasource {
   }
 
   String get _baseUrl {
-    final host = dotenv.env['P2P_CHAT_HOST'] ?? '10.0.2.2';
+    final host = dotenv.env['P2P_CHAT_HOST'] ?? endpointRegistry.grpcHost;
     final portStr = dotenv.env['P2P_CHAT_PORT'] ?? '8018';
     final port = int.tryParse(portStr) ?? 8018;
     // Cloudflare edge on 443 expects TLS — speak https. Loopback dev ports
@@ -28,7 +29,7 @@ class P2PChatRemoteDatasource {
   }
 
   String get _coreGatewayUrl {
-    final host = dotenv.env['CORE_GATEWAY_HOST'] ?? '10.0.2.2';
+    final host = dotenv.env['CORE_GATEWAY_HOST'] ?? endpointRegistry.grpcHost;
     final portStr = dotenv.env['CORE_GATEWAY_PORT'] ?? '7878';
     final port = int.tryParse(portStr) ?? 7878;
     final scheme = port == 443 ? 'https' : 'http';

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 import '../../domain/entities/group_entities.dart';
 
@@ -88,7 +89,7 @@ class PastMembershipsRemoteDataSource {
         return v.trim().replaceAll(RegExp(r'/$'), '');
       }
     }
-    return 'https://api.lazervault.app/api/v1';
+    return endpointRegistry.httpFinancial;
   }
 
   Map<String, String> _headers(String token) => {

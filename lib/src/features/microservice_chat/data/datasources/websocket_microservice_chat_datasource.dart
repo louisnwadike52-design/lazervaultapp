@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'http_microservice_chat_datasource.dart';
 
@@ -21,8 +22,8 @@ class WebSocketMicroserviceChatDataSourceImpl implements WebSocketMicroserviceCh
 
   WebSocketMicroserviceChatDataSourceImpl({
     required this.callOptionsHelper,
-    this.baseUrl = 'https://api.lazervault.app/chat', // WebSocket URL for Chat Agent Gateway (10.0.2.2 for Android emulator)
-  });
+    String? baseUrl,
+  }) : baseUrl = baseUrl ?? endpointRegistry.httpChatAgent;
 
   @override
   bool get isConnected => _isConnected && _channel != null;

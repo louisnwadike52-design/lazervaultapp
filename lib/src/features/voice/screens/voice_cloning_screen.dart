@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -59,7 +60,7 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
   late AnimationController _pulseController;
 
   String get _voiceGatewayUrl =>
-      dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'https://api.lazervault.app/voice';
+      dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent;
 
   // Reading prompts to guide natural speech
   static const List<String> _readingPrompts = [

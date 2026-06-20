@@ -35,10 +35,18 @@ class P2PTransferBubble extends StatelessWidget {
       otherUserName.isNotEmpty ? otherUserName : 'Unknown User';
 
   /// Whether this transfer was sent by the current user.
-  /// For all transfer types (new "transfer" and legacy "transfer_sent"/"transfer_received"),
-  /// we derive from `isMe` (senderId == currentUserId) since senderId is always the money sender.
-  /// After legacy dedup, both users see the same message, so isMe correctly gives the perspective.
-  bool get _isSentByMe => isMe;
+  ///
+  /// LEGACY messages ("transfer_sent"/"transfer_received") encode the direction
+  /// in the type itself — trust that over senderId, because some legacy rows
+  /// were stored with an inconsistent senderId which made a user's OWN sent
+  /// transfer render on the receiver's (left) side. Canonical "transfer" rows
+  /// always carry the money sender as senderId, so fall back to `isMe`
+  /// (senderId == currentUserId) for those.
+  bool get _isSentByMe {
+    if (message.isTransferSent) return true;
+    if (message.isTransferReceived) return false;
+    return isMe;
+  }
 
   /// Clean transfer reference — strips legacy "-recv" suffix for display/receipt.
   String? get _cleanTransferRef {
@@ -49,7 +57,7 @@ class P2PTransferBubble extends StatelessWidget {
 
   /// Whether "Send Again" should be offered for this transfer.
   bool get _canSendAgain {
-    if (!isMe) return false;
+    if (!_isSentByMe) return false;
     if (message.isTransferRequest) return false;
     if (otherUserId == null || otherUserId!.isEmpty) return false;
     // Don't offer for failed or pending transfers
@@ -100,7 +108,10 @@ class P2PTransferBubble extends StatelessWidget {
         transferStatus != 'success';
 
     return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      // Align by the SAME derived direction the label uses, so a "Money Sent"
+      // bubble always sits on the right and "Money Received" on the left even
+      // for legacy rows whose senderId disagreed with their type.
+      alignment: isSent ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
         onTap: isRequest ? null : () => _showTransferDetailsSheet(context),
         child: Container(

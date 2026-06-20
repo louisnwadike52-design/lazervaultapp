@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// PIN entry dialog for voice sessions.
@@ -40,7 +41,13 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
   static const int _maxNetworkRetries = 3;
 
   String get _transferGatewayUrl {
-    return dotenv.env['TRANSFER_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1';
+    // Both TRANSFER_GATEWAY_URL and endpointRegistry.httpTransfer already end
+    // in `/api/v1`. The endpoints below are bare routes (`/transfers/...`), so
+    // strip any trailing slash and DON'T let the route re-prefix `/api/v1` —
+    // that doubled to `/api/v1/api/v1/transfers/...` and 404'd every voice
+    // transfer.
+    final base = dotenv.env['TRANSFER_GATEWAY_URL'] ?? endpointRegistry.httpTransfer;
+    return base.replaceAll(RegExp(r'/+$'), '');
   }
 
   @override
@@ -105,7 +112,7 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
       Map<String, dynamic> body;
 
       if (transferType == 'domestic') {
-        endpoint = '/api/v1/transfers/domestic';
+        endpoint = '/transfers/domestic';
         body = {
           'transaction_pin': pin,
           'from_account_id': payload['account_id'] ?? '',
@@ -117,7 +124,7 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
         };
       } else {
         // Internal (C2C) — verify-and-transfer
-        endpoint = '/api/v1/transfers/verify-and-transfer';
+        endpoint = '/transfers/verify-and-transfer';
         body = {
           'transaction_pin': pin,
           'from_account_id': payload['account_id'] ?? '',

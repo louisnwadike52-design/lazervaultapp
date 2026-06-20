@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// AI-generated coverage summary returned by chat-agent-gateway.
 ///
@@ -55,7 +56,7 @@ class CoverageSummaryService {
   static String _defaultBaseUrl() {
     const fromEnv = String.fromEnvironment('CHAT_GATEWAY_URL', defaultValue: '');
     if (fromEnv.isNotEmpty) return fromEnv;
-    return 'https://api.lazervault.app/chat';
+    return endpointRegistry.httpChatAgent;
   }
 
   Future<CoverageSummary> summarize({

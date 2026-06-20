@@ -9,6 +9,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
 import '../screens/voice_registration_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -500,7 +501,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
 
     try {
       // Get base URL for voice agent gateway
-      final baseUrl = widget.baseUrl ?? 'https://api.lazervault.app/api/v1';
+      final baseUrl = widget.baseUrl ?? endpointRegistry.httpVoiceAgent;
       final uri = Uri.parse('$baseUrl/voice/process');
 
       // Prepare request with audio

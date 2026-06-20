@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:http/http.dart' as http;
 
 /// Uploads SprayMe session cover images to the lifestyle-gateway.
@@ -24,7 +25,7 @@ class SpraymeImageUploadService {
     // Android emulator: 10.0.2.2, iOS simulator: localhost, real device: actual IP
     final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??
         dotenv.env['PAYMENT_GRPC_HOST'] ??
-        (Platform.isAndroid ? '10.0.2.2' : 'localhost');
+        endpointRegistry.grpcHost;
     final port = dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088';
     return 'http://$host:$port';
   }

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:lazervault/core/services/endpoint_registry.dart';
+
 /// Resolves the Terms of Service / Privacy Policy URLs shown across the app
 /// (e.g. the BVN verification screen). The URLs are admin-configurable: the
 /// backend stores them in system_settings (banking config) and exposes them at
@@ -15,11 +17,23 @@ class LegalLinksService {
   static const String _defaultTerms = 'https://lazervault.app/legal/terms';
   static const String _defaultPrivacy = 'https://lazervault.app/legal/privacy';
 
-  // Host the app talks to (emulator maps the dev host to 10.0.2.2). The legal
-  // links endpoint lives on banking-service's public HTTP port.
-  static const String _host =
-      String.fromEnvironment('TEST_BACKEND_HOST', defaultValue: '10.0.2.2');
-  static const String _legalUrl = 'http://$_host:8073/api/v1/legal/links';
+  // Endpoint the app fetches the admin-configured legal links from. A non-empty
+  // TEST_BACKEND_HOST (compile-time) pins the legacy host:port shape (:8073 =
+  // banking-service HTTP) for test harnesses; otherwise route through the
+  // central registry's BANKING gateway base (already ends in /api/v1) so
+  // there's no hardcoded host literal. /api/v1/legal/links is served by
+  // banking-service's HTTP mux (see banking-service/cmd/main.go), NOT the core
+  // gateway — use httpBanking so a local/dev build (distinct host:port) and any
+  // admin repoint of the banking URL resolve to the right backend.
+  static const String _testHost =
+      String.fromEnvironment('TEST_BACKEND_HOST');
+  static String get _legalUrl {
+    if (_testHost.isNotEmpty) {
+      return 'http://$_testHost:8073/api/v1/legal/links';
+    }
+    final banking = endpointRegistry.httpBanking.replaceAll(RegExp(r'/+$'), '');
+    return '$banking/legal/links';
+  }
 
   String _terms = _defaultTerms;
   String _privacy = _defaultPrivacy;

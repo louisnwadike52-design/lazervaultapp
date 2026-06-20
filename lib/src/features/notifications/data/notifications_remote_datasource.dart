@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
@@ -88,7 +89,7 @@ class NotificationsRemoteDataSource {
     // the wrong host and never load.
     final raw = dotenv.env['CORE_GATEWAY_URL'] ??
         dotenv.env['HTTP_API_HOST'] ??
-        'https://api.lazervault.app/api/v1';
+        endpointRegistry.httpCore;
     var normalised = raw
         .replaceAll('localhost', '10.0.2.2')
         .replaceAll('127.0.0.1', '10.0.2.2');

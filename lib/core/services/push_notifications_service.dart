@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
@@ -226,7 +227,7 @@ class PushNotificationsService {
   }
 
   String get _coreGatewayBase {
-    final raw = dotenv.env['CORE_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1';
+    final raw = dotenv.env['CORE_GATEWAY_URL'] ?? endpointRegistry.httpCore;
     return raw
         .replaceAll('localhost', '10.0.2.2')
         .replaceAll('127.0.0.1', '10.0.2.2');

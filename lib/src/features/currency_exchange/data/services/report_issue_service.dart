@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 
 /// Result of submitting an issue report. Keep it a tiny sealed-ish pair
@@ -33,9 +34,10 @@ class ReportIssueService {
   ReportIssueService({
     required Dio dio,
     required GrpcCallOptionsHelper callOptionsHelper,
-    this.baseUrl = 'https://api.lazervault.app/api/v1',
+    String? baseUrl,
   })  : _dio = dio,
-        _callOptionsHelper = callOptionsHelper;
+        _callOptionsHelper = callOptionsHelper,
+        baseUrl = baseUrl ?? endpointRegistry.httpFinancial;
 
   Future<ReportIssueResult> submit({
     required String message,

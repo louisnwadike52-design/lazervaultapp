@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Products status event received from WebSocket
@@ -117,7 +118,7 @@ class ProductsWebSocketService {
 
   /// Connect using WebSocket protocol
   Future<void> _connectWebSocket(String userId, String accessToken) async {
-    final wsHost = dotenv.env['PRODUCTS_WS_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
+    final wsHost = dotenv.env['PRODUCTS_WS_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final wsPort = int.tryParse(dotenv.env['PRODUCTS_WS_PORT'] ?? '8083') ?? 8083;
     // Port 443 == tunnel termination expects TLS (wss). Other ports = loopback dev.
     final tlsTunnel = wsPort == 443;
@@ -165,7 +166,7 @@ class ProductsWebSocketService {
 
   /// Connect using Server-Sent Events (SSE) - fallback
   Future<void> _connectSSE(String userId, String accessToken) async {
-    final wsHost = dotenv.env['PRODUCTS_WS_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
+    final wsHost = dotenv.env['PRODUCTS_WS_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final wsPort = int.tryParse(dotenv.env['PRODUCTS_WS_PORT'] ?? '8083') ?? 8083;
     final tlsTunnel = wsPort == 443;
 

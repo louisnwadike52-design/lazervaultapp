@@ -69,6 +69,17 @@ class VoiceSessionConnected extends VoiceSessionState {
 
 class VoiceSessionDisconnected extends VoiceSessionState {}
 
+/// The AGENT ended the call (user said "goodbye"/"end the call", idle timeout, etc.)
+/// and asked the app to CLOSE the voice screen entirely. The sheet listens for this
+/// and pops itself. `reason` records who/what ended it (user / agent_idle / …).
+class VoiceSessionClosedByAgent extends VoiceSessionState {
+  final String reason;
+  const VoiceSessionClosedByAgent(this.reason);
+
+  @override
+  List<Object?> get props => [reason];
+}
+
 /// Agent detected a mid-conversation language switch (e.g., user spoke Yoruba).
 /// UI should update the language indicator without interrupting the session.
 class VoiceSessionLanguageChanged extends VoiceSessionState {

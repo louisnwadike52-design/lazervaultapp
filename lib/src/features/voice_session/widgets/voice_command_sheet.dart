@@ -28,6 +28,7 @@ import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_c
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -75,9 +76,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   bool _isCheckingEnrollment = true;
   bool _isMuted = false;
   bool _isClosing = false;
-  // Expand the sheet to full screen (mirrors the ai_chat send-funds chatbot
-  // fullscreen toggle). Drives the DraggableScrollableController. Defaults to
-  // TRUE — the sheet opens fullscreen and can only minimise to 90%.
+  // Expand the sheet to full screen. Drives the AnimatedFractionallySizedBox
+  // heightFactor: false = opens at 90% (default), true = full screen. The
+  // full-screen toggle flips it; it can only resize, never dismiss the sheet.
   bool _isFullScreen = false;
   // Tiny-CTA toggle for the live captions overlay. Captions default ON (the
   // in-progress "speaking…" bubble is the primary realtime feedback). The
@@ -90,8 +91,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   //  • false = EPHEMERAL  — only the current user→AI cycle is shown; it's replaced
   //    by the next cycle (older turns disappear).
   bool _continuousChat = true;
-  final DraggableScrollableController _dragController =
-      DraggableScrollableController();
   final ScrollController _conversationScrollController = ScrollController();
   int _selectedRating = 0;
   bool _isSubmittingRating = false;
@@ -325,9 +324,25 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
   void _startVoiceSession(String? token) {
     if (token == null || token.isEmpty) return;
+    // Pin the SAME active account + currency the rest of the app uses — exactly like
+    // the text chatbot (ai_chats sends accountManager.activeAccountId + the active
+    // currency). Without this the voice agent fell back to a backend "primary lookup"
+    // that landed on an empty wrong-currency wallet, so balance reads and transfers
+    // saw ₦0 ("no money"). Sending the active account makes voice match the working
+    // chat path end-to-end.
+    String? activeAccountId;
+    String? activeCurrency;
+    try {
+      activeAccountId = serviceLocator<AccountManager>().activeAccountId;
+    } catch (_) {/* fall back to backend primary lookup */}
+    try {
+      activeCurrency = serviceLocator<LocaleManager>().currentCurrency;
+    } catch (_) {/* optional */}
     context.read<VoiceSessionCubit>().startVoiceSession(
       accessToken: token,
       serviceName: widget.serviceName,
+      accountId: activeAccountId,
+      currency: activeCurrency,
     );
   }
 
@@ -399,15 +414,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// Toggle the sheet between 90% height and full screen, mirroring the
   /// send-funds chatbot's fullscreen toggle.
   void _toggleFullScreen() {
+    // The sheet height follows _isFullScreen via AnimatedFractionallySizedBox, so a
+    // simple setState resizes it (90% ⇄ full) — it can never dismiss the sheet.
     setState(() => _isFullScreen = !_isFullScreen);
-    final target = _isFullScreen ? 1.0 : 0.9;
-    if (_dragController.isAttached) {
-      _dragController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-      );
-    }
   }
 
   /// Coalesces rapid auto-scroll requests so the stream of interim caption
@@ -471,7 +480,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _waveController.dispose();
     _glowController.dispose();
     _avatarController.dispose();
-    _dragController.dispose();
     _conversationScrollController.dispose();
     // Only disconnect if not already closing (avoids double disconnect)
     if (!_isClosing) {
@@ -514,6 +522,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               backgroundColor: const Color(0xFFEF4444),
             ),
           );
+        } else if (state is VoiceSessionClosedByAgent) {
+          // The agent ended the call (user said "goodbye"/"end the call", idle timeout,
+          // etc.) and asked us to CLOSE the screen — pop the bottom sheet entirely.
+          _dismissActiveDialog();
+          _resetMuteState();
+          if (!_isClosing && mounted) {
+            _isClosing = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          }
         } else if (state is VoiceSessionDisconnected) {
           // Dismiss any open dialogs when room disconnects
           _dismissActiveDialog();
@@ -651,18 +668,19 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         //   TOP    = compact header (avatar + Nova + status + controls)
         //   MIDDLE = single scrollable conversation/transcript + live caption
         //   BOTTOM = action bar (mute / end)
-        return DraggableScrollableSheet(
-          controller: _dragController,
-          // Opens FULLSCREEN by default; can only minimise to 90% (snaps
-          // between 0.9 and 1.0 — the sheet owns its own height).
-          initialChildSize: 0.9,
-          minChildSize: 0.9,
-          maxChildSize: 1.0,
-          expand: false,
-          snap: true,
-          snapSizes: const [0.9, 1.0],
-          builder: (context, scrollController) {
-            return Container(
+        // Sheet height driven by the full-screen toggle: opens at 90% of the screen
+        // and animates to full screen (and back) when the toggle is tapped. We use an
+        // EXPLICIT height (MediaQuery * factor) rather than a FractionallySizedBox —
+        // inside a GetX/modal bottom sheet a fractional box is given loose height
+        // constraints and silently renders full-bleed (the "still opens fullscreen on
+        // Android" bug). An explicit height is unambiguous, so it always opens at 90%
+        // and the minimise button can only resize it — never dismiss it.
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: MediaQuery.of(context).size.height * (_isFullScreen ? 1.0 : 0.9),
+          alignment: Alignment.bottomCenter,
+          child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   begin: Alignment.topCenter,
@@ -683,10 +701,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 top: false,
                 child: Column(
                   children: [
-                    // Drag handle — also the implicit drag target for the sheet
-                    SingleChildScrollView(
-                      controller: scrollController,
-                      physics: const ClampingScrollPhysics(),
+                    // Decorative drag handle (the sheet resizes via the toggle, not drag)
+                    Center(
                       child: Container(
                         width: 36.w,
                         height: 4.h,
@@ -698,8 +714,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       ),
                     ),
 
-                    // Compact header: avatar + Nova + live status + controls
+                    // Compact header: avatar + Nova + live status + (fullscreen/close)
                     _buildSessionHeader(state),
+
+                    // Always-visible secondary controls (captions, history, settings,
+                    // language, customize voice) — pulled out of the header so none are
+                    // hidden behind a horizontal scroll.
+                    _buildSecondaryControlsRow(state),
 
                     Divider(
                       color: const Color(0xFF2D2D2D),
@@ -707,9 +728,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       thickness: 1,
                     ),
 
-                    // Conversation / transcript area (scrollable, fills space)
+                    // Conversation / transcript area (scrollable, fills space).
+                    // Rebuilt on EVERY chat-history change (not just VoiceSessionCubit
+                    // state changes) so new messages always appear — even when the
+                    // session state doesn't tick (e.g. after a recipient is selected and
+                    // a transfer becomes active). This is the fix for "new chats stop
+                    // appearing after selecting a recipient": the chat lives in
+                    // _chatHistoryCubit, so the view must watch THAT, not only the session.
                     Expanded(
-                      child: _buildConversationArea(state),
+                      child: BlocBuilder<VoiceChatHistoryCubit, VoiceChatHistoryState>(
+                        bloc: context.read<VoiceSessionCubit>().chatHistoryCubit,
+                        builder: (context, _) => _buildConversationArea(state),
+                      ),
                     ),
 
                     // Bottom action bar
@@ -719,8 +749,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                   ],
                 ),
               ),
-            );
-          },
+            ),
         );
       },
     );
@@ -758,87 +787,162 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ],
             ),
           ),
-          // Control cluster. Wrapped in a Flexible + horizontal scroll so it can
-          // shrink (and scroll) instead of overflowing the Row on very narrow
-          // (<340px) screens. On normal phones it has room and never scrolls,
-          // so the look is unchanged.
-          Flexible(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              reverse: true,
-              physics: const ClampingScrollPhysics(),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Tiny CTAs: show/hide live captions + conversation history.
-                  // Kept genuinely small (~22.w) so they fit alongside the
-                  // control cluster.
-                  _buildTinyToggleChip(
-                    icon: _showCaptions
-                        ? Icons.closed_caption_rounded
-                        : Icons.closed_caption_off_rounded,
-                    active: _showCaptions,
-                    activeColor: const Color(0xFF10B981),
-                    onTap: () => setState(() => _showCaptions = !_showCaptions),
-                  ),
-                  SizedBox(width: 5.w),
-                  // Chat-mode chip: TAP toggles the transcript between
-                  // continuous (whole session, scrolls in realtime) and
-                  // ephemeral (only the current user→AI cycle, disappears after).
-                  // LONG-PRESS opens the fuller standalone history sheet.
-                  _buildTinyToggleChip(
-                    icon: _continuousChat
-                        ? Icons.forum_rounded
-                        : Icons.chat_bubble_outline_rounded,
-                    active: _continuousChat,
-                    activeColor: const Color(0xFF3B82F6),
-                    onTap: () =>
-                        setState(() => _continuousChat = !_continuousChat),
-                    onLongPress: _showChatHistorySheet,
-                  ),
-                  SizedBox(width: 6.w),
-                  _buildSettingsButton(),
-                  SizedBox(width: 6.w),
-                  _buildLanguagePillCompact(),
-                  SizedBox(width: 6.w),
-                  _buildFullScreenButton(),
-                  SizedBox(width: 6.w),
-                  GestureDetector(
-                    onTap: _closeSheet,
-                    behavior: HitTestBehavior.opaque,
-                    // Larger circular tappable background (matches the
-                    // dashboard top-right icon style) so the cancel/close
-                    // control is easy to tap. A transparent 44x44 minimum
-                    // hit target wraps the 40.w visual circle for
-                    // accessibility. Behaviour is unchanged (_closeSheet
-                    // cancels the connection + closes the bottomsheet).
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minWidth: 44.w,
-                        minHeight: 44.w,
-                      ),
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: 40.w,
-                        height: 40.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.22),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.close_rounded,
-                          color: Colors.white.withValues(alpha: 0.85),
-                          size: 19.sp,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+          // Right cluster: ONLY the two essential controls (full-screen toggle +
+          // close) stay in the header row, so nothing is ever hidden off-screen.
+          // Every other control lives in the always-visible secondary row below.
+          _buildFullScreenButton(),
+          SizedBox(width: 8.w),
+          GestureDetector(
+            onTap: _closeSheet,
+            behavior: HitTestBehavior.opaque,
+            // 44x44 min hit target wrapping a 40.w visual circle (matches the
+            // dashboard top-right icon style). _closeSheet cancels the connection
+            // + closes the bottomsheet.
+            child: Container(
+              constraints: BoxConstraints(
+                minWidth: 44.w,
+                minHeight: 44.w,
               ),
+              alignment: Alignment.center,
+              child: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: Colors.white.withValues(alpha: 0.85),
+                  size: 19.sp,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Always-visible secondary control bar shown directly under the header, so the
+  /// settings / language / customize-voice / captions / history controls are never
+  /// hidden behind a horizontal scroll. Each control is wired to its backend action.
+  Widget _buildSecondaryControlsRow(VoiceSessionState state) {
+    final cubit = context.read<VoiceSessionCubit>();
+    final lang = cubit.selectedLanguage;
+    final canCustomize = lang != null && lang.supportsVoiceCustomization;
+    // Each control is wrapped in Expanded so 4–5 chips always share the row width
+    // evenly and can NEVER overflow, on any screen size (no horizontal scroll).
+    return Padding(
+      padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
+      child: Row(
+        children: [
+          // Live captions on/off (local display toggle).
+          Expanded(
+            child: _buildControlChip(
+              icon: _showCaptions
+                  ? Icons.closed_caption_rounded
+                  : Icons.closed_caption_off_rounded,
+              label: 'Captions',
+              active: _showCaptions,
+              activeColor: const Color(0xFF10B981),
+              onTap: () => setState(() => _showCaptions = !_showCaptions),
+            ),
+          ),
+          // Transcript mode (continuous vs ephemeral); long-press = full history.
+          Expanded(
+            child: _buildControlChip(
+              icon: _continuousChat
+                  ? Icons.forum_rounded
+                  : Icons.chat_bubble_outline_rounded,
+              label: 'History',
+              active: _continuousChat,
+              activeColor: const Color(0xFF3B82F6),
+              onTap: () => setState(() => _continuousChat = !_continuousChat),
+              onLongPress: _showChatHistorySheet,
+            ),
+          ),
+          // Voice settings screen (per-service or global) — backend via cubit.
+          Expanded(
+            child: _buildControlChip(
+              icon: Icons.settings_rounded,
+              label: 'Settings',
+              onTap: _openSettings,
+            ),
+          ),
+          // Language picker → cubit.setLanguage / backend language_changed.
+          Expanded(
+            child: _buildControlChip(
+              icon: Icons.language_rounded,
+              label: 'Language',
+              onTap: _showLanguagePicker,
+            ),
+          ),
+          // Customize voice → VoiceCustomizationSheet → cubit.setVoice (ElevenLabs/
+          // OpenAI/YarnGPT voices from the backend). Only shown when the active
+          // language supports voice customization.
+          if (canCustomize)
+            Expanded(
+              child: _buildControlChip(
+                icon: Icons.tune_rounded,
+                label: 'Voice',
+                activeColor: const Color(0xFF5B45C9),
+                onTap: _showVoiceCustomization,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// A small labeled icon control used in the secondary controls row.
+  Widget _buildControlChip({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool active = false,
+    Color activeColor = const Color(0xFF3B82F6),
+    VoidCallback? onLongPress,
+  }) {
+    final tint = active ? activeColor : Colors.white.withValues(alpha: 0.6);
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 38.w,
+            height: 38.w,
+            decoration: BoxDecoration(
+              color: active
+                  ? activeColor.withValues(alpha: 0.16)
+                  : Colors.white.withValues(alpha: 0.06),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: active
+                    ? activeColor.withValues(alpha: 0.45)
+                    : Colors.white.withValues(alpha: 0.10),
+                width: 1,
+              ),
+            ),
+            child: Icon(icon, color: tint, size: 18.sp),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -916,29 +1020,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               : Icons.fullscreen_rounded,
           color: Colors.white.withValues(alpha: 0.55),
           size: 18.sp,
-        ),
-      ),
-    );
-  }
-
-  /// Compact language pill for the header (tap = language picker).
-  Widget _buildLanguagePillCompact() {
-    final cubit = context.read<VoiceSessionCubit>();
-    final lang = cubit.selectedLanguage;
-    if (lang == null) return const SizedBox.shrink();
-    return GestureDetector(
-      onTap: _showLanguagePicker,
-      child: Container(
-        width: 34.w,
-        height: 34.w,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.language,
-          color: const Color(0xFF5B45C9),
-          size: 17.sp,
         ),
       ),
     );
@@ -1058,7 +1139,53 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           if (agentCaption != null && agentCaption.isNotEmpty)
             _buildLiveCaptionBubble(agentCaption, isUser: false),
         ],
+        // "Nova is typing…" bubble while the AI is thinking and hasn't started
+        // its spoken reply yet — a real chat-style typing indicator on the left.
+        if (_isAgentThinking(state, agentCaption)) _buildTypingBubble(),
       ],
+    );
+  }
+
+  /// True when the AI is processing a turn but hasn't begun its reply yet.
+  bool _isAgentThinking(VoiceSessionState state, String? agentCaption) {
+    final cubit = context.read<VoiceSessionCubit>();
+    final processing = state is VoiceSessionAgentProcessing;
+    final speakingNoText = cubit.isAgentSpeaking &&
+        (agentCaption == null || agentCaption.isEmpty);
+    return (processing || speakingNoText) &&
+        (agentCaption == null || agentCaption.isEmpty);
+  }
+
+  /// Left-aligned "Nova is typing" bubble with bouncing dots.
+  Widget _buildTypingBubble() {
+    const accent = Color(0xFF5B45C9);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h, right: 48.w),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: accent.withValues(alpha: 0.30), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Nova is typing',
+              style: GoogleFonts.inter(
+                color: accent,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
+              ),
+            ),
+            SizedBox(width: 8.w),
+            const _TypingDots(color: accent),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1097,6 +1224,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             _buildLiveCaptionBubble(userCaption, isUser: true),
           if (agentCaption != null && agentCaption.isNotEmpty)
             _buildLiveCaptionBubble(agentCaption, isUser: false),
+        ],
+        if (_isAgentThinking(state, agentCaption)) ...[
+          SizedBox(height: 14.h),
+          _buildTypingBubble(),
         ],
       ],
     );
@@ -1286,44 +1417,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             return cubit;
           },
           child: PerServiceVoiceSettingsScreen(serviceName: service),
-        ),
-      ),
-    );
-  }
-
-  /// Tiny toggle chip (~22.w) used in the header for the captions / history
-  /// CTAs. Small enough to sit alongside settings / language / fullscreen /
-  /// close without crowding. [active] tints it with [activeColor].
-  Widget _buildTinyToggleChip({
-    required IconData icon,
-    required bool active,
-    required Color activeColor,
-    required VoidCallback onTap,
-    VoidCallback? onLongPress,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 24.w,
-        height: 24.w,
-        decoration: BoxDecoration(
-          color: active
-              ? activeColor.withValues(alpha: 0.16)
-              : Colors.white.withValues(alpha: 0.05),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: active
-                ? activeColor.withValues(alpha: 0.45)
-                : Colors.white.withValues(alpha: 0.08),
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          color: active ? activeColor : Colors.white.withValues(alpha: 0.4),
-          size: 13.sp,
         ),
       ),
     );
@@ -3029,5 +3122,67 @@ String _voiceLanguageLabel(String code) {
       return 'Swahili';
     default:
       return code.toUpperCase();
+  }
+}
+
+/// Three dots that bounce in sequence — the classic "typing…" indicator.
+class _TypingDots extends StatefulWidget {
+  final Color color;
+  const _TypingDots({required this.color});
+
+  @override
+  State<_TypingDots> createState() => _TypingDotsState();
+}
+
+class _TypingDotsState extends State<_TypingDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            // Stagger each dot's phase so they bounce in sequence.
+            final phase = (_controller.value + (i * 0.2)) % 1.0;
+            // Bounce: rise then fall over the first ~60% of the phase.
+            final t = phase < 0.6 ? (phase / 0.6) : 0.0;
+            final lift = (t == 0.0 ? 0.0 : (1 - (2 * t - 1).abs())) * 4.0;
+            return Padding(
+              padding: EdgeInsets.only(right: i < 2 ? 4.w : 0),
+              child: Transform.translate(
+                offset: Offset(0, -lift),
+                child: Container(
+                  width: 6.w,
+                  height: 6.w,
+                  decoration: BoxDecoration(
+                    color: widget.color.withValues(alpha: 0.45 + (lift / 4.0) * 0.55),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
   }
 }

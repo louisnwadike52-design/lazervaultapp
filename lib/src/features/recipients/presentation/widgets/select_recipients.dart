@@ -12,6 +12,7 @@ import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -3130,8 +3131,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           ? authState.profile.user.id
           : '';
 
-      final gatewayUrl = dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat';
-      // BankScanDataSource now goes through storage-service first (via
+      // The OCR route lives at the gateway ROOT (`/scan/bank-details`), NOT under
+      // `/chat`. CHAT_GATEWAY_URL ends in `/chat`, so we MUST strip it — otherwise the
+      // datasource posts to `/chat/scan/bank-details` which 404s and the scan "keeps
+      // failing". This mirrors the working ai_scan_to_pay flow, which strips it too.
+      final gatewayUrl = (dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent)
+          .replaceAll(RegExp(r'/chat/?$'), '');
+      // BankScanDataSource goes through storage-service first (via
       // BankScanUploadService) and posts only the resulting public URL
       // to /scan/bank-details — see datasource for the 3-step pipeline.
       dataSource = BankScanDataSource(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 import '../../domain/entities/linked_bank_account.dart';
@@ -58,8 +59,12 @@ class OpenBankingRemoteDataSource {
   }
 
   static String _getBaseUrl() {
-    final host = dotenv.env['BANKING_API_URL'] ?? 'https://api.lazervault.app/api/v1';
-    return '$host/api/v1';
+    // Both BANKING_API_URL and endpointRegistry.httpBanking already end in
+    // `/api/v1`. The call sites below append bare routes (`/open-banking/...`,
+    // `/users/...`), so do NOT re-append `/api/v1` here — doing so produced a
+    // doubled `/api/v1/api/v1/...` and 404'd every open-banking call.
+    final host = dotenv.env['BANKING_API_URL'] ?? endpointRegistry.httpBanking;
+    return host.replaceAll(RegExp(r'/+$'), '');
   }
 
   /// Build headers with all required metadata

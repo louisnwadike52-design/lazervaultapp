@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 /// Wire shape from `services/commerce-gateway/websocket/qr_websocket.go`.
 /// Keep keys in sync with the Go `QRUpdateEvent`.
@@ -94,7 +95,7 @@ class QrPayWebSocketService {
     // the scheme automatically.
     final wsHost = dotenv.env['QR_WS_HOST'] ??
         dotenv.env['COMMERCE_WS_HOST'] ??
-        '10.0.2.2';
+        endpointRegistry.grpcHost;
     final portStr =
         dotenv.env['QR_WS_PORT'] ?? dotenv.env['COMMERCE_WS_PORT'] ?? '8080';
     final port = int.tryParse(portStr) ?? 8080;

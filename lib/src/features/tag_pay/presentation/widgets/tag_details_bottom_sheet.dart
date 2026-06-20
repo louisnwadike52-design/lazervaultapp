@@ -68,6 +68,8 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
       await TagPayPdfService.shareInvoice(
         tag: widget.tag,
         isOutgoing: widget.isOutgoing,
+        // iPad/iOS share popover anchor — required so the share sheet opens.
+        sharePositionOrigin: TagPayPdfService.shareOriginFromContext(context),
       );
 
       Get.snackbar(
@@ -112,6 +114,8 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
       await TagPayPdfService.sharePaidTagReceipt(
         tag: widget.tag,
         isOutgoing: widget.isOutgoing,
+        // iPad/iOS share popover anchor — required so the share sheet opens.
+        sharePositionOrigin: TagPayPdfService.shareOriginFromContext(context),
       );
 
       Get.snackbar(

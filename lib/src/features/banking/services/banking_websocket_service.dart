@@ -8,6 +8,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Banking status event received from WebSocket
@@ -131,7 +132,7 @@ class BankingWebSocketService {
 
   /// Connect using WebSocket protocol
   Future<void> _connectWebSocket(String userId, String accessToken) async {
-    final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? '10.0.2.2';
+    final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final wsPort = int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? '8082') ?? 8082;
     // Port 443 == tunnel termination expects TLS (wss). Other ports = loopback dev.
     final tlsTunnel = wsPort == 443;
@@ -179,7 +180,7 @@ class BankingWebSocketService {
 
   /// Connect using Server-Sent Events (SSE) - fallback
   Future<void> _connectSSE(String userId, String accessToken) async {
-    final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? '10.0.2.2';
+    final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? endpointRegistry.grpcHost;
     final wsPort = int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? '8082') ?? 8082;
     final tlsTunnel = wsPort == 443;
 

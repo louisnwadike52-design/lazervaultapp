@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_message_model.dart';
 
 /// Typing event from another user
@@ -125,7 +126,7 @@ class P2PChatWebSocketService {
     _manualDisconnect = false;
     _accessToken = accessToken;
 
-    final host = dotenv.env['P2P_CHAT_HOST'] ?? '10.0.2.2';
+    final host = dotenv.env['P2P_CHAT_HOST'] ?? endpointRegistry.grpcHost;
     final port = int.tryParse(dotenv.env['P2P_CHAT_PORT'] ?? '8018') ?? 8018;
     // Port 443 == the env points at the public tunnel which terminates
     // TLS, so we must speak wss. Loopback dev (port 8018) stays on ws.

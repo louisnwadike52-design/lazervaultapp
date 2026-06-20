@@ -121,6 +121,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
+    int? mediaDurationMs,
     Map<String, dynamic>? extraMetadata,
   }) async {
     try {
@@ -180,6 +181,11 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       }
       if (mediaMimeType != null && mediaMimeType.isNotEmpty) {
         requestBody['media_mime_type'] = mediaMimeType;
+      }
+      // Voice-note duration round-trip: the backend persists this under
+      // metadata.media.duration_ms so a reloaded voice note shows its length.
+      if (mediaDurationMs != null && mediaDurationMs > 0) {
+        requestBody['media_duration_ms'] = mediaDurationMs;
       }
 
       print('AI Chat Request Body: ${requestBody.keys}');

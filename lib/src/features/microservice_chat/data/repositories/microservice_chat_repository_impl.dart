@@ -166,13 +166,32 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         }
 
         final isUser = msg.role == 'user';
+        final mediaType = msg.mediaMetadata?['type'] as String?;
+        final mediaUrl = msg.mediaMetadata?['url'] as String?;
+        var transcript = msg.mediaMetadata?['transcript'] as String?;
+
+        // Re-render media history just like when it was sent: voice → a playable
+        // bubble labelled "Sent a voice note" (the persisted content IS the
+        // transcript, which rides inside the player); image → caption or
+        // "Sent an image". Plain text stays as-is (PIN-masked for the user).
+        String displayText = isUser ? maskIfPin(msg.content) : msg.content;
+        if (mediaType == 'voice') {
+          transcript ??= msg.content.isNotEmpty ? msg.content : null;
+          displayText = 'Sent a voice note';
+        } else if (mediaType == 'image') {
+          displayText = msg.content.isNotEmpty
+              ? (isUser ? maskIfPin(msg.content) : msg.content)
+              : 'Sent an image';
+        }
+
         return MicroserviceChatMessageEntity(
-          text: isUser ? maskIfPin(msg.content) : msg.content,
+          text: displayText,
           isUser: isUser,
           timestamp: DateTime.tryParse(msg.timestamp) ?? DateTime.now(),
           serviceRoutedTo: msg.service.isNotEmpty ? msg.service : null,
-          mediaType: msg.mediaMetadata?['type'] as String?,
-          mediaUrl: msg.mediaMetadata?['url'] as String?,
+          mediaType: mediaType,
+          mediaUrl: mediaUrl,
+          transcript: transcript,
           metadata: metadata,
         );
       }).toList();
@@ -248,11 +267,32 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         }
 
         final isUser = msg.role == 'user';
+        final mediaType = msg.mediaMetadata?['type'] as String?;
+        final mediaUrl = msg.mediaMetadata?['url'] as String?;
+        var transcript = msg.mediaMetadata?['transcript'] as String?;
+
+        // Re-render media history just like when it was sent: voice → a playable
+        // bubble labelled "Sent a voice note" (the persisted content IS the
+        // transcript, which rides inside the player); image → caption or
+        // "Sent an image". Plain text stays as-is (PIN-masked for the user).
+        String displayText = isUser ? maskIfPin(msg.content) : msg.content;
+        if (mediaType == 'voice') {
+          transcript ??= msg.content.isNotEmpty ? msg.content : null;
+          displayText = 'Sent a voice note';
+        } else if (mediaType == 'image') {
+          displayText = msg.content.isNotEmpty
+              ? (isUser ? maskIfPin(msg.content) : msg.content)
+              : 'Sent an image';
+        }
+
         return MicroserviceChatMessageEntity(
-          text: isUser ? maskIfPin(msg.content) : msg.content,
+          text: displayText,
           isUser: isUser,
           timestamp: DateTime.tryParse(msg.timestamp) ?? DateTime.now(),
           serviceRoutedTo: msg.service.isNotEmpty ? msg.service : null,
+          mediaType: mediaType,
+          mediaUrl: mediaUrl,
+          transcript: transcript,
           metadata: metadata,
         );
       }).toList();

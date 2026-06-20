@@ -720,7 +720,7 @@ Future<void> init() async {
   // Register Voice Biometrics Service
   serviceLocator.registerLazySingleton<VoiceBiometricsService>(
     () => VoiceBiometricsService(
-      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'https://api.lazervault.app/voice',
+      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent,
       client: serviceLocator<http.Client>(),
     ),
   );
@@ -1532,7 +1532,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CreditScoreAIService>(
     () => CreditScoreAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1679,7 +1679,7 @@ Future<void> init() async {
       dio: Dio(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       secureStorageService: serviceLocator<SecureStorageService>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
     ),
   );
 
@@ -1705,7 +1705,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<IAiChatDataSource>(
     () => HttpAiChatDataSource(
       dio: Dio(BaseOptions(
-        baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat', // Use 10.0.2.2 for Android emulator
+        baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
         sendTimeout: const Duration(seconds: 30),
@@ -1795,7 +1795,7 @@ Future<void> init() async {
           client: serviceLocator<http.Client>(),
           baseUrl: dotenv.env['STOCKS_API_URL'] ??
               dotenv.env['INVESTMENT_GATEWAY_HTTP_URL'] ??
-              'https://api.lazervault.app/api/v1/api/v1',
+              endpointRegistry.httpInvestment,
           secureStorage: serviceLocator<SecureStorageService>(),
         );
       }
@@ -1924,7 +1924,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CrowdfundDonorRatingService>(
     () => CrowdfundDonorRatingService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1936,7 +1936,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CrowdfundReportService>(
     () => CrowdfundReportService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1949,7 +1949,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<GroupAccountReportService>(
     () => GroupAccountReportService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -3120,7 +3120,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<BudgetAIService>(
     () => BudgetAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
@@ -3299,7 +3299,7 @@ Future<void> init() async {
     () => HttpGeneralChatDataSource(
       dio: serviceLocator<Dio>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat', // Enhanced Gateway
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent, // Enhanced Gateway
     ),
   );
 
@@ -3343,7 +3343,7 @@ Future<void> init() async {
         sendTimeout: const Duration(seconds: 30),
       )),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'https://api.lazervault.app/chat',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
     ),
   );
 
@@ -3707,7 +3707,7 @@ Future<void> init() async {
   // Repository (lazy singleton — shared HTTP client)
   serviceLocator.registerLazySingleton<IPlanMyDayRepository>(
     () => PlanMyDayRepository(
-      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1',
+      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? endpointRegistry.httpPlanning,
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       accountManager: serviceLocator<AccountManager>(),
       // Use the SHARED secure storage (AndroidOptions encryptedSharedPreferences:
@@ -3720,7 +3720,7 @@ Future<void> init() async {
   // Calendar Sync Service (lazy singleton — shared calendar sync state)
   serviceLocator.registerLazySingleton<CalendarSyncService>(
     () => CalendarSyncService(
-      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1',
+      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? endpointRegistry.httpPlanning,
       accountManager: serviceLocator<AccountManager>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       storage: serviceLocator<FlutterSecureStorage>(), // shared encrypted store
@@ -3744,7 +3744,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<SprayMeRemoteDataSource>(
     () {
       final dio = Dio(BaseOptions(
-        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'https://api.lazervault.app/api/v1',
+        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
       ));

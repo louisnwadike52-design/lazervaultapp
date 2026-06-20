@@ -87,10 +87,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   ///   • Link Account (Mono direct debit) — NGN only.
   ///   • Bank Transfer (virtual NUBAN)    — NGN only (non-NGN wallets have no NUBAN).
   ///   • Apple Pay (Flutterwave)          — iOS only, non-NGN (Flutterwave Apple Pay corridors).
-  ///   • Card (Flutterwave hosted)        — non-NGN.
+  ///   • Card (Flutterwave hosted)        — ALL currencies. Flutterwave fully
+  ///     supports NGN card charges, and banking-service routes paymentMethod
+  ///     'card' to the Flutterwave hosted checkout even for NGN wallets.
   List<_DepositMethod> get _availableMethods {
     if (_isNGN) {
-      return const [_DepositMethod.linkAccount, _DepositMethod.bankTransfer];
+      return const [
+        _DepositMethod.linkAccount,
+        _DepositMethod.bankTransfer,
+        _DepositMethod.card,
+      ];
     }
     return [
       if (Platform.isIOS) _DepositMethod.applePay,
@@ -769,7 +775,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             label: 'Pay with Card',
             icon: Icons.credit_card,
             onPressed: () {
-              if (!_validateSheetAmount()) return;
+              // Flutterwave's NGN card minimum is ₦100; other corridors just
+              // need a positive amount.
+              if (!_validateSheetAmount(min: _isNGN ? 100 : 0)) return;
               Navigator.of(sheetCtx).pop();
               _startFlutterwaveDeposit(context, paymentMethod: 'card', sourceLabel: 'Card');
             },

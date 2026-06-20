@@ -195,6 +195,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   // message on the backend.
   String _chatLanguage = ChatLanguagePreference.defaultLanguage;
 
+  // Transaction IDs whose PIN bottom sheet has already been AUTO-opened.
+  // Ensures each chat-driven money-move auto-opens its PIN sheet at most once,
+  // never re-opening on widget rebuild or after the user dismisses it. The
+  // durable in-chat ChatPinPromptCard still re-opens on manual tap regardless.
+  final Set<String> _autoOpenedPinPrompts = <String>{};
+
   // Media state
   final ImagePicker _imagePicker = ImagePicker();
   final AudioRecorder _audioRecorder = AudioRecorder();
@@ -245,6 +251,42 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     if (authState is AuthenticationSuccess) {
       context.read<AIChatCubit>().loadChatHistory(accessToken: authState.profile.session.accessToken);
     }
+  }
+
+  /// Auto-open the PIN bottom sheet for the latest assistant message that
+  /// carries a pin_prompt, once per transaction_id. Only ever called from the
+  /// AIChatMessageSuccess branch of the listener (live turn), so historical
+  /// prompts replayed by loadChatHistory never trigger it. The sheet is the
+  /// SAME native modal the in-chat card opens — we just drive that card's
+  /// state via its stable GlobalKey, so there is one verification code path.
+  void _maybeAutoOpenPinPrompt(List<ChatMessageEntity> messages) {
+    // Find the most recent assistant message with a pin_prompt. Iterate from
+    // the end so we only consider the newest prompt of this turn.
+    ChatMessageEntity? latest;
+    for (var i = messages.length - 1; i >= 0; i--) {
+      final m = messages[i];
+      if (!m.isUser && m.pinPrompt != null) {
+        latest = m;
+        break;
+      }
+    }
+    if (latest == null) return;
+
+    final txId = latest.pinPrompt!['transaction_id']?.toString() ?? '';
+    if (txId.isEmpty) return;
+    if (_autoOpenedPinPrompts.contains(txId)) return;
+
+    // Mark consumed BEFORE the async open so a same-frame rebuild can't
+    // double-fire. Manual re-tap on the card is unaffected (it doesn't read
+    // this set) — only the auto-open is one-shot.
+    _autoOpenedPinPrompts.add(txId);
+
+    // Defer to after this frame so the ChatPinPromptCard (and its GlobalKey)
+    // is actually mounted in the rebuilt list before we drive its modal.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ChatPinPromptCard.autoOpenFor(txId);
+    });
   }
 
   @override
@@ -341,17 +383,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         imageQuality: 85,
       );
       if (picked != null && mounted) {
-        final authState = context.read<AuthenticationCubit>().state;
-        if (authState is! AuthenticationSuccess) return;
-        context.read<AIChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
-          accessToken: authState.profile.session.accessToken,
-          text: _messageController.text.trim(),
-        );
-        _messageController.clear();
-        _scrollToBottom(isDelayed: true);
+        await _showImageCaptionComposer(picked);
       }
     } catch (_) {
       // Picker cancelled or permission denied
@@ -371,23 +403,148 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         imageQuality: 85,
       );
       if (picked != null && mounted) {
-        final authState = context.read<AuthenticationCubit>().state;
-        if (authState is! AuthenticationSuccess) return;
-        context.read<AIChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
-          accessToken: authState.profile.session.accessToken,
-          text: _messageController.text.trim(),
-        );
-        _messageController.clear();
-        _scrollToBottom(isDelayed: true);
+        await _showImageCaptionComposer(picked);
       }
     } catch (_) {
       // Picker cancelled or permission denied
     } finally {
       _isPickingMedia = false;
     }
+  }
+
+  /// Show a preview of the picked image with an editable caption field and a
+  /// Send button. The typed caption travels with the image via
+  /// [AIChatCubit.sendMediaMessage]'s `text` arg (the backend extracts + routes
+  /// any transfer intent from it). An empty caption is allowed.
+  Future<void> _showImageCaptionComposer(XFile picked) async {
+    final captionController = TextEditingController(
+      text: _messageController.text.trim(),
+    );
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Padding(
+          // Lift above the keyboard.
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.primaryBackground,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              border: Border.all(color: InvoiceThemeColors.borderColor),
+            ),
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 14.h),
+                  decoration: BoxDecoration(
+                    color: InvoiceThemeColors.borderColor,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 260.h),
+                    child: Image.file(
+                      File(picked.path),
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 160.h,
+                        color: InvoiceThemeColors.secondaryBackground,
+                        child: Icon(Icons.broken_image_outlined,
+                            color: const Color(0xFF9CA3AF), size: 40.sp),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        decoration: BoxDecoration(
+                          color: InvoiceThemeColors.secondaryBackground,
+                          borderRadius: BorderRadius.circular(24.r),
+                          border:
+                              Border.all(color: InvoiceThemeColors.borderColor),
+                        ),
+                        child: TextField(
+                          controller: captionController,
+                          autofocus: true,
+                          style: const TextStyle(color: Colors.white),
+                          minLines: 1,
+                          maxLines: 4,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) =>
+                              _sendImageWithCaption(picked, captionController),
+                          decoration: InputDecoration(
+                            hintText: 'Add a caption...',
+                            hintStyle: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.5)),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    GestureDetector(
+                      onTap: () =>
+                          _sendImageWithCaption(picked, captionController),
+                      child: Container(
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: [
+                            InvoiceThemeColors.primaryPurple,
+                            InvoiceThemeColors.gradientPurple,
+                          ]),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.send_rounded,
+                            color: Colors.white, size: 20.sp),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    captionController.dispose();
+  }
+
+  void _sendImageWithCaption(
+    XFile picked,
+    TextEditingController captionController,
+  ) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      Get.snackbar('Error', 'User not authenticated. Please log in.');
+      return;
+    }
+    final caption = captionController.text.trim();
+    context.read<AIChatCubit>().sendMediaMessage(
+          mediaType: 'image',
+          localFilePath: picked.path,
+          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
+          accessToken: authState.profile.session.accessToken,
+          text: caption, // empty caption is allowed
+        );
+    // Clear the main composer (its text was prefilled into the caption field).
+    _messageController.clear();
+    Navigator.of(context).pop(); // close the composer sheet
+    _scrollToBottom(isDelayed: true);
   }
 
   Future<void> _toggleRecording() async {
@@ -1178,6 +1335,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             // transaction continues in this same conversation.
             if (!isUser && message.pinPrompt != null)
               ChatPinPromptCard(
+                // Stable key per transaction_id so the auto-open listener can
+                // drive THIS card's modal — keeps one code path into the PIN
+                // sheet shared by the manual tap and the auto-open.
+                key: ChatPinPromptCard.keyFor(
+                  message.pinPrompt!['transaction_id']?.toString() ?? '',
+                ),
                 payload: message.pinPrompt!,
                 onPinVerified: (verificationToken) async {
                   final payload = message.pinPrompt!;
@@ -1480,42 +1643,140 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   }
 
   Widget _buildAttachButton() {
-    return PopupMenuButton<String>(
-      onSelected: (value) {
-        if (value == 'gallery') {
-          _handleImagePicker();
-        } else if (value == 'camera') {
-          _handleCameraCapture();
-        }
-      },
-      color: InvoiceThemeColors.secondaryBackground,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          value: 'gallery',
-          child: Row(
-            children: [
-              Icon(Icons.photo_library, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
-              SizedBox(width: 8.w),
-              Text('Gallery', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'camera',
-          child: Row(
-            children: [
-              Icon(Icons.camera_alt, color: Colors.green[300], size: 20.sp),
-              SizedBox(width: 8.w),
-              Text('Camera', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
-            ],
-          ),
-        ),
-      ],
+    return GestureDetector(
+      onTap: _showImageSourceSheet,
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: Icon(Icons.add_photo_alternate_rounded, color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
+      ),
+    );
+  }
+
+  /// Themed bottom sheet for picking an image source (gallery vs camera).
+  /// Replaces the cramped popup menu so the affordance matches the rest of the
+  /// app (P2P + service chats) and is reliably tappable.
+  void _showImageSourceSheet() {
+    FocusScope.of(context).unfocus();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
+          color: InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 4.w, bottom: 10.h),
+                    child: Text(
+                      'Add a photo',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                _buildImageSourceTile(
+                  icon: Icons.photo_library_rounded,
+                  iconColor: InvoiceThemeColors.primaryPurple,
+                  label: 'Choose from Gallery',
+                  subtitle: 'Pick an existing photo',
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _handleImagePicker();
+                  },
+                ),
+                SizedBox(height: 10.h),
+                _buildImageSourceTile(
+                  icon: Icons.camera_alt_rounded,
+                  iconColor: const Color(0xFF10B981),
+                  label: 'Take a Photo',
+                  subtitle: 'Use your camera',
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _handleCameraCapture();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageSourceTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.04),
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.all(12.w),
+          child: Row(
+            children: [
+              Container(
+                width: 42.w,
+                height: 42.w,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(icon, color: iconColor, size: 22.sp),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle,
+                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.3), size: 22.sp),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1680,6 +1941,15 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           _scrollToBottom(isDelayed: true, animate: false);
         } else if (state is AIChatMessageSuccess || state is AIChatMessageLoading) {
           _scrollToBottom(isDelayed: true);
+        }
+
+        // Auto-open the transaction-PIN bottom sheet the moment a live turn
+        // (AIChatMessageSuccess — NOT history load) yields an assistant
+        // message carrying a pin_prompt. Dedupe by transaction_id so it opens
+        // exactly once per prompt: never on rebuild, never after dismissal,
+        // and never for historical prompts replayed by loadChatHistory.
+        if (state is AIChatMessageSuccess) {
+          _maybeAutoOpenPinPrompt(state.messages);
         }
 
         // Optional: Print statements for debugging state changes
