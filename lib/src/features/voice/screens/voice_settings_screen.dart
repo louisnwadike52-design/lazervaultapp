@@ -197,6 +197,11 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
       if (mounted) {
         setState(() {
           _customVoiceStatus = status;
+          // Seed progress/score from the poll so the card shows them even with
+          // no active voice session (the live `custom_voice_state` push, which
+          // only fires during a call, overrides these when it arrives).
+          _liveProgress = status?.progress ?? _liveProgress;
+          _liveScore = status?.score ?? _liveScore;
           _loadingCustomVoice = false;
         });
         // Auto-refresh while status is pending
@@ -226,7 +231,11 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           final voiceService = VoiceSettingsService();
           final status = await voiceService.getCustomVoiceStatus(userId);
           if (!mounted) return;
-          setState(() => _customVoiceStatus = status);
+          setState(() {
+            _customVoiceStatus = status;
+            _liveProgress = status?.progress ?? _liveProgress;
+            _liveScore = status?.score ?? _liveScore;
+          });
 
           final newStatus = status?.customVoiceStatus;
           if (newStatus != 'pending') {

@@ -126,6 +126,15 @@ class CustomVoiceStatus {
   final String? customVoiceError;
   final bool enabled;
 
+  /// Setup progress 0-100 (deterministic stage value from the gateway). Lets the
+  /// settings card show progress on the POLL path (settings opened outside a
+  /// live call), mirroring the live `custom_voice_state` push.
+  final int? progress;
+
+  /// Audio-derived readiness score 0.0-1.0, persisted by the gateway (Redis,
+  /// 90-day) so it survives across sessions and a retake reflects the real take.
+  final double? score;
+
   CustomVoiceStatus({
     required this.hasCustomVoice,
     this.customVoiceId,
@@ -134,9 +143,13 @@ class CustomVoiceStatus {
     this.customVoiceCreatedAt,
     this.customVoiceError,
     required this.enabled,
+    this.progress,
+    this.score,
   });
 
   factory CustomVoiceStatus.fromJson(Map<String, dynamic> json) {
+    final rawProgress = json['custom_voice_progress'];
+    final rawScore = json['custom_voice_score'];
     return CustomVoiceStatus(
       hasCustomVoice: json['has_custom_voice'] as bool? ?? false,
       customVoiceId: json['custom_voice_id'] as String?,
@@ -145,6 +158,8 @@ class CustomVoiceStatus {
       customVoiceCreatedAt: json['custom_voice_created_at'] as int?,
       customVoiceError: json['custom_voice_error'] as String?,
       enabled: json['enabled'] as bool? ?? false,
+      progress: rawProgress is num ? rawProgress.toInt() : null,
+      score: rawScore is num ? rawScore.toDouble() : null,
     );
   }
 
