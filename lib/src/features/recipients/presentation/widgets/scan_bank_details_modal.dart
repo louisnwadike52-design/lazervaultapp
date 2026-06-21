@@ -148,8 +148,14 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // 1.5: Conditionally wrap with BlocListener only if cubit is available
-    Widget content = Container(
+    // 1.5: Conditionally wrap with BlocListener only if cubit is available.
+    // Tapping anywhere on the sheet that isn't a field/button dismisses the
+    // keyboard — while the user is editing an extracted field, a tap on empty
+    // space closes the keyboard instead of leaving it stuck open.
+    Widget content = GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
@@ -177,6 +183,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
             SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
           ],
         ),
+      ),
       ),
     );
 

@@ -138,7 +138,7 @@ class VoiceSessionAgentProcessing extends VoiceSessionState {
   final Room room;
 
   /// Rebuild nonce — see [VoiceSessionConnected.seq]. Bumped on each streaming
-  /// agent-caption chunk so Nova's reply grows live ("typing as it speaks")
+  /// agent-caption chunk so Nyla's reply grows live ("typing as it speaks")
   /// while the processing state stays the same.
   final int seq;
   const VoiceSessionAgentProcessing(this.room, {this.seq = 0});

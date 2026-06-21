@@ -14,8 +14,8 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
-import 'package:lazervault/src/features/voice_session/widgets/voice_language_picker.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_language_voice_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_dialog.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_chat_history_sheet.dart';
@@ -54,7 +54,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   late AnimationController _waveController;
   late AnimationController _glowController;
   // Avatar speaking/listening pulse — drives the glow ring + gentle scale
-  // around the Nova customer-rep avatar.
+  // around the Nyla customer-rep avatar.
   late AnimationController _avatarController;
   final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
 
@@ -77,9 +77,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   bool _isCheckingEnrollment = true;
   bool _isMuted = false;
   bool _isClosing = false;
-  // Expand the sheet to full screen. Drives the AnimatedFractionallySizedBox
-  // heightFactor: false = opens at 90% (default), true = full screen. The
-  // full-screen toggle flips it; it can only resize, never dismiss the sheet.
+  // Sheet height as a fraction of the screen. Opens at 80% (DEFAULT); the user
+  // can DRAG the top handle to resize anywhere between 80% and full screen, and
+  // the drag snaps to the nearer of the two on release. The full-screen toggle
+  // also switches between 80% and full. _isFullScreen mirrors the full state for
+  // the toggle icon; it can only resize, never dismiss the sheet.
+  static const double _kDefaultHeightFactor = 0.8;
+  double _sheetHeightFactor = _kDefaultHeightFactor;
+  bool _isDraggingSheet = false;
   bool _isFullScreen = false;
   // Tiny-CTA toggle for the live captions overlay. Captions default ON (the
   // in-progress "speaking…" bubble is the primary realtime feedback). The
@@ -430,8 +435,25 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       );
       if (selected != null && mounted) {
         await cubit.setVoice(selected.id);
+        // Apply LIVE when a call is active (the clone toggle for "Your Voice",
+        // otherwise a preset TTS swap). setLanguage already sent language_changed
+        // above; this carries the final voice choice.
+        if (cubit.hasActiveVoiceSession) {
+          if (selected.id == kMyVoiceSentinelId) {
+            await cubit.notifyCustomVoiceChanged(true);
+          } else {
+            await cubit.notifyVoiceChanged(selected.id);
+          }
+        }
       }
     }
+
+    // If a call is already live, the language + voice changes were applied as LIVE
+    // swaps over the WebSocket above. Do NOT restart the session — a mid-call
+    // restart races the backend's concurrent-session limit + dedup and leaves a
+    // room with no agent (the reported "voice output breaks"). Only start a new
+    // session when none is active (the initial pick-language-to-start flow).
+    if (cubit.hasActiveVoiceSession) return;
 
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
@@ -439,49 +461,56 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _startVoiceSession(authState.profile.session.accessToken);
   }
 
-  void _showLanguagePicker() async {
+  /// ONE central control: opens the combined Voice & Language sheet (language +
+  /// its voices in a single place). Applies the chosen language + voice as a LIVE
+  /// swap during a call (no session restart — restarting raced the backend's
+  /// concurrent-session limit + dedup and killed audio), or starts a session
+  /// with them when none is active.
+  void _openVoiceAndLanguage() async {
     final cubit = context.read<VoiceSessionCubit>();
-    final selected = await VoiceLanguagePicker.show(
+    final wasActive = cubit.hasActiveVoiceSession;
+    final result = await VoiceLanguageVoiceSheet.show(
       context,
       languages: cubit.availableLanguages,
       selectedLanguageCode: cubit.selectedLanguageCode,
-    );
-    if (selected != null && mounted) {
-      _onLanguageSelected(selected);
-    }
-  }
-
-  void _showVoiceCustomization() async {
-    final cubit = context.read<VoiceSessionCubit>();
-    final lang = cubit.selectedLanguage;
-    if (lang == null || !lang.supportsVoiceCustomization) return;
-
-    final yourVoice = await _resolveYourVoice(lang);
-    if (!mounted) return;
-    await _reconcileYourVoiceSelection(cubit, lang, yourVoice != null);
-    if (!mounted) return;
-
-    final selected = await VoiceCustomizationSheet.show(
-      context,
-      voices: lang.availableVoices,
       selectedVoiceId: cubit.selectedVoiceId,
-      provider: lang.provider,
-      showYourVoice: yourVoice != null,
-      yourVoiceName: yourVoice?.name,
-      yourVoiceUsername: yourVoice?.username,
-      yourVoiceAvatarUrl: yourVoice?.avatarUrl,
+      isSessionActive: wasActive,
+      resolveYourVoice: (lang) async {
+        final info = await _resolveYourVoice(lang);
+        if (info == null) return null;
+        return YourVoiceInfo(
+          name: info.name,
+          username: info.username,
+          avatarUrl: info.avatarUrl,
+        );
+      },
+      onAdvancedSettings: _openSettings,
     );
-    if (selected != null && mounted) {
-      await cubit.setVoice(selected.id);
-      // If a call is live, swap the agent to the cloned voice immediately when
-      // "Your Voice" was picked (reuses the existing custom_voice_changed path).
-      // Preset selections during a live call keep their existing behaviour (the
-      // new STT/TTS choice is applied on the deterministic session restart).
-      if (selected.id == kMyVoiceSentinelId &&
-          cubit.hasActiveVoiceSession) {
-        await cubit.notifyCustomVoiceChanged(true);
-      }
+    if (result == null || !mounted) return;
+
+    // Only apply a language change when the language actually changed — otherwise
+    // a voice-only change would fire language_changed and the agent would wrongly
+    // announce "Language changed to …".
+    final languageChanged = result.language.code != cubit.selectedLanguageCode;
+    if (languageChanged) {
+      await cubit.setLanguage(result.language.code);
     }
+    await cubit.setVoice(result.voice.id);
+
+    if (wasActive) {
+      // Live swap — the next reply uses the new language/voice, no restart.
+      if (result.voice.id == kMyVoiceSentinelId) {
+        await cubit.notifyCustomVoiceChanged(true);
+      } else {
+        await cubit.notifyVoiceChanged(result.voice.id);
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    _startVoiceSession(authState.profile.session.accessToken);
   }
 
   void _startAnimations() {
@@ -498,12 +527,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _avatarController.stop();
   }
 
-  /// Toggle the sheet between 90% height and full screen, mirroring the
-  /// send-funds chatbot's fullscreen toggle.
+  /// Toggle the sheet between the default 80% height and full screen, mirroring
+  /// the send-funds chatbot's fullscreen toggle. Keeps _sheetHeightFactor in
+  /// sync so a later drag starts from the right place.
   void _toggleFullScreen() {
-    // The sheet height follows _isFullScreen via AnimatedFractionallySizedBox, so a
-    // simple setState resizes it (90% ⇄ full) — it can never dismiss the sheet.
-    setState(() => _isFullScreen = !_isFullScreen);
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+      _sheetHeightFactor = _isFullScreen ? 1.0 : _kDefaultHeightFactor;
+    });
   }
 
   /// Coalesces rapid auto-scroll requests so the stream of interim caption
@@ -575,12 +606,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     super.dispose();
   }
 
-  /// Wrap the static (non-draggable) sub-views at full screen height so they
-  /// match the main session sheet, which now opens FULLSCREEN by default
-  /// (the draggable sheet only minimises to 90%).
+  /// Wrap the static (non-draggable) sub-views at the same default height as the
+  /// main session sheet (80%).
   Widget _sizedSheet(Widget child) {
     return FractionallySizedBox(
-      heightFactor: 0.9,
+      heightFactor: _kDefaultHeightFactor,
       child: child,
     );
   }
@@ -752,20 +782,22 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
         // Main voice session UI — self-sizing draggable sheet (90% → full
         // screen), mirroring the send-funds chatbot. Clean vertical layout:
-        //   TOP    = compact header (avatar + Nova + status + controls)
+        //   TOP    = compact header (avatar + Nyla + status + controls)
         //   MIDDLE = single scrollable conversation/transcript + live caption
         //   BOTTOM = action bar (mute / end)
-        // Sheet height driven by the full-screen toggle: opens at 90% of the screen
-        // and animates to full screen (and back) when the toggle is tapped. We use an
-        // EXPLICIT height (MediaQuery * factor) rather than a FractionallySizedBox —
+        // Sheet height = MediaQuery * _sheetHeightFactor. Opens at 80% and can be
+        // resized to full screen by DRAGGING the top handle (or the full-screen
+        // toggle). We use an EXPLICIT height rather than a FractionallySizedBox —
         // inside a GetX/modal bottom sheet a fractional box is given loose height
         // constraints and silently renders full-bleed (the "still opens fullscreen on
-        // Android" bug). An explicit height is unambiguous, so it always opens at 90%
-        // and the minimise button can only resize it — never dismiss it.
+        // Android" bug). While dragging we drop the animation so the sheet tracks the
+        // finger; on release it animates the snap to 80% / full.
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: _isDraggingSheet
+              ? Duration.zero
+              : const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
-          height: MediaQuery.of(context).size.height * (_isFullScreen ? 1.0 : 0.9),
+          height: MediaQuery.of(context).size.height * _sheetHeightFactor,
           alignment: Alignment.bottomCenter,
           child: Container(
               decoration: BoxDecoration(
@@ -788,20 +820,48 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 top: false,
                 child: Column(
                   children: [
-                    // Decorative drag handle (the sheet resizes via the toggle, not drag)
-                    Center(
+                    // Drag handle — drag UP to grow toward full screen, DOWN to
+                    // shrink toward the 80% default; snaps to the nearer on release.
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragUpdate: (details) {
+                        final h = MediaQuery.of(context).size.height;
+                        if (h <= 0) return;
+                        setState(() {
+                          _isDraggingSheet = true;
+                          // Dragging up (negative dy) increases the height factor.
+                          _sheetHeightFactor =
+                              (_sheetHeightFactor - details.delta.dy / h)
+                                  .clamp(_kDefaultHeightFactor, 1.0);
+                        });
+                      },
+                      onVerticalDragEnd: (_) {
+                        setState(() {
+                          _isDraggingSheet = false;
+                          // Snap to the nearer of 80% / full (midpoint = 0.9).
+                          final full = _sheetHeightFactor >=
+                              (_kDefaultHeightFactor + 1.0) / 2;
+                          _sheetHeightFactor =
+                              full ? 1.0 : _kDefaultHeightFactor;
+                          _isFullScreen = full;
+                        });
+                      },
                       child: Container(
-                        width: 36.w,
-                        height: 4.h,
-                        margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(2.r),
+                        // Pad out the touch target so the thin bar is easy to grab.
+                        padding: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 36.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
                         ),
                       ),
                     ),
 
-                    // Compact header: avatar + Nova + live status + (fullscreen/close)
+                    // Compact header: avatar + Nyla + live status + (fullscreen/close)
                     _buildSessionHeader(state),
 
                     // Always-visible secondary controls (captions, history, settings,
@@ -842,7 +902,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Compact session header: Nova avatar (flashing while speaking) + name +
+  /// Compact session header: Nyla avatar (flashing while speaking) + name +
   /// live status (Listening… / Thinking… / Speaking) + control cluster
   /// (settings, language, full-screen, history, close).
   Widget _buildSessionHeader(VoiceSessionState state) {
@@ -850,8 +910,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 10.h),
       child: Row(
         children: [
-          // Nova avatar (small, flashing)
-          _buildNovaAvatar(state, compact: true),
+          // Nyla avatar (small, flashing)
+          _buildNylaAvatar(state, compact: true),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -859,7 +919,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Nova',
+                  'Nyla',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
@@ -919,16 +979,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// settings / language / customize-voice / captions / history controls are never
   /// hidden behind a horizontal scroll. Each control is wired to its backend action.
   Widget _buildSecondaryControlsRow(VoiceSessionState state) {
-    final cubit = context.read<VoiceSessionCubit>();
-    final lang = cubit.selectedLanguage;
-    final canCustomize = lang != null && lang.supportsVoiceCustomization;
-    // Each control is wrapped in Expanded so 4–5 chips always share the row width
-    // evenly and can NEVER overflow, on any screen size (no horizontal scroll).
+    // Consolidated to 3 controls. Each is wrapped in Expanded so they always
+    // share the row width evenly and can NEVER overflow, on any screen size.
     return Padding(
       padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
       child: Row(
         children: [
-          // Live captions on/off (local display toggle).
+          // Captions + transcript MERGED into one toggle: tap shows/hides the
+          // live conversation text (and keeps the running transcript); long-press
+          // opens the full history. (Previously two near-identical chips.)
           Expanded(
             child: _buildControlChip(
               icon: _showCaptions
@@ -937,23 +996,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               label: 'Captions',
               active: _showCaptions,
               activeColor: const Color(0xFF10B981),
-              onTap: () => setState(() => _showCaptions = !_showCaptions),
-            ),
-          ),
-          // Transcript mode (continuous vs ephemeral); long-press = full history.
-          Expanded(
-            child: _buildControlChip(
-              icon: _continuousChat
-                  ? Icons.forum_rounded
-                  : Icons.chat_bubble_outline_rounded,
-              label: 'History',
-              active: _continuousChat,
-              activeColor: const Color(0xFF3B82F6),
-              onTap: () => setState(() => _continuousChat = !_continuousChat),
+              onTap: () => setState(() {
+                _showCaptions = !_showCaptions;
+                _continuousChat = _showCaptions;
+              }),
               onLongPress: _showChatHistorySheet,
             ),
           ),
-          // Voice settings screen (per-service or global) — backend via cubit.
+          // Deeper per-service / global voice settings screen.
           Expanded(
             child: _buildControlChip(
               icon: Icons.settings_rounded,
@@ -961,26 +1011,17 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               onTap: _openSettings,
             ),
           ),
-          // Language picker → cubit.setLanguage / backend language_changed.
+          // ONE central control for language + voice (replaces the separate
+          // Language and Voice chips). Pick language → its voices filter in →
+          // applies LIVE during a call (no session restart).
           Expanded(
             child: _buildControlChip(
-              icon: Icons.language_rounded,
-              label: 'Language',
-              onTap: _showLanguagePicker,
+              icon: Icons.record_voice_over_rounded,
+              label: 'Voice & Language',
+              activeColor: const Color(0xFF5B45C9),
+              onTap: _openVoiceAndLanguage,
             ),
           ),
-          // Customize voice → VoiceCustomizationSheet → cubit.setVoice (ElevenLabs/
-          // OpenAI/YarnGPT voices from the backend). Only shown when the active
-          // language supports voice customization.
-          if (canCustomize)
-            Expanded(
-              child: _buildControlChip(
-                icon: Icons.tune_rounded,
-                label: 'Voice',
-                activeColor: const Color(0xFF5B45C9),
-                onTap: _showVoiceCustomization,
-              ),
-            ),
         ],
       ),
     );
@@ -1141,7 +1182,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildNovaAvatar(state, compact: false),
+            _buildNylaAvatar(state, compact: false),
             SizedBox(height: 28.h),
             _buildStatusSection(state),
           ],
@@ -1151,7 +1192,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     // ── ACTIVE TRANSFER LAYOUT ──
     // When a transfer is in flight, the screen has a lot going on: give the
-    // sci-fi HUD the prime central space, the (already-compact) Nova avatar
+    // sci-fi HUD the prime central space, the (already-compact) Nyla avatar
     // lives in the header, and the conversation is condensed below it. This is
     // the SINGLE transfer surface — the old inline progress stepper is gone.
     final transfer = cubit.transferContext;
@@ -1172,7 +1213,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildNovaAvatar(state, compact: false),
+            _buildNylaAvatar(state, compact: false),
             SizedBox(height: 24.h),
             Text(
               'How can I help you?',
@@ -1209,7 +1250,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       children: [
         // A compact avatar header bubble at the top of the transcript so the
         // rep stays present without dominating the conversation.
-        Center(child: _buildNovaAvatar(state, compact: false)),
+        Center(child: _buildNylaAvatar(state, compact: false)),
         SizedBox(height: 16.h),
 
         // Transcript per chat mode (continuous = all + scroll; ephemeral =
@@ -1226,7 +1267,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           if (agentCaption != null && agentCaption.isNotEmpty)
             _buildLiveCaptionBubble(agentCaption, isUser: false),
         ],
-        // "Nova is typing…" bubble while the AI is thinking and hasn't started
+        // "Nyla is typing…" bubble while the AI is thinking and hasn't started
         // its spoken reply yet — a real chat-style typing indicator on the left.
         if (_isAgentThinking(state, agentCaption)) _buildTypingBubble(),
       ],
@@ -1243,7 +1284,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         (agentCaption == null || agentCaption.isEmpty);
   }
 
-  /// Left-aligned "Nova is typing" bubble with bouncing dots.
+  /// Left-aligned "Nyla is typing" bubble with bouncing dots.
   Widget _buildTypingBubble() {
     const accent = Color(0xFF5B45C9);
     return Align(
@@ -1260,7 +1301,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Nova is typing',
+              'Nyla is typing',
               style: GoogleFonts.inter(
                 color: accent,
                 fontSize: 11.sp,
@@ -1277,7 +1318,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   /// Active-transfer layout: HUD takes the prime central space; captions +
-  /// (collapsible) conversation history are condensed below it. The Nova avatar
+  /// (collapsible) conversation history are condensed below it. The Nyla avatar
   /// stays compact in the header (built by [_buildSessionHeader]).
   Widget _buildActiveTransferArea({
     required VoiceSessionState state,
@@ -1287,35 +1328,40 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     required String? agentCaption,
     required bool hasLiveCaption,
   }) {
-    return ListView(
-      controller: _conversationScrollController,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+    // The transfer surface (selected recipient + amount + status) is PINNED at the
+    // top as a fixed header — NOT inside the scroll. Previously it was the first
+    // item of the ListView, so as the transcript/captions accumulated and the list
+    // auto-scrolled to the bottom, the recipient/transfer widget scrolled out of
+    // view (the reported "widget appears at the top and isn't visible"). Pinning it
+    // keeps it always on screen while only the transcript scrolls below it.
+    return Column(
       children: [
-        // THE single transfer surface — sci-fi HUD, prime real estate.
+        // THE single transfer surface — sci-fi HUD, always visible.
         VoiceTransferHud(context: transfer),
-
-        // Running transcript condensed under the HUD so older turns stay
-        // visible and scrollable while a transfer is in flight (accumulates —
-        // user complaint #1). Always rendered when there's history.
-        if (messages.isNotEmpty) ...[
-          SizedBox(height: 14.h),
-          ..._displayedMessages(messages).map(_buildConversationBubble),
-        ],
-
-        // Condensed live caption below the transcript so the user still sees
-        // what they / Nova are saying while reviewing/authorizing (captions on
-        // only). Shown as the latest in-progress bubble.
-        if (_showCaptions && hasLiveCaption) ...[
-          SizedBox(height: 14.h),
-          if (userCaption != null && userCaption.isNotEmpty)
-            _buildLiveCaptionBubble(userCaption, isUser: true),
-          if (agentCaption != null && agentCaption.isNotEmpty)
-            _buildLiveCaptionBubble(agentCaption, isUser: false),
-        ],
-        if (_isAgentThinking(state, agentCaption)) ...[
-          SizedBox(height: 14.h),
-          _buildTypingBubble(),
-        ],
+        SizedBox(height: 12.h),
+        // Running transcript + live captions scroll INDEPENDENTLY below the pinned
+        // HUD so older turns stay reachable while the transfer stays in view.
+        Expanded(
+          child: ListView(
+            controller: _conversationScrollController,
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            children: [
+              if (messages.isNotEmpty)
+                ..._displayedMessages(messages).map(_buildConversationBubble),
+              if (_showCaptions && hasLiveCaption) ...[
+                SizedBox(height: 14.h),
+                if (userCaption != null && userCaption.isNotEmpty)
+                  _buildLiveCaptionBubble(userCaption, isUser: true),
+                if (agentCaption != null && agentCaption.isNotEmpty)
+                  _buildLiveCaptionBubble(agentCaption, isUser: false),
+              ],
+              if (_isAgentThinking(state, agentCaption)) ...[
+                SizedBox(height: 14.h),
+                _buildTypingBubble(),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -1407,7 +1453,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  isUser ? 'You' : 'Nova',
+                  isUser ? 'You' : 'Nyla',
                   style: GoogleFonts.inter(
                     color: accent,
                     fontSize: 10.sp,
@@ -1538,7 +1584,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
-          onTap: _showLanguagePicker,
+          onTap: _openVoiceAndLanguage,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             decoration: BoxDecoration(
@@ -1569,7 +1615,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 if (lang.supportsVoiceCustomization) ...[
                   SizedBox(width: 4.w),
                   GestureDetector(
-                    onTap: _showVoiceCustomization,
+                    onTap: _openVoiceAndLanguage,
                     child: Icon(
                       Icons.tune_rounded,
                       color: Colors.white.withValues(alpha: 0.35),
@@ -1979,13 +2025,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Nova customer-rep avatar inside a circular frame. While the agent is
+  /// Nyla customer-rep avatar inside a circular frame. While the agent is
   /// SPEAKING it pulses a purple glow ring + gentle scale and shows an active
   /// mic indicator (reads as "the rep is talking with their mic on"). While
   /// the user is LISTENING it pulses a softer blue. Idle/thinking = calm.
   ///
   /// [compact] = small header variant; otherwise the large central variant.
-  Widget _buildNovaAvatar(VoiceSessionState state, {required bool compact}) {
+  Widget _buildNylaAvatar(VoiceSessionState state, {required bool compact}) {
     final cubit = context.read<VoiceSessionCubit>();
     final isSpeaking = cubit.isAgentSpeaking;
     final isListening = state is VoiceSessionLocalUserSpeaking;

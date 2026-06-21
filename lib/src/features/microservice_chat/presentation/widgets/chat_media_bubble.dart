@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 
 /// Renders media content (image or voice note) inside a chat bubble.
 class ChatMediaBubble extends StatelessWidget {
@@ -160,7 +160,12 @@ class ChatMediaBubble extends StatelessWidget {
   }
 }
 
-class _VoiceNotePlayer extends StatefulWidget {
+/// Voice-note bubble. Stateless — it OWNS no player; it observes and drives the
+/// shared [ChatVoiceNotePlayer] so playback survives this widget being disposed
+/// when the list scrolls it off-screen. Only the currently-playing note rebuilds
+/// on position ticks; every other bubble rebuilds only when the active note
+/// changes.
+class _VoiceNotePlayer extends StatelessWidget {
   final String? localMediaPath;
   final String? mediaUrl;
   final int? audioDurationMs;
@@ -175,84 +180,18 @@ class _VoiceNotePlayer extends StatefulWidget {
     required this.isUser,
   });
 
-  @override
-  State<_VoiceNotePlayer> createState() => _VoiceNotePlayerState();
-}
-
-class _VoiceNotePlayerState extends State<_VoiceNotePlayer> {
-  late AudioPlayer _player;
-  bool _isPlaying = false;
-  bool _disposed = false;
-  Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
-  bool _loadError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _player = AudioPlayer();
-    _initAudio();
+  /// Stable id for this note in the shared player (remote URL > local path).
+  String get _noteId {
+    final remote = mediaUrl;
+    if (remote != null && remote.isNotEmpty) return remote;
+    final local = localMediaPath;
+    if (local != null && local.isNotEmpty) return local;
+    return 'voice-${identityHashCode(this)}';
   }
 
-  Future<void> _initAudio() async {
-    try {
-      if (widget.localMediaPath != null && widget.localMediaPath!.isNotEmpty) {
-        final file = File(widget.localMediaPath!);
-        if (file.existsSync()) {
-          await _player.setFilePath(widget.localMediaPath!);
-        } else {
-          _loadError = true;
-        }
-      } else if (widget.mediaUrl != null && widget.mediaUrl!.isNotEmpty) {
-        // Guard the URL scheme the same way the image bubble does — an
-        // expired tunnel URL, a relative path, or a non-http reference can
-        // never be played, so treat it as a load error up front instead of
-        // letting setUrl throw an opaque failure.
-        final url = widget.mediaUrl!;
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-          await _player.setUrl(url);
-        } else {
-          _loadError = true;
-        }
-      }
-
-      if (_disposed) return;
-
-      _duration = _player.duration ?? Duration.zero;
-      if (_duration == Duration.zero && widget.audioDurationMs != null) {
-        _duration = Duration(milliseconds: widget.audioDurationMs!);
-      }
-
-      _player.positionStream.listen((pos) {
-        if (mounted && !_disposed) setState(() => _position = pos);
-      });
-      _player.playerStateStream.listen((state) {
-        if (mounted && !_disposed) {
-          setState(() => _isPlaying = state.playing);
-          if (state.processingState == ProcessingState.completed) {
-            _player.seek(Duration.zero);
-            _player.pause();
-          }
-        }
-      });
-      if (mounted && !_disposed) setState(() {});
-    } catch (_) {
-      _loadError = true;
-      // Audio load failed - show duration from metadata
-      if (widget.audioDurationMs != null) {
-        _duration = Duration(milliseconds: widget.audioDurationMs!);
-        if (mounted && !_disposed) setState(() {});
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    _player.stop();
-    _player.dispose();
-    super.dispose();
-  }
+  Duration get _fallbackDuration => audioDurationMs != null
+      ? Duration(milliseconds: audioDurationMs!)
+      : Duration.zero;
 
   String _formatDuration(Duration d) {
     final mins = d.inMinutes;
@@ -260,117 +199,167 @@ class _VoiceNotePlayerState extends State<_VoiceNotePlayer> {
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  void _onTap() {
+    ChatVoiceNotePlayer.instance.toggle(
+      _noteId,
+      localPath: localMediaPath,
+      mediaUrl: mediaUrl,
+      fallbackDurationMs: audioDurationMs,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final accentColor = widget.isUser ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
+    final player = ChatVoiceNotePlayer.instance;
+    final accentColor = isUser ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: _loadError
-                  ? null
-                  : () {
-                      if (_isPlaying) {
-                        _player.pause();
-                      } else {
-                        _player.play();
-                      }
-                    },
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _loadError ? const Color(0xFF4B5563) : accentColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  _loadError
-                      ? Icons.error_outline
-                      : (_isPlaying ? Icons.pause : Icons.play_arrow),
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Waveform visualization (simplified bars)
-                  SizedBox(
-                    height: 24,
-                    width: 140,
-                    child: CustomPaint(
-                      painter: _WaveformPainter(
-                        progress: _duration.inMilliseconds > 0
-                            ? (_position.inMilliseconds / _duration.inMilliseconds)
-                                .clamp(0.0, 1.0)
-                            : 0.0,
-                        activeColor: accentColor,
-                        inactiveColor: const Color(0xFF4B5563),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  if (_loadError)
-                    // Tell the user WHY the (disabled) play control won't
-                    // respond — without this the duration still shows and the
-                    // greyed button reads as "not yet tapped" rather than failed.
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.cloud_off_outlined,
-                          color: Color(0xFFEF4444),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Audio unavailable',
-                          style: TextStyle(
-                            color: widget.isUser
-                                ? Colors.white70
-                                : const Color(0xFFEF4444),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    Text(
-                      _isPlaying
-                          ? _formatDuration(_position)
-                          : _formatDuration(_duration),
-                      style: TextStyle(
-                        color: widget.isUser ? Colors.white70 : const Color(0xFF9CA3AF),
-                        fontSize: 11,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+        // Outer: rebuild only when the ACTIVE note changes (rare).
+        ValueListenableBuilder<String?>(
+          valueListenable: player.currentId,
+          builder: (context, currentId, _) {
+            final isCurrent = currentId == _noteId;
+            if (!isCurrent) {
+              return _buildRow(
+                accentColor: accentColor,
+                isPlaying: false,
+                progress: 0.0,
+                timeLabel: _formatDuration(_fallbackDuration),
+                hasError: false,
+              );
+            }
+            // This is the active note — reflect error / live position.
+            return ValueListenableBuilder<String?>(
+              valueListenable: player.errorId,
+              builder: (context, errorId, _) {
+                if (errorId == _noteId) {
+                  return _buildRow(
+                    accentColor: accentColor,
+                    isPlaying: false,
+                    progress: 0.0,
+                    timeLabel: '',
+                    hasError: true,
+                  );
+                }
+                return AnimatedBuilder(
+                  animation: Listenable.merge(
+                      [player.playing, player.position, player.duration]),
+                  builder: (context, _) {
+                    final dur = player.duration.value > Duration.zero
+                        ? player.duration.value
+                        : _fallbackDuration;
+                    final pos = player.position.value;
+                    final isPlaying = player.playing.value;
+                    final progress = dur.inMilliseconds > 0
+                        ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
+                        : 0.0;
+                    return _buildRow(
+                      accentColor: accentColor,
+                      isPlaying: isPlaying,
+                      progress: progress,
+                      timeLabel:
+                          isPlaying ? _formatDuration(pos) : _formatDuration(dur),
+                      hasError: false,
+                    );
+                  },
+                );
+              },
+            );
+          },
         ),
-        if (widget.transcript != null && widget.transcript!.isNotEmpty) ...[
+        if (transcript != null && transcript!.isNotEmpty) ...[
           const SizedBox(height: 6),
           Text(
             // Limit transcript display to 500 chars to prevent layout overflow
-            widget.transcript!.length > 500
-                ? '${widget.transcript!.substring(0, 500)}...'
-                : widget.transcript!,
+            transcript!.length > 500
+                ? '${transcript!.substring(0, 500)}...'
+                : transcript!,
             style: TextStyle(
-              color: widget.isUser ? Colors.white : const Color(0xFFD1D5DB),
+              color: isUser ? Colors.white : const Color(0xFFD1D5DB),
               fontSize: 13,
               fontStyle: FontStyle.italic,
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildRow({
+    required Color accentColor,
+    required bool isPlaying,
+    required double progress,
+    required String timeLabel,
+    required bool hasError,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: hasError ? null : _onTap,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: hasError ? const Color(0xFF4B5563) : accentColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              hasError
+                  ? Icons.error_outline
+                  : (isPlaying ? Icons.pause : Icons.play_arrow),
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 24,
+                width: 140,
+                child: CustomPaint(
+                  painter: _WaveformPainter(
+                    progress: progress,
+                    activeColor: accentColor,
+                    inactiveColor: const Color(0xFF4B5563),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              if (hasError)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.cloud_off_outlined,
+                        color: Color(0xFFEF4444), size: 12),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Audio unavailable',
+                      style: TextStyle(
+                        color: isUser ? Colors.white70 : const Color(0xFFEF4444),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Text(
+                  timeLabel,
+                  style: TextStyle(
+                    color: isUser ? Colors.white70 : const Color(0xFF9CA3AF),
+                    fontSize: 11,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

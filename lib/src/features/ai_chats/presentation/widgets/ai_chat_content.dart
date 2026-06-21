@@ -19,6 +19,7 @@ import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import '../../cubit/ai_chat_cubit.dart';
@@ -255,6 +256,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   void _onActiveTabChanged() {
     if (widget.activeTab?.value == widget.chatTabIndex) {
       _scrollChatToBottom();
+    } else {
+      // Left the chat tab (bottom-nav) — stop any playing voice note. While the
+      // user stays on the chat tab it keeps playing even as the list scrolls.
+      ChatVoiceNotePlayer.instance.stop();
     }
   }
 
@@ -328,6 +333,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   @override
   void dispose() {
     widget.activeTab?.removeListener(_onActiveTabChanged);
+    // Leaving the chat page entirely — stop any playing voice note.
+    ChatVoiceNotePlayer.instance.stop();
     _messageController.dispose();
     _scrollController.dispose();
     _typingDotsController.dispose();
@@ -1242,6 +1249,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   static final _userBubbleColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2);
   static const _aiBubbleColor = InvoiceThemeColors.secondaryBackground;
 
+  /// Whether to render a message's text bubble. Voice notes carry a "Sent a
+  /// voice note" placeholder as their text, which is redundant next to the
+  /// player — suppress it (their real transcript still shows inside the player).
+  bool _showMessageText(ChatMessage message) =>
+      message.text.isNotEmpty && message.mediaType != 'voice';
+
   Widget _buildMessageBubble(ChatMessage message) {
     final bool isUser = message.isUser;
 
@@ -1275,9 +1288,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 transcript: message.transcript,
                 isUser: isUser,
               ),
-              if (message.text.isNotEmpty) SizedBox(height: 4.h),
+              // Voice notes need no caption — the player already reads as a voice
+              // note, so skip the "Sent a voice note" placeholder text. Images
+              // keep their caption.
+              if (_showMessageText(message)) SizedBox(height: 4.h),
             ],
-            if (message.text.isNotEmpty)
+            if (_showMessageText(message))
               Stack(
                 clipBehavior: Clip.none,
                 children: [
