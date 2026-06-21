@@ -82,7 +82,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // the drag snaps to the nearer of the two on release. The full-screen toggle
   // also switches between 80% and full. _isFullScreen mirrors the full state for
   // the toggle icon; it can only resize, never dismiss the sheet.
-  static const double _kDefaultHeightFactor = 0.8;
+  static const double _kDefaultHeightFactor = 0.9;
   double _sheetHeightFactor = _kDefaultHeightFactor;
   bool _isDraggingSheet = false;
   bool _isFullScreen = false;
@@ -607,7 +607,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   /// Wrap the static (non-draggable) sub-views at the same default height as the
-  /// main session sheet (80%).
+  /// main session sheet (90%).
   Widget _sizedSheet(Widget child) {
     return FractionallySizedBox(
       heightFactor: _kDefaultHeightFactor,
@@ -785,13 +785,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         //   TOP    = compact header (avatar + Nyla + status + controls)
         //   MIDDLE = single scrollable conversation/transcript + live caption
         //   BOTTOM = action bar (mute / end)
-        // Sheet height = MediaQuery * _sheetHeightFactor. Opens at 80% and can be
+        // Sheet height = MediaQuery * _sheetHeightFactor. Opens at 90% and can be
         // resized to full screen by DRAGGING the top handle (or the full-screen
         // toggle). We use an EXPLICIT height rather than a FractionallySizedBox —
         // inside a GetX/modal bottom sheet a fractional box is given loose height
         // constraints and silently renders full-bleed (the "still opens fullscreen on
         // Android" bug). While dragging we drop the animation so the sheet tracks the
-        // finger; on release it animates the snap to 80% / full.
+        // finger; on release it animates the snap to 90% / full.
         return AnimatedContainer(
           duration: _isDraggingSheet
               ? Duration.zero
@@ -821,7 +821,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 child: Column(
                   children: [
                     // Drag handle — drag UP to grow toward full screen, DOWN to
-                    // shrink toward the 80% default; snaps to the nearer on release.
+                    // shrink toward the 90% default; snaps to the nearer on release.
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onVerticalDragUpdate: (details) {
@@ -838,7 +838,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       onVerticalDragEnd: (_) {
                         setState(() {
                           _isDraggingSheet = false;
-                          // Snap to the nearer of 80% / full (midpoint = 0.9).
+                          // Snap to the nearer of 90% / full (midpoint = 0.95).
                           final full = _sheetHeightFactor >=
                               (_kDefaultHeightFactor + 1.0) / 2;
                           _sheetHeightFactor =

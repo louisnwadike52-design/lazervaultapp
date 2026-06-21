@@ -58,6 +58,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// running so a single user action starts exactly one session.
   bool _isStartingSession = false;
 
+  /// Set when a teardown (dismiss/disconnect/end) has been requested, so an
+  /// in-flight connectToLiveKitRoom() that completes AFTER the user dismissed the
+  /// sheet immediately disconnects the freshly-connected room instead of leaving a
+  /// ghost session on the server (the gateway otherwise has to sweep stale
+  /// `voice:active` keys on its next startup). Reset at the start of each connect.
+  bool _teardownRequested = false;
+
+  /// De-dupes concurrent _disposeRoomResources() calls. The widget's dispose()
+  /// fires a (fire-and-forget) disconnect while a user-driven _closeSheet() or an
+  /// agent-ended teardown may run the same path — without this both race on the
+  /// same Room and can leave a half-released connection.
+  Future<void>? _disposingRoom;
+
   /// Get the current session ID
   String? get currentSessionId => _currentSessionId;
 
@@ -370,8 +383,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         await sendToVoiceAgent('language_changed', {
           'language': languageCode,
           'locale': locale,
+          // Carry the (auto-selected) voice for the new language so the agent
+          // re-resolves TTS with a voice that's VALID for it — without this the
+          // backend kept the old language's voice and audio could break.
+          if (_selectedVoiceId != null && _selectedVoiceId!.isNotEmpty)
+            'voice_preference': _selectedVoiceId,
         });
-        print('VoiceSessionCubit: Sent language change to backend: $languageCode ($locale)');
+        print('VoiceSessionCubit: Sent language change to backend: $languageCode ($locale) voice=$_selectedVoiceId');
       }
     } catch (e) {
       // Edge case: Handle SharedPreferences errors
@@ -597,6 +615,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   Future<void> connectToLiveKitRoom(String roomName, String token, String url) async {
     if (isClosed) return;
+    _teardownRequested = false; // fresh connect — clear any stale teardown request
     emit(VoiceSessionConnectingToRoom());
 
     final micPermissionStatus = await Permission.microphone.request();
@@ -655,6 +674,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       );
       await _room!.connect(url, token, connectOptions: connectOptions);
       print('VoiceSessionCubit: Connected to LiveKit room');
+
+      // The user may have dismissed the sheet (or the agent ended the call) WHILE
+      // this connect was in flight — up to 30s. If so, immediately leave the room
+      // we just joined instead of going live on a session nobody is watching.
+      if (isClosed || _teardownRequested) {
+        print('VoiceSessionCubit: teardown requested during connect — disconnecting immediately');
+        await _disposeRoomResources();
+        if (!isClosed) emit(VoiceSessionDisconnected());
+        return;
+      }
+
       await _room!.localParticipant?.setMicrophoneEnabled(true);
 
       // Connect to voice WebSocket service for visual feedback events
@@ -1411,6 +1441,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     await sendToVoiceAgent('custom_voice_changed', {'enabled': enabled});
   }
 
+  /// User picked a different PRESET voice during a live call. Tell the agent to
+  /// swap its TTS live so the next reply uses it — a LIVE swap, NOT a session
+  /// restart (restarting mid-call raced the backend's concurrent-session limit
+  /// and left a room with no agent, which is what broke voice output). No-ops
+  /// when there is no active session; the next session start picks up the saved
+  /// voice from metadata. Does not transition session state.
+  Future<void> notifyVoiceChanged(String voiceId) async {
+    if (voiceId.isEmpty) return;
+    await sendToVoiceAgent('voice_changed', {'voice_preference': voiceId});
+  }
+
   /// The user opened the voice-cloning setup flow while a voice call is live.
   /// Tell the agent to PAUSE (stop listening / talking) so the mic isn't fought
   /// over while the user records their cloning sample. No-op when there is no
@@ -1429,6 +1470,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   Future<void> disconnectFromLiveKitRoom({bool fullCleanup = false}) async {
     print('VoiceSessionCubit: disconnectFromLiveKitRoom called, fullCleanup=$fullCleanup');
+    _teardownRequested = true; // cancel any in-flight connect (mid-connection dismissal)
     _disconnectWebSocket();
     _setVisualFeedbackActive(false);
     _clearCaptions();
@@ -1450,6 +1492,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Future<void> endSession({String? endReason}) async {
     final sessionId = _currentSessionId ?? '';
     print('VoiceSessionCubit: endSession called, sessionId=$sessionId');
+    _teardownRequested = true; // cancel any in-flight connect (mid-connection end)
     _disconnectWebSocket();
     _setVisualFeedbackActive(false);
     _clearCaptions();
@@ -1518,11 +1561,34 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     startVoiceSession(accessToken: accessToken);
   }
 
-  Future<void> _disposeRoomResources() async {
-    await _roomEventsListener?.dispose();
+  Future<void> _disposeRoomResources() {
+    // Concurrent callers (widget dispose + _closeSheet + agent-ended) share the
+    // SAME in-flight disposal instead of racing on _room.
+    final existing = _disposingRoom;
+    if (existing != null) return existing;
+    final future = _doDisposeRoomResources();
+    _disposingRoom = future;
+    return future.whenComplete(() => _disposingRoom = null);
+  }
+
+  Future<void> _doDisposeRoomResources() async {
+    final listener = _roomEventsListener;
+    final room = _room;
+    // Null the refs first so a late connect / re-entrant call sees a clean slate.
     _roomEventsListener = null;
-    await _room?.disconnect();
     _room = null;
+    try {
+      await listener?.dispose();
+    } catch (e) {
+      print('VoiceSessionCubit: room listener dispose error (ignored): $e');
+    }
+    try {
+      // Bound the disconnect — a stuck WebRTC teardown must never hang cleanup or
+      // the user is trapped on a dead session. 5s is well past a healthy close.
+      await room?.disconnect().timeout(const Duration(seconds: 5));
+    } catch (e) {
+      print('VoiceSessionCubit: room disconnect error/timeout (ignored): $e');
+    }
   }
 
   /// Reset the session state (for reconnection scenarios)
