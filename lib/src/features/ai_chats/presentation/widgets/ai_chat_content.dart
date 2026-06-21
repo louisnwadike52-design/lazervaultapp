@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -169,7 +170,16 @@ class BubbleTailPainter extends CustomPainter {
 }
 
 class AiChatContent extends StatefulWidget {
-  const AiChatContent({super.key});
+  /// The dashboard's active bottom-nav index. When it becomes [chatTabIndex]
+  /// (the chatbot tab is opened), the conversation scrolls to the bottom — the
+  /// TabBarView keeps this page alive, so initState fires only once and would
+  /// not otherwise re-scroll when the user returns to the tab.
+  final ValueListenable<int>? activeTab;
+
+  /// The bottom-nav index this chat occupies (AI Chat == 2 on the dashboard).
+  final int chatTabIndex;
+
+  const AiChatContent({super.key, this.activeTab, this.chatTabIndex = 2});
 
   @override
   State<AiChatContent> createState() => _AiChatContentState();
@@ -228,11 +238,37 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
     _loadSettings();
 
+    // Scroll to the bottom each time the chatbot tab is opened (the page is
+    // kept alive by TabBarView, so this is the only signal that it became
+    // visible again after the first build).
+    widget.activeTab?.addListener(_onActiveTabChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadHistory();
       }
     });
+  }
+
+  /// Fired when the dashboard's active tab changes. When this chat becomes the
+  /// visible tab, settle the conversation at the bottom.
+  void _onActiveTabChanged() {
+    if (widget.activeTab?.value == widget.chatTabIndex) {
+      _scrollChatToBottom();
+    }
+  }
+
+  /// Pin the conversation to the very bottom on load / tab-open. Unlike a single
+  /// jump, this re-jumps a few times over ~0.6s so the list lands at the TRUE
+  /// bottom even as async media (chat images) finish laying out and grow the
+  /// scroll extent after the first frame.
+  void _scrollChatToBottom() {
+    for (final ms in const [0, 120, 300, 600]) {
+      Future.delayed(Duration(milliseconds: ms), () {
+        if (!mounted || !_scrollController.hasClients) return;
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      });
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -291,6 +327,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   @override
   void dispose() {
+    widget.activeTab?.removeListener(_onActiveTabChanged);
     _messageController.dispose();
     _scrollController.dispose();
     _typingDotsController.dispose();
@@ -1936,9 +1973,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           );
         }
 
-        // Scroll to bottom: instant jump on history load, animated for new messages
+        // Scroll to bottom: instant settle on history load (staggered so it
+        // reaches the true bottom as media expands the list), animated for new messages
         if (state is AIChatHistorySuccess) {
-          _scrollToBottom(isDelayed: true, animate: false);
+          _scrollChatToBottom();
         } else if (state is AIChatMessageSuccess || state is AIChatMessageLoading) {
           _scrollToBottom(isDelayed: true);
         }

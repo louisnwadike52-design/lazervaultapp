@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/screen.dart';
 import 'package:lazervault/src/features/presentation/views/bottom_nav_menu.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/view/ai_chats_screen.dart';
 import 'package:lazervault/src/features/widgets/themed_drawer.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
@@ -42,6 +43,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   int _currentIndex = 0;
   bool isDrawerOpen = false;
 
+  /// The currently-active bottom-nav tab index, exposed to tab children that
+  /// need to react to becoming visible. The AI Chat tab (index 2) listens to
+  /// this so it can scroll its conversation to the bottom every time the user
+  /// opens it — TabBarView keeps the page alive, so its initState only fires
+  /// once and wouldn't otherwise re-scroll on re-entry.
+  final ValueNotifier<int> _activeTab = ValueNotifier<int>(0);
+
 
 
   void _handleOnTabChange(int index) {
@@ -49,6 +57,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       _currentIndex = index;
       activeScreen = Screen(name: DashboardScreen.tabItems[index].name);
     });
+    // Notify tab children (e.g. AI Chat) that the active tab changed so they
+    // can react to becoming visible. Set even when the index is unchanged is
+    // harmless (ValueNotifier only fires on a real value change).
+    _activeTab.value = index;
     _tabController.animateTo(
       index,
       duration: const Duration(milliseconds: 300),
@@ -202,6 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
+    _activeTab.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -238,6 +251,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                     // bottom nav can jump back to any dashboard tab.
                     if (entry.key == 4) {
                       return _buildLifestyleTab();
+                    }
+                    // AI Chat tab: hand it the active-tab notifier so it scrolls
+                    // its conversation to the bottom every time it's opened.
+                    if (entry.key == 2) {
+                      return AiChats(activeTab: _activeTab, chatTabIndex: 2);
                     }
                     return entry.value.widget;
                   })
