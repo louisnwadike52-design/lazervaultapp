@@ -458,7 +458,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
           ),
           // Dark overlay
           Container(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withValues(alpha: 0.35),
           ),
           SafeArea(
             child: Padding(
