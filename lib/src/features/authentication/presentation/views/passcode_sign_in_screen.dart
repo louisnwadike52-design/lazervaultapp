@@ -44,9 +44,9 @@ class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
             ),
             child: const SizedBox.expand(),
           ),
-          // Dark overlay so the foreground text/keypad stay readable regardless
-          // of which (possibly bright) background photo was randomly selected.
-          Container(color: Colors.black.withValues(alpha: 0.4)),
+          // NOTE: the dark scrim for readability is rendered INSIDE PasscodeSignIn
+          // (single light overlay) — no screen-level overlay here, otherwise the
+          // two compound and the background photo goes too dark on low brightness.
           const PasscodeSignIn(),
         ],
       ),
