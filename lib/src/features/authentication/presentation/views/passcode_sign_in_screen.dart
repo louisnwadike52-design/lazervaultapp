@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For SystemChrome
+import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/passcode_sign_in.dart';
 
 class PasscodeSignInScreen extends StatefulWidget {
@@ -31,21 +32,22 @@ class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Stack(
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                  'assets/images/bg/auth_background.webp',
-                ),
+                image: AssetImage(AuthBackground.current),
                 fit: BoxFit.cover,
               ),
             ),
-            child: SizedBox.expand(),
+            child: const SizedBox.expand(),
           ),
-          PasscodeSignIn(),
+          // Dark overlay so the foreground text/keypad stay readable regardless
+          // of which (possibly bright) background photo was randomly selected.
+          Container(color: Colors.black.withValues(alpha: 0.6)),
+          const PasscodeSignIn(),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
@@ -447,11 +448,9 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
         children: [
           // Background image
           DecoratedBox(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                  'assets/images/bg/auth_background.webp',
-                ),
+                image: AssetImage(AuthBackground.current),
                 fit: BoxFit.cover,
               ),
             ),

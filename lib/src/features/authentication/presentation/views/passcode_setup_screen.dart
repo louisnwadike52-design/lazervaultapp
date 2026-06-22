@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
+import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -123,11 +124,9 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
             children: [
               // Background image (matching passcode login)
               DecoratedBox(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
-                      'assets/images/bg/auth_background.webp',
-                    ),
+                    image: AssetImage(AuthBackground.current),
                     fit: BoxFit.cover,
                   ),
                 ),
