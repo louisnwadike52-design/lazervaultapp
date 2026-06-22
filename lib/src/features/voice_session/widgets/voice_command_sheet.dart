@@ -1614,68 +1614,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Language indicator chip shown during active session.
-  Widget _buildLanguageIndicator() {
-    final cubit = context.read<VoiceSessionCubit>();
-    final lang = cubit.selectedLanguage;
-    if (lang == null) return const SizedBox.shrink();
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: _openVoiceAndLanguage,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.language_rounded,
-                  color: const Color(0xFF3B82F6),
-                  size: 15.sp,
-                ),
-                SizedBox(width: 6.w),
-                Text(
-                  lang.nativeName,
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (lang.supportsVoiceCustomization) ...[
-                  SizedBox(width: 4.w),
-                  GestureDetector(
-                    onTap: _openVoiceAndLanguage,
-                    child: Icon(
-                      Icons.tune_rounded,
-                      color: Colors.white.withValues(alpha: 0.35),
-                      size: 14.sp,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-        // Custom Voice button for English
-        if (lang.code == 'en') ...[
-          SizedBox(width: 6.w),
-          _buildCustomVoiceButton(),
-        ],
-      ],
-    );
-  }
-
   /// Reusable "Custom Voice" pill that routes to the voice-settings screen.
   /// Used in the language indicator (call-end) and the OTP/PIN entry sheet.
   Widget _buildCustomVoiceButton() {
@@ -2628,14 +2566,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
             ),
 
-            // Top bar: settings + language + close
+            // Top bar: ONE settings entry + close. Language + custom voice now
+            // live inside the settings modal (opened by the gear), so the
+            // call-end page isn't cluttered with three separate icons.
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
                   _buildSettingsButton(),
-                  SizedBox(width: 8.w),
-                  _buildLanguageIndicator(),
                   const Spacer(),
                   GestureDetector(
                     onTap: _closeSheet,
