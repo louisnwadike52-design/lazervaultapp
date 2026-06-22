@@ -715,6 +715,38 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<Either<Failure, void>> logout({
+    required String userId,
+    required String refreshToken,
+  }) async {
+    try {
+      final request = auth_req_resp.LogoutRequest(
+        userId: userId,
+        refreshToken: refreshToken,
+      );
+      // Authenticated call — the gateway revokes the server-side session for the
+      // bearer token. Must run BEFORE the local session is cleared so withAuth()
+      // can still attach a valid access token.
+      final callOptions = await _callOptionsHelper.withAuth();
+      await _authServiceClient.logout(request, options: callOptions);
+      print('Logout: server-side session revoked');
+      return const Right(null);
+    } on GrpcError catch (e) {
+      print('gRPC Error during logout: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Logout failed.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during logout: $e');
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred during logout.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
   Future<Either<Failure, ProfileEntity>> validateToken({required String accessToken}) async {
     try {
       final request = auth_req_resp.ValidateTokenRequest(token: accessToken);

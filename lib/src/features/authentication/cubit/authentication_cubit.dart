@@ -9,12 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/core/config/country_config.dart';
@@ -727,6 +729,41 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (currentEmail != null && currentEmail.isNotEmpty) {
       await _storage.write(key: 'stored_email', value: currentEmail);
     }
+
+    // 1) End any ACTIVE VOICE CALL first — we must never leave a LiveKit room /
+    //    voice agent connected against a user who has just logged out and been
+    //    routed to the passcode screen. Silent full teardown (no rating screen).
+    try {
+      if (serviceLocator.isRegistered<VoiceSessionCubit>()) {
+        final voice = serviceLocator<VoiceSessionCubit>();
+        if (voice.hasActiveVoiceSession) {
+          await voice.disconnectFromLiveKitRoom(fullCleanup: true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Logout: failed to end voice session (continuing): $e');
+    }
+
+    // 2) REVOKE THE SESSION ON THE BACKEND so the JWT/refresh token can't be
+    //    replayed — logout must invalidate server-side, not just route to the
+    //    passcode screen. Read the tokens BEFORE _clearSession() wipes them.
+    //    Best-effort: a network failure here must not block local logout.
+    final userId = _currentProfile?.user.id ?? '';
+    final refreshToken = _currentProfile?.session.refreshToken ??
+        (await _storage.read(key: _refreshTokenKey)) ??
+        '';
+    if (userId.isNotEmpty || refreshToken.isNotEmpty) {
+      final result = await _authRepository.logout(
+        userId: userId,
+        refreshToken: refreshToken,
+      );
+      result.fold(
+        (f) => debugPrint(
+            'Logout: backend revoke failed (continuing local logout): ${f.message}'),
+        (_) => debugPrint('Logout: backend session revoked'),
+      );
+    }
+
     await _clearSession();
     // Clear currency sync state on logout
     _currencySyncService.clear();
@@ -2070,6 +2107,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // over the "come back soon" message. Legitimate login errors still show
     // because _isLoggingOut is only ever true during logout().
     if (_isLoggingOut) return;
+    // Error haptic on EVERY error snackbar — validation and API alike. Previously
+    // only page-2 phone validation buzzed (the UI called Haptics.error directly),
+    // so all other signup validation errors (email/password/name/DOB/username/
+    // country) showed the snackbar with no vibration. Centralising it here makes
+    // the haptic fire consistently wherever an error snackbar is shown.
+    Haptics.error();
+    // GetX shows ONE snackbar at a time and drops a new one while another is
+    // still on screen — so a second validation error (e.g. user re-taps Continue
+    // after fixing one field) could silently not appear. Close any open snackbar
+    // first so the latest error always shows.
+    if (Get.isSnackbarOpen) {
+      Get.closeCurrentSnackbar();
+    }
     Get.snackbar(
       title,
       message,

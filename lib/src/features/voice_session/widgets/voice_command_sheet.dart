@@ -849,12 +849,22 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               child: Stack(
                 children: [
                   SafeArea(
-                // In full screen the sheet reaches the very top, so apply the top
-                // inset to keep the header below the OS status bar (clock/battery);
-                // at 90%/minimized the sheet doesn't reach the top, so no inset.
-                top: _isFullScreen,
+                // We handle the TOP inset explicitly below — SafeArea's top inset
+                // is unreliable inside a modal bottom sheet (the route can zero
+                // out MediaQuery.padding.top), which left the Nyla header tucked
+                // under the OS status bar in full screen. Keep bottom/side insets.
+                top: false,
                 child: Column(
                   children: [
+                    // In full screen the sheet reaches the very top, so reserve the
+                    // real status-bar height (read straight from the FlutterView so
+                    // a zeroed ancestor MediaQuery can't hide it) to push the header
+                    // clear of the clock/battery. No inset at 90%/minimized.
+                    if (_isFullScreen)
+                      SizedBox(
+                        height:
+                            MediaQueryData.fromView(View.of(context)).padding.top,
+                      ),
                     // Drag handle — drag UP to grow toward full screen, DOWN to
                     // shrink toward the 90% default; snaps to the nearer on release.
                     GestureDetector(

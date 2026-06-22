@@ -102,6 +102,14 @@ abstract class IAuthRepository {
     required String accessToken,
   });
 
+  /// Revoke the current session on the backend (invalidates the server-side
+  /// session / refresh token) so the JWT can't be replayed after logout. Best
+  /// effort — the caller still clears the local session even if this fails.
+  Future<Either<Failure, void>> logout({
+    required String userId,
+    required String refreshToken,
+  });
+
   // Phone verification methods
   Future<Either<Failure, PhoneVerificationEntity>> requestPhoneVerification({
     required String phoneNumber,
