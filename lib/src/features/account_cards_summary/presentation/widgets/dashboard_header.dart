@@ -34,17 +34,20 @@ class _DashboardHeaderState extends State<DashboardHeader>
   /// Drives the continuous "breathing" glow/halo around the voice mic icon, so
   /// users always notice there's an AI assistant they can talk to.
   AnimationController? _voiceGlowController;
+  // Guards the async gap between tapping the mic and the sheet opening, so a
+  // rapid double-tap can't launch the voice command sheet twice.
+  bool _voiceSheetOpening = false;
 
   @override
   void initState() {
     super.initState();
-    // Continuous, gentle pulsing glow around the voice mic — NOT a one-time
-    // bling. A soft ~1.6s "breathe" repeated forever signals "there's a live AI
-    // here" without being distracting (the halo never fully disappears, so the
-    // icon always looks alive). Driven by a single lightweight AnimatedBuilder.
+    // Continuous pulsing glow around the voice mic so users notice the AI
+    // assistant. A faster ~0.7s blink (≈1.4s full cycle) clearly draws the eye;
+    // the halo never fully disappears (base > 0) so the icon always looks alive.
+    // Driven by a single lightweight AnimatedBuilder.
     _voiceGlowController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 700),
     );
     // Kick it off after first frame so the dashboard is visible, then loop.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -295,21 +298,34 @@ class _DashboardHeaderState extends State<DashboardHeader>
       builder: (context, inner) {
         // Gentle ease, value 0..1..0 from repeat(reverse).
         final t = Curves.easeInOut.transform(controller.value);
-        // Base + pulse so the halo is always visible (never 0) and breathes.
-        final spread = 1.5 + (3.5 * t); // 1.5 → 5
-        final blur = 6.0 + (12.0 * t); // 6 → 18
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: glowColor.withValues(alpha: 0.35 + (0.40 * t)), // 0.35 → 0.75
-                blurRadius: blur,
-                spreadRadius: spread,
-              ),
-            ],
+        // Base + pulse so the halo is always visible (never 0) and breathes,
+        // but the BRIGHT blink is now much brighter (peak alpha 1.0) with a tight
+        // bright core that flares, plus a subtle grow — so it really catches the eye.
+        final spread = 1.5 + (5.0 * t); // 1.5 → 6.5
+        final blur = 8.0 + (18.0 * t); // 8 → 26
+        final scale = 1.0 + (0.07 * t); // subtle grow on the bright blink
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                // Wide soft halo — far brighter at the peak than before.
+                BoxShadow(
+                  color: glowColor.withValues(alpha: 0.30 + (0.70 * t)), // 0.30 → 1.0
+                  blurRadius: blur,
+                  spreadRadius: spread,
+                ),
+                // Tight bright core that flares on the bright blink for punch.
+                BoxShadow(
+                  color: glowColor.withValues(alpha: 0.55 * t), // 0 → 0.55
+                  blurRadius: 4.0 + (6.0 * t),
+                  spreadRadius: 0.5 + (1.5 * t),
+                ),
+              ],
+            ),
+            child: inner,
           ),
-          child: inner,
         );
       },
       child: child,
@@ -364,6 +380,18 @@ class _DashboardHeaderState extends State<DashboardHeader>
   }
 
   void _showVoiceCommandSheet(BuildContext context) async {
+    // Double-tap / re-entrancy guard: ignore if we're already opening the sheet
+    // or a bottom sheet is already on screen.
+    if (_voiceSheetOpening || (Get.isBottomSheetOpen ?? false)) return;
+    _voiceSheetOpening = true;
+    try {
+      await _showVoiceCommandSheetInner(context);
+    } finally {
+      _voiceSheetOpening = false;
+    }
+  }
+
+  Future<void> _showVoiceCommandSheetInner(BuildContext context) async {
     final activationManager = VoiceActivationManager();
 
     // Check if voice service is available first

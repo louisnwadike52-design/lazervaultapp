@@ -91,6 +91,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // also switches between 80% and full. _isFullScreen mirrors the full state for
   // the toggle icon; it can only resize, never dismiss the sheet.
   static const double _kDefaultHeightFactor = 0.9;
+  // Smallest height the sheet can be dragged down to (a true "minimized" peek),
+  // so the user can shrink it — not just toggle between 90% and full.
+  static const double _kMinHeightFactor = 0.5;
   double _sheetHeightFactor = _kDefaultHeightFactor;
   bool _isDraggingSheet = false;
   bool _isFullScreen = false;
@@ -816,7 +819,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 ),
               ),
               child: SafeArea(
-                top: false,
+                // In full screen the sheet reaches the very top, so apply the top
+                // inset to keep the header below the OS status bar (clock/battery);
+                // at 90%/minimized the sheet doesn't reach the top, so no inset.
+                top: _isFullScreen,
                 child: Column(
                   children: [
                     // Drag handle — drag UP to grow toward full screen, DOWN to
@@ -828,21 +834,32 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                         if (h <= 0) return;
                         setState(() {
                           _isDraggingSheet = true;
-                          // Dragging up (negative dy) increases the height factor.
+                          // Dragging up (negative dy) grows; dragging down shrinks,
+                          // now all the way to the minimized peek (not just 90%).
                           _sheetHeightFactor =
                               (_sheetHeightFactor - details.delta.dy / h)
-                                  .clamp(_kDefaultHeightFactor, 1.0);
+                                  .clamp(_kMinHeightFactor, 1.0);
                         });
                       },
                       onVerticalDragEnd: (_) {
                         setState(() {
                           _isDraggingSheet = false;
-                          // Snap to the nearer of 90% / full (midpoint = 0.95).
-                          final full = _sheetHeightFactor >=
-                              (_kDefaultHeightFactor + 1.0) / 2;
-                          _sheetHeightFactor =
-                              full ? 1.0 : _kDefaultHeightFactor;
-                          _isFullScreen = full;
+                          // Snap to the NEAREST of min / default / full so the user
+                          // can land on a small, medium, or full height.
+                          const snaps = [
+                            _kMinHeightFactor,
+                            _kDefaultHeightFactor,
+                            1.0,
+                          ];
+                          double nearest = snaps.first;
+                          for (final s in snaps) {
+                            if ((_sheetHeightFactor - s).abs() <
+                                (_sheetHeightFactor - nearest).abs()) {
+                              nearest = s;
+                            }
+                          }
+                          _sheetHeightFactor = nearest;
+                          _isFullScreen = nearest >= 1.0;
                         });
                       },
                       child: Container(
@@ -1142,9 +1159,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           shape: BoxShape.circle,
         ),
         child: Icon(
-          _isFullScreen
-              ? Icons.fullscreen_exit_rounded
-              : Icons.fullscreen_rounded,
+          // Match the chatbot bottomsheet's expand/collapse icons.
+          _isFullScreen ? Icons.close_fullscreen : Icons.open_in_full,
           color: Colors.white.withValues(alpha: 0.55),
           size: 18.sp,
         ),
