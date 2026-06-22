@@ -1,5 +1,6 @@
 import 'package:grpc/grpc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../core/auth/jwt_payload.dart';
 import '../../../core/services/grpc_call_options_helper.dart';
 import '../../generated/invoice.pbgrpc.dart';
 import '../../generated/invoice_payment.pbgrpc.dart';
@@ -46,6 +47,9 @@ class GrpcClient {
   final FlutterSecureStorage _secureStorage;
   final GrpcCallOptionsHelper? _callOptionsHelper;
   static const String _accessTokenKey = 'access_token';
+  // Same key SecureStorageService persists the logged-in user id under (written
+  // by AuthenticationCubit on login). Used by getCurrentUserId().
+  static const String _userIdKey = 'user_id';
 
   /// Accepts an injected ClientChannel (Financial Gateway from injection_container)
   /// This ensures all financial services go through the proper API gateway
@@ -143,9 +147,27 @@ class GrpcClient {
     await _channel.shutdown();
   }
 
-  /// Get current user ID from token (not implemented for this storage approach)
+  /// Current logged-in user id.
+  ///
+  /// Was a stub returning null, which made every caller that gates on it (e.g.
+  /// AI Scan-to-Pay's `_getUserId()`) throw "User not authenticated" even when
+  /// the user was signed in. Resolve it for real: prefer the id persisted at
+  /// login (`user_id`), then fall back to the `sub`/`user_id` claim decoded from
+  /// the access-token JWT (which is always present when authenticated).
   Future<String?> getCurrentUserId() async {
-    // User ID would need to be decoded from JWT or stored separately
+    final stored = await _secureStorage.read(key: _userIdKey);
+    if (stored != null && stored.isNotEmpty) return stored;
+
+    final token = await _secureStorage.read(key: _accessTokenKey);
+    if (token != null && token.isNotEmpty) {
+      final claims = decodeJwtPayload(token);
+      final fromJwt = (claims?['user_id'] ??
+              claims?['sub'] ??
+              claims?['userId'] ??
+              claims?['uid'])
+          ?.toString();
+      if (fromJwt != null && fromJwt.isNotEmpty) return fromJwt;
+    }
     return null;
   }
 
