@@ -663,6 +663,19 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     return BlocConsumer<VoiceSessionCubit, VoiceSessionState>(
       listener: (context, state) {
+        // If the recipient picker is open and the user resolves it BY VOICE
+        // ("the first one" / "send to John"), the agent starts a fresh turn or
+        // the flow advances — close the in-sheet picker so the conversation
+        // continues naturally (the user didn't have to tap). Tap-selection
+        // dismisses the overlay on its own.
+        if (_recipientCandidates != null &&
+            (state is VoiceSessionAgentProcessing ||
+                state is VoiceSessionTransferConfirmation ||
+                state is VoiceSessionPinRequired ||
+                state is VoiceSessionTransactionSuccess)) {
+          _hideRecipientOverlay();
+        }
+
         if (state is VoiceSessionLanguageSelection) {
           // Language selection is handled in the builder
         } else if (state is VoiceSessionCredentialsLoaded) {
@@ -3047,6 +3060,20 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       _recipientCandidates = users;
       _recipientQuery = query;
     });
+  }
+
+  /// Silently hide the recipient picker overlay WITHOUT touching the cubit —
+  /// used when the agent resolves the recipient itself (e.g. the user picked by
+  /// VOICE — "the first one" / "send to John") so the flow moved on and the
+  /// picker should just disappear. Idempotent.
+  void _hideRecipientOverlay() {
+    if (_recipientCandidates == null) return;
+    if (mounted) {
+      setState(() {
+        _recipientCandidates = null;
+        _recipientQuery = '';
+      });
+    }
   }
 
   /// Dismiss the in-sheet recipient picker overlay. When [cancelled] the voice
