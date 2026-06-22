@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/scan_entities.dart';
+import '../../data/datasources/ai_scan_history_store.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
 import '../widgets/scan_history_card.dart';
@@ -21,8 +22,6 @@ import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:get_it/get_it.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AiScanToPayScreen extends StatefulWidget {
@@ -163,26 +162,10 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
         ),
         centerTitle: true,
         actions: [
-          // Per-service voice + chat icons — pin every session to
-          // the AI-scan flow on chat-transfers-service via
-          // DIRECT_ROUTES['ai-scan'] → primary 'transfers'. Same
-          // pattern as crowdfund / autosave / lock-funds / tax /
-          // customers / inventory / per-bill landings.
-          ServiceVoiceButton(
-            serviceName: 'ai-scan',
-            iconColor: const Color.fromARGB(255, 78, 3, 208),
-            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-          ),
-          SizedBox(width: 8.w),
-          MicroserviceChatIcon(
-            serviceName: 'AI Scan to Pay',
-            sourceContext: 'ai-scan',
-            icon: Icons.chat_bubble_outline,
-            iconColor: const Color.fromARGB(255, 78, 3, 208),
-          ),
-          SizedBox(width: 8.w),
+          // Voice + chat icons intentionally removed from this landing per
+          // request — AI Scan to Pay is a camera/upload-first surface.
           IconButton(
-            onPressed: () => context.read<AiScanCubit>().loadScanHistory(),
+            onPressed: () => context.read<AiScanCubit>().loadLocalHistory(),
             icon: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
@@ -327,6 +310,8 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
             // Unified flow: behind the auto-opened chooser, show the source
             // landing (Take a photo / Upload) — not the legacy tile grid.
             return _buildInitialState();
+          } else if (state is AiScanLocalHistoryLoaded) {
+            return _buildLocalHistory(state.entries);
           } else if (state is AiScanHistoryLoaded) {
             return _buildScanHistory(state.sessions);
           } else if (state is AiScanError) {
@@ -478,6 +463,208 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     );
   }
 
+
+  /// "Previous scans" — on-device history. Completed scans open the full-screen
+  /// receipt; incomplete ones tell the user the flow wasn't finished.
+  Widget _buildLocalHistory(List<AiScanHistoryEntry> entries) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Previous scans',
+                style: GoogleFonts.inter(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _openSourceSheet,
+                icon: const Icon(Icons.add,
+                    color: Color.fromARGB(255, 78, 3, 208), size: 18),
+                label: Text(
+                  'New scan',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color.fromARGB(255, 78, 3, 208),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          if (entries.isEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 60.h),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.history, size: 56.sp, color: Colors.grey[700]),
+                    SizedBox(height: 14.h),
+                    Text(
+                      'No scans yet',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      'Your scan-to-pay history will appear here.',
+                      style: GoogleFonts.inter(
+                          fontSize: 13.sp, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...entries.map(_buildHistoryTile),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryTile(AiScanHistoryEntry e) {
+    final completed = e.isCompleted;
+    final dt = e.createdAt;
+    final dateStr =
+        '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    return GestureDetector(
+      onTap: () => _onHistoryTap(e),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: (completed
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF9CA3AF))
+                    .withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                completed ? Icons.check_circle : Icons.hourglass_empty,
+                color:
+                    completed ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                size: 22.sp,
+              ),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    e.title.isNotEmpty ? e.title : 'Scan',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    completed
+                        ? '${e.currency} ${e.amount.toStringAsFixed(2)} • $dateStr'
+                        : 'Didn\'t complete • $dateStr',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: (completed
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF9CA3AF))
+                    .withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                completed ? 'Completed' : 'Incomplete',
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: completed
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF9CA3AF),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onHistoryTap(AiScanHistoryEntry e) {
+    if (e.isCompleted && e.receipt != null) {
+      Get.to(() => AiScanReceiptScreen(receipt: e.receipt!));
+    } else {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text(
+            'Scan not completed',
+            style: GoogleFonts.inter(
+                color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w700),
+          ),
+          content: Text(
+            'This scan didn\'t complete the payment flow, so there\'s no receipt '
+            'to show. You can start a new scan to try again.',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 14.sp, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Close',
+                  style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _openSourceSheet();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('New scan', style: GoogleFonts.inter()),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   Widget _buildScanHistory(List<ScanSession> sessions) {
     return SingleChildScrollView(

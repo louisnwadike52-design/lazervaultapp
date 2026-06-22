@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/scan_entities.dart';
+import '../../data/datasources/ai_scan_history_store.dart';
 
 abstract class AiScanState extends Equatable {
   const AiScanState();
@@ -240,6 +241,17 @@ class AiScanHistoryLoaded extends AiScanState {
 
   @override
   List<Object?> get props => [sessions];
+}
+
+/// Local "Previous scans" history (on-device): each entry is a resolved scan,
+/// marked completed (with a receipt) or incomplete.
+class AiScanLocalHistoryLoaded extends AiScanState {
+  final List<AiScanHistoryEntry> entries;
+
+  const AiScanLocalHistoryLoaded(this.entries);
+
+  @override
+  List<Object?> get props => [entries];
 }
 
 // Error state

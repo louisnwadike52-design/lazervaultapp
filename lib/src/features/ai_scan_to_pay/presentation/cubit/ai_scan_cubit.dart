@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../data/datasources/ai_scan_session_store.dart';
+import '../../data/datasources/ai_scan_history_store.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/exceptions/scan_exceptions.dart';
 import '../../domain/repositories/ai_scan_repository.dart';
@@ -37,6 +38,12 @@ class AiScanCubit extends Cubit<AiScanState> {
   // Injected via DI; tests can pass a fake. See K3 (session persistence).
   final AiScanSessionStore _store;
 
+  // On-device "Previous scans" history (resolved scans + completed receipts).
+  final AiScanHistoryStore _history;
+  // The history entry id for the scan currently in flight, so the matching
+  // payment can be marked completed against it.
+  String? _currentHistoryId;
+
   AiScanCubit({
     required this.startScanSessionUseCase,
     required this.processScanUseCase,
@@ -52,8 +59,44 @@ class AiScanCubit extends Cubit<AiScanState> {
     required this.paymentsTransferDataSource,
     required this.profileRepository,
     AiScanSessionStore? sessionStore,
+    AiScanHistoryStore? historyStore,
   })  : _store = sessionStore ?? AiScanSessionStore(),
+        _history = historyStore ?? AiScanHistoryStore(),
         super(AiScanInitial());
+
+  /// Record local "Previous scans" history off the state stream, so every
+  /// resolution / completion path is covered without touching each emit site.
+  /// Best-effort — history writes never block or break the money flow.
+  @override
+  void onChange(Change<AiScanState> change) {
+    super.onChange(change);
+    final next = change.nextState;
+    if (next is AiScanIntentResolved) {
+      _currentHistoryId = 'scan-${DateTime.now().microsecondsSinceEpoch}';
+      // ignore: discarded_futures
+      _history.record(id: _currentHistoryId!, intent: next.intent);
+    } else if (next is AiScanPaymentCompleted) {
+      final id = _currentHistoryId;
+      if (id != null) {
+        // ignore: discarded_futures
+        _history.markCompleted(id, next.receipt);
+      }
+    }
+  }
+
+  /// Load the on-device "Previous scans" history.
+  Future<void> loadLocalHistory() async {
+    if (isClosed) return;
+    emit(const AiScanLoading(message: 'Loading your scans...'));
+    try {
+      final entries = await _history.list();
+      if (isClosed) return;
+      emit(AiScanLocalHistoryLoaded(entries));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AiScanLocalHistoryLoaded(const []));
+    }
+  }
 
   /// Surfaced scan types — curated subset of [ScanType.values] that have a
   /// real end-to-end flow wired up (extraction → confirm → pay/redeem).

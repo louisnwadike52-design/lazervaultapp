@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -27,6 +28,11 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
   CameraController? _cameraController;
   List<CameraDescription> _cameras = [];
   bool _isCameraInitialized = false;
+  // Set when the camera can't start (no permission, no camera, init failed or
+  // timed out) so the UI shows a clear fallback instead of hanging on the
+  // "Initializing camera…" loader forever.
+  bool _cameraError = false;
+  String _cameraErrorMsg = '';
   bool _isCapturing = false;
   bool _isFlashOn = false;
   int _selectedCameraIndex = 0;
@@ -83,20 +89,26 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
 
   Future<void> _initializeCamera() async {
     if (_isDisposing) return;
-    
+
+    // Reset error/loading state for this attempt.
+    if (mounted) {
+      setState(() {
+        _cameraError = false;
+        _cameraErrorMsg = '';
+        _isCameraInitialized = false;
+      });
+    }
+
     try {
       // Dispose existing controller first
       await _disposeCamera();
-      
+
       // Request camera permission
       final status = await Permission.camera.request();
       if (!status.isGranted) {
-        Get.snackbar(
-          'Permission Denied',
-          'Camera permission is required to scan documents',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
+        _setCameraError(
+          'Camera permission is needed to take a photo. You can grant it in '
+          'Settings, or upload an image from your device instead.',
         );
         return;
       }
@@ -104,41 +116,51 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
       // Get available cameras
       _cameras = await availableCameras();
       if (_cameras.isEmpty) {
-        Get.snackbar(
-          'No Camera',
-          'No camera found on this device',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
+        _setCameraError(
+          'No camera is available on this device. Upload an image from your '
+          'device instead.',
         );
         return;
       }
 
-      // Initialize camera controller
+      // Initialize camera controller. ResolutionPreset.medium is the most
+      // broadly-compatible preset (high/veryHigh fail on some devices and the
+      // Android emulator's virtual camera).
       _cameraController = CameraController(
         _cameras[_selectedCameraIndex],
-        ResolutionPreset.high,
+        ResolutionPreset.medium,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
-      await _cameraController!.initialize();
+      // Guard against a hung initialize() (emulator camera can stall) so the
+      // UI never sticks on the loader — fall back to the error view + upload.
+      await _cameraController!.initialize().timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => throw TimeoutException('camera init timed out'),
+      );
 
       if (mounted && !_isDisposing) {
         setState(() {
           _isCameraInitialized = true;
+          _cameraError = false;
         });
       }
     } catch (e) {
-      if (mounted && !_isDisposing) {
-        Get.snackbar(
-          'Camera Error',
-          'Failed to initialize camera: ${e.toString()}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-        );
-      }
+      _setCameraError(
+        'Couldn\'t start the camera. Tap retry, or upload an image from your '
+        'device instead.',
+      );
+    }
+  }
+
+  void _setCameraError(String message) {
+    if (mounted && !_isDisposing) {
+      setState(() {
+        _cameraError = true;
+        _cameraErrorMsg = message;
+        _isCameraInitialized = false;
+      });
     }
   }
 
@@ -318,8 +340,15 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
           
           if (state is AiScanProcessing) {
             return _buildProcessingState(state);
-          } else if (state is AiScanCamera && _isCameraInitialized) {
-            return _buildCameraState(state);
+          }
+          // Camera readiness drives the preview — NOT the cubit state. The
+          // unified flow pushes this screen directly (no AiScanCamera emit), so
+          // gating on `state is AiScanCamera` left it stuck on the loader.
+          if (_cameraError) {
+            return _buildCameraErrorView();
+          }
+          if (_isCameraInitialized && _cameraController != null) {
+            return _buildCameraState();
           }
 
           return _buildLoadingCameraView();
@@ -328,7 +357,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
     );
   }
 
-  Widget _buildCameraState(AiScanCamera state) {
+  Widget _buildCameraState() {
     return Stack(
       children: [
         // Camera preview
@@ -366,13 +395,13 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _getIconForScanType(state.session.scanType),
+                      Icons.qr_code_scanner,
                       color: const Color.fromARGB(255, 78, 3, 208),
                       size: 20.sp,
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      state.session.scanType.displayName,
+                      'Scan to Pay',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -391,7 +420,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
-                  'Position ${state.session.scanType.displayName.toLowerCase()} within the frame and tap capture',
+                  'Position the bank details or payment QR within the frame and tap capture',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 13.sp,
@@ -630,6 +659,91 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
     );
   }
 
+  /// Shown when the camera can't start — never leave the user on an endless
+  /// loader. Offers Retry + Upload-from-device (which works without a camera).
+  Widget _buildCameraErrorView() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black,
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
+      child: Stack(
+        children: [
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12.h,
+            left: 4.w,
+            child: _buildControlButton(Icons.arrow_back, () => Get.back()),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.no_photography_outlined,
+                    color: const Color(0xFF9CA3AF), size: 56.sp),
+                SizedBox(height: 16.h),
+                Text(
+                  'Camera unavailable',
+                  style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  _cameraErrorMsg,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF), height: 1.4),
+                ),
+                SizedBox(height: 28.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52.h,
+                  child: ElevatedButton.icon(
+                    onPressed: _isDisposing ? null : _initializeCamera,
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    label: Text('Retry',
+                        style: GoogleFonts.inter(
+                            fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52.h,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickImageFromGallery(),
+                    icon: const Icon(Icons.photo_library_outlined,
+                        color: Colors.white),
+                    label: Text('Upload from device',
+                        style: GoogleFonts.inter(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF2D2D2D)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _captureImage() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized || _isDisposing) {
       return;
@@ -695,26 +809,6 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
     }
   }
 
-  IconData _getIconForScanType(ScanType scanType) {
-    switch (scanType) {
-      case ScanType.accountDetails:
-        return Icons.account_balance;
-      case ScanType.invoice:
-        return Icons.receipt_long;
-      case ScanType.barcode:
-        return Icons.qr_code_2;
-      case ScanType.utilityBill:
-        return Icons.receipt;
-      case ScanType.giftCard:
-        return Icons.card_giftcard;
-      case ScanType.qrCode:
-        return Icons.qr_code_scanner;
-      case ScanType.receipt:
-        return Icons.receipt_outlined;
-      case ScanType.bankDetails:
-        return Icons.account_balance_wallet;
-    }
-  }
 }
 
 // Custom painter for camera overlay
