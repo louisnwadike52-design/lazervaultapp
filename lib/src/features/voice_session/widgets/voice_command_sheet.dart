@@ -28,6 +28,8 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
+import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
+import 'package:lazervault/src/features/voice/screens/voice_settings_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
@@ -1529,24 +1531,49 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
+  // Voice settings open IN-SHEET (as a modal over the voice bottomsheet) — never
+  // a full-screen app route — so the live voice session is preserved and the
+  // user returns to the conversation on close. General mic → global voice
+  // settings; per-service mic → that service's settings.
   void _openSettings() {
     final service = widget.serviceName;
+    final Widget settingsChild;
     if (service == null || service.isEmpty) {
-      Get.toNamed(AppRoutes.voiceSettings);
-      return;
+      settingsChild = BlocProvider<VoiceSettingsCubit>(
+        create: (_) => serviceLocator<VoiceSettingsCubit>(),
+        child: const VoiceSettingsScreen(),
+      );
+    } else {
+      settingsChild = BlocProvider<PerServiceVoiceSettingsCubit>(
+        create: (_) {
+          final cubit = PerServiceVoiceSettingsCubit(
+            serviceName: service,
+            storage: SharedPrefsPerServiceVoiceSettingsStorage(),
+          );
+          cubit.load();
+          return cubit;
+        },
+        child: PerServiceVoiceSettingsScreen(serviceName: service),
+      );
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider<PerServiceVoiceSettingsCubit>(
-          create: (_) {
-            final cubit = PerServiceVoiceSettingsCubit(
-              serviceName: service,
-              storage: SharedPrefsPerServiceVoiceSettingsStorage(),
-            );
-            cubit.load();
-            return cubit;
-          },
-          child: PerServiceVoiceSettingsScreen(serviceName: service),
+    _presentSettingsInSheet(settingsChild);
+  }
+
+  /// Present a full settings screen as a near-full-height modal OVER the voice
+  /// bottomsheet (showModalBottomSheet) instead of pushing an app route — the
+  /// route push would tear down / background the live LiveKit voice session.
+  /// Dismissing returns straight to the conversation.
+  Future<void> _presentSettingsInSheet(Widget child) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.93,
+        child: ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          child: child,
         ),
       ),
     );
@@ -1637,7 +1664,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// Used in the language indicator (call-end) and the OTP/PIN entry sheet.
   Widget _buildCustomVoiceButton() {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.voiceSettings),
+      onTap: _openVoiceAndLanguage,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
         decoration: BoxDecoration(
