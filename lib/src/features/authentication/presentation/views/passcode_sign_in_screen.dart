@@ -37,8 +37,8 @@ class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
           DecoratedBox(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                  'https://picsum.photos/seed/lazervaultsignin/1080/1920',
+                image: AssetImage(
+                  'assets/images/bg/auth_background_dark.jpg',
                 ),
                 fit: BoxFit.cover,
               ),

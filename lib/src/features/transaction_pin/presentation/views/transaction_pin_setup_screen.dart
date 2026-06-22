@@ -449,8 +449,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
           DecoratedBox(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                  'https://picsum.photos/seed/lazervaultpin/1080/1920',
+                image: AssetImage(
+                  'assets/images/bg/auth_background_dark.jpg',
                 ),
                 fit: BoxFit.cover,
               ),
