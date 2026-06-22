@@ -208,6 +208,13 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
       ),
       body: BlocConsumer<AiScanCubit, AiScanState>(
         listener: (context, state) {
+          // A fresh analysis (camera capture or upload) means any prior
+          // confirm/paying screen is done — reset the one-shot push guards so
+          // the next resolved intent can push cleanly even after a retry.
+          if (state is AiScanAnalyzing) {
+            _confirmPushed = false;
+            _payingScreenPushed = false;
+          }
           if (state is AiScanResumable) {
             // Surface the resumable session as a sticky bottom sheet
             // with Resume / Discard. Either choice dispatches back to

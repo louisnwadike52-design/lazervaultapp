@@ -409,6 +409,20 @@ class AiScanCubit extends Cubit<AiScanState> {
         return;
       }
 
+      // 4b) OCR resolved an email → LazerVault user resolved by email at pay time.
+      if (analysis != null && analysis.isEmail) {
+        emit(AiScanIntentResolved(ScanPaymentIntent(
+          type: ScanIntentType.recipient,
+          title: analysis.displayName ?? analysis.email ?? 'Recipient',
+          subtitle: analysis.email ?? 'Email',
+          username: analysis.email, // resolved via search at pay time
+          amount: analysis.amount,
+          amountEditable: true,
+          description: analysis.description,
+        )));
+        return;
+      }
+
       // 5) Ambiguous (10–11 digit value).
       if (analysis != null && analysis.isAmbiguous) {
         emit(AiScanAmbiguousResult(
