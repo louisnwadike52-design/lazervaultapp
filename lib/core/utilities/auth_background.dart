@@ -13,12 +13,16 @@ import 'dart:math';
 class AuthBackground {
   AuthBackground._();
 
-  /// All bundled background variants.
+  /// All bundled background variants (1–4 forest, 5–8 ocean).
   static const List<String> all = [
     'assets/images/bg/auth_background_1.webp',
     'assets/images/bg/auth_background_2.webp',
     'assets/images/bg/auth_background_3.webp',
     'assets/images/bg/auth_background_4.webp',
+    'assets/images/bg/auth_background_5.webp',
+    'assets/images/bg/auth_background_6.webp',
+    'assets/images/bg/auth_background_7.webp',
+    'assets/images/bg/auth_background_8.webp',
   ];
 
   /// The variant chosen for THIS app launch (random, memoized once).
