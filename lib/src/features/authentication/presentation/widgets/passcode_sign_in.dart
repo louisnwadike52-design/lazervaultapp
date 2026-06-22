@@ -238,8 +238,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
         if (state is! PasscodeLoginInProgress) {
           return Stack(
             children: [
-              Container(
-                color: Colors.black.withValues(alpha: 0.35),
+              Positioned.fill(
+                child: Container(color: Colors.black.withValues(alpha: 0.5)),
               ),
               const Center(child: LazerVaultLoader.small()),
             ],
@@ -252,8 +252,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
 
         return Stack(
           children: [
-            Container(
-              color: Colors.black.withValues(alpha: 0.35),
+            Positioned.fill(
+              child: Container(color: Colors.black.withValues(alpha: 0.5)),
             ),
           SafeArea(
             child: Padding(
