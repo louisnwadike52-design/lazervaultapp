@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -380,29 +381,6 @@ class _BankAccountItem extends StatelessWidget {
     this.isSelected = false,
   });
 
-  Color _getBankColor(String bankName) {
-    final name = bankName.toLowerCase();
-    if (name.contains('access')) return const Color(0xFFED7D31);
-    if (name.contains('gtb') || name.contains('guaranty')) return const Color(0xFFE94C16);
-    if (name.contains('zenith')) return const Color(0xFFED1C24);
-    if (name.contains('uba')) return const Color(0xFFE4002B);
-    if (name.contains('first')) return const Color(0xFF003366);
-    if (name.contains('sterling')) return const Color(0xFF003399);
-    if (name.contains('fidelity')) return const Color(0xFF009933);
-    if (name.contains('fcmb')) return const Color(0xFF800080);
-    if (name.contains('ecobank')) return const Color(0xFF003366);
-    if (name.contains('union')) return const Color(0xFF009DDC);
-    if (name.contains('polaris')) return const Color(0xFF8B0000);
-    if (name.contains('stanbic')) return const Color(0xFF0033A0);
-    if (name.contains('wema')) return const Color(0xFF800080);
-    if (name.contains('keystone')) return const Color(0xFF006400);
-    if (name.contains('kuda')) return const Color(0xFF40196D);
-    if (name.contains('opay')) return const Color(0xFF1BB066);
-    if (name.contains('palmpay')) return const Color(0xFF6F42C1);
-    if (name.contains('moniepoint')) return const Color(0xFF2F3292);
-    return const Color(0xFF3B82F6);
-  }
-
   String _formatSyncTime(DateTime? syncTime) {
     if (syncTime == null) return 'Never';
     final diff = DateTime.now().difference(syncTime);
@@ -414,7 +392,6 @@ class _BankAccountItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bankColor = _getBankColor(account.bankName);
     final needsReauth = account.needsReauthorization;
     const amber = Color(0xFFFB923C);
 
@@ -443,24 +420,12 @@ class _BankAccountItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Bank icon
-            Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: BoxDecoration(
-                color: bankColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Center(
-                child: Text(
-                  account.bankName.substring(0, 1).toUpperCase(),
-                  style: TextStyle(
-                    color: bankColor,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            // Bank logo (bundled asset, gradient-initials fallback)
+            BankLogo(
+              bankName: account.bankName,
+              bankCode: account.bankCode,
+              size: 36,
+              borderRadius: 8,
             ),
             SizedBox(width: 10.w),
 

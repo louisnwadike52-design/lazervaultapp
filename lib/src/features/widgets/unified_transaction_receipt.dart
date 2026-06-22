@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -320,6 +321,9 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     final bankName = tx.metadata?['bank_name'] as String?
         ?? tx.metadata?['destination_bank_name'] as String?
         ?? tx.metadata?['recipient_bank_name'] as String?;
+    final bankCode = tx.metadata?['bank_code'] as String?
+        ?? tx.metadata?['destination_bank_code'] as String?
+        ?? tx.metadata?['recipient_bank_code'] as String?;
 
     final rows = <_DetailEntry>[
       // Counterparty info (recipient/sender details)
@@ -331,7 +335,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       if (tx.counterpartyAccount != null && tx.counterpartyAccount!.isNotEmpty)
         _DetailEntry('Account', tx.counterpartyAccount!),
       if (bankName != null && bankName.isNotEmpty)
-        _DetailEntry('Bank', bankName),
+        _DetailEntry('Bank', bankName,
+            logoBankName: bankName, logoBankCode: bankCode),
       if (tx.description != null)
         _DetailEntry('Description', tx.description!),
       if (tx.transactionReference != null)
@@ -465,17 +470,34 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                       _showSnackbar('Copied to clipboard');
                     }
                   : null,
-              child: Text(
-                sanitizedValue,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                  fontFamily: 'Inter',
-                ),
-                textAlign: TextAlign.right,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (entry.logoBankName != null &&
+                      entry.logoBankName!.isNotEmpty) ...[
+                    BankLogo(
+                      bankName: entry.logoBankName!,
+                      bankCode: entry.logoBankCode,
+                      size: 16,
+                      borderRadius: 4,
+                    ),
+                    SizedBox(width: 6.w),
+                  ],
+                  Flexible(
+                    child: Text(
+                      sanitizedValue,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        fontFamily: 'Inter',
+                      ),
+                      textAlign: TextAlign.right,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -808,6 +830,14 @@ class _DetailEntry {
   final String label;
   final String value;
   final bool copyable;
+  final String? logoBankName;
+  final String? logoBankCode;
 
-  const _DetailEntry(this.label, this.value, {this.copyable = false});
+  const _DetailEntry(
+    this.label,
+    this.value, {
+    this.copyable = false,
+    this.logoBankName,
+    this.logoBankCode,
+  });
 }

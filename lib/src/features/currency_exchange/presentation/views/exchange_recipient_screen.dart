@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -324,6 +324,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   @override
   void initState() {
     super.initState();
+    serviceLocator<BankRepository>().warmUp('NG');
     final args = Get.arguments is Map<String, dynamic>
         ? Get.arguments as Map<String, dynamic>
         : null;
@@ -819,9 +820,9 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
 
   void _showBankPicker() {
     FocusScope.of(context).unfocus();
-    final banks = BanksData.getBanksForCountry(_countryConfig.countryCode);
-    final popular =
-        BanksData.getPopularBanksForCountry(_countryConfig.countryCode);
+    final banks =
+        serviceLocator<BankRepository>().cachedSync(_countryConfig.countryCode);
+    final popular = banks.take(6).toList();
     String searchQuery = '';
 
     showModalBottomSheet(
@@ -831,10 +832,14 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (_, setSheetState) {
+            final q = searchQuery.toLowerCase();
             final filtered = searchQuery.isEmpty
                 ? banks
-                : BanksData.searchBanks(
-                    _countryConfig.countryCode, searchQuery);
+                : banks
+                    .where((b) =>
+                        (b['name'] ?? '').toLowerCase().contains(q) ||
+                        (b['code'] ?? '').toLowerCase().contains(q))
+                    .toList();
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.75,

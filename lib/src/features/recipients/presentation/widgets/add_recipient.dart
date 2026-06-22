@@ -11,6 +11,7 @@ import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/core/services/contact_service.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
@@ -116,19 +117,19 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   }
 
   void _loadBanks() {
+    // Show the static list immediately for first paint, then refresh from the
+    // dynamic (Flutterwave-backed) source so codes stay valid for transfers.
     setState(() {
-      _isLoadingBanks = true;
+      _banksList = BanksData.getBanksForCountry(_currentCountry);
+      _isLoadingBanks = false;
       _banksError = null;
     });
 
-    // Use local banks data only - no API calls
-    if (mounted) {
-      setState(() {
-        _banksList = BanksData.getBanksForCountry(_currentCountry);
-        _isLoadingBanks = false;
-        _banksError = null;
-      });
-    }
+    serviceLocator<BankRepository>().getBanks(_currentCountry).then((banks) {
+      if (mounted && banks.isNotEmpty) {
+        setState(() => _banksList = banks);
+      }
+    }).catchError((_) {/* keep static fallback */});
   }
 
   @override

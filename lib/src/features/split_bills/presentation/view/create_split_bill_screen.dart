@@ -12,7 +12,7 @@ import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_state.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/tag_pay_entity.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import '../cubit/split_bill_cubit.dart';
@@ -109,6 +109,14 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       default:
         return '\u20a6';
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Warm the dynamic (Flutterwave) bank list for the external-bank picker
+    // (only NG has a dynamic source; non-NG is a no-op).
+    GetIt.I<BankRepository>().warmUp('NG');
   }
 
   @override
@@ -986,7 +994,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   }
 
   void _showBankPickerBottomSheet() {
-    final banks = BanksData.getBanksForCountry(_bankCountry);
+    final banks = GetIt.I<BankRepository>().cachedSync(_bankCountry);
     final searchController = TextEditingController();
     showModalBottomSheet(
       context: context,

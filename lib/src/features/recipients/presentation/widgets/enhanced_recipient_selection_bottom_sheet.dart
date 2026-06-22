@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/services/contact_service.dart';
@@ -974,19 +975,34 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Text(
-          [
-            recipient.accountNumber.length > 4
-              ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
-              : recipient.accountNumber,
-            if (recipient.bankName.isNotEmpty) recipient.bankName,
-          ].join(' · '),
-          style: GoogleFonts.inter(
-            color: Colors.grey[500],
-            fontSize: 12.sp,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        subtitle: Row(
+          children: [
+            if (recipient.bankName.isNotEmpty) ...[
+              BankLogo(
+                bankName: recipient.displayBankName,
+                bankCode: recipient.sortCode,
+                size: 14,
+                borderRadius: 4,
+              ),
+              SizedBox(width: 6.w),
+            ],
+            Expanded(
+              child: Text(
+                [
+                  recipient.accountNumber.length > 4
+                    ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
+                    : recipient.accountNumber,
+                  if (recipient.bankName.isNotEmpty) recipient.displayBankName,
+                ].join(' · '),
+                style: GoogleFonts.inter(
+                  color: Colors.grey[500],
+                  fontSize: 12.sp,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

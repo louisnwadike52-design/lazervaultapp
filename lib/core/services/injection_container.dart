@@ -115,6 +115,7 @@ import 'package:lazervault/src/features/funds/domain/repositories/i_withdrawal_r
 import 'package:lazervault/src/features/funds/domain/services/pending_deposit.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdraw_funds_screen.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/recipient_repository_impl.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
@@ -1513,6 +1514,15 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<OpenBankingRemoteDataSource>(
     () => OpenBankingRemoteDataSource(
       secureStorage: serviceLocator<SecureStorageService>(),
+    ),
+  );
+
+  // Dynamic bank list (Flutterwave-backed via /api/v1/banks) with 24h cache +
+  // static fallback. Used by recipient/bank-picker dropdowns.
+  serviceLocator.registerLazySingleton<BankRepository>(
+    () => BankRepository(
+      serviceLocator<OpenBankingRemoteDataSource>(),
+      serviceLocator<SecureStorageService>(),
     ),
   );
 

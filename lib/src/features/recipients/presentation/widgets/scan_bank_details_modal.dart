@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
@@ -93,6 +94,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   @override
   void initState() {
     super.initState();
+    serviceLocator<BankRepository>().warmUp(widget.country);
     _accountNumberController = TextEditingController(
       text: widget.scanResult.accountNumber ?? '',
     );
@@ -118,7 +120,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   }
 
   void _resolveBankCode(String bankName) {
-    final banks = BanksData.getBanksForCountry(widget.country);
+    final banks = serviceLocator<BankRepository>().cachedSync(widget.country);
     final lower = bankName.toLowerCase();
     for (final bank in banks) {
       if (bank['name']!.toLowerCase().contains(lower) ||
@@ -1102,7 +1104,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   }
 
   Widget _buildBankSelector() {
-    final banks = BanksData.getBanksForCountry(widget.country);
+    final banks = serviceLocator<BankRepository>().cachedSync(widget.country);
 
     return GestureDetector(
       onTap: () => _showBankPicker(banks),

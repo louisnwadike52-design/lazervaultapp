@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -219,12 +220,27 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w700)),
                         SizedBox(height: 2.h),
-                        Text(
-                            it.bankName.isEmpty
-                                ? it.recipientAccount
-                                : '${it.bankName} • ${it.recipientAccount}',
-                            style: GoogleFonts.inter(
-                                color: btTextSecondary, fontSize: 12.sp)),
+                        Row(
+                          children: [
+                            if (it.bankName.isNotEmpty) ...[
+                              BankLogo(
+                                  bankName: it.bankName,
+                                  bankCode: it.bankCode,
+                                  size: 14,
+                                  borderRadius: 4),
+                              SizedBox(width: 6.w),
+                            ],
+                            Flexible(
+                              child: Text(
+                                  it.bankName.isEmpty
+                                      ? it.recipientAccount
+                                      : '${it.bankName} • ${it.recipientAccount}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                      color: btTextSecondary, fontSize: 12.sp)),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

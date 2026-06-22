@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -304,23 +305,16 @@ class _RecipientsState extends State<Recipients> {
                             // Bank name with icon
                             Row(
                               children: [
-                                Container(
-                                  width: 40.w,
-                                  height: 40.h,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                  child: Icon(
-                                    Icons.account_balance,
-                                    color: Colors.white,
-                                    size: 20.sp,
-                                  ),
+                                BankLogo(
+                                  bankName: recipient.displayBankName,
+                                  bankCode: recipient.sortCode,
+                                  size: 40,
+                                  borderRadius: 8,
                                 ),
                                 SizedBox(width: 12.w),
                                 Expanded(
                                   child: Text(
-                                    recipient.bankName,
+                                    recipient.displayBankName,
                                     style: TextStyle(
                                       color: Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14.sp,

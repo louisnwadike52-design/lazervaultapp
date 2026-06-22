@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -448,14 +449,28 @@ class _BatchReceiptDetailedScreenState
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600)),
                   SizedBox(height: 2.h),
-                  Text(
-                      it.bankName.isEmpty
-                          ? it.recipientAccount
-                          : '${it.bankName} • ${it.recipientAccount}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                          color: btTextSecondary, fontSize: 11.sp)),
+                  Row(
+                    children: [
+                      if (it.bankName.isNotEmpty) ...[
+                        BankLogo(
+                            bankName: it.bankName,
+                            bankCode: it.bankCode,
+                            size: 13,
+                            borderRadius: 4),
+                        SizedBox(width: 5.w),
+                      ],
+                      Flexible(
+                        child: Text(
+                            it.bankName.isEmpty
+                                ? it.recipientAccount
+                                : '${it.bankName} • ${it.recipientAccount}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                                color: btTextSecondary, fontSize: 11.sp)),
+                      ),
+                    ],
+                  ),
                   if (it.failureReason.isNotEmpty) ...[
                     SizedBox(height: 2.h),
                     Text(it.failureReason,

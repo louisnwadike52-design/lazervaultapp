@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../utilities/bank_logo_manifest.dart';
+import '../utilities/banks_data.dart';
 
-/// A widget that displays a bank logo with fallback to gradient initials.
+
+/// A widget that displays a bank logo.
 ///
-/// Displays a gradient container with the bank's initials.
-/// All bank data comes from local configuration - no remote calls.
+/// Prefers a bundled logo asset (`assets/images/banks/<code>.webp`) keyed by
+/// bank code; falls back to a gradient container with the bank's initials when
+/// no logo is bundled (or the asset fails to decode). Logos ship in the app
+/// binary so there are no remote calls.
 class BankLogo extends StatelessWidget {
   final String bankName;
   final String? bankCode;
@@ -24,6 +29,7 @@ class BankLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logoAsset = _resolveLogoAsset();
     return Container(
       width: size.w,
       height: size.h,
@@ -39,7 +45,33 @@ class BankLogo extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius.r),
-        child: _buildFallback(),
+        child: logoAsset != null ? _buildAssetLogo(logoAsset) : _buildFallback(),
+      ),
+    );
+  }
+
+  /// Resolve the bundled-logo asset, trying (in order): the provided [bankCode]
+  /// (direct or via the Flutterwave→logo alias map), [bankName] when it stores a
+  /// bare code, and finally a name→code lookup against the static bank list.
+  String? _resolveLogoAsset() {
+    final byCode = bundledBankLogoAsset(bankCode);
+    if (byCode != null) return byCode;
+    final byNameAsCode = bundledBankLogoAsset(bankName.trim());
+    if (byNameAsCode != null) return byNameAsCode;
+    return bundledBankLogoAsset(
+      BanksData.getBankCodeByName(bankName, country: country),
+    );
+  }
+
+  Widget _buildAssetLogo(String asset) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.all((size * 0.12).w),
+      child: Image.asset(
+        asset,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        errorBuilder: (_, __, ___) => _buildFallback(),
       ),
     );
   }

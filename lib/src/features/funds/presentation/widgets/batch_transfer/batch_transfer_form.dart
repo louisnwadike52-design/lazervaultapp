@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
@@ -29,7 +31,6 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class BatchRecipientItem {
@@ -122,6 +123,9 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     _tabController = TabController(length: 3, vsync: this);
     _searchController.addListener(_onSearchChanged);
     _loadCurrentUserInfo();
+    // Warm the dynamic (Flutterwave) bank list so the picker uses codes valid
+    // for transfer `account_bank`.
+    serviceLocator<BankRepository>().warmUp('NG');
   }
 
   void _loadCurrentUserInfo() {
@@ -933,12 +937,26 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                             overflow: TextOverflow.ellipsis,
                           ),
                           SizedBox(height: 2.h),
-                          Text(
-                            '${recipient.bankName} \u2022 ${recipient.accountNumber}',
-                            style: GoogleFonts.inter(
-                              color: btTextSecondary,
-                              fontSize: 12.sp,
-                            ),
+                          Row(
+                            children: [
+                              BankLogo(
+                                bankName: recipient.bankName,
+                                bankCode: recipient.sortCode,
+                                size: 14,
+                                borderRadius: 4,
+                              ),
+                              SizedBox(width: 6.w),
+                              Flexible(
+                                child: Text(
+                                  '${recipient.bankName} \u2022 ${recipient.accountNumber}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    color: btTextSecondary,
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -1197,7 +1215,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   }
 
   void _showBankSelectionSheet() {
-    final banks = BanksData.getBanksForCountry('NG');
+    final banks = serviceLocator<BankRepository>().cachedSync('NG');
     final searchCtrl = TextEditingController();
 
     showModalBottomSheet(
@@ -1569,12 +1587,26 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                         ),
                       ),
                       SizedBox(height: 2.h),
-                      Text(
-                        '${recipient.bankName} \u2022 ${recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber}',
-                        style: GoogleFonts.inter(
-                          color: isAlreadyAdded ? btBorder : btTextSecondary,
-                          fontSize: 12.sp,
-                        ),
+                      Row(
+                        children: [
+                          BankLogo(
+                            bankName: recipient.bankName,
+                            bankCode: recipient.sortCode,
+                            size: 14,
+                            borderRadius: 4,
+                          ),
+                          SizedBox(width: 6.w),
+                          Flexible(
+                            child: Text(
+                              '${recipient.bankName} \u2022 ${recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber}',
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                color: isAlreadyAdded ? btBorder : btTextSecondary,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

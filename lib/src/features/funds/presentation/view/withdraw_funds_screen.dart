@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/app_surfaces.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter/services.dart';
@@ -332,29 +333,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         margin: EdgeInsets.all(12.w));
   }
 
-  // ===== Bank logo avatar (gradient initials; matches deposit) =====
-  Widget _bankLogoAvatar(String bankName, {double size = 42}) {
-    final name = bankName.trim().isEmpty ? 'Bank' : bankName.trim();
-    final initials = name.length >= 2 ? name.substring(0, 2).toUpperCase() : name.substring(0, 1).toUpperCase();
-    final palettes = <List<Color>>[
-      [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-      [const Color(0xFF0EA5E9), const Color(0xFF2563EB)],
-      [const Color(0xFF10B981), const Color(0xFF059669)],
-      [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
-      [const Color(0xFFEC4899), const Color(0xFF8B5CF6)],
-      [const Color(0xFF14B8A6), const Color(0xFF0EA5E9)],
-    ];
-    final pair = palettes[name.codeUnits.fold<int>(0, (a, b) => a + b) % palettes.length];
-    return Container(
-      width: size.w,
-      height: size.w,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: pair, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      alignment: Alignment.center,
-      child: Text(initials,
-          style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+  // ===== Bank logo (bundled asset, gradient-initials fallback) =====
+  Widget _bankLogoAvatar(String bankName, {String? bankCode, double size = 42}) {
+    return BankLogo(
+      bankName: bankName,
+      bankCode: bankCode,
+      size: size,
+      borderRadius: 12,
     );
   }
 
@@ -641,7 +626,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           children: [
             Row(
               children: [
-                _bankLogoAvatar(a.bankName, size: 38),
+                _bankLogoAvatar(a.bankName, bankCode: a.bankCode, size: 38),
                 const Spacer(),
                 if (needsReauth)
                   _reconnectChip(cardCtx, a)
@@ -954,7 +939,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         ),
         child: Row(
           children: [
-            _bankLogoAvatar(account.bankName, size: 46),
+            _bankLogoAvatar(account.bankName, bankCode: account.bankCode, size: 46),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(

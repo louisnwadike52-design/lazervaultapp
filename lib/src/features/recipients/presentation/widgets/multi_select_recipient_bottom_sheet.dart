@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -452,12 +453,26 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               ),
             ),
             if (recipient.bankName.isNotEmpty)
-              Text(
-                recipient.bankName,
-                style: GoogleFonts.inter(
-                  color: Colors.grey[500],
-                  fontSize: 12.sp,
-                ),
+              Row(
+                children: [
+                  BankLogo(
+                    bankName: recipient.displayBankName,
+                    bankCode: recipient.sortCode,
+                    size: 14,
+                    borderRadius: 4,
+                  ),
+                  SizedBox(width: 6.w),
+                  Flexible(
+                    child: Text(
+                      recipient.displayBankName,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[500],
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             if (isAlreadyAdded)
               Text(

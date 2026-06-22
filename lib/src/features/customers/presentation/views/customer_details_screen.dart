@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -427,7 +428,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   Widget _buildBusinessInfoSection() {
     final rows = <_DetailRow>[
       _DetailRow('TIN', _customer.tin),
-      _DetailRow('Bank Name', _customer.bankName),
+      _DetailRow('Bank Name', _customer.bankName,
+          logoBankName: _customer.bankName, logoBankCode: _customer.bankCode),
       _DetailRow('Bank Account', _customer.bankAccountNumber),
       _DetailRow('Bank Code', _customer.bankCode),
     ];
@@ -785,6 +787,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               entry.value.label,
               entry.value.value,
               isLast: isLast,
+              logoBankName: entry.value.logoBankName,
+              logoBankCode: entry.value.logoBankCode,
             );
           }),
         ],
@@ -797,6 +801,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     String value, {
     bool isLast = false,
     Color valueColor = Colors.white,
+    String? logoBankName,
+    String? logoBankCode,
   }) {
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 12.h),
@@ -814,16 +820,33 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
           ),
           SizedBox(width: 16.w),
           Flexible(
-            child: Text(
-              value,
-              style: GoogleFonts.inter(
-                color: valueColor,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 3,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (logoBankName != null && logoBankName.isNotEmpty) ...[
+                  BankLogo(
+                    bankName: logoBankName,
+                    bankCode: logoBankCode,
+                    size: 16,
+                    borderRadius: 4,
+                  ),
+                  SizedBox(width: 6.w),
+                ],
+                Flexible(
+                  child: Text(
+                    value,
+                    style: GoogleFonts.inter(
+                      color: valueColor,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -843,6 +866,13 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
 class _DetailRow {
   final String label;
   final String value;
+  final String? logoBankName;
+  final String? logoBankCode;
 
-  const _DetailRow(this.label, this.value);
+  const _DetailRow(
+    this.label,
+    this.value, {
+    this.logoBankName,
+    this.logoBankCode,
+  });
 }

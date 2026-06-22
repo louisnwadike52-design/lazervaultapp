@@ -14,6 +14,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -1900,19 +1901,19 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       _currentCountry = 'NG'; // Default to Nigeria
     }
 
+    // Static list for first paint, then refresh from the dynamic
+    // (Flutterwave-backed) source so codes stay valid for transfers.
     setState(() {
-      _isLoadingBanks = true;
+      _banksList = BanksData.getBanksForCountry(_currentCountry);
+      _isLoadingBanks = false;
       _banksError = null;
     });
 
-    // Use local banks data only - no API calls
-    if (mounted) {
-      setState(() {
-        _banksList = BanksData.getBanksForCountry(_currentCountry);
-        _isLoadingBanks = false;
-        _banksError = null;
-      });
-    }
+    serviceLocator<BankRepository>().getBanks(_currentCountry).then((banks) {
+      if (mounted && banks.isNotEmpty) {
+        setState(() => _banksList = banks);
+      }
+    }).catchError((_) {/* keep static fallback */});
   }
 
   void _showAddContactAsRecipientDialog(DeviceContact contact) {

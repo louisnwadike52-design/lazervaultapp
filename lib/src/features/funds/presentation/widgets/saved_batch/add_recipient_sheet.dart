@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
@@ -88,6 +88,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    serviceLocator<BankRepository>().warmUp('NG');
   }
 
   @override
@@ -403,7 +404,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
   // ===== Bank NUBAN tab =====
 
   Widget _buildBankTab() {
-    final banks = BanksData.getBanksForCountry('NG');
+    final banks = serviceLocator<BankRepository>().cachedSync('NG');
     return BlocListener<AccountVerificationCubit, AccountVerificationState>(
       listener: (context, state) {
         if (!mounted) return;

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:lazervault/core/widgets/bank_logo.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -333,7 +335,8 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
           if (!isConversion && tx.recipientName.isNotEmpty)
             _row('Recipient', tx.recipientName),
           if (!isConversion && tx.recipient.bankName.isNotEmpty)
-            _row('Bank', tx.recipient.bankName),
+            _row('Bank', tx.recipient.bankName,
+                logoBankName: tx.recipient.bankName),
           if (!isConversion && tx.recipient.accountNumber.isNotEmpty)
             _row('Account', _mask(tx.recipient.accountNumber)),
           if (!isConversion && tx.recipient.countryCode.isNotEmpty)
@@ -449,7 +452,8 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  Widget _row(String label, String value) {
+  Widget _row(String label, String value,
+      {String? logoBankName, String? logoBankCode}) {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 7.h),
       child: Row(
@@ -466,16 +470,32 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: GoogleFonts.inter(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (logoBankName != null && logoBankName.isNotEmpty) ...[
+                  BankLogo(
+                    bankName: logoBankName,
+                    bankCode: logoBankCode,
+                    size: 16,
+                    borderRadius: 4,
+                  ),
+                  SizedBox(width: 6.w),
+                ],
+                Flexible(
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

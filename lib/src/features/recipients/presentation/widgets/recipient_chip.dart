@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 
 class RecipientChip extends StatelessWidget {
@@ -79,12 +80,26 @@ class RecipientChip extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 4.h),
-                    Text(
-                      recipient.displayBankName,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 12.sp,
-                      ),
+                    Row(
+                      children: [
+                        BankLogo(
+                          bankName: recipient.displayBankName,
+                          bankCode: recipient.sortCode,
+                          size: 16,
+                          borderRadius: 4,
+                        ),
+                        SizedBox(width: 6.w),
+                        Flexible(
+                          child: Text(
+                            recipient.displayBankName,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
