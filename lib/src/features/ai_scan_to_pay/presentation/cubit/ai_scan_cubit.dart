@@ -1,8 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../data/datasources/ai_scan_session_store.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/exceptions/scan_exceptions.dart';
+import '../../domain/repositories/ai_scan_repository.dart';
+import '../../domain/services/scanned_code_classifier.dart';
 import '../../domain/usecases/ai_scan_usecases.dart';
+import '../../../qr_payment/domain/repositories/qr_payment_repository.dart';
+import '../../../pay_invoice/domain/repositories/pay_invoice_repository.dart';
+import '../../../funds/data/datasources/payments_transfer_data_source.dart';
+import '../../../profile/domain/repositories/i_profile_repository.dart';
 import 'ai_scan_state.dart';
 
 class AiScanCubit extends Cubit<AiScanState> {
@@ -14,6 +21,14 @@ class AiScanCubit extends Cubit<AiScanState> {
   final GetScanHistoryUseCase getScanHistoryUseCase;
   final ScanBankDetailsUseCase scanBankDetailsUseCase;
   final ProcessBankDetailsPaymentUseCase processBankDetailsPaymentUseCase;
+
+  // Unified intelligent-scan dependencies.
+  final AiScanRepository aiScanRepository;
+  final QRPaymentRepository qrPaymentRepository;
+  final PayInvoiceRepository payInvoiceRepository;
+  final IPaymentsTransferDataSource paymentsTransferDataSource;
+  final IProfileRepository profileRepository;
+  final ScannedCodeClassifier _classifier = const ScannedCodeClassifier();
 
   // Track current session for bank details flow
   ScanSession? _currentSession;
@@ -31,6 +46,11 @@ class AiScanCubit extends Cubit<AiScanState> {
     required this.getScanHistoryUseCase,
     required this.scanBankDetailsUseCase,
     required this.processBankDetailsPaymentUseCase,
+    required this.aiScanRepository,
+    required this.qrPaymentRepository,
+    required this.payInvoiceRepository,
+    required this.paymentsTransferDataSource,
+    required this.profileRepository,
     AiScanSessionStore? sessionStore,
   })  : _store = sessionStore ?? AiScanSessionStore(),
         super(AiScanInitial());
@@ -303,6 +323,374 @@ class AiScanCubit extends Cubit<AiScanState> {
         if (isClosed) return;
         emit(currentState.copyWith(session: updatedSession));
       }
+    }
+  }
+
+  // ========== Unified Intelligent-Scan Flow ==========
+
+  /// Analyze a captured/uploaded image and resolve it to a single payable
+  /// [ScanPaymentIntent]. Runs the local QR decode and the OCR analysis in
+  /// PARALLEL, then applies bank-details-priority routing.
+  Future<void> analyzeImage(String imagePath, ScanSource source) async {
+    if (isClosed) return;
+    emit(const AiScanAnalyzing());
+
+    // Ensure a session id exists for the OCR call (server-side session is
+    // optional — the OCR endpoint is stateless HTTP).
+    final sessionId = _currentSession?.id ??
+        'local-${DateTime.now().microsecondsSinceEpoch}';
+    _currentSession ??= ScanSession(
+      id: sessionId,
+      scanType: ScanType.bankDetails,
+      createdAt: DateTime.now(),
+      status: ScanStatus.analyzing,
+    );
+
+    try {
+      final results = await Future.wait<dynamic>([
+        _decodeQr(imagePath),
+        _runOcr(imagePath, sessionId),
+      ]);
+
+      final qrIntent = results[0] as ScanPaymentIntent?;
+      final analysis = results[1] as ScanAnalysis?;
+
+      if (isClosed) return;
+
+      // 1) Bank-details PRIORITY — a confident document extraction wins.
+      if (analysis != null && analysis.isBankDetails) {
+        final bank = analysis.toBankDetails();
+        emit(AiScanIntentResolved(ScanPaymentIntent(
+          type: ScanIntentType.bankDetails,
+          title: bank.accountName.isNotEmpty ? bank.accountName : 'Bank Transfer',
+          subtitle: '${bank.maskedAccountNumber} • ${bank.bankName}',
+          amount: analysis.amount,
+          amountEditable: true,
+          description: analysis.description,
+          bankDetails: bank,
+          accountNumber: bank.accountNumber,
+          bankName: bank.bankName,
+          bankCode: bank.bankCode,
+        )));
+        return;
+      }
+
+      // 2) A recognized LazerVault QR (qr-pay / invoice / recipient).
+      if (qrIntent != null) {
+        emit(AiScanIntentResolved(qrIntent));
+        return;
+      }
+
+      // 3) OCR resolved an internal user.
+      if (analysis != null && analysis.isInternalUser) {
+        emit(AiScanIntentResolved(ScanPaymentIntent(
+          type: ScanIntentType.recipient,
+          title: analysis.displayName ?? analysis.username ?? 'Recipient',
+          subtitle: analysis.username != null ? '@${analysis.username}' : 'LazerVault user',
+          username: analysis.username,
+          amount: analysis.amount,
+          amountEditable: true,
+          description: analysis.description,
+        )));
+        return;
+      }
+
+      // 4) OCR resolved a phone number → recipient by phone.
+      if (analysis != null && analysis.isPhone) {
+        emit(AiScanIntentResolved(ScanPaymentIntent(
+          type: ScanIntentType.recipient,
+          title: analysis.displayName ?? analysis.phoneNumber ?? 'Recipient',
+          subtitle: analysis.phoneNumber ?? 'Phone number',
+          username: analysis.phoneNumber, // resolved via search at pay time
+          amount: analysis.amount,
+          amountEditable: true,
+          description: analysis.description,
+        )));
+        return;
+      }
+
+      // 5) Ambiguous (10–11 digit value).
+      if (analysis != null && analysis.isAmbiguous) {
+        emit(AiScanAmbiguousResult(
+          possibleTypes: analysis.possibleTypes,
+          hint: analysis.disambiguationHint,
+          data: analysis.raw,
+        ));
+        return;
+      }
+
+      // 6) Nothing payable.
+      emit(const AiScanNoDataResult());
+    } on ScanException catch (e) {
+      if (isClosed) return;
+      emit(AiScanNoDataResult(message: e.getUserMessage()));
+    } catch (e) {
+      if (isClosed) return;
+      emit(const AiScanNoDataResult());
+    }
+  }
+
+  /// Resolve an ambiguous scan to a concrete intent (user picked account vs
+  /// phone in the disambiguation sheet) → drives the confirm screen.
+  void emitIntent(ScanPaymentIntent intent) {
+    if (isClosed) return;
+    emit(AiScanIntentResolved(intent));
+  }
+
+  /// Decode the first barcode in a still image and classify it. Never throws —
+  /// returns null so the OCR result can still win.
+  Future<ScanPaymentIntent?> _decodeQr(String imagePath) async {
+    final controller = MobileScannerController();
+    try {
+      final capture = await controller.analyzeImage(imagePath);
+      final barcodes = capture?.barcodes ?? const [];
+      for (final b in barcodes) {
+        final raw = b.rawValue;
+        if (raw == null || raw.isEmpty) continue;
+        final intent = _classifier.classify(raw);
+        if (intent != null) return intent;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    } finally {
+      // ignore: discarded_futures
+      controller.dispose();
+    }
+  }
+
+  /// Run the OCR analysis. Never throws for "no data" cases — returns null so
+  /// a QR result can win; only genuine auth/network errors propagate.
+  Future<ScanAnalysis?> _runOcr(String imagePath, String sessionId) async {
+    try {
+      return await aiScanRepository.analyzeScan(imagePath, sessionId);
+    } on ScanException {
+      rethrow;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Pay the resolved [intent]. Branches by [ScanIntentType] to the matching
+  /// existing domain repo and maps the response into the unified
+  /// [PaymentReceipt]. The PIN [verificationToken] is obtained on the confirm
+  /// screen via TransactionPinMixin BEFORE calling.
+  Future<void> pay({
+    required ScanPaymentIntent intent,
+    required String verificationToken,
+    required String sourceAccountId,
+    required double amount,
+    String? description,
+  }) async {
+    if (isClosed) return;
+    emit(const AiScanPaying(status: 'Processing payment...', progress: 0.3));
+
+    try {
+      switch (intent.type) {
+        case ScanIntentType.bankDetails:
+          await _payBankDetails(intent, verificationToken, amount, description);
+          break;
+        case ScanIntentType.qrPay:
+          await _payQr(intent, verificationToken, sourceAccountId, amount);
+          break;
+        case ScanIntentType.invoice:
+          await _payInvoice(intent, sourceAccountId, amount, description);
+          break;
+        case ScanIntentType.recipient:
+          await _payRecipient(
+              intent, verificationToken, sourceAccountId, amount, description);
+          break;
+        case ScanIntentType.unknown:
+          _failPayment(intent, 'This scan target is not supported.', false);
+          break;
+      }
+    } on ScanException catch (e) {
+      _failPayment(intent, e.getUserMessage(), e.canRetry);
+    } catch (e) {
+      _failPayment(
+          intent, e.toString().replaceAll('Exception: ', ''), true);
+    }
+  }
+
+  void _failPayment(ScanPaymentIntent intent, String message, bool canRetry) {
+    if (isClosed) return;
+    emit(AiScanPaymentFailedResult(
+      message: message,
+      intent: intent,
+      canRetry: canRetry,
+    ));
+  }
+
+  Future<void> _payBankDetails(
+    ScanPaymentIntent intent,
+    String verificationToken,
+    double amount,
+    String? description,
+  ) async {
+    final bank = intent.bankDetails;
+    if (bank == null) {
+      _failPayment(intent, 'Bank details are missing.', false);
+      return;
+    }
+    final transactionId = 'TRF-${DateTime.now().millisecondsSinceEpoch}';
+    final receipt = await processBankDetailsPaymentUseCase(
+      bankDetails: bank,
+      amount: amount,
+      description: description ?? intent.description ?? '',
+      verificationToken: verificationToken,
+      transactionId: transactionId,
+    );
+    if (isClosed) return;
+    // ignore: discarded_futures
+    _store.clear();
+    emit(AiScanPaymentCompleted(receipt));
+  }
+
+  Future<void> _payQr(
+    ScanPaymentIntent intent,
+    String verificationToken,
+    String sourceAccountId,
+    double amount,
+  ) async {
+    final qrCode = intent.qrCode;
+    if (qrCode == null || qrCode.isEmpty) {
+      _failPayment(intent, 'QR code is missing.', false);
+      return;
+    }
+    final result = await qrPaymentRepository.processQRPayment(
+      qrCode: qrCode,
+      sourceAccountId: sourceAccountId,
+      amount: amount,
+      transactionPin: verificationToken,
+    );
+    if (isClosed) return;
+    result.fold(
+      (failure) => _failPayment(intent, failure.message, true),
+      (tuple) {
+        final txn = tuple.$1;
+        emit(AiScanPaymentCompleted(PaymentReceipt(
+          id: txn.id,
+          reference: txn.referenceNumber,
+          recipientName: txn.recipientName.isNotEmpty
+              ? txn.recipientName
+              : (intent.title),
+          accountNumber: txn.recipientUsername,
+          bankName: 'LazerVault',
+          amount: txn.amount,
+          currency: txn.currency,
+          status: txn.status.name,
+          description: txn.description,
+          transactionDate: txn.createdAt,
+          isExternal: false,
+        )));
+      },
+    );
+  }
+
+  Future<void> _payInvoice(
+    ScanPaymentIntent intent,
+    String sourceAccountId,
+    double amount,
+    String? description,
+  ) async {
+    final invoiceId = intent.invoiceId;
+    if (invoiceId == null || invoiceId.isEmpty) {
+      _failPayment(intent, 'Invoice id is missing.', false);
+      return;
+    }
+    final result = await payInvoiceRepository.payInvoice(
+      invoiceId,
+      PaymentDetails(
+        method: PaymentMethod.accountBalance,
+        amount: amount,
+        currency: intent.currency,
+        accountId: sourceAccountId,
+        reference: 'AISCAN-${DateTime.now().millisecondsSinceEpoch}',
+      ),
+    );
+    if (isClosed) return;
+    if (result.success) {
+      emit(AiScanPaymentCompleted(PaymentReceipt(
+        id: result.transactionId ?? invoiceId,
+        reference: result.paymentReference ?? result.transactionId ?? invoiceId,
+        recipientName: intent.title,
+        accountNumber: invoiceId,
+        bankName: 'Invoice',
+        amount: amount,
+        currency: intent.currency,
+        status: result.status.name,
+        description: description ?? intent.description,
+        transactionDate: result.processedAt,
+        isExternal: false,
+      )));
+    } else {
+      _failPayment(intent, result.errorMessage ?? 'Invoice payment failed.', true);
+    }
+  }
+
+  Future<void> _payRecipient(
+    ScanPaymentIntent intent,
+    String verificationToken,
+    String sourceAccountId,
+    double amount,
+    String? description,
+  ) async {
+    // Resolve the destination account. The QR/OCR carry a userId/username (and
+    // sometimes a phone) but the C2C send-funds RPC needs an account number /
+    // account UUID, so resolve via the user search (returns primaryAccountId).
+    String? toAccountId = intent.userId;
+    String? toAccountNumber = intent.accountNumber;
+
+    if (toAccountNumber == null || toAccountNumber.isEmpty) {
+      final query = intent.username ?? intent.userId;
+      if (query != null && query.isNotEmpty) {
+        final matches = await profileRepository.searchUsers(query: query, limit: 5);
+        if (matches.isNotEmpty) {
+          final match = matches.first;
+          toAccountId = match.primaryAccountId ?? toAccountId ?? match.userId;
+          toAccountNumber = match.primaryAccountId ?? toAccountId;
+        }
+      }
+    }
+
+    // Fall back to the userId as the destination identifier when nothing else
+    // resolved — the send-funds RPC accepts an account UUID for internal type.
+    toAccountId ??= intent.userId;
+    toAccountNumber ??= toAccountId ?? '';
+
+    if ((toAccountId == null || toAccountId.isEmpty) && toAccountNumber.isEmpty) {
+      _failPayment(intent, 'Could not resolve the recipient account.', false);
+      return;
+    }
+
+    final transactionId = 'C2C-${DateTime.now().millisecondsSinceEpoch}';
+    final result = await paymentsTransferDataSource.sendFunds(
+      fromAccountId: sourceAccountId,
+      toAccountNumber: toAccountNumber,
+      toAccountId: toAccountId,
+      type: 'internal',
+      amount: amount,
+      description: description ?? intent.description ?? 'Scan to pay',
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
+    if (isClosed) return;
+    if (result.success) {
+      emit(AiScanPaymentCompleted(PaymentReceipt(
+        id: result.transferId ?? transactionId,
+        reference: result.reference ?? transactionId,
+        recipientName: result.recipientName ?? intent.title,
+        accountNumber: toAccountNumber,
+        bankName: 'LazerVault',
+        amount: amount,
+        currency: intent.currency,
+        status: result.status ?? 'completed',
+        description: description ?? intent.description,
+        transactionDate: result.createdAt ?? DateTime.now(),
+        isExternal: false,
+      )));
+    } else {
+      _failPayment(intent, result.errorMessage ?? 'Transfer failed.', true);
     }
   }
 

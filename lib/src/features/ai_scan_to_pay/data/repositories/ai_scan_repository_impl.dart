@@ -157,6 +157,23 @@ class AiScanRepositoryImpl implements AiScanRepository {
   }
 
   @override
+  Future<ScanAnalysis> analyzeScan(String imagePath, String sessionId) async {
+    final userId = await _getUserId();
+    final accessToken = await secureStorage.getAccessToken();
+
+    if (accessToken == null || accessToken.isEmpty) {
+      throw Exception('User not authenticated');
+    }
+
+    return await remoteDataSource.analyzeScan(
+      imagePath,
+      userId,
+      sessionId,
+      accessToken,
+    );
+  }
+
+  @override
   Future<PaymentReceipt> processBankDetailsPayment({
     required BankDetails bankDetails,
     required double amount,

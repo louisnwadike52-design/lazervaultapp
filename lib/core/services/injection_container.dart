@@ -2780,6 +2780,8 @@ Future<void> init() async {
       // URL ('3011' → '8080'), which broke whenever the chat gateway
       // lived on a different port (staging tunnel on 443 etc).
       corePaymentsBaseUrl: dotenv.env['CORE_PAYMENTS_BASE_URL'],
+      // Preferred image_url upload for the unified analyzeScan() OCR call.
+      bankScanUploadService: serviceLocator<BankScanUploadService>(),
     ),
   );
 
@@ -2812,6 +2814,12 @@ Future<void> init() async {
     getScanHistoryUseCase: serviceLocator<GetScanHistoryUseCase>(),
     scanBankDetailsUseCase: serviceLocator<ScanBankDetailsUseCase>(),
     processBankDetailsPaymentUseCase: serviceLocator<ProcessBankDetailsPaymentUseCase>(),
+    // Unified intelligent-scan dependencies.
+    aiScanRepository: serviceLocator<AiScanRepository>(),
+    qrPaymentRepository: serviceLocator<QRPaymentRepository>(),
+    payInvoiceRepository: serviceLocator<PayInvoiceRepository>(),
+    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
+    profileRepository: serviceLocator<IProfileRepository>(),
   ));
 
   // ================== Feature: Group Account ==================

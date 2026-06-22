@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
@@ -10,10 +11,14 @@ import '../widgets/scan_type_card.dart';
 import '../widgets/scan_history_card.dart';
 import '../widgets/ai_chat_bottom_sheet.dart';
 import '../widgets/bank_details_bottom_sheet.dart';
+import '../widgets/scan_source_sheet.dart';
 import 'ai_scan_camera_screen.dart';
+import 'ai_scan_confirm_screen.dart';
+import 'ai_scan_receipt_screen.dart';
 import 'bank_details_processing_screen.dart';
 import 'bank_details_receipt_screen.dart';
 import '../../../presentation/views/dashboard/dashboard_screen.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:get_it/get_it.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
@@ -35,6 +40,13 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
   // updates. We push once on entry and let the screen rebuild internally.
   bool _processingScreenPushed = false;
 
+  // Guards for the unified flow.
+  bool _confirmPushed = false;
+  bool _payingScreenPushed = false;
+  bool _sourceSheetOpen = false;
+
+  final ImagePicker _picker = ImagePicker();
+
   /// Provide the PIN service implementation the mixin needs. Sourced
   /// from GetIt — the same singleton other money-moving screens use.
   @override
@@ -43,7 +55,60 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
   @override
   void initState() {
     super.initState();
-    context.read<AiScanCubit>().initializeScanTypes();
+    // The unified flow opens the source picker immediately instead of the
+    // tile grid. Still call initializeScanTypes() so a resumable session is
+    // surfaced first (it emits AiScanResumable and the resume prompt wins).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cubit = context.read<AiScanCubit>();
+      // ignore: discarded_futures
+      cubit.initializeScanTypes().then((_) {
+        if (!mounted) return;
+        // Only auto-open the source sheet when there's nothing to resume.
+        if (cubit.state is! AiScanResumable) {
+          _openSourceSheet();
+        }
+      });
+    });
+  }
+
+  /// Open the camera/upload chooser, then kick off analysis.
+  Future<void> _openSourceSheet() async {
+    if (_sourceSheetOpen || !mounted) return;
+    _sourceSheetOpen = true;
+    final source = await ScanSourceSheet.show(context);
+    _sourceSheetOpen = false;
+    if (!mounted || source == null) return;
+
+    if (source == ScanSource.camera) {
+      // Push the existing camera screen; on capture it calls analyzeImage.
+      Get.to(() => BlocProvider.value(
+            value: context.read<AiScanCubit>(),
+            child: const AiScanCameraScreen(),
+          ));
+    } else {
+      await _pickFromGalleryAndAnalyze();
+    }
+  }
+
+  Future<void> _pickFromGalleryAndAnalyze() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (image == null || !mounted) return;
+      _confirmPushed = false;
+      context.read<AiScanCubit>().analyzeImage(image.path, ScanSource.upload);
+    } catch (e) {
+      Get.snackbar(
+        'Gallery Error',
+        'Failed to pick image: ${e.toString()}',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   @override
@@ -153,6 +218,18 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
               value: context.read<AiScanCubit>(),
               child: const AiScanCameraScreen(),
             ));
+          } else if (state is AiScanIntentResolved) {
+            _handleIntentResolved(context, state);
+          } else if (state is AiScanAmbiguousResult) {
+            _handleAmbiguous(context, state);
+          } else if (state is AiScanNoDataResult) {
+            _handleNoData(context, state);
+          } else if (state is AiScanPaying) {
+            _handlePaying(context, state);
+          } else if (state is AiScanPaymentCompleted) {
+            _handlePaymentCompleted(context, state);
+          } else if (state is AiScanPaymentFailedResult) {
+            _handlePaymentFailed(context, state);
           } else if (state is AiScanChatActive) {
             // Only show bottom sheet if it's not already showing
             if (Get.isBottomSheetOpen != true) {
@@ -234,6 +311,8 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
         builder: (context, state) {
           if (state is AiScanLoading) {
             return _buildLoadingState(state.message);
+          } else if (state is AiScanAnalyzing) {
+            return _buildAnalyzingState(state.message);
           } else if (state is AiScanResumable) {
             // While the modal sheet is up, render the scan-type tiles
             // dimmed in the background so context isn't lost.
@@ -777,6 +856,237 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
       description: state.description,
       verificationToken: result.verificationToken ?? '',
       transactionId: state.transactionId,
+    );
+  }
+
+  // ===== Unified intelligent-scan flow handlers =====
+
+  /// Full-screen "Reading your scan…" loader.
+  Widget _buildAnalyzingState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 110.w,
+            height: 110.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color.fromARGB(255, 78, 3, 208),
+                width: 2,
+              ),
+            ),
+            child: const Center(child: LazerVaultLoader.small()),
+          ),
+          SizedBox(height: 28.h),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Detecting bank details or a payment code…',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// A scan resolved to one payable target → push the unified confirm screen,
+  /// sharing the same AiScanCubit so cubit.pay() states reach this host.
+  void _handleIntentResolved(BuildContext context, AiScanIntentResolved state) {
+    if (_confirmPushed) return;
+    _confirmPushed = true;
+    final cubit = context.read<AiScanCubit>();
+    Get.to(() => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: cubit),
+            BlocProvider(
+                create: (_) => GetIt.I<AccountCardsSummaryCubit>()),
+          ],
+          child: AiScanConfirmScreen(intent: state.intent),
+        ))?.then((_) {
+      // User backed out of confirm — allow re-resolution next time.
+      _confirmPushed = false;
+    });
+  }
+
+  /// OCR found a value that could be an account number OR a phone number.
+  void _handleAmbiguous(BuildContext context, AiScanAmbiguousResult state) {
+    final cubit = context.read<AiScanCubit>();
+    final data = state.data;
+    final value = (data['account_number'] ??
+            data['phone_number'] ??
+            data['value'] ??
+            '')
+        .toString();
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                margin: EdgeInsets.only(bottom: 16.h),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            Text(
+              'What did you scan?',
+              style: GoogleFonts.inter(
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              state.hint ??
+                  'We found "$value" — is it a bank account or a phone number?',
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+            ),
+            SizedBox(height: 20.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(sheetCtx).pop();
+                cubit.emitIntent(ScanPaymentIntent(
+                  type: ScanIntentType.bankDetails,
+                  title: 'Bank Transfer',
+                  subtitle: value,
+                  amountEditable: true,
+                  accountNumber: value,
+                  bankDetails: BankDetails(
+                    accountNumber: value,
+                    accountName: '',
+                    bankName: '',
+                    confidenceScore: 0.5,
+                    fieldConfidence: const {},
+                    accountType: 'external',
+                    transferMethod: 'paystack_transfer',
+                  ),
+                ));
+              },
+              icon: const Icon(Icons.account_balance, color: Colors.white),
+              label: Text('Bank account',
+                  style: GoogleFonts.inter(
+                      fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 10.h),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(sheetCtx).pop();
+                cubit.emitIntent(ScanPaymentIntent(
+                  type: ScanIntentType.recipient,
+                  title: value,
+                  subtitle: 'Phone number',
+                  username: value,
+                  amountEditable: true,
+                ));
+              },
+              icon: const Icon(Icons.phone, color: Colors.white),
+              label: Text('Phone number',
+                  style: GoogleFonts.inter(
+                      fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFF2D2D2D)),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Nothing payable found → snackbar + re-open the source chooser so the
+  /// user can retake / re-pick.
+  void _handleNoData(BuildContext context, AiScanNoDataResult state) {
+    Get.snackbar(
+      'No payment details found',
+      state.message,
+      backgroundColor: const Color(0xFFFB923C),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _openSourceSheet();
+    });
+  }
+
+  /// Generic payment in flight → push the (generalized) processing screen once.
+  void _handlePaying(BuildContext context, AiScanPaying state) {
+    if (_payingScreenPushed) return;
+    _payingScreenPushed = true;
+    Get.to(
+      () => BankDetailsProcessingScreen(
+        initialStatus: state.status,
+        initialProgress: state.progress,
+      ),
+      preventDuplicates: true,
+    );
+  }
+
+  /// Payment completed → replace the processing screen with the unified
+  /// receipt; back from the receipt returns to the dashboard.
+  void _handlePaymentCompleted(
+      BuildContext context, AiScanPaymentCompleted state) {
+    _payingScreenPushed = false;
+    _confirmPushed = false;
+    Get.off(() => AiScanReceiptScreen(receipt: state.receipt));
+  }
+
+  /// Payment failed → pop the processing screen (if up) and surface the error.
+  /// The user lands back on the confirm screen to fix + retry.
+  void _handlePaymentFailed(
+      BuildContext context, AiScanPaymentFailedResult state) {
+    if (_payingScreenPushed) {
+      Get.back();
+      _payingScreenPushed = false;
+    }
+    Get.snackbar(
+      'Payment failed',
+      state.canRetry
+          ? '${state.message} — you can try again.'
+          : state.message,
+      backgroundColor: const Color(0xFFEF4444),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 5),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../../../../generated/ai_scan.pb.dart' as pb;
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/exceptions/scan_exceptions.dart';
 import '../models/scan_models.dart';
+import '../../../recipients/data/services/bank_scan_upload_service.dart';
 
 abstract class AiScanRemoteDataSource {
   Future<ScanSessionModel> createScanSession(ScanType scanType, String userId);
@@ -24,6 +25,18 @@ abstract class AiScanRemoteDataSource {
 
   // Bank details scan methods
   Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken);
+
+  /// Richer scan analysis — POSTs to the SAME /scan/bank-details OCR endpoint
+  /// but returns the full multi-target [ScanAnalysisModel] (extraction_type +
+  /// internal-user / phone / email / ambiguous fields). Used by the unified
+  /// intelligent-scan flow. Prefers the BankScanUploadService image_url upload
+  /// (server-fetched) and falls back to base64 inline when unavailable.
+  Future<ScanAnalysisModel> analyzeScan(
+    String imagePath,
+    String userId,
+    String sessionId,
+    String accessToken,
+  );
   Future<PaymentReceiptModel> processBankDetailsPayment({
     required BankDetailsModel bankDetails,
     required double amount,
@@ -44,6 +57,10 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   // chat-gateway port-swap behaviour kicks in as a back-compat fallback.
   // Always favour the explicit env var via injection_container.
   final String? corePaymentsBaseUrl;
+  // Preferred upload path for OCR images — uploads to storage and hands the
+  // chat-agent-gateway a server-fetchable image_url instead of base64. Optional
+  // so existing tests / wiring that don't need analyzeScan still construct.
+  final BankScanUploadService? bankScanUploadService;
 
   AiScanRemoteDataSourceImpl({
     required this.grpcClient,
@@ -51,6 +68,7 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     required this.secureStorage,
     required this.chatGatewayBaseUrl,
     this.corePaymentsBaseUrl,
+    this.bankScanUploadService,
   });
 
   /// Build HTTP headers with all required metadata
@@ -422,6 +440,117 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
       throw OCRException(
         errorType: OCRErrorType.processingTimeout,
         message: 'Failed to scan bank details: $e',
+        userMessage: 'An unexpected error occurred. Please try again.',
+      );
+    }
+  }
+
+  @override
+  Future<ScanAnalysisModel> analyzeScan(
+    String imagePath,
+    String userId,
+    String sessionId,
+    String accessToken,
+  ) async {
+    try {
+      // Validate image file.
+      final imageFile = File(imagePath);
+      if (!await imageFile.exists()) {
+        throw OCRException.invalidImageFormat();
+      }
+      final fileSize = await imageFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        throw OCRException(
+          errorType: OCRErrorType.invalidImageFormat,
+          message: 'Image file too large',
+          userMessage: 'Image is too large. Maximum size: 10MB',
+        );
+      }
+
+      // Build the request body. Prefer the storage image_url path (the
+      // backend fetches it server-side); fall back to inline base64 when the
+      // upload service is unavailable or the upload fails.
+      Map<String, dynamic> payload = {
+        'user_id': userId,
+        'session_id': sessionId,
+        'access_token': accessToken,
+      };
+
+      String? imageUrl;
+      if (bankScanUploadService != null) {
+        try {
+          final uploaded =
+              await bankScanUploadService!.uploadFromFile(imageFile);
+          imageUrl = uploaded.publicUrl;
+        } catch (_) {
+          imageUrl = null; // fall back to base64 below
+        }
+      }
+
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        payload['image_url'] = imageUrl;
+      } else {
+        final imageBytes = await imageFile.readAsBytes();
+        payload['image_base64'] = base64Encode(imageBytes);
+      }
+
+      final scanBase =
+          chatGatewayBaseUrl.replaceAll(RegExp(r'/chat/?$'), '');
+      final uri = Uri.parse('$scanBase/scan/bank-details');
+      final headers = await _getHeaders(overrideAccessToken: accessToken);
+      final response = await httpClient
+          .post(uri, headers: headers, body: jsonEncode(payload))
+          .timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw OCRException.processingTimeout(),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        // The OCR endpoint returns success:false with an error code when it
+        // could not extract anything payable — surface that as a no_data
+        // analysis so the unified flow shows the retry UI rather than crashing.
+        if (responseData['success'] == true) {
+          final extractedData =
+              (responseData['extracted_data'] as Map?)?.cast<String, dynamic>() ??
+                  <String, dynamic>{};
+          return ScanAnalysisModel.fromExtractedData(extractedData);
+        }
+        // Non-success 200 — treat as no_data (caller decides messaging).
+        return const ScanAnalysisModel(extractionType: 'no_data');
+      } else if (response.statusCode == 400) {
+        // Bad image / nothing detected — surface as no_data rather than throw,
+        // so the QR-decode result (run in parallel) can still win.
+        return const ScanAnalysisModel(extractionType: 'no_data');
+      } else if (response.statusCode == 401) {
+        throw AuthenticationException.notAuthenticated();
+      } else if (response.statusCode == 403) {
+        throw AuthenticationException.unauthorized();
+      } else if (response.statusCode == 429) {
+        final retryAfter =
+            int.tryParse(response.headers['retry-after'] ?? '');
+        throw RateLimitException.tooManyRequests(retryAfter: retryAfter);
+      } else if (response.statusCode >= 500) {
+        throw NetworkException.serverError(statusCode: response.statusCode);
+      } else {
+        return const ScanAnalysisModel(extractionType: 'no_data');
+      }
+    } on SocketException {
+      throw NetworkException.noConnection();
+    } on TimeoutException {
+      throw NetworkException.timeout();
+    } on http.ClientException catch (e) {
+      throw NetworkException(
+        errorType: NetworkErrorType.serverError,
+        message: 'Network error: ${e.message}',
+        userMessage: 'Connection failed. Please check your network.',
+      );
+    } on ScanException {
+      rethrow;
+    } catch (e) {
+      throw OCRException(
+        errorType: OCRErrorType.processingTimeout,
+        message: 'Failed to analyze scan: $e',
         userMessage: 'An unexpected error occurred. Please try again.',
       );
     }

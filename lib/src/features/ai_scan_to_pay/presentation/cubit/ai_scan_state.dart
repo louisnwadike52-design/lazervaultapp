@@ -158,6 +158,80 @@ class AiScanChatActive extends AiScanState {
 //  generic-chat payment path is gone. The canonical money path emits
 //  the AiScanBankDetails* states defined below.)
 
+// ── Unified intelligent-scan flow states ──
+
+/// Image captured/uploaded; running QR-decode + OCR in parallel.
+class AiScanAnalyzing extends AiScanState {
+  final String message;
+  const AiScanAnalyzing({this.message = 'Reading your scan…'});
+  @override
+  List<Object?> get props => [message];
+}
+
+/// A scan resolved to a single payable target → show the unified confirm screen.
+class AiScanIntentResolved extends AiScanState {
+  final ScanPaymentIntent intent;
+  const AiScanIntentResolved(this.intent);
+  @override
+  List<Object?> get props => [intent];
+}
+
+/// OCR found a 10–11 digit value that could be an account OR a phone number.
+class AiScanAmbiguousResult extends AiScanState {
+  final List<String> possibleTypes;
+  final String? hint;
+  final Map<String, dynamic> data;
+  const AiScanAmbiguousResult({
+    required this.possibleTypes,
+    required this.data,
+    this.hint,
+  });
+  @override
+  List<Object?> get props => [possibleTypes, hint, data];
+}
+
+/// Nothing payable detected (no QR + OCR no_data, or an unsupported QR).
+class AiScanNoDataResult extends AiScanState {
+  final String message;
+  const AiScanNoDataResult({
+    this.message =
+        "We couldn't find payment details in that image. Try again with a clearer photo.",
+  });
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Generic payment in flight (any target).
+class AiScanPaying extends AiScanState {
+  final String status;
+  final double progress;
+  const AiScanPaying({required this.status, this.progress = 0.0});
+  @override
+  List<Object?> get props => [status, progress];
+}
+
+/// Generic payment completed → unified receipt.
+class AiScanPaymentCompleted extends AiScanState {
+  final PaymentReceipt receipt;
+  const AiScanPaymentCompleted(this.receipt);
+  @override
+  List<Object?> get props => [receipt];
+}
+
+/// Generic payment failure (carries the intent so the user can retry).
+class AiScanPaymentFailedResult extends AiScanState {
+  final String message;
+  final ScanPaymentIntent intent;
+  final bool canRetry;
+  const AiScanPaymentFailedResult({
+    required this.message,
+    required this.intent,
+    this.canRetry = true,
+  });
+  @override
+  List<Object?> get props => [message, intent, canRetry];
+}
+
 // Scan history state
 class AiScanHistoryLoaded extends AiScanState {
   final List<ScanSession> sessions;

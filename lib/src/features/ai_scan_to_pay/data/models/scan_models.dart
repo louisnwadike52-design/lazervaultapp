@@ -217,6 +217,110 @@ class BankDetailsModel extends BankDetails {
   }
 }
 
+// Scan Analysis model — parses the richer /scan/bank-details extracted_data.
+class ScanAnalysisModel extends ScanAnalysis {
+  const ScanAnalysisModel({
+    required super.extractionType,
+    super.accountNumber,
+    super.accountName,
+    super.bankName,
+    super.bankCode,
+    super.accountType,
+    super.transferMethod,
+    super.username,
+    super.displayName,
+    super.phoneNumber,
+    super.email,
+    super.amount,
+    super.description,
+    super.possibleTypes,
+    super.disambiguationHint,
+    super.confidence,
+    super.fieldConfidence,
+    super.raw,
+  });
+
+  /// Build from the `extracted_data` map returned by POST /scan/bank-details.
+  /// Falls back gracefully when the backend omits the newer multi-target
+  /// fields (older deployments only emit bank-detail fields).
+  factory ScanAnalysisModel.fromExtractedData(Map<String, dynamic> json) {
+    String str(String key) => json[key]?.toString() ?? '';
+    String? strOrNull(String key) {
+      final v = json[key];
+      if (v == null) return null;
+      final s = v.toString();
+      return s.isEmpty ? null : s;
+    }
+
+    double? toDouble(dynamic v) {
+      if (v == null) return null;
+      if (v is num) return v.toDouble();
+      return double.tryParse(v.toString());
+    }
+
+    // extraction_type — infer when absent for back-compat with older OCR.
+    var extractionType = str('extraction_type');
+    if (extractionType.isEmpty) {
+      if (str('account_number').isNotEmpty) {
+        extractionType = 'bank_details';
+      } else if (str('username').isNotEmpty) {
+        extractionType = 'internal_user';
+      } else if (str('phone_number').isNotEmpty) {
+        extractionType = 'phone_number';
+      } else if (str('email').isNotEmpty) {
+        extractionType = 'email';
+      } else {
+        extractionType = 'no_data';
+      }
+    }
+
+    // amount_minor (kobo) → major units.
+    final amountMinor = toDouble(json['amount_minor']);
+    final amountMajor = amountMinor != null ? amountMinor / 100.0 : toDouble(json['amount']);
+
+    // field_confidence may be absent or a {field: double} map.
+    final fc = <String, double>{};
+    final rawFc = json['field_confidence'];
+    if (rawFc is Map) {
+      rawFc.forEach((key, value) {
+        final d = toDouble(value);
+        if (d != null) fc[key.toString()] = d;
+      });
+    }
+
+    final possible = <String>[];
+    final rawPossible = json['possible_types'];
+    if (rawPossible is List) {
+      for (final p in rawPossible) {
+        if (p != null) possible.add(p.toString());
+      }
+    }
+
+    return ScanAnalysisModel(
+      extractionType: extractionType,
+      accountNumber: strOrNull('account_number'),
+      accountName: strOrNull('account_name'),
+      bankName: strOrNull('bank_name'),
+      bankCode: strOrNull('bank_code'),
+      accountType: strOrNull('account_type'),
+      transferMethod: strOrNull('transfer_method'),
+      username: strOrNull('username'),
+      displayName: strOrNull('display_name'),
+      phoneNumber: strOrNull('phone_number'),
+      email: strOrNull('email'),
+      amount: amountMajor,
+      description: strOrNull('description'),
+      possibleTypes: possible,
+      disambiguationHint: strOrNull('disambiguation_hint'),
+      confidence: toDouble(json['confidence']) ??
+          toDouble(json['confidence_score']) ??
+          0.0,
+      fieldConfidence: fc,
+      raw: json,
+    );
+  }
+}
+
 // Payment Receipt model
 class PaymentReceiptModel extends PaymentReceipt {
   const PaymentReceiptModel({

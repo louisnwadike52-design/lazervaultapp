@@ -292,6 +292,9 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String aiScanChat = '/ai-scan-to-pay/chat';
   static const String aiScanPayment = '/ai-scan-to-pay/payment';
   static const String aiScanPaymentSuccess = '/ai-scan-to-pay/payment-success';
+  // Unified intelligent-scan flow routes.
+  static const String aiScanConfirm = '/ai-scan-to-pay/confirm';
+  static const String aiScanReceipt = '/ai-scan-to-pay/receipt';
   
   // Group Account Routes
   static const String groupAccount = '/group-account';

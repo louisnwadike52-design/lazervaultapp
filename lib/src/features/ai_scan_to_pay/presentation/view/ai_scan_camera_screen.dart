@@ -213,7 +213,20 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
       backgroundColor: Colors.black,
       body: BlocConsumer<AiScanCubit, AiScanState>(
         listener: (context, state) {
-          if (state is AiScanChatActive) {
+          if (state is AiScanAnalyzing) {
+            // Unified flow: analysis started — dispose the camera and pop
+            // back to the host screen (still alive beneath us), which holds
+            // the BlocConsumer that routes AiScanIntentResolved / Ambiguous /
+            // NoData and the subsequent pay states.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _disposeCamera();
+                if (Navigator.canPop(context)) {
+                  Get.back();
+                }
+              }
+            });
+          } else if (state is AiScanChatActive) {
             // Navigate specifically to AI scan screen and dispose camera
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
@@ -630,18 +643,12 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
       // Capture image
       final XFile image = await _cameraController!.takePicture();
 
-      // Route bank-details scans through the dedicated bank-details
-      // extraction pipeline (which fans out to the BankDetailsBottomSheet
-      // → PIN entry → BankDetailsProcessingScreen → BankDetailsReceiptScreen
-      // sequence). All other scan types stay on the legacy chat-driven
-      // path. Without this fork the bank-details flow is unreachable.
-      final cubit = _aiScanCubit ?? context.read<AiScanCubit>();
-      final scanType = _resolveActiveScanType(cubit);
-      if (scanType == ScanType.bankDetails) {
-        cubit.processBankDetailsImage(image.path);
-      } else {
-        cubit.captureAndProcessImage(image.path);
-      }
+      // Unified intelligent-scan: hand the captured image to analyzeImage
+      // which runs QR-decode + OCR in parallel and routes to the right
+      // payment target (bank details / qr-pay / invoice / recipient).
+      // _aiScanCubit was captured in initState, so no BuildContext is needed
+      // across the await.
+      _aiScanCubit?.analyzeImage(image.path, ScanSource.camera);
     } catch (e) {
       if (mounted && !_isDisposing) {
         Get.snackbar(
@@ -671,14 +678,9 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
       );
       
       if (image != null && !_isDisposing) {
-        // Same scan-type fork as the camera capture path.
-        final cubit = _aiScanCubit ?? context.read<AiScanCubit>();
-        final scanType = _resolveActiveScanType(cubit);
-        if (scanType == ScanType.bankDetails) {
-          cubit.processBankDetailsImage(image.path);
-        } else {
-          cubit.uploadImage(image.path);
-        }
+        // Same unified analysis path as the camera capture. _aiScanCubit was
+        // captured in initState, so no BuildContext crosses the await.
+        _aiScanCubit?.analyzeImage(image.path, ScanSource.upload);
       }
     } catch (e) {
       if (mounted && !_isDisposing) {
@@ -691,19 +693,6 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
         );
       }
     }
-  }
-
-  /// Read the active scan type from whichever cubit state currently
-  /// holds it. The camera screen is opened from `AiScanCamera` but we
-  /// may already have transitioned past that state (e.g. into
-  /// AiScanProcessing) by the time the capture completes, so try the
-  /// most recent state shapes that still carry the session.
-  ScanType? _resolveActiveScanType(AiScanCubit cubit) {
-    final s = cubit.state;
-    if (s is AiScanCamera) return s.session.scanType;
-    if (s is AiScanProcessing) return s.session.scanType;
-    if (s is AiScanChatActive) return s.session.scanType;
-    return null;
   }
 
   IconData _getIconForScanType(ScanType scanType) {

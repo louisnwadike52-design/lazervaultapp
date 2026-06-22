@@ -136,6 +136,9 @@ import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoi
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_to_pay_screen.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_camera_screen.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_confirm_screen.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_receipt_screen.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart' as scan_entities;
 // import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_screen.dart';
 // import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_success_screen.dart';
 // import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart';
@@ -1718,6 +1721,34 @@ class AppRouter {
         create: (_) => serviceLocator<AiScanCubit>(),
         child: const AiScanCameraScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    // Unified intelligent-scan confirm screen. Receives the resolved
+    // ScanPaymentIntent via Get.arguments. AccountCardsSummaryCubit is
+    // provided here for the source-account selector (it's also global, but
+    // providing locally keeps this route self-contained for deep links).
+    GetPage(
+      name: AppRoutes.aiScanConfirm,
+      page: () {
+        final intent = Get.arguments as scan_entities.ScanPaymentIntent;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<AiScanCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: AiScanConfirmScreen(intent: intent),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    // Unified receipt. Receives the PaymentReceipt via Get.arguments.
+    GetPage(
+      name: AppRoutes.aiScanReceipt,
+      page: () {
+        final receipt = Get.arguments as scan_entities.PaymentReceipt;
+        return AiScanReceiptScreen(receipt: receipt);
+      },
       transition: Transition.rightToLeft,
     ),
     // GetPage(

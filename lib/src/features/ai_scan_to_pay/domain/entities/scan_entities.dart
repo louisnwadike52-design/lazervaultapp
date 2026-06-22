@@ -77,6 +77,222 @@ extension ScanTypeExtension on ScanType {
   }
 }
 
+// Where the scanned image came from.
+enum ScanSource { camera, upload }
+
+// What an analyzed scan resolved to — drives the unified confirm + dispatch.
+enum ScanIntentType { bankDetails, qrPay, invoice, recipient, unknown }
+
+/// Unified payment intent produced by analyzing a scan (QR decode or OCR).
+/// Every target funnels through this so the confirm screen + cubit.pay() can be
+/// generic. Only the fields relevant to [type] are populated.
+class ScanPaymentIntent extends Equatable {
+  final ScanIntentType type;
+
+  /// Beneficiary headline (recipient/business/invoice title).
+  final String title;
+
+  /// Secondary line (e.g. "@username", masked account + bank, invoice number).
+  final String subtitle;
+
+  /// Pre-filled amount (major units). Null = user must enter.
+  final double? amount;
+  final String currency;
+
+  /// False for fixed-amount targets (dynamic qr-pay, invoice) — amount is locked.
+  final bool amountEditable;
+
+  final String? description;
+
+  // ── bankDetails ──
+  final BankDetails? bankDetails;
+
+  // ── recipient / internal user ──
+  final String? username;
+  final String? userId;
+  final String? accountNumber;
+  final String? bankName;
+  final String? bankCode;
+
+  // ── qrPay ──
+  final String? qrCode;
+
+  // ── invoice ──
+  final String? invoiceId;
+
+  /// Raw decoded payload / source string (audit + debugging).
+  final String? raw;
+
+  const ScanPaymentIntent({
+    required this.type,
+    required this.title,
+    required this.subtitle,
+    this.amount,
+    this.currency = 'NGN',
+    this.amountEditable = true,
+    this.description,
+    this.bankDetails,
+    this.username,
+    this.userId,
+    this.accountNumber,
+    this.bankName,
+    this.bankCode,
+    this.qrCode,
+    this.invoiceId,
+    this.raw,
+  });
+
+  ScanPaymentIntent copyWith({
+    double? amount,
+    String? currency,
+    bool? amountEditable,
+    String? description,
+  }) {
+    return ScanPaymentIntent(
+      type: type,
+      title: title,
+      subtitle: subtitle,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      amountEditable: amountEditable ?? this.amountEditable,
+      description: description ?? this.description,
+      bankDetails: bankDetails,
+      username: username,
+      userId: userId,
+      accountNumber: accountNumber,
+      bankName: bankName,
+      bankCode: bankCode,
+      qrCode: qrCode,
+      invoiceId: invoiceId,
+      raw: raw,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        type,
+        title,
+        subtitle,
+        amount,
+        currency,
+        amountEditable,
+        description,
+        bankDetails,
+        username,
+        userId,
+        accountNumber,
+        bankName,
+        bankCode,
+        qrCode,
+        invoiceId,
+        raw,
+      ];
+}
+
+/// Rich result of an OCR scan analysis (POST /scan/bank-details). Unlike
+/// [BankDetails] (which assumes a bank-account extraction), this exposes the
+/// backend's `extraction_type` so the cubit can route to the right payment
+/// target (bank details, internal user, phone, email, ambiguous, or no data).
+class ScanAnalysis extends Equatable {
+  /// One of: bank_details | internal_user | phone_number | email | ambiguous | no_data.
+  final String extractionType;
+
+  // Bank-account fields (extraction_type == bank_details).
+  final String? accountNumber;
+  final String? accountName;
+  final String? bankName;
+  final String? bankCode;
+  final String? accountType; // "internal" | "external"
+  final String? transferMethod;
+
+  // Internal-user fields (extraction_type == internal_user).
+  final String? username;
+  final String? displayName;
+
+  // Contact fields (phone_number / email).
+  final String? phoneNumber;
+  final String? email;
+
+  // Optional pre-filled payment hints.
+  final double? amount; // major units (derived from amount_minor)
+  final String? description;
+
+  // Disambiguation (extraction_type == ambiguous).
+  final List<String> possibleTypes;
+  final String? disambiguationHint;
+
+  // Confidence.
+  final double confidence;
+  final Map<String, double> fieldConfidence;
+
+  /// Raw extracted_data map for audit / fallthrough.
+  final Map<String, dynamic> raw;
+
+  const ScanAnalysis({
+    required this.extractionType,
+    this.accountNumber,
+    this.accountName,
+    this.bankName,
+    this.bankCode,
+    this.accountType,
+    this.transferMethod,
+    this.username,
+    this.displayName,
+    this.phoneNumber,
+    this.email,
+    this.amount,
+    this.description,
+    this.possibleTypes = const [],
+    this.disambiguationHint,
+    this.confidence = 0.0,
+    this.fieldConfidence = const {},
+    this.raw = const {},
+  });
+
+  bool get isBankDetails => extractionType == 'bank_details';
+  bool get isInternalUser => extractionType == 'internal_user';
+  bool get isPhone => extractionType == 'phone_number';
+  bool get isEmail => extractionType == 'email';
+  bool get isAmbiguous => extractionType == 'ambiguous';
+  bool get isNoData => extractionType == 'no_data' || extractionType.isEmpty;
+
+  /// Build a [BankDetails] from a bank_details extraction so the existing
+  /// bank-details payment path can consume it unchanged.
+  BankDetails toBankDetails() {
+    return BankDetails(
+      accountNumber: accountNumber ?? '',
+      accountName: accountName ?? '',
+      bankName: bankName ?? '',
+      bankCode: bankCode,
+      confidenceScore: confidence,
+      fieldConfidence: fieldConfidence,
+      accountType: accountType ?? 'external',
+      transferMethod: transferMethod ?? 'paystack_transfer',
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        extractionType,
+        accountNumber,
+        accountName,
+        bankName,
+        bankCode,
+        accountType,
+        transferMethod,
+        username,
+        displayName,
+        phoneNumber,
+        email,
+        amount,
+        description,
+        possibleTypes,
+        disambiguationHint,
+        confidence,
+        fieldConfidence,
+      ];
+}
+
 // Scan session entity
 class ScanSession extends Equatable {
   final String id;
