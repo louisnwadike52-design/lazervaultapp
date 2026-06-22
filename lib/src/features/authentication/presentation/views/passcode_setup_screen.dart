@@ -126,7 +126,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                 decoration: const BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(
-                      'assets/images/bg/auth_background_dark.jpg',
+                      'assets/images/bg/auth_background.webp',
                     ),
                     fit: BoxFit.cover,
                   ),

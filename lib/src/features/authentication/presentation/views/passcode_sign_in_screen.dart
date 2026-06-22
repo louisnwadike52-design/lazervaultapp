@@ -38,7 +38,7 @@ class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(
-                  'assets/images/bg/auth_background_dark.jpg',
+                  'assets/images/bg/auth_background.webp',
                 ),
                 fit: BoxFit.cover,
               ),
