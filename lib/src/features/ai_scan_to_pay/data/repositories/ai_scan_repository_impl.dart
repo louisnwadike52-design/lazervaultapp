@@ -194,6 +194,47 @@ class AiScanRepositoryImpl implements AiScanRepository {
     );
   }
 
+  @override
+  Future<void> recordScanHistory(AiScanHistoryEntry entry) async {
+    try {
+      final userId = await _getUserId();
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      if (accessToken.isEmpty) return;
+      await remoteDataSource.recordAiScanHistory(
+        id: entry.id,
+        userId: userId,
+        accessToken: accessToken,
+        scanType: entry.typeName,
+        title: entry.title,
+        subtitle: entry.subtitle,
+        amount: entry.amount,
+        currency: entry.currency,
+        status: entry.status,
+        receipt: entry.receipt != null
+            ? AiScanHistoryEntry.receiptToJson(entry.receipt!)
+            : null,
+      );
+    } catch (_) {
+      // best-effort — history must never break the flow
+    }
+  }
+
+  @override
+  Future<List<AiScanHistoryEntry>> listScanHistory() async {
+    try {
+      final userId = await _getUserId();
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      if (accessToken.isEmpty) return [];
+      final rows = await remoteDataSource.listAiScanHistory(
+        userId: userId,
+        accessToken: accessToken,
+      );
+      return rows.map(AiScanHistoryEntry.fromBackend).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// Set the current session ID for subsequent operations
   void setCurrentSession(String sessionId) {
     _currentSessionId = sessionId;

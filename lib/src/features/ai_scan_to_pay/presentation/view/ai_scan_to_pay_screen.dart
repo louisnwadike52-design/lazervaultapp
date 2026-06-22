@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/scan_entities.dart';
-import '../../data/datasources/ai_scan_history_store.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
 import '../widgets/scan_history_card.dart';

@@ -293,6 +293,94 @@ class ScanAnalysis extends Equatable {
       ];
 }
 
+/// One entry in the backend-driven AI Scan-to-Pay "Previous scans" history.
+/// Resolved scans are `incomplete` until a payment completes, at which point
+/// the [receipt] is attached and [status] becomes `completed`.
+class AiScanHistoryEntry extends Equatable {
+  final String id;
+  final DateTime createdAt;
+  final String title;
+  final String subtitle;
+  final String typeName; // ScanIntentType.name
+  final double amount;
+  final String currency;
+  final String status; // 'completed' | 'incomplete'
+  final PaymentReceipt? receipt;
+
+  const AiScanHistoryEntry({
+    required this.id,
+    required this.createdAt,
+    required this.title,
+    required this.subtitle,
+    required this.typeName,
+    required this.amount,
+    required this.currency,
+    required this.status,
+    this.receipt,
+  });
+
+  bool get isCompleted => status == 'completed' && receipt != null;
+
+  /// Parse a row from `GET /scan/ai-history`.
+  factory AiScanHistoryEntry.fromBackend(Map<String, dynamic> j) {
+    final rcpt = j['receipt'];
+    return AiScanHistoryEntry(
+      id: (j['id'] ?? '').toString(),
+      createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ??
+          DateTime.now(),
+      title: (j['title'] ?? 'Scan').toString(),
+      subtitle: (j['subtitle'] ?? '').toString(),
+      typeName: (j['scan_type'] ?? 'unknown').toString(),
+      amount: (j['amount'] is num)
+          ? (j['amount'] as num).toDouble()
+          : double.tryParse('${j['amount']}') ?? 0,
+      currency: (j['currency'] ?? 'NGN').toString(),
+      status: (j['status'] ?? 'incomplete').toString(),
+      receipt: rcpt is Map
+          ? receiptFromJson(Map<String, dynamic>.from(rcpt))
+          : null,
+    );
+  }
+
+  static Map<String, dynamic> receiptToJson(PaymentReceipt r) => {
+        'id': r.id,
+        'reference': r.reference,
+        'recipientName': r.recipientName,
+        'accountNumber': r.accountNumber,
+        'bankName': r.bankName,
+        'amount': r.amount,
+        'currency': r.currency,
+        'status': r.status,
+        'description': r.description,
+        'transactionDate': r.transactionDate.toIso8601String(),
+        'transferReference': r.transferReference,
+        'isExternal': r.isExternal,
+      };
+
+  static PaymentReceipt receiptFromJson(Map<String, dynamic> j) => PaymentReceipt(
+        id: (j['id'] ?? '').toString(),
+        reference: (j['reference'] ?? '').toString(),
+        recipientName: (j['recipientName'] ?? '').toString(),
+        accountNumber: (j['accountNumber'] ?? '').toString(),
+        bankName: (j['bankName'] ?? '').toString(),
+        amount: (j['amount'] is num)
+            ? (j['amount'] as num).toDouble()
+            : double.tryParse('${j['amount']}') ?? 0,
+        currency: (j['currency'] ?? 'NGN').toString(),
+        status: (j['status'] ?? 'completed').toString(),
+        description: j['description']?.toString(),
+        transactionDate:
+            DateTime.tryParse(j['transactionDate']?.toString() ?? '') ??
+                DateTime.now(),
+        transferReference: j['transferReference']?.toString(),
+        isExternal: j['isExternal'] == true,
+      );
+
+  @override
+  List<Object?> get props =>
+      [id, createdAt, title, subtitle, typeName, amount, currency, status, receipt];
+}
+
 // Scan session entity
 class ScanSession extends Equatable {
   final String id;

@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/scan_entities.dart';
-import '../../data/datasources/ai_scan_history_store.dart';
 
 abstract class AiScanState extends Equatable {
   const AiScanState();

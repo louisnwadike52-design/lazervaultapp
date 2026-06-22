@@ -34,4 +34,8 @@ abstract class AiScanRepository {
     required String verificationToken,
     required String transactionId,
   });
+
+  // Backend-driven "Previous scans" history.
+  Future<void> recordScanHistory(AiScanHistoryEntry entry);
+  Future<List<AiScanHistoryEntry>> listScanHistory();
 } 

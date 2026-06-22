@@ -45,6 +45,29 @@ abstract class AiScanRemoteDataSource {
     required String transactionId,
     required String userId,
   });
+
+  /// Record/update a backend AI Scan-to-Pay history entry (POST /scan/ai-history).
+  /// Best-effort — never throws.
+  Future<void> recordAiScanHistory({
+    required String id,
+    required String userId,
+    required String accessToken,
+    required String scanType,
+    required String title,
+    required String subtitle,
+    required double amount,
+    required String currency,
+    required String status,
+    Map<String, dynamic>? receipt,
+  });
+
+  /// List the user's AI Scan-to-Pay history (GET /scan/ai-history). Returns raw
+  /// row maps; never throws (returns [] on error).
+  Future<List<Map<String, dynamic>>> listAiScanHistory({
+    required String userId,
+    required String accessToken,
+    int limit,
+  });
 }
 
 class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
@@ -829,5 +852,73 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     if (map.containsKey('confidence_score')) data.confidenceScore = (map['confidence_score'] as num).toDouble();
 
     return data;
+  }
+
+  String _scanHistoryBase() =>
+      chatGatewayBaseUrl.replaceAll(RegExp(r'/chat/?$'), '');
+
+  @override
+  Future<void> recordAiScanHistory({
+    required String id,
+    required String userId,
+    required String accessToken,
+    required String scanType,
+    required String title,
+    required String subtitle,
+    required double amount,
+    required String currency,
+    required String status,
+    Map<String, dynamic>? receipt,
+  }) async {
+    try {
+      final uri = Uri.parse('${_scanHistoryBase()}/scan/ai-history');
+      final headers = await _getHeaders(overrideAccessToken: accessToken);
+      await httpClient
+          .post(uri,
+              headers: headers,
+              body: jsonEncode({
+                'user_id': userId,
+                'access_token': accessToken,
+                'id': id,
+                'scan_type': scanType,
+                'title': title,
+                'subtitle': subtitle,
+                'amount': amount,
+                'currency': currency,
+                'status': status,
+                if (receipt != null) 'receipt': receipt,
+              }))
+          .timeout(const Duration(seconds: 15));
+    } catch (_) {
+      // History is best-effort — never break the money flow over it.
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> listAiScanHistory({
+    required String userId,
+    required String accessToken,
+    int limit = 40,
+  }) async {
+    try {
+      final uri = Uri.parse(
+        '${_scanHistoryBase()}/scan/ai-history?user_id=${Uri.encodeComponent(userId)}'
+        '&access_token=${Uri.encodeComponent(accessToken)}&limit=$limit',
+      );
+      final headers = await _getHeaders(overrideAccessToken: accessToken);
+      final response =
+          await httpClient.get(uri, headers: headers).timeout(const Duration(seconds: 15));
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final scans = (body['scans'] as List?) ?? const [];
+        return scans
+            .whereType<Map>()
+            .map((m) => Map<String, dynamic>.from(m))
+            .toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
   }
 }
