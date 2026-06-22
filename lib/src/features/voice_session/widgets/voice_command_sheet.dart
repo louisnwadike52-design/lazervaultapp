@@ -9,6 +9,8 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
@@ -70,6 +72,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // second VoiceSessionPinRequired emit (e.g. a caption re-emit) from
   // stacking a duplicate sheet.
   bool _isPinSheetShowing = false;
+  // Re-entrancy guard for the receipt sheet, keyed by reference so a re-emitted
+  // success state doesn't stack duplicate receipt sheets.
+  bool _isReceiptSheetShowing = false;
+  String? _lastReceiptRef;
   // Safety net for [_isPinSheetShowing]: if a PIN sheet's await stalls (or a
   // stale VoiceSessionPinRequired arrives while one is showing), this timer
   // force-clears the re-entrancy flag so future PIN sheets are never blocked.
@@ -683,16 +689,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         } else if (state is VoiceSessionPinRequired) {
           _showPinEntrySheet(state.transactionPayload);
         } else if (state is VoiceSessionTransactionSuccess) {
-          final ref = state.result['reference'] as String? ?? '';
-          final success = state.result['success'] as bool? ?? true;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(success
-                  ? 'Transfer completed! Ref: $ref'
-                  : 'Transfer failed: ${state.result['error'] ?? 'Unknown error'}'),
-              backgroundColor: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-            ),
-          );
+          _showReceiptSheet(state.result);
         } else if (state is VoiceSessionTransactionError) {
           _dismissActiveDialog();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -3068,6 +3065,121 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// staring at the invisible barrier with no PIN UI. We now drive the
   /// canonical `TransactionPinMixin` sheet DIRECTLY from this State (one route,
   /// same as the chat path) so it reliably appears on `VoiceSessionPinRequired`.
+  /// On a successful voice transaction, render the SAME receipt widget the chat
+  /// path uses (tap → full-screen receipt with download/share), instead of just
+  /// a snackbar. Mirrors general_chat_content: prefer the structured
+  /// `receipt_card` (ChatReceiptCardV2 → native receipt screen via deeplink),
+  /// else the legacy `receipt_data` shape (ChatReceiptCard → FullScreenReceiptView
+  /// with built-in PDF download + share). Failures keep the error snackbar.
+  void _showReceiptSheet(Map<String, dynamic> result) {
+    if (!mounted) return;
+    final success = result['success'] as bool? ?? true;
+    if (!success) {
+      final err =
+          (result['error'] ?? result['message'] ?? 'Unknown error').toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Transfer failed: $err'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
+    final ref = (result['reference'] ??
+            result['transaction_reference'] ??
+            (result['receipt_card'] is Map
+                ? (result['receipt_card'] as Map)['reference']
+                : null) ??
+            '')
+        .toString();
+
+    // Skip if this exact receipt is already showing / was just shown.
+    if (_isReceiptSheetShowing || (ref.isNotEmpty && ref == _lastReceiptRef)) {
+      return;
+    }
+
+    Widget? receiptWidget;
+    final rc = result['receipt_card'];
+    if (rc is Map) {
+      receiptWidget =
+          ChatReceiptCardV2(payload: Map<String, dynamic>.from(rc));
+    } else if (result['type'] != null ||
+        result['amount_display'] != null ||
+        result['receipt_id'] != null) {
+      receiptWidget = ChatReceiptCard(
+        receipt: TransferReceiptData.fromJson(
+          Map<String, dynamic>.from(result),
+        ),
+      );
+    }
+
+    // No structured receipt available — fall back to a confirmation snackbar.
+    if (receiptWidget == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ref.isEmpty ? 'Transfer completed!' : 'Transfer completed! Ref: $ref',
+          ),
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+      return;
+    }
+
+    _isReceiptSheetShowing = true;
+    if (ref.isNotEmpty) _lastReceiptRef = ref;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 12.h,
+          bottom: MediaQuery.of(sheetCtx).padding.bottom + 16.h,
+        ),
+        child: Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: const BoxDecoration(
+            color: Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                margin: EdgeInsets.only(bottom: 16.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              receiptWidget!,
+              SizedBox(height: 12.h),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(sheetCtx).pop(),
+                  child: Text(
+                    'Done',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF3B82F6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(() => _isReceiptSheetShowing = false);
+  }
+
   Future<void> _showPinEntrySheet(Map<String, dynamic> payload) async {
     if (_isPinSheetShowing || !mounted) return;
     _isPinSheetShowing = true;
