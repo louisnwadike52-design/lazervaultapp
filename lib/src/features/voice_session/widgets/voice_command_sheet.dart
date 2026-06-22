@@ -2099,7 +2099,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       }
     }
 
-    final double size = compact ? 44.w : 132.w;
+    // Full avatar shrunk (was 132) so the conversation has more vertical room.
+    final double size = compact ? 44.w : 88.w;
     final Color glowColor = isSpeaking
         ? const Color(0xFF5B45C9)
         : isListening
