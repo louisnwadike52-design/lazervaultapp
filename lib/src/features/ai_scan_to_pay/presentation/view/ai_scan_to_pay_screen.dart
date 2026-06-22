@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
-import '../widgets/scan_type_card.dart';
 import '../widgets/scan_history_card.dart';
 import '../widgets/ai_chat_bottom_sheet.dart';
 import '../widgets/bank_details_bottom_sheet.dart';
@@ -55,24 +54,16 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
   @override
   void initState() {
     super.initState();
-    // The unified flow opens the source picker immediately instead of the
-    // tile grid. Still call initializeScanTypes() so a resumable session is
-    // surfaced first (it emits AiScanResumable and the resume prompt wins).
+    // Unified flow: the camera/upload chooser is the FIRST thing the user sees
+    // on entry — no tile grid, no resume gate. The landing behind it also shows
+    // both options as buttons, so they're always reachable even if dismissed.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final cubit = context.read<AiScanCubit>();
-      // ignore: discarded_futures
-      cubit.initializeScanTypes().then((_) {
-        if (!mounted) return;
-        // Only auto-open the source sheet when there's nothing to resume.
-        if (cubit.state is! AiScanResumable) {
-          _openSourceSheet();
-        }
-      });
+      _openSourceSheet();
     });
   }
 
-  /// Open the camera/upload chooser, then kick off analysis.
+  /// Open the camera/upload chooser, then kick off the chosen action.
   Future<void> _openSourceSheet() async {
     if (_sourceSheetOpen || !mounted) return;
     _sourceSheetOpen = true;
@@ -81,15 +72,25 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     if (!mounted || source == null) return;
 
     if (source == ScanSource.camera) {
-      // Push the existing camera screen; on capture it calls analyzeImage.
-      Get.to(() => BlocProvider.value(
-            value: context.read<AiScanCubit>(),
-            child: const AiScanCameraScreen(),
-          ));
+      _takePhoto();
     } else {
-      await _pickFromGalleryAndAnalyze();
+      await _uploadFromDevice();
     }
   }
+
+  /// Push the camera screen; on capture it calls analyzeImage.
+  void _takePhoto() {
+    if (!mounted) return;
+    _confirmPushed = false;
+    _payingScreenPushed = false;
+    Get.to(() => BlocProvider.value(
+          value: context.read<AiScanCubit>(),
+          child: const AiScanCameraScreen(),
+        ));
+  }
+
+  /// Pick from the device gallery and analyze.
+  Future<void> _uploadFromDevice() => _pickFromGalleryAndAnalyze();
 
   Future<void> _pickFromGalleryAndAnalyze() async {
     try {
@@ -320,17 +321,12 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
             return _buildLoadingState(state.message);
           } else if (state is AiScanAnalyzing) {
             return _buildAnalyzingState(state.message);
-          } else if (state is AiScanResumable) {
-            // While the modal sheet is up, render the scan-type tiles
-            // dimmed in the background so context isn't lost.
-            return _buildScanTypeSelection(state.availableTypes);
-          } else if (state is AiScanTypeSelection) {
-            return _buildScanTypeSelection(state.availableTypes);
-          } else if (state is AiScanChatActive) {
-            // Show scan type selection with bottom sheet — curated list
-            // matches the rest of the flow (no orphan tiles for scan types
-            // without an end-to-end integration).
-            return _buildScanTypeSelection(AiScanCubit.supportedScanTypes);
+          } else if (state is AiScanResumable ||
+              state is AiScanTypeSelection ||
+              state is AiScanChatActive) {
+            // Unified flow: behind the auto-opened chooser, show the source
+            // landing (Take a photo / Upload) — not the legacy tile grid.
+            return _buildInitialState();
           } else if (state is AiScanHistoryLoaded) {
             return _buildScanHistory(state.sessions);
           } else if (state is AiScanError) {
@@ -391,27 +387,73 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
             ),
           ),
           SizedBox(height: 40.h),
-          ElevatedButton(
-            onPressed: () => context.read<AiScanCubit>().initializeScanTypes(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              elevation: 3,
-            ),
-            child: Text(
-              'Get Started',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
+          // Both scan sources are always reachable here (the chooser sheet also
+          // auto-opens on entry).
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
+              children: [
+                _sourceButton(
+                  icon: Icons.photo_camera_outlined,
+                  label: 'Take a photo',
+                  filled: true,
+                  onTap: _takePhoto,
+                ),
+                SizedBox(height: 12.h),
+                _sourceButton(
+                  icon: Icons.photo_library_outlined,
+                  label: 'Upload from device',
+                  filled: false,
+                  onTap: () => _uploadFromDevice(),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// A scan-source action button used on the landing (camera / upload).
+  Widget _sourceButton({
+    required IconData icon,
+    required String label,
+    required bool filled,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54.h,
+      child: filled
+          ? ElevatedButton.icon(
+              onPressed: onTap,
+              icon: Icon(icon, color: Colors.white, size: 20.sp),
+              label: Text(label,
+                  style: GoogleFonts.inter(
+                      fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            )
+          : OutlinedButton.icon(
+              onPressed: onTap,
+              icon: Icon(icon, color: Colors.white, size: 20.sp),
+              label: Text(label,
+                  style: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2D2D2D)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
     );
   }
 
@@ -436,97 +478,6 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen>
     );
   }
 
-  Widget _buildScanTypeSelection(List<ScanType> availableTypes) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color.fromARGB(255, 78, 3, 208),
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 50.w,
-                  height: 50.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.auto_awesome,
-                    color: Colors.white,
-                    size: 24.sp,
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'What would you like to scan?',
-                        style: GoogleFonts.inter(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Choose the type of document or code you want to scan',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 24.h),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16.w,
-              mainAxisSpacing: 16.h,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: availableTypes.length,
-            itemBuilder: (context, index) {
-              final scanType = availableTypes[index];
-              return ScanTypeCard(
-                scanType: scanType,
-                onTap: () => context.read<AiScanCubit>().startScanSession(scanType),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildScanHistory(List<ScanSession> sessions) {
     return SingleChildScrollView(
