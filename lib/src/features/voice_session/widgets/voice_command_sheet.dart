@@ -18,7 +18,6 @@ import 'package:lazervault/src/features/voice_session/models/voice_language.dart
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_language_voice_sheet.dart';
-import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_dialog.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_chat_history_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_hud.dart';
@@ -69,6 +68,17 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       GetIt.I<ITransactionPinService>();
 
   bool _isDialogShowing = false;
+  // ── Sci-fi recipient picker (in-sheet overlay, NOT a nested bottom sheet) ──
+  // When the voice agent needs the user to disambiguate a recipient, we float a
+  // HUD-styled modal OVER the conversation (a Stack layer) instead of pushing a
+  // second bottom sheet on top of this one. `null` = no picker showing.
+  List<Map<String, dynamic>>? _recipientCandidates;
+  String _recipientQuery = '';
+  // Transient "Sending to <name>" confirmation surfaced when a single recipient
+  // is resolved; auto-dismisses so the conversation stays the focus.
+  Map<String, dynamic>? _recipientConfirm;
+  Timer? _recipientConfirmTimer;
+  String? _lastConfirmedRecipientKey;
   // Guards against re-entrant PIN sheet launches. The PIN bottom sheet
   // (TransactionPinMixin) presents its own modal route; this flag keeps a
   // second VoiceSessionPinRequired emit (e.g. a caption re-emit) from
@@ -495,33 +505,50 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           avatarUrl: info.avatarUrl,
         );
       },
+      // During a live call, every tap in the sheet applies INSTANTLY (no Apply
+      // button) — push the language/voice swap over the WebSocket so the very
+      // next voice reply uses it.
+      onLiveChange: wasActive
+          ? (result) => _applyLiveVoiceLanguage(result)
+          : null,
       onAdvancedSettings: _openSettings,
     );
     if (result == null || !mounted) return;
 
-    // Only apply a language change when the language actually changed — otherwise
-    // a voice-only change would fire language_changed and the agent would wrongly
-    // announce "Language changed to …".
+    // Non-active (START) flow only — `result` carries the confirmed pick. Live
+    // calls applied each change instantly via onLiveChange, so we never reach
+    // here with wasActive == true (the sheet returns null on Done/close).
     final languageChanged = result.language.code != cubit.selectedLanguageCode;
     if (languageChanged) {
       await cubit.setLanguage(result.language.code);
     }
     await cubit.setVoice(result.voice.id);
 
-    if (wasActive) {
-      // Live swap — the next reply uses the new language/voice, no restart.
-      if (result.voice.id == kMyVoiceSentinelId) {
-        await cubit.notifyCustomVoiceChanged(true);
-      } else {
-        await cubit.notifyVoiceChanged(result.voice.id);
-      }
-      return;
-    }
-
     if (!mounted) return;
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
     _startVoiceSession(authState.profile.session.accessToken);
+  }
+
+  /// Apply a language/voice change LIVE during an active call (no session
+  /// restart — restarting races the backend concurrent-session limit + dedup
+  /// and kills audio). Pushes language_changed / voice_changed over the
+  /// WebSocket so the next voice reply reflects it immediately. Invoked on each
+  /// tap in the Voice & Language sheet while a session is active.
+  Future<void> _applyLiveVoiceLanguage(VoiceLangVoiceResult result) async {
+    final cubit = context.read<VoiceSessionCubit>();
+    // Only fire language_changed when the language ACTUALLY changed — otherwise
+    // a voice-only tap would make the agent wrongly announce "Language changed".
+    final languageChanged = result.language.code != cubit.selectedLanguageCode;
+    if (languageChanged) {
+      await cubit.setLanguage(result.language.code);
+    }
+    await cubit.setVoice(result.voice.id);
+    if (result.voice.id == kMyVoiceSentinelId) {
+      await cubit.notifyCustomVoiceChanged(true);
+    } else {
+      await cubit.notifyVoiceChanged(result.voice.id);
+    }
   }
 
   void _startAnimations() {
@@ -603,6 +630,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _pinSheetTimeoutTimer?.cancel();
+    _recipientConfirmTimer?.cancel();
     _dismissActiveDialog();
     _feedbackController.dispose();
     _pulseController.dispose();
@@ -818,7 +846,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                   width: 1,
                 ),
               ),
-              child: SafeArea(
+              child: Stack(
+                children: [
+                  SafeArea(
                 // In full screen the sheet reaches the very top, so apply the top
                 // inset to keep the header below the OS status bar (clock/battery);
                 // at 90%/minimized the sheet doesn't reach the top, so no inset.
@@ -911,6 +941,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                     SizedBox(height: 12.h),
                   ],
                 ),
+              ),
+                  // ── Sci-fi recipient picker, layered OVER the conversation ──
+                  if (_recipientCandidates != null)
+                    _buildRecipientOverlay(),
+                  // ── Transient "Sending to <name>" confirmation ──
+                  if (_recipientConfirm != null)
+                    _buildRecipientConfirmToast(),
+                ],
               ),
             ),
         );
@@ -1259,32 +1297,41 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // fuller standalone history sheet on long-press. The live interim caption
     // is appended as the latest in-progress bubble while the user/agent is
     // mid-utterance, then replaced by its finalized history bubble with no gap.
-    return ListView(
-      controller: _conversationScrollController,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+    // Avatar is PINNED at the top (a fixed Column section) so Nyla stays
+    // visible while the conversation scrolls beneath her — previously the
+    // avatar was the first ListView item and scrolled out of view (#19).
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // A compact avatar header bubble at the top of the transcript so the
-        // rep stays present without dominating the conversation.
-        Center(child: _buildNylaAvatar(state, compact: false)),
-        SizedBox(height: 16.h),
+        Padding(
+          padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+          child: Center(child: _buildNylaAvatar(state, compact: false)),
+        ),
+        Expanded(
+          child: ListView(
+            controller: _conversationScrollController,
+            padding: EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 16.h),
+            children: [
+              // Transcript per chat mode (continuous = all + scroll; ephemeral =
+              // only the current cycle). Accumulates + scrollable in continuous mode.
+              ..._displayedMessages(messages).map(_buildConversationBubble),
 
-        // Transcript per chat mode (continuous = all + scroll; ephemeral =
-        // only the current cycle). Accumulates + scrollable in continuous mode.
-        ..._displayedMessages(messages).map(_buildConversationBubble),
-
-        // Live realtime caption inline as the latest bubble (when captions on).
-        // Rendered as interim (italic + lower opacity) so it reads as
-        // in-progress "typing as they speak"; it's dropped once the turn is
-        // committed to the transcript above.
-        if (_showCaptions) ...[
-          if (userCaption != null && userCaption.isNotEmpty)
-            _buildLiveCaptionBubble(userCaption, isUser: true),
-          if (agentCaption != null && agentCaption.isNotEmpty)
-            _buildLiveCaptionBubble(agentCaption, isUser: false),
-        ],
-        // "Nyla is typing…" bubble while the AI is thinking and hasn't started
-        // its spoken reply yet — a real chat-style typing indicator on the left.
-        if (_isAgentThinking(state, agentCaption)) _buildTypingBubble(),
+              // Live realtime caption inline as the latest bubble (when captions on).
+              // Rendered as interim (italic + lower opacity) so it reads as
+              // in-progress "typing as they speak"; it's dropped once the turn is
+              // committed to the transcript above.
+              if (_showCaptions) ...[
+                if (userCaption != null && userCaption.isNotEmpty)
+                  _buildLiveCaptionBubble(userCaption, isUser: true),
+                if (agentCaption != null && agentCaption.isNotEmpty)
+                  _buildLiveCaptionBubble(agentCaption, isUser: false),
+              ],
+              // "Nyla is typing…" bubble while the AI is thinking and hasn't started
+              // its spoken reply yet — a real chat-style typing indicator on the left.
+              if (_isAgentThinking(state, agentCaption)) _buildTypingBubble(),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -2925,6 +2972,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       }
       _isDialogShowing = false;
     }
+    // Also tear down the in-sheet recipient overlay on teardown/disconnect so a
+    // stale picker can't linger over a dead session.
+    if (_recipientCandidates != null && mounted) {
+      setState(() {
+        _recipientCandidates = null;
+        _recipientQuery = '';
+      });
+    }
   }
 
   void _showLowConfidenceWarningDialog(BuildContext context, String message) {
@@ -2973,41 +3028,327 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   void _showUserSearchDialog(BuildContext context, List<Map<String, dynamic>> users, String query) {
-    // Dismiss any existing dialog first to prevent stacking
+    // Float the sci-fi recipient picker as an IN-SHEET overlay (a Stack layer
+    // over the conversation), NOT a nested bottom sheet on top of this one.
+    // Any nested AlertDialog/summary is dismissed first so they never stack.
     _dismissActiveDialog();
-    _isDialogShowing = true;
-
-    // Capture the cubit before showing so the post-dismissal callback (which
-    // runs after an async gap) doesn't reach through `context`.
-    final voiceCubit = context.read<VoiceSessionCubit>();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => VoiceUserSearchDialog(
-        users: users,
-        query: query,
-        onUserSelected: (userId, username) {
-          _isDialogShowing = false;
-          Navigator.of(context).pop();
-          context.read<VoiceSessionCubit>().selectUser(userId, username);
-        },
-        onCancel: () {
-          _isDialogShowing = false;
-          Navigator.of(context).pop();
-          context.read<VoiceSessionCubit>().cancelVoiceAction();
-        },
-      ),
-    ).whenComplete(() {
-      // Handle dismissal via back button or swipe (this modal bottom sheet is
-      // swipe-dismissible, unlike the barrierDismissible:false dialogs). If the
-      // user swiped it away without tapping a button, no resolving event clears
-      // the cubit's visual-feedback flag — tell the cubit the dialog is gone so
-      // stale-event suppression stops. Idempotent if a button already cleared it.
-      _isDialogShowing = false;
-      voiceCubit.onVisualFeedbackDismissed();
+    if (!mounted) return;
+    setState(() {
+      _recipientCandidates = users;
+      _recipientQuery = query;
     });
+  }
+
+  /// Dismiss the in-sheet recipient picker overlay. When [cancelled] the voice
+  /// action is aborted; otherwise we only clear the cubit's visual-feedback flag
+  /// (a selection already resolved the flow). Idempotent.
+  void _dismissRecipientOverlay({bool cancelled = false}) {
+    if (_recipientCandidates == null) return;
+    final voiceCubit = context.read<VoiceSessionCubit>();
+    setState(() {
+      _recipientCandidates = null;
+      _recipientQuery = '';
+    });
+    if (cancelled) {
+      voiceCubit.cancelVoiceAction();
+    } else {
+      voiceCubit.onVisualFeedbackDismissed();
+    }
+  }
+
+  /// Surface the transient "Sending to `name`" confirmation, auto-dismissing
+  /// after ~3s so the conversation stays primary. De-duped per recipient so a
+  /// re-emitted context doesn't re-trigger the toast.
+  void _showRecipientConfirm(Map<String, dynamic> recipient) {
+    final key = (recipient['recipientUsername'] ??
+            recipient['recipientName'] ??
+            '')
+        .toString();
+    if (key.isEmpty || key == _lastConfirmedRecipientKey) return;
+    _lastConfirmedRecipientKey = key;
+    _recipientConfirmTimer?.cancel();
+    if (!mounted) return;
+    setState(() => _recipientConfirm = recipient);
+    _recipientConfirmTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _recipientConfirm = null);
+    });
+  }
+
+  // ── Sci-fi recipient picker overlay (in-sheet HUD modal) ────────────────
+  static const Color _hudAccent = Color(0xFF7C5CFF);
+  static const Color _hudAccent2 = Color(0xFF22D3EE);
+
+  /// Glassy neon HUD frame — mirrors the active-transfer HUD aesthetic so the
+  /// recipient picker reads as part of the same sci-fi surface.
+  Widget _hudCard({required Widget child}) {
+    return AnimatedBuilder(
+      animation: _glowController,
+      builder: (context, _) {
+        final glow = 0.35 + 0.35 * _glowController.value;
+        return Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF181428), Color(0xFF0C0B14)],
+            ),
+            borderRadius: BorderRadius.circular(22.r),
+            border: Border.all(
+              color: _hudAccent.withValues(alpha: glow),
+              width: 1.4,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _hudAccent.withValues(alpha: 0.25 * glow),
+                blurRadius: 28,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+    );
+  }
+
+  Widget _buildRecipientOverlay() {
+    final users = _recipientCandidates ?? const [];
+    final voiceCubit = context.read<VoiceSessionCubit>();
+    return Positioned.fill(
+      child: AnimatedOpacity(
+        opacity: 1,
+        duration: const Duration(milliseconds: 180),
+        child: GestureDetector(
+          // Tap the scrim to cancel (mirrors swipe-to-dismiss on the old sheet).
+          onTap: () => _dismissRecipientOverlay(cancelled: true),
+          child: Container(
+            color: Colors.black.withValues(alpha: 0.55),
+            alignment: Alignment.center,
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+            child: GestureDetector(
+              onTap: () {}, // swallow taps inside the card
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  maxWidth: 460.w,
+                ),
+                child: _hudCard(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(20.w, 18.h, 14.w, 8.h),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person_search_rounded,
+                                color: _hudAccent2, size: 22.sp),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Select recipient',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                  if (_recipientQuery.isNotEmpty)
+                                    Text(
+                                      'Matches for "$_recipientQuery"',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12.sp,
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () =>
+                                  _dismissRecipientOverlay(cancelled: true),
+                              child: Icon(Icons.close_rounded,
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  size: 20.sp),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: _hudAccent.withValues(alpha: 0.18),
+                        height: 1,
+                      ),
+                      if (users.isEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 28.h, horizontal: 20.w),
+                          child: Text(
+                            'No matches — try saying the name again clearly.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        )
+                      else
+                        Flexible(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.symmetric(vertical: 6.h),
+                            itemCount: users.length,
+                            separatorBuilder: (_, __) => Divider(
+                              color: _hudAccent.withValues(alpha: 0.10),
+                              height: 1,
+                              indent: 64.w,
+                            ),
+                            itemBuilder: (context, i) {
+                              final u = users[i];
+                              final username =
+                                  (u['username'] ?? '').toString();
+                              final fullName =
+                                  (u['full_name'] ?? username).toString();
+                              final userId = (u['user_id'] ??
+                                      u['userId'] ??
+                                      '')
+                                  .toString();
+                              return InkWell(
+                                onTap: () {
+                                  voiceCubit.selectUser(userId, username);
+                                  _showRecipientConfirm({
+                                    'recipientName': fullName,
+                                    'recipientUsername': username,
+                                  });
+                                  // Selection resolves the flow — clear without
+                                  // cancelling the voice action.
+                                  _dismissRecipientOverlay();
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 18.w, vertical: 12.h),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 40.r,
+                                        height: 40.r,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              _hudAccent.withValues(alpha: 0.30),
+                                              _hudAccent2
+                                                  .withValues(alpha: 0.20),
+                                            ],
+                                          ),
+                                          border: Border.all(
+                                            color: _hudAccent2
+                                                .withValues(alpha: 0.4),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          fullName.isNotEmpty
+                                              ? fullName[0].toUpperCase()
+                                              : '?',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 14.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              fullName,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15.sp,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            if (username.isNotEmpty)
+                                              Text(
+                                                '@$username',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12.5.sp,
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.5),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(Icons.arrow_forward_ios_rounded,
+                                          size: 14.sp, color: _hudAccent2),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      SizedBox(height: 8.h),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Brief, auto-dismissing "Sending to `name`" cue floated at the top of the
+  /// sheet — keeps the conversation primary rather than appending a bubble.
+  Widget _buildRecipientConfirmToast() {
+    final r = _recipientConfirm!;
+    final name = (r['recipientName'] ?? r['recipientUsername'] ?? '').toString();
+    return Positioned(
+      top: 64.h,
+      left: 24.w,
+      right: 24.w,
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          opacity: _recipientConfirm != null ? 1 : 0,
+          duration: const Duration(milliseconds: 220),
+          child: Center(
+            child: _hudCard(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle_rounded,
+                        color: _hudAccent2, size: 20.sp),
+                    SizedBox(width: 10.w),
+                    Flexible(
+                      child: Text(
+                        'Sending to $name',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showTransferSummaryDialog(BuildContext context, Map<String, dynamic> details) {
