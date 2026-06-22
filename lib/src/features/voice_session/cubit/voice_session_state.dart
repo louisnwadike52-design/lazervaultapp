@@ -205,6 +205,17 @@ class VoiceSessionLowConfidenceWarning extends VoiceSessionState {
   List<Object?> get props => [room, message];
 }
 
+/// Voice biometrics CONFIRMED the speaker — a brief success confirmation shown
+/// over the live session (auto-dismissed after ~3s, or via an OK button). The
+/// positive mirror of [VoiceSessionVerificationFailed].
+class VoiceSessionVerificationSuccess extends VoiceSessionState {
+  final Room room;
+  final String message;
+  const VoiceSessionVerificationSuccess(this.room, this.message);
+  @override
+  List<Object?> get props => [room, message];
+}
+
 /// Transaction-specific error from voice agent (insufficient funds, daily limit, etc.)
 class VoiceSessionTransactionError extends VoiceSessionState {
   final Room room;

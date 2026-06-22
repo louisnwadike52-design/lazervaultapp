@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
@@ -626,9 +627,32 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     }
   }
 
+  /// Tracks the current wakelock state so we only toggle on transitions.
+  bool _wakelockOn = false;
+
+  /// Keep the screen awake while the voice session is live (connected / actively
+  /// listening / speaking / processing), release it otherwise. Idempotent.
+  void _syncWakelock(VoiceSessionState state) {
+    final shouldStayAwake = state is VoiceSessionConnected ||
+        state is VoiceSessionLocalUserSpeaking ||
+        state is VoiceSessionLocalUserNotSpeaking ||
+        state is VoiceSessionAgentProcessing ||
+        state is VoiceSessionUserSearchRequired ||
+        state is VoiceSessionTransferConfirmation ||
+        state is VoiceSessionPinRequired ||
+        state is VoiceSessionConnectingToRoom ||
+        state is VoiceSessionLoadingCredentials;
+    if (shouldStayAwake == _wakelockOn) return;
+    _wakelockOn = shouldStayAwake;
+    // Fire-and-forget — never let a wakelock error affect the call.
+    WakelockPlus.toggle(enable: shouldStayAwake).catchError((_) {});
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Always release the wakelock when the sheet is torn down.
+    WakelockPlus.disable().catchError((_) {});
     _pinSheetTimeoutTimer?.cancel();
     _recipientConfirmTimer?.cancel();
     _dismissActiveDialog();
@@ -663,6 +687,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     return BlocConsumer<VoiceSessionCubit, VoiceSessionState>(
       listener: (context, state) {
+        // Keep the phone awake for the whole live session (connected/active) so it
+        // never sleeps mid-call; release the lock once the call ends/errors/closes.
+        _syncWakelock(state);
+
         // If the recipient picker is open and the user resolves it BY VOICE
         // ("the first one" / "send to John"), the agent starts a fresh turn or
         // the flow advances — close the in-sheet picker so the conversation
@@ -783,6 +811,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             _lowConfidenceWarned = true;
             _showLowConfidenceWarningDialog(context, state.message);
           }
+        } else if (state is VoiceSessionVerificationSuccess) {
+          // Voice biometrics confirmed the speaker — show a brief success
+          // confirmation (auto-dismisses after 3s, OK closes it sooner).
+          _showVerificationSuccessDialog(context, state.message);
         }
 
         // Keep the inline conversation pinned to the newest message/caption.
@@ -800,7 +832,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             state is VoiceSessionTransactionSuccess ||
             state is VoiceSessionTransactionError ||
             state is VoiceSessionWebSocketFailed ||
-            state is VoiceSessionLowConfidenceWarning) {
+            state is VoiceSessionLowConfidenceWarning ||
+            state is VoiceSessionVerificationSuccess) {
           _startAnimations();
         } else if (state is VoiceSessionEnded ||
             state is VoiceSessionDisconnected) {
@@ -984,7 +1017,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// (settings, language, full-screen, history, close).
   Widget _buildSessionHeader(VoiceSessionState state) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 10.h),
+      // Tighter vertical padding so the header band is shorter and the chat below
+      // gets more space.
+      padding: EdgeInsets.fromLTRB(16.w, 2.h, 12.w, 4.h),
       child: Row(
         children: [
           // Nyla avatar (small, flashing)
@@ -2099,8 +2134,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       }
     }
 
-    // Full avatar shrunk (was 132) so the conversation has more vertical room.
-    final double size = compact ? 44.w : 88.w;
+    // Avatar shrunk further (compact header was 44, full was 132) so the
+    // conversation gets more vertical room.
+    final double size = compact ? 34.w : 76.w;
     final Color glowColor = isSpeaking
         ? const Color(0xFF5B45C9)
         : isListening
@@ -2226,7 +2262,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         state is VoiceSessionTransactionSuccess ||
         state is VoiceSessionTransactionError ||
         state is VoiceSessionWebSocketFailed ||
-        state is VoiceSessionLowConfidenceWarning;
+        state is VoiceSessionLowConfidenceWarning ||
+        state is VoiceSessionVerificationSuccess;
 
     final isSpeaking = state is VoiceSessionLocalUserSpeaking;
     final isProcessing = state is VoiceSessionAgentProcessing;
@@ -2536,7 +2573,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         state is VoiceSessionTransactionSuccess ||
         state is VoiceSessionTransactionError ||
         state is VoiceSessionWebSocketFailed ||
-        state is VoiceSessionLowConfidenceWarning;
+        state is VoiceSessionLowConfidenceWarning ||
+        state is VoiceSessionVerificationSuccess;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -2915,6 +2953,48 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
             ),
 
+            SizedBox(height: 12.h),
+
+            // Close button — dismiss the voice bottomsheet entirely (beside the
+            // "Start New Call" CTA) so the user can leave without starting again.
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.w),
+              child: GestureDetector(
+                onTap: _closeSheet,
+                child: Container(
+                  width: double.infinity,
+                  height: 52.h,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(26.r),
+                    color: Colors.white.withValues(alpha: 0.06),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.close_rounded,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 10.w),
+                      Text(
+                        'Close',
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             SizedBox(height: 16.h),
           ],
         ),
@@ -3049,6 +3129,64 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         ],
       ),
     ).whenComplete(() => _isDialogShowing = false);
+  }
+
+  /// Brief "Voice verified" success confirmation (positive mirror of the
+  /// low-confidence / unable-to-verify nudge). Auto-dismisses after 3s so it
+  /// never lingers; an OK button can close it sooner.
+  void _showVerificationSuccessDialog(BuildContext context, String message) {
+    _dismissActiveDialog();
+    _isDialogShowing = true;
+    Timer? autoClose;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) {
+        autoClose = Timer(const Duration(seconds: 3), () {
+          if (Navigator.of(dialogCtx).canPop()) Navigator.of(dialogCtx).pop();
+        });
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: const Color(0xFF1F1F1F),
+          title: const Row(
+            children: [
+              Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 26),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Voice verified',
+                  style: TextStyle(fontSize: 17, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            message.isNotEmpty
+                ? message
+                : "Voice verified — it's really you. You're all set.",
+            style: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                autoClose?.cancel();
+                Navigator.of(dialogCtx).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                shape:
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    ).whenComplete(() {
+      autoClose?.cancel();
+      _isDialogShowing = false;
+    });
   }
 
   void _showUserSearchDialog(BuildContext context, List<Map<String, dynamic>> users, String query) {
@@ -3351,8 +3489,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   Widget _buildRecipientConfirmToast() {
     final r = _recipientConfirm!;
     final name = (r['recipientName'] ?? r['recipientUsername'] ?? '').toString();
+    // Anchor the transient "Sending to <name>" confirmation ABOVE the bottom
+    // action bar rather than at a fixed top offset. The old `top: 64.h` ignored
+    // the status-bar inset, so in full-screen it overlapped the Nyla avatar /
+    // header. Bottom-anchoring clears the header at every sheet height.
     return Positioned(
-      top: 64.h,
+      bottom: 96.h,
       left: 24.w,
       right: 24.w,
       child: IgnorePointer(

@@ -27,7 +27,6 @@ import 'package:lazervault/src/features/profile/presentation/widgets/change_pass
 import 'package:lazervault/src/features/profile/presentation/widgets/country_picker_dialog.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/currency_picker_dialog.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/edit_profile_dialog.dart';
-import 'package:lazervault/src/features/profile/presentation/widgets/language_picker_dialog.dart';
 import 'package:lazervault/src/features/settings/presentation/view/card_settings_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/help_support_screen.dart';
@@ -558,9 +557,9 @@ class _SettingsViewState extends State<_SettingsView> {
   }
 
   Widget _regionalBody(ProfileState state) {
-    final language = state is ProfileLoaded
-        ? _languageName(state.user.language ?? 'en')
-        : 'English';
+    // NOTE: the app LANGUAGE picker was removed from Settings — language is now
+    // chosen ONLY in "Voice & Languages" (single source of truth), so the two
+    // pickers can't conflict.
     final country = state is ProfileLoaded
         ? state.user.country ?? 'United Kingdom'
         : 'United Kingdom';
@@ -568,24 +567,6 @@ class _SettingsViewState extends State<_SettingsView> {
 
     return Column(
       children: [
-        _navTile(
-          icon: Icons.language_outlined,
-          title: 'Language',
-          subtitle: language,
-          onTap: () {
-            final currentLanguage = state is ProfileLoaded
-                ? (state.user.language ?? 'en')
-                : 'en';
-            showDialog(
-              context: context,
-              builder: (dialogContext) => BlocProvider.value(
-                value: context.read<ProfileCubit>(),
-                child:
-                    LanguagePickerDialog(currentLanguage: currentLanguage),
-              ),
-            );
-          },
-        ),
         _navTile(
           icon: Icons.location_on_outlined,
           title: 'Country',
@@ -1200,21 +1181,6 @@ class _SettingsViewState extends State<_SettingsView> {
     );
   }
 
-  String _languageName(String code) {
-    const languages = {
-      'en': 'English',
-      'es': 'Spanish',
-      'fr': 'French',
-      'de': 'German',
-      'it': 'Italian',
-      'pt': 'Portuguese',
-      'zh': 'Chinese',
-      'ja': 'Japanese',
-      'ar': 'Arabic',
-      'hi': 'Hindi',
-    };
-    return languages[code] ?? 'English';
-  }
 }
 
 // ============================================================

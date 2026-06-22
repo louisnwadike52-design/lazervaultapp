@@ -62,11 +62,13 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
   // Upload progress
   String _uploadStatus = '';
 
-  // Short guided read-aloud targets. The fixed script below takes ~20s to read
-  // at a natural pace; we accept anything past the minimum and auto-stop at max.
-  static const int _minDurationSeconds = 15;
-  static const int _targetDurationSeconds = 22;
-  static const int _maxDurationSeconds = 35;
+  // Guided read-aloud targets. The fixed script below takes ~40s to read at a
+  // natural pace; we accept anything past the minimum and auto-stop at max. Longer
+  // than before so we capture MORE speaker audio — better speaker-embedding quality
+  // for biometric recognition AND a richer phoneme set for clone enrollment.
+  static const int _minDurationSeconds = 25;
+  static const int _targetDurationSeconds = 40;
+  static const int _maxDurationSeconds = 60;
   static const int _maxAudioSizeBytes = 10 * 1024 * 1024; // 10MB safety limit
 
   late AnimationController _pulseController;
@@ -82,15 +84,21 @@ class _VoiceCloningScreenState extends State<VoiceCloningScreen>
   String get _voiceGatewayUrl =>
       dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent;
 
-  /// Fixed, phonetically-balanced read-aloud script (~20s at a natural pace).
-  /// Chosen to cover varied vowels, plosives, fricatives, nasals and sibilants
-  /// across short and long words so the clone hears a representative range of
-  /// the speaker's phonemes.
+  /// Fixed, phonetically-balanced read-aloud script (~40s at a natural pace).
+  /// Longer on purpose: more audio means a more reliable speaker embedding for
+  /// biometric recognition and a richer phoneme range for the voice clone. It
+  /// covers varied vowels, plosives, fricatives, nasals, sibilants and spoken
+  /// numbers across short and long words.
   static const String _readingScript =
       "Hello, this is my voice and I am setting up my personal assistant today. "
       "The quick brown fox jumps over the lazy dog while five wizards quietly judge my pitch and tone. "
-      "I enjoy bright mornings, calm evenings, and a good cup of coffee with friends. "
-      "Please remember my voice exactly as it sounds right now, naturally and clearly.";
+      "I enjoy bright mornings, calm evenings, and a good cup of coffee with friends and family. "
+      "On a typical day I might check my balance, send money to a friend, and pay a few bills before lunch. "
+      "Numbers like one, two, three, seven, twelve, and fifteen should sound clear and natural when I say them aloud. "
+      "I like to travel, read interesting books, listen to good music, and take long walks beside the river. "
+      "My voice rises and falls as I speak, so please learn its natural rhythm, pace, and tone. "
+      "Please remember my voice exactly as it sounds right now — naturally, clearly, and in my own way. "
+      "Thank you for taking the time to learn how I speak, so you can recognise me whenever I come back.";
 
   @override
   void initState() {

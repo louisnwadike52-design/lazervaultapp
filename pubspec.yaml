@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+57
+version: 1.0.0+61
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -32,6 +32,10 @@ dependencies:
     sdk: flutter
 
   livekit_client: ^2.4.5
+
+  # Keep the screen awake during an active voice session (the bottomsheet is
+  # connected) so the phone never sleeps mid-call.
+  wakelock_plus: ^1.2.8
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

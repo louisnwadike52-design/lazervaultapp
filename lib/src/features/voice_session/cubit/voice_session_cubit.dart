@@ -102,8 +102,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// would otherwise stay true forever and suppress all subsequent
   /// status/processing updates — freezing the UI on a stale dialog. This timer
   /// force-clears the flag after [_visualFeedbackTimeout] as a last resort.
+  ///
+  /// 75s: long enough to outlast the PIN-entry sheet's own 60s guard (so this
+  /// watchdog never clears the flag while the user is mid-PIN), but shorter than
+  /// the old 90s so a genuinely-dropped terminal event un-freezes the
+  /// status/processing UI sooner.
   Timer? _visualFeedbackTimer;
-  static const Duration _visualFeedbackTimeout = Duration(seconds: 90);
+  static const Duration _visualFeedbackTimeout = Duration(seconds: 75);
 
   /// Set the visual-feedback suppression flag with a safety timeout.
   ///
@@ -891,6 +896,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               emit(VoiceSessionVerificationFailed(
                 message ?? 'Voice verification failed. Please try again.',
               ));
+            } else if (status == 'language_switched' ||
+                status == 'voice_switched') {
+              // The agent already SPOKE the switch confirmation (audio) in the new
+              // language/voice; just clear any feedback gate and return to listening
+              // so the UI reflects that the change took effect.
+              _setVisualFeedbackActive(false);
+              emit(VoiceSessionConnected(_room!));
             } else if (status == 'disconnected') {
               // Agent signaled session end
               _setVisualFeedbackActive(false);
@@ -923,6 +935,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               // Auto-dismiss after 5s and return to connected state
               Future.delayed(const Duration(seconds: 5), () {
                 if (!isClosed && _room != null &&
+                    _room!.connectionState == ConnectionState.connected) {
+                  emit(VoiceSessionConnected(_room!));
+                }
+              });
+            } else if (verificationStatus == 'verified') {
+              // Voice biometrics CONFIRMED the speaker — surface a brief success
+              // confirmation (mirrors the failure/unable nudge). The UI auto-
+              // dismisses it after 3s; an OK button can dismiss it sooner.
+              emit(VoiceSessionVerificationSuccess(
+                _room!,
+                verificationMsg.isNotEmpty
+                    ? verificationMsg
+                    : "Voice verified — it's really you.",
+              ));
+              Future.delayed(const Duration(seconds: 3), () {
+                if (!isClosed &&
+                    state is VoiceSessionVerificationSuccess &&
+                    _room != null &&
                     _room!.connectionState == ConnectionState.connected) {
                   emit(VoiceSessionConnected(_room!));
                 }
