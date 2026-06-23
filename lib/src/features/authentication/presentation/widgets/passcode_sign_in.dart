@@ -239,7 +239,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
           return Stack(
             children: [
               Positioned.fill(
-                child: Container(color: Colors.black.withValues(alpha: 0.5)),
+                child: Container(color: Colors.black.withValues(alpha: 0.65)),
               ),
               const Center(child: LazerVaultLoader.small()),
             ],
@@ -253,7 +253,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
         return Stack(
           children: [
             Positioned.fill(
-              child: Container(color: Colors.black.withValues(alpha: 0.5)),
+              child: Container(color: Colors.black.withValues(alpha: 0.65)),
             ),
           SafeArea(
             child: Padding(

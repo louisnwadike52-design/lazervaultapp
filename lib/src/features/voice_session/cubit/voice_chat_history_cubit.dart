@@ -172,6 +172,39 @@ class VoiceChatHistoryCubit extends Cubit<VoiceChatHistoryState> {
     _schedulePersist();
   }
 
+  /// Replace the most recent AGENT message with [text] when a merged/superseding
+  /// answer arrives, so an interrupted reply isn't followed by a second bubble —
+  /// the user sees ONE answer. Only replaces when the LAST message is an agent
+  /// message; otherwise the previous reply was never committed (interrupted before
+  /// it ended) and we simply append this one.
+  void replaceLastAgentMessage(String sessionId, String text, {VoiceConversationMetadata? metadata}) {
+    if (sessionId.isEmpty || text.trim().isEmpty) return;
+
+    final conversation = _conversations[sessionId];
+    if (conversation == null || conversation.messages.isEmpty) {
+      addAgentMessage(sessionId, text, metadata: metadata);
+      return;
+    }
+
+    final messages = List<VoiceConversationMessage>.from(conversation.messages);
+    if (messages.last.sender != VoiceConversationSender.agent) {
+      addAgentMessage(sessionId, text, metadata: metadata);
+      return;
+    }
+
+    messages[messages.length - 1] = messages.last.copyWith(
+      text: text,
+      metadata: metadata ?? messages.last.metadata,
+    );
+    final updated = conversation.copyWith(messages: messages);
+    _conversations[sessionId] = updated;
+
+    if (state.conversation?.sessionId == sessionId) {
+      emit(VoiceChatHistoryState(conversation: updated));
+    }
+    _schedulePersist();
+  }
+
   /// End a session
   void endSession(String sessionId) {
     if (sessionId.isEmpty) return;

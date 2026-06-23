@@ -3,8 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Note: voice_enrollment_state.dart is a part of voice_enrollment_cubit.dart, no need to import separately
@@ -33,10 +35,23 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
   late Animation<double> _pulseAnimation;
   late Animation<double> _waveAnimation;
 
+  // Pause the live AI voice call (if one is active) for the whole enrollment so the
+  // agent's mic doesn't fight the recorder and it doesn't react to enrollment audio —
+  // same mechanism voice cloning uses. Resumes when the screen closes. Safe no-op
+  // when no voice session is active (sendToVoiceAgent early-returns).
+  VoiceSessionCubit? _voiceSession;
+  bool _sessionPaused = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Pause the live voice agent for the duration of enrollment (if a call is live).
+    if (GetIt.I.isRegistered<VoiceSessionCubit>()) {
+      _voiceSession = GetIt.I<VoiceSessionCubit>();
+    }
+    _pauseSessionForSetup();
 
     // Pulse animation for mic button
     _pulseController = AnimationController(
@@ -73,9 +88,28 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Resume the live voice agent now enrollment is finished/left.
+    _resumeSessionIfPaused();
     _pulseController.dispose();
     _waveController.dispose();
     super.dispose();
+  }
+
+  /// Tell the live voice agent to PAUSE while the user enrolls (mirrors voice
+  /// cloning). No-op when no voice session is active.
+  void _pauseSessionForSetup() {
+    if (_sessionPaused) return;
+    final session = _voiceSession;
+    if (session == null || !session.hasActiveVoiceSession) return;
+    _sessionPaused = true;
+    session.notifyCustomVoiceSetupStarted();
+  }
+
+  /// Tell the live voice agent to RESUME after enrollment finishes / is left.
+  void _resumeSessionIfPaused() {
+    if (!_sessionPaused) return;
+    _sessionPaused = false;
+    _voiceSession?.notifyCustomVoiceSetupFinished();
   }
 
   /// Handle app lifecycle changes — stop recording if user backgrounds the app

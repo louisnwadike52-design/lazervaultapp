@@ -54,6 +54,8 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SelectRecipients extends StatefulWidget {
@@ -86,6 +88,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   // instance per screen lifecycle (factory-registered in serviceLocator).
   // Created lazily on first tap of the "Recurring" pill.
   RecurringTransferCubit? _recurringTransferCubit;
+
+  // Transaction-history cubit backing the "History" filter (factory-registered,
+  // so one fresh instance per screen). Created lazily on first tap of the
+  // "History" pill so users who never open it don't pay for the gRPC setup.
+  TransactionHistoryCubit? _historyCubit;
+  // Re-entry guard for the History list's scroll-triggered pagination.
+  bool _historyLoadingMore = false;
 
   String? _getAccessTokenFromState(AuthenticationState authState) {
     if (authState is AuthenticationSuccess) {
@@ -216,13 +225,17 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     _localeSubscription?.cancel();
     _recipientsScrollController.dispose();
     _recurringTransferCubit?.close();
+    _historyCubit?.close();
     super.dispose();
   }
 
   void _onRecipientsScroll() {
-    // Recurring tab uses a different cubit + no pagination — skip the
-    // recipients load-more on that filter.
-    if (_currentFilter == RecipientFilterType.recurring) return;
+    // Recurring + History tabs use different cubits with their own scroll
+    // handling — skip the recipients load-more on those filters.
+    if (_currentFilter == RecipientFilterType.recurring ||
+        _currentFilter == RecipientFilterType.history) {
+      return;
+    }
 
     if (_recipientsScrollController.position.pixels >=
         _recipientsScrollController.position.maxScrollExtent * 0.8) {
@@ -282,6 +295,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         _recurringTransferCubit ??= serviceLocator<RecurringTransferCubit>();
         _recurringTransferCubit!.loadRecurringTransfers(status: 'active');
         break;
+      case RecipientFilterType.history:
+        // Lazy-create the transaction-history cubit on first tap. Loads ALL
+        // transactions; the list view filters down to transfers locally.
+        _historyCubit ??= GetIt.I<TransactionHistoryCubit>();
+        _historyCubit!.loadAllTransactions();
+        break;
     }
   }
 
@@ -289,14 +308,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, authState) {
-        // Handle side-effects based on Authentication state
+        // Handle side-effects based on Authentication state.
+        // No snackbar on sign-out: when the session ends (manual logout or
+        // automatic sign-out) the user is navigated away anyway, so an
+        // "Authentication Error" toast here is just noise.
         final accessToken = _getAccessTokenFromState(authState);
-        if (accessToken == null) {
-          Get.snackbar('Authentication Error', 'You need to be logged in.',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red.withValues(alpha: 0.7),
-              colorText: Colors.white);
-        } else {
+        if (accessToken != null) {
           // authState is AuthenticationSuccess
           // Trigger fetch if needed (handles auth happening while screen is visible)
           final recipientState = context.read<RecipientCubit>().state;
@@ -322,10 +339,27 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             },
             builder: (context, recipientState) {
               // Build UI based on Recipient state
+              // Position the white content sheet right beneath the search bar
+              // instead of a fixed `Get.height` fraction. The fraction left a
+              // tall empty purple band above the content on taller devices;
+              // deriving the offset from the real header content (status bar +
+              // paddings + back row + gap + search field) keeps the sheet flush
+              // under the search bar on every screen size, pulling everything
+              // below it upward.
+              final double topInset = MediaQuery.of(context).padding.top;
+              // 16 top pad + 40 back row + 24 gap + 48 search bar = 128, plus an
+              // 8px peek so the rounded sheet tucks just under the search field.
+              final double sheetTop = topInset + 136.h;
               return Stack(children: [
-                // Top Purple Section with Gradient
+                // Top Purple Section with Gradient.
+                // Height carries extra slack below `sheetTop` so the inner
+                // header Column (back row + gap + search bar) always has room
+                // — the gap beyond sheetTop sits behind the white content
+                // sheet (next Stack child) so it's never visible. Prevents the
+                // "BOTTOM OVERFLOWED" RenderFlex warning on shorter devices
+                // where .w-scaled header icons exceed the .h-scaled budget.
                 Container(
-                  height: Get.height * 0.35,
+                  height: sheetTop + 48.h,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -338,7 +372,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                   ),
                   padding:
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  // bottom:false — this is the TOP header; reserving the bottom
+                  // safe-area (home-indicator) inset here would steal ~34px from
+                  // the column's height budget and overflow the back row +
+                  // search bar ("BOTTOM OVERFLOWED"). Only the top inset matters.
                   child: SafeArea(
+                    bottom: false,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -507,7 +546,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
                 // Main Content Section
                 Container(
-                  margin: EdgeInsets.only(top: Get.height * 0.22),
+                  margin: EdgeInsets.only(top: sheetTop),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius:
@@ -526,48 +565,38 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             ),
                           ),
                         ),
-                        child: SingleChildScrollView(
-                          // Horizontal scroll — five entries fit on most
-                          // devices but stay scrollable so labels never
-                          // crush on narrower screens. AI Scan & Pay
-                          // intentionally lives on the dashboard service
-                          // grid, NOT here — this strip is recipient-
-                          // selection actions only.
-                          //
-                          // Horizontal padding matches the search bar
-                          // above (`horizontal: 16.w`) and the filter-
-                          // chip block below (`all(16.w)`) so the
-                          // first/last tile aligns with the "All…"
-                          // chip + the search field's left edge + the
-                          // appbar arrow's right edge.
-                          scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          // Page padding (16.w) on both edges; the actions are
+                          // distributed with spaceBetween so the last tile
+                          // (Split Bills) no longer overflows off the right edge
+                          // as it did inside the old horizontal scroller.
+                          // Transfer "History" moved to a filter chip beside
+                          // "Recurring" below.
                           padding: EdgeInsets.symmetric(horizontal: 16.w),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildQuickAction(
                                 icon: Icons.qr_code_scanner_outlined,
                                 label: 'Scan QR',
                                 onTap: _launchQRScanner,
                               ),
-                              SizedBox(width: 18.w),
                               _buildQuickAction(
                                 icon: Icons.person_add_outlined,
                                 label: 'Add User',
                                 onTap: () => Get.toNamed(AppRoutes.addRecipient),
                               ),
-                              SizedBox(width: 18.w),
                               _buildQuickAction(
                                 icon: Icons.document_scanner_outlined,
                                 label: 'Scan Bank Details',
                                 onTap: _launchBankDetailsScan,
                               ),
-                              SizedBox(width: 18.w),
                               _buildQuickAction(
                                 icon: Icons.manage_search_outlined,
                                 label: 'Scan History',
                                 onTap: _showScanHistory,
                               ),
-                              SizedBox(width: 18.w),
                               // Split Bills quick action with pending co-payer badge
                               BlocBuilder<SplitBillCountCubit, int>(
                                 bloc: serviceLocator<SplitBillCountCubit>(),
@@ -610,12 +639,6 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                     ],
                                   );
                                 },
-                              ),
-                              SizedBox(width: 18.w),
-                              _buildQuickAction(
-                                icon: Icons.history,
-                                label: 'History',
-                                onTap: _showTransferHistory,
                               ),
                             ],
                           ),
@@ -664,6 +687,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     // empty-state copy — easiest to fork at the top.
     if (_currentFilter == RecipientFilterType.recurring) {
       return _buildRecurringList();
+    }
+
+    // History tab swaps the list for the user's transfer transaction history
+    // (rendered with bank logos for external-bank transfers).
+    if (_currentFilter == RecipientFilterType.history) {
+      return _buildHistoryList();
     }
 
     // Handle Initial State explicitly - show centered loader while initializing
@@ -929,7 +958,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   /// Build individual recipient item for the list
   Widget _buildRecipientItem(RecipientModel recipient) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+      margin: EdgeInsets.symmetric(vertical: 5.h, horizontal: 4.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
@@ -948,13 +977,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           borderRadius: BorderRadius.circular(16.r),
           onTap: () => Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
             child: Row(
               children: [
                 // Profile Image
                 Container(
-                  width: 48.w,
-                  height: 48.w,
+                  width: 42.w,
+                  height: 42.w,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     shape: BoxShape.circle,
@@ -963,14 +992,14 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                     child: Text(
                       _getInitials(recipient.name),
                       style: TextStyle(
-                        fontSize: 18.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey[700],
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 16.w),
+                SizedBox(width: 14.w),
 
                 // Name, Alias, and Account Number - Expanded to take available space
                 Expanded(
@@ -2779,12 +2808,22 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             ),
           ),
           SizedBox(height: 8.h),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.black87,
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
+          // Fixed-width, centered, up-to-2-line label so the tiles distribute
+          // evenly with spaceBetween and a long label like "Scan Bank Details"
+          // wraps within its slot instead of pushing the row past the edge.
+          SizedBox(
+            width: 64.w,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w500,
+                height: 1.15,
+              ),
             ),
           ),
         ],
@@ -3752,14 +3791,120 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     });
   }
 
-  void _showTransferHistory() {
-    Get.bottomSheet(
-      BlocProvider(
-        create: (_) => GetIt.I<TransactionHistoryCubit>(),
-        child: const TransferHistoryBottomSheet(),
+  /// Builds the transfer-history panel shown when the user taps the "History"
+  /// pill (beside "Recurring"). Shows the user's transfer transactions inline,
+  /// rendered with bank logos for external-bank transfers via the shared
+  /// [TransferHistoryItem]. Backed by the lazily-created [_historyCubit].
+  Widget _buildHistoryList() {
+    final cubit = _historyCubit;
+    if (cubit == null) {
+      return _buildLoadingWidget();
+    }
+    return BlocProvider.value(
+      value: cubit,
+      child: BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
+        builder: (context, state) {
+          if (state is TransactionHistoryInitial ||
+              state is TransactionHistoryLoading) {
+            return _buildLoadingWidget();
+          }
+          if (state is TransactionHistoryError) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.cloud_off_rounded,
+                        color: Colors.grey[400], size: 48.sp),
+                    SizedBox(height: 16.h),
+                    Text(
+                      _friendlyError(state.message),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16.h),
+                    TextButton(
+                      onPressed: () => cubit.loadAllTransactions(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // Pull the loaded transactions (Empty + Loaded both yield a list we
+          // can filter to transfers; Empty simply has none).
+          final List<UnifiedTransaction> all =
+              state is TransactionHistoryLoaded ? state.transactions : const [];
+          final bool hasMore =
+              state is TransactionHistoryLoaded && state.hasMore;
+          final transfers = all.where(isTransferTransaction).toList();
+
+          if (transfers.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.swap_horiz,
+                        color: Colors.grey[400], size: 48.sp),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'No transfer history yet',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 16.sp),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'Your past transfers will show up here.',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 13.sp),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return NotificationListener<ScrollNotification>(
+            onNotification: (n) {
+              if (hasMore &&
+                  !_historyLoadingMore &&
+                  n.metrics.pixels >= n.metrics.maxScrollExtent - 200) {
+                _historyLoadingMore = true;
+                cubit.loadMoreTransactions().then((_) {
+                  _historyLoadingMore = false;
+                });
+              }
+              return false;
+            },
+            child: RefreshIndicator(
+              color: const Color.fromARGB(255, 78, 3, 208),
+              onRefresh: () => cubit.refreshTransactions(),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                itemCount: transfers.length + (hasMore ? 1 : 0),
+                separatorBuilder: (_, __) =>
+                    Divider(color: Colors.grey[200], height: 1),
+                itemBuilder: (context, index) {
+                  if (index >= transfers.length) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      child: const Center(child: LazerVaultLoader.tiny()),
+                    );
+                  }
+                  return TransferHistoryItem(transaction: transfers[index]);
+                },
+              ),
+            ),
+          );
+        },
       ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
     );
   }
 

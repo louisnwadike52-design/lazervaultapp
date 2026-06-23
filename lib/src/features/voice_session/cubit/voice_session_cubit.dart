@@ -151,6 +151,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Current agent caption (what the AI is responding with)
   String? _currentAgentCaption;
 
+  /// True when the next committed agent reply should REPLACE the previous one
+  /// (the agent_caption_start carried `replace=true` because this answer
+  /// supersedes/merges an interrupted reply) — so a merged exchange shows ONE
+  /// AI answer instead of several.
+  bool _pendingAgentReplace = false;
+
   /// Whether the AI agent is currently speaking
   bool _isAgentSpeaking = false;
 
@@ -1058,6 +1064,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           if (_room != null) {
             _currentUserCaption = null;
             final text = eventData['text'] as String?;
+            // `replace` = this answer supersedes/merges a prior reply whose bubble
+            // is still showing — commit it as a REPLACE on agent_caption_end so the
+            // user sees ONE answer, not a half reply followed by a second one.
+            _pendingAgentReplace = eventData['replace'] == true;
             final sanitized =
                 text != null ? _sanitizeCaptionText(text) : '';
             _currentAgentCaption = sanitized.isNotEmpty ? sanitized : null;
@@ -1092,8 +1102,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 ? _sanitizeCaptionText(endText)
                 : (_currentAgentCaption ?? '');
             if (finalText.isNotEmpty && _currentSessionId != null) {
-              _chatHistoryCubit.addAgentMessage(_currentSessionId!, finalText);
+              if (_pendingAgentReplace) {
+                _chatHistoryCubit.replaceLastAgentMessage(_currentSessionId!, finalText);
+              } else {
+                _chatHistoryCubit.addAgentMessage(_currentSessionId!, finalText);
+              }
             }
+            _pendingAgentReplace = false;
             _isAgentSpeaking = false;
             _currentAgentCaption = null;
             _emitCaptionUpdate();

@@ -16,6 +16,12 @@ import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
     as settings_models;
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_language_voice_sheet.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart'
+    show kMyVoiceSentinelId;
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart' show serviceLocator;
 
 /// Voice Settings Screen
 ///
@@ -30,8 +36,6 @@ class VoiceSettingsScreen extends StatefulWidget {
 class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   String? _selectedLanguageCode;
   String? _selectedVoiceId;
-  List<settings_models.VoiceOption> _voicesForLanguage = [];
-  bool _loadingVoices = false;
   bool _isEnrolled = false;
   bool _loadingEnrollment = true;
   double? _enrollmentQualityScore;
@@ -115,11 +119,6 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
     // Check enrollment status from backend (single source of truth)
     await _checkEnrollmentFromBackend();
     if (!mounted) return;
-
-    // Load voices for current language
-    if (_selectedLanguageCode != null) {
-      _loadVoicesForLanguage(_selectedLanguageCode!);
-    }
 
     // Load custom voice status if enrolled (cloning is cross-lingual)
     if (_isEnrolled) {
@@ -217,9 +216,10 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   void _managePendingPoll() {
     final statusText = _customVoiceStatus?.customVoiceStatus ?? 'none';
     if (statusText == 'pending') {
-      // Start polling every 10 seconds
+      // Poll every 3s while cloning is processing so the card flips to ready
+      // quickly (was 10s, which felt like it "didn't auto-update").
       _pendingStatusTimer?.cancel();
-      _pendingStatusTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      _pendingStatusTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
         if (!mounted) {
           timer.cancel();
           return;
@@ -275,48 +275,6 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
     }
   }
 
-  /// Track which language load is in flight to avoid out-of-order responses
-  String? _voiceLoadRequestLanguage;
-
-  Future<void> _loadVoicesForLanguage(String languageCode) async {
-    _voiceLoadRequestLanguage = languageCode;
-    if (!mounted) return;
-    setState(() => _loadingVoices = true);
-    try {
-      final voiceService = VoiceSettingsService();
-      final voices = await voiceService.getVoicesForLanguage(languageCode);
-      // Only apply result if this is still the most recent request
-      if (mounted && _voiceLoadRequestLanguage == languageCode) {
-        setState(() {
-          _voicesForLanguage = voices;
-          _loadingVoices = false;
-        });
-      }
-    } catch (e) {
-      if (mounted && _voiceLoadRequestLanguage == languageCode) {
-        setState(() => _loadingVoices = false);
-      }
-    }
-  }
-
-  Future<void> _saveLanguage(String code) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefKeyLanguage, code);
-    await prefs.remove(_prefKeyVoice); // Clear voice pref before updating state
-    if (!mounted) return;
-    setState(() {
-      _selectedLanguageCode = code;
-      _selectedVoiceId = null; // Reset voice when language changes
-      _voicesForLanguage = [];
-    });
-    _loadVoicesForLanguage(code);
-  }
-
-  Future<void> _saveVoice(String voiceId) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefKeyVoice, voiceId);
-    setState(() => _selectedVoiceId = voiceId);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -426,44 +384,149 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           SizedBox(height: 28.h),
         ],
 
-        // Language Section
-        _buildSectionHeader('Voice Language'),
-        SizedBox(height: 8.h),
-        _buildLanguageSelector(languages, selectedLang),
-        SizedBox(height: 28.h),
-
-        // Voice Section
-        _buildSectionHeader('Assistant Voice'),
+        // Language & Voice — single source of truth. Selection lives ONLY in the
+        // Voice & Language sheet (same one the in-call control opens) so there's no
+        // second place that can drift out of sync.
+        _buildSectionHeader('Voice & Language'),
         SizedBox(height: 4.h),
         Text(
-          'Choose the voice your assistant speaks with',
+          'Choose the language and the voice your assistant speaks with',
           style: GoogleFonts.inter(
             color: Colors.white.withValues(alpha: 0.4),
             fontSize: 12.sp,
           ),
         ),
         SizedBox(height: 12.h),
-        if (_selectedLanguageCode == null)
-          _buildPlaceholderCard(
-            icon: Icons.record_voice_over_rounded,
-            text: 'Select a language first to see available voices',
-          )
-        else if (_loadingVoices)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: LazerVaultLoader.tiny(),
-            ),
-          )
-        else if (_voicesForLanguage.isEmpty)
-          _buildPlaceholderCard(
-            icon: Icons.voice_over_off_rounded,
-            text: 'No voices available for this language',
-          )
-        else
-          ..._voicesForLanguage.map((voice) => _buildVoiceTile(voice)),
+        _buildVoiceLanguageButton(selectedLang),
       ],
     );
+  }
+
+  /// Opens the central Voice & Language sheet (the single source of truth for
+  /// language + voice). Replaces the old inline language/voice pickers so there's
+  /// one place to choose them.
+  Widget _buildVoiceLanguageButton(settings_models.VoiceLanguage? selectedLang) {
+    final langLabel = selectedLang?.nativeName ?? selectedLang?.name;
+    final subtitle = langLabel != null
+        ? 'Language: $langLabel'
+        : 'Tap to choose language & voice';
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: _openVoiceAndLanguageSheet,
+        child: Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.record_voice_over_rounded,
+                  color: const Color(0xFF3B82F6), size: 22.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Voice & Language',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Resolve the user's cloned voice for [language] (null when none/not ready/not
+  /// enabled). Mirrors the voice command sheet's resolver so the "Your Voice" tile
+  /// shows up in the sheet here too.
+  Future<YourVoiceInfo?> _resolveYourVoice(VoiceLanguage language) async {
+    if (!language.supportsVoiceCloning) return null;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return null;
+    final user = authState.profile.user;
+    try {
+      final status = await VoiceSettingsService().getCustomVoiceStatus(user.id);
+      if (status == null || !status.isReady || !status.enabled) return null;
+    } catch (_) {
+      return null;
+    }
+    return YourVoiceInfo(
+      name: '${user.firstName} ${user.lastName}'.trim(),
+      username: user.username,
+      avatarUrl: user.profilePicture,
+    );
+  }
+
+  /// Open the central Voice & Language sheet and persist the pick. The settings
+  /// page is never in a live call, so we only save the selection (no session
+  /// start); the next voice session reads it back.
+  Future<void> _openVoiceAndLanguageSheet() async {
+    final cubit = _voiceSession ?? serviceLocator<VoiceSessionCubit>();
+    // Ensure the language list is loaded (the cubit is a lazy singleton that may
+    // not have fetched yet if the user hasn't opened voice this run).
+    if (cubit.availableLanguages.isEmpty) {
+      final country = serviceLocator<LocaleManager>().currentCountry;
+      await cubit.loadLanguagePreferences(country);
+    }
+    if (!mounted) return;
+    final result = await VoiceLanguageVoiceSheet.show(
+      context,
+      languages: cubit.availableLanguages,
+      selectedLanguageCode: cubit.selectedLanguageCode ?? _selectedLanguageCode,
+      selectedVoiceId: cubit.selectedVoiceId ?? _selectedVoiceId,
+      isSessionActive: cubit.hasActiveVoiceSession,
+      resolveYourVoice: _resolveYourVoice,
+      onAdvancedSettings: () {},
+      onLiveChange: cubit.hasActiveVoiceSession
+          ? (r) async {
+              if (r.language.code != cubit.selectedLanguageCode) {
+                await cubit.setLanguage(r.language.code);
+              }
+              await cubit.setVoice(r.voice.id);
+              if (r.voice.id == kMyVoiceSentinelId) {
+                await cubit.notifyCustomVoiceChanged(true);
+              } else {
+                await cubit.notifyVoiceChanged(r.voice.id);
+              }
+            }
+          : null,
+    );
+    if (result == null || !mounted) return;
+    // Non-active (selection) flow — persist via the cubit (single source of truth)
+    // and reflect it on this screen.
+    if (result.language.code != cubit.selectedLanguageCode) {
+      await cubit.setLanguage(result.language.code);
+    }
+    await cubit.setVoice(result.voice.id);
+    if (mounted) {
+      setState(() {
+        _selectedLanguageCode = result.language.code;
+        _selectedVoiceId = result.voice.id;
+      });
+    }
   }
 
   Widget _buildSectionHeader(String title) {
@@ -910,302 +973,6 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
     );
   }
 
-  Widget _buildLanguageSelector(
-    List<settings_models.VoiceLanguage> languages,
-    settings_models.VoiceLanguage? selectedLang,
-  ) {
-    if (languages.isEmpty) {
-      return _buildPlaceholderCard(
-        icon: Icons.translate_rounded,
-        text: 'No languages available',
-      );
-    }
-
-    return Column(
-      children: languages.map((lang) {
-        final isSelected = lang.code == _selectedLanguageCode;
-        return GestureDetector(
-          onTap: () => _saveLanguage(lang.code),
-          child: Container(
-            margin: EdgeInsets.only(bottom: 8.h),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
-                  : const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.3)
-                    : const Color(0xFF2D2D2D),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      lang.flagEmoji ?? '',
-                      style: TextStyle(fontSize: 20.sp),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        lang.nativeName,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        lang.name,
-                        style: GoogleFonts.inter(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Container(
-                    width: 24.w,
-                    height: 24.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF3B82F6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 14.sp,
-                    ),
-                  )
-                else
-                  Container(
-                    width: 24.w,
-                    height: 24.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildVoiceTile(settings_models.VoiceOption voice) {
-    final isSelected = voice.voiceId == _selectedVoiceId;
-    return GestureDetector(
-      onTap: () => _saveVoice(voice.voiceId),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
-              : const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
-                : const Color(0xFF2D2D2D),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
-                    : Colors.white.withValues(alpha: 0.06),
-              ),
-              child: Center(
-                child: Icon(
-                  voice.gender == 'female'
-                      ? Icons.woman_rounded
-                      : voice.gender == 'male'
-                          ? Icons.man_rounded
-                          : Icons.person_rounded,
-                  color: isSelected
-                      ? const Color(0xFF3B82F6)
-                      : Colors.white.withValues(alpha: 0.4),
-                  size: 22.sp,
-                ),
-              ),
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        voice.name,
-                        style: GoogleFonts.inter(
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.85),
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (isSelected) ...[
-                        SizedBox(width: 8.w),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6.w,
-                            vertical: 2.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4.r),
-                            border: Border.all(
-                              color: const Color(0xFF3B82F6)
-                                  .withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'CURRENT',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF3B82F6),
-                              fontSize: 9.sp,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  SizedBox(height: 4.h),
-                  Row(
-                    children: [
-                      if (voice.gender != null && voice.gender!.isNotEmpty)
-                        _buildChip(_capitalize(voice.gender!)),
-                      if (voice.description != null &&
-                          voice.description!.isNotEmpty)
-                        _buildChip(voice.description!),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Container(
-                width: 28.w,
-                height: 28.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF3B82F6),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_rounded,
-                  color: Colors.white,
-                  size: 16.sp,
-                ),
-              )
-            else
-              Container(
-                width: 28.w,
-                height: 28.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    width: 1.5,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChip(String text) {
-    return Container(
-      margin: EdgeInsets.only(right: 6.w),
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(6.r),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          color: Colors.white.withValues(alpha: 0.5),
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderCard({
-    required IconData icon,
-    required String text,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: 36.sp,
-            color: Colors.white.withValues(alpha: 0.2),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              color: Colors.white.withValues(alpha: 0.4),
-              fontSize: 13.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _capitalize(String s) {
-    if (s.isEmpty) return s;
-    return s[0].toUpperCase() + s.substring(1);
-  }
 
   /// Compact clone readiness/quality chip from a 0-1 score (Good/Fair/Poor).
   Widget _buildCloneScoreChip(double score) {
