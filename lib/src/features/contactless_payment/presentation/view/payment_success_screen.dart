@@ -216,7 +216,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     } else {
       // Fallback to text-based receipt
       final buffer = StringBuffer();
-      buffer.writeln('LazerVault Payment Receipt');
+      buffer.writeln('Lazervault Payment Receipt');
       buffer.writeln('─────────────────────────');
       buffer.writeln('Amount: $_formattedAmount');
       buffer.writeln(
@@ -233,7 +233,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
       buffer.writeln('Date: $_formattedDate');
       buffer.writeln('Status: Completed ✓');
       buffer.writeln('─────────────────────────');
-      buffer.writeln('Powered by LazerVault');
+      buffer.writeln('Powered by Lazervault');
 
       await SharePlus.instance.share(
           ShareParams(text: buffer.toString(), subject: 'Payment Receipt'));

@@ -750,7 +750,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     }
 
     final buffer = StringBuffer();
-    buffer.writeln('LazerVault AI Chat Export');
+    buffer.writeln('Lazervault AI Chat Export');
     buffer.writeln('Exported on: ${DateTime.now().toString().split('.').first}');
     buffer.writeln('${'─' * 40}\n');
 
@@ -768,7 +768,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       await file.writeAsString(buffer.toString());
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        title: 'LazerVault Chat Export',
+        title: 'Lazervault Chat Export',
       ));
     } catch (e) {
       Get.snackbar('Error', 'Failed to export chat', snackPosition: SnackPosition.BOTTOM);
@@ -2021,12 +2021,14 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             FocusScope.of(context).unfocus();
           },
           child: Container(
-            // Keep bottom-nav clearance (60.h) when the keyboard is closed,
-            // but rise with the keyboard so the input isn't covered.
+            // Keep bottom-nav clearance when the keyboard is closed, but rise
+            // with the keyboard so the input isn't covered. 72.h lifts the
+            // typing area clear of the curved nav bar (it previously sat a few
+            // px behind it).
             margin: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom > 0
                   ? MediaQuery.of(context).viewInsets.bottom
-                  : 60.h,
+                  : 72.h,
             ),
             decoration: const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
             child: Scaffold(

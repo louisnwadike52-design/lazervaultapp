@@ -1510,7 +1510,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  'LazerVault User',
+                  'Lazervault User',
                   style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600),
                 ),
               ),

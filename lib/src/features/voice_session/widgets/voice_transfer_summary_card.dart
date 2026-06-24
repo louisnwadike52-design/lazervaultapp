@@ -25,7 +25,7 @@ class VoiceTransferSummaryCard extends StatelessWidget {
   String _typeLabel(String transferType) {
     switch (transferType) {
       case 'internal':
-        return 'LazerVault Transfer';
+        return 'Lazervault Transfer';
       case 'domestic':
         return 'Domestic Bank Transfer';
       case 'international':

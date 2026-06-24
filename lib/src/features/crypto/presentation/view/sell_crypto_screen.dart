@@ -838,7 +838,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           SizedBox(height: 8.h),
           _buildDetailRow('Transaction type', 'Market sell'),
           SizedBox(height: 8.h),
-          _buildDetailRow('Destination', 'LazerVault Balance'),
+          _buildDetailRow('Destination', 'Lazervault Balance'),
         ],
       ),
     );

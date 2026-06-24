@@ -130,7 +130,7 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
 
     // Add welcome message for Enhanced Gateway
     final welcomeMessage = GeneralChatMessageEntity(
-      text: '''👋 Hi! I'm Lazer, your LazerVault assistant!
+      text: '''👋 Hi! I'm Lazer, your Lazervault assistant!
 
 I use AI to understand what you need and route you to the right service:
 

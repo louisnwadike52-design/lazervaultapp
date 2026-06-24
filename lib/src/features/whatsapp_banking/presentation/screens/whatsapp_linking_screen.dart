@@ -119,7 +119,7 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
             ),
             SizedBox(height: 12.h),
             Text(
-              'You can now access all LazerVault services via WhatsApp',
+              'You can now access all Lazervault services via WhatsApp',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,

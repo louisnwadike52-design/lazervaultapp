@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartz/dartz.dart' hide State;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -378,10 +380,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
       print('❌ Login failed for email: $email - ${failure.message}');
-      // Show generic error message for security
-      const genericError = 'Invalid email or password';
+      // Network/server outages must not be mislabelled as a credential error.
+      // Surface a friendly network message for those; otherwise keep the
+      // deliberately generic credential message (don't reveal which field).
+      final message = isNetworkStatusCode(failure.statusCode)
+          ? networkErrorMessage
+          : 'Invalid email or password';
       emit(AuthenticationFailure(
-        genericError,
+        message,
         statusCode: failure.statusCode,
       ));
     } else {
@@ -772,6 +778,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // the session unless explicitly cleared.
     if (serviceLocator.isRegistered<GroupAccountCubit>()) {
       serviceLocator<GroupAccountCubit>().clearOnLogout();
+    }
+    // Clear the cached FCM-registration flag so the NEXT user to log in on this
+    // device re-registers their token (the backend may have dropped this
+    // device's tokens on logout, and a stale marker must not skip them).
+    if (serviceLocator.isRegistered<PushNotificationsService>()) {
+      unawaited(serviceLocator<PushNotificationsService>().clearRegistrationMarker());
     }
     // No logout snackbar (removed per request).
     // Emit PasscodeLoginInProgress instead of AuthenticationInitial
@@ -1557,8 +1569,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   /// Signup flow pages:
   /// Page 0: Country Selection (Nigeria only for now)
-  /// Page 1: Email/Phone + Password
-  /// Page 2: Personal Info (First Name, Last Name, DOB)
+  /// Page 1: Phone (primary contact, country chip + SIM hint) + Password
+  /// Page 2: Personal Info (First Name, Last Name, DOB) + optional Email
   /// BVN verification: progressive KYC after passcode/PIN (not on signup).
   Future<void> signUpNextPage() async {
     if (state is SignUpInProgress) {
@@ -1590,43 +1602,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(currentState.copyWith(currentPage: 1, clearErrorMessage: true));
         return;
       } else if (currentState.currentPage == 1) {
-        // ========== PAGE 1: Email/Phone + Password ==========
-        final hasEmail = currentState.email.isNotEmpty;
-        final hasPhone = currentState.phoneNumber.isNotEmpty;
-
-        if (!hasEmail && !hasPhone) {
-          final errorMsg = 'Email or phone number is required';
+        // ========== PAGE 1: Phone (primary) + Password ==========
+        // Phone is now the PRIMARY contact, captured here with a country chip
+        // + per-country length check + SIM-hint prefill (the widget stamps the
+        // value as E.164 via signUpPhoneNumberChanged before we run). Email is
+        // an optional secondary contact collected on page 2.
+        if (currentState.phoneNumber.isEmpty) {
+          const errorMsg = 'Phone number is required';
           _showErrorSnackbar('Validation Error', errorMsg);
           if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
 
-        // Validate based on what was entered
-        if (currentState.primaryContactType == PrimaryContactType.email ||
-            (currentState.primaryContactType == PrimaryContactType.none && hasEmail)) {
-          if (!_isValidEmail(currentState.email)) {
-            final errorMsg = 'Please enter a valid email address';
-            _showErrorSnackbar('Validation Error', errorMsg);
-            if (isClosed) return;
-            emit(currentState.copyWith(errorMessage: errorMsg));
-            return;
-          }
-          if (currentState.primaryContactType == PrimaryContactType.none) {
-            emit(currentState.copyWith(primaryContactType: PrimaryContactType.email));
-          }
-        } else if (currentState.primaryContactType == PrimaryContactType.phone ||
-                   (currentState.primaryContactType == PrimaryContactType.none && hasPhone)) {
-          if (!_isValidPhoneNumber(currentState.phoneNumber)) {
-            final errorMsg = 'Please enter a valid phone number';
-            _showErrorSnackbar('Validation Error', errorMsg);
-            if (isClosed) return;
-            emit(currentState.copyWith(errorMessage: errorMsg));
-            return;
-          }
-          if (currentState.primaryContactType == PrimaryContactType.none) {
-            emit(currentState.copyWith(primaryContactType: PrimaryContactType.phone));
-          }
+        if (!_isValidPhoneNumber(currentState.phoneNumber)) {
+          const errorMsg = 'Please enter a valid phone number';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
         }
 
         // Validate password
@@ -1662,42 +1656,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Check email availability
-        if (currentState.primaryContactType == PrimaryContactType.email ||
-            currentState.primaryContactType == PrimaryContactType.none) {
-          if (isClosed) return;
-          emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
-
-          final result = await _checkEmailAvailabilityUseCase(email: currentState.email);
-
-          if (isClosed) return;
-
-          final bool shouldProceed = result.fold(
-            (failure) {
-              final errorMsg = 'Failed to verify email availability. Please try again.';
-              _showErrorSnackbar('Connection Error', errorMsg);
-              emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-              return false;
-            },
-            (isAvailable) {
-              if (!isAvailable) {
-                final errorMsg = 'This email is already registered. Please use a different email or sign in.';
-                _showErrorSnackbar('Email Already Exists', errorMsg);
-                emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-                return false;
-              }
-              return true;
-            },
-          );
-
-          if (!shouldProceed) return;
-
-          emit(currentState.copyWith(currentPage: 2, clearErrorMessage: true, isLoading: false));
-          return;
-        } else {
-          emit(currentState.copyWith(currentPage: 2, clearErrorMessage: true, isLoading: false));
-          return;
-        }
+        // Phone is always the primary contact in this flow — stamp it so the
+        // backend signup + post-signup verification routing pick the phone-OTP
+        // path. Advance to page 2 (personal info + optional email).
+        if (isClosed) return;
+        emit(currentState.copyWith(
+          currentPage: 2,
+          primaryContactType: PrimaryContactType.phone,
+          clearErrorMessage: true,
+          isLoading: false,
+        ));
+        return;
       } else if (currentState.currentPage == 2) {
         // ========== PAGE 2: Personal Info ==========
         final firstNameError = _validateName(currentState.firstName, 'First name');
@@ -1724,21 +1693,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Secondary contact validation (optional). For phone-primary signups
-        // we still validate an optionally-provided email here. For email-primary
-        // signups we NO LONGER require a phone at this point — phone is now
-        // captured on a dedicated post-email-verify screen so the user can pick
-        // any country (and a UK-resident user with NG registration can still
-        // sign up with a UK number). KYC and SMS-OTP needs are met by the
-        // separate phone screen + its existing PhoneVerificationCubit flow.
-        if (currentState.primaryContactType == PrimaryContactType.phone) {
-          if (currentState.email.isNotEmpty && !_isValidEmail(currentState.email)) {
-            final errorMsg = 'Please enter a valid email address';
-            _showErrorSnackbar('Validation Error', errorMsg);
-            if (isClosed) return;
-            emit(currentState.copyWith(errorMessage: errorMsg));
-            return;
-          }
+        // Secondary contact validation. Phone (the primary contact) was already
+        // captured + validated on page 1, so here we only validate the OPTIONAL
+        // email's format when the user actually provided one. An empty email is
+        // fine — it's a secondary contact for password-reset / recovery only.
+        if (currentState.email.isNotEmpty && !_isValidEmail(currentState.email)) {
+          final errorMsg = 'Please enter a valid email address';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
         }
 
         // Validate username if provided (optional field)
@@ -1765,6 +1729,38 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             emit(currentState.copyWith(errorMessage: errorMsg));
             return;
           }
+        }
+
+        // If an optional email was provided, make sure it isn't already
+        // registered before we attempt signup (this moved here from page 1
+        // along with the email field). Empty email skips the check entirely.
+        if (currentState.email.isNotEmpty) {
+          if (isClosed) return;
+          emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+
+          final availability = await _checkEmailAvailabilityUseCase(email: currentState.email);
+
+          if (isClosed) return;
+
+          final bool emailOk = availability.fold(
+            (failure) {
+              const errorMsg = 'Failed to verify email availability. Please try again.';
+              _showErrorSnackbar('Connection Error', errorMsg);
+              emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+              return false;
+            },
+            (isAvailable) {
+              if (!isAvailable) {
+                const errorMsg = 'This email is already registered. Use a different email or leave it blank.';
+                _showErrorSnackbar('Email Already Exists', errorMsg);
+                emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+                return false;
+              }
+              return true;
+            },
+          );
+
+          if (!emailOk) return;
         }
 
         // Create account; BVN/NIN verification happens in progressive KYC after passcode/PIN.
@@ -2177,6 +2173,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final currentState = state as PasscodeSetupInProgress;
 
       if (!currentState.isConfirmMode) {
+        // Reject weak passcodes up front (before asking to confirm) so users
+        // can't set 111111 / 123456 etc. — same policy as the Settings flow.
+        if (isWeakNumericCode(passcode)) {
+          emit(const PasscodeSetupInProgress(
+            errorMessage:
+                'Choose a less predictable passcode (avoid 111111 or 123456).',
+          ));
+          return;
+        }
         // First entry - ask for confirmation
         emit(PasscodeSetupInProgress(
           isConfirmMode: true,
@@ -2484,8 +2489,23 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     unawaited(_registerPushTokenIfReady());
   }
 
-  /// Pushes the FCM token to notifications-service. Called after every
-  /// transition to AuthenticationAuthenticated. The service skips the
+  /// Single chokepoint: register the FCM token on EVERY transition into an
+  /// authenticated state — email/password login, Google/Apple sign-in, passcode
+  /// login, post-verification, and cold-start session restore all emit either
+  /// [AuthenticationSuccess] or [AuthenticationAuthenticated]. Without this, the
+  /// common email/password login path (which emits AuthenticationSuccess) never
+  /// registered a token, so fcm_tokens stayed empty and no push could be sent.
+  /// registerCurrentToken() is idempotent (server keyed by user_id+device_id).
+  @override
+  void onChange(Change<AuthenticationState> change) {
+    super.onChange(change);
+    final next = change.nextState;
+    if (next is AuthenticationSuccess || next is AuthenticationAuthenticated) {
+      unawaited(_registerPushTokenIfReady());
+    }
+  }
+
+  /// Pushes the FCM token to notifications-service. The service skips the
   /// network call if user_id isn't in secure storage yet.
   Future<void> _registerPushTokenIfReady() async {
     try {

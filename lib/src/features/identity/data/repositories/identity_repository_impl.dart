@@ -326,7 +326,7 @@ class IdentityRepositoryImpl implements IIdentityRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> verifyPasscode({
+  Future<Either<Failure, PasscodeVerifyResult>> verifyPasscode({
     required String passcode,
   }) async {
     try {
@@ -341,8 +341,16 @@ class IdentityRepositoryImpl implements IIdentityRepository {
       );
 
       if (response.success) {
-        return Right(response.isValid);
+        // success=true covers correct, incorrect, AND locked-out — the
+        // structured fields tell them apart so the UI can render attempts /
+        // a countdown.
+        return Right(PasscodeVerifyResult(
+          isValid: response.isValid,
+          attemptsRemaining: response.attemptsRemaining,
+          retryAfterSeconds: response.retryAfterSeconds,
+        ));
       } else {
+        // Operational failure (e.g. passcode not set).
         return Left(ServerFailure(
           message: response.message.isNotEmpty
               ? response.message

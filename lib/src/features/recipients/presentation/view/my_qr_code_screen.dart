@@ -364,7 +364,7 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
           _buildInstructionItem(
             '2',
             'They scan it',
-            'They open LazerVault and scan your QR code',
+            'They open Lazervault and scan your QR code',
           ),
           SizedBox(height: 12.h),
           _buildInstructionItem(
@@ -589,8 +589,8 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
     try {
       // Share the QR data as text
       await SharePlus.instance.share(ShareParams(
-        text: 'Scan my LazerVault QR code to send me money!\n\n$qrData',
-        subject: 'My LazerVault QR Code',
+        text: 'Scan my Lazervault QR code to send me money!\n\n$qrData',
+        subject: 'My Lazervault QR Code',
       ));
     } catch (e) {
       Get.snackbar(

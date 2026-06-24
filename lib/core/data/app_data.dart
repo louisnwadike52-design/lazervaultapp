@@ -25,10 +25,10 @@ abstract class AppData {
   AppData._();
 
   // ========== ONBOARDING SLIDES ==========
-  // LazerVault onboarding content with proper fintech branding
+  // Lazervault onboarding content with proper fintech branding
   static const List<OnboardingSlide> onboardingSlides = [
     OnboardingSlide(
-      title: 'Welcome to LazerVault',
+      title: 'Welcome to Lazervault',
       subtitle: 'Your secure gateway to seamless financial management. Send, receive, and manage your money with ease.',
       imagePath: 'assets/images/logos/lazervault-logo-only.png',
       backgroundColor: Color(0xFFF5F7FA), // Light gray-blue
@@ -61,7 +61,7 @@ abstract class AppData {
     ),
     OnboardingSlide(
       title: 'Start Your Journey',
-      subtitle: 'Join thousands of users who trust LazerVault for their financial needs. Let\'s get started!',
+      subtitle: 'Join thousands of users who trust Lazervault for their financial needs. Let\'s get started!',
       imagePath: 'assets/images/logos/lazervault-full-logo-no-background.png',
       backgroundColor: Color(0xFFF3E5F5), // Light purple
       textColor: Color(0xFF4A148C), // Dark purple

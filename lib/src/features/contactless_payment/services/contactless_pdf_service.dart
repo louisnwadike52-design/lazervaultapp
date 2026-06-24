@@ -284,7 +284,7 @@ class ContactlessPdfService {
               pw.Image(logo, width: 120)
             else
               pw.Text(
-                'LazerVault',
+                'Lazervault',
                 style: _getTextStyle(fontSize: 28, isBold: true)
                     .copyWith(color: PdfColors.blue800),
               ),
@@ -514,7 +514,7 @@ class ContactlessPdfService {
             children: [
               _buildDetailRow(
                 'Name',
-                recipientName.isNotEmpty ? recipientName : 'LazerVault User',
+                recipientName.isNotEmpty ? recipientName : 'Lazervault User',
               ),
               _buildDetailRow('Username', '@$recipientTag'),
             ],
@@ -580,7 +580,7 @@ class ContactlessPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                  '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
@@ -600,9 +600,9 @@ class ContactlessPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'LazerVault Technologies Ltd is a financial technology company. '
-            'This document is a confirmation of a Contactless NFC payment processed through the LazerVault platform. '
-            'For any queries regarding this transaction, please contact support through the LazerVault app.',
+            'Lazervault Technologies Ltd is a financial technology company. '
+            'This document is a confirmation of a Contactless NFC payment processed through the Lazervault platform. '
+            'For any queries regarding this transaction, please contact support through the Lazervault app.',
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),
@@ -705,7 +705,7 @@ class ContactlessPdfService {
         files: [XFile(file.path)],
         text:
             'Contactless Payment Receipt - $currencySymbol$amount to @${transaction.receiverUsername}',
-        subject: 'LazerVault Contactless Payment Receipt',
+        subject: 'Lazervault Contactless Payment Receipt',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
@@ -730,7 +730,7 @@ class ContactlessPdfService {
         files: [XFile(file.path)],
         text:
             'Contactless Payment Received - $currencySymbol$amount from @${transaction.payerUsername}',
-        subject: 'LazerVault Contactless Payment Received',
+        subject: 'Lazervault Contactless Payment Received',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

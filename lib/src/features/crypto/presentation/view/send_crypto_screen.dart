@@ -111,7 +111,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     final recipient = _addressController.text.trim();
     if (recipient.isEmpty) {
       _toast(_isInternal
-          ? 'Enter a LazerVault user id or email'
+          ? 'Enter a Lazervault user id or email'
           : 'Enter a destination address');
       return;
     }
@@ -217,7 +217,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   _buildField(
                     _addressController,
                     _isInternal
-                        ? 'Recipient LazerVault user id or email'
+                        ? 'Recipient Lazervault user id or email'
                         : 'Destination address',
                   ),
                   SizedBox(height: 12.h),
@@ -412,7 +412,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       SizedBox(width: 8.w),
       Expanded(
         child: ChoiceChip(
-          label: const Text('LazerVault user'),
+          label: const Text('Lazervault user'),
           selected: _isInternal,
           onSelected: (s) => setState(() => _isInternal = s),
         ),

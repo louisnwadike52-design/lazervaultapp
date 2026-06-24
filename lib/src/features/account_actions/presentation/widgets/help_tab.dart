@@ -385,7 +385,7 @@ class HelpTab extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildFeeRow('LazerVault ATMs', 'Free'),
+            _buildFeeRow('Lazervault ATMs', 'Free'),
             SizedBox(height: 8.h),
             _buildFeeRow('Other bank ATMs', '₦50 per withdrawal'),
             SizedBox(height: 8.h),

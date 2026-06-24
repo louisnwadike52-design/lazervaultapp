@@ -271,13 +271,13 @@ class _GeneralChatContentState extends State<GeneralChatContent>
             ChatSessionsInitial() => (const [], null as String?),
           };
           final currentTitle = (currentId == null || currentId.isEmpty)
-              ? 'LazerVault Chat'
+              ? 'Lazervault Chat'
               : sessions
                   .where((s) => s.sessionId == currentId)
                   .map((s) => s.title)
                   .firstWhere(
                     (_) => true,
-                    orElse: () => 'LazerVault Chat',
+                    orElse: () => 'Lazervault Chat',
                   );
 
           return BlocBuilder<GeneralChatCubit, GeneralChatState>(
@@ -435,7 +435,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           ),
           const SizedBox(height: 16),
           const Text(
-            'Welcome to LazerVault Chat!',
+            'Welcome to Lazervault Chat!',
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
@@ -444,7 +444,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           ),
           const SizedBox(height: 8),
           Text(
-            'I can help you with all LazerVault services',
+            'I can help you with all Lazervault services',
             style: TextStyle(
               color: Colors.grey[400],
               fontSize: 14,
@@ -1009,7 +1009,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                       obscuringCharacter: '*',
                       keyboardType: _isPinMode ? TextInputType.number : TextInputType.text,
                       decoration: InputDecoration(
-                        hintText: _isPinMode ? 'Enter your PIN...' : 'Ask me anything about LazerVault...',
+                        hintText: _isPinMode ? 'Enter your PIN...' : 'Ask me anything about Lazervault...',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Colors.grey[800],

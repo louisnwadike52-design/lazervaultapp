@@ -6,6 +6,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
+import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
@@ -80,6 +81,18 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     }
   }
 
+  /// New-PIN policy for setup/change: reject trivially guessable PINs and (in
+  /// change mode) reusing the current PIN. Returns an error to show, or null.
+  String? _newPinSetupError(String pin) {
+    if (_isChangePinMode && pin == _currentPin) {
+      return 'New PIN must be different from your current one.';
+    }
+    if (isWeakNumericCode(pin)) {
+      return 'Choose a less predictable PIN (avoid 1111 or 1234).';
+    }
+    return null;
+  }
+
   void _onNumberPressed(String number) {
     if (_isCreating) return;
 
@@ -109,15 +122,23 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
         if (_enteredPin.length < _pinLength) {
           _enteredPin += number;
 
-          // Auto-switch to confirm mode when PIN is complete
+          // Validate the new PIN the moment it's complete (before confirm) so
+          // the user isn't asked to confirm a PIN we'll reject — weak codes and
+          // (in change mode) reusing the current PIN are rejected up front.
           if (_enteredPin.length == _pinLength) {
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (mounted) {
-                setState(() {
-                  _isConfirmMode = true;
-                });
-              }
-            });
+            final pinErr = _newPinSetupError(_enteredPin);
+            if (pinErr != null) {
+              _errorMessage = pinErr;
+              _enteredPin = '';
+            } else {
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (mounted) {
+                  setState(() {
+                    _isConfirmMode = true;
+                  });
+                }
+              });
+            }
           }
         }
       } else {
@@ -456,9 +477,11 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
             ),
             child: const SizedBox.expand(),
           ),
-          // Dark overlay
+          // Dark overlay — darkened (0.6) so the PIN dots, prompts and keypad
+          // read clearly over the bright auth background. Kept in sync with the
+          // passcode setup screen.
           Container(
-            color: Colors.black.withValues(alpha: 0.5),
+            color: Colors.black.withValues(alpha: 0.6),
           ),
           SafeArea(
             child: Padding(

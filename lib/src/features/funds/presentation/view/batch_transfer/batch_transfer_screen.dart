@@ -356,7 +356,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
     final isInternal = r.type == 'internal' ||
         r.bankName.toLowerCase() == 'lazervault';
     final subtitle = isInternal
-        ? 'LazerVault • ${r.name}'
+        ? 'Lazervault • ${r.name}'
         : '${r.displayBankName} •••• ${r.accountNumber.length >= 4 ? r.accountNumber.substring(r.accountNumber.length - 4) : r.accountNumber}';
     Get.bottomSheet(
       Container(

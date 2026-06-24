@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -37,6 +38,9 @@ class AccountCarousel extends StatefulWidget {
 class _AccountCarouselState extends State<AccountCarousel> {
   int _currentIndex = 0;
   final AccountManager _accountManager = serviceLocator<AccountManager>();
+  // Panic Balance — when its decoy is active, the DISPLAYED balance is replaced
+  // with the decoy amount. Real values (_getAvailableBalance) are untouched.
+  final PanicBalanceService _panic = serviceLocator<PanicBalanceService>();
 
   // Store cubit reference early to avoid context.read() in delayed callbacks
   // (accessing context after Element is defunct causes crashes)
@@ -146,6 +150,25 @@ class _AccountCarouselState extends State<AccountCarousel> {
     // Check if the cubit has pending WebSocket animations to play
     // (e.g., when dashboard is rebuilt via Get.offAllNamed after a transfer)
     _checkForPendingAnimation();
+    // Re-render when the panic decoy is toggled (shake / long-press) or edited.
+    _panic.addListener(_onPanicChanged);
+  }
+
+  void _onPanicChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _panic.removeListener(_onPanicChanged);
+    super.dispose();
+  }
+
+  /// Balance to DISPLAY: the decoy amount when the panic camouflage is on, else
+  /// the real available balance. Display-only — never used for transactions.
+  double _displayBalance(AccountSummaryEntity account) {
+    if (_panic.isCamouflageOn) return _panic.decoyAmount;
+    return _getAvailableBalance(account);
   }
 
   @override
@@ -541,7 +564,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'accountNumber': account.accountNumber ?? '•••• ${account.accountNumberLast4}', // Full NUBAN for deposits
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',
       'bankName': account.bankName ?? 'Wema Bank', // Partner bank name
-      'accountName': account.accountName ?? 'LazerVault Account', // Account holder name
+      'accountName': account.accountName ?? 'Lazervault Account', // Account holder name
       'trend': '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,
     };
@@ -708,12 +731,18 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     // strip and the top "label + chips" row.
                     const Spacer(),
                     // Animated balance counter — shows AVAILABLE balance on dashboard
-                    CompactAnimatedBalance(
-                      balance: _getAvailableBalance(account),
-                      currencySymbol: currencySymbol,
-                      fontSize: 28,
-                      color: Colors.white,
-                      duration: const Duration(seconds: 3),
+                    // Long-press the balance to toggle the panic decoy (one of the
+                    // two triggers; shake is the other). No-op until configured.
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onLongPress: () => _panic.toggle(),
+                      child: CompactAnimatedBalance(
+                        balance: _displayBalance(account),
+                        currencySymbol: currencySymbol,
+                        fontSize: 28,
+                        color: Colors.white,
+                        duration: const Duration(seconds: 3),
+                      ),
                     ),
                     // Stale balance indicator — shown while WebSocket update is animating
                     if (_animatingAccounts.contains(account.id))
@@ -1006,12 +1035,18 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           ),
                         ),
                       ] else ...[
-                        CompactAnimatedBalance(
-                          balance: _getAvailableBalance(account),
-                          currencySymbol: currencySymbol,
-                          fontSize: 26,
-                          color: Colors.white,
-                          duration: const Duration(seconds: 3),
+                        // Group/family balance — shows the decoy when panic
+                        // camouflage is on (long-press toggles), matching the
+                        // standard card so no wallet leaks the real balance.
+                        GestureDetector(
+                          onLongPress: () => _panic.toggle(),
+                          child: CompactAnimatedBalance(
+                            balance: _displayBalance(account),
+                            currencySymbol: currencySymbol,
+                            fontSize: 26,
+                            color: Colors.white,
+                            duration: const Duration(seconds: 3),
+                          ),
                         ),
                         SizedBox(height: 2.h),
                         if (_animatingAccounts.contains(account.id))
@@ -1137,7 +1172,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
           account.accountNumber ?? '•••• ${account.accountNumberLast4}',
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',
       'bankName': account.bankName ?? 'Wema Bank',
-      'accountName': account.accountName ?? 'LazerVault Business',
+      'accountName': account.accountName ?? 'Lazervault Business',
       'trend':
           '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,
@@ -1216,7 +1251,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                'LazerVault Business',
+                                'Lazervault Business',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 16.sp,
@@ -1244,13 +1279,17 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         ],
                       ),
                       SizedBox(height: 12.h),
-                      // Animated balance counter for business accounts — shows available balance
-                      CompactAnimatedBalance(
-                        balance: _getAvailableBalance(account),
-                        currencySymbol: currencySymbol,
-                        fontSize: 26,
-                        color: Colors.white,
-                        duration: const Duration(seconds: 3),
+                      // Animated balance counter for business accounts — shows
+                      // the decoy when panic camouflage is on (long-press toggles).
+                      GestureDetector(
+                        onLongPress: () => _panic.toggle(),
+                        child: CompactAnimatedBalance(
+                          balance: _displayBalance(account),
+                          currencySymbol: currencySymbol,
+                          fontSize: 26,
+                          color: Colors.white,
+                          duration: const Duration(seconds: 3),
+                        ),
                       ),
                       SizedBox(height: 2.h),
                       if (_animatingAccounts.contains(account.id))

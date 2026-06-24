@@ -249,7 +249,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
                 label: 'Share',
                 onTap: () {
                   Share.share(
-                    'Pay me using IDPay: ${_idPay.displayPayId}\n\n${_idPay.description.isNotEmpty ? _idPay.description : "Send payment via LazerVault"}',
+                    'Pay me using IDPay: ${_idPay.displayPayId}\n\n${_idPay.description.isNotEmpty ? _idPay.description : "Send payment via Lazervault"}',
                     subject: 'IDPay Payment Request',
                   );
                 },

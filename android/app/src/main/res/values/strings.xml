@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LazerVault</string>
+    <string name="app_name">Lazervault</string>
 
     <!-- App Icon Quick Action shortcuts -->
     <string name="shortcut_send_money">Send Money</string>
@@ -13,9 +13,9 @@
     <string name="shortcut_pay_bills_long">Electricity, airtime &amp; more</string>
 
     <!-- Quick Settings Tile -->
-    <string name="quick_pay_tile_label">LazerVault Pay</string>
+    <string name="quick_pay_tile_label">Lazervault Pay</string>
 
     <!-- NFC HCE (contactless payment broadcast) -->
-    <string name="hce_service_description">LazerVault contactless payments</string>
-    <string name="hce_aid_group_description">LazerVault payment request</string>
+    <string name="hce_service_description">Lazervault contactless payments</string>
+    <string name="hce_aid_group_description">Lazervault payment request</string>
 </resources>

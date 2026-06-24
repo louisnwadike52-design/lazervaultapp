@@ -210,7 +210,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   _buildFaqItem(
                     id: '3',
                     question: 'What payment methods can I add?',
-                    answer: 'LazerVault supports multiple payment methods:\n\n• Bank accounts (via ACH)\n• Debit cards\n• Credit cards\n• Digital wallets\n\nTo add a payment method, go to Profile → Payment Methods → Add New.',
+                    answer: 'Lazervault supports multiple payment methods:\n\n• Bank accounts (via ACH)\n• Debit cards\n• Credit cards\n• Digital wallets\n\nTo add a payment method, go to Profile → Payment Methods → Add New.',
                   ),
                   _buildFaqItem(
                     id: '4',
@@ -261,7 +261,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   _buildResourceCard(
                     icon: Icons.menu_book_outlined,
                     title: 'User Guide',
-                    subtitle: 'Complete guide to using LazerVault',
+                    subtitle: 'Complete guide to using Lazervault',
                     onTap: () {},
                   ),
                   SizedBox(height: 12.h),

@@ -81,6 +81,24 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
     });
   }
 
+  Widget _tag(String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 9.sp,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -121,6 +139,16 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
               ],
             ),
 
+            SizedBox(height: 8.h),
+            Text(
+              'Your region is set from registration. Other countries are shown '
+              'but locked.',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF6B7280),
+                height: 1.3,
+              ),
+            ),
             SizedBox(height: 16.h),
 
             // Search Field
@@ -157,86 +185,118 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                 itemCount: _filteredCountries.length,
                 itemBuilder: (context, index) {
                   final country = _filteredCountries[index];
+                  // Region is fixed to the one chosen at registration: only that
+                  // country is enabled/selectable; every other is shown but
+                  // disabled (for transparency).
+                  final isSignup = country.countryName == widget.currentCountry;
+                  final enabled = isSignup;
                   final isSelected = _selectedCountry == country.countryName;
 
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedCountry = country.countryName;
-                        _selectedCurrency = country.currency;
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
-                            : Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
+                  return Opacity(
+                    opacity: enabled ? 1.0 : 0.45,
+                    child: InkWell(
+                      onTap: enabled
+                          ? () {
+                              setState(() {
+                                _selectedCountry = country.countryName;
+                                _selectedCurrency = country.currency;
+                              });
+                            }
+                          : null,
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF4E03D0)
-                              : Colors.grey.shade200,
-                          width: isSelected ? 2 : 1,
+                              ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+                              : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFF4E03D0)
+                                : Colors.grey.shade200,
+                            width: isSelected ? 2 : 1,
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          // Flag emoji
-                          Text(
-                            country.flag,
-                            style: TextStyle(fontSize: 24.sp),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  country.countryName,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16.sp,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                    color: isSelected
-                                        ? const Color(0xFF4E03D0)
-                                        : const Color(0xFF1F2937),
+                        child: Row(
+                          children: [
+                            // Flag emoji
+                            Text(
+                              country.flag,
+                              style: TextStyle(fontSize: 24.sp),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          country.countryName,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16.sp,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                            color: isSelected
+                                                ? const Color(0xFF4E03D0)
+                                                : const Color(0xFF1F2937),
+                                          ),
+                                        ),
+                                      ),
+                                      if (isSignup) ...[
+                                        SizedBox(width: 6.w),
+                                        _tag('Active', const Color(0xFF10B981)),
+                                        SizedBox(width: 4.w),
+                                        _tag('Signup', const Color(0xFF4E03D0)),
+                                      ],
+                                    ],
                                   ),
-                                ),
-                                SizedBox(height: 2.h),
-                                Row(
-                                  children: [
-                                    Text(
-                                      country.currency,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w400,
-                                        color: isSelected
-                                            ? const Color(0xFF4E03D0).withValues(alpha: 0.7)
-                                            : const Color(0xFF6B7280),
+                                  SizedBox(height: 2.h),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        country.currency,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13.sp,
+                                          fontWeight: FontWeight.w400,
+                                          color: isSelected
+                                              ? const Color(0xFF4E03D0)
+                                                  .withValues(alpha: 0.7)
+                                              : const Color(0xFF6B7280),
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(
-                                      '• ${country.countryCode}',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w400,
-                                        color: Colors.grey.shade500,
+                                      SizedBox(width: 8.w),
+                                      Text(
+                                        '• ${country.countryCode}',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.grey.shade500,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check_circle,
-                              color: const Color(0xFF4E03D0),
-                              size: 20.sp,
-                            ),
-                        ],
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                color: const Color(0xFF4E03D0),
+                                size: 20.sp,
+                              )
+                            else if (!enabled)
+                              Icon(
+                                Icons.lock_outline,
+                                color: Colors.grey.shade400,
+                                size: 16.sp,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   );

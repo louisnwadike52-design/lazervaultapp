@@ -137,7 +137,7 @@ class BatchTransferPdfService {
     final isScheduled = receiptData['isScheduled'] as bool? ?? false;
     final scheduledAt = receiptData['scheduledAt'] as String?;
     final senderName =
-        receiptData['senderAccountName'] as String? ?? 'LazerVault User';
+        receiptData['senderAccountName'] as String? ?? 'Lazervault User';
     final senderAccountInfo =
         receiptData['senderAccountInfo'] as String?;
     final transfers =
@@ -327,7 +327,7 @@ class BatchTransferPdfService {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    'LazerVault',
+                    'Lazervault',
                     style: _getTextStyle(fontSize: 28, isBold: true)
                         .copyWith(color: PdfColors.blue800),
                   ),
@@ -402,7 +402,7 @@ class BatchTransferPdfService {
             pw.Text('Bank',
                 style: _getTextStyle(fontSize: 11, isBold: true)),
             pw.SizedBox(width: 12),
-            pw.Text('LazerVault', style: _getTextStyle(fontSize: 11)),
+            pw.Text('Lazervault', style: _getTextStyle(fontSize: 11)),
           ],
         ),
       ],
@@ -693,7 +693,7 @@ class BatchTransferPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                  '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
@@ -713,9 +713,9 @@ class BatchTransferPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'LazerVault Technologies Ltd is a licensed financial technology company. '
-            'This document is a confirmation of a batch transfer processed through the LazerVault platform. '
-            'For any queries regarding this transaction, please contact support through the LazerVault app or visit www.lazervault.com.',
+            'Lazervault Technologies Ltd is a licensed financial technology company. '
+            'This document is a confirmation of a batch transfer processed through the Lazervault platform. '
+            'For any queries regarding this transaction, please contact support through the Lazervault app or visit www.lazervault.com.',
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),
@@ -852,8 +852,8 @@ class BatchTransferPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'LazerVault Batch Transfer Receipt - $currencySymbol${totalAmount.toStringAsFixed(2)} to $recipientCount recipients',
-        subject: 'LazerVault Batch Transfer Receipt - $batchId',
+            'Lazervault Batch Transfer Receipt - $currencySymbol${totalAmount.toStringAsFixed(2)} to $recipientCount recipients',
+        subject: 'Lazervault Batch Transfer Receipt - $batchId',
       ));
     } catch (e) {
       throw Exception('Failed to share batch transfer receipt: $e');
@@ -878,7 +878,7 @@ class BatchTransferPdfService {
     final isScheduled = receiptData['isScheduled'] as bool? ?? false;
     final scheduledAt = receiptData['scheduledAt'] as String?;
     final senderName =
-        receiptData['senderAccountName'] as String? ?? 'LazerVault User';
+        receiptData['senderAccountName'] as String? ?? 'Lazervault User';
     final senderAccountInfo = receiptData['senderAccountInfo'] as String?;
 
     DateTime? timestamp;
@@ -1056,7 +1056,7 @@ class BatchTransferPdfService {
                   children: [
                     _buildDetailRow('Name', recipientName, isBold: true),
                     _buildDetailRow('Account', recipientAccount),
-                    _buildDetailRow('Bank', 'LazerVault'),
+                    _buildDetailRow('Bank', 'Lazervault'),
                   ],
                 ),
               ),
@@ -1179,8 +1179,8 @@ class BatchTransferPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'LazerVault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
-        subject: 'LazerVault Transfer Receipt - $recipientName',
+            'Lazervault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
+        subject: 'Lazervault Transfer Receipt - $recipientName',
       ));
     } catch (e) {
       throw Exception(

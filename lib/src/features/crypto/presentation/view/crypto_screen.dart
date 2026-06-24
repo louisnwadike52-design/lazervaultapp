@@ -1294,7 +1294,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-            'LazerVault Services',
+            'Lazervault Services',
             style: TextStyle(
                     color: Colors.white,
               fontSize: 20.sp,
@@ -2069,7 +2069,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
           child: Column(
             children: [
               Text(
-                'Service provided by LazerVault Ltd.',
+                'Service provided by Lazervault Ltd.',
                 style: GoogleFonts.inter(
                   color: Colors.white.withValues(alpha: 0.45),
                   fontSize: 11.sp,

@@ -232,7 +232,7 @@ class _QrScanConfirmationSheetState extends State<QrScanConfirmationSheet>
               ),
               SizedBox(width: 4.w),
               Text(
-                'LazerVault User',
+                'Lazervault User',
                 style: TextStyle(
                   fontSize: 13.sp,
                   color: const Color(0xFF10B981),
@@ -301,7 +301,7 @@ class _QrScanConfirmationSheetState extends State<QrScanConfirmationSheet>
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
-                  'LazerVault',
+                  'Lazervault',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14.sp,

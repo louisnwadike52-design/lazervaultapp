@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
+
+import '../services/chat_receipt_pdf_service.dart';
 
 /// ChatReceiptCardV2 — generic in-chat receipt card.
 ///
@@ -32,12 +33,19 @@ import 'package:share_plus/share_plus.dart';
 /// existing native receipt screen (CryptoReceiptScreen for crypto, the
 /// transfers receipt sheet for transfers, etc.). The chat side never
 /// re-implements receipt detail; chat is just a compact view + handoff.
-class ChatReceiptCardV2 extends StatelessWidget {
+class ChatReceiptCardV2 extends StatefulWidget {
   final Map<String, dynamic> payload;
 
   const ChatReceiptCardV2({super.key, required this.payload});
 
-  String _s(String key) => payload[key]?.toString() ?? '';
+  @override
+  State<ChatReceiptCardV2> createState() => _ChatReceiptCardV2State();
+}
+
+class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
+  bool _isSharing = false;
+
+  String _s(String key) => widget.payload[key]?.toString() ?? '';
 
   Color get _statusColor {
     switch (_s('status')) {
@@ -100,12 +108,27 @@ class ChatReceiptCardV2 extends StatelessWidget {
     Get.toNamed(route);
   }
 
-  void _share() {
-    final text = _s('shareable_text');
-    if (text.isEmpty) return;
-    SharePlus.instance.share(
-      ShareParams(text: text, subject: _s('shareable_email_subject')),
-    );
+  /// Generate a real PDF receipt and hand it to the native share sheet (so it
+  /// can be saved/downloaded), mirroring the send-funds receipt flow. Works for
+  /// both the in-chat card and the voice-agent receipt sheet.
+  Future<void> _share() async {
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
+    try {
+      await ChatReceiptPdfService.shareReceipt(widget.payload);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not share receipt. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
   }
 
   @override
@@ -239,11 +262,20 @@ class ChatReceiptCardV2 extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: TextButton.icon(
-                  onPressed:
-                      _s('shareable_text').isEmpty ? null : _share,
-                  icon: const Icon(Icons.share_outlined, size: 14),
+                  onPressed: _isSharing ? null : _share,
+                  icon: _isSharing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.share_outlined, size: 14),
                   label: Text(
-                    'Share',
+                    _isSharing ? 'Sharing…' : 'Share',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

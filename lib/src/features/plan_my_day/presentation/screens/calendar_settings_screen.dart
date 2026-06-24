@@ -119,7 +119,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'Connect your calendar to sync events between LazerVault and your external calendars.',
+              'Connect your calendar to sync events between Lazervault and your external calendars.',
               style: TextStyle(
                 color: Colors.grey[300],
                 fontSize: 14.sp,
@@ -329,7 +329,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
           SizedBox(height: 12.h),
           _buildSettingItem(
             'Create events in calendar',
-            'New LazerVault events are added to connected calendars',
+            'New Lazervault events are added to connected calendars',
             true,
             (value) {},
           ),

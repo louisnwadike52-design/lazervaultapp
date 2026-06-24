@@ -441,7 +441,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         }
       case 2:
         return _selectedTriggerType == TriggerType.externalInflow
-            ? 'Pick the linked bank to watch and the LazerVault account the savings land in.'
+            ? 'Pick the linked bank to watch and the Lazervault account the savings land in.'
             : 'Money goes from the source to the destination. Pick a destination savings account.';
       case 3:
         return 'Goals and guardrails. Skip anything you don\'t need.';
@@ -571,7 +571,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             icon: Icons.account_balance_rounded,
             title: 'Bank Inflow',
             description:
-                'Auto-save when money enters your linked bank. Direct Debit moves a slice straight into LazerVault.',
+                'Auto-save when money enters your linked bank. Direct Debit moves a slice straight into Lazervault.',
             selected: _selectedTriggerType == TriggerType.externalInflow,
             onTap: () => setState(() {
               _selectedTriggerType = TriggerType.externalInflow;
@@ -846,7 +846,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             icon: Icons.account_balance_rounded,
             title: 'How it works',
             body:
-                'When money lands in your linked bank account, LazerVault pulls your configured save through the bank\'s Direct Debit mandate into your savings. You pick the bank on the accounts step.',
+                'When money lands in your linked bank account, Lazervault pulls your configured save through the bank\'s Direct Debit mandate into your savings. You pick the bank on the accounts step.',
           ),
           SizedBox(height: 14.h),
           _PreviewCard(
@@ -1133,7 +1133,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 badge: dests.isEmpty ? null : 'Savings',
                 help: dests.isEmpty
                     ? 'You have no savings account yet. Pick any other account.'
-                    : 'Where each save lands inside LazerVault.',
+                    : 'Where each save lands inside Lazervault.',
                 child: _AccountDropdown(
                   accounts: dests.isEmpty ? all : dests,
                   valueId: _selectedDestinationAccountId,

@@ -8,6 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/grpc_channel_factory.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
@@ -795,6 +796,13 @@ Future<void> init() async {
   // Register LocaleManager for centralized locale/country state management
   serviceLocator.registerLazySingleton<LocaleManager>(
     () => LocaleManager(),
+  );
+
+  // Panic Balance — decoy balance camouflage (display-only; never touches real
+  // balances). Singleton so balance widgets, triggers, settings and the AI-synced
+  // config all share one source of truth. Initialized at startup in main().
+  serviceLocator.registerLazySingleton<PanicBalanceService>(
+    () => PanicBalanceService(),
   );
 
   // Register CurrencySyncService for currency synchronization between local and server

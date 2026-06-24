@@ -9,7 +9,7 @@ import '../entities/scan_entities.dart';
 /// `lazervault_recipient`), `qr_payment/.../scan_qr_screen.dart` (`qr_payment`
 /// + raw `QR-…`) and `invoice/services/invoice_qr_service.dart`
 /// (`invoice` / `payment`). Returns `null` when the value isn't a recognizable
-/// LazerVault payment code (caller falls back to OCR or shows "unsupported QR").
+/// Lazervault payment code (caller falls back to OCR or shows "unsupported QR").
 class ScannedCodeClassifier {
   const ScannedCodeClassifier();
 
@@ -91,7 +91,7 @@ class ScannedCodeClassifier {
         return ScanPaymentIntent(
           type: ScanIntentType.recipient,
           title: (payload['name'] ?? username ?? 'Recipient').toString(),
-          subtitle: username != null ? '@$username' : 'LazerVault user',
+          subtitle: username != null ? '@$username' : 'Lazervault user',
           userId: userId,
           username: username,
           amount: amount == 0 ? null : amount,
@@ -111,7 +111,7 @@ class ScannedCodeClassifier {
         return ScanPaymentIntent(
           type: ScanIntentType.recipient,
           title: (data['name'] ?? username ?? 'Recipient').toString(),
-          subtitle: username != null ? '@$username' : 'LazerVault user',
+          subtitle: username != null ? '@$username' : 'Lazervault user',
           userId: userId,
           username: username,
           amountEditable: true,

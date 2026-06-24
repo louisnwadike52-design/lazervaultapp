@@ -445,7 +445,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           SizedBox(height: 8.h),
           _buildSecurityFeature('Funds stored in cold storage wallet'),
           SizedBox(height: 8.h),
-          _buildSecurityFeature('LazerVault is FCA regulated and authorized'),
+          _buildSecurityFeature('Lazervault is FCA regulated and authorized'),
           SizedBox(height: 8.h),
           _buildSecurityFeature('Transaction recorded on blockchain'),
         ],
@@ -748,7 +748,7 @@ Status: ${widget.receipt.status.name.toUpperCase()}
 Powered by LazerVault - Your trusted crypto platform
 ''';
 
-    SharePlus.instance.share(ShareParams(text: receiptText, subject: 'LazerVault Transaction Receipt'));
+    SharePlus.instance.share(ShareParams(text: receiptText, subject: 'Lazervault Transaction Receipt'));
   }
 
   void _downloadReceipt() {

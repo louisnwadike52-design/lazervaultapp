@@ -132,9 +132,11 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                 ),
                 child: const SizedBox.expand(),
               ),
-              // Dark overlay
+              // Dark overlay — darkened (0.6) so the passcode dots, prompts and
+              // keypad read clearly over the bright auth background. Kept in
+              // sync with the transaction-PIN setup/confirm screens.
               Container(
-                color: Colors.black.withValues(alpha: 0.5),
+                color: Colors.black.withValues(alpha: 0.6),
               ),
               SafeArea(
                 child: Padding(

@@ -254,8 +254,8 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       ),
       'internal_user' => (
         Icons.person_outline,
-        'LazerVault User Found',
-        'We detected a LazerVault username',
+        'Lazervault User Found',
+        'We detected a Lazervault username',
       ),
       'phone_number' => (
         Icons.phone_outlined,
@@ -444,7 +444,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         if (!hasUsername) ...[
           SizedBox(height: 12.h),
           Text(
-            'The scan detected a LazerVault reference but could not read the username clearly. Try again with a clearer image.',
+            'The scan detected a Lazervault reference but could not read the username clearly. Try again with a clearer image.',
             style: TextStyle(color: Colors.grey[600], fontSize: 13.sp),
           ),
         ],
@@ -603,7 +603,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         if (types.contains('internal_user'))
           _buildDisambiguationOption(
             'internal_user',
-            'LazerVault Username',
+            'Lazervault Username',
             Icons.person_outline,
           ),
         // Fallback if possibleTypes is empty (shouldn't happen but handle it)

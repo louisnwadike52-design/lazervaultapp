@@ -275,7 +275,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LazerVault Invoice Service',
+                      'Lazervault Invoice Service',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18.sp,
@@ -383,7 +383,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             isSelected: false,
             icon: Icons.account_balance_wallet,
             iconColor: Colors.blue,
-            title: 'Pay with LazerVault Wallet',
+            title: 'Pay with Lazervault Wallet',
             subtitle: 'Loading wallets...',
             trailing: LazerVaultLoader.tiny(),
             onTap: null,
@@ -396,7 +396,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             isSelected: false,
             icon: Icons.account_balance_wallet,
             iconColor: Colors.blue,
-            title: 'Pay with LazerVault Wallet',
+            title: 'Pay with Lazervault Wallet',
             subtitle: 'No wallets available',
             trailing: null,
             onTap: null,
@@ -424,7 +424,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           isSelected: true,
           icon: _getAccountIcon(displayAccount.accountType),
           iconColor: _getAccountColor(displayAccount.accountType),
-          title: 'Pay with LazerVault Wallet',
+          title: 'Pay with Lazervault Wallet',
           subtitle: '${displayAccount.accountType} Account  •  $_currencySymbol${displayAccount.availableBalance.toStringAsFixed(2)}',
           insufficientFunds: !hasEnough,
           trailing: Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 22.sp),

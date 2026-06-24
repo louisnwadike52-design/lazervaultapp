@@ -1,23 +1,45 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// Maps raw gRPC errors to user-friendly messages.
 /// Use this in all repository catch blocks instead of exposing [GrpcError.message].
+///
+/// NEVER returns the raw [GrpcError.message] for a transport-level failure — a
+/// non-200 gateway response surfaces as a gRPC error whose message contains raw
+/// text like "expected 200, got 503", which must never reach the user. Such
+/// failures are collapsed to the single [networkErrorMessage]. The server's own
+/// message is only passed through for business-meaningful codes, and only when
+/// it does not look technical.
 String friendlyGrpcError(GrpcError e, String fallback) {
-  if (e.code == StatusCode.unavailable ||
-      e.code == StatusCode.unimplemented ||
-      (e.message != null && e.message!.contains('unknown service'))) {
-    return 'Service temporarily unavailable. Please try again later.';
+  // Connectivity / transport failures (incl. non-200 gateway responses) first.
+  if (isNetworkError(e)) {
+    return networkErrorMessage;
   }
-  if (e.code == StatusCode.deadlineExceeded) {
-    return 'Request timed out. Please try again.';
+  if (e.code == StatusCode.unimplemented ||
+      (e.message != null && e.message!.contains('unknown service'))) {
+    return networkErrorMessage;
   }
   if (e.code == StatusCode.unauthenticated) {
     return 'Session expired. Please log in again.';
   }
-  if (e.code == StatusCode.permissionDenied) {
-    return e.message ?? 'Permission denied.';
+  if (e.code == StatusCode.resourceExhausted) {
+    return 'Too many attempts. Please wait a moment and try again.';
   }
-  return e.message ?? fallback;
+  // Business-meaningful codes: prefer the server's message, but only if it reads
+  // like a human sentence rather than raw transport/exception text.
+  if (e.code == StatusCode.permissionDenied ||
+      e.code == StatusCode.failedPrecondition ||
+      e.code == StatusCode.invalidArgument ||
+      e.code == StatusCode.alreadyExists ||
+      e.code == StatusCode.notFound) {
+    final msg = e.message;
+    if (msg != null && msg.isNotEmpty && !looksTechnical(msg)) {
+      return msg;
+    }
+    return fallback;
+  }
+  // Default: never leak the raw message.
+  return fallback;
 }
 
 abstract class Failure {

@@ -21,9 +21,40 @@ class SecureStorageService {
   /// Wiped by `clearAll` on logout.
   static const String _keyChatCurrentSessionId = 'chat_current_session_id';
 
+  /// Biometric-login opt-in flags (per method). Device biometrics (fingerprint/
+  /// face) gate the locally-cached session (refresh_token); voice login uses the
+  /// voice-biometrics enrollment. Managed from Settings → Biometric Login.
+  static const String _keyFingerprintLogin = 'fingerprint_login_enabled';
+  static const String _keyFaceLogin = 'face_login_enabled';
+  static const String _keyVoiceLogin = 'voice_login_enabled';
+
   final FlutterSecureStorage _storage;
 
   SecureStorageService(this._storage);
+
+  // Biometric login preferences
+  Future<void> setFingerprintLoginEnabled(bool v) async =>
+      _storage.write(key: _keyFingerprintLogin, value: v.toString());
+  Future<bool> getFingerprintLoginEnabled() async =>
+      (await _storage.read(key: _keyFingerprintLogin)) == 'true';
+
+  Future<void> setFaceLoginEnabled(bool v) async =>
+      _storage.write(key: _keyFaceLogin, value: v.toString());
+  Future<bool> getFaceLoginEnabled() async =>
+      (await _storage.read(key: _keyFaceLogin)) == 'true';
+
+  Future<void> setVoiceLoginEnabled(bool v) async =>
+      _storage.write(key: _keyVoiceLogin, value: v.toString());
+  Future<bool> getVoiceLoginEnabled() async =>
+      (await _storage.read(key: _keyVoiceLogin)) == 'true';
+
+  // Dark mode (display preference). Cached locally for an instant, offline theme
+  // at startup; reconciled with the server preference after profile load.
+  static const String _keyDarkMode = 'dark_mode';
+  Future<void> setDarkMode(bool v) async =>
+      _storage.write(key: _keyDarkMode, value: v.toString());
+  Future<bool> getDarkMode() async =>
+      (await _storage.read(key: _keyDarkMode)) == 'true';
 
   // User email
   Future<void> saveUserEmail(String email) async {

@@ -731,7 +731,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
         ),
         child: Text(
           '$symbol does not currently support deposits or withdrawals on any network. '
-          'You can still buy and sell it from your LazerVault balance.',
+          'You can still buy and sell it from your Lazervault balance.',
           style: GoogleFonts.inter(
             color: const Color(0xFFFB923C),
             fontSize: 12.sp,

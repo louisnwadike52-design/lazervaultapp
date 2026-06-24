@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 /// Thin Dart wrapper over the native Android Host Card Emulation (HCE) service
-/// (`com.lazervault.app/hce`). When a LazerVault receiver opens the "Receive
+/// (`com.lazervault.app/hce`). When a Lazervault receiver opens the "Receive
 /// Payment" screen we load the session's NDEF payload into the emulated tag so
 /// any payer phone — Android (NfcManager) or iPhone (CoreNFC) — can tap to read
 /// it, exactly like tapping a physical NFC sticker.

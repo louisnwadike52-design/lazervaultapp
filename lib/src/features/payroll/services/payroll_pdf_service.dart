@@ -191,7 +191,7 @@ class PayrollPdfService {
         files: [XFile(file.path)],
         text:
             'Pay Slip - ${slip.employeeName} - Net Pay: ${_formatAmount(slip.netPay)}',
-        subject: 'LazerVault Payroll - Pay Slip',
+        subject: 'Lazervault Payroll - Pay Slip',
       ));
     } catch (e) {
       throw Exception('Failed to share pay slip: $e');
@@ -311,7 +311,7 @@ class PayrollPdfService {
       files: [XFile(file.path)],
       text:
           'Payroll Report ($periodStart to $periodEnd) - Net Paid: ${_formatAmount((summary['totalNet'] as num?)?.toDouble() ?? 0.0)}',
-      subject: 'LazerVault Payroll - Report',
+      subject: 'Lazervault Payroll - Report',
     ));
   }
 
@@ -424,7 +424,7 @@ class PayrollPdfService {
               pw.Image(logo, width: 120)
             else
               pw.Text(
-                'LazerVault',
+                'Lazervault',
                 style: _getTextStyle(fontSize: 28, isBold: true)
                     .copyWith(color: PdfColors.blue800),
               ),
@@ -731,7 +731,7 @@ class PayrollPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                  '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
@@ -751,9 +751,9 @@ class PayrollPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'LazerVault Technologies Ltd is a financial technology company. '
-            'This document is a payroll pay slip generated through the LazerVault platform. '
-            'For any queries regarding this pay slip, please contact support through the LazerVault app.',
+            'Lazervault Technologies Ltd is a financial technology company. '
+            'This document is a payroll pay slip generated through the Lazervault platform. '
+            'For any queries regarding this pay slip, please contact support through the Lazervault app.',
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),

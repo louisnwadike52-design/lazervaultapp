@@ -77,6 +77,24 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
     }
   }
 
+  Widget _tag(String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 9.sp,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -120,7 +138,8 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
             SizedBox(height: 8.h),
 
             Text(
-              'Choose your preferred currency for transactions',
+              'Your currency is set from registration. Other currencies are '
+              'shown but locked.',
               style: GoogleFonts.inter(
                 fontSize: 13.sp,
                 color: const Color(0xFF6B7280),
@@ -136,83 +155,111 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                 itemCount: _currencies.length,
                 itemBuilder: (context, index) {
                   final currency = _currencies[index];
+                  // Currency is fixed to the registration currency: only that
+                  // one is enabled; the rest are shown but locked.
+                  final isSignup = currency['code'] == widget.currentCurrency;
+                  final enabled = isSignup;
                   final isSelected = _selectedCurrency == currency['code'];
 
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedCurrency = currency['code']!;
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
-                            : Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
+                  return Opacity(
+                    opacity: enabled ? 1.0 : 0.45,
+                    child: InkWell(
+                      onTap: enabled
+                          ? () {
+                              setState(() {
+                                _selectedCurrency = currency['code']!;
+                              });
+                            }
+                          : null,
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF4E03D0)
-                              : Colors.grey.shade200,
-                          width: isSelected ? 2 : 1,
+                              ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+                              : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFF4E03D0)
+                                : Colors.grey.shade200,
+                            width: isSelected ? 2 : 1,
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40.w,
-                            height: 40.w,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF4E03D0)
-                                  : Colors.grey.shade200,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                currency['symbol']!,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40.w,
+                              height: 40.w,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF4E03D0)
+                                    : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  currency['symbol']!,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF6B7280),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  currency['code']!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? const Color(0xFF4E03D0)
-                                        : const Color(0xFF1F2937),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        currency['code']!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: isSelected
+                                              ? const Color(0xFF4E03D0)
+                                              : const Color(0xFF1F2937),
+                                        ),
+                                      ),
+                                      if (isSignup) ...[
+                                        SizedBox(width: 6.w),
+                                        _tag('Active', const Color(0xFF10B981)),
+                                        SizedBox(width: 4.w),
+                                        _tag('Signup', const Color(0xFF4E03D0)),
+                                      ],
+                                    ],
                                   ),
-                                ),
-                                Text(
-                                  currency['name']!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13.sp,
-                                    color: const Color(0xFF6B7280),
+                                  Text(
+                                    currency['name']!,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.sp,
+                                      color: const Color(0xFF6B7280),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check_circle,
-                              color: const Color(0xFF4E03D0),
-                              size: 20.sp,
-                            ),
-                        ],
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                color: const Color(0xFF4E03D0),
+                                size: 20.sp,
+                              )
+                            else if (!enabled)
+                              Icon(
+                                Icons.lock_outline,
+                                color: Colors.grey.shade400,
+                                size: 16.sp,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   );

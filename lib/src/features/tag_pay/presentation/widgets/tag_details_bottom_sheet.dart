@@ -147,7 +147,7 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
     // Get display names with fallbacks
     final otherName = widget.isOutgoing ? widget.tag.taggedUserName : widget.tag.taggerName;
     final otherTag = widget.isOutgoing ? widget.tag.taggedUserTagPay : widget.tag.taggerTagPay;
-    final displayName = otherName.isNotEmpty ? otherName : 'LazerVault User';
+    final displayName = otherName.isNotEmpty ? otherName : 'Lazervault User';
     final displayTag = otherTag.isNotEmpty ? '@$otherTag' : '';
 
     Color statusColor;

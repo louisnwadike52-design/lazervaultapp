@@ -59,7 +59,7 @@ class _PaymentMethodSelectionScreenState
     },
     {
       'method': PaymentMethod.wallet,
-      'name': 'LazerVault Wallet',
+      'name': 'Lazervault Wallet',
       'icon': Icons.account_balance_wallet,
       'description': 'Use your wallet balance',
     },

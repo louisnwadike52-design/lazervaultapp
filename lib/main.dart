@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/data/datasources/cms_data.dart';
@@ -19,6 +18,9 @@ import 'core/services/endpoint_registry.dart';
 import 'core/services/inactivity_watcher.dart';
 import 'src/core/config/app_environment.dart' show currentAppEnvironment;
 import 'core/services/injection_container.dart';
+import 'core/services/secure_storage_service.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'core/services/push_notifications_service.dart';
 import 'src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:get/get.dart';
@@ -36,6 +38,7 @@ import 'package:permission_handler/permission_handler.dart';
 // device_info_plus dropped — tier identity is build-time now (see above).
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/quick_actions_service.dart';
+import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/src/core/services/deep_link_service.dart';
 import 'dart:async';
 
@@ -94,6 +97,19 @@ void main() async {
 
   // Initialize dependency injection (after env vars are loaded)
   await init();
+
+  // Hydrate the panic-balance decoy state from local storage BEFORE the first
+  // balance render, so a previously-triggered decoy is restored on cold start.
+  await serviceLocator<PanicBalanceService>().init();
+
+  // Build the theme controller from the cached dark-mode flag BEFORE the first
+  // frame so the app opens in the correct theme (instant, offline).
+  final themeController =
+      await ThemeController.create(serviceLocator<SecureStorageService>());
+  if (serviceLocator.isRegistered<ThemeController>()) {
+    serviceLocator.unregister<ThemeController>();
+  }
+  serviceLocator.registerSingleton<ThemeController>(themeController);
 
   // Initialize the database
   final dbHelper = DatabaseHelper();
@@ -401,25 +417,9 @@ class _MyAppState extends State<MyApp> {
           fallbackLocale: const Locale('en', 'UK'),
           locale: Get.deviceLocale,
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            appBarTheme: const AppBarTheme(
-              systemOverlayStyle: SystemUiOverlayStyle(
-                statusBarColor: Colors.transparent,
-                statusBarIconBrightness: Brightness.light,
-                systemNavigationBarIconBrightness: Brightness.light,
-              ),
-            ),
-            textTheme: GoogleFonts.robotoTextTheme().copyWith(
-              titleLarge: GoogleFonts.robotoTextTheme().titleLarge?.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                    letterSpacing: 0.5,
-                  ),
-            ),
-          ),
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: serviceLocator<ThemeController>().mode,
           initialRoute: widget.initialRoute,
           unknownRoute: GetPage(
             name: '/not-found',

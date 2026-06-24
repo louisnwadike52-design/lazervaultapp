@@ -690,7 +690,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Send to a LazerVault user by tag, phone, or email.',
+          Text('Send to a Lazervault user by tag, phone, or email.',
               style: GoogleFonts.inter(
                   color: btTextSecondary, fontSize: 12.sp)),
           SizedBox(height: 14.h),

@@ -6,6 +6,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../cubit/channel_management_cubit.dart';
 import '../../cubit/channel_management_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/transaction_pin/widgets/pin_success_view.dart';
 
 class ChannelPinSetupScreen extends StatefulWidget {
   final String channelType;
@@ -99,21 +100,12 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
         body: BlocConsumer<ChannelManagementCubit, ChannelManagementState>(
           listener: (context, state) {
             if (state is ChannelPinCreated) {
-              Get.snackbar(
-                'PIN Created',
-                '$_channelDisplayName banking PIN has been set up successfully!',
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-              );
-              Get.offAllNamed(AppRoutes.dashboard);
+              // Show the centralized success view briefly, then continue.
+              Future.delayed(const Duration(milliseconds: 1200),
+                  () => Get.offAllNamed(AppRoutes.dashboard));
             } else if (state is ChannelPinChanged) {
-              Get.snackbar(
-                'PIN Changed',
-                '$_channelDisplayName banking PIN has been changed successfully!',
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-              );
-              Get.back();
+              Future.delayed(
+                  const Duration(milliseconds: 1200), () => Get.back());
             } else if (state is ChannelManagementError) {
               Get.snackbar(
                 'Error',
@@ -125,6 +117,22 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
           },
           builder: (context, state) {
             final isLoading = state is ChannelManagementLoading;
+
+            // Centralized PIN-success confirmation (shared across PIN flows).
+            if (state is ChannelPinCreated) {
+              return PinSuccessView(
+                title: 'PIN Created',
+                subtitle:
+                    '$_channelDisplayName banking PIN has been set up successfully!',
+              );
+            }
+            if (state is ChannelPinChanged) {
+              return PinSuccessView(
+                title: 'PIN Changed',
+                subtitle:
+                    '$_channelDisplayName banking PIN has been changed successfully!',
+              );
+            }
 
             return Padding(
               padding: const EdgeInsets.all(24),

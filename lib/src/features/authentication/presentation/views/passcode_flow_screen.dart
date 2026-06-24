@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,15 +7,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
+import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/core/widgets/passcode_dots.dart';
 import 'package:lazervault/core/widgets/passcode_keypad.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/change_passcode_usecase.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
+import 'package:lazervault/src/features/identity/domain/repositories/i_identity_repository.dart';
 
 /// The three settings-area passcode operations.
 ///
@@ -95,6 +101,13 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
   bool _busy = false;
   String _error = '';
 
+  /// Brute-force lockout countdown (seconds). > 0 disables the keypad and shows
+  /// a "try again in mm:ss" message that ticks down via [_lockoutTimer].
+  int _lockoutRemaining = 0;
+  Timer? _lockoutTimer;
+
+  bool get _locked => _lockoutRemaining > 0;
+
   @override
   void initState() {
     super.initState();
@@ -109,19 +122,53 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
 
   @override
   void dispose() {
+    _lockoutTimer?.cancel();
     _passwordController.dispose();
     super.dispose();
   }
 
-  String get _title {
-    switch (widget.mode) {
-      case PasscodeFlowMode.setup:
-        return 'Set Up Passcode';
-      case PasscodeFlowMode.change:
-        return 'Change Passcode';
-      case PasscodeFlowMode.reset:
-        return 'Reset Passcode';
+  /// Begin a lockout countdown for [seconds]; disables the keypad and ticks the
+  /// "try again" message down to zero, then re-enables entry.
+  void _startLockout(int seconds) {
+    _lockoutTimer?.cancel();
+    if (seconds <= 0) return;
+    setState(() {
+      _lockoutRemaining = seconds;
+      _current = '';
+      _error = '';
+    });
+    _lockoutTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        _lockoutRemaining -= 1;
+        if (_lockoutRemaining <= 0) {
+          _lockoutRemaining = 0;
+          t.cancel();
+        }
+      });
+    });
+  }
+
+  String _formatDuration(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    if (m > 0) return '${m}m ${s.toString().padLeft(2, '0')}s';
+    return '${s}s';
+  }
+
+  /// Local new-passcode policy shared by every mode. Returns an error string to
+  /// show (and reject on), or null when the passcode is acceptable.
+  String? _newPasscodeError(String code) {
+    if (widget.mode == PasscodeFlowMode.change && code == _current) {
+      return 'New passcode must be different from your current one.';
     }
+    if (isWeakNumericCode(code)) {
+      return 'Choose a less predictable passcode (avoid 111111 or 123456).';
+    }
+    return null;
   }
 
   String get _stepTitle {
@@ -167,19 +214,31 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
   }
 
   void _onDigit(String d) {
-    if (_busy) return;
+    if (_busy || _locked) return;
     setState(() {
       _error = '';
       if (_step == 0 && _current.length < _passcodeLength) {
         _current += d;
         if (_current.length == _passcodeLength) {
-          // Move to "enter new"
-          _step = 1;
+          // Verify the current passcode with the backend BEFORE letting the
+          // user enter a new one — so a wrong current code fails fast instead
+          // of after they've typed the new code twice.
+          _verifyCurrent();
         }
       } else if (_step == 1 && _next.length < _passcodeLength) {
         _next += d;
         if (_next.length == _passcodeLength) {
-          _step = 2;
+          // Validate the new passcode AS SOON AS it's entered (not after the
+          // confirm step) so the user isn't asked to confirm a code we'll
+          // reject — more streamlined.
+          final err = _newPasscodeError(_next);
+          if (err != null) {
+            _error = err;
+            _next = '';
+            _shakeError();
+          } else {
+            _step = 2;
+          }
         }
       } else if (_step == 2 && _confirm.length < _passcodeLength) {
         _confirm += d;
@@ -191,7 +250,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
   }
 
   void _onBackspace() {
-    if (_busy) return;
+    if (_busy || _locked) return;
     setState(() {
       _error = '';
       if (_step == 0 && _current.isNotEmpty) {
@@ -200,13 +259,19 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         if (_next.isNotEmpty) {
           _next = _next.substring(0, _next.length - 1);
         } else if (widget.mode == PasscodeFlowMode.change) {
+          // Going back to the current-passcode step: clear it so it is
+          // re-entered and re-verified rather than left full and unverifiable.
           _step = 0;
+          _current = '';
         }
       } else if (_step == 2) {
         if (_confirm.isNotEmpty) {
           _confirm = _confirm.substring(0, _confirm.length - 1);
         } else {
+          // Step back to "enter new" and clear it so the user re-enters the
+          // new passcode cleanly rather than seeing a full, uneditable row.
           _step = 1;
+          _next = '';
         }
       }
     });
@@ -228,6 +293,8 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
       _shakeError();
       return;
     }
+    // (new != current and weak-code checks already ran when the new passcode
+    // was first entered — see _onDigit step 1.)
 
     switch (widget.mode) {
       case PasscodeFlowMode.setup:
@@ -261,6 +328,80 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         );
   }
 
+  /// Verify the current passcode server-side (read-only, no session change)
+  /// before advancing to "enter new". Handles rate-limit lockout (countdown +
+  /// disabled keypad) and network timeouts distinctly from a wrong passcode.
+  Future<void> _verifyCurrent() async {
+    setState(() {
+      _busy = true;
+      _error = '';
+    });
+    try {
+      final result = await serviceLocator<IIdentityRepository>()
+          .verifyPasscode(passcode: _current)
+          .timeout(const Duration(seconds: 15));
+      if (!mounted) return;
+      result.fold(
+        (failure) {
+          // Timeouts / connectivity issues are NOT a wrong attempt — let the
+          // user retry without penalty.
+          setState(() {
+            _busy = false;
+            _current = '';
+            _error = _isConnectivityFailure(failure)
+                ? 'Connection timed out. Check your connection and try again.'
+                : (failure.message.isNotEmpty
+                    ? failure.message
+                    : 'Could not verify your passcode. Please try again.');
+          });
+          _shakeError();
+        },
+        (res) {
+          setState(() => _busy = false);
+          if (res.isValid) {
+            setState(() => _step = 1); // proceed to "enter new"
+          } else if (res.isLockedOut) {
+            // Rate-limited — start the countdown + disable the keypad.
+            _startLockout(res.retryAfterSeconds);
+            _shakeError();
+          } else {
+            setState(() {
+              _current = '';
+              _error = res.attemptsRemaining > 0
+                  ? 'Incorrect passcode. ${res.attemptsRemaining} '
+                      '${res.attemptsRemaining == 1 ? "attempt" : "attempts"} remaining.'
+                  : 'Incorrect passcode. Please try again.';
+            });
+            _shakeError();
+          }
+        },
+      );
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _current = '';
+        _error = 'Connection timed out. Check your connection and try again.';
+      });
+      _shakeError();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _current = '';
+        _error = 'Could not verify your passcode. Please try again.';
+      });
+      _shakeError();
+    }
+  }
+
+  /// gRPC DEADLINE_EXCEEDED (4) / UNAVAILABLE (14) — i.e. timeout/connectivity,
+  /// surfaced by the repository as a ServerFailure with that status code.
+  bool _isConnectivityFailure(Failure failure) {
+    final c = failure.statusCode;
+    return c == 4 || c == 14;
+  }
+
   Future<void> _submitChange() async {
     setState(() {
       _busy = true;
@@ -270,19 +411,24 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
       final result = await serviceLocator<ChangePasscodeUseCase>()(
         oldPasscode: _current,
         newPasscode: _next,
-      );
+      ).timeout(const Duration(seconds: 20));
       if (!mounted) return;
       result.fold(
         (failure) {
-          setState(() {
-            _busy = false;
-            _error = failure.message;
-            _current = '';
-            _next = '';
-            _confirm = '';
-            _step = 0;
-          });
-          _shakeError();
+          if (_isConnectivityFailure(failure)) {
+            // Timed out — keep the new passcode, just re-confirm to retry.
+            _onSubmitTimeout();
+          } else {
+            setState(() {
+              _busy = false;
+              _error = failure.message;
+              _current = '';
+              _next = '';
+              _confirm = '';
+              _step = 0;
+            });
+            _shakeError();
+          }
         },
         (_) async {
           // Refresh the cached passcode so passcode-login keeps working.
@@ -292,18 +438,33 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
           _onSuccess('Passcode changed successfully');
         },
       );
+    } on TimeoutException {
+      if (!mounted) return;
+      _onSubmitTimeout();
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'Something went wrong: $e';
-        _step = 0;
+        _error = 'Something went wrong. Please try again.';
+        _step = widget.mode == PasscodeFlowMode.change ? 0 : 1;
         _current = '';
         _next = '';
         _confirm = '';
       });
       _shakeError();
     }
+  }
+
+  /// Submit timed out — don't discard the chosen new passcode; drop back to the
+  /// confirm step so a single re-confirm retries the write.
+  void _onSubmitTimeout() {
+    setState(() {
+      _busy = false;
+      _error = 'Connection timed out. Please re-enter to try again.';
+      _confirm = '';
+      _step = 2;
+    });
+    _shakeError();
   }
 
   Future<void> _submitReset() async {
@@ -321,18 +482,22 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
       final result = await serviceLocator<ChangePasscodeUseCase>()(
         oldPasscode: '', // backend interprets empty + reset token as reset
         newPasscode: _next,
-      );
+      ).timeout(const Duration(seconds: 20));
       if (!mounted) return;
       result.fold(
         (failure) {
-          setState(() {
-            _busy = false;
-            _error = failure.message;
-            _step = 1;
-            _next = '';
-            _confirm = '';
-          });
-          _shakeError();
+          if (_isConnectivityFailure(failure)) {
+            _onSubmitTimeout();
+          } else {
+            setState(() {
+              _busy = false;
+              _error = failure.message;
+              _step = 1;
+              _next = '';
+              _confirm = '';
+            });
+            _shakeError();
+          }
         },
         (_) async {
           await _storage.write(key: 'login_passcode', value: _next);
@@ -341,11 +506,14 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
           _onSuccess('Passcode reset successfully');
         },
       );
+    } on TimeoutException {
+      if (!mounted) return;
+      _onSubmitTimeout();
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'Something went wrong: $e';
+        _error = 'Something went wrong. Please try again.';
         _step = 1;
         _next = '';
         _confirm = '';
@@ -407,11 +575,14 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
   }
 
   Widget _buildBody(BuildContext context) {
-    // Dark, login-matching presentation: a near-black gradient background
-    // with a centered dots row + 3x3 keypad, mirroring
-    // `passcode_sign_in.dart`. The password gate (setup-only) keeps a dark
-    // card style so it doesn't break the look.
-    return Scaffold(
+    // Auth background image + dark overlay, matching the passcode login/setup
+    // screens (`passcode_setup_screen.dart` / `passcode_sign_in.dart`) so the
+    // settings passcode flow looks consistent with the rest of the auth surface.
+    // PopScope blocks back-navigation (gesture/button) while a verify/write is
+    // in flight so we never pop mid-operation; otherwise back returns to Settings.
+    return PopScope(
+      canPop: !_busy,
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -422,93 +593,123 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: _busy ? null : () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          _title,
-          style: GoogleFonts.inter(
-            fontSize: 17.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
+        // No title — the step heading ("Enter Current Passcode" / "Create
+        // Passcode" / "Confirm New Passcode") already names the action.
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1A1430), // subtle brand-tinted top
-              Color(0xFF0A0A0A),
-            ],
+      body: Stack(
+        children: [
+          // Background image (matching passcode login/setup).
+          DecoratedBox(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(AuthBackground.current),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: const SizedBox.expand(),
           ),
-        ),
-        child: SafeArea(
-          child: _busy
-              ? const Center(child: LazerVaultLoader.small())
-              : _step == 3
-                  ? _buildPasswordGate()
-                  : _buildKeypad(),
-        ),
+          // Dark overlay (0.6) so dots, prompts and keypad read clearly over
+          // the bright auth background — kept in sync with the setup screens.
+          Container(color: Colors.black.withValues(alpha: 0.6)),
+          SafeArea(
+            child: _busy
+                ? const Center(child: LazerVaultLoader.small())
+                : _step == 3
+                    ? _buildPasswordGate()
+                    : _buildKeypad(),
+          ),
+        ],
+      ),
       ),
     );
   }
 
   Widget _buildKeypad() {
-    return Column(
-      children: [
-        SizedBox(height: 16.h),
-        Text(
-          _stepTitle,
-          style: GoogleFonts.inter(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          _stepSubtitle,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w400,
-            color: Colors.white.withValues(alpha: 0.7),
-          ),
-        ),
-        SizedBox(height: 30.h),
-        ShakeWidget(
-          key: _shakeKey,
-          child: PasscodeDots(
-            length: _passcodeLength,
-            filled: _activePasscode.length,
-          ),
-        ),
-        SizedBox(height: 10.h),
-        if (_error.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Text(
-              _error,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 13.sp,
-                color: const Color(0xFFEF4444),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          )
-        else
-          SizedBox(height: 16.h),
-        const Spacer(),
-        Padding(
+    // Center the whole cluster (heading → subtitle → dots → keypad) vertically
+    // in the area below the transparent AppBar, mirroring the auth passcode
+    // setup/login screens — no large gap between the dots and the keypad.
+    final media = MediaQuery.of(context);
+    final availableHeight =
+        media.size.height - media.padding.top - kToolbarHeight;
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: availableHeight),
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.w),
-          child: PasscodeKeypad(
-            onDigit: _onDigit,
-            onBackspace: _onBackspace,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 16.h),
+              Text(
+                _stepTitle,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                _stepSubtitle,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+              SizedBox(height: 36.h),
+              ShakeWidget(
+                key: _shakeKey,
+                child: PasscodeDots(
+                  length: _passcodeLength,
+                  filled: _activePasscode.length,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              if (_locked)
+                Text(
+                  'Too many attempts. Try again in '
+                  '${_formatDuration(_lockoutRemaining)}.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: const Color(0xFFFB923C),
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              else if (_error.isEmpty)
+                SizedBox(height: 20.h)
+              else
+                Text(
+                  _error,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: const Color(0xFFEF4444),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              SizedBox(height: 36.h),
+              // Disable + dim the keypad during a rate-limit lockout.
+              IgnorePointer(
+                ignoring: _locked,
+                child: AnimatedOpacity(
+                  opacity: _locked ? 0.4 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: PasscodeKeypad(
+                    onDigit: _onDigit,
+                    onBackspace: _onBackspace,
+                  ),
+                ),
+              ),
+              SizedBox(height: 24.h),
+            ],
           ),
         ),
-        SizedBox(height: 32.h),
-      ],
+      ),
     );
   }
 
@@ -547,7 +748,7 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
               labelText: 'Account password',
               labelStyle:
                   TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-              hintText: 'Your LazerVault password',
+              hintText: 'Your Lazervault password',
               hintStyle:
                   TextStyle(color: Colors.white.withValues(alpha: 0.4)),
               filled: true,

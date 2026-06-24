@@ -156,7 +156,7 @@ class IDPayCreatedScreen extends StatelessWidget {
                 label: 'Share',
                 onTap: () {
                   Share.share(
-                    'Pay me using IDPay: ${idPay.displayPayId}\n\n${idPay.description.isNotEmpty ? idPay.description : "Send payment via LazerVault"}',
+                    'Pay me using IDPay: ${idPay.displayPayId}\n\n${idPay.description.isNotEmpty ? idPay.description : "Send payment via Lazervault"}',
                     subject: 'IDPay Payment Request',
                   );
                 },

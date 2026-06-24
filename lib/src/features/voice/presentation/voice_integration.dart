@@ -920,7 +920,7 @@ class DashboardHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('LazerVault Dashboard'),
+        title: Text('Lazervault Dashboard'),
         actions: [
           // UNIVERSAL MODE MIC BUTTON
           // Connects to Gateway (Port 3010)

@@ -195,7 +195,7 @@ class _MoveStatusInfoSheet extends StatelessWidget {
         ),
         (
           label: refundedToWallet
-              ? 'Refunded to your LazerVault wallet'
+              ? 'Refunded to your Lazervault wallet'
               : 'Refunded to $source',
           done: status == MoveTransferStatus.refunded,
           active: status == MoveTransferStatus.refunding,

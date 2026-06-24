@@ -15,7 +15,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class DepositScreen extends StatefulWidget {
   final String userId;
   final String accessToken;
-  final String destinationAccountId; // User's LazerVault virtual account
+  final String destinationAccountId; // User's Lazervault virtual account
   final String destinationAccountName;
 
   const DepositScreen({

@@ -1368,7 +1368,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   children: [
                     Icon(Icons.verified, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
                     SizedBox(width: 4.w),
-                    Text('LazerVault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                    Text('Lazervault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -2921,7 +2921,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    'Users not on LazerVault will receive an invitation link',
+                    'Users not on Lazervault will receive an invitation link',
                     style: GoogleFonts.inter(
                       color: InvoiceThemeColors.infoBlue,
                       fontSize: 12.sp,

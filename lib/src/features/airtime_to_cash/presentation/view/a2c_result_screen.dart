@@ -404,7 +404,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
       child: Column(
         children: [
           Text(
-            'Thank you for using LazerVault',
+            'Thank you for using Lazervault',
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,

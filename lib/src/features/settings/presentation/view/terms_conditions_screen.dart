@@ -77,19 +77,19 @@ class TermsConditionsScreen extends StatelessWidget {
             // Introduction
             _buildSection(
               'Introduction',
-              'Welcome to LazerVault. By using our mobile application and services, you agree to these Terms and Conditions. Please read them carefully before using our platform.',
+              'Welcome to Lazervault. By using our mobile application and services, you agree to these Terms and Conditions. Please read them carefully before using our platform.',
             ),
 
             // Acceptance
             _buildSection(
               '1. Acceptance of Terms',
-              'By accessing or using LazerVault, you agree to be bound by these Terms and Conditions and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use our services.',
+              'By accessing or using Lazervault, you agree to be bound by these Terms and Conditions and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use our services.',
             ),
 
             // Account Creation
             _buildSection(
               '2. Account Registration',
-              'To use LazerVault, you must:',
+              'To use Lazervault, you must:',
             ),
             _buildBulletList([
               'Be at least 18 years of age',
@@ -103,7 +103,7 @@ class TermsConditionsScreen extends StatelessWidget {
             // Services
             _buildSection(
               '3. Our Services',
-              'LazerVault provides the following services:',
+              'Lazervault provides the following services:',
             ),
             _buildBulletList([
               'Digital wallet for storing and managing funds',
@@ -117,7 +117,7 @@ class TermsConditionsScreen extends StatelessWidget {
             // User Responsibilities
             _buildSection(
               '4. User Responsibilities',
-              'As a user of LazerVault, you agree to:',
+              'As a user of Lazervault, you agree to:',
             ),
             _buildBulletList([
               'Use the service only for lawful purposes',
@@ -132,7 +132,7 @@ class TermsConditionsScreen extends StatelessWidget {
             // Prohibited Activities
             _buildSection(
               '5. Prohibited Activities',
-              'You may not use LazerVault to:',
+              'You may not use Lazervault to:',
             ),
             _buildBulletList([
               'Engage in money laundering or terrorist financing',
@@ -148,7 +148,7 @@ class TermsConditionsScreen extends StatelessWidget {
             // Fees and Charges
             _buildSection(
               '6. Fees and Charges',
-              'LazerVault may charge fees for certain services:',
+              'Lazervault may charge fees for certain services:',
             ),
             _buildBulletList([
               'Transaction fees may apply to specific transfers',
@@ -195,19 +195,19 @@ class TermsConditionsScreen extends StatelessWidget {
             // Data and Privacy
             _buildSection(
               '10. Data and Privacy',
-              'Your use of LazerVault is subject to our Privacy Policy. We collect, use, and protect your data as described in our Privacy Policy. By using our services, you consent to data processing as outlined.',
+              'Your use of Lazervault is subject to our Privacy Policy. We collect, use, and protect your data as described in our Privacy Policy. By using our services, you consent to data processing as outlined.',
             ),
 
             // Intellectual Property
             _buildSection(
               '11. Intellectual Property',
-              'All content, features, and functionality of LazerVault are owned by us and protected by:\n\n• Copyright laws\n• Trademark laws\n• Patent laws\n• Trade secret laws\n\nYou may not copy, modify, distribute, or reverse engineer any part of our platform without explicit written permission.',
+              'All content, features, and functionality of Lazervault are owned by us and protected by:\n\n• Copyright laws\n• Trademark laws\n• Patent laws\n• Trade secret laws\n\nYou may not copy, modify, distribute, or reverse engineer any part of our platform without explicit written permission.',
             ),
 
             // Limitation of Liability
             _buildSection(
               '12. Limitation of Liability',
-              'LazerVault shall not be liable for:',
+              'Lazervault shall not be liable for:',
             ),
             _buildBulletList([
               'Indirect, incidental, or consequential damages',
@@ -221,13 +221,13 @@ class TermsConditionsScreen extends StatelessWidget {
             // Warranties
             _buildSection(
               '13. Warranties Disclaimer',
-              'LazerVault is provided "as is" without warranties of any kind. We do not guarantee:\n\n• Uninterrupted or error-free service\n• Specific results or outcomes\n• Compatibility with all devices\n• Third-party service availability',
+              'Lazervault is provided "as is" without warranties of any kind. We do not guarantee:\n\n• Uninterrupted or error-free service\n• Specific results or outcomes\n• Compatibility with all devices\n• Third-party service availability',
             ),
 
             // Indemnification
             _buildSection(
               '14. Indemnification',
-              'You agree to indemnify and hold LazerVault harmless from any claims, losses, liabilities, and expenses (including legal fees) arising from:\n\n• Your use of the service\n• Violation of these Terms\n• Violation of any rights of others\n• Any content you submit',
+              'You agree to indemnify and hold Lazervault harmless from any claims, losses, liabilities, and expenses (including legal fees) arising from:\n\n• Your use of the service\n• Violation of these Terms\n• Violation of any rights of others\n• Any content you submit',
             ),
 
             // Governing Law
@@ -239,7 +239,7 @@ class TermsConditionsScreen extends StatelessWidget {
             // Dispute Resolution
             _buildSection(
               '16. Dispute Resolution',
-              'Any disputes arising from these Terms or use of LazerVault shall be resolved through:\n\n1. Good faith negotiation\n2. Mediation (if negotiation fails)\n3. Binding arbitration in San Francisco, California\n4. Class action waiver applies',
+              'Any disputes arising from these Terms or use of Lazervault shall be resolved through:\n\n1. Good faith negotiation\n2. Mediation (if negotiation fails)\n3. Binding arbitration in San Francisco, California\n4. Class action waiver applies',
             ),
 
             // Changes to Terms
@@ -293,7 +293,7 @@ class TermsConditionsScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'By using LazerVault, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.',
+                    'By using Lazervault, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,

@@ -77,7 +77,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             // Introduction
             _buildSection(
               'Introduction',
-              'LazerVault ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.',
+              'Lazervault ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.',
             ),
 
             // Data Collection
@@ -168,7 +168,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             // Children's Privacy
             _buildSection(
               '8. Children\'s Privacy',
-              'LazerVault is not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.',
+              'Lazervault is not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.',
             ),
 
             // International Transfers
@@ -228,7 +228,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'By using LazerVault, you acknowledge that you have read and understood this Privacy Policy.',
+                    'By using Lazervault, you acknowledge that you have read and understood this Privacy Policy.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,

@@ -422,7 +422,7 @@ class _ScanHistorySheetState extends State<ScanHistorySheet> {
         final username = _str(d, 'username');
         if (username.isNotEmpty) return '@$username';
         final display = _str(d, 'display_name');
-        return display.isNotEmpty ? display : 'LazerVault user';
+        return display.isNotEmpty ? display : 'Lazervault user';
       case 'phone_number':
         final phone = _str(d, 'phone_number');
         return phone.isNotEmpty ? phone : 'Phone number';
@@ -438,7 +438,7 @@ class _ScanHistorySheetState extends State<ScanHistorySheet> {
 
   String _typeLabel(String type) => switch (type) {
         'bank_details' => 'Bank account',
-        'internal_user' => 'LazerVault user',
+        'internal_user' => 'Lazervault user',
         'phone_number' => 'Phone number',
         'email' => 'Email',
         'ambiguous' => 'Needs review',

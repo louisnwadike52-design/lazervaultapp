@@ -844,7 +844,7 @@ Reference: ${purchase.reference}
 Date: ${DateFormat('MMM dd, yyyy · hh:mm a').format(_parsedTimestamp(purchase))}
 Status: ${purchase.displayStatus}
 ---
-Powered by LazerVault''';
+Powered by Lazervault''';
       SharePlus.instance.share(
         ShareParams(text: text, subject: 'Data Bundle Purchase Receipt'),
       );

@@ -248,7 +248,7 @@ class GroupAccountReportService {
     final doc = pw.Document(
       title: report.title,
       author: groupName,
-      creator: 'LazerVault',
+      creator: 'Lazervault',
     );
 
     final accent = PdfColor.fromInt(0xFF4E03D0);

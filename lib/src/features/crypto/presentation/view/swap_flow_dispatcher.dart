@@ -278,7 +278,7 @@ CryptoTransactionDetails _buildReceiptDetails(
     networkFee: 0.0,
     tradingFee: 0.0,
     totalAmount: fiatAmount,
-    paymentMethod: 'LazerVault Wallet',
+    paymentMethod: 'Lazervault Wallet',
     fromCrypto: type == CryptoTransactionType.swap ? fromCryptoSymbol.toUpperCase() : null,
     toCrypto: type == CryptoTransactionType.swap ? cryptoSymbol.toUpperCase() : null,
   );

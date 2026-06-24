@@ -172,7 +172,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
           }
 
           if (payloadData['type'] != 'lazervault_contactless_payment') {
-            _handleScanError('This is not a LazerVault payment tag');
+            _handleScanError('This is not a Lazervault payment tag');
             return;
           }
 

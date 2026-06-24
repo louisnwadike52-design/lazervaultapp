@@ -28,11 +28,11 @@ class _StatisticsSourceSheet extends StatelessWidget {
 
   static const _options = <(StatisticsSource, IconData, String)>[
     (StatisticsSource.lazervault, Icons.account_balance_wallet_rounded,
-        'Spending and income from your LazerVault wallet only'),
+        'Spending and income from your Lazervault wallet only'),
     (StatisticsSource.bank, Icons.account_balance_rounded,
         'Activity from your linked external bank accounts only'),
     (StatisticsSource.both, Icons.dashboard_rounded,
-        'Everything combined across LazerVault and your banks'),
+        'Everything combined across Lazervault and your banks'),
   ];
 
   @override

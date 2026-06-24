@@ -250,10 +250,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   void _shareSessionCode() {
     HapticFeedback.lightImpact();
     Share.share(
-      'Join my LazerSpray session on LazerVault!\n\n'
+      'Join my LazerSpray session on Lazervault!\n\n'
       'Session: ${_titleController.text.trim()}\n'
       'Code: $_sessionCode\n\n'
-      'Open LazerVault and enter the code to join.',
+      'Open Lazervault and enter the code to join.',
       subject: 'Join my LazerSpray session',
     );
   }

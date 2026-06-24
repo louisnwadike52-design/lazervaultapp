@@ -6,11 +6,16 @@ import 'package:flutter/material.dart';
 /// duplicate of `all`). When selected, the recipients screen swaps the
 /// list contents for the user's active recurring transfers — see
 /// `_buildRecurringList()` in `select_recipients.dart`.
+///
+/// `history` sits beside `recurring` and swaps the list for the user's
+/// transfer transaction history (with bank logos for external-bank
+/// transfers) — see `_buildHistoryList()` in `select_recipients.dart`.
 enum RecipientFilterType {
   all,
   recent,
   favorites,
   recurring,
+  history,
 }
 
 class RecipientFilterChip {

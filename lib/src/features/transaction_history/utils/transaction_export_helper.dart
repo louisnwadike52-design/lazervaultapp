@@ -42,7 +42,7 @@ class TransactionExportHelper {
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        text: 'LazerVault Transaction History',
+        text: 'Lazervault Transaction History',
       ),
     );
   }
@@ -73,7 +73,7 @@ class TransactionExportHelper {
     final dir = await getTemporaryDirectory();
     final dateRange =
         '${DateFormat('yyyyMMdd').format(startDate)}_${DateFormat('yyyyMMdd').format(endDate)}';
-    final file = File('${dir.path}/LazerVault_Transactions_$dateRange.csv');
+    final file = File('${dir.path}/Lazervault_Transactions_$dateRange.csv');
     await file.writeAsString(csvString);
     return file;
   }
@@ -104,7 +104,7 @@ class TransactionExportHelper {
               children: [
                 if (p == 0) ...[
                   pw.Text(
-                    'LazerVault',
+                    'Lazervault',
                     style: pw.TextStyle(
                       fontSize: 20,
                       fontWeight: pw.FontWeight.bold,
@@ -189,7 +189,7 @@ class TransactionExportHelper {
     final dir = await getTemporaryDirectory();
     final fileDate =
         '${DateFormat('yyyyMMdd').format(startDate)}_${DateFormat('yyyyMMdd').format(endDate)}';
-    final file = File('${dir.path}/LazerVault_Transactions_$fileDate.pdf');
+    final file = File('${dir.path}/Lazervault_Transactions_$fileDate.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }

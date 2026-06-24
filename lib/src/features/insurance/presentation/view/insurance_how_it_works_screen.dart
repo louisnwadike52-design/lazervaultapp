@@ -83,7 +83,7 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
               ),
               SizedBox(height: 4.h),
               Text(
-                'Understanding insurance on LazerVault',
+                'Understanding insurance on Lazervault',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
@@ -133,7 +133,7 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'LazerVault + MyCover.ai',
+            'Lazervault + MyCover.ai',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 20.sp,
@@ -143,7 +143,7 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'We\'ve partnered with MyCover.ai to bring you access to a wide range of insurance products from top providers. Browse, compare, and purchase policies seamlessly within the LazerVault app.',
+            'We\'ve partnered with MyCover.ai to bring you access to a wide range of insurance products from top providers. Browse, compare, and purchase policies seamlessly within the Lazervault app.',
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: 14.sp,
@@ -177,7 +177,7 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
         number: 3,
         title: 'Purchase Your Policy',
         description:
-            'Complete your purchase securely using your LazerVault account balance. Your policy is activated instantly.',
+            'Complete your purchase securely using your Lazervault account balance. Your policy is activated instantly.',
         icon: Icons.shopping_cart,
       ),
       _StepData(

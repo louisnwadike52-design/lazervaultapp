@@ -1284,7 +1284,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'User not on LazerVault',
+                      'User not on Lazervault',
                       style: GoogleFonts.inter(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,

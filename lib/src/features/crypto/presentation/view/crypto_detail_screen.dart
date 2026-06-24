@@ -1556,11 +1556,11 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     final hasRank = widget.crypto.marketCapRank > 0;
     final desc = hasRank
         ? 'Trade ${widget.crypto.name} (${widget.crypto.symbol.toUpperCase()}) '
-            'securely through LazerVault with our SEC-licensed partner Quidax. '
+            'securely through Lazervault with our SEC-licensed partner Quidax. '
             '${widget.crypto.name} is ranked #${widget.crypto.marketCapRank} '
             'by market capitalisation.'
         : 'Trade ${widget.crypto.name} (${widget.crypto.symbol.toUpperCase()}) '
-            'securely through LazerVault with our SEC-licensed partner Quidax.';
+            'securely through Lazervault with our SEC-licensed partner Quidax.';
 
     return _statsCard(
       headerIcon: Icons.info_outline_rounded,

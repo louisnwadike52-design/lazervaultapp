@@ -3,7 +3,7 @@ part of 'voice_enrollment_cubit.dart';
 /// Enrollment phrases used across states
 const List<String> enrollmentPhrases = [
   'My voice is my password',
-  'I authorize LazerVault transactions',
+  'I authorize Lazervault transactions',
   'Banking by voice is secure and convenient',
 ];
 

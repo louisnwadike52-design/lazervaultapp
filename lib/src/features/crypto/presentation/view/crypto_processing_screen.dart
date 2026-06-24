@@ -33,7 +33,7 @@ class CryptoProcessingScreen extends StatefulWidget {
     required this.cryptoId,
     required this.cryptoQuantity,
     required this.transactionPin,
-    this.paymentMethod = 'LazerVault Wallet',
+    this.paymentMethod = 'Lazervault Wallet',
   });
 
   @override

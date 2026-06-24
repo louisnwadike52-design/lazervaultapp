@@ -235,7 +235,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                         child: Column(
                           children: [
                             Text(
-                              'LazerVault',
+                              'Lazervault',
                               style: TextStyle(
                                 color: const Color(0xFF4E03D0),
                                 fontSize: 20.sp,

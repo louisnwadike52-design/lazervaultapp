@@ -523,7 +523,7 @@ Powered by LazerVault
 
     SharePlus.instance.share(ShareParams(
       text: shareText,
-      subject: 'LazerVault Payment Receipt',
+      subject: 'Lazervault Payment Receipt',
     ));
   }
 

@@ -41,7 +41,7 @@ class _InsuranceFaqScreenState extends State<InsuranceFaqScreen> {
     _FaqItem(
       question: 'How do I purchase an insurance policy?',
       answer:
-          'Browse available products, get a quote, review the terms, and confirm payment from your LazerVault account.',
+          'Browse available products, get a quote, review the terms, and confirm payment from your Lazervault account.',
       category: 'Policies',
     ),
     _FaqItem(
@@ -85,7 +85,7 @@ class _InsuranceFaqScreenState extends State<InsuranceFaqScreen> {
     _FaqItem(
       question: 'What payment methods are accepted?',
       answer:
-          'You can pay premiums directly from your LazerVault wallet balance.',
+          'You can pay premiums directly from your Lazervault wallet balance.',
       category: 'Payments',
     ),
     _FaqItem(

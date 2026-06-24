@@ -432,7 +432,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                                 borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Text(
-                                'On LazerVault',
+                                'On Lazervault',
                                 style: GoogleFonts.inter(
                                   fontSize: 9.sp,
                                   fontWeight: FontWeight.w600,
@@ -523,7 +523,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                     ),
                     SizedBox(width: 4.w),
                     Text(
-                      'On LazerVault',
+                      'On Lazervault',
                       style: GoogleFonts.inter(
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w600,
@@ -670,7 +670,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                       if (isOnPlatform) ...[
                         SizedBox(height: 2.h),
                         Text(
-                          'LazerVault user',
+                          'Lazervault user',
                           style: GoogleFonts.inter(
                             fontSize: 10.sp,
                             color: const Color(0xFF10B981),
@@ -723,7 +723,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
             ),
             SizedBox(height: 12.h),
             Text(
-              'LazerVault needs access to your contacts to help you quickly add members to your group.',
+              'Lazervault needs access to your contacts to help you quickly add members to your group.',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 color: Colors.grey[400],

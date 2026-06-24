@@ -34,7 +34,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
   // No more flickering error-builders falling back to a different style.
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      title: 'Welcome to LazerVault',
+      title: 'Welcome to Lazervault',
       subtitle: 'Your all-in-one financial super app',
       description: 'Bank, save, send and invest from one trusted home — designed for how money actually moves today.',
       icon: Icons.account_balance_wallet_rounded,

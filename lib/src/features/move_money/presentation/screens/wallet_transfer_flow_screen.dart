@@ -256,12 +256,12 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         'internalReference': result.reference,
         'transferId': result.transferId,
         'recipientName': result.destinationAccountName,
-        'recipientBankName': 'LazerVault Wallet',
+        'recipientBankName': 'Lazervault Wallet',
         'recipientAccountMasked': destination.accountNumber ?? '',
         'sourceAccountName': result.sourceAccountName,
-        'sourceBankName': 'LazerVault Wallet',
+        'sourceBankName': 'Lazervault Wallet',
         'sourceAccountMasked': source.accountNumber ?? '',
-        'sourceAccountInfo': 'LazerVault Wallet',
+        'sourceAccountInfo': 'Lazervault Wallet',
         'narration': description,
         'timestamp': DateTime.now(),
         'backRoute': AppRoutes.moveMoney,
@@ -849,7 +849,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
             ),
             SizedBox(height: 10.h),
             Text(
-              'You need at least two LazerVault accounts to '
+              'You need at least two Lazervault accounts to '
               'transfer between them. Create another account first.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(

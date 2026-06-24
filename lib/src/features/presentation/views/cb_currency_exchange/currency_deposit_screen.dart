@@ -31,7 +31,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
   Map<String, dynamic> get _depositDetails {
     return {
       'GBP': {
-        'accountName': 'LazerVault Ltd',
+        'accountName': 'Lazervault Ltd',
         'accountNumber': '12345678',
         'sortCode': '12-34-56',
         'bankName': 'Barclays Bank',
@@ -40,7 +40,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
         'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
       },
       'USD': {
-        'accountName': 'LazerVault Inc',
+        'accountName': 'Lazervault Inc',
         'accountNumber': '987654321',
         'routingNumber': '021000021',
         'bankName': 'Chase Bank',
@@ -48,7 +48,7 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
         'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
       },
       'EUR': {
-        'accountName': 'LazerVault SARL',
+        'accountName': 'Lazervault SARL',
         'accountNumber': '1234567890',
         'iban': 'FR14 2004 1010 0505 0001 3M02 606',
         'bankName': 'BNP Paribas',
@@ -56,14 +56,14 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
         'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
       },
       'JPY': {
-        'accountName': 'LazerVault KK',
+        'accountName': 'Lazervault KK',
         'accountNumber': '1234567',
         'bankName': 'Mitsubishi UFJ Bank',
         'swift': 'BOTKJPJT',
         'reference': 'LV${DateTime.now().millisecondsSinceEpoch}',
       },
       'CAD': {
-        'accountName': 'LazerVault Corp',
+        'accountName': 'Lazervault Corp',
         'accountNumber': '123456789',
         'transitNumber': '12345',
         'bankName': 'Royal Bank of Canada',

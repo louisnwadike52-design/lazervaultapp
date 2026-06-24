@@ -904,7 +904,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
-                          'On LazerVault',
+                          'On Lazervault',
                           style: GoogleFonts.inter(
                             fontSize: 10.sp,
                             fontWeight: FontWeight.w600,
@@ -990,7 +990,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'User not on LazerVault',
+                      'User not on Lazervault',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,

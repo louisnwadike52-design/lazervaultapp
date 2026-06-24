@@ -5,6 +5,27 @@ import 'package:lazervault/src/features/identity/domain/entities/id_document.dar
 import 'package:lazervault/src/features/identity/domain/entities/facial_data.dart';
 import 'package:lazervault/src/features/identity/domain/entities/device_permission.dart';
 
+/// Result of a passcode verification, carrying brute-force feedback so the UI
+/// can show remaining attempts and a lockout countdown.
+class PasscodeVerifyResult {
+  /// Whether the supplied passcode matched.
+  final bool isValid;
+
+  /// Wrong attempts left before the account locks (0 when locked or unknown).
+  final int attemptsRemaining;
+
+  /// Seconds the caller must wait before retrying. > 0 means currently locked.
+  final int retryAfterSeconds;
+
+  const PasscodeVerifyResult({
+    required this.isValid,
+    this.attemptsRemaining = 0,
+    this.retryAfterSeconds = 0,
+  });
+
+  bool get isLockedOut => retryAfterSeconds > 0;
+}
+
 abstract class IIdentityRepository {
   // ID Documents
   Future<Either<Failure, IDDocument>> uploadIDDocument({
@@ -36,7 +57,7 @@ abstract class IIdentityRepository {
     required String password,
   });
 
-  Future<Either<Failure, bool>> verifyPasscode({
+  Future<Either<Failure, PasscodeVerifyResult>> verifyPasscode({
     required String passcode,
   });
 

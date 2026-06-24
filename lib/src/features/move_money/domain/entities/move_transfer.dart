@@ -156,7 +156,7 @@ enum MoveTransferStatus {
         return refundedToWallet
             ? 'The money left $source but could not be delivered to '
                 '$destination. The full amount has been credited to your '
-                'LazerVault wallet instead.'
+                'Lazervault wallet instead.'
             : 'The money left $source but could not be delivered to '
                 '$destination. The full amount has been returned to $source.';
     }

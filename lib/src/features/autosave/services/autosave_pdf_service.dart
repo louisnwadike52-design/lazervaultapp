@@ -425,7 +425,7 @@ class AutoSavePdfService {
       child: pw.Text(
         // Pipe separator instead of a middle-dot/bullet — same
         // glyph-coverage reason as the row placeholders above.
-        'Page ${ctx.pageNumber} of ${ctx.pagesCount}   |   LazerVault',
+        'Page ${ctx.pageNumber} of ${ctx.pagesCount}   |   Lazervault',
         style: pw.TextStyle(
           color: _mutedColor,
           fontSize: 8,

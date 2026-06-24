@@ -157,7 +157,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
         buffer.writeln('');
       }
 
-      buffer.writeln('Purchased via LazerVault');
+      buffer.writeln('Purchased via Lazervault');
 
       SharePlus.instance.share(ShareParams(text: buffer.toString()));
     } finally {

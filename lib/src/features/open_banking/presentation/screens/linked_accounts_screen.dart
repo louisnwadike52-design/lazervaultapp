@@ -653,7 +653,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Link your bank account to deposit funds directly into your LazerVault wallet.',
+              'Link your bank account to deposit funds directly into your Lazervault wallet.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,

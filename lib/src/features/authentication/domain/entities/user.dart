@@ -29,6 +29,12 @@ class User extends Equatable {
   final bool hasPasscode;
   final bool hasTransactionPin;
 
+  /// Two-factor authentication state (mirrors users.two_factor_enabled /
+  /// two_factor_method on the backend). Surfaced so Settings reflects the
+  /// current 2FA state without an extra round-trip.
+  final bool twoFactorEnabled;
+  final String? twoFactorMethod;
+
   const User({
     required this.id,
     required this.firstName,
@@ -50,6 +56,8 @@ class User extends Equatable {
     this.currentSignupStep,
     this.hasPasscode = false,
     this.hasTransactionPin = false,
+    this.twoFactorEnabled = false,
+    this.twoFactorMethod,
   });
 
   /// An empty user which represents an unauthenticated user.
@@ -74,6 +82,8 @@ class User extends Equatable {
     currentSignupStep: null,
     hasPasscode: false,
     hasTransactionPin: false,
+    twoFactorEnabled: false,
+    twoFactorMethod: null,
   );
 
   /// Convenience getter to determine whether the current user is empty.
@@ -106,6 +116,8 @@ class User extends Equatable {
     String? currentSignupStep,
     bool? hasPasscode,
     bool? hasTransactionPin,
+    bool? twoFactorEnabled,
+    String? twoFactorMethod,
   }) {
     return User(
       id: id ?? this.id,
@@ -130,6 +142,8 @@ class User extends Equatable {
       currentSignupStep: currentSignupStep ?? this.currentSignupStep,
       hasPasscode: hasPasscode ?? this.hasPasscode,
       hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin,
+      twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
+      twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
     );
   }
 
@@ -155,6 +169,8 @@ class User extends Equatable {
         currentSignupStep,
         hasPasscode,
         hasTransactionPin,
+        twoFactorEnabled,
+        twoFactorMethod,
       ];
 }
 

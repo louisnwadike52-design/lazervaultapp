@@ -64,7 +64,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         // v1 static recipient QR
         _handleRecipientQR(data);
       } else {
-        _showError('Invalid QR Code', 'This QR code is not a LazerVault code.');
+        _showError('Invalid QR Code', 'This QR code is not a Lazervault code.');
       }
     } catch (e) {
       _showError('Invalid Format', 'Could not read QR code. Please try again.');

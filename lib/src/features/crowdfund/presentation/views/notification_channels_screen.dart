@@ -990,7 +990,7 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Notifications are sent from our verified LazerVault WhatsApp Business account.',
+                    'Notifications are sent from our verified Lazervault WhatsApp Business account.',
                     style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
                   ),
                 ),
@@ -1005,7 +1005,7 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           const Text(
             'Send donation updates to a WhatsApp group:\n\n'
             '1. Create a WhatsApp group for your campaign\n'
-            '2. Add our LazerVault number to your WhatsApp group\n'
+            '2. Add our Lazervault number to your WhatsApp group\n'
             '3. Enter the group name below',
             style: TextStyle(
               color: Color(0xFF9CA3AF),

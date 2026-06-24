@@ -213,7 +213,7 @@ class AirtimePdfService {
                 child: pw.Column(
                   children: [
                     pw.Text(
-                      'Thank you for using LazerVault',
+                      'Thank you for using Lazervault',
                       style: _getTextStyle(
                         fontSize: 12,
                         isBold: true,
@@ -265,7 +265,7 @@ class AirtimePdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'LazerVault',
+                  'Lazervault',
                   style: _getTextStyle(fontSize: 20, isBold: true),
                 ),
                 pw.Text(
@@ -374,7 +374,7 @@ class AirtimePdfService {
         files: [XFile(file.path)],
         text:
             'Airtime Purchase Receipt - $currencySymbol$amount to ${transaction.displayRecipientNumber}',
-        subject: 'LazerVault Airtime Purchase Receipt',
+        subject: 'Lazervault Airtime Purchase Receipt',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

@@ -119,6 +119,9 @@ dependencies:
   device_info_plus: ^11.4.0
   livekit_components: ^1.2.1
   shared_preferences: ^2.5.5
+  # Accelerometer shake detection — one of the two Panic Balance triggers
+  # (the other is a long-press on the balance). No runtime permission needed.
+  shake: ^3.0.0
   # Build/version info — used by EndpointRegistry to detect a new install/update
   # (build-number change) and refresh the endpoint cache so stale cross-version /
   # cross-env URLs never stick.

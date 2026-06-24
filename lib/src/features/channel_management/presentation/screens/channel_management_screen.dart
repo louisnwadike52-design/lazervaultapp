@@ -106,7 +106,7 @@ class ChannelManagementScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const Text(
-            'Manage your banking channels to access LazerVault from WhatsApp, phone calls, and SMS.',
+            'Manage your banking channels to access Lazervault from WhatsApp, phone calls, and SMS.',
             style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
           ),
           const SizedBox(height: 24),
@@ -187,19 +187,46 @@ class ChannelManagementScreen extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(height: 2),
-                    Text(subtitle,
-                        style: const TextStyle(
-                            color: Color(0xFF9CA3AF), fontSize: 13)),
+                    Text(
+                      isPending
+                          ? 'Verification pending — turn on to finish'
+                          : subtitle,
+                      style: TextStyle(
+                          color: isPending
+                              ? const Color(0xFFFB923C)
+                              : const Color(0xFF9CA3AF),
+                          fontSize: 13),
+                    ),
                   ],
                 ),
               ),
-              _buildStatusBadge(isActive, isPending),
+              // The on/off toggle IS the enable/disable control: turning it on
+              // routes to the setup flow; off deactivates (with confirmation).
+              Switch(
+                value: isActive,
+                activeThumbColor: Colors.white,
+                activeTrackColor: color,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFF2D2D2D),
+                onChanged: (turnOn) {
+                  if (turnOn) {
+                    // Enable → run the channel setup (phone → OTP → activate).
+                    final cubit = context.read<ChannelManagementCubit>();
+                    Get.to(() =>
+                            ChannelActivationScreen(channelType: channelType))
+                        ?.then((_) => cubit.loadChannels());
+                  } else {
+                    _confirmDeactivation(context, channelType);
+                  }
+                },
+              ),
             ],
           ),
+          // When active, show PIN setup/management for the channel.
           if (isActive) ...[
-            const SizedBox(height: 16),
-            const Divider(color: Color(0xFF2D2D2D)),
             const SizedBox(height: 12),
+            const Divider(color: Color(0xFF2D2D2D)),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -225,109 +252,18 @@ class ChannelManagementScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!hasPin)
-                  _buildActionButton(
-                    'Set PIN',
-                    () => Get.to(() => ChannelPinSetupScreen(
-                          channelType: channelType,
-                          isChange: false,
-                        )),
-                  )
-                else
-                  _buildActionButton(
-                    'Change PIN',
-                    () => Get.to(() => ChannelPinSetupScreen(
-                          channelType: channelType,
-                          isChange: true,
-                        )),
-                  ),
+                _buildActionButton(
+                  hasPin ? 'Change PIN' : 'Set PIN',
+                  () => Get.to(() => ChannelPinSetupScreen(
+                        channelType: channelType,
+                        isChange: hasPin,
+                      )),
+                ),
               ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => _confirmDeactivation(context, channelType),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFEF4444)),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Deactivate',
-                    style: TextStyle(color: Color(0xFFEF4444))),
-              ),
-            ),
-          ] else if (!isActive && !isPending) ...[
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Get.to(() => ChannelActivationScreen(
-                      channelType: channelType,
-                    )),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: color,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Activate',
-                    style: TextStyle(color: Colors.white)),
-              ),
-            ),
-          ] else if (isPending) ...[
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Get.to(() => ChannelActivationScreen(
-                      channelType: channelType,
-                    )),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFB923C),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Complete Activation',
-                    style: TextStyle(color: Colors.white)),
-              ),
             ),
           ],
         ],
       ),
-    );
-  }
-
-  Widget _buildStatusBadge(bool isActive, bool isPending) {
-    if (isActive) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF10B981).withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Text('Active',
-            style: TextStyle(color: Color(0xFF10B981), fontSize: 12)),
-      );
-    }
-    if (isPending) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFB923C).withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Text('Pending',
-            style: TextStyle(color: Color(0xFFFB923C), fontSize: 12)),
-      );
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF9CA3AF).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Text('Inactive',
-          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
     );
   }
 
@@ -400,7 +336,7 @@ class ChannelManagementScreen extends StatelessWidget {
         title: Text('Deactivate $channelName Banking?',
             style: const TextStyle(color: Colors.white)),
         content: Text(
-          'You will no longer be able to use $channelName to access your LazerVault account. You can reactivate it later.',
+          'You will no longer be able to use $channelName to access your Lazervault account. You can reactivate it later.',
           style: const TextStyle(color: Color(0xFF9CA3AF)),
         ),
         actions: [

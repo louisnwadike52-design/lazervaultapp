@@ -7,8 +7,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -114,6 +116,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   // resumed link/deposit from launching twice (e.g. a rebuild re-entering the
   // resume path). Cleared once the resumed flow has been kicked off.
   bool _isResuming = false;
+
+  // Guards the pre-launch KYC check so a double-tap on a deposit action can't
+  // fire two concurrent status fetches / two Mono launches / two KYC saves.
+  bool _kycCheckInFlight = false;
 
   // Watchdog: if linking/initiating stalls (e.g. a provider call hangs), flip the
   // progress sheet to a retryable failure instead of spinning on "Linking Account"
@@ -304,7 +310,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       linkedAccountId: linkedId,
       destinationAccountId: destId,
       amount: amount,
-      narration: 'Deposit from $bankLabel to LazerVault',
+      narration: 'Deposit from $bankLabel to Lazervault',
       accessToken: authState.profile.session.accessToken,
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),
@@ -750,8 +756,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             icon: Icons.link,
             onPressed: () {
               if (!_validateSheetAmount(min: 200)) return;
+              // Pop the sheet FIRST (prevents a double-tap re-entering this
+              // action), then gate on KYC before launching Mono.
               Navigator.of(sheetCtx).pop();
-              _launchNGNMonoBottomsheet(context);
+              _ensureKycThenDeposit(
+                proceed: () => _launchNGNMonoBottomsheet(context),
+              );
             },
           ),
           SizedBox(height: 12.h),
@@ -1341,7 +1351,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                       onPressed: () {
                         if (!_validateSheetAmount(min: _isNGN ? 200 : 0)) return;
                         Navigator.of(sheetCtx).pop();
-                        _depositFromLinkedAccount(account);
+                        // NGN bank deposits require a verified identity — gate
+                        // before re-depositing; a KYC detour resumes by
+                        // re-depositing from this same linked account.
+                        if (_isNGN) {
+                          _ensureKycThenDeposit(
+                            linkedAccountId: account.id,
+                            linkedBankName: account.bankName,
+                            proceed: () => _depositFromLinkedAccount(account),
+                          );
+                        } else {
+                          _depositFromLinkedAccount(account);
+                        }
                       },
                     ),
                     SizedBox(height: 10.h),
@@ -2434,14 +2455,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
+  /// True when a backend error message signals the identity-verification gate.
+  /// The gate surfaces in several shapes across paths (link, DirectPay deposit,
+  /// mandate setup, REST vs gRPC), so we match the canonical code AND the
+  /// human-readable variants. The discriminating error CODE
+  /// (`OpenBankingError.errorCode == 'KYC_REQUIRED'`) is preferred where
+  /// available (see [_openBankingListener]); this is the message-only net for
+  /// paths that surface only text (e.g. a persisted `failureReason`).
+  bool _isKycError(String? raw) {
+    final lower = (raw ?? '').toLowerCase();
+    if (lower.isEmpty) return false;
+    return lower.contains('kyc_required') ||
+        lower.contains('kyc required') ||
+        lower.contains('verify your identity') ||
+        lower.contains('identity verification required') ||
+        lower.contains('verify your bvn') ||
+        (lower.contains('bvn') && lower.contains('required'));
+  }
+
   /// Push a classified failure into the progress sheet — UNLESS the backend
   /// signalled the KYC gate, in which case route the user into identity
   /// verification (DirectPay/Direct Debit refuse without a verified BVN).
   void _showDepositFailure(String? raw) {
-    final lower = (raw ?? '').toLowerCase();
-    if (lower.contains('kyc_required') ||
-        lower.contains('kyc required') ||
-        lower.contains('verify your identity')) {
+    if (_isKycError(raw)) {
       _goToKycThenResume(
         snackbarMessage:
             'Complete a quick BVN verification to deposit from your bank account.',
@@ -2492,6 +2528,126 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     _progressController.failKyc(
       title: 'Verification required',
       message: snackbarMessage,
+    );
+  }
+
+  /// PRE-LAUNCH KYC gate. Bank deposits (Mono link + DirectPay/Direct Debit)
+  /// require an identity-verified user (backend Tier 2 / BVN). Rather than let
+  /// an unverified user complete the whole Mono link only to be rejected, we
+  /// check their KYC standing FIRST and route them into verification if they're
+  /// short — then [_maybeResumeAfterKyc] continues this exact deposit afterward.
+  ///
+  /// Source of truth: the Mono **Prove** tier (`ProveKycHttpService.status()`),
+  /// the SAME signal the backend deposit gate and the BVN screen use — gate on
+  /// `tier >= 2`. We deliberately do NOT use `KYCRepository` here (different
+  /// backend path → risk of a stale source-of-truth split).
+  ///
+  /// Resilience: this is a UX optimization, not a security control (the backend
+  /// re-gates authoritatively and the reactive net in [_openBankingListener] /
+  /// [_showDepositFailure] still catches a slip-through). So on a FETCH FAILURE
+  /// or timeout we FAIL OPEN and proceed. A *successful* low/unknown tier
+  /// (`tier < 2`) always GATES.
+  ///
+  /// `linkedAccountId`/`linkedBankName` are passed for the redeposit-from-an-
+  /// already-linked-account entry point so a KYC detour resumes by re-depositing
+  /// (not re-linking). They're null for the fresh link-and-deposit entry point.
+  Future<void> _ensureKycThenDeposit({
+    String? linkedAccountId,
+    String? linkedBankName,
+    required VoidCallback proceed,
+  }) async {
+    if (_kycCheckInFlight) return;
+
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      Get.snackbar(
+        'Authentication Error',
+        'You need to be logged in to make a deposit.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Carry the resume context so a KYC detour continues the right path.
+    if (linkedAccountId != null && linkedAccountId.isNotEmpty) {
+      _linkedAccountId = linkedAccountId;
+      if (linkedBankName != null && linkedBankName.isNotEmpty) {
+        _selectedBank = linkedBankName;
+      }
+    }
+
+    _kycCheckInFlight = true;
+    // Lightweight, non-blocking progress hint (NOT the DirectPay progress sheet,
+    // which is reserved for the deposit itself).
+    Get.snackbar(
+      'Checking your account',
+      'One moment…',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.black.withValues(alpha: 0.8),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 1),
+      showProgressIndicator: true,
+    );
+
+    try {
+      final status = await ProveKycHttpService(serviceLocator<SecureStorageService>())
+          .status()
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      if (status.tier >= 2) {
+        proceed();
+      } else {
+        _promptVerifyThenKyc();
+      }
+    } catch (e) {
+      // Network / timeout / parse error → fail open. The backend re-gates and
+      // the reactive KYC net will catch an unverified user after linking.
+      debugPrint('[Deposit] KYC pre-check failed, proceeding (backend re-gates): $e');
+      if (!mounted) return;
+      proceed();
+    } finally {
+      _kycCheckInFlight = false;
+    }
+  }
+
+  /// Ask the user to verify before we send them into KYC. Shown when the
+  /// pre-launch gate finds an insufficient tier — gives a clear explanation and
+  /// a clean cancel point (so we never yank them into KYC unexpectedly).
+  void _promptVerifyThenKyc() {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: const Text(
+          'Verify your identity',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'To deposit from your bank account, we need to verify your identity '
+          'with a quick BVN check. It only takes a moment.',
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Not now',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2962FF),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Get.back();
+              _saveAndGoToKyc();
+            },
+            child: const Text('Verify Now'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2802,10 +2958,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             : "We couldn't reach your bank right now. Please check your connection and try again.");
       }
     } else if (state is OpenBankingError) {
-      debugPrint('[Deposit] OpenBankingError: ${state.message}, operation: ${state.operation}');
+      debugPrint('[Deposit] OpenBankingError: ${state.message}, code: ${state.errorCode}, operation: ${state.operation}');
       // Don't surface link/unlink-list errors as a deposit failure (they're
       // background loads for the carousel); only deposit-flow errors matter.
       if (state.operation == 'fetchLinkedAccounts' || state.operation == 'unlinkAccount') {
+        return;
+      }
+      // Code-first KYC routing: the cubit preserves the backend error CODE, so
+      // route on it directly rather than relying on message text (which varies
+      // across the link / DirectPay / mandate paths). _isKycError(message) is
+      // the secondary net inside _showDepositFailure for message-only paths.
+      if (state.errorCode == 'KYC_REQUIRED') {
+        _goToKycThenResume(
+          snackbarMessage:
+              'Complete a quick BVN verification to deposit from your bank account.',
+        );
         return;
       }
       _showDepositFailure(state.message);
@@ -3278,14 +3445,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // with "country  is not supported for Flutterwave deposits").
     // _selectedBank can be empty on the fresh-link path (it is only set by the
     // redeposit flow) — without the guard the Mono checkout remark read
-    // "Deposit from to LazerVault".
+    // "Deposit from to Lazervault".
     final bankLabel = _selectedBank.isNotEmpty ? _selectedBank : 'your bank';
     serviceLocator<OpenBankingCubit>().initiateDeposit(
       userId: userId,
       linkedAccountId: _linkedAccountId!,
       destinationAccountId: destinationAccountId,
       amount: amount,
-      narration: 'Deposit from $bankLabel to LazerVault',
+      narration: 'Deposit from $bankLabel to Lazervault',
       accessToken: accessToken,
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),

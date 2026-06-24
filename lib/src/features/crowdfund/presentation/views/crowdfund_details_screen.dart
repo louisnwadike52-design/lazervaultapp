@@ -1286,7 +1286,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
   void _shareLink(Crowdfund crowdfund, String url) {
     SharePlus.instance.share(
       ShareParams(
-        text: 'Support "${crowdfund.title}" on LazerVault: $url',
+        text: 'Support "${crowdfund.title}" on Lazervault: $url',
         subject: crowdfund.title,
       ),
     );

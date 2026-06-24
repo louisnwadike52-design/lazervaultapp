@@ -111,7 +111,7 @@ class _RecipientsState extends State<Recipients> {
   String _formatRecipientType(String? type) {
     switch (type?.toLowerCase()) {
       case 'internal':
-        return 'Internal (LazerVault)';
+        return 'Internal (Lazervault)';
       case 'external':
         return 'External (Bank)';
       case 'domestic':

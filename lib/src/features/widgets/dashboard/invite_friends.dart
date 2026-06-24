@@ -88,7 +88,7 @@ class _InviteFriendsState extends State<InviteFriends> {
                       ),
                       SizedBox(height: 12.h),
                       Text(
-                        'Get £100 for each friend you invite\nwho joins LazerVault',
+                        'Get £100 for each friend you invite\nwho joins Lazervault',
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: Colors.white.withValues(alpha: 0.8),

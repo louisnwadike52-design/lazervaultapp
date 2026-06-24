@@ -246,7 +246,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            t.taggedUserName.isNotEmpty ? t.taggedUserName : 'LazerVault User',
+                            t.taggedUserName.isNotEmpty ? t.taggedUserName : 'Lazervault User',
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14.sp,
@@ -307,7 +307,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow('Tagged User', recipientName.isNotEmpty ? recipientName : 'LazerVault User'),
+          _buildDetailRow('Tagged User', recipientName.isNotEmpty ? recipientName : 'Lazervault User'),
           SizedBox(height: 12.h),
           _buildDetailRow('Tag', recipientTag.isNotEmpty ? '@$recipientTag' : '-'),
           SizedBox(height: 12.h),

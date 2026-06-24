@@ -294,7 +294,7 @@ class OpenBankingRemoteDataSource {
         'linked_account_id': linkedAccountId,
         'destination_account_id': destinationAccountId,
         'amount': amountInKobo,
-        'narration': narration ?? 'Deposit to LazerVault',
+        'narration': narration ?? 'Deposit to Lazervault',
         'idempotency_key': idempotencyKey,
       }),
       retryConfig: const RetryConfig(
@@ -474,7 +474,7 @@ class OpenBankingRemoteDataSource {
         'account_number': accountNumber,
         'account_name': accountName,
         'amount': amountInKobo,
-        'narration': narration ?? 'Withdrawal from LazerVault',
+        'narration': narration ?? 'Withdrawal from Lazervault',
         'idempotency_key': idempotencyKey,
       }),
       retryConfig: const RetryConfig(

@@ -173,7 +173,7 @@ class ThemedDrawer extends StatelessWidget {
                           ),
                           _DrawerMenuItem(
                             icon: Icons.info_outline,
-                            title: 'About LazerVault',
+                            title: 'About Lazervault',
                             iconColor: Color(0xFF3784F9),
                             onTap: () {
                               Navigator.pop(context);
@@ -366,7 +366,7 @@ class ThemedDrawer extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
               Text(
-                'LazerVault',
+                'Lazervault',
                 style: GoogleFonts.inter(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,

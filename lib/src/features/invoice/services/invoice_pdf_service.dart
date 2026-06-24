@@ -158,7 +158,7 @@ class InvoicePdfService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'LazerVault',
+              'Lazervault',
               style: pw.TextStyle(
                 fontSize: 28,
                 fontWeight: pw.FontWeight.bold,
@@ -416,7 +416,7 @@ class InvoicePdfService {
                 isBold: true,
               ),
               pw.Divider(color: PdfColors.grey300, height: 16),
-              _buildPaymentDetailRow('Payment Method', 'LazerVault Wallet'),
+              _buildPaymentDetailRow('Payment Method', 'Lazervault Wallet'),
               pw.Divider(color: PdfColors.grey300, height: 16),
               _buildPaymentDetailRow('Currency', invoice.currency.toUpperCase()),
             ],
@@ -543,7 +543,7 @@ class InvoicePdfService {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    'LazerVault Financial Services',
+                    'Lazervault Financial Services',
                     style: pw.TextStyle(
                       fontSize: 9,
                       fontWeight: pw.FontWeight.bold,
@@ -552,7 +552,7 @@ class InvoicePdfService {
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
-                    'This document is a receipt for your invoice payment. For any queries, please contact our support team through the LazerVault app or email support@lazervault.com.',
+                    'This document is a receipt for your invoice payment. For any queries, please contact our support team through the Lazervault app or email support@lazervault.com.',
                     style: const pw.TextStyle(
                       fontSize: 8,
                       color: PdfColors.grey500,
@@ -569,7 +569,7 @@ class InvoicePdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              '(c) ${DateTime.now().year} LazerVault',
+              '(c) ${DateTime.now().year} Lazervault',
               style: const pw.TextStyle(
                 fontSize: 9,
                 color: PdfColors.grey500,
@@ -1016,7 +1016,7 @@ class InvoicePdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              '(c) ${DateTime.now().year} LazerVault',
+              '(c) ${DateTime.now().year} Lazervault',
               style: const pw.TextStyle(
                 fontSize: 9,
                 color: PdfColors.grey500,

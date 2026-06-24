@@ -218,7 +218,7 @@ class _VoiceCaptionBoxState extends State<VoiceCaptionBox>
               ),
               SizedBox(width: 8.w),
               Text(
-                isAgent ? 'LazerVault AI' : 'You',
+                isAgent ? 'Lazervault AI' : 'You',
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,

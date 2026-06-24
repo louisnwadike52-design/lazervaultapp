@@ -210,7 +210,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Access all LazerVault services directly from WhatsApp. Fast, secure, and convenient.',
+                  'Access all Lazervault services directly from WhatsApp. Fast, secure, and convenient.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14.sp,
@@ -893,7 +893,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           ),
         ),
         content: Text(
-          'You will no longer be able to access LazerVault services via WhatsApp. You can re-link anytime.',
+          'You will no longer be able to access Lazervault services via WhatsApp. You can re-link anytime.',
           style: TextStyle(
             fontSize: 14.sp,
             color: Colors.black87,

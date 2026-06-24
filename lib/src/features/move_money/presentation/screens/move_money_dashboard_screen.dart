@@ -40,7 +40,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// Dashboard screen for the Move Money feature.
 ///
 /// Two tabs: "External Banks" (linked accounts + Mono DirectPay) and
-/// "LazerVault Wallet" (move between own LazerVault virtual accounts).
+/// "Lazervault Wallet" (move between own Lazervault virtual accounts).
 class MoveMoneyDashboardScreen extends StatefulWidget {
   const MoveMoneyDashboardScreen({super.key});
 
@@ -536,7 +536,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             WidgetStateProperty.all(brandPurple.withValues(alpha: 0.08)),
         tabs: const [
           Tab(text: 'External Banks'),
-          Tab(text: 'LazerVault Wallet'),
+          Tab(text: 'Lazervault Wallet'),
         ],
       ),
     );
@@ -637,7 +637,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                                   ),
                                   SizedBox(height: 2.h),
                                   Text(
-                                    'Send to any bank or LazerVault wallet',
+                                    'Send to any bank or Lazervault wallet',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.inter(
@@ -1259,7 +1259,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: Text(
-                  'To transfer between your wallets, you need at least two LazerVault accounts.',
+                  'To transfer between your wallets, you need at least two Lazervault accounts.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
@@ -1526,7 +1526,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    'Move money between your LazerVault accounts with zero fees.',
+                    'Move money between your Lazervault accounts with zero fees.',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
@@ -1679,7 +1679,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   ),
                   SizedBox(height: 6.h),
                   Text(
-                    'Instantly move money across banks and LazerVault wallets.',
+                    'Instantly move money across banks and Lazervault wallets.',
                     style: GoogleFonts.inter(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 13.sp,

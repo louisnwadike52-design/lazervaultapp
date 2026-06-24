@@ -686,7 +686,7 @@ Reference: ${payment.transactionReference ?? ''}
 Date: ${_formatDate(payment.createdAt)}
 Status: ${_formatStatus(payment.status)}
 ---
-Powered by LazerVault''';
+Powered by Lazervault''';
       SharePlus.instance
           .share(ShareParams(text: text, subject: 'Water Bill Receipt'));
     } finally {

@@ -761,7 +761,7 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'LazerVault',
+                                          'Lazervault',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 20.sp,

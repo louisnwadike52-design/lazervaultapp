@@ -143,11 +143,13 @@ class IdentityCubit extends Cubit<IdentityState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
-      (verified) => emit(PasscodeVerified(
-        verified: verified,
-        message: verified
+      (res) => emit(PasscodeVerified(
+        verified: res.isValid,
+        message: res.isValid
             ? 'Passcode verified successfully'
-            : 'Invalid passcode',
+            : res.isLockedOut
+                ? 'Too many attempts. Please try again later.'
+                : 'Invalid passcode',
       )),
     );
   }

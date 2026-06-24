@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/identity/domain/entities/device_permission.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
+/// Settings → Security → Device Permissions.
+///
+/// The OS is the SOURCE OF TRUTH for what the app can actually access, so the
+/// switches reflect the live `permission_handler` status (queried on load and
+/// whenever the app resumes from the system settings page). Toggling a granted
+/// permission opens the system settings (the OS doesn't allow apps to revoke
+/// silently); toggling a denied one requests it. Each change is also synced to
+/// the backend best-effort for cross-device audit — failures never block the UI.
 class DevicePermissionsScreen extends StatefulWidget {
   const DevicePermissionsScreen({super.key});
 
@@ -14,96 +25,136 @@ class DevicePermissionsScreen extends StatefulWidget {
       _DevicePermissionsScreenState();
 }
 
-class _DevicePermissionsScreenState extends State<DevicePermissionsScreen> {
+class _DevicePermissionsScreenState extends State<DevicePermissionsScreen>
+    with WidgetsBindingObserver {
+  // Dark theme palette (matches the rest of the app).
+  static const Color _bg = Color(0xFF0A0A0A);
+  static const Color _card = Color(0xFF1F1F1F);
+  static const Color _divider = Color(0xFF2D2D2D);
+  static const Color _textPrimary = Colors.white;
+  static const Color _textSecondary = Color(0xFF9CA3AF);
+  static const Color _primary = Color(0xFF3B82F6);
+  static const Color _success = Color(0xFF10B981);
+
   final Map<PermissionType, bool> _permissions = {};
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPermissions();
-  }
-
-  Future<void> _loadPermissions() async {
+    WidgetsBinding.instance.addObserver(this);
+    _syncOsStatus();
+    // Best-effort: pull the server's last-known audit (ignored on failure).
     context.read<IdentityCubit>().getPermissions();
   }
 
-  Future<void> _requestPermission(PermissionType permissionType) async {
-    Permission permission;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
-    switch (permissionType) {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-read OS status when returning from the system settings page so a
+    // permission the user changed there is reflected immediately.
+    if (state == AppLifecycleState.resumed) _syncOsStatus();
+  }
+
+  Permission _osPermission(PermissionType t) {
+    switch (t) {
       case PermissionType.camera:
-        permission = Permission.camera;
-        break;
+        return Permission.camera;
       case PermissionType.location:
-        permission = Permission.location;
-        break;
+        return Permission.location;
       case PermissionType.microphone:
-        permission = Permission.microphone;
-        break;
+        return Permission.microphone;
       case PermissionType.storage:
-        permission = Permission.storage;
-        break;
+        return Permission.storage;
       case PermissionType.contacts:
-        permission = Permission.contacts;
-        break;
+        return Permission.contacts;
       case PermissionType.biometric:
-        permission = Permission.sensors;
-        break;
+        return Permission.sensors;
     }
+  }
 
-    final status = await permission.request();
-    final isGranted = status.isGranted;
+  /// Read the live OS permission status for every type — the source of truth.
+  Future<void> _syncOsStatus() async {
+    for (final t in PermissionType.values) {
+      try {
+        final status = await _osPermission(t).status;
+        _permissions[t] = status.isGranted;
+      } catch (_) {
+        _permissions[t] = _permissions[t] ?? false;
+      }
+    }
+    if (mounted) setState(() => _loading = false);
+  }
 
-    setState(() {
-      _permissions[permissionType] = isGranted;
-    });
+  Future<void> _onToggle(PermissionType type) async {
+    final granted = _permissions[type] ?? false;
+    if (granted) {
+      // OS doesn't let an app silently revoke — send the user to settings.
+      _showRevokeDialog(type);
+      return;
+    }
+    final status = await _osPermission(type).request();
+    if (!mounted) return;
+    setState(() => _permissions[type] = status.isGranted);
+    if (status.isPermanentlyDenied) {
+      _showRevokeDialog(type, permanentlyDenied: true);
+    }
+    _syncToServer();
+  }
 
-    // Update on server
-    final permissionList = PermissionType.values
-        .map((type) => DevicePermission(
-              permissionType: type,
-              isGranted: _permissions[type] ?? false,
-              grantedAt: _permissions[type] == true ? DateTime.now() : null,
+  /// Best-effort backend audit — never surfaces errors to the user.
+  void _syncToServer() {
+    final list = PermissionType.values
+        .map((t) => DevicePermission(
+              permissionType: t,
+              isGranted: _permissions[t] ?? false,
+              grantedAt: (_permissions[t] ?? false) ? DateTime.now() : null,
             ))
         .toList();
-
-    if (mounted) {
-      context.read<IdentityCubit>().updatePermissions(
-            permissions: permissionList,
-          );
-    }
+    context.read<IdentityCubit>().updatePermissions(permissions: list);
   }
 
-  Future<void> _togglePermission(PermissionType permissionType) async {
-    final currentStatus = _permissions[permissionType] ?? false;
-
-    if (currentStatus) {
-      // Permission is currently granted - show dialog to direct user to settings
-      _showSettingsDialog(permissionType);
-    } else {
-      // Request the permission
-      await _requestPermission(permissionType);
-    }
-  }
-
-  void _showSettingsDialog(PermissionType permissionType) {
+  void _showRevokeDialog(PermissionType type, {bool permanentlyDenied = false}) {
+    final name = _entity(type).permissionName;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Permission Settings'),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _card,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          permanentlyDenied ? '$name needs system access' : 'Manage $name',
+          style: GoogleFonts.inter(
+              color: _textPrimary, fontWeight: FontWeight.w700, fontSize: 16.sp),
+        ),
         content: Text(
-          'To revoke ${_getPermissionName(permissionType)} permission, please go to app settings.',
+          permanentlyDenied
+              ? '$name is blocked. Open system settings to allow it for Lazervault.'
+              : 'To change $name access, open your system settings for Lazervault.',
+          style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: _textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
               openAppSettings();
-              Navigator.pop(context);
+              Navigator.pop(ctx);
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r)),
+            ),
             child: const Text('Open Settings'),
           ),
         ],
@@ -111,52 +162,21 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen> {
     );
   }
 
-  String _getPermissionName(PermissionType type) {
-    switch (type) {
-      case PermissionType.camera:
-        return 'Camera';
-      case PermissionType.location:
-        return 'Location';
-      case PermissionType.microphone:
-        return 'Microphone';
-      case PermissionType.storage:
-        return 'Storage';
-      case PermissionType.contacts:
-        return 'Contacts';
-      case PermissionType.biometric:
-        return 'Biometric';
-    }
-  }
+  DevicePermission _entity(PermissionType t) =>
+      DevicePermission(permissionType: t, isGranted: false);
 
-  String _getPermissionDescription(PermissionType type) {
-    switch (type) {
+  IconData _icon(PermissionType t) {
+    switch (t) {
       case PermissionType.camera:
-        return 'Access camera for facial recognition and document scanning';
+        return Icons.camera_alt_outlined;
       case PermissionType.location:
-        return 'Access location for enhanced security verification';
+        return Icons.location_on_outlined;
       case PermissionType.microphone:
-        return 'Access microphone for voice verification';
+        return Icons.mic_none_outlined;
       case PermissionType.storage:
-        return 'Access storage to save documents and images';
+        return Icons.folder_outlined;
       case PermissionType.contacts:
-        return 'Access contacts for peer-to-peer transactions';
-      case PermissionType.biometric:
-        return 'Access biometric authentication (fingerprint/face)';
-    }
-  }
-
-  IconData _getPermissionIcon(PermissionType type) {
-    switch (type) {
-      case PermissionType.camera:
-        return Icons.camera_alt;
-      case PermissionType.location:
-        return Icons.location_on;
-      case PermissionType.microphone:
-        return Icons.mic;
-      case PermissionType.storage:
-        return Icons.folder;
-      case PermissionType.contacts:
-        return Icons.contacts;
+        return Icons.contacts_outlined;
       case PermissionType.biometric:
         return Icons.fingerprint;
     }
@@ -165,95 +185,114 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _bg,
       appBar: AppBar(
-        title: const Text('Device Permissions'),
-        backgroundColor: Colors.purple.shade700,
+        backgroundColor: _bg,
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        iconTheme: const IconThemeData(color: _textPrimary),
+        title: Text(
+          'Device Permissions',
+          style: GoogleFonts.inter(
+              color: _textPrimary, fontSize: 17.sp, fontWeight: FontWeight.w600),
+        ),
       ),
-      body: BlocConsumer<IdentityCubit, IdentityState>(
+      body: BlocListener<IdentityCubit, IdentityState>(
         listener: (context, state) {
-          if (state is PermissionsUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          } else if (state is PermissionsLoaded) {
-            // Update local state with loaded permissions
-            setState(() {
-              for (var perm in state.permissions) {
-                _permissions[perm.permissionType] = perm.isGranted;
-              }
-            });
-          } else if (state is IdentityError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+          // Server is audit-only; the OS status drives the switches. We don't
+          // override OS truth with server data, and we swallow server errors.
         },
-        builder: (context, state) {
-          if (state is IdentityLoading) {
-            return const Center(child: LazerVaultLoader.small());
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              const Text(
-                'Manage App Permissions',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        child: _loading
+            ? const Center(child: CircularProgressIndicator(color: _primary))
+            : ListView(
+                padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
+                children: [
+                  Text(
+                    'App permissions',
+                    style: GoogleFonts.inter(
+                        color: _textPrimary,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'Control what Lazervault can access on this device. These '
+                    'reflect your system settings.',
+                    style: GoogleFonts.inter(
+                        color: _textSecondary, fontSize: 12.sp, height: 1.4),
+                  ),
+                  SizedBox(height: 20.h),
+                  ...PermissionType.values.map(_tile),
+                ],
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Control what data the app can access on your device',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-
-              // Permission tiles
-              ...PermissionType.values.map((type) {
-                return _buildPermissionTile(
-                  type: type,
-                  isGranted: _permissions[type] ?? false,
-                );
-              }),
-            ],
-          );
-        },
       ),
     );
   }
 
-  Widget _buildPermissionTile({
-    required PermissionType type,
-    required bool isGranted,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isGranted
-                ? Colors.purple.shade100
-                : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(8),
+  Widget _tile(PermissionType type) {
+    final granted = _permissions[type] ?? false;
+    final entity = _entity(type);
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: _divider),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44.w,
+            height: 44.w,
+            decoration: BoxDecoration(
+              color: (granted ? _primary : _textSecondary)
+                  .withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(_icon(type),
+                color: granted ? _primary : _textSecondary, size: 22.sp),
           ),
-          child: Icon(
-            _getPermissionIcon(type),
-            color: isGranted ? Colors.purple.shade700 : Colors.grey,
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(entity.permissionName,
+                        style: GoogleFonts.inter(
+                            color: _textPrimary,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(width: 8.w),
+                    Text(
+                      granted ? 'Allowed' : 'Not allowed',
+                      style: GoogleFonts.inter(
+                        color: granted ? _success : _textSecondary,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 4.h),
+                Text(entity.permissionDescription,
+                    style: GoogleFonts.inter(
+                        color: _textSecondary, fontSize: 11.sp, height: 1.35)),
+              ],
+            ),
           ),
-        ),
-        title: Text(
-          _getPermissionName(type),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(_getPermissionDescription(type)),
-        trailing: Switch(
-          value: isGranted,
-          activeThumbColor: Colors.purple.shade700,
-          onChanged: (_) => _togglePermission(type),
-        ),
+          SizedBox(width: 8.w),
+          Switch(
+            value: granted,
+            activeThumbColor: Colors.white,
+            activeTrackColor: _primary,
+            inactiveThumbColor: Colors.white,
+            inactiveTrackColor: _divider,
+            onChanged: (_) => _onToggle(type),
+          ),
+        ],
       ),
     );
   }

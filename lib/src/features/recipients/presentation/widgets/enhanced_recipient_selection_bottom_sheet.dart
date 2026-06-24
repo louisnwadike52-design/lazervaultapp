@@ -299,7 +299,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           ],
         ),
         content: Text(
-          'LazerVault needs access to your contacts to help you quickly send money to friends and family. You can grant permission in Settings.',
+          'Lazervault needs access to your contacts to help you quickly send money to friends and family. You can grant permission in Settings.',
           style: GoogleFonts.inter(
             color: Colors.grey[300],
             fontSize: 14.sp,
@@ -663,7 +663,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             return _buildEmptyState(
               icon: Icons.search_off,
               title: 'No recipients found',
-              subtitle: 'No saved recipients or LazerVault users match "$_searchQuery"',
+              subtitle: 'No saved recipients or Lazervault users match "$_searchQuery"',
             );
           }
 
@@ -692,7 +692,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                 Padding(
                   padding: EdgeInsets.only(top: hasSavedMatches ? 16.h : 0, bottom: 8.h, left: 4.w),
                   child: Text(
-                    hasSavedMatches ? 'Also on LazerVault' : 'Found on LazerVault',
+                    hasSavedMatches ? 'Also on Lazervault' : 'Found on Lazervault',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12.sp,
@@ -728,7 +728,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     if (_searchQuery.isEmpty) {
       return _buildEmptyState(
         icon: Icons.search,
-        title: 'Find LazerVault Users',
+        title: 'Find Lazervault Users',
         subtitle: 'Search by username, email, phone, or name',
         showExamples: true,
       );
@@ -739,14 +739,14 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       return _buildEmptyState(
         icon: Icons.search_off,
         title: 'No users found',
-        subtitle: 'No LazerVault users match "$_searchQuery"',
+        subtitle: 'No Lazervault users match "$_searchQuery"',
       );
     }
 
     if (cleanQuery.length < 2) {
       return _buildEmptyState(
         icon: Icons.search,
-        title: 'Find LazerVault Users',
+        title: 'Find Lazervault Users',
         subtitle: 'Type at least 2 characters to search',
         showExamples: true,
       );

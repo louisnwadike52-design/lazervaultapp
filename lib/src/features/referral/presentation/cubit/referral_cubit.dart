@@ -154,7 +154,7 @@ class ReferralCubit extends Cubit<ReferralState> {
     try {
       final currencySymbol = _getCurrencySymbol(currency ?? 'GBP');
       final message =
-          'Join LazerVault using my referral code: $code and get ${currencySymbol}50 bonus! '
+          'Join Lazervault using my referral code: $code and get ${currencySymbol}50 bonus! '
           'Download the app now: https://lazervault.com';
 
       await SharePlus.instance.share(ShareParams(text: message));

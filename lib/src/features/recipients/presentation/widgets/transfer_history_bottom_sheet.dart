@@ -7,11 +7,26 @@ import 'package:shimmer/shimmer.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+
+/// Whether a transaction belongs to the transfer flow. Shared by the transfer
+/// history bottom sheet and the inline "History" filter on the select-recipient
+/// screen so both surfaces classify transfers identically.
+bool isTransferTransaction(UnifiedTransaction tx) {
+  if (tx.serviceType == TransactionServiceType.transfer) return true;
+  final titleLower = tx.title.toLowerCase();
+  if (titleLower.contains('transfer')) return true;
+  final descLower = tx.description?.toLowerCase() ?? '';
+  if (descLower.contains('transfer')) return true;
+  final category = tx.metadata?['category']?.toString().toLowerCase() ?? '';
+  if (category.contains('transfer') || category.contains('c2c')) return true;
+  return false;
+}
 
 class TransferHistoryBottomSheet extends StatefulWidget {
   const TransferHistoryBottomSheet({super.key});
@@ -72,23 +87,10 @@ class _TransferHistoryBottomSheetState
     setState(() {}); // Rebuild to show/hide clear button
   }
 
-  /// Check if a transaction is transfer-related
-  bool _isTransfer(UnifiedTransaction tx) {
-    if (tx.serviceType == TransactionServiceType.transfer) return true;
-    final titleLower = tx.title.toLowerCase();
-    if (titleLower.contains('transfer')) return true;
-    final descLower = tx.description?.toLowerCase() ?? '';
-    if (descLower.contains('transfer')) return true;
-    // Check category in metadata
-    final category = tx.metadata?['category']?.toString().toLowerCase() ?? '';
-    if (category.contains('transfer') || category.contains('c2c')) return true;
-    return false;
-  }
-
   List<UnifiedTransaction> _filterTransactions(
       List<UnifiedTransaction> transactions) {
     // First: only keep transfer transactions
-    var filtered = transactions.where(_isTransfer).toList();
+    var filtered = transactions.where(isTransferTransaction).toList();
 
     // Then: apply search filter if active
     if (_searchQuery.isNotEmpty) {
@@ -451,17 +453,17 @@ class _TransferHistoryBottomSheetState
             );
           }
           final tx = filtered[index];
-          return _TransferHistoryItem(transaction: tx);
+          return TransferHistoryItem(transaction: tx);
         },
       ),
     );
   }
 }
 
-class _TransferHistoryItem extends StatelessWidget {
+class TransferHistoryItem extends StatelessWidget {
   final UnifiedTransaction transaction;
 
-  const _TransferHistoryItem({required this.transaction});
+  const TransferHistoryItem({super.key, required this.transaction});
 
   /// Build the row's leading avatar from the counterparty's name. Prefers
   /// initials-from-name (1 or 2 letters); falls back to a directional arrow
@@ -471,6 +473,24 @@ class _TransferHistoryItem extends StatelessWidget {
   /// Sized to sit proportionally next to the 14sp title + 12sp date row —
   /// 30×30 keeps the avatar visually present without dominating the row.
   Widget _buildLeadingAvatar({required bool isIncoming}) {
+    // External-bank transfers lead with the destination bank's logo so the
+    // user can scan their history by bank at a glance. Internal / LazerVault
+    // transfers keep the counterparty-initials avatar.
+    final meta = transaction.metadata;
+    final bankName = (meta?['bank_name'] as String?)?.trim() ?? '';
+    final bankCode = (meta?['bank_code'] as String?)?.trim() ??
+        (meta?['destination_bank_code'] as String?)?.trim();
+    final isExternalBank =
+        bankName.isNotEmpty && bankName.toLowerCase() != 'lazervault';
+    if (isExternalBank) {
+      return BankLogo(
+        bankName: bankName,
+        bankCode: bankCode,
+        size: 30,
+        borderRadius: 8,
+      );
+    }
+
     final name = transaction.counterpartyName?.trim() ?? '';
     final initials = _initialsFrom(name);
     const brand = Color(0xFF4E03D0);

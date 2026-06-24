@@ -41,7 +41,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   late Animation<Offset> _slideAnimation;
   
   Crypto? _selectedCrypto;
-  String _selectedPaymentMethod = 'LazerVault Wallet';
+  String _selectedPaymentMethod = 'Lazervault Wallet';
   bool _isAmountInCrypto = false;
   bool _isLoading = false;
   bool _isTransacting = false;
@@ -1016,7 +1016,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                             children: [
                               Expanded(
                                 child: Text(
-                                  'LazerVault Wallet',
+                                  'Lazervault Wallet',
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
@@ -1100,7 +1100,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Funds will be deducted from your LazerVault wallet balance',
+                      'Funds will be deducted from your Lazervault wallet balance',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: Colors.blue.withValues(alpha: 0.8),

@@ -900,7 +900,7 @@ class _FamilyActivationSetupScreenState
           ),
           SizedBox(height: 8.h),
           Text(
-            'Search for LazerVault users by username, phone, name, or email. You can also invite members later from the account details.',
+            'Search for Lazervault users by username, phone, name, or email. You can also invite members later from the account details.',
             style: TextStyle(
               color: const Color(0xFF9CA3AF),
               fontSize: 13.sp,

@@ -111,7 +111,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                       ),
                     ),
                     Text(
-                      'Transfer directly to your LazerVault wallet',
+                      'Transfer directly to your Lazervault wallet',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,

@@ -31,11 +31,11 @@ extension StatisticsSourceX on StatisticsSource {
   String get label {
     switch (this) {
       case StatisticsSource.lazervault:
-        return 'LazerVault';
+        return 'Lazervault';
       case StatisticsSource.bank:
         return 'Bank';
       case StatisticsSource.both:
-        return 'LazerVault & Bank';
+        return 'Lazervault & Bank';
     }
   }
 

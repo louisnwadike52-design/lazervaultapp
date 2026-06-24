@@ -137,7 +137,7 @@ class CrowdfundPdfService {
                       ),
                     ),
                     pw.Text(
-                      'LazerVault Crowdfunding',
+                      'Lazervault Crowdfunding',
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
@@ -216,7 +216,7 @@ class CrowdfundPdfService {
         throw Exception('Could not access downloads directory');
       }
 
-      final fileName = 'LazerVault_Receipt_${receipt.receiptNumber}.pdf';
+      final fileName = 'Lazervault_Receipt_${receipt.receiptNumber}.pdf';
       final savedFile = File('${directory.path}/$fileName');
       await file.copy(savedFile.path);
 
@@ -236,7 +236,7 @@ class CrowdfundPdfService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'LazerVault',
+              'Lazervault',
               style: pw.TextStyle(
                 fontSize: 28,
                 fontWeight: pw.FontWeight.bold,

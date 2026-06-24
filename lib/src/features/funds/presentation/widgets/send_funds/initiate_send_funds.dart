@@ -24,7 +24,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
-import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
@@ -2417,7 +2416,28 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                             // Top Row (Recipient Info)
                             Row(
                               children: [
-                                const BackNavigator(),
+                                // Themed back button — a translucent-white
+                                // surface (alpha 0.08) that reads as a tappable
+                                // chip against the 0xFF121212 page background,
+                                // matching the page's other cards/inputs. The
+                                // padded InkWell gives a ~42px hit target (wider
+                                // than the bare icon) plus a ripple on tap.
+                                Material(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: InkWell(
+                                    onTap: () => Get.back(),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(12.w),
+                                      child: const Icon(
+                                        Icons.arrow_back_ios_new,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 Expanded(
                                   child: Center(
                                     child: Column(

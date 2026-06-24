@@ -1531,7 +1531,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   children: [
                     Icon(Icons.verified, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
                     SizedBox(width: 4.w),
-                    Text('LazerVault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                    Text('Lazervault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),

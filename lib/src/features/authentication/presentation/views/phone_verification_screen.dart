@@ -525,34 +525,28 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                         ],
                       ),
 
-                      // Skip Button — always available; advances onboarding
-                      // without marking the phone verified. Styled as a clearly
-                      // afforded bordered button so users can find it easily.
-                      SizedBox(height: 20.h),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52.h,
-                        child: OutlinedButton(
+                      // Skip CTA — a prominent TEXT action, NOT a bordered button,
+                      // so it's clearly secondary to the primary "Verify" CTA and
+                      // never mistaken for it (still easy to find: accent colour,
+                      // bold, with a forward arrow).
+                      SizedBox(height: 12.h),
+                      Center(
+                        child: TextButton(
                           onPressed: _skipVerification,
-                          style: OutlinedButton.styleFrom(
+                          style: TextButton.styleFrom(
                             foregroundColor: const Color(0xFF4834D4),
-                            side: const BorderSide(
-                              color: Color(0xFF4834D4),
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 10.h),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 'Skip for now',
                                 style: GoogleFonts.inter(
                                   fontSize: 15.sp,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   color: const Color(0xFF4834D4),
                                 ),
                               ),

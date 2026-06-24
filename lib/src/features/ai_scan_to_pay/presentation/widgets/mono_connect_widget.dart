@@ -82,7 +82,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   // Build customer config - required by the SDK
   final customer = MonoCustomer(
     newCustomer: MonoNewCustomer(
-      name: customerName ?? 'LazerVault User',
+      name: customerName ?? 'Lazervault User',
       email: emailToUse,
       identity: (customerBvn != null && customerBvn.isNotEmpty)
           ? MonoCustomerIdentity(
@@ -109,7 +109,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   debugPrint('[MonoConnect] Scope: $scope');
   debugPrint('[MonoConnect] Institution ID: $institutionId');
   debugPrint('[MonoConnect] Reference: $ref');
-  debugPrint('[MonoConnect] Customer Name: ${customerName ?? 'LazerVault User'}');
+  debugPrint('[MonoConnect] Customer Name: ${customerName ?? 'Lazervault User'}');
   debugPrint('[MonoConnect] Customer Email: $emailToUse');
   debugPrint('[MonoConnect] Requires Business Approval: ${MonoConfig.requiresBusinessApproval}');
 

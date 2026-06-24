@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
 import 'package:lazervault/core/widgets/passcode_dots.dart';
@@ -73,28 +74,36 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
       canCheck = false;
     }
 
+    // Only offer biometric unlock for methods the user opted into in
+    // Settings → Biometric Login (opt-in, per method).
+    final store = serviceLocator<SecureStorageService>();
+    final faceOn = await store.getFaceLoginEnabled();
+    final fingerprintOn = await store.getFingerprintLoginEnabled();
+
     if (!mounted) return;
 
     setState(() {
-      _canCheckBiometrics = canCheck;
-      if (_canCheckBiometrics && availableBiometrics.isNotEmpty) {
-        if (availableBiometrics.contains(BiometricType.face)) {
-          _availableBiometricType = BiometricType.face;
-          _biometricIcon = Icons.face;
-          _biometricTooltip = 'Use Face ID';
-        } else if (availableBiometrics.contains(BiometricType.fingerprint) ||
-            availableBiometrics.contains(BiometricType.strong) ||
-            availableBiometrics.contains(BiometricType.weak)) {
-          _availableBiometricType = BiometricType.fingerprint;
-          _biometricIcon = Icons.fingerprint;
-          _biometricTooltip = 'Use Fingerprint';
-        } else {
-          _availableBiometricType = availableBiometrics.first;
-          _biometricIcon = Icons.fingerprint;
-          _biometricTooltip = 'Use Biometrics';
-        }
+      final hasFace =
+          availableBiometrics.contains(BiometricType.face) && faceOn;
+      final hasFingerprint = (availableBiometrics
+                  .contains(BiometricType.fingerprint) ||
+              availableBiometrics.contains(BiometricType.strong) ||
+              availableBiometrics.contains(BiometricType.weak)) &&
+          fingerprintOn;
+
+      if (canCheck && hasFace) {
+        _availableBiometricType = BiometricType.face;
+        _biometricIcon = Icons.face;
+        _biometricTooltip = 'Use Face ID';
+        _canCheckBiometrics = true;
+      } else if (canCheck && hasFingerprint) {
+        _availableBiometricType = BiometricType.fingerprint;
+        _biometricIcon = Icons.fingerprint;
+        _biometricTooltip = 'Use Fingerprint';
+        _canCheckBiometrics = true;
       } else {
         _availableBiometricType = null;
+        _canCheckBiometrics = false;
       }
     });
   }

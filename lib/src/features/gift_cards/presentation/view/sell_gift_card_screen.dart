@@ -1768,7 +1768,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'By submitting this card you confirm it is valid, unused, and unexpired. LazerVault is not liable for cards rejected by the gift-card processor due to incorrect, used, or expired details. Cards are reviewed and may take 5 minutes – 24 hours to verify. Once approved your wallet is credited automatically; if rejected you will be notified with the reason.',
+              'By submitting this card you confirm it is valid, unused, and unexpired. Lazervault is not liable for cards rejected by the gift-card processor due to incorrect, used, or expired details. Cards are reviewed and may take 5 minutes – 24 hours to verify. Once approved your wallet is credited automatically; if rejected you will be notified with the reason.',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 color: Colors.white.withValues(alpha: 0.85),

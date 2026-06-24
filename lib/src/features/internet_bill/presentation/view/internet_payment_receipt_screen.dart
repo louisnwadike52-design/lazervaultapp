@@ -720,7 +720,7 @@ Reference: ${payment.reference}
 Date: ${_formatDate(payment.createdAt)}
 Status: ${_formatStatus(payment.status)}
 ---
-Powered by LazerVault''';
+Powered by Lazervault''';
 
       SharePlus.instance.share(ShareParams(text: text, subject: 'Internet Bill Payment Receipt'));
     } finally {

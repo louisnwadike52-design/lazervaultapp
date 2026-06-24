@@ -509,8 +509,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // to recover the human-readable name from the narration. The send-funds
     // flow's default narration is "Transfer from {Sender Name}" /
     // "Transfer to {Recipient Name}", so a simple prefix-strip yields the
-    // name we want to show. We deliberately ignore "LazerVault" to avoid
-    // the vague "Transfer from LazerVault" string surfacing as a name.
+    // name we want to show. We deliberately ignore "Lazervault" to avoid
+    // the vague "Transfer from Lazervault" string surfacing as a name.
     if ((counterpartyName == null || counterpartyName.isEmpty)
         && protoTx.description.isNotEmpty) {
       final desc = protoTx.description.trim();

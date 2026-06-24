@@ -530,7 +530,7 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
     );
   }
 
-  /// TagPay-style account card showing the user's personal LazerVault account.
+  /// TagPay-style account card showing the user's personal Lazervault account.
   /// Pre-selected, no ability to change — only personal account is allowed.
   Widget _buildAccountCard({
     required String label,
@@ -633,7 +633,7 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        _accountDisplay.isNotEmpty ? _accountDisplay : 'LazerVault Wallet',
+                        _accountDisplay.isNotEmpty ? _accountDisplay : 'Lazervault Wallet',
                         style: TextStyle(
                           color: const Color(0xFF9CA3AF),
                           fontSize: 13.sp,

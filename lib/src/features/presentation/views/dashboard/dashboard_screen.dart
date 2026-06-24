@@ -12,6 +12,10 @@ import 'package:lazervault/src/features/voice/managers/voice_activation_manager.
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/panic_balance_service.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:shake/shake.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
 import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
@@ -75,11 +79,31 @@ class _DashboardScreenState extends State<DashboardScreen>
         TabController(length: DashboardScreen.tabItems.length, vsync: this);
     _tabController.addListener(_onTabChanged);
 
+    // Panic Balance trigger: a phone shake toggles the decoy (the other trigger
+    // is a long-press on the balance). toggle() no-ops until the user has set it
+    // up, so a stray shake never surprises anyone.
+    _shakeDetector = ShakeDetector.autoStart(
+      onPhoneShake: (_) => serviceLocator<PanicBalanceService>().toggle(),
+    );
+
+    // Best-effort: sync the Panic Balance config from the server (so AI-set
+    // presets appear here and edits propagate). Never blocks; local is the
+    // source of truth for display.
+    final panic = serviceLocator<PanicBalanceService>();
+    panic.configureSync(
+      baseUrl: EndpointRegistry.instance.httpCore,
+      accessTokenProvider: () =>
+          serviceLocator<SecureStorageService>().getAccessToken(),
+    );
+    panic.syncFromServer();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowVoiceSetup();
       _checkAutoOpenVoiceSheet();
     });
   }
+
+  ShakeDetector? _shakeDetector;
 
   /// Check if voice setup is needed and show modal prompt
   Future<void> _checkAndShowVoiceSetup() async {
@@ -214,6 +238,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
+    _shakeDetector?.stopListening();
     _activeTab.dispose();
     _tabController.dispose();
     super.dispose();
@@ -300,7 +325,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
           child: CurvedNavigationBar(
             index: _currentIndex,
-            height: 65.0,
+            height: 58.0,
             items: [
               _buildCurvedNavItem(0),
               _buildCurvedNavItem(1),

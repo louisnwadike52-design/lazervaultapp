@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,8 +9,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/utilities/auth_background.dart';
+import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/transaction_pin/widgets/pin_success_view.dart';
 
 /// Settings → Security → Transaction PIN.
 ///
@@ -50,12 +56,7 @@ enum _PinStage {
 class _PinManagementScreenState extends State<PinManagementScreen> {
   static const int _pinLength = 4;
   static const Color _bg = Color(0xFF0A0A0A);
-  static const Color _card = Color(0xFF1F1F1F);
-  static const Color _divider = Color(0xFF2D2D2D);
   static const Color _textPrimary = Colors.white;
-  static const Color _textSecondary = Color(0xFF9CA3AF);
-  static const Color _accent = Color(0xFF3B82F6);
-  static const Color _successGreen = Color(0xFF10B981);
   static const Color _errorRed = Color(0xFFEF4444);
 
   late final TransactionPinCubit _cubit;
@@ -70,12 +71,59 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
 
   String? _inlineError;
 
+  /// True while the current PIN is being verified up front (before "enter new").
+  bool _verifyingCurrent = false;
+
+  /// Rate-limit lockout countdown (seconds). > 0 disables the keypad and shows
+  /// a "try again in mm:ss" message that ticks down via [_lockoutTimer].
+  int _lockoutRemaining = 0;
+  Timer? _lockoutTimer;
+
+  bool get _locked => _lockoutRemaining > 0;
+
   @override
   void initState() {
     super.initState();
     _cubit = serviceLocator<TransactionPinCubit>();
     _pinService = serviceLocator<ITransactionPinService>();
     _bootstrap();
+  }
+
+  @override
+  void dispose() {
+    _lockoutTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startLockout(int seconds) {
+    _lockoutTimer?.cancel();
+    if (seconds <= 0) return;
+    setState(() {
+      _lockoutRemaining = seconds;
+      _currentPin = '';
+      _inlineError = null;
+      _stage = _PinStage.enterCurrent;
+    });
+    _lockoutTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        _lockoutRemaining -= 1;
+        if (_lockoutRemaining <= 0) {
+          _lockoutRemaining = 0;
+          t.cancel();
+        }
+      });
+    });
+  }
+
+  String _formatDuration(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    if (m > 0) return '${m}m ${s.toString().padLeft(2, '0')}s';
+    return '${s}s';
   }
 
   Future<void> _bootstrap() async {
@@ -137,7 +185,7 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
       _stage == _PinStage.confirmNew;
 
   void _onKey(String d) {
-    if (!_isInputStage) return;
+    if (!_isInputStage || _locked || _verifyingCurrent) return;
     if (_activeBuffer.length >= _pinLength) return;
     setState(() {
       _inlineError = null;
@@ -150,7 +198,7 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
   }
 
   void _onBackspace() {
-    if (!_isInputStage) return;
+    if (!_isInputStage || _locked || _verifyingCurrent) return;
     final buf = _activeBuffer;
     if (buf.isEmpty) {
       // On empty buffer, allow stepping back through stages so the user can
@@ -192,16 +240,16 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
     if (!mounted) return;
     switch (_stage) {
       case _PinStage.enterCurrent:
-        setState(() => _stage = _PinStage.enterNew);
+        // Verify the current PIN with the backend BEFORE asking for the new
+        // one — so a wrong current PIN fails fast (and counts toward lockout)
+        // instead of after the user has typed the new PIN twice.
+        _verifyCurrentPin();
         break;
       case _PinStage.enterNew:
-        // Light client-side guard: reject obviously weak PINs (all same digit,
-        // sequential like 1234/4321) so the user gets immediate feedback
-        // without a round-trip. The backend also enforces format on its side.
-        final weakness = _weakPinReason(_newPin);
-        if (weakness != null) {
+        final err = _newPinError(_newPin);
+        if (err != null) {
           setState(() {
-            _inlineError = weakness;
+            _inlineError = err;
             _newPin = '';
           });
           return;
@@ -225,25 +273,93 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
     }
   }
 
-  String? _weakPinReason(String pin) {
+  /// New-PIN policy: must be 4 digits, differ from the current PIN (change
+  /// flow), and not be trivially guessable. Checked the moment the new PIN is
+  /// entered (before confirm) so the user isn't asked to confirm a rejected PIN.
+  String? _newPinError(String pin) {
     if (pin.length != _pinLength) return 'PIN must be $_pinLength digits.';
-    // All same digit (1111, 9999, …)
-    if (pin.split('').toSet().length == 1) {
-      return 'PIN can\'t be all the same digit.';
+    if (_hasExistingPin && pin == _currentPin) {
+      return 'New PIN must be different from your current one.';
     }
-    // Strictly ascending (1234, 2345) or strictly descending (9876)
-    bool ascending = true;
-    bool descending = true;
-    for (var i = 1; i < pin.length; i++) {
-      final prev = pin.codeUnitAt(i - 1);
-      final curr = pin.codeUnitAt(i);
-      if (curr != prev + 1) ascending = false;
-      if (curr != prev - 1) descending = false;
-    }
-    if (ascending || descending) {
-      return 'PIN can\'t be a simple sequence.';
+    if (isWeakNumericCode(pin)) {
+      return 'Choose a less predictable PIN (avoid 1111 or 1234).';
     }
     return null;
+  }
+
+  /// Verify the current PIN up front (reuses the authenticated VerifyTransactionPin
+  /// RPC with a non-transactional "pin_change" context — a real backend check
+  /// that also applies the shared lockout). Handles lockout countdown + timeout.
+  Future<void> _verifyCurrentPin() async {
+    setState(() {
+      _verifyingCurrent = true;
+      _inlineError = null;
+    });
+    try {
+      final res = await _pinService
+          .verifyPin(
+            pin: _currentPin,
+            transactionId: 'pin-change',
+            transactionType: 'pin_change',
+            amount: 0,
+            currency: 'NGN',
+          )
+          .timeout(const Duration(seconds: 15));
+      if (!mounted) return;
+      setState(() => _verifyingCurrent = false);
+      if (res.success) {
+        setState(() => _stage = _PinStage.enterNew);
+      } else if (res.isLocked || res.isLockedUntil) {
+        final secs = res.lockedUntil != null
+            ? res.lockedUntil!.difference(DateTime.now()).inSeconds
+            : 15 * 60;
+        _startLockout(secs > 0 ? secs : 15 * 60);
+      } else {
+        setState(() {
+          _currentPin = '';
+          _inlineError = res.remainingAttempts > 0
+              ? 'Incorrect PIN. ${res.remainingAttempts} '
+                  '${res.remainingAttempts == 1 ? "attempt" : "attempts"} remaining.'
+              : 'Incorrect PIN. Please try again.';
+        });
+      }
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _verifyingCurrent = false;
+        _currentPin = '';
+        _inlineError =
+            'Connection timed out. Check your connection and try again.';
+      });
+    } on GrpcError catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _verifyingCurrent = false;
+        _currentPin = '';
+        if (e.code == StatusCode.permissionDenied) {
+          // Locked but no structured timestamp — fall back to the default window.
+          _startLockout(15 * 60);
+          return;
+        }
+        if (e.code == StatusCode.notFound) {
+          _hasExistingPin = false;
+          _stage = _PinStage.enterNew;
+          _inlineError = 'You don\'t have a PIN yet. Set one now.';
+          return;
+        }
+        _inlineError = e.code == StatusCode.deadlineExceeded ||
+                e.code == StatusCode.unavailable
+            ? 'Connection timed out. Check your connection and try again.'
+            : 'Incorrect PIN. Please try again.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _verifyingCurrent = false;
+        _currentPin = '';
+        _inlineError = 'Could not verify your PIN. Please try again.';
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -255,16 +371,20 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
     try {
       bool ok;
       if (_hasExistingPin) {
-        ok = await _cubit.changePin(
-          currentPin: _currentPin,
-          newPin: _newPin,
-          confirmNewPin: _confirmPin,
-        );
+        ok = await _cubit
+            .changePin(
+              currentPin: _currentPin,
+              newPin: _newPin,
+              confirmNewPin: _confirmPin,
+            )
+            .timeout(const Duration(seconds: 20));
       } else {
-        ok = await _cubit.createPin(
-          pin: _newPin,
-          confirmPin: _confirmPin,
-        );
+        ok = await _cubit
+            .createPin(
+              pin: _newPin,
+              confirmPin: _confirmPin,
+            )
+            .timeout(const Duration(seconds: 20));
       }
 
       if (!mounted) return;
@@ -283,6 +403,14 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
       // is one; otherwise fall back to a generic prompt.
       final cubitErr = _cubit.state.errorMessage;
       _handleFailure(cubitErr ?? 'Could not save your PIN. Try again.');
+    } on TimeoutException {
+      // Timed out — keep the new PIN, just re-confirm to retry.
+      if (!mounted) return;
+      setState(() {
+        _confirmPin = '';
+        _stage = _PinStage.confirmNew;
+        _inlineError = 'Connection timed out. Please re-enter to try again.';
+      });
     } on GrpcError catch (e) {
       _handleGrpcFailure(e);
     } catch (e) {
@@ -305,12 +433,19 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
         });
         return;
       case StatusCode.permissionDenied:
+        // Locked — start the countdown + disable the keypad (no structured
+        // timestamp from this RPC, so use the default lockout window).
+        _newPin = '';
+        _confirmPin = '';
+        _startLockout(15 * 60);
+        return;
+      case StatusCode.deadlineExceeded:
+      case StatusCode.unavailable:
         setState(() {
-          _currentPin = '';
-          _newPin = '';
           _confirmPin = '';
-          _stage = _PinStage.enterCurrent;
-          _inlineError = 'PIN locked due to too many attempts. Try again later.';
+          _stage = _PinStage.confirmNew;
+          _inlineError =
+              'Connection timed out. Please re-enter to try again.';
         });
         return;
       case StatusCode.alreadyExists:
@@ -403,32 +538,47 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final busy = _stage == _PinStage.submitting || _verifyingCurrent;
     return BlocProvider.value(
       value: _cubit,
-      child: Scaffold(
-        backgroundColor: _bg,
-        appBar: AppBar(
+      // Block back-nav while a verify/write is in flight; otherwise back to Settings.
+      child: PopScope(
+        canPop: !busy,
+        child: Scaffold(
           backgroundColor: _bg,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: _textPrimary),
-            onPressed: () => Get.back(),
-          ),
-          title: Text(
-            'Transaction PIN',
-            style: GoogleFonts.inter(
-              color: _textPrimary,
-              fontSize: 17.sp,
-              fontWeight: FontWeight.w600,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            systemOverlayStyle: SystemUiOverlayStyle.light,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: _textPrimary),
+              onPressed: busy ? null : () => Get.back(),
             ),
+            // No title — the step heading already names the action, matching the
+            // passcode flow.
           ),
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: _textPrimary),
-        ),
-        body: SafeArea(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            child: _buildBody(),
+          body: Stack(
+            children: [
+              // Auth background image + dark overlay (parity with the passcode
+              // and login/setup screens).
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(AuthBackground.current),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: const SizedBox.expand(),
+              ),
+              Container(color: Colors.black.withValues(alpha: 0.6)),
+              SafeArea(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  child: _buildBody(),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -451,6 +601,7 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
 
   Widget _buildEntry() {
     final submitting = _stage == _PinStage.submitting;
+    final busy = submitting || _verifyingCurrent;
     final buffer = _activeBuffer;
 
     return Padding(
@@ -459,23 +610,11 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
       child: Column(
         children: [
           SizedBox(height: 24.h),
-          // Lock icon to anchor the surface
-          Container(
-            width: 56.w,
-            height: 56.w,
-            decoration: BoxDecoration(
-              color: _card,
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: _divider),
-            ),
-            child: const Icon(Icons.lock_outline, color: _accent, size: 28),
-          ),
-          SizedBox(height: 18.h),
           Text(
             _title,
             style: GoogleFonts.inter(
               color: _textPrimary,
-              fontSize: 22.sp,
+              fontSize: 24.sp,
               fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
@@ -484,7 +623,7 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
           Text(
             _subtitle,
             style: GoogleFonts.inter(
-              color: _textSecondary,
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
               height: 1.4,
@@ -503,37 +642,51 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
             isError: _inlineError != null,
           ),
           SizedBox(height: 14.h),
-          // Inline error region — fixed height so the keypad doesn't jump.
+          // Status region — lockout countdown (orange) takes priority, else the
+          // inline error (red). Fixed height so the keypad doesn't jump.
           SizedBox(
             height: 36.h,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              child: _inlineError == null
-                  ? const SizedBox.shrink()
-                  : Row(
-                      key: ValueKey(_inlineError),
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline,
-                            color: _errorRed, size: 16),
-                        SizedBox(width: 6.w),
-                        Flexible(
-                          child: Text(
-                            _inlineError!,
-                            style: GoogleFonts.inter(
-                              color: _errorRed,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
+            child: _locked
+                ? Center(
+                    child: Text(
+                      'Too many attempts. Try again in '
+                      '${_formatDuration(_lockoutRemaining)}.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFB923C),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-            ),
+                  )
+                : AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: _inlineError == null
+                        ? const SizedBox.shrink()
+                        : Row(
+                            key: ValueKey(_inlineError),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline,
+                                  color: _errorRed, size: 16),
+                              SizedBox(width: 6.w),
+                              Flexible(
+                                child: Text(
+                                  _inlineError!,
+                                  style: GoogleFonts.inter(
+                                    color: _errorRed,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
           ),
           SizedBox(height: 8.h),
-          if (submitting)
+          if (busy)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: LazerVaultLoader.small(),
@@ -541,10 +694,17 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
           else
             Expanded(
               child: Center(
-                child: _Keypad(
-                  onKey: _onKey,
-                  onBackspace: _onBackspace,
-                  disabled: submitting,
+                child: IgnorePointer(
+                  ignoring: _locked,
+                  child: AnimatedOpacity(
+                    opacity: _locked ? 0.4 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: _Keypad(
+                      onKey: _onKey,
+                      onBackspace: _onBackspace,
+                      disabled: _locked,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -555,45 +715,8 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
   }
 
   Widget _buildSuccess() {
-    return Padding(
-      key: const ValueKey('success'),
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 84.w,
-            height: 84.w,
-            decoration: BoxDecoration(
-              color: _successGreen.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.check_rounded,
-                color: _successGreen, size: 44),
-          ),
-          SizedBox(height: 20.h),
-          Text(
-            _title,
-            style: GoogleFonts.inter(
-              color: _textPrimary,
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            _subtitle,
-            style: GoogleFonts.inter(
-              color: _textSecondary,
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
-              height: 1.4,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    // Centralized PIN-success confirmation (shared across PIN flows).
+    return PinSuccessView(title: _title, subtitle: _subtitle);
   }
 }
 

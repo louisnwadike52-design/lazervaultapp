@@ -2531,7 +2531,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       subtitle = 'Session ended';
     } else {
       title = 'Voice Assistant';
-      subtitle = 'Powered by LazerVault AI';
+      subtitle = 'Powered by Lazervault AI';
     }
 
     return Padding(
@@ -2761,7 +2761,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
             ] else ...[
               Text(
-                'Thank you for using LazerVault Voice',
+                'Thank you for using Lazervault Voice',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   color: Colors.white.withValues(alpha: 0.45),

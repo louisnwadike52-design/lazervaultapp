@@ -203,7 +203,7 @@ class ElectricityBillPdfService {
               pw.Image(logo, width: 120)
             else
               pw.Text(
-                'LazerVault',
+                'Lazervault',
                 style: _getTextStyle(fontSize: 28, isBold: true)
                     .copyWith(color: PdfColors.blue800),
               ),
@@ -531,7 +531,7 @@ class ElectricityBillPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                  '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
@@ -551,9 +551,9 @@ class ElectricityBillPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'LazerVault Technologies Ltd is a financial technology company. '
-            'This document is a confirmation of an electricity bill payment processed through the LazerVault platform. '
-            'For any queries regarding this transaction, please contact support through the LazerVault app.',
+            'Lazervault Technologies Ltd is a financial technology company. '
+            'This document is a confirmation of an electricity bill payment processed through the Lazervault platform. '
+            'For any queries regarding this transaction, please contact support through the Lazervault app.',
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),
@@ -610,7 +610,7 @@ class ElectricityBillPdfService {
         files: [XFile(file.path)],
         text:
             'Electricity Payment Receipt - $currencySymbol$amount to ${payment.providerName} (Meter: ${payment.meterNumber})',
-        subject: 'LazerVault Electricity Payment Receipt',
+        subject: 'Lazervault Electricity Payment Receipt',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

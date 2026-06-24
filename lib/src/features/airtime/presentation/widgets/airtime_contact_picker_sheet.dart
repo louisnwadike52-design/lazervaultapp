@@ -440,7 +440,7 @@ class _AirtimeContactPickerSheetState extends State<AirtimeContactPickerSheet> {
             ),
             SizedBox(height: 10.h),
             Text(
-              'Allow LazerVault to read your contacts so you can quickly '
+              'Allow Lazervault to read your contacts so you can quickly '
               'pick a number to top up.',
               style: TextStyle(
                 fontSize: 13.sp,

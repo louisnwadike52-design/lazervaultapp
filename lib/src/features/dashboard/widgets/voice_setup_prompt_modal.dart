@@ -163,7 +163,7 @@ class _VoiceSetupPromptModalState extends State<VoiceSetupPromptModal>
                     Text(
                       widget.canDismiss
                           ? 'Secure your account with voice authentication and unlock AI-powered banking features.'
-                          : 'Voice banking setup is required to continue using LazerVault. This adds an extra layer of security to your transactions.',
+                          : 'Voice banking setup is required to continue using Lazervault. This adds an extra layer of security to your transactions.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14.sp,

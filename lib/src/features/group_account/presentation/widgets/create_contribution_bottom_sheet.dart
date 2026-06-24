@@ -3299,7 +3299,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Search for LazerVault users by name or @tag',
+                  'Search for Lazervault users by name or @tag',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -3429,7 +3429,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             ),
             SizedBox(height: 4.h),
             Text(
-              'Type a name or @username to find LazerVault users',
+              'Type a name or @username to find Lazervault users',
               style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),

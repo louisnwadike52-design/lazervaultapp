@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/theme/theme_controller.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
@@ -18,6 +19,7 @@ import 'package:lazervault/src/features/authentication/presentation/views/email_
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
+import 'package:lazervault/src/features/identity/domain/repositories/i_identity_repository.dart';
 import 'package:lazervault/src/features/identity/presentation/view/device_permissions_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_settings_tile.dart';
@@ -27,10 +29,12 @@ import 'package:lazervault/src/features/profile/presentation/widgets/change_pass
 import 'package:lazervault/src/features/profile/presentation/widgets/country_picker_dialog.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/currency_picker_dialog.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/edit_profile_dialog.dart';
+import 'package:lazervault/src/features/settings/presentation/view/biometric_login_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/card_settings_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/help_support_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/privacy_policy_screen.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/panic_balance_settings.dart';
 import 'package:lazervault/src/features/settings/presentation/view/terms_conditions_screen.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/view/download_statements_screen.dart';
@@ -206,6 +210,12 @@ class _SettingsViewState extends State<_SettingsView> {
         title: 'Security',
         icon: Icons.security_outlined,
         body: _securityBody(),
+      ),
+      _SectionSpec(
+        title: 'Panic Balance',
+        icon: Icons.shield_moon_outlined,
+        subtitle: 'Show a decoy balance in unsafe situations',
+        body: const PanicBalanceSettings(),
       ),
       _SectionSpec(
         title: 'Regional',
@@ -416,8 +426,18 @@ class _SettingsViewState extends State<_SettingsView> {
   }
 
   Widget _securityBody() {
-    return Column(
-      children: [
+    // Rebuild on profile changes so the verification / 2FA tiles reflect the
+    // current auth state (Settings ↔ auth sync).
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      bloc: context.read<ProfileCubit>(),
+      builder: (context, pState) {
+        final user = pState is ProfileLoaded ? pState.user : null;
+        final emailVerified = user?.isEmailVerified ?? false;
+        final phoneVerified = user?.verified ?? false;
+        final twoFaOn = user?.twoFactorEnabled ?? false;
+        final twoFaMethod = user?.twoFactorMethod;
+        return Column(
+          children: [
         _navTile(
           icon: Icons.lock_outline,
           title: 'Change Password',
@@ -436,20 +456,7 @@ class _SettingsViewState extends State<_SettingsView> {
           icon: Icons.pin_outlined,
           title: 'Passcode',
           subtitle: 'Set up or change your 6-digit login passcode',
-          onTap: () {
-            // Unified flow: setup if the user has no passcode yet,
-            // change otherwise. Server tells us via ProfileLoaded.user
-            // (hasPasscode flag is plumbed through login response).
-            final state = context.read<ProfileCubit>().state;
-            final hasPasscode =
-                state is ProfileLoaded ? state.user.hasPasscode : false;
-            Get.toNamed(
-              AppRoutes.passcodeFlow,
-              arguments: {
-                'mode': hasPasscode ? 'change' : 'setup',
-              },
-            );
-          },
+          onTap: () => _openPasscodeFlow(context),
         ),
         _navTile(
           icon: Icons.lock_clock_outlined,
@@ -466,13 +473,21 @@ class _SettingsViewState extends State<_SettingsView> {
         _navTile(
           icon: Icons.fingerprint,
           title: 'Biometric Login',
-          subtitle: 'Use fingerprint or Face ID to unlock',
-          onTap: () => Get.toNamed(AppRoutes.setFingerPrint),
+          subtitle: 'Use fingerprint, Face ID or voice to unlock',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const BiometricLoginScreen(),
+            ),
+          ),
         ),
         _navTile(
           icon: Icons.email_outlined,
           title: 'Verify Email',
-          subtitle: 'Verify the email on your account',
+          subtitle: emailVerified
+              ? 'Your email is verified'
+              : 'Verify the email on your account',
+          badge: emailVerified ? 'Verified' : null,
           onTap: () {
             Navigator.push(
               context,
@@ -489,7 +504,10 @@ class _SettingsViewState extends State<_SettingsView> {
         _navTile(
           icon: Icons.phone_android_outlined,
           title: 'Verify Phone Number',
-          subtitle: 'Verify your phone number',
+          subtitle: phoneVerified
+              ? 'Your phone number is verified'
+              : 'Verify your phone number',
+          badge: phoneVerified ? 'Verified' : null,
           onTap: () {
             Navigator.push(
               context,
@@ -506,7 +524,11 @@ class _SettingsViewState extends State<_SettingsView> {
         _navTile(
           icon: Icons.vpn_key_outlined,
           title: 'Two-Factor Authentication',
-          subtitle: 'Manage TOTP / SMS / email 2FA',
+          subtitle: twoFaOn
+              ? 'On${twoFaMethod != null && twoFaMethod.isNotEmpty ? ' · ${twoFaMethod.toUpperCase()}' : ''} — extra login security'
+              : 'Off — add an extra layer of login security',
+          badge: twoFaOn ? 'On' : null,
+          badgeColor: const Color(0xFF3B82F6),
           onTap: () {
             // Pass the existing AuthenticationCubit through — the 2FA
             // settings screen reads `currentProfile` from it for the
@@ -552,7 +574,9 @@ class _SettingsViewState extends State<_SettingsView> {
             );
           },
         ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -638,6 +662,14 @@ class _SettingsViewState extends State<_SettingsView> {
     final dark =
         state is ProfileLoaded ? state.preferences.darkMode : false;
 
+    // Reconcile the live theme with the server preference (cross-device): if the
+    // loaded pref differs from the current theme, align it after this frame.
+    if (state is ProfileLoaded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        serviceLocator<ThemeController>().syncFromServer(dark);
+      });
+    }
+
     void update({
       bool? push,
       bool? email,
@@ -683,7 +715,11 @@ class _SettingsViewState extends State<_SettingsView> {
           title: 'Dark Mode',
           subtitle: 'Use the dark theme',
           value: dark,
-          onChanged: (v) => update(dark: v),
+          onChanged: (v) {
+            // Switch the theme instantly + cache locally, then persist to server.
+            serviceLocator<ThemeController>().setDark(v);
+            update(dark: v);
+          },
         ),
         if (_kInAppCategoriesEnabled)
           _navTile(
@@ -870,7 +906,7 @@ class _SettingsViewState extends State<_SettingsView> {
         ),
         _navTile(
           icon: Icons.info_outline,
-          title: 'About LazerVault',
+          title: 'About Lazervault',
           subtitle: 'Version 1.0.0',
           onTap: _showAboutDialog,
         ),
@@ -1103,7 +1139,7 @@ class _SettingsViewState extends State<_SettingsView> {
             Icon(Icons.account_balance_wallet,
                 size: 48.sp, color: _kAccent),
             SizedBox(height: 12.h),
-            Text('LazerVault',
+            Text('Lazervault',
                 style: GoogleFonts.inter(
                     fontSize: 20.sp, fontWeight: FontWeight.bold)),
           ],
@@ -1143,6 +1179,27 @@ class _SettingsViewState extends State<_SettingsView> {
     );
   }
 
+  /// Open the passcode flow in the correct mode. The mode (setup vs change)
+  /// MUST be authoritative — if we wrongly pick `setup` for a user who already
+  /// has a passcode, we skip the verify-current step entirely. The ProfileCubit
+  /// flag is unreliable (it's only populated by the login response, not profile
+  /// reloads), so we confirm with the backend (`CheckPasscodeExists`, which now
+  /// reflects login_passcode_hash) before navigating, falling back to the cubit
+  /// value only if the check fails.
+  Future<void> _openPasscodeFlow(BuildContext context) async {
+    final state = context.read<ProfileCubit>().state;
+    var hasPasscode = state is ProfileLoaded ? state.user.hasPasscode : false;
+
+    // Brief blocking check so we never misroute the flow.
+    final result = await serviceLocator<IIdentityRepository>().checkPasscodeExists();
+    result.fold((_) {/* keep cubit fallback */}, (exists) => hasPasscode = exists);
+
+    Get.toNamed(
+      AppRoutes.passcodeFlow,
+      arguments: {'mode': hasPasscode ? 'change' : 'setup'},
+    );
+  }
+
   // ===== Tiny tile helpers used inside accordion bodies =====
 
   Widget _navTile({
@@ -1150,14 +1207,39 @@ class _SettingsViewState extends State<_SettingsView> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    String? badge,
+    Color badgeColor = const Color(0xFF10B981),
   }) {
     return _SettingsRow(
       icon: icon,
       title: title,
       subtitle: subtitle,
       onTap: onTap,
-      trailing: Icon(Icons.arrow_forward_ios,
-          size: 14.sp, color: const Color(0xFF9CA3AF)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (badge != null) ...[
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Text(
+                badge,
+                style: GoogleFonts.inter(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  color: badgeColor,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+          ],
+          Icon(Icons.arrow_forward_ios,
+              size: 14.sp, color: const Color(0xFF9CA3AF)),
+        ],
+      ),
     );
   }
 

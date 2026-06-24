@@ -214,7 +214,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
     // Use fallbacks if transaction receiver info is empty
     final recipientName = transaction.receiverName.isNotEmpty
         ? transaction.receiverName
-        : (tag.taggerName.isNotEmpty ? tag.taggerName : 'LazerVault User');
+        : (tag.taggerName.isNotEmpty ? tag.taggerName : 'Lazervault User');
     final recipientTag = transaction.receiverTagPay.isNotEmpty
         ? transaction.receiverTagPay
         : tag.taggerTagPay;

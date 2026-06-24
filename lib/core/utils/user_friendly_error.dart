@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:grpc/grpc.dart';
 import '../cache/swr_cache_manager.dart';
+import 'friendly_error.dart';
 
 /// Converts any error/exception into a natural, user-friendly message.
 ///
@@ -14,6 +15,13 @@ String getUserFriendlyErrorMessage(Object? error, {String? fallback}) {
   // CacheError from SWR cache manager
   if (error is CacheError) {
     return _cacheErrorMessage(error);
+  }
+
+  // Connectivity / transport-level failures (incl. non-200 gateway responses).
+  // Caught before everything else so raw text like "expected 200, got 503"
+  // can never be echoed back to the user.
+  if (isNetworkError(error)) {
+    return networkErrorMessage;
   }
 
   // gRPC errors
@@ -101,9 +109,14 @@ String _cacheErrorMessage(CacheError error) {
 }
 
 String _grpcErrorMessage(GrpcError error) {
+  // Transport-level failures (incl. non-200 gateway responses surfacing under
+  // unknown/internal) collapse to the canonical network message.
+  if (isNetworkError(error)) {
+    return networkErrorMessage;
+  }
   switch (error.code) {
     case StatusCode.unavailable:
-      return 'Service is temporarily unavailable. Please try again in a moment.';
+      return networkErrorMessage;
     case StatusCode.deadlineExceeded:
       return 'This is taking too long. Please check your connection and try again.';
     case StatusCode.unauthenticated:
@@ -123,9 +136,10 @@ String _grpcErrorMessage(GrpcError error) {
     case StatusCode.cancelled:
       return 'Request was cancelled. Please try again.';
     default:
-      // If the gRPC error has a meaningful message, check it
+      // If the gRPC error has a meaningful message, check it — but never echo
+      // raw transport/exception text back to the user.
       final msg = error.message ?? '';
-      if (msg.isNotEmpty && !msg.contains('Exception') && msg.length < 100) {
+      if (msg.isNotEmpty && !looksTechnical(msg) && msg.length < 100) {
         return msg;
       }
       return 'Something went wrong. Please try again.';

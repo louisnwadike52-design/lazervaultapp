@@ -1,4 +1,5 @@
 import 'package:grpc/grpc.dart';
+import 'friendly_error.dart';
 
 /// Centralized gRPC error handling with user-friendly messages,
 /// PIN failure extraction, and error classification helpers.
@@ -36,18 +37,23 @@ class GrpcErrorHandler {
       case StatusCode.alreadyExists:
         return error.message ?? 'This operation has already been completed.';
       case StatusCode.unavailable:
-        return 'Service temporarily unavailable. Please try again shortly.';
       case StatusCode.deadlineExceeded:
-        return 'Request timed out. Please check your connection and try again.';
+      case StatusCode.unknown:
+      case StatusCode.internal:
+      case StatusCode.aborted:
+        return networkErrorMessage;
       case StatusCode.unauthenticated:
         return 'Your session has expired. Please log in again.';
       case StatusCode.invalidArgument:
         return error.message ??
             'Invalid input. Please check your details and try again.';
       default:
-        // If the server sent a short, meaningful message, prefer it
+        // Transport-level failures can surface under odd codes — collapse them.
+        if (isNetworkError(error)) return networkErrorMessage;
+        // If the server sent a short, meaningful message, prefer it — but never
+        // if it looks like raw transport/exception text.
         final msg = error.message ?? '';
-        if (msg.isNotEmpty && !msg.contains('Exception') && msg.length < 120) {
+        if (msg.isNotEmpty && !looksTechnical(msg) && msg.length < 120) {
           return msg;
         }
         return 'An unexpected error occurred. Please try again.';

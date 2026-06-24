@@ -283,7 +283,7 @@ class OpenBankingGrpcDataSource {
           linkedAccountId: linkedAccountId,
           destinationAccountId: destinationAccountId,
           amount: Int64(amountInKobo),
-          narration: narration ?? 'Deposit to LazerVault',
+          narration: narration ?? 'Deposit to Lazervault',
           idempotencyKey: idempotencyKey ?? _uuid.v4(),
           useRecurringAccess: useRecurringAccess,
           countryCode: countryCode ?? '',
@@ -828,7 +828,7 @@ class OpenBankingGrpcDataSource {
         mandateType: mandateType,
         amountLimit: Int64(amountLimit),
         debitLimit: debitLimit,
-        description: description ?? 'LazerVault auto-debit mandate',
+        description: description ?? 'Lazervault auto-debit mandate',
       );
 
       // Build extra metadata for Mono customer auto-creation

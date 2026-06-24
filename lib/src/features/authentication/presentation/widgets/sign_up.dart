@@ -294,14 +294,15 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     return null;
   }
 
-  /// Continue-button pre-flight. On signup page 2 we run the per-country
-  /// length check BEFORE handing off to the cubit so an invalid phone
-  /// (too short, too long, leading-zero quirks) is caught right here
-  /// with an inline error rather than failing later at the backend.
+  /// Continue-button pre-flight. On signup page 1 (where the phone now
+  /// lives as the primary contact) we run the per-country length check
+  /// BEFORE handing off to the cubit so an invalid phone (too short, too
+  /// long, leading-zero quirks) is caught right here with an inline error
+  /// rather than failing later at the backend.
   void _onContinuePressed() {
     final cubit = context.read<AuthenticationCubit>();
     final state = cubit.state;
-    if (state is SignUpInProgress && state.currentPage == 2) {
+    if (state is SignUpInProgress && state.currentPage == 1) {
       final err = _validatePhoneNsn();
       if (err != null) {
         Haptics.error();
@@ -435,6 +436,15 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                   );
+             }
+             // Phone now lives on page 1 (immediately after country select on
+             // page 0). Seed the phone-field country from the country chosen on
+             // page 0 the first time we land on page 1 (while the input is still
+             // empty) so the dial code matches the user's registration country
+             // instead of defaulting to NG. We skip seeding once the user has
+             // typed a number so we never clobber a country they picked manually.
+             if (pageNum == 1 && _phoneController.text.isEmpty) {
+               _syncPhoneCountryFromSignup();
              }
              break;
           case AuthenticationError(message: final msg): // Destructure error message
@@ -861,9 +871,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       builder: (context, state) {
         final password = state is SignUpInProgress ? state.password : '';
         final confirmPassword = state is SignUpInProgress ? state.confirmPassword : '';
-        final primaryContactType = state is SignUpInProgress ? state.primaryContactType : PrimaryContactType.none;
-        final email = state is SignUpInProgress ? state.email : '';
-        final phoneNumber = state is SignUpInProgress ? state.phoneNumber : '';
 
         // Password validation checks
         final hasMinLength = password.length >= 8;
@@ -888,45 +895,26 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         final showPasswordIndicators = password.isNotEmpty;
         final showConfirmPasswordIndicator = confirmPassword.isNotEmpty;
 
-        // Get current value for unified field (email or phone)
-        final currentContactValue = primaryContactType == PrimaryContactType.phone
-            ? phoneNumber
-            : (email.isNotEmpty ? email : initialEmail ?? '');
-
-        // Determine icon based on detected type
-        final contactIcon = primaryContactType == PrimaryContactType.phone
-            ? Icons.phone
-            : (primaryContactType == PrimaryContactType.email ? Icons.email : Icons.person_outline);
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Unified Email or Phone Number field
-            BuildFormField(
-              name: "emailOrPhone",
-              placeholder: "Email or Phone Number",
-              keyboardType: TextInputType.emailAddress,
-              prefixIcon: Icon(contactIcon, color: Colors.black45),
-              initialValue: currentContactValue,
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailOrPhoneChanged(value),
-            ),
-            // Show hint about detected type
-            if (primaryContactType != PrimaryContactType.none) ...[
-              SizedBox(height: 4.0.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.0.w),
-                child: Text(
-                  primaryContactType == PrimaryContactType.phone
-                      ? 'Detected: Phone number'
-                      : 'Detected: Email address',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12.sp,
-                  ),
+            // Phone number is the PRIMARY contact, captured here on the first
+            // credentials slide with a country chip + per-country length check
+            // + SIM-hint prefill. Email is now an optional secondary contact
+            // collected on the next slide.
+            Padding(
+              padding: EdgeInsets.only(left: 4.0.w, bottom: 8.0.h),
+              child: Text(
+                "Phone Number",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
                 ),
               ),
-            ],
-            SizedBox(height: 8.0.h),
+            ),
+            _buildPhoneSection(context),
+            SizedBox(height: 12.0.h),
             BuildFormField(
               name: "password",
               placeholder: "Password",
@@ -1195,15 +1183,14 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     );
   }
 
-  // Helper method for Personal Info Page (Page 2). The phone field used to
-  // live here but was extracted to a dedicated post-email-verify screen so
-  // users can pick a phone number country independent of their registration
-  // locale. `initialPhoneNumber` stays in the signature for compat with the
-  // BlocBuilder destructure above — it isn't used here.
+  // Helper method for Personal Info Page (Page 2). Phone (the primary
+  // contact) is captured on page 1; this page collects identity fields plus
+  // an OPTIONAL email as a secondary contact. `initialPhoneNumber` stays in
+  // the signature for compat with the BlocBuilder destructure above — it
+  // isn't used here.
   Widget _buildPersonalInfoPage(BuildContext context, {String? initialFirstName, String? initialLastName, DateTime? selectedDate, String? initialPhoneNumber, required bool isLoading}) {
     return BlocBuilder<AuthenticationCubit, AuthenticationState>(
       builder: (context, state) {
-        final primaryContactType = state is SignUpInProgress ? state.primaryContactType : PrimaryContactType.none;
         final email = state is SignUpInProgress ? state.email : '';
 
         // Page 2 spacing model: ~16.h between visually-distinct fields,
@@ -1340,29 +1327,17 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             ),
             SizedBox(height: 14.0.h),
 
-            // Secondary contact: when the user gave their PHONE on page 1, we
-            // still ask for an optional email here (used for password reset
-            // delivery + account recovery).
-            if (primaryContactType == PrimaryContactType.phone) ...[
-              BuildFormField(
-                name: "email",
-                placeholder: "Email (Optional)",
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(Icons.email, color: Colors.black45),
-                initialValue: email,
-                onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
-              ),
-              SizedBox(height: 14.0.h),
-            ],
-
-            // ── Phone number ──────────────────────────────────────────
-            // Country chip + national number + SIM-hint CTA. Tapping
-            // the chip opens a bottomsheet picker. Tapping "Use phone
-            // from this device" surfaces the Google-account number
-            // picker on Android (silent no-op on iOS / unavailable
-            // platforms). Length is validated per selected country at
-            // submit time; leading "0" trunk is stripped automatically.
-            _buildPhoneSection(context),
+            // Secondary contact: optional email. Phone (the primary contact)
+            // is now captured on page 1, so we always offer an optional email
+            // here for password-reset delivery + account recovery.
+            BuildFormField(
+              name: "email",
+              placeholder: "Email (Optional)",
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: const Icon(Icons.email, color: Colors.black45),
+              initialValue: email,
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
+            ),
             SizedBox(height: 16.0.h),
             // Continue button moved to the sticky themed bottom panel.
           ],

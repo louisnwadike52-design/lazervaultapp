@@ -29,7 +29,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Withdraw funds to one of the user's linked bank accounts.
 ///
-/// Money OUT of the user's LazerVault balance. Mirrors the deposit screen's theme.
+/// Money OUT of the user's Lazervault balance. Mirrors the deposit screen's theme.
 /// The destination is restricted to a **Mono-linked** bank account (verified during
 /// deposit linking); the payout itself runs server-side via the NIP transfer provider
 /// (Mono is collection-only and has no payout API). The backend resolves the bank +

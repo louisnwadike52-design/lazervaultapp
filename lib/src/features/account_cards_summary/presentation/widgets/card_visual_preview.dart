@@ -35,7 +35,7 @@ class CardVisualPreview extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'LazerVault', 
+                  'Lazervault', 
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20.sp,

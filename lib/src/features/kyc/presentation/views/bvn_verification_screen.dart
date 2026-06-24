@@ -198,13 +198,30 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                 Center(
                   child: TextButton(
                     onPressed: _skipForNow,
-                    child: Text(
-                      'Skip for now',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        color: _textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: _accent,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 10.h),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    // Prominent TEXT CTA (no border) — consistent with the
+                    // email/phone verification skips: clearly secondary to the
+                    // primary CTA but easy to find (accent colour, bold, arrow).
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Skip for now',
+                          style: GoogleFonts.inter(
+                            fontSize: 15.sp,
+                            color: _accent,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(Icons.arrow_forward_rounded,
+                            size: 18.sp, color: _accent),
+                      ],
                     ),
                   ),
                 ),
@@ -713,8 +730,16 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       final card = Map<String, dynamic>.from(
         pending.selectedCard ?? const <String, dynamic>{},
       )..['resumePending'] = true;
-      Get.offNamed(
+      // offNamedUntil (not offNamed): this screen was PUSHED on top of the
+      // original deposit screen (Get.toNamed in _saveAndGoToKyc), so offNamed
+      // would replace only THIS route and leave the stale deposit screen alive
+      // beneath the resumed one (leaked controllers + a back-gesture landing on
+      // a stale duplicate). Unwind down to the dashboard (the deposit screen's
+      // natural parent) and push a single fresh deposit screen to resume.
+      Get.offNamedUntil(
         AppRoutes.depositFunds,
+        (route) =>
+            route.settings.name == AppRoutes.dashboard || route.isFirst,
         arguments: {
           ...card,
           'selectedCard': card,
@@ -784,18 +809,16 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     }
     if (!mounted) return;
 
+    // Drop any in-flight deposit context unconditionally — a user who skips
+    // verification must never auto-resume a deposit without completing it. This
+    // also covers the onboarding-root branch (where we leave for the dashboard
+    // and would otherwise strand a stale deposit context in the singleton).
+    serviceLocator<PendingDeposit>().clear();
+
     if (_isOnboardingRoot) {
       await _deleteFlag('kyc_onboarding_pending');
       Get.offAllNamed(AppRoutes.dashboard);
     } else {
-      // Skipping mid-deposit: drop the pending so the deposit doesn't
-      // auto-resume the link without a completed verification.
-      final returnTo = (Get.arguments is Map)
-          ? (Get.arguments as Map)['returnTo']
-          : null;
-      if (returnTo == 'deposit') {
-        serviceLocator<PendingDeposit>().clear();
-      }
       Get.back(result: false);
     }
   }

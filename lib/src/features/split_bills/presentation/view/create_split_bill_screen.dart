@@ -565,7 +565,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
               child: _buildReceiverModeCard(
                 mode: _ReceiverMode.lazerVaultUser,
                 icon: Icons.person_outline,
-                title: 'Another LazerVault user',
+                title: 'Another Lazervault user',
                 subtitle: 'Pick a recipient',
               ),
             ),
@@ -611,7 +611,7 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
                     Icon(Icons.search, color: Color(0xFF4834D4), size: 20),
                     SizedBox(width: 12),
                     Text(
-                      'Select a LazerVault user',
+                      'Select a Lazervault user',
                       style: TextStyle(
                         color: Color(0xFF9CA3AF),
                         fontSize: 14,

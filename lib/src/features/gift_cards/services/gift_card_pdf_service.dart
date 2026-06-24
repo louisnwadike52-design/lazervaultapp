@@ -152,7 +152,7 @@ class GiftCardPdfService {
               pw.Image(logo, width: 120)
             else
               pw.Text(
-                'LazerVault',
+                'Lazervault',
                 style: _getTextStyle(fontSize: 28, isBold: true)
                     .copyWith(color: PdfColors.blue800),
               ),
@@ -395,7 +395,7 @@ class GiftCardPdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              'LazerVault Financial Services',
+              'Lazervault Financial Services',
               style: _getTextStyle(fontSize: 10, color: PdfColors.grey500),
             ),
             pw.Text(
@@ -466,7 +466,7 @@ class GiftCardPdfService {
         files: [XFile(file.path)],
         text:
             'Gift Card Receipt - ${giftCard.brandName} $currencySymbol$amount',
-        subject: 'LazerVault Gift Card Receipt',
+        subject: 'Lazervault Gift Card Receipt',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

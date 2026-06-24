@@ -50,41 +50,41 @@
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>NSCameraUsageDescription</key>
-		<string>LazerVault uses your camera to scan QR codes for payments, capture documents for KYC verification, and read card details for secure transfers.</string>
+		<string>Lazervault uses your camera to scan QR codes for payments, capture documents for KYC verification, and read card details for secure transfers.</string>
 		<key>NSMicrophoneUsageDescription</key>
-		<string>LazerVault uses your microphone for voice biometric authentication and the in-app voice assistant for payments and balance checks.</string>
+		<string>Lazervault uses your microphone for voice biometric authentication and the in-app voice assistant for payments and balance checks.</string>
 		<key>NSContactsUsageDescription</key>
-		<string>LazerVault uses your contacts to help you quickly send money to friends and family by name instead of typing account numbers.</string>
+		<string>Lazervault uses your contacts to help you quickly send money to friends and family by name instead of typing account numbers.</string>
 		<!-- ITMS-90683: required by App Store Connect because Flutter plugins
 		     (image_picker, file_picker, mobile_scanner) reference photo
 		     library / speech APIs. Apple requires a purpose string per API
 		     even if a particular code path doesn't end up calling it. -->
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>LazerVault uses your photo library to attach receipts to expenses, upload KYC documents, and share transaction proofs.</string>
+		<string>Lazervault uses your photo library to attach receipts to expenses, upload KYC documents, and share transaction proofs.</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>LazerVault saves receipts and transaction proofs to your photo library so you can share them or keep them for records.</string>
+		<string>Lazervault saves receipts and transaction proofs to your photo library so you can share them or keep them for records.</string>
 		<key>NSSpeechRecognitionUsageDescription</key>
-		<string>LazerVault uses speech recognition to let you make payments, check your balance, and pay bills with voice commands.</string>
+		<string>Lazervault uses speech recognition to let you make payments, check your balance, and pay bills with voice commands.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>LazerVault uses your location to detect unusual sign-in activity, surface nearby agents for cash deposits, and comply with anti-fraud regulations.</string>
+		<string>Lazervault uses your location to detect unusual sign-in activity, surface nearby agents for cash deposits, and comply with anti-fraud regulations.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>LazerVault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
+		<string>Lazervault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
-		<string>LazerVault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
+		<string>Lazervault uses your location in the background to keep your account secure — flagging logins from new places and verifying transactions against your usual locations to prevent fraud.</string>
 		<key>NSFaceIDUsageDescription</key>
-		<string>LazerVault uses Face ID to confirm payments, unlock the app, and authorise sensitive operations without a password.</string>
+		<string>Lazervault uses Face ID to confirm payments, unlock the app, and authorise sensitive operations without a password.</string>
 		<key>NSBluetoothAlwaysUsageDescription</key>
-		<string>LazerVault uses Bluetooth for contactless tap-to-pay between phones.</string>
+		<string>Lazervault uses Bluetooth for contactless tap-to-pay between phones.</string>
 		<key>NSBluetoothPeripheralUsageDescription</key>
-		<string>LazerVault uses Bluetooth for contactless tap-to-pay between phones.</string>
+		<string>Lazervault uses Bluetooth for contactless tap-to-pay between phones.</string>
 		<key>NSLocalNetworkUsageDescription</key>
-		<string>LazerVault discovers nearby devices on your local network for contactless tap-to-pay.</string>
+		<string>Lazervault discovers nearby devices on your local network for contactless tap-to-pay.</string>
 		<!-- NFC purpose string for contactless tap-to-pay. Required by iOS
 		     for any Core NFC session; without it CoreNFC throws at session
 		     start and the user sees a generic "feature unavailable" error.
 		     Paired with the NFC entitlement in Runner.entitlements. -->
 		<key>NFCReaderUsageDescription</key>
-		<string>LazerVault uses NFC to send and receive money by tapping your phone against another LazerVault user's phone.</string>
+		<string>Lazervault uses NFC to send and receive money by tapping your phone against another Lazervault user's phone.</string>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>
@@ -115,7 +115,7 @@
 		<true/>
 		<!-- Siri integration for voice-activated payments -->
 		<key>NSSiriUsageDescription</key>
-		<string>LazerVault uses Siri to let you quickly send money, check your balance, and pay bills with your voice.</string>
+		<string>Lazervault uses Siri to let you quickly send money, check your balance, and pay bills with your voice.</string>
 		<!-- App Icon Quick Actions (long-press shortcuts) -->
 		<key>UIApplicationShortcutItems</key>
 		<array>

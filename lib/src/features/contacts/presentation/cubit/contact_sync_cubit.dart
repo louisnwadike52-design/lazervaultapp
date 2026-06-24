@@ -172,7 +172,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
       if (isClosed) return;
-      emit(ContactSyncError('Failed to find LazerVault users: $e'));
+      emit(ContactSyncError('Failed to find Lazervault users: $e'));
     }
   }
 
@@ -213,7 +213,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
       if (isClosed) return;
-      emit(ContactSyncError('Failed to find LazerVault users: $e'));
+      emit(ContactSyncError('Failed to find Lazervault users: $e'));
     }
   }
 

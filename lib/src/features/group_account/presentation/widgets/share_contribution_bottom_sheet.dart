@@ -433,7 +433,7 @@ Progress: $progress%
 Deadline: ${dateFormat.format(c.deadline)}
 Members: ${widget.members.length}
 
-Join us on LazerVault!''';
+Join us on Lazervault!''';
 
       case ShareFormat.pdfReport:
         return 'A detailed PDF report will be generated containing:\n\n'

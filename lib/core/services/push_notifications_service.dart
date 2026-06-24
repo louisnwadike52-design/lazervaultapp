@@ -49,7 +49,7 @@ class PushNotificationsService {
         _local = localNotifications ?? FlutterLocalNotificationsPlugin();
 
   static const _channelId = 'lazervault_default';
-  static const _channelName = 'LazerVault notifications';
+  static const _channelName = 'Lazervault notifications';
   static const _channelDescription =
       'Transactions, security alerts, and account activity';
 
@@ -175,10 +175,32 @@ class PushNotificationsService {
   /// it, FirebaseMessaging silently returns null and push never works on
   /// web. On native (iOS/Android), the vapidKey arg is ignored.
   Future<void> registerCurrentToken() async {
-    final token = await FirebaseMessaging.instance.getToken(
-      vapidKey: kIsWeb ? DefaultFirebaseOptions.vapidKey : null,
-    );
-    if (token == null || token.isEmpty) return;
+    String? token;
+    try {
+      token = await FirebaseMessaging.instance.getToken(
+        vapidKey: kIsWeb ? DefaultFirebaseOptions.vapidKey : null,
+      );
+    } catch (e) {
+      debugPrint('[push] getToken threw: $e');
+    }
+    if (token == null || token.isEmpty) {
+      // Play-services can lag on a cold start — retry once after a short delay
+      // so the very first login still registers without needing an app restart.
+      debugPrint('[push] getToken returned null/empty — retrying in 3s');
+      await Future.delayed(const Duration(seconds: 3));
+      try {
+        token = await FirebaseMessaging.instance.getToken(
+          vapidKey: kIsWeb ? DefaultFirebaseOptions.vapidKey : null,
+        );
+      } catch (e) {
+        debugPrint('[push] getToken retry threw: $e');
+      }
+    }
+    if (token == null || token.isEmpty) {
+      debugPrint('[push] no FCM token available — push will not work until one is obtained');
+      return;
+    }
+    debugPrint('[push] FCM token obtained (len=${token.length})');
     await _registerToken(token);
   }
 
@@ -197,9 +219,59 @@ class PushNotificationsService {
     return fresh;
   }
 
+  static const _kRegisteredMarkerKey = 'fcm_registered_marker';
+
+  FlutterSecureStorage get _markerStore => const FlutterSecureStorage(
+        aOptions: AndroidOptions(
+          encryptedSharedPreferences: true,
+          resetOnError: true,
+        ),
+      );
+
+  /// The "<userId>:<token>" we last successfully registered, or null.
+  Future<String?> _readRegisteredMarker() async {
+    try {
+      return await _markerStore.read(key: _kRegisteredMarkerKey);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _writeRegisteredMarker(String marker) async {
+    try {
+      await _markerStore.write(key: _kRegisteredMarkerKey, value: marker);
+    } catch (_) {
+      // Non-fatal: worst case we re-POST on the next login.
+    }
+  }
+
+  /// Clears the local registration flag so the next authenticated call
+  /// re-registers with the server. Call on logout (the server may drop the
+  /// device's tokens, and the next user must not be skipped by a stale marker).
+  Future<void> clearRegistrationMarker() async {
+    try {
+      await _markerStore.delete(key: _kRegisteredMarkerKey);
+    } catch (_) {}
+  }
+
   Future<void> _registerToken(String token) async {
     final userId = await _secureStorage.getUserId() ?? '';
-    if (userId.isEmpty) return;
+    if (userId.isEmpty) {
+      debugPrint('[push] skip token registration — no userId yet');
+      return;
+    }
+
+    // Local-flag gate: only hit the network if we haven't already registered
+    // THIS device-token for THIS user. _registerPushTokenIfReady fires on every
+    // auth transition (login, app-start, etc.), so without this we'd POST on
+    // every login. The marker is "<userId>:<token>": if the FCM token rotates
+    // (onTokenRefresh) it stops matching and we re-register automatically; a new
+    // user logging in also won't match, so their token gets created on first login.
+    final marker = '$userId:$token';
+    if (await _readRegisteredMarker() == marker) {
+      debugPrint('[push] token already registered for this user/device — skipping remote call');
+      return;
+    }
 
     final deviceId = await _resolveDeviceId();
     final deviceType = kIsWeb
@@ -208,9 +280,10 @@ class PushNotificationsService {
             ? 'ios'
             : 'android';
 
+    final url = _coreUrl('/api/v1/notifications/fcm-token');
     try {
-      await _dio.post(
-        '$_coreGatewayBase/api/v1/notifications/fcm-token',
+      final resp = await _dio.post(
+        url,
         data: {
           'user_id': userId,
           'fcm_token': token,
@@ -219,10 +292,20 @@ class PushNotificationsService {
         },
         options: Options(headers: await _headers()),
       );
+      debugPrint('[push] token registered → $url (HTTP ${resp.statusCode})');
+      final code = resp.statusCode ?? 0;
+      if (code >= 200 && code < 300) {
+        // Cache the success so subsequent logins skip the remote call until the
+        // token or user changes.
+        await _writeRegisteredMarker(marker);
+      }
+    } on DioException catch (e) {
+      debugPrint('[push] register token failed → $url '
+          '(HTTP ${e.response?.statusCode}) ${e.response?.data ?? e.message}');
     } catch (e) {
-      // Token re-registration is retried on next onTokenRefresh / app start;
-      // a transient network failure here must not crash the app.
-      debugPrint('[push] register token failed: $e');
+      // A transient failure must not crash the app; retried on next
+      // onTokenRefresh / app start / dashboard load.
+      debugPrint('[push] register token failed → $url: $e');
     }
   }
 
@@ -231,6 +314,20 @@ class PushNotificationsService {
     return raw
         .replaceAll('localhost', '10.0.2.2')
         .replaceAll('127.0.0.1', '10.0.2.2');
+  }
+
+  /// Joins [apiPath] (a full gateway path like '/api/v1/notifications/fcm-token')
+  /// onto the core-gateway base WITHOUT duplicating the '/api/v1' segment.
+  /// `endpointRegistry.httpCore` already ends in '/api/v1', while a raw
+  /// CORE_GATEWAY_URL override may not — this normalises both so the result
+  /// always has exactly one '/api/v1' (the earlier bug produced
+  /// `.../api/v1/api/v1/notifications/fcm-token` → 404).
+  String _coreUrl(String apiPath) {
+    var base = _coreGatewayBase.replaceAll(RegExp(r'/+$'), '');
+    if (base.endsWith('/api/v1') && apiPath.startsWith('/api/v1')) {
+      base = base.substring(0, base.length - '/api/v1'.length);
+    }
+    return '$base$apiPath';
   }
 
   Future<Map<String, String>> _headers() => ApiHeaders.build(

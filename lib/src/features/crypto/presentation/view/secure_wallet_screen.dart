@@ -47,7 +47,7 @@ class SecureWalletScreen extends StatelessWidget {
                     _buildSecurityFeature(
                       Icons.key_off_rounded,
                       'No key management',
-                      'LazerVault handles the complexity. No seed phrases or private keys to lose.',
+                      'Lazervault handles the complexity. No seed phrases or private keys to lose.',
                     ),
                     SizedBox(height: 12.h),
                     _buildSecurityFeature(
@@ -396,7 +396,7 @@ class SecureWalletScreen extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.w),
             child: Text(
-              'LazerVault partners with regulated providers so your '
+              'Lazervault partners with regulated providers so your '
               'crypto stays segregated, recoverable and audit-trailed.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(

@@ -210,11 +210,11 @@ class ContactSyncRepository {
           .toList();
     } on GrpcError catch (e) {
       throw ContactSyncException(
-        'Failed to find LazerVault users: ${e.message}',
+        'Failed to find Lazervault users: ${e.message}',
         code: e.code,
       );
     } catch (e) {
-      throw ContactSyncException('Failed to find LazerVault users: $e');
+      throw ContactSyncException('Failed to find Lazervault users: $e');
     }
   }
 

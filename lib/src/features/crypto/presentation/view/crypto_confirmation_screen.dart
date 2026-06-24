@@ -407,7 +407,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           SizedBox(height: 12.h),
           _buildSummaryRow('Network Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.networkFee.toStringAsFixed(2)}', ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('LazerVault Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.tradingFee.toStringAsFixed(2)}', ''),
+          _buildSummaryRow('Lazervault Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.tradingFee.toStringAsFixed(2)}', ''),
           Divider(color: Colors.white.withValues(alpha: 0.2), height: 24.h),
           _buildSummaryRow('Total', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.totalAmount.toStringAsFixed(2)}', '', isTotal: true),
           SizedBox(height: 16.h),
@@ -899,9 +899,9 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
   String _getPaymentMethodDetails() {
     switch (widget.transactionDetails.paymentMethod.toLowerCase()) {
       case 'lazervault wallet':
-        return 'LazerVault ${CurrencySymbols.currentCurrency} Wallet';
+        return 'Lazervault ${CurrencySymbols.currentCurrency} Wallet';
       default:
-        return 'LazerVault Wallet';
+        return 'Lazervault Wallet';
     }
   }
 }
