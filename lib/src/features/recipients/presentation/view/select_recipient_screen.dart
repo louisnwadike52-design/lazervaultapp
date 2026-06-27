@@ -24,16 +24,23 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Short flow (admin-gated) is requested via route arguments. In short mode
+    // the add-recipient UI is inline under the filters, so the "add" FAB is
+    // hidden to avoid a duplicate path.
+    final args = Get.arguments;
+    final shortFlow = args is Map && args['shortFlow'] == true;
     return Scaffold(
-      body: SelectRecipients(),
-      // Floating Action Button for adding recipients - always visible
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed(AppRoutes.addRecipient),
-        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-        foregroundColor: Colors.white,
-        elevation: 4,
-        child: Icon(Icons.add, size: 28.sp),
-      ),
+      body: SelectRecipients(shortFlow: shortFlow),
+      // Floating Action Button for adding recipients — long flow only.
+      floatingActionButton: shortFlow
+          ? null
+          : FloatingActionButton(
+              onPressed: () => Get.toNamed(AppRoutes.addRecipient),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+              foregroundColor: Colors.white,
+              elevation: 4,
+              child: Icon(Icons.add, size: 28.sp),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

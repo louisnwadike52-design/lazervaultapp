@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // For serviceLocator
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -1387,24 +1388,66 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           ? summaries[selectedCardIndex].currency
                                           : 'NGN';
 
-                                      final pinSuccess = await validateTransactionPin(
-                                        context: context,
-                                        transactionId: transactionId,
-                                        transactionType: 'transfer',
-                                        amount: transferAmountMajor,
-                                        currency: accountCurrency,
-                                        title: 'Confirm Transfer',
-                                        message: 'Confirm transfer of $accountCurrency ${transferAmountMajor.toStringAsFixed(2)}',
-                                        onPinValidated: (verificationToken) async {
-                                          // Execute transfer inside callback — PIN modal stays open
-                                          // showing processing phase while backend works
+                                      if (FeatureFlags.sendFundsPinIsRequired) {
+                                        final pinSuccess = await validateTransactionPin(
+                                          context: context,
+                                          transactionId: transactionId,
+                                          transactionType: 'transfer',
+                                          amount: transferAmountMajor,
+                                          currency: accountCurrency,
+                                          title: 'Confirm Transfer',
+                                          message: 'Confirm transfer of $accountCurrency ${transferAmountMajor.toStringAsFixed(2)}',
+                                          onPinValidated: (verificationToken) async {
+                                            // Execute transfer inside callback — PIN modal stays open
+                                            // showing processing phase while backend works
+                                            await _executeTransferWithPin(
+                                              accountState: accountState,
+                                              transactionId: transactionId,
+                                              verificationToken: verificationToken,
+                                            );
+
+                                            // Wait for TransferSuccess state from cubit
+                                            final transferCubit = context.read<TransferCubit>();
+                                            await transferCubit.stream.firstWhere(
+                                              (s) => s is TransferSuccess || s is TransferFailure || s is TransferPinFailure,
+                                            ).timeout(
+                                              const Duration(seconds: 30),
+                                              onTimeout: () => transferCubit.state,
+                                            );
+
+                                            // If transfer failed, throw to show error in PIN modal
+                                            final finalState = transferCubit.state;
+                                            if (finalState is TransferFailure) {
+                                              throw Exception(finalState.message);
+                                            } else if (finalState is TransferPinFailure) {
+                                              throw Exception('Invalid PIN');
+                                            }
+                                            // TransferSuccess — mixin will show success, then dismiss
+                                          },
+                                        );
+
+                                        if (!pinSuccess) {
+                                          if (mounted) {
+                                            setState(() {
+                                              _isConfirmingTransfer = false;
+                                            });
+                                          }
+                                          return;
+                                        }
+                                      } else {
+                                        // Transaction PIN disabled by admin
+                                        // (send_funds_pin_required=false). Execute the
+                                        // transfer directly with an empty token — the
+                                        // backend independently enforces the same setting
+                                        // and skips token validation; all other
+                                        // money-safety (holds, idempotency, limits) still
+                                        // applies.
+                                        try {
                                           await _executeTransferWithPin(
                                             accountState: accountState,
                                             transactionId: transactionId,
-                                            verificationToken: verificationToken,
+                                            verificationToken: '',
                                           );
-
-                                          // Wait for TransferSuccess state from cubit
                                           final transferCubit = context.read<TransferCubit>();
                                           await transferCubit.stream.firstWhere(
                                             (s) => s is TransferSuccess || s is TransferFailure || s is TransferPinFailure,
@@ -1412,25 +1455,28 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             const Duration(seconds: 30),
                                             onTimeout: () => transferCubit.state,
                                           );
-
-                                          // If transfer failed, throw to show error in PIN modal
                                           final finalState = transferCubit.state;
                                           if (finalState is TransferFailure) {
                                             throw Exception(finalState.message);
                                           } else if (finalState is TransferPinFailure) {
-                                            throw Exception('Invalid PIN');
+                                            throw Exception('Transfer could not be completed');
                                           }
-                                          // TransferSuccess — mixin will show success, then dismiss
-                                        },
-                                      );
-
-                                      if (!pinSuccess) {
-                                        if (mounted) {
-                                          setState(() {
-                                            _isConfirmingTransfer = false;
-                                          });
+                                        } catch (e) {
+                                          if (mounted) {
+                                            setState(() {
+                                              _isConfirmingTransfer = false;
+                                            });
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text(e
+                                                    .toString()
+                                                    .replaceAll('Exception:', '')
+                                                    .trim()),
+                                              ),
+                                            );
+                                          }
+                                          return;
                                         }
-                                        return;
                                       }
 
                                       // Transfer completed and PIN modal dismissed — navigate to receipt

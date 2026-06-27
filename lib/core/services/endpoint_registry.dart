@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/src/core/config/app_environment.dart'
     show currentAppEnvironment;
+import 'package:lazervault/core/config/feature_flags.dart';
 
 /// Single chokepoint for every backend URL the Flutter app talks to —
 /// gRPC channels, HTTP REST gateways, WebSockets, the chat/voice agent
@@ -57,7 +58,32 @@ class EndpointRegistry {
   static const Set<String> _persistedNonUrlKeys = {
     'session_inactivity_logout_seconds',
     'splitbill_external_receiver_enabled',
+    // Flutter feature flags (admin-toggled). Cached here like every other
+    // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
+    'dashboard_cards_section_visible',
+    'voice_chat_assistant_section_visible',
+    // Send Funds flow config (admin-toggled). Cached after login; the send-funds
+    // flow reads these via FeatureFlags for instant, poor-network-safe routing.
+    'send_funds_short_flow_enabled',
+    'send_funds_pin_required',
+    // Insurance hosted-webview entry points (admin-toggled). The toggle gates
+    // whether Buy + Manage open MyCover's hosted webview; the link is the
+    // universal base the app composes the per-user URL from. Read via
+    // FeatureFlags at boot.
+    'insurance_hosted_entrypoints_enabled',
+    'insurance_hosted_link',
   };
+
+  /// Snapshot of the cached non-`url_` admin keys (feature flags + runtime
+  /// knobs). FeatureFlags consumes this at boot to hydrate its flag cache.
+  Map<String, String> nonUrlSnapshot() {
+    final out = <String, String>{};
+    for (final k in _persistedNonUrlKeys) {
+      final v = _cache[k];
+      if (v != null && v.isNotEmpty) out[k] = v;
+    }
+    return out;
+  }
 
   /// SharedPreferences key (under [_prefix]) holding the `version+build` of the
   /// last launch. A change means a fresh install or an app update — both must
@@ -82,6 +108,11 @@ class EndpointRegistry {
         : '$sub.lazervault.app';
     return 'https://$host/api/v1/internal/voice-agents/settings';
   }
+
+  /// Public accessor for the admin settings endpoint (no-auth internal read).
+  /// Other admin-driven config services (e.g. HelpConfigService) reuse this so
+  /// the host/tier resolution stays in one place.
+  String get adminSettingsEndpoint => _settingsRefreshUrl;
 
   /// Background refresh budget. The first refresh after a cold install
   /// happens while the rest of the app is still booting and Flutter is
@@ -324,6 +355,11 @@ class EndpointRegistry {
       if (updated > 0) {
         debugPrint('[EndpointRegistry] background refresh updated '
             '$updated URL(s)');
+        // Re-apply admin flags to FeatureFlags so a post-login refresh takes
+        // effect WITHIN this session — the send-funds entry (and other flag
+        // gates) read FeatureFlags synchronously, so without this they'd stay
+        // stale until the next cold start.
+        await FeatureFlags.applyRemoteSnapshot(nonUrlSnapshot());
         changeTick.value++;
       }
     } catch (e) {

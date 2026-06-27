@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
 
@@ -69,6 +70,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.tagPay:
         Get.toNamed(AppRoutes.tagPay);
         break;
+      case AppServiceName.escrow:
+        Get.toNamed(AppRoutes.escrow);
+        break;
       case AppServiceName.crowdfund:
         Get.toNamed(AppRoutes.crowdfund);
         break;
@@ -85,7 +89,13 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.idPayHome);
         break;
       case AppServiceName.sendFunds:
-        Get.toNamed(AppRoutes.selectRecipient);
+        // Both modes use the SAME select-recipients screen; short flow renders
+        // the add-recipient inline + runs amount→PIN→receipt on that screen.
+        // Admin-gated via the cached FeatureFlags (read after login).
+        Get.toNamed(
+          AppRoutes.selectRecipient,
+          arguments: {'shortFlow': FeatureFlags.sendFundsShortFlow},
+        );
         break;
       case AppServiceName.payroll:
         Get.toNamed(AppRoutes.payroll);
@@ -200,6 +210,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.tagPay:
         iconData = Icons.tag;
+        break;
+      case AppServiceName.escrow:
+        iconData = Icons.verified_user;
         break;
       case AppServiceName.invoice:
         iconData = Icons.receipt_long;

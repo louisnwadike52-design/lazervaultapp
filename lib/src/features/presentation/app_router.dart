@@ -38,7 +38,6 @@ import 'package:lazervault/src/features/presentation/views/deposit/deposit_metho
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_amount_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_review_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_success_screen.dart';
-import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
 import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
 import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
@@ -77,6 +76,13 @@ import 'package:lazervault/src/features/funds/presentation/view/send_funds/trans
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_entry_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_otp_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_passcode_create_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_personal_details_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_optional_email_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_passcode_login_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_setup_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
@@ -288,6 +294,10 @@ import 'package:lazervault/src/features/tag_pay/presentation/view/tag_payment_re
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_processing_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_receipt_screen.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_tag_entity.dart';
+import 'package:lazervault/src/features/escrow/presentation/cubit/escrow_cubit.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_home_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/create_escrow_deal_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_deal_detail_screen.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 
 // QR Pay imports
@@ -589,11 +599,78 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AppRouter {
+  // Phone+passcode SIGNUP is a multi-screen journey whose working state
+  // (chosen passcode in particular) lives in-memory on the cubit and is NOT
+  // persisted. The flow therefore needs ONE shared cubit instance across its
+  // screens — a per-route factory instance would lose the passcode between
+  // pages. The cubit is registered as a factory (per the DI contract); we
+  // resolve a single instance here, reset on entry, and reuse via
+  // BlocProvider.value on the subsequent signup screens. Login is independent
+  // and uses its own fresh instance.
+  static PhonePasscodeCubit? _phoneSignupCubit;
+  static PhonePasscodeCubit _phoneSignup({bool reset = false}) {
+    if (reset || _phoneSignupCubit == null) {
+      _phoneSignupCubit = serviceLocator<PhonePasscodeCubit>();
+    }
+    return _phoneSignupCubit!;
+  }
+
   static final routes = [
     GetPage(
       name: AppRoutes.root,
       page: () => const ModernOnboardingScreen(),
       transition: Transition.fade,
+    ),
+    // ── Phone + Passcode auth flow ──────────────────────────────────────
+    GetPage(
+      name: AppRoutes.phoneEntry,
+      // New journey — reset the shared signup cubit.
+      page: () => BlocProvider.value(
+        value: _phoneSignup(reset: true),
+        child: const PhoneEntryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.phoneOtp,
+      page: () => BlocProvider.value(
+        value: _phoneSignup(),
+        child: const PhoneOtpScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.phonePasscodeCreate,
+      page: () => BlocProvider.value(
+        value: _phoneSignup(),
+        child: const PhonePasscodeCreateScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.phonePersonalDetails,
+      page: () => BlocProvider.value(
+        value: _phoneSignup(),
+        child: const PhonePersonalDetailsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.phoneOptionalEmail,
+      page: () => BlocProvider.value(
+        value: _phoneSignup(),
+        child: const PhoneOptionalEmailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.phonePasscodeLogin,
+      // Login is self-contained — a fresh instance each time is fine.
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PhonePasscodeCubit>(),
+        child: const PhonePasscodeLoginScreen(),
+      ),
+      transition: Transition.rightToLeft,
     ),
     // No splash route — main() resolves the boot destination before
     // runApp(), so the GetMaterialApp boots straight onto the real route
@@ -685,8 +762,16 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.selectRecipient,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<RecipientCubit>(),
+      // TransferCubit provided too so the short flow (admin-gated, requested via
+      // arguments:{'shortFlow':true}) can run amount → PIN → send on this same
+      // screen. Harmless for the long flow. Other cubits the inline AddRecipient
+      // needs (AccountVerification, ContactSync, Profile, AccountCardsSummary,
+      // Authentication) are global providers from main.dart.
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<RecipientCubit>()),
+          BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
+        ],
         child: serviceLocator<SelectRecipientScreen>(),
       ),
       transition: Transition.rightToLeft,
@@ -975,8 +1060,10 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      // Legacy route — consolidated onto the single Transaction-PIN screen used
+      // by Settings (SET/CHANGE + "Forgot PIN?" recovery in one place).
       name: AppRoutes.changePin,
-      page: () => serviceLocator<ChangePinScreen>(),
+      page: () => const PinManagementScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -2571,6 +2658,31 @@ GetPage(
       page: () => BlocProvider(
         create: (context) => serviceLocator<TagPayCubit>(),
         child: const SearchUsersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Escrow routes
+    GetPage(
+      name: AppRoutes.escrow,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const EscrowHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.escrowCreate,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const CreateEscrowDealScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.escrowDetail,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const EscrowDealDetailScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

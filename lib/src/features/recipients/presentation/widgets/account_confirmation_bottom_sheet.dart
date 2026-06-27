@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 
 /// Account confirmation bottomsheet widget.
 ///
@@ -32,8 +33,9 @@ class AccountConfirmationBottomSheet extends StatefulWidget {
 class AccountConfirmationBottomSheetState
     extends State<AccountConfirmationBottomSheet>
     with SingleTickerProviderStateMixin {
-  bool _isSaved = false;
-  bool _isFavorite = false;
+  bool _isSaved = true; // Save recipient ON by default.
+  // Favorites are managed from the recipients list (star / 3-dot), not here.
+  final bool _isFavorite = false;
   String? _alias;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -203,18 +205,10 @@ class AccountConfirmationBottomSheetState
           // Bank name row
           Row(
             children: [
-              Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(
-                  Icons.account_balance,
-                  color: Colors.white,
-                  size: 18.sp,
-                ),
+              BankLogo(
+                bankName: widget.bankName,
+                bankCode: widget.bankCode,
+                size: 36.w,
               ),
               SizedBox(width: 10.w),
               Expanded(
@@ -366,10 +360,7 @@ class AccountConfirmationBottomSheetState
                 child: Switch(
                   value: _isSaved,
                   onChanged: (value) {
-                    setState(() {
-                      _isSaved = value;
-                      if (!value) _isFavorite = false;
-                    });
+                    setState(() => _isSaved = value);
                   },
                   activeThumbColor: const Color(0xFF4E03D0),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -378,42 +369,9 @@ class AccountConfirmationBottomSheetState
             ],
           ),
         ),
-        // Add to Favorites toggle (only visible when saved)
-        if (_isSaved)
-          SizedBox(
-            height: 40.h,
-            child: Row(
-              children: [
-                Icon(
-                  _isFavorite ? Icons.star : Icons.star_outline,
-                  color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF9CA3AF),
-                  size: 20.sp,
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    'Add to Favorites',
-                    style: TextStyle(
-                      color: const Color(0xFF374151),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Transform.scale(
-                  scale: 0.85,
-                  child: Switch(
-                    value: _isFavorite,
-                    onChanged: (value) {
-                      setState(() => _isFavorite = value);
-                    },
-                    activeThumbColor: const Color(0xFFF59E0B),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        // Favorites are no longer set here — they're toggled from each saved
+        // recipient (the star on the row / the 3-dot menu) on the recipients
+        // screen, so this sheet stays focused on verify + save.
       ],
     );
   }

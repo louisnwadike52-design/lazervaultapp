@@ -8,6 +8,20 @@ import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/contact_service.dart';
+import 'package:lazervault/core/models/device_contact.dart';
+import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault_users_usecase.dart';
+import 'package:lazervault/src/features/contacts/data/models/lazervault_user_match_model.dart';
+import 'package:share_plus/share_plus.dart';
+
+/// One device-contact row in the "Find from contacts" view, paired with its
+/// LazerVault match (when the contact is an existing user).
+class _ContactRow {
+  final DeviceContact contact;
+  final LazerVaultUserMatchModel? match; // non-null → already on LazerVault
+  const _ContactRow(this.contact, this.match);
+  bool get isLazerVaultUser => match != null;
+}
 
 /// Bottom sheet for searching and selecting LazerVault users (username, email, or phone).
 class UsernameSearchBottomSheet extends StatefulWidget {
@@ -68,6 +82,12 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
   // shifts the offset (which would re-fetch / skip rows on the backend).
   int _fetchedCount = 0;
 
+  // ── "Find from contacts" mode ──────────────────────────────────────────────
+  bool _contactsMode = false;
+  bool _loadingContacts = false;
+  String? _contactsError;
+  List<_ContactRow> _contactRows = [];
+
   @override
   void initState() {
     super.initState();
@@ -99,6 +119,11 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
   }
 
   void _onSearchChanged(String query) {
+    // In contacts mode the field filters the contact list locally (no backend).
+    if (_contactsMode) {
+      setState(() {});
+      return;
+    }
     // Cancel any pending search
     _debouncer.cancel();
 
@@ -324,15 +349,165 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
               ),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
+
+          // "Find from contacts" CTA (or a back-link when already browsing
+          // contacts). Tapping it swaps the results area for the device-contacts
+          // list with LazerVault-user / Invite badges.
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: _contactsMode
+                ? GestureDetector(
+                    onTap: _exitContactsMode,
+                    child: Row(
+                      children: [
+                        Icon(Icons.arrow_back,
+                            size: 18.sp,
+                            color: const Color.fromARGB(255, 78, 3, 208)),
+                        SizedBox(width: 6.w),
+                        Text('Back to search',
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 78, 3, 208),
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            )),
+                      ],
+                    ),
+                  )
+                : GestureDetector(
+                    onTap: _enterContactsMode,
+                    child: Container(
+                      width: double.infinity,
+                      padding:
+                          EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.contacts_outlined,
+                              color: const Color.fromARGB(255, 78, 3, 208),
+                              size: 20.sp),
+                          SizedBox(width: 10.w),
+                          Text('Find from contacts',
+                              style: TextStyle(
+                                color: const Color.fromARGB(255, 78, 3, 208),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+          ),
+          SizedBox(height: 12.h),
 
           // Results Section
           Expanded(
-            child: _buildResultsContent(),
+            child: _contactsMode
+                ? _buildContactsContent()
+                : _buildResultsContent(),
           ),
         ],
       ),
     );
+  }
+
+  // ── Find-from-contacts ─────────────────────────────────────────────────────
+
+  Future<void> _enterContactsMode() async {
+    _focusNode.unfocus();
+    setState(() {
+      _contactsMode = true;
+      _loadingContacts = true;
+      _contactsError = null;
+      _contactRows = [];
+    });
+    await _fetchContacts();
+  }
+
+  void _exitContactsMode() {
+    setState(() {
+      _contactsMode = false;
+      _contactsError = null;
+    });
+  }
+
+  Future<void> _fetchContacts() async {
+    try {
+      final contacts =
+          await serviceLocator<ContactService>().getContactsWithPhone();
+      // One bulk match against LazerVault (phones + emails on file).
+      final phones = <String>[];
+      final emails = <String>[];
+      for (final c in contacts) {
+        phones.addAll(c.phoneNumbers);
+        if ((c.email ?? '').isNotEmpty) emails.add(c.email!);
+      }
+      List<LazerVaultUserMatchModel> matches = const [];
+      try {
+        matches = await serviceLocator<FindLazerVaultUsersUseCase>()(
+          phoneNumbers: phones,
+          emails: emails,
+        );
+      } catch (_) {/* matching is best-effort; everyone shows as "Invite" */}
+
+      // Matches don't return the matched phone, so correlate by normalized name
+      // (best-effort). Unmatched contacts fall through to "Invite".
+      final byName = <String, LazerVaultUserMatchModel>{};
+      for (final m in matches) {
+        final k = m.name.trim().toLowerCase();
+        if (k.isNotEmpty) byName[k] = m;
+      }
+      final rows = contacts
+          .map((c) => _ContactRow(c, byName[c.name.trim().toLowerCase()]))
+          .toList()
+        // LazerVault users first, then alphabetical.
+        ..sort((a, b) {
+          if (a.isLazerVaultUser != b.isLazerVaultUser) {
+            return a.isLazerVaultUser ? -1 : 1;
+          }
+          return a.contact.name
+              .toLowerCase()
+              .compareTo(b.contact.name.toLowerCase());
+        });
+
+      if (!mounted) return;
+      setState(() {
+        _contactRows = rows;
+        _loadingContacts = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingContacts = false;
+        _contactsError =
+            'Could not read your contacts. Check the permission and try again.';
+      });
+    }
+  }
+
+  UserSearchResultEntity _matchToEntity(LazerVaultUserMatchModel m) {
+    return UserSearchResultEntity(
+      userId: m.userId,
+      username: m.username,
+      firstName: m.name,
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      profilePicture: m.profilePhotoUrl ?? '',
+    );
+  }
+
+  void _inviteContact(DeviceContact contact) {
+    final to = contact.name.isNotEmpty ? contact.name : 'there';
+    SharePlus.instance.share(ShareParams(
+      text: 'Hi $to, join me on LazerVault — fast, secure transfers. '
+          'Download the app: https://lazervault.app',
+    ));
   }
 
   Widget _buildResultsContent() {
@@ -390,6 +565,174 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
         final user = _searchResults[index];
         return _buildUserResultCard(user);
       },
+    );
+  }
+
+  Widget _buildContactsContent() {
+    if (_loadingContacts) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LazerVaultLoader.small(),
+            SizedBox(height: 16.h),
+            Text('Reading your contacts…',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14.sp)),
+          ],
+        ),
+      );
+    }
+    if (_contactsError != null) {
+      return _buildEmptyState(
+        icon: Icons.contact_phone_outlined,
+        title: _contactsError!,
+        subtitle: 'Tap "Back to search" or grant contacts access and retry.',
+      );
+    }
+    // Local filter by the search field text (name or any phone number).
+    final q = _searchController.text.trim().toLowerCase();
+    final rows = q.isEmpty
+        ? _contactRows
+        : _contactRows.where((r) {
+            return r.contact.name.toLowerCase().contains(q) ||
+                r.contact.phoneNumbers
+                    .any((p) => p.toLowerCase().contains(q));
+          }).toList();
+    if (rows.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.contacts_outlined,
+        title: 'No contacts found',
+        subtitle: 'No phone contacts match your search.',
+      );
+    }
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      itemCount: rows.length,
+      itemBuilder: (context, index) => _buildContactRow(rows[index]),
+    );
+  }
+
+  Widget _buildContactRow(_ContactRow row) {
+    final c = row.contact;
+    final isUser = row.isLazerVaultUser;
+    const purple = Color.fromARGB(255, 78, 3, 208);
+    return GestureDetector(
+      onTap: () {
+        if (isUser) {
+          // Existing LazerVault user → continue the transfer flow.
+          widget.onUserSelected(_matchToEntity(row.match!));
+        } else {
+          _inviteContact(c);
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.grey[200]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48.w,
+              height: 48.h,
+              decoration: BoxDecoration(
+                color: purple.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  c.initials,
+                  style: TextStyle(
+                    color: purple,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    c.name.isNotEmpty ? c.name : 'Unknown',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    isUser
+                        ? '@${row.match!.username}'
+                        : (c.phoneNumber ??
+                            (c.phoneNumbers.isNotEmpty
+                                ? c.phoneNumbers.first
+                                : '')),
+                    style: TextStyle(
+                      color: isUser ? purple : Colors.grey[600],
+                      fontSize: 14.sp,
+                      fontWeight: isUser ? FontWeight.w500 : FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            // Badge: green "LazerVault user" (selectable) or grey "Invite".
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+              decoration: BoxDecoration(
+                color: isUser
+                    ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                    : Colors.grey[100],
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: isUser
+                      ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                      : Colors.grey[300]!,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isUser ? Icons.verified : Icons.send_outlined,
+                    size: 13.sp,
+                    color: isUser ? const Color(0xFF059669) : Colors.grey[600],
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    isUser ? 'LazerVault' : 'Invite',
+                    style: TextStyle(
+                      color:
+                          isUser ? const Color(0xFF059669) : Colors.grey[700],
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -210,6 +210,18 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String signIn = '/auth/sign-in';
   static const String emailSignIn = '/auth/email-sign-in';
   static const String passcodeLogin = '/auth/passcode-login';
+
+  // Phone + Passcode authentication mode (admin-selected via auth_mode).
+  // Signup journey: phoneEntry → phoneOtp → phonePasscodeCreate →
+  // phonePersonalDetails → phoneOptionalEmail → (transaction PIN → KYC →
+  // dashboard). phonePasscodeLogin is the default login for PHONE_PASSCODE
+  // accounts.
+  static const String phoneEntry = '/auth/phone-entry';
+  static const String phoneOtp = '/auth/phone-otp';
+  static const String phonePasscodeCreate = '/auth/phone-passcode-create';
+  static const String phonePersonalDetails = '/auth/phone-personal-details';
+  static const String phoneOptionalEmail = '/auth/phone-optional-email';
+  static const String phonePasscodeLogin = '/auth/phone-passcode-login';
   static const String passcodeSetup = '/auth/passcode-setup';
   static const String transactionPinSetup = '/auth/transaction-pin-setup';
   static const String pinManagement = '/settings/pin-management';
@@ -461,6 +473,11 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String tagPaymentReceipt = '/tag-payment-receipt';
   static const String tagCreationProcessing = '/tag-creation-processing';
   static const String tagCreationReceipt = '/tag-creation-receipt';
+
+  // Escrow Routes
+  static const String escrow = '/escrow';
+  static const String escrowCreate = '/escrow/create';
+  static const String escrowDetail = '/escrow/detail';
 
   // QR Pay Routes
   static const String qrPayHome = '/qr-pay';

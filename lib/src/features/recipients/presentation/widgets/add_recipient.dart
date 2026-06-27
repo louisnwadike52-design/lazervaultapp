@@ -41,7 +41,27 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 enum AddRecipientMethod { bankDetails, lazervaultUser, contacts }
 
 class AddRecipient extends StatefulWidget {
-  const AddRecipient({super.key});
+  /// When true, renders WITHOUT its own Scaffold + purple header so it can be
+  /// embedded as a section inside another screen (the short-flow
+  /// SelectRecipients). The parent provides the chrome/theme.
+  final bool embedded;
+
+  /// When provided, a chosen recipient (bank / LazerVault user / contact) is
+  /// handed back via this callback INSTEAD of navigating to initiateSendFunds.
+  /// The short flow uses this to continue with amount → PIN → receipt on the
+  /// same screen. All add UI + confirmation sheets are reused unchanged.
+  final void Function(RecipientModel recipient)? onRecipientSelected;
+
+  /// Fired (embedded only) whenever the active method tab changes, so the host
+  /// screen can filter its saved-recipients list to match (Bank vs LazerVault).
+  final void Function(AddRecipientMethod method)? onMethodChanged;
+
+  const AddRecipient({
+    super.key,
+    this.embedded = false,
+    this.onRecipientSelected,
+    this.onMethodChanged,
+  });
 
   @override
   State<AddRecipient> createState() => _AddRecipientState();
@@ -226,6 +246,12 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
           }
         },
         builder: (context, state) {
+          // Embedded (short flow): no Scaffold/header — just the method
+          // selector + the selected form + the action button, so it drops in
+          // as a section inside SelectRecipients' white sheet.
+          if (widget.embedded) {
+            return _buildEmbeddedBody(state);
+          }
           return Scaffold(
           backgroundColor: Colors.white,
           body: Stack(
@@ -415,24 +441,111 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     }
   }
 
+  // ── Embedded (short-flow) rendering ───────────────────────────────────────
+  // Reuses the exact forms + action button, just without the Scaffold/purple
+  // header, and with a white-surface method selector that matches the
+  // SelectRecipients sheet it lives inside.
+  Widget _buildEmbeddedBody(RecipientState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildEmbeddedMethodSelector(),
+        SizedBox(height: 16.h),
+        _buildSelectedMethodContent(),
+        // Only the Bank method needs an explicit "Verify Recipient" button.
+        // The LazerVault-user form's search field already opens the find-user
+        // sheet on tap, so a separate action button there is redundant.
+        if (_selectedMethod == AddRecipientMethod.bankDetails) ...[
+          SizedBox(height: 16.h),
+          _buildActionButton(state),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildEmbeddedMethodSelector() {
+    Widget chip(AddRecipientMethod method, IconData icon, String label) {
+      final selected = _selectedMethod == method;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() => _selectedMethod = method);
+            widget.onMethodChanged?.call(method);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 6.w),
+            decoration: BoxDecoration(
+              color: selected
+                  ? const Color.fromARGB(255, 78, 3, 208)
+                  : Colors.grey[100],
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: selected
+                    ? const Color.fromARGB(255, 78, 3, 208)
+                    : Colors.grey[200]!,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon,
+                    color: selected ? Colors.white : Colors.grey[600],
+                    size: 20.sp),
+                SizedBox(height: 4.h),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: selected ? Colors.white : Colors.grey[700],
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Short flow: only Bank or LazerVault user. "Contacts" isn't a top-level
+    // method here — it lives as a "Find from contacts" CTA inside the User form
+    // (contacts are used to locate a LazerVault user).
+    return Row(
+      children: [
+        chip(AddRecipientMethod.bankDetails, Icons.account_balance_wallet_outlined,
+            'Bank'),
+        SizedBox(width: 8.w),
+        chip(AddRecipientMethod.lazervaultUser, Icons.person_search_outlined,
+            'Lazervault user'),
+      ],
+    );
+  }
+
   Widget _buildBankDetailsForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Bank Account Details',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+        // "Bank Account Details" heading — long flow only. In the short flow the
+        // Bank tab already labels this, so it's dropped to reduce clutter.
+        if (!widget.embedded) ...[
+          Text(
+            'Bank Account Details',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        SizedBox(height: 8.h),
+          SizedBox(height: 8.h),
+        ],
         Text(
           'Enter account number and we\'ll verify the account holder name',
           style: TextStyle(
-            color: Colors.grey[600],
+            // A bit more visible than the old grey[600] caption, but not bold.
+            color: Colors.grey[800],
             fontSize: 14.sp,
+            fontWeight: FontWeight.w400,
           ),
         ),
         SizedBox(height: 24.h),
@@ -662,15 +775,19 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Lazervault user',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+        // The embedded (short-flow) selector chip already says "User", so skip
+        // the redundant heading to keep the screen uncluttered.
+        if (!widget.embedded) ...[
+          Text(
+            'Lazervault user',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        SizedBox(height: 24.h),
+          SizedBox(height: 24.h),
+        ],
 
         // Username search — opens bottom sheet
         GestureDetector(
@@ -752,36 +869,41 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 ),
               ),
             ),
-        SizedBox(height: 24.h),
-
-        // Info Card
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.blue[100]!),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: Colors.blue[600],
-                size: 20.sp,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  'Internal transfers are verified automatically once you pick the right person.',
-                  style: TextStyle(
-                    color: Colors.blue[700],
-                    fontSize: 12.sp,
+        // (The "Find from contacts" entry now lives INSIDE the username search
+        // bottom sheet — see UsernameSearchBottomSheet — so the inline form
+        // stays minimal: tapping the field above opens that sheet.)
+        // Info Card — helpful in the full add page; omitted in the compact
+        // embedded (short-flow) section to reduce visual load.
+        if (!widget.embedded) ...[
+          SizedBox(height: 24.h),
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.blue[100]!),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.blue[600],
+                  size: 20.sp,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    'Internal transfers are verified automatically once you pick the right person.',
+                    style: TextStyle(
+                      color: Colors.blue[700],
+                      fontSize: 12.sp,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -908,6 +1030,13 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       type: 'internal', // Explicitly set type for LazerVault users
       internalUserId: selectedUser.userId,
     );
+
+    // Short flow (embedded): hand the recipient back to the host screen to
+    // continue amount → PIN → receipt inline, instead of navigating.
+    if (widget.onRecipientSelected != null) {
+      widget.onRecipientSelected!(recipient);
+      return;
+    }
 
     // Navigate directly to send funds with temporary recipient
     Get.offNamed(
@@ -3080,6 +3209,12 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       type: 'external', // Explicitly set type for external bank recipients
     );
 
+    // Short flow (embedded): hand back to the host screen instead of navigating.
+    if (widget.onRecipientSelected != null) {
+      widget.onRecipientSelected!(temporaryRecipient);
+      return;
+    }
+
     // Navigate to payment screen with temporary recipient
     Get.offNamed(
       AppRoutes.initiateSendFunds,
@@ -3908,6 +4043,12 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       currency: 'NGN',
       type: 'external', // Explicitly set type for external bank recipients
     );
+
+    // Short flow (embedded): hand back to the host screen instead of navigating.
+    if (widget.onRecipientSelected != null) {
+      widget.onRecipientSelected!(temporaryRecipient);
+      return;
+    }
 
     // Navigate to payment screen with temporary recipient
     Get.offNamed(

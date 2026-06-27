@@ -57,15 +57,49 @@ import 'package:lazervault/src/features/transaction_history/presentation/cubit/t
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+// Short-flow (admin-gated) send-funds: reuse this screen + the AddRecipient
+// widget inline, and run amount → PIN → receipt on the same screen.
+import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/add_recipient.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
+import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/send_funds_amount_sheet.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 class SelectRecipients extends StatefulWidget {
-  const SelectRecipients({super.key});
+  /// When true, render the short send-funds flow: the AddRecipient widget is
+  /// shown inline as a section under the filters, and selecting/adding a
+  /// recipient continues with amount → PIN → receipt on this screen (no
+  /// separate add page or initiate-send-funds screen).
+  final bool shortFlow;
+  const SelectRecipients({super.key, this.shortFlow = false});
 
   @override
   State<SelectRecipients> createState() => _SelectRecipientsState();
 }
 
-class _SelectRecipientsState extends State<SelectRecipients> {
+class _SelectRecipientsState extends State<SelectRecipients>
+    with TransactionPinMixin {
+  // ── Short-flow (send-funds) state ─────────────────────────────────────────
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+  // Re-entry guard so a fast double-tap can't fire two transfers.
+  bool _shortBusy = false;
+  Map<String, dynamic>? _shortPendingReceipt;
+  // Active method tab inside the embedded AddRecipient — drives which saved
+  // recipients show (Bank → external only, LazerVault user → internal only).
+  AddRecipientMethod _shortMethod = AddRecipientMethod.bankDetails;
+
+  bool _isInternalRecipient(RecipientModel r) =>
+      r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+
   // Contact bank verification state
   List<Map<String, String>> _banksList = [];
   bool _isLoadingBanks = false;
@@ -349,7 +383,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
               final double topInset = MediaQuery.of(context).padding.top;
               // 16 top pad + 40 back row + 24 gap + 48 search bar = 128, plus an
               // 8px peek so the rounded sheet tucks just under the search field.
-              final double sheetTop = topInset + 136.h;
+              // Short flow hides the search bar, so the white sheet rides up to
+              // just under the back/title row — no empty purple gap.
+              final double sheetTop =
+                  topInset + (widget.shortFlow ? 88.h : 136.h);
               return Stack(children: [
                 // Top Purple Section with Gradient.
                 // Height carries extra slack below `sheetTop` so the inner
@@ -501,7 +538,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         ),
                         SizedBox(height: 24.h),
 
-                        // Search Bar
+                        // Search Bar — long flow only. The short flow keeps the
+                        // header minimal and puts search inside the "View all"
+                        // saved-recipients bottom sheet (more room up top).
+                        if (!widget.shortFlow)
                         GestureDetector(
                           onTap: _showEnhancedRecipientSelection,
                           child: Container(
@@ -554,7 +594,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                   ),
                   child: Column(
                     children: [
-                      // Quick Actions Strip
+                      // Quick Actions Strip (Scan QR / Add User / Scan Bank
+                      // Details / Scan History / Split Bills) — shown in BOTH
+                      // flows. In short flow the scans feed the inline send.
                       Container(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         decoration: BoxDecoration(
@@ -645,7 +687,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         ),
                       ),
 
-                      // Filter chips - always visible
+                      // Filter chips (All / Favorites / Recurring / History) —
+                      // long flow only. The short flow shows just the inline add
+                      // + a simple saved list, so these are hidden to declutter.
+                      if (!widget.shortFlow)
                       Padding(
                         padding: EdgeInsets.all(16.w),
                         child: RecipientChipsBuilder(
@@ -654,9 +699,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         ),
                       ),
 
-                      // Recipients List Section
+                      // Recipients List Section. Short flow inlines the
+                      // AddRecipient widget (as a section under the filters)
+                      // above the saved list, all in one scroll.
                       Expanded(
-                        child: _buildRecipientsList(recipientState),
+                        child: widget.shortFlow
+                            ? _buildShortFlowBody(recipientState)
+                            : _buildRecipientsList(recipientState),
                       ),
                     ],
                   ),
@@ -677,6 +726,508 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             ),
           );
         }
+      },
+    );
+  }
+
+  // ── Short send-funds flow (admin-gated) ───────────────────────────────────
+  // Reuses this screen's theme + the AddRecipient widget (embedded), and the
+  // same money path as the long flow (TransferCubit.sendFunds). The long flow
+  // is unchanged.
+
+  void _onRecipientTapped(RecipientModel recipient) {
+    if (widget.shortFlow) {
+      // Saved recipient → straight to amount; already persisted, don't re-save.
+      _startShortSend(recipient, saveRecipient: false);
+    } else {
+      Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+    }
+  }
+
+  /// Single router for "recipient acquired → go pay". Used by every entry point
+  /// (scan bank details, QR, contact, etc.) so they all honour the active flow:
+  /// short → amount → PIN → receipt on this screen; long → initiate-send-funds.
+  /// [longFlowArguments] preserves any extra args (e.g. QR prefill) for the long
+  /// flow; the short flow just needs the recipient.
+  void _continueWithRecipient(RecipientModel recipient,
+      {Object? longFlowArguments}) {
+    if (widget.shortFlow) {
+      _startShortSend(recipient, saveRecipient: recipient.isSaved);
+    } else {
+      Get.toNamed(AppRoutes.initiateSendFunds,
+          arguments: longFlowArguments ?? recipient);
+    }
+  }
+
+  List<AccountSummaryEntity> get _shortSummaries {
+    final s = context.read<AccountCardsSummaryCubit>().state;
+    return switch (s) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => const <AccountSummaryEntity>[],
+    };
+  }
+
+  AccountSummaryEntity? get _shortActiveSummary {
+    final list = _shortSummaries;
+    if (list.isEmpty) return null;
+    final activeId = serviceLocator<AccountManager>().activeAccountId;
+    if (activeId != null) {
+      for (final a in list) {
+        if (a.spendingAccountId == activeId || a.id == activeId) return a;
+      }
+    }
+    return list.first;
+  }
+
+  String? get _shortUserId =>
+      context.read<AuthenticationCubit>().currentProfile?.user.id;
+
+  /// Inline AddRecipient handed back a chosen recipient → run the short tail.
+  void _onShortRecipientPicked(RecipientModel recipient) {
+    _startShortSend(recipient, saveRecipient: recipient.isSaved);
+  }
+
+  Future<void> _startShortSend(RecipientModel r,
+      {required bool saveRecipient}) async {
+    if (_shortBusy) return;
+    final active = _shortActiveSummary;
+    if (active == null) {
+      Get.snackbar('Please wait', 'Your account is still loading.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    final isInternal =
+        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+    if (isInternal && r.internalUserId != null && r.internalUserId == _shortUserId) {
+      Get.snackbar('Not allowed', 'You can’t send funds to yourself.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final minor = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => SendFundsAmountSheet(
+        recipientName: r.name,
+        bankName: r.bankName,
+        currency: active.currency,
+        transferType: isInternal ? 'internal' : 'external',
+        destinationBankCode: isInternal ? null : r.sortCode,
+        availableBalanceMajor: active.availableBalance,
+        sourceAccountLabel: (active.accountName != null &&
+                active.accountName!.isNotEmpty)
+            ? '${active.accountName} • ••••${active.accountNumberLast4}'
+            : '${active.accountType} • ••••${active.accountNumberLast4}',
+        transferCubit: context.read<TransferCubit>(),
+      ),
+    );
+    if (minor == null || minor <= 0 || !mounted) return;
+
+    _shortBusy = true;
+    final transactionId = 'transfer_${const Uuid().v4()}';
+    final amountMajor = minor / 100.0;
+    try {
+      if (FeatureFlags.sendFundsPinIsRequired) {
+        final ok = await validateTransactionPin(
+          context: context,
+          transactionId: transactionId,
+          transactionType: 'transfer',
+          amount: amountMajor,
+          currency: active.currency,
+          title: 'Confirm Transfer',
+          message:
+              'Confirm transfer of ${active.currency} ${amountMajor.toStringAsFixed(2)}',
+          onPinValidated: (verificationToken) async {
+            await _dispatchShortAndAwait(
+                r, minor, active, transactionId, verificationToken,
+                saveRecipient: saveRecipient);
+          },
+        );
+        if (!ok) return;
+        _navShortReceipt();
+      } else {
+        await _dispatchShortAndAwait(r, minor, active, transactionId, '',
+            saveRecipient: saveRecipient);
+        if (mounted) _navShortReceipt();
+      }
+    } catch (e) {
+      Get.snackbar('Transfer failed',
+          e.toString().replaceAll('Exception:', '').trim(),
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      _shortBusy = false;
+    }
+  }
+
+  Future<void> _dispatchShortAndAwait(
+    RecipientModel r,
+    int amountMinor,
+    AccountSummaryEntity active,
+    String transactionId,
+    String verificationToken, {
+    required bool saveRecipient,
+  }) async {
+    final transferCubit = context.read<TransferCubit>();
+    final recipientCubit = context.read<RecipientCubit>();
+    final token =
+        context.read<AuthenticationCubit>().currentProfile?.session.accessToken;
+    final isInternal =
+        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+    final senderProfile = context.read<AuthenticationCubit>().currentProfile;
+    final senderName = senderProfile != null
+        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
+        : '';
+    final narration = senderName.isNotEmpty
+        ? 'Transfer from $senderName'
+        : 'Transfer from LazerVault';
+
+    transferCubit.sendFunds(
+      fromAccountId: active.spendingAccountId,
+      toAccountNumber: r.accountNumber,
+      toAccountId: isInternal ? (r.internalUserId ?? r.accountNumber) : null,
+      type: isInternal ? 'internal' : 'external',
+      amount: amountMinor / 100.0,
+      description: narration,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+      destinationBankCode: isInternal ? null : r.sortCode,
+      beneficiaryName: isInternal ? null : r.name,
+    );
+
+    final terminal = await transferCubit.stream
+        .firstWhere((s) =>
+            s is TransferSuccess ||
+            s is TransferFailure ||
+            s is TransferPinFailure)
+        .timeout(const Duration(seconds: 30),
+            onTimeout: () => transferCubit.state);
+
+    if (terminal is TransferFailure) throw Exception(terminal.message);
+    if (terminal is TransferPinFailure) throw Exception('Invalid PIN');
+    if (terminal is! TransferSuccess) {
+      throw Exception(
+          'Transfer is taking longer than expected. Check your transaction history before retrying.');
+    }
+    _shortPendingReceipt = _buildShortReceipt(terminal.response, r, active);
+    // Save only newly-added (inline) recipients the user favorited — never a
+    // recipient tapped from the already-persisted saved list.
+    if (saveRecipient && token != null) {
+      recipientCubit.addRecipient(
+        recipient: r.copyWith(id: '0', isSaved: true, isFavorite: true),
+        accessToken: token,
+      );
+    }
+  }
+
+  Map<String, dynamic> _buildShortReceipt(
+      TransferEntity res, RecipientModel r, AccountSummaryEntity active) {
+    final isInternal =
+        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+    final masked = r.accountNumber.length > 4
+        ? '•••• ${r.accountNumber.substring(r.accountNumber.length - 4)}'
+        : r.accountNumber;
+    return {
+      'amount': res.amount.toDouble() / 100.0,
+      'fee': res.fee.toDouble() / 100.0,
+      'totalAmount': res.totalAmount.toDouble() / 100.0,
+      'recipientName': r.name,
+      'recipientAccountMasked': masked,
+      'recipientBankName': r.bankName,
+      'sourceAccountInfo':
+          '${active.accountType} •••• ${active.accountNumberLast4}',
+      'sourceAccountName': active.accountName ?? '',
+      'currency': active.currency,
+      'transferId': res.transferId.toString(),
+      'timestamp': res.createdAt,
+      'reference': null,
+      'providerReference': res.providerReference,
+      'internalReference': res.internalReference,
+      'status': res.status,
+      'network':
+          isInternal ? 'LazerVault Internal Transfer' : 'External Bank Transfer',
+      'transferType': isInternal ? 'Internal Transfer' : 'Domestic Transfer',
+    };
+  }
+
+  void _navShortReceipt() {
+    if (_shortPendingReceipt != null) {
+      Get.offAllNamed(AppRoutes.transferProof, arguments: _shortPendingReceipt);
+    }
+  }
+
+  Widget _buildShortFlowBody(RecipientState state) {
+    final saved = _orderedSaved(state);
+    return SingleChildScrollView(
+      // 24.w side padding matches the full Add-Recipient page; 24.h top so the
+      // Bank/User/Contacts selector clears the sheet's rounded top corner.
+      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Inline "add recipient" — the AddRecipient widget embedded as a
+          // section right under the header (reuses its forms + confirm sheets).
+          AddRecipient(
+            embedded: true,
+            onRecipientSelected: _onShortRecipientPicked,
+            onMethodChanged: (m) => setState(() => _shortMethod = m),
+          ),
+          SizedBox(height: 24.h),
+          // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
+          // (opens the full list + search sheet). Only shown when there are any.
+          Row(
+            children: [
+              Text(
+                'Saved recipients',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              if (saved.isNotEmpty)
+                InkWell(
+                  borderRadius: BorderRadius.circular(8.r),
+                  onTap: () => _openSavedRecipientsSheet(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                    child: Row(
+                      children: [
+                        Text(
+                          'View all',
+                          style: TextStyle(
+                            color: const Color.fromARGB(255, 78, 3, 208),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 2.w),
+                        Icon(Icons.chevron_right,
+                            size: 16.sp,
+                            color: const Color.fromARGB(255, 78, 3, 208)),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          _buildShortSavedList(state),
+        ],
+      ),
+    );
+  }
+
+  /// Favorites-first ordering of the saved recipients in [state] (empty for
+  /// loading/error). Shared by the header CTA, the inline preview, and the sheet.
+  List<RecipientModel> _orderedSaved(RecipientState state) {
+    final recipients = switch (state) {
+      RecipientLoaded(:final recipients) => recipients,
+      RecipientLoadingMore(:final currentRecipients) => currentRecipients,
+      _ => const <RecipientModel>[],
+    };
+    return [
+      ...recipients.where((r) => r.isFavorite),
+      ...recipients.where((r) => !r.isFavorite),
+    ];
+  }
+
+  Widget _buildShortSavedList(RecipientState state) {
+    if (state is RecipientLoading || state is RecipientInitial) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: const Center(child: LazerVaultLoader.small()),
+      );
+    }
+    // Filter to the active tab: Bank → external only, Lazervault user →
+    // internal only.
+    final wantInternal = _shortMethod == AddRecipientMethod.lazervaultUser;
+    final ordered = _orderedSaved(state)
+        .where((r) => _isInternalRecipient(r) == wantInternal)
+        .toList();
+    if (ordered.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: Text(
+            wantInternal
+                ? 'No saved LazerVault recipients yet.'
+                : 'No saved bank recipients yet.',
+            style: TextStyle(color: Colors.grey[500], fontSize: 13.sp)),
+      );
+    }
+    // Inline preview count: LazerVault users show 5 (faster repeat sends),
+    // bank shows 3. The rest live behind the header "View all" sheet.
+    final previewCount = wantInternal ? 5 : 3;
+    return Column(
+      children: [
+        for (final r in ordered.take(previewCount)) _buildRecipientItem(r),
+      ],
+    );
+  }
+
+  /// Saved-recipients picker for the short flow: an 85%-height bottom sheet with
+  /// search over all saved recipients. Reuses [_buildRecipientItem]; selecting
+  /// one closes the sheet and continues the flow (amount → PIN → receipt).
+  void _openSavedRecipientsSheet() {
+    // Capture the cubit from the screen context (the sheet's overlay context is
+    // above the route provider). BlocBuilder makes the list + favorite stars
+    // update live when a star is toggled inside the sheet.
+    final recipientCubit = context.read<RecipientCubit>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        String query = '';
+        String pill = 'all'; // all | bank | lazervault
+        const purple = Color.fromARGB(255, 78, 3, 208);
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return BlocBuilder<RecipientCubit, RecipientState>(
+              bloc: recipientCubit,
+              builder: (blocCtx, state) {
+                final all = _orderedSaved(state);
+                final q = query.trim().toLowerCase();
+            final byPill = switch (pill) {
+              'bank' => all.where((r) => !_isInternalRecipient(r)),
+              'lazervault' => all.where((r) => _isInternalRecipient(r)),
+              _ => all,
+            };
+            final filtered = (q.isEmpty
+                    ? byPill
+                    : byPill.where((r) {
+                        return r.name.toLowerCase().contains(q) ||
+                            r.accountNumber.toLowerCase().contains(q) ||
+                            r.bankName.toLowerCase().contains(q) ||
+                            (r.alias ?? '').toLowerCase().contains(q);
+                      }))
+                .toList();
+            Widget pillChip(String value, String label) {
+              final selected = pill == value;
+              return GestureDetector(
+                onTap: () => setSheetState(() => pill = value),
+                child: Container(
+                  margin: EdgeInsets.only(right: 8.w),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+                  decoration: BoxDecoration(
+                    color: selected ? purple : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                        color: selected ? purple : Colors.grey[300]!),
+                  ),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: selected ? Colors.white : Colors.grey[700],
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              );
+            }
+            return Container(
+              height: 0.85.sh,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Saved recipients',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  // Search field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: TextField(
+                            autofocus: false,
+                            onChanged: (v) => setSheetState(() => query = v),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Search recipients...',
+                              hintStyle: TextStyle(
+                                  color: Colors.grey[500], fontSize: 14.sp),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  // Filter pills: All / Bank / Lazervault user.
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        pillChip('all', 'All'),
+                        pillChip('bank', 'Bank'),
+                        pillChip('lazervault', 'Lazervault user'),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? Center(
+                            child: Text('No matches',
+                                style: TextStyle(
+                                    color: Colors.grey[500], fontSize: 13.sp)),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(vertical: 8.h),
+                            itemCount: filtered.length,
+                            itemBuilder: (_, i) {
+                              final r = filtered[i];
+                              return _buildRecipientItem(
+                                r,
+                                onTapOverride: () {
+                                  Navigator.pop(sheetCtx);
+                                  _onRecipientTapped(r);
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+              },
+            );
+          },
+        );
       },
     );
   }
@@ -955,10 +1506,16 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     return const Center(child: Text('An unexpected error occurred.'));
   }
 
-  /// Build individual recipient item for the list
-  Widget _buildRecipientItem(RecipientModel recipient) {
+  /// Build individual recipient item for the list. [onTapOverride] lets the
+  /// short-flow "View all" sheet pop itself before continuing.
+  Widget _buildRecipientItem(RecipientModel recipient,
+      {VoidCallback? onTapOverride}) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 5.h, horizontal: 4.w),
+      // Short flow: no side margin so the card edge lines up with the form
+      // fields above (which sit at the body's 24.w padding). Long flow keeps
+      // the small 4.w inset it always had.
+      margin: EdgeInsets.symmetric(
+          vertical: 5.h, horizontal: widget.shortFlow ? 0 : 4.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
@@ -975,7 +1532,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
-          onTap: () => Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient),
+          onTap: onTapOverride ?? () => _onRecipientTapped(recipient),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
             child: Row(
@@ -1094,48 +1651,85 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                 ),
                 SizedBox(width: 8.w),
 
-                // Action icons - fixed position on the right
-                // Quick repeat transfer button
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20.r),
-                    onTap: () => _quickSendToRecipient(recipient),
-                    child: Padding(
-                      padding: EdgeInsets.all(6.w),
-                      child: Icon(
-                        Icons.repeat,
-                        color: const Color(0xFF4E03D0),
-                        size: 20.w,
+                // Action icons - fixed position on the right.
+                if (widget.shortFlow) ...[
+                  // Short flow: a quick favorite star (right-aligned, under the
+                  // "View all" CTA) + the 3-dot menu. The repeat/chat shortcuts
+                  // are long-flow conveniences, omitted here to stay focused.
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20.r),
+                      onTap: () => _toggleFavorite(recipient),
+                      child: Padding(
+                        padding: EdgeInsets.all(6.w),
+                        child: Icon(
+                          recipient.isFavorite
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: recipient.isFavorite
+                              ? const Color(0xFFF59E0B)
+                              : Colors.grey[500],
+                          size: 22.w,
+                        ),
                       ),
                     ),
                   ),
-                ),
-
-                // P2P chat button (all recipients — dialog for external)
-                P2PChatIcon(
-                  otherUserId: recipient.internalUserId,
-                  otherUserName: recipient.name,
-                  isInternal: recipient.type == 'internal',
-                  accountNumber: recipient.accountNumber,
-                ),
-
-                // More options button (three-dot menu)
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20.r),
-                    onTap: () => _showRecipientOptionsSheet(recipient),
-                    child: Padding(
-                      padding: EdgeInsets.all(6.w),
-                      child: Icon(
-                        Icons.more_vert,
-                        color: Colors.grey[600],
-                        size: 22.w,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20.r),
+                      onTap: () => _showRecipientOptionsSheet(recipient),
+                      child: Padding(
+                        padding: EdgeInsets.all(6.w),
+                        child: Icon(Icons.more_vert,
+                            color: Colors.grey[600], size: 22.w),
                       ),
                     ),
                   ),
-                ),
+                ] else ...[
+                  // Quick repeat transfer button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20.r),
+                      onTap: () => _quickSendToRecipient(recipient),
+                      child: Padding(
+                        padding: EdgeInsets.all(6.w),
+                        child: Icon(
+                          Icons.repeat,
+                          color: const Color(0xFF4E03D0),
+                          size: 20.w,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // P2P chat button (all recipients — dialog for external)
+                  P2PChatIcon(
+                    otherUserId: recipient.internalUserId,
+                    otherUserName: recipient.name,
+                    isInternal: recipient.type == 'internal',
+                    accountNumber: recipient.accountNumber,
+                  ),
+
+                  // More options button (three-dot menu)
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20.r),
+                      onTap: () => _showRecipientOptionsSheet(recipient),
+                      child: Padding(
+                        padding: EdgeInsets.all(6.w),
+                        child: Icon(
+                          Icons.more_vert,
+                          color: Colors.grey[600],
+                          size: 22.w,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1611,7 +2205,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             child: ElevatedButton.icon(
                               onPressed: () {
                                 Get.back();
-                                Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+                                _continueWithRecipient(recipient);
                               },
                               icon: Icon(Icons.send, size: 18.sp),
                               label: Text('Send Money'),
@@ -2782,7 +3376,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       currency: 'NGN',
     );
 
-    Get.toNamed(AppRoutes.initiateSendFunds, arguments: temporaryRecipient);
+    _continueWithRecipient(temporaryRecipient);
   }
 
   Widget _buildQuickAction({
@@ -2936,7 +3530,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             arguments['prefillAmount'] = qrAmount;
             arguments['prefillCurrency'] = currency;
           }
-          Get.toNamed(AppRoutes.initiateSendFunds, arguments: arguments);
+          _continueWithRecipient(recipient, longFlowArguments: arguments);
         }
       } catch (e) {
         // Dismiss loading sheet if still open
@@ -3188,10 +3782,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           isSaved: false,
           countryCode: _currentCountry,
         );
-        Get.toNamed(
-          AppRoutes.initiateSendFunds,
-          arguments: buildSendFundsArgs(recipient),
-        );
+        _continueWithRecipient(recipient,
+            longFlowArguments: buildSendFundsArgs(recipient));
       case ScanActionType.internalTransfer:
         if (action.username != null && action.username!.isNotEmpty) {
           _handleSmartScanUserSearch(
@@ -3212,10 +3804,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           phoneNumber: action.phoneNumber,
           countryCode: _currentCountry,
         );
-        Get.toNamed(
-          AppRoutes.initiateSendFunds,
-          arguments: buildSendFundsArgs(recipient),
-        );
+        _continueWithRecipient(recipient,
+            longFlowArguments: buildSendFundsArgs(recipient));
       case ScanActionType.retryCapture:
         // From history, "Scan Again" means start a fresh live capture.
         _launchBankDetailsScan();
@@ -3367,10 +3957,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             isSaved: false,
             countryCode: _currentCountry,
           );
-          Get.toNamed(
-            AppRoutes.initiateSendFunds,
-            arguments: buildSendFundsArgs(recipient),
-          );
+          _continueWithRecipient(recipient,
+              longFlowArguments: buildSendFundsArgs(recipient));
         case ScanActionType.internalTransfer:
           if (action.username != null && action.username!.isNotEmpty) {
             _handleSmartScanUserSearch(
@@ -3391,10 +3979,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             phoneNumber: action.phoneNumber,
             countryCode: _currentCountry,
           );
-          Get.toNamed(
-            AppRoutes.initiateSendFunds,
-            arguments: buildSendFundsArgs(recipient),
-          );
+          _continueWithRecipient(recipient,
+              longFlowArguments: buildSendFundsArgs(recipient));
         case ScanActionType.retryCapture:
           _launchBankDetailsScan();
       }
@@ -3442,7 +4028,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     if (prefillDescription != null && prefillDescription.isNotEmpty) {
       args['prefillDescription'] = prefillDescription;
     }
-    Get.toNamed(AppRoutes.initiateSendFunds, arguments: args);
+    _continueWithRecipient(recipient, longFlowArguments: args);
   }
 
   void _showQrVerificationLoadingSheet() {
