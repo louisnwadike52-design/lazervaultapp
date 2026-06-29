@@ -193,6 +193,7 @@ class BudgetAIService {
     List<Map<String, dynamic>> upcomingBills = const [],
     List<Map<String, dynamic>> budgetAlerts = const [],
     List<Map<String, dynamic>> failedTransactions = const [],
+    Map<String, dynamic> dataSources = const {},
   }) async {
     try {
       final headers = await ApiHeaders.build(secureStorage: _secureStorage);
@@ -211,6 +212,10 @@ class BudgetAIService {
           'risk_tolerance': riskTolerance,
           'currency': currency,
           'months_of_data': monthsOfData,
+          // Tells the AI which money sources the spending reflects (wallet only
+          // vs wallet + linked banks), so it can reason about external spend and
+          // note when bank data was unavailable instead of silently dropping it.
+          'data_sources': dataSources,
         },
         options: Options(
           headers: headers,

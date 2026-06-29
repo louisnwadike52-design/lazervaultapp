@@ -17,7 +17,7 @@ import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../data/services/prove_kyc_http_service.dart';
 import '../../domain/repositories/kyc_repository.dart';
 
-/// Dark-theme palette (matches the rest of the app — see CLAUDE.md).
+/// Dark-theme palette (matches the rest of the app — see the platform conventions).
 const Color _bg = Color(0xFF0A0A0A);
 const Color _card = Color(0xFF1F1F1F);
 const Color _divider = Color(0xFF2D2D2D);
@@ -25,6 +25,7 @@ const Color _textPrimary = Colors.white;
 const Color _textSecondary = Color(0xFF9CA3AF);
 const Color _accent = Color(0xFF6366F1); // KYC indigo accent
 const Color _success = Color(0xFF10B981);
+const Color _warning = Color(0xFFFB923C);
 const Color _danger = Color(0xFFEF4444);
 
 /// Identity Verification — Mono Prove 3-tier KYC via the hosted widget.
@@ -164,12 +165,15 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               if (status != null && status.tier > 0) _buildTierCard(status),
               if (!isMaxTier) ...[
                 _buildInfoCard(
-                  'You will be guided through a secure check by our verification partner. Have your BVN and NIN handy and allow camera access for a quick liveness check — completing your BVN, NIN and the liveness check reaches Tier 3, the highest tier with unlimited limits. Your information is encrypted and only used for CBN compliance.',
+                  'You will be guided through a secure check by our verification partner. Have your BVN and NIN handy and allow camera access for a quick liveness check. Completing your BVN, NIN and the liveness check reaches Tier 3, the highest tier with unlimited limits. Your information is encrypted and only used for CBN compliance.',
                 ),
-                SizedBox(height: 24.h),
+                // Surface profile-readiness (valid email required; NG-phone note)
+                // so the user fixes blockers before opening the secure check.
+                _buildReadinessNotices(),
+                SizedBox(height: 18.h),
                 _buildBenefitsSection(status),
               ],
-              SizedBox(height: 28.h),
+              SizedBox(height: 20.h),
               SizedBox(
                 width: double.infinity,
                 height: 50.h,
@@ -238,7 +242,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(height: 60.h),
+        SizedBox(height: 16.h),
         Center(
           child: SizedBox(
             width: 70.h,
@@ -275,7 +279,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
             textAlign: TextAlign.center,
           ),
         ],
-        SizedBox(height: 32.h),
+        SizedBox(height: 20.h),
       ],
     );
   }
@@ -303,6 +307,173 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ===== Profile readiness (email + NG phone) =====
+
+  /// Lightweight email sanity check — mirrors backend `looksLikeEmail`
+  /// (non-empty local part, an "@", a dotted domain). A valid email is a HARD
+  /// requirement for Mono Prove (banking-service prove_kyc.go), so we catch a
+  /// missing/invalid one here with an actionable message instead of letting the
+  /// Prove session start and fail.
+  bool _isValidEmail(String s) {
+    final v = s.trim();
+    final at = v.indexOf('@');
+    if (at <= 0 || at >= v.length - 1) return false;
+    return v.indexOf('.', at + 1) >= 0;
+  }
+
+  /// True when `phone` is a genuine Nigerian mobile (0 + [789] + 9 digits) once
+  /// normalised. Mirrors backend `isValidNGMobile`. A non-NG number (e.g. a UK
+  /// +44) or a placeholder normalises to something that is NOT an NG mobile —
+  /// in that case the backend omits the pre-fill and the Prove widget collects
+  /// the BVN-linked phone, so this only drives a reassuring note, never a block.
+  bool _looksLikeNGMobile(String phone) {
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    String local;
+    if (digits.startsWith('234') && digits.length == 13) {
+      local = '0${digits.substring(3)}';
+    } else if (digits.startsWith('2340') && digits.length == 14) {
+      local = digits.substring(3);
+    } else if (digits.length == 10) {
+      local = '0$digits';
+    } else if (digits.startsWith('0') && digits.length == 11) {
+      local = digits;
+    } else {
+      local = digits;
+    }
+    return RegExp(r'^0[789]\d{9}$').hasMatch(local);
+  }
+
+  ({String email, String phone}) _profileContact() {
+    try {
+      final profile = context.read<AuthenticationCubit>().currentProfile;
+      if (profile != null) {
+        return (
+          email: profile.user.email,
+          phone: profile.user.phoneNumber ?? '',
+        );
+      }
+    } catch (_) {/* profile not available yet */}
+    return (email: '', phone: '');
+  }
+
+  /// Renders readiness notices driven by the profile's email/phone state:
+  ///  - a blocking-style warning when the email is missing/invalid (the user
+  ///    must fix it before Prove will start), with a CTA to edit their profile;
+  ///  - a neutral, reassuring note when the profile phone isn't an NG mobile,
+  ///    so a foreign/placeholder-phone user knows they'll enter their Nigerian
+  ///    (BVN-linked) number inside the secure check rather than being surprised.
+  Widget _buildReadinessNotices() {
+    final contact = _profileContact();
+    final emailOk = _isValidEmail(contact.email);
+    final phoneIsNG = _looksLikeNGMobile(contact.phone);
+
+    final notices = <Widget>[];
+    if (!emailOk) {
+      notices.add(_buildNoticeCard(
+        icon: Icons.alternate_email_rounded,
+        color: _warning,
+        title: 'Add a valid email first',
+        body:
+            'Identity verification needs a valid email on your profile. Add or '
+            'fix it, then come back to verify.',
+        actionLabel: 'Update email',
+        onAction: () => Get.toNamed(AppRoutes.myAccount),
+      ));
+    }
+    if (emailOk && !phoneIsNG) {
+      notices.add(_buildNoticeCard(
+        icon: Icons.phone_iphone_rounded,
+        color: _accent,
+        title: 'Have your Nigerian number ready',
+        body:
+            'Your profile phone isn\'t a Nigerian number. During the secure '
+            'check you\'ll enter the Nigerian phone number linked to your BVN.',
+      ));
+    }
+    if (notices.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(height: 12.h),
+        for (final n in notices) ...[n, SizedBox(height: 8.h)],
+      ],
+    );
+  }
+
+  /// A compact tinted notice card (warning or info) with an optional CTA.
+  Widget _buildNoticeCard({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String body,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 20.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        color: _textPrimary,
+                        fontSize: 13.5.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      body,
+                      style: GoogleFonts.inter(
+                        color: _textPrimary.withValues(alpha: 0.82),
+                        fontSize: 12.5.sp,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (actionLabel != null && onAction != null) ...[
+            SizedBox(height: 10.h),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onAction,
+                style: TextButton.styleFrom(
+                  foregroundColor: color,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  actionLabel,
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -354,8 +525,8 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    'Upgrade to Tier 3 for the highest, unlimited limits — '
-                    'add your second ID (NIN) and complete the liveness check.',
+                    'Upgrade to Tier 3 for the highest, unlimited limits. '
+                    'Add your second ID (NIN) and complete the liveness check.',
                     style: GoogleFonts.inter(
                       color: _textPrimary.withValues(alpha: 0.85),
                       fontSize: 12.5.sp,
@@ -492,6 +663,26 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
 
   Future<void> _startVerification() async {
     if (_isSubmitting) return;
+
+    // Pre-flight: a valid email is a HARD requirement for Mono Prove. Catch a
+    // missing/invalid one HERE — before the camera permission + webview — with
+    // an actionable message, instead of opening the secure check only for the
+    // backend to reject it with a raw email error.
+    final contact = _profileContact();
+    if (!_isValidEmail(contact.email)) {
+      _showErrorDialog(
+        'Add a valid email first',
+        'We need a valid email on your profile to verify your identity. '
+            'Please add or update it, then try again.',
+        primaryLabel: 'Update email',
+        onPrimary: () {
+          Get.back();
+          Get.toNamed(AppRoutes.myAccount);
+        },
+        showSkip: _fromSignup,
+      );
+      return;
+    }
 
     // Mono Prove does a live facial/biometric check that calls getUserMedia()
     // inside the webview. If the OS-level camera permission isn't granted FIRST,

@@ -35,12 +35,24 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     double monthlyIncome = 0;
     List<Map<String, dynamic>> spendingData = [];
     final statisticsCubit = context.read<StatisticsCubit>();
-    // Ensure real stats exist before composing the AI prompt — when opened
-    // cold (deep link / fresh session) the shared singleton may not have
-    // loaded yet. Without this the prompt was built on zero data and then
-    // back-filled with a fabricated income (removed below).
-    if (statisticsCubit.state is! StatisticsLoaded) {
-      await statisticsCubit.loadStatistics();
+    // Ensure real, LINKED-BANK-INCLUSIVE stats exist before composing the AI
+    // prompt. The cubit defaults to `both` (wallet + linked banks) and merges
+    // external-bank analytics into categoryAnalytics/financialAnalytics, but a
+    // prior screen may have left it wallet-only, or it may not have loaded yet
+    // (cold deep link). Switch to include external, then WAIT for a settled
+    // load — loadStatistics() isn't re-entrant, so we await the cubit stream
+    // rather than the call, so the prompt is never built on a stale snapshot.
+    if (statisticsCubit.source == StatisticsSource.lazervault) {
+      statisticsCubit.changeSource(StatisticsSource.both); // triggers a reload
+    } else if (statisticsCubit.state is! StatisticsLoaded) {
+      statisticsCubit.loadStatistics();
+    }
+    final cur = statisticsCubit.state;
+    if (cur is! StatisticsLoaded || cur.isRefreshing) {
+      await statisticsCubit.stream
+          .firstWhere((s) => s is StatisticsLoaded && !s.isRefreshing)
+          .timeout(const Duration(seconds: 12),
+              onTimeout: () => statisticsCubit.state);
       if (!mounted) return;
     }
     final statsState = statisticsCubit.state;
@@ -173,6 +185,23 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       }
     }
 
+    // Tell the AI which money sources this spending reflects, so it reasons
+    // about linked-bank spend explicitly and notes (rather than silently drops)
+    // any bank data it couldn't load. Derived from the loaded scope.
+    final dataSources = <String, dynamic>{'wallet': true};
+    if (statsState is StatisticsLoaded) {
+      final includesExternal = statsState.source != StatisticsSource.lazervault;
+      dataSources['linked_banks'] =
+          includesExternal && statsState.externalStatus == ExternalDataStatus.ready;
+      dataSources['linked_banks_status'] = includesExternal
+          ? statsState.externalStatus.name // ready | empty | unavailable | ...
+          : 'not_included';
+      if (statsState.externalError != null &&
+          statsState.externalError!.isNotEmpty) {
+        dataSources['linked_banks_note'] = statsState.externalError;
+      }
+    }
+
     if (!mounted) return;
 
     context.read<BudgetCubit>().loadAIInsights(
@@ -187,6 +216,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       upcomingBills: upcomingBills,
       budgetAlerts: budgetAlerts,
       failedTransactions: failedTransactions,
+      dataSources: dataSources,
     );
   }
 

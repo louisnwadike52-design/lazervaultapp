@@ -1706,6 +1706,8 @@ message InitiateWithdrawalRequest {
     string narration = 7;
     string idempotency_key = 8;
     string linked_account_id = 9;     // Optional: withdraw to a linked bank account (server resolves bank/account)
+    string verification_token = 10;   // Token from TransactionPinService validation (required for PIN enforcement)
+    string transaction_id = 11;       // Unique transaction identifier for PIN verification
 }
 
 message WithdrawalResponse {

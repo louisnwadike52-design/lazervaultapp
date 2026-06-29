@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter/services.dart';
@@ -88,6 +89,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   @override
   void initState() {
     super.initState();
+    // Telemetry: withdrawal screen view.
+    AnalyticsService.instance.trackWithdrawalScreen(_currency);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadLinkedAccounts());
   }
 
@@ -286,6 +289,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       },
     );
 
+    // Telemetry: linked-bank withdrawal initiation outcome.
+    AnalyticsService.instance.trackWithdrawalOutcome(
+      destination: 'linked_bank',
+      outcome: (ok && resp != null && resp!.success) ? 'success' : 'failure',
+    );
+
     // Failure path already surfaced inside the sheet.
     if (!ok || resp == null || !resp!.success) return;
     if (!mounted) return;
@@ -312,7 +321,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       ..linkedAccountId = account.id
       ..amount = Int64((amount * 100).round())
       ..narration = 'Withdrawal to ${account.bankName}'
-      ..idempotencyKey = transactionId;
+      ..idempotencyKey = transactionId
+      // PIN verification is ENFORCED server-side: pass the token + txn id in the
+      // request body (matching InitiateMoveTransfer). Metadata is also set below
+      // for older gateway paths, but the body fields are now the primary source.
+      ..verificationToken = verificationToken
+      ..transactionId = transactionId;
 
     var callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
     callOptions = callOptions.mergedWith(CallOptions(metadata: {

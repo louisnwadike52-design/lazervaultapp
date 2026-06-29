@@ -250,6 +250,7 @@ class BudgetCubit extends Cubit<BudgetState> {
     List<Map<String, dynamic>> upcomingBills = const [],
     List<Map<String, dynamic>> budgetAlerts = const [],
     List<Map<String, dynamic>> failedTransactions = const [],
+    Map<String, dynamic> dataSources = const {},
   }) async {
     emit(BudgetAIInsightsLoading());
     try {
@@ -265,6 +266,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         upcomingBills: upcomingBills,
         budgetAlerts: budgetAlerts,
         failedTransactions: failedTransactions,
+        dataSources: dataSources,
       );
 
       final insights = BudgetAIInsightsData(
