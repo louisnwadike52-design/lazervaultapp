@@ -59,20 +59,39 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef}) async {
     return retryWithBackoff(
       operation: () async {
+        // Canonical party blocks. In this entity `recipientDetails` is the
+        // creator/issuer ("Invoice From") and `payerDetails` is the customer
+        // ("Bill To"); map them to the proto's sender/receiver so the details
+        // page reflects exactly what was entered. Legacy flat fields are kept
+        // populated for back-compat (recipient_* = the customer the backend
+        // sends to). recipientLogoUrl = sender logo, payerLogoUrl = customer.
+        final sender = _toParty(invoice.recipientDetails,
+            logoUrl: invoice.recipientLogoUrl);
+        final receiver = _toParty(invoice.payerDetails,
+            logoUrl: invoice.payerLogoUrl,
+            fallbackName: invoice.toName,
+            fallbackEmail: invoice.toEmail);
+
         final request = pb.CreateInvoiceRequest()
           ..accountId = currentUserId
-          ..recipientEmail = invoice.toEmail ?? ''
-          ..recipientName = invoice.toName ?? ''
+          ..recipientEmail = invoice.toEmail ?? invoice.payerDetails?.email ?? ''
+          ..recipientName = invoice.toName ?? invoice.payerDetails?.contactName ?? ''
           ..description = invoice.description
           ..amount = invoice.amount
           ..dueDate = invoice.dueDate?.toUtc().toIso8601String() ?? DateTime.now().add(Duration(days: 30)).toUtc().toIso8601String()
           ..tax = invoice.taxAmount ?? 0.0
           ..discount = invoice.discountAmount ?? 0.0
           ..notes = invoice.notes ?? ''
-          ..payerEmail = invoice.payerDetails?.email ?? ''
+          ..payerEmail = invoice.payerDetails?.email ?? invoice.toEmail ?? ''
           ..currency = invoice.currency
           ..payerLogoUrl = invoice.payerLogoUrl ?? ''
-          ..recipientLogoUrl = invoice.recipientLogoUrl ?? '';
+          ..recipientLogoUrl = invoice.recipientLogoUrl ?? ''
+          // Persist the chosen document type + title so the details page
+          // reflects them on reload (enum name == backend string).
+          ..invoiceType = invoice.type.name
+          ..title = invoice.title;
+        if (sender != null) request.sender = sender;
+        if (receiver != null) request.receiver = receiver;
 
         // Add invoice items
         if (invoice.items.isNotEmpty) {
@@ -550,12 +569,17 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
     return Invoice(
       id: proto.id,
-      title: proto.description.isNotEmpty ? proto.description : 'Invoice',
+      // Preserve the title chosen at creation; fall back to description, then a
+      // generic label, so the details page no longer shows a defaulted title.
+      title: proto.title.isNotEmpty
+          ? proto.title
+          : (proto.description.isNotEmpty ? proto.description : 'Invoice'),
       description: proto.description.isNotEmpty ? proto.description : '',
       amount: proto.amount,
       currency: proto.currency.isNotEmpty ? proto.currency : 'USD',
       status: _deriveStatusWithPartiallyPaid(status, proto.taggedUsers),
-      type: InvoiceType.invoice,
+      // Preserve the chosen document type (invoice/request/quote) on reload.
+      type: _invoiceTypeFromString(proto.invoiceType),
       createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
       dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
       fromUserId: proto.userId,
@@ -569,19 +593,37 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       discountAmount: proto.discount > 0 ? proto.discount : null,
       totalAmount: totalAmount,
       paymentMethod: null,
-      recipientDetails: (proto.recipientName.isNotEmpty || proto.recipientEmail.isNotEmpty)
-          ? AddressDetails(
-              contactName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
-              email: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,
-            )
-          : null,
-      payerDetails: proto.payerEmail.isNotEmpty
-          ? AddressDetails(
-              email: proto.payerEmail,
-            )
-          : null,
-      payerLogoUrl: proto.payerLogoUrl.isNotEmpty ? proto.payerLogoUrl : null,
-      recipientLogoUrl: proto.recipientLogoUrl.isNotEmpty ? proto.recipientLogoUrl : null,
+      // recipientDetails = the SENDER/issuer ("Invoice From"). Prefer the
+      // structured sender block; fall back to the creator's resolved name so a
+      // received invoice still shows who sent it.
+      recipientDetails: proto.hasSender()
+          ? _partyToAddress(proto.sender)
+          : ((proto.creatorFirstName.isNotEmpty || proto.creatorLastName.isNotEmpty)
+              ? AddressDetails(
+                  contactName:
+                      '${proto.creatorFirstName} ${proto.creatorLastName}'.trim(),
+                )
+              : null),
+      // payerDetails = the RECEIVER/customer ("Bill To"). Prefer the structured
+      // receiver block; fall back to the legacy recipient_* (customer) fields.
+      payerDetails: proto.hasReceiver()
+          ? _partyToAddress(proto.receiver)
+          : ((proto.recipientName.isNotEmpty || proto.recipientEmail.isNotEmpty)
+              ? AddressDetails(
+                  contactName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
+                  email: proto.recipientEmail.isNotEmpty
+                      ? proto.recipientEmail
+                      : (proto.payerEmail.isNotEmpty ? proto.payerEmail : null),
+                )
+              : null),
+      // Logos: sender block's logo for "From", receiver block's for "Bill To",
+      // each falling back to the legacy column.
+      payerLogoUrl: (proto.hasReceiver() && proto.receiver.logoUrl.isNotEmpty)
+          ? proto.receiver.logoUrl
+          : (proto.payerLogoUrl.isNotEmpty ? proto.payerLogoUrl : null),
+      recipientLogoUrl: (proto.hasSender() && proto.sender.logoUrl.isNotEmpty)
+          ? proto.sender.logoUrl
+          : (proto.recipientLogoUrl.isNotEmpty ? proto.recipientLogoUrl : null),
       isUnlocked: proto.isUnlocked,
       unlockPaymentRef: proto.unlockPaymentRef.isNotEmpty ? proto.unlockPaymentRef : null,
       taggedUsers: proto.taggedUsers.isNotEmpty
@@ -597,6 +639,67 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
               paidAt: tu.paidAt.isNotEmpty ? DateTime.tryParse(tu.paidAt) : null,
             )).toList()
           : null,
+    );
+  }
+
+  // Build a proto InvoiceParty from an AddressDetails block + logo. Returns
+  // null when there's nothing meaningful to send (so the request omits it).
+  pb.InvoiceParty? _toParty(
+    AddressDetails? d, {
+    String? logoUrl,
+    String? fallbackName,
+    String? fallbackEmail,
+  }) {
+    final businessName = d?.companyName ?? '';
+    final contactName = d?.contactName ?? fallbackName ?? '';
+    final email = d?.email ?? fallbackEmail ?? '';
+    final phone = d?.phone ?? '';
+    final logo = logoUrl ?? '';
+    final hasAny = [
+      businessName, contactName, email, phone, logo,
+      d?.addressLine1 ?? '', d?.city ?? '', d?.country ?? '',
+    ].any((v) => v.trim().isNotEmpty);
+    if (!hasAny) return null;
+    return pb.InvoiceParty()
+      ..businessName = businessName
+      ..contactName = contactName
+      ..email = email
+      ..phone = phone
+      ..addressLine1 = d?.addressLine1 ?? ''
+      ..addressLine2 = d?.addressLine2 ?? ''
+      ..city = d?.city ?? ''
+      ..state = d?.state ?? ''
+      ..postcode = d?.postcode ?? ''
+      ..country = d?.country ?? ''
+      ..logoUrl = logo;
+  }
+
+  // Map the backend document-type string back to the enum (default: invoice).
+  InvoiceType _invoiceTypeFromString(String t) {
+    switch (t.toLowerCase().trim()) {
+      case 'request':
+        return InvoiceType.request;
+      case 'quote':
+        return InvoiceType.quote;
+      default:
+        return InvoiceType.invoice;
+    }
+  }
+
+  // Map a proto InvoiceParty back to an AddressDetails for the UI.
+  AddressDetails _partyToAddress(pb.InvoiceParty p) {
+    String? nz(String s) => s.isNotEmpty ? s : null;
+    return AddressDetails(
+      companyName: nz(p.businessName),
+      contactName: nz(p.contactName),
+      email: nz(p.email),
+      phone: nz(p.phone),
+      addressLine1: nz(p.addressLine1),
+      addressLine2: nz(p.addressLine2),
+      city: nz(p.city),
+      state: nz(p.state),
+      postcode: nz(p.postcode),
+      country: nz(p.country),
     );
   }
 

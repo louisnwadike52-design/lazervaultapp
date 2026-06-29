@@ -166,6 +166,36 @@ message Invoice {
   string payer_email = 25;              // Optional payer email for auto-send on unlock
   string payer_logo_url = 26;           // Cloud storage URL for payer logo
   string recipient_logo_url = 27;       // Cloud storage URL for recipient logo
+
+  // Creator/Tagger information (for incoming invoices - who created/tagged you)
+  string creator_first_name = 28;
+  string creator_last_name = 29;
+  string creator_username = 30;
+
+  // Structured party blocks (canonical). sender = the issuer/creator
+  // ("Invoice From"); receiver = the customer who pays ("Bill To").
+  InvoiceParty sender = 31;
+  InvoiceParty receiver = 32;
+
+  // Document type ("invoice" | "request" | "quote") and a distinct title.
+  string invoice_type = 33;
+  string title = 34;
+}
+
+// InvoiceParty is one side of an invoice — the issuer (sender) or the customer
+// (receiver) — with the full business/contact block shown on the invoice.
+message InvoiceParty {
+  string business_name = 1;
+  string contact_name = 2;
+  string email = 3;
+  string phone = 4;
+  string address_line1 = 5;
+  string address_line2 = 6;
+  string city = 7;
+  string state = 8;
+  string postcode = 9;
+  string country = 10;
+  string logo_url = 11;
 }
 
 message InvoiceItem {
@@ -232,6 +262,13 @@ message CreateInvoiceRequest {
   string currency = 14;                 // Target currency for the invoice (e.g., NGN, USD, GBP)
   string payer_logo_url = 15;           // Cloud storage URL for payer logo
   string recipient_logo_url = 16;       // Cloud storage URL for recipient logo
+  string service_fee_ref = 17;          // Optional: pre-paid service fee reference
+  // Structured party blocks (canonical). sender = issuer/creator ("Invoice
+  // From"); receiver = customer ("Bill To"). Source of truth when set.
+  InvoiceParty sender = 18;
+  InvoiceParty receiver = 19;
+  string invoice_type = 20;             // "invoice" | "request" | "quote"
+  string title = 21;                    // Distinct invoice title
 }
 
 message CreateInvoiceResponse {

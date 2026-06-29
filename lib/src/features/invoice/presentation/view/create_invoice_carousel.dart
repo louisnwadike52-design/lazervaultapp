@@ -20,9 +20,8 @@ import '../widgets/create_invoice/items_amounts_screen.dart';
 import '../widgets/create_invoice/invoice_review_screen.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
-import '../../../../../core/services/injection_container.dart';
-import '../../data/repositories/invoice_repository_grpc_impl.dart';
-import '../../domain/repositories/invoice_repository.dart';
+import '../../../../../core/services/endpoint_registry.dart';
+import '../../data/services/invoice_image_upload_service.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -49,8 +48,8 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
 
   final List<String> _pageNames = [
     'Basic Info',
-    'Recipient',
-    'Payer',
+    'From (You)',
+    'Bill To',
     'Items & Amounts',
     'Review & Confirm',
   ];
@@ -173,42 +172,34 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
     try {
       final cubit = context.read<CreateInvoiceCubit>();
 
-      // Upload payer and recipient logos if present
+      // Upload the customer (payer) and issuer (recipient) logos via the
+      // canonical storage-service pipeline (core-gateway presigned PUT, same as
+      // profile pictures). Each returns a public_url we persist on the invoice
+      // and render later with Image.network. Non-fatal: a failed logo upload
+      // never blocks invoice creation.
       String? payerLogoUrl;
       String? recipientLogoUrl;
+      final uploader = InvoiceImageUploadService(endpoints: endpointRegistry);
 
-      final repo = serviceLocator<InvoiceRepository>();
-      if (repo is InvoiceRepositoryGrpcImpl) {
-        final grpcRepo = repo;
-
-        if (cubit.payerImage != null) {
-          try {
-            final file = cubit.payerImage!;
-            if (await file.exists()) {
-              final bytes = await file.readAsBytes();
-              final ext = file.path.split('.').last.toLowerCase();
-              final fileName = 'payer_logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
-              final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
-              payerLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
-            }
-          } catch (e) {
-            // Non-fatal: continue without logo
+      if (cubit.payerImage != null) {
+        try {
+          final file = cubit.payerImage!;
+          if (await file.exists()) {
+            payerLogoUrl = (await uploader.uploadFromFile(file)).publicUrl;
           }
+        } catch (_) {
+          // Non-fatal: continue without the customer logo.
         }
+      }
 
-        if (cubit.recipientImage != null) {
-          try {
-            final file = cubit.recipientImage!;
-            if (await file.exists()) {
-              final bytes = await file.readAsBytes();
-              final ext = file.path.split('.').last.toLowerCase();
-              final fileName = 'recipient_logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
-              final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
-              recipientLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
-            }
-          } catch (e) {
-            // Non-fatal: continue without logo
+      if (cubit.recipientImage != null) {
+        try {
+          final file = cubit.recipientImage!;
+          if (await file.exists()) {
+            recipientLogoUrl = (await uploader.uploadFromFile(file)).publicUrl;
           }
+        } catch (_) {
+          // Non-fatal: continue without the issuer logo.
         }
       }
 

@@ -303,10 +303,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           _buildDetailRow('Created', '${invoice.createdAt.day}/${invoice.createdAt.month}/${invoice.createdAt.year}'),
           if (invoice.dueDate != null)
             _buildDetailRow('Due Date', '${invoice.dueDate!.day}/${invoice.dueDate!.month}/${invoice.dueDate!.year}'),
-          if (invoice.toName != null)
-            _buildDetailRow('Recipient', invoice.toName!),
-          if (invoice.toEmail != null)
-            _buildDetailRow('Email', invoice.toEmail!),
+          // Parties (issuer "Invoice From" + customer "Bill To") are shown in
+          // the participant cards below — not duplicated here with a misleading
+          // "Recipient" label (which previously showed the customer).
           _buildDetailRow('Type', invoice.typeDisplayName),
           _buildDetailRow('Currency', invoice.currency),
         ],
@@ -1716,6 +1715,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ),
                 ],
               ),
+              _buildPartyLogo(invoice.recipientLogoUrl),
               SizedBox(height: 16.h),
               _buildParticipantInfo(
                 invoice.recipientDetails,
@@ -1778,6 +1778,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ),
                 ],
               ),
+              _buildPartyLogo(invoice.payerLogoUrl),
               SizedBox(height: 16.h),
               _buildParticipantInfo(
                 invoice.payerDetails,
@@ -1792,6 +1793,28 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Renders the uploaded party logo (issuer or customer) from its storage
+  /// public URL. Hidden when there's no logo; degrades gracefully if the image
+  /// can't load so the card never shows a broken-image box.
+  Widget _buildPartyLogo(String? url) {
+    if (url == null || url.trim().isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 12.h),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.r),
+        child: Image.network(
+          url,
+          height: 48.h,
+          fit: BoxFit.contain,
+          alignment: Alignment.centerLeft,
+          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          loadingBuilder: (context, child, progress) =>
+              progress == null ? child : SizedBox(height: 48.h),
+        ),
+      ),
     );
   }
 

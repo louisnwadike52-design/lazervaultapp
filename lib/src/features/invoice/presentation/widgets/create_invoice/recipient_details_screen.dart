@@ -229,7 +229,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recipient Details',
+          'Your Details (From)',
           style: GoogleFonts.inter(
             fontSize: 24.sp,
             fontWeight: FontWeight.w700,
@@ -238,7 +238,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
         ),
         SizedBox(height: 8.h),
         Text(
-          'Your business or personal information as the invoice creator',
+          'Your business or personal information as the invoice issuer — shown as "Invoice From"',
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
