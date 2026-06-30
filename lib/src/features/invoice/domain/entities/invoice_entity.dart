@@ -479,6 +479,38 @@ class TaggedUserInfo extends Equatable {
     }
   }
 
+  TaggedUserInfo copyWith({
+    String? userId,
+    String? username,
+    String? firstName,
+    String? lastName,
+    String? profilePicture,
+    String? status,
+    String? tagType,
+    String? tagValue,
+    DateTime? taggedAt,
+    DateTime? viewedAt,
+    DateTime? paidAt,
+    double? shareAmount,
+    double? amountPaid,
+  }) {
+    return TaggedUserInfo(
+      userId: userId ?? this.userId,
+      username: username ?? this.username,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      profilePicture: profilePicture ?? this.profilePicture,
+      status: status ?? this.status,
+      tagType: tagType ?? this.tagType,
+      tagValue: tagValue ?? this.tagValue,
+      taggedAt: taggedAt ?? this.taggedAt,
+      viewedAt: viewedAt ?? this.viewedAt,
+      paidAt: paidAt ?? this.paidAt,
+      shareAmount: shareAmount ?? this.shareAmount,
+      amountPaid: amountPaid ?? this.amountPaid,
+    );
+  }
+
   @override
   List<Object?> get props => [userId, username, firstName, lastName, profilePicture, status, tagType, tagValue, taggedAt, viewedAt, paidAt, shareAmount, amountPaid];
 }

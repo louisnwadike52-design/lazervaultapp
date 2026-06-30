@@ -172,6 +172,16 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
     try {
       final cubit = context.read<CreateInvoiceCubit>();
 
+      // Validate the split before submitting: at least one payer and (custom
+      // mode) amounts that sum to the invoice total.
+      if (cubit.splitMode && !cubit.splitIsValid) {
+        _showErrorSnackBar(cubit.splitPayers.isEmpty
+            ? 'Add at least one person to split with.'
+            : 'Split amounts must add up to the invoice total.');
+        setState(() => _isCreating = false);
+        return;
+      }
+
       // Upload the customer (payer) and issuer (recipient) logos via the
       // canonical storage-service pipeline (core-gateway presigned PUT, same as
       // profile pictures). Each returns a public_url we persist on the invoice
@@ -234,8 +244,12 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         description: invoice.description,
         items: invoice.items,
         type: invoice.type,
-        toEmail: invoice.payerDetails?.email ?? invoice.recipientDetails?.email,
-        toName: invoice.payerDetails?.contactName ?? invoice.recipientDetails?.contactName,
+        toEmail: cubit.splitMode
+            ? null
+            : invoice.payerDetails?.email ?? invoice.recipientDetails?.email,
+        toName: cubit.splitMode
+            ? 'Split among ${cubit.splitPayers.length} ${cubit.splitPayers.length == 1 ? 'person' : 'people'}'
+            : invoice.payerDetails?.contactName ?? invoice.recipientDetails?.contactName,
         dueDate: invoice.dueDate,
         taxAmount: invoice.taxAmount,
         discountAmount: invoice.discountAmount,
@@ -255,8 +269,9 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 country: invoice.recipientDetails!.country,
               )
             : null,
-        payerDetails: invoice.payerDetails != null
-            ? AddressDetails(
+        payerDetails: (cubit.splitMode || invoice.payerDetails == null)
+            ? null
+            : AddressDetails(
                 companyName: invoice.payerDetails!.companyName,
                 contactName: invoice.payerDetails!.contactName,
                 email: invoice.payerDetails!.email,
@@ -267,12 +282,14 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 state: invoice.payerDetails!.state,
                 postcode: invoice.payerDetails!.postcode,
                 country: invoice.payerDetails!.country,
-              )
-            : null,
+              ),
         currency: invoice.currency,
         payerLogoUrl: invoice.payerLogoUrl,
         recipientLogoUrl: invoice.recipientLogoUrl,
         serviceFeeRef: widget.serviceFeeRef,
+        // Split payment: the tagged app users + whether amounts are custom.
+        splitPayers: cubit.splitMode ? cubit.splitPayers : const [],
+        customSplit: cubit.splitMode && cubit.splitCustom,
       );
 
       final resultState = await stateCompleter.future.timeout(

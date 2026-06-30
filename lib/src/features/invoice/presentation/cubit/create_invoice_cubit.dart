@@ -47,6 +47,14 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   List<InvoiceItem> _items = [];
   double _taxAmount = 0.0;
   double _discountAmount = 0.0;
+
+  // Split payment: when on, the invoice is split among multiple tagged app users
+  // (each charged their share) instead of billed to one recipient. _splitCustom
+  // is false while the split is equal (backend computes exact equal shares) and
+  // true once the user edits an amount (per-user amounts are sent).
+  bool _splitMode = false;
+  bool _splitCustom = false;
+  final List<TaggedUserInfo> _splitPayers = [];
   String _notes = '';
 
   bool _isAutoFilled = false;
@@ -99,6 +107,74 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
 
   double get total {
     return subtotal + _taxAmount - _discountAmount;
+  }
+
+  // ── Split payment ──────────────────────────────────────────────────────────
+  bool get splitMode => _splitMode;
+  bool get splitCustom => _splitCustom;
+  List<TaggedUserInfo> get splitPayers => List.unmodifiable(_splitPayers);
+  double get splitAssigned =>
+      _splitPayers.fold(0.0, (s, p) => s + p.shareAmount);
+  double get splitRemaining => total - splitAssigned;
+
+  /// Whether the split is valid to submit: at least one payer, and — in custom
+  /// mode — the per-person amounts sum to the invoice total (within a cent).
+  bool get splitIsValid {
+    if (_splitPayers.isEmpty) return false;
+    if (!_splitCustom) return true; // equal split is always exact
+    return (splitRemaining).abs() < 0.01;
+  }
+
+  void toggleSplitMode(bool on) {
+    _splitMode = on;
+    if (on && _splitPayers.isNotEmpty) _redistributeEqually();
+    _emitFormUpdated();
+  }
+
+  void addSplitPayer(TaggedUserInfo payer) {
+    if (_splitPayers.any((p) => p.userId == payer.userId)) return;
+    _splitPayers.add(payer);
+    if (!_splitCustom) _redistributeEqually();
+    _emitFormUpdated();
+  }
+
+  void removeSplitPayer(String userId) {
+    _splitPayers.removeWhere((p) => p.userId == userId);
+    if (!_splitCustom) _redistributeEqually();
+    _emitFormUpdated();
+  }
+
+  /// Set one payer's custom amount; flips the split into custom mode.
+  void setSplitPayerAmount(String userId, double amount) {
+    final i = _splitPayers.indexWhere((p) => p.userId == userId);
+    if (i < 0) return;
+    _splitCustom = true;
+    _splitPayers[i] =
+        _splitPayers[i].copyWith(shareAmount: amount < 0 ? 0 : amount);
+    _emitFormUpdated();
+  }
+
+  /// Reset to an equal split (backend computes exact shares).
+  void splitEqually() {
+    _splitCustom = false;
+    _redistributeEqually();
+    _emitFormUpdated();
+  }
+
+  void _redistributeEqually() {
+    final n = _splitPayers.length;
+    if (n == 0) return;
+    final per = total / n;
+    for (var i = 0; i < n; i++) {
+      _splitPayers[i] = _splitPayers[i].copyWith(shareAmount: per);
+    }
+  }
+
+  /// Keep equal-split display amounts in sync when items/tax/discount change.
+  void _resyncEqualSplit() {
+    if (_splitMode && !_splitCustom && _splitPayers.isNotEmpty) {
+      _redistributeEqually();
+    }
   }
 
   /// Initialize form with auto-fill data from user profile
@@ -443,6 +519,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
 
   void _emitFormUpdated() {
     if (isClosed) return;
+    // Keep equal-split amounts in sync when the invoice total changes.
+    _resyncEqualSplit();
     emit(CreateInvoiceFormUpdated(
       invoiceType: _invoiceType,
       title: _title,

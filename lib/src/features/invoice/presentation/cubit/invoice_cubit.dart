@@ -355,6 +355,11 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     String? payerLogoUrl,
     String? recipientLogoUrl,
     String? serviceFeeRef,
+    // Split payment: the tagged app users to split this invoice among. When
+    // customSplit is false the per-user shareAmounts are ignored and the backend
+    // computes an exact equal split; when true the entered amounts are sent.
+    List<TaggedUserInfo> splitPayers = const [],
+    bool customSplit = false,
   }) async {
     // Store current form state to restore if error occurs
     final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
@@ -374,6 +379,15 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       final finalTaxAmount = taxAmount ?? 0;
       final finalDiscountAmount = discountAmount ?? 0;
       final totalAmount = subtotal + finalTaxAmount - finalDiscountAmount;
+
+      // Split payers go IN the create request (atomic + custom shares). For an
+      // equal split we zero the amounts so the backend computes exact shares;
+      // for a custom split each entered amount is kept and sent.
+      final taggedForCreate = splitPayers.isEmpty
+          ? null
+          : splitPayers
+              .map((p) => customSplit ? p : p.copyWith(shareAmount: 0))
+              .toList();
 
       final invoice = Invoice(
         id: '', // Will be generated in repository
@@ -397,6 +411,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         payerDetails: payerDetails,
         payerLogoUrl: payerLogoUrl,
         recipientLogoUrl: recipientLogoUrl,
+        taggedUsers: taggedForCreate,
       );
 
       final createdInvoice = await repository.createInvoice(invoice, serviceFeeRef: serviceFeeRef);
@@ -733,6 +748,11 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     AddressDetails? recipientDetails,
     AddressDetails? payerDetails,
     String currency = 'NGN',
+    // Split payment: the tagged app users to split this invoice among. When
+    // customSplit is false the per-user shareAmounts are ignored and the backend
+    // computes an exact equal split; when true the amounts are sent verbatim.
+    List<TaggedUserInfo> splitPayers = const [],
+    bool customSplit = false,
   }) async {
     try {
       if (currentUserId == null) {
@@ -748,6 +768,15 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       final finalTaxAmount = taxAmount ?? 0;
       final finalDiscountAmount = discountAmount ?? 0;
       final totalAmount = subtotal + finalTaxAmount - finalDiscountAmount;
+
+      // Tagged split payers are sent IN the create request (atomic + custom
+      // shares). For an equal split we zero the amounts so the backend computes
+      // exact shares; for a custom split we keep each entered amount.
+      final taggedForCreate = splitPayers.isEmpty
+          ? null
+          : splitPayers
+              .map((p) => customSplit ? p : p.copyWith(shareAmount: 0))
+              .toList();
 
       final invoice = Invoice(
         id: '',
@@ -769,13 +798,17 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         notes: notes,
         recipientDetails: recipientDetails,
         payerDetails: payerDetails,
+        taggedUsers: taggedForCreate,
       );
 
       final createdInvoice = await repository.createInvoice(invoice);
       if (isClosed) return;
 
-      // Tag users if any were selected
-      if (taggedUserIds.isNotEmpty && createdInvoice.id.isNotEmpty) {
+      // Tag users via the legacy post-create path ONLY when split payers weren't
+      // already sent in the create request above (avoids double-tagging).
+      if (splitPayers.isEmpty &&
+          taggedUserIds.isNotEmpty &&
+          createdInvoice.id.isNotEmpty) {
         try {
           await repository.tagUsersToInvoice(createdInvoice.id, taggedUserIds, [], []);
         } catch (e) {

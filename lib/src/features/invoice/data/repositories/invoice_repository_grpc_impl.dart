@@ -93,6 +93,19 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
         if (sender != null) request.sender = sender;
         if (receiver != null) request.receiver = receiver;
 
+        // Split payment: tag the payers and (for a custom split) send each one's
+        // amount. Tagged users with shareAmount <= 0 are split equally by the
+        // backend, so an equal split sends ids only and the shares are exact.
+        final taggedPayers = invoice.taggedUsers ?? const <TaggedUserInfo>[];
+        if (taggedPayers.isNotEmpty) {
+          request.taggedUserIds.addAll(taggedPayers.map((t) => t.userId));
+          request.taggedShares.addAll(taggedPayers
+              .where((t) => t.shareAmount > 0)
+              .map((t) => pb.TaggedShare()
+                ..userId = t.userId
+                ..amount = t.shareAmount));
+        }
+
         // Add invoice items
         if (invoice.items.isNotEmpty) {
           request.items.addAll(invoice.items.map((item) => pb.InvoiceItem()

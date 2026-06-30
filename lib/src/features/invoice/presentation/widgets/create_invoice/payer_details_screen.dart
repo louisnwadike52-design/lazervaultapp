@@ -7,6 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../cubit/create_invoice_cubit.dart';
 import '../../utils/phone_validator.dart';
+import '../../../domain/entities/invoice_entity.dart';
+import '../../../../recipients/presentation/widgets/username_search_bottom_sheet.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Screen 3: Payer Details
 ///
@@ -112,21 +115,357 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            SizedBox(height: 32.h),
-            _buildLogoSection(),
-            SizedBox(height: 32.h),
-            _buildFormFields(),
-            SizedBox(height: 24.h),
-          ],
-        ),
+      child: BlocBuilder<CreateInvoiceCubit, dynamic>(
+        builder: (context, _) {
+          final cubit = context.read<CreateInvoiceCubit>();
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                SizedBox(height: 20.h),
+                _buildSplitToggle(cubit),
+                SizedBox(height: 20.h),
+                if (cubit.splitMode)
+                  _buildSplitSection(cubit)
+                else ...[
+                  _buildLogoSection(),
+                  SizedBox(height: 32.h),
+                  _buildFormFields(),
+                ],
+                SizedBox(height: 24.h),
+              ],
+            ),
+          );
+        },
       ),
     );
+  }
+
+  // ── Split payment UI ────────────────────────────────────────────────────────
+
+  static const _accent = Color(0xFF6366F1);
+
+  Widget _buildSplitToggle(CreateInvoiceCubit cubit) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.groups_rounded, color: _accent, size: 22.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Split among multiple people',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600)),
+                Text('Each person pays their share',
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[500], fontSize: 12.sp)),
+              ],
+            ),
+          ),
+          Switch(
+            value: cubit.splitMode,
+            activeColor: _accent,
+            onChanged: cubit.toggleSplitMode,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSplitSection(CreateInvoiceCubit cubit) {
+    final symbol = CurrencySymbols.getSymbol(
+        cubit.invoiceCurrency.isNotEmpty ? cubit.invoiceCurrency : 'NGN');
+    final payers = cubit.splitPayers;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text('Payers (${payers.length})',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+            ),
+            if (payers.length > 1)
+              TextButton.icon(
+                onPressed: cubit.splitEqually,
+                icon: Icon(Icons.balance_rounded, size: 16.sp, color: _accent),
+                label: Text('Split equally',
+                    style: GoogleFonts.inter(
+                        color: _accent,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600)),
+              ),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        if (payers.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 24.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.person_add_alt_1_rounded,
+                    color: Colors.grey[600], size: 28.sp),
+                SizedBox(height: 8.h),
+                Text('Add the people to split this invoice with',
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[500], fontSize: 13.sp)),
+              ],
+            ),
+          )
+        else
+          ...payers.map((p) => _buildPayerRow(cubit, p, symbol)),
+        SizedBox(height: 12.h),
+        OutlinedButton.icon(
+          onPressed: () => _addPayer(cubit),
+          icon: Icon(Icons.add, size: 18.sp, color: _accent),
+          label: Text('Add person',
+              style: GoogleFonts.inter(
+                  color: _accent, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: _accent.withValues(alpha: 0.5)),
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            minimumSize: Size(double.infinity, 0),
+          ),
+        ),
+        if (payers.isNotEmpty) ...[
+          SizedBox(height: 16.h),
+          if (cubit.total <= 0)
+            Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 14.sp, color: Colors.grey[500]),
+                  SizedBox(width: 6.w),
+                  Expanded(
+                    child: Text(
+                      'Add items next — shares split equally and update automatically.',
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[500], fontSize: 12.sp),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          _buildSplitSummary(cubit, symbol),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPayerRow(
+      CreateInvoiceCubit cubit, TaggedUserInfo p, String symbol) {
+    final name = p.displayName;
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18.r,
+            backgroundColor: _accent.withValues(alpha: 0.15),
+            backgroundImage: (p.profilePicture != null &&
+                    p.profilePicture!.isNotEmpty)
+                ? NetworkImage(p.profilePicture!)
+                : null,
+            child: (p.profilePicture == null || p.profilePicture!.isEmpty)
+                ? Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : '?',
+                    style: GoogleFonts.inter(
+                        color: _accent, fontWeight: FontWeight.w700),
+                  )
+                : null,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600)),
+                if (p.username.isNotEmpty)
+                  Text('@${p.username}',
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[500], fontSize: 11.sp)),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => _editAmount(cubit, p, symbol),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D2D2D),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Text('$symbol${p.shareAmount.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(width: 4.w),
+                  Icon(Icons.edit, size: 13.sp, color: Colors.grey[500]),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => cubit.removeSplitPayer(p.userId),
+            icon: Icon(Icons.close, size: 18.sp, color: Colors.grey[500]),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSplitSummary(CreateInvoiceCubit cubit, String symbol) {
+    final assigned = cubit.splitAssigned;
+    final total = cubit.total;
+    final remaining = cubit.splitRemaining;
+    final balanced = remaining.abs() < 0.01;
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: (balanced ? const Color(0xFF10B981) : const Color(0xFFFB923C))
+            .withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+            color: (balanced
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFFB923C))
+                .withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        children: [
+          _summaryRow('Assigned',
+              '$symbol${assigned.toStringAsFixed(2)}', Colors.white),
+          SizedBox(height: 4.h),
+          _summaryRow('Invoice total',
+              '$symbol${total.toStringAsFixed(2)}', Colors.grey[400]!),
+          if (!balanced) ...[
+            SizedBox(height: 6.h),
+            _summaryRow(
+              remaining > 0 ? 'Unassigned' : 'Over by',
+              '$symbol${remaining.abs().toStringAsFixed(2)}',
+              const Color(0xFFFB923C),
+            ),
+          ] else if (cubit.splitCustom) ...[
+            SizedBox(height: 6.h),
+            Row(children: [
+              Icon(Icons.check_circle, size: 14.sp, color: const Color(0xFF10B981)),
+              SizedBox(width: 6.w),
+              Text('Amounts add up to the total',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF10B981), fontSize: 12.sp)),
+            ]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+        Text(value,
+            style: GoogleFonts.inter(
+                color: valueColor,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700)),
+      ],
+    );
+  }
+
+  Future<void> _addPayer(CreateInvoiceCubit cubit) async {
+    final user = await UsernameSearchBottomSheet.show(context);
+    if (user == null) return;
+    cubit.addSplitPayer(TaggedUserInfo(
+      userId: user.userId,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profilePicture: user.profilePicture.isNotEmpty ? user.profilePicture : null,
+    ));
+  }
+
+  Future<void> _editAmount(
+      CreateInvoiceCubit cubit, TaggedUserInfo p, String symbol) async {
+    final controller =
+        TextEditingController(text: p.shareAmount.toStringAsFixed(2));
+    final result = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: Text("${p.displayName}'s share",
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+          ],
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            prefixText: symbol,
+            prefixStyle: const TextStyle(color: Colors.white),
+            enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF2D2D2D))),
+            focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: _accent)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx)
+                .pop(double.tryParse(controller.text.trim()) ?? 0),
+            child: const Text('Save', style: TextStyle(color: _accent)),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (result != null) cubit.setSplitPayerAmount(p.userId, result);
   }
 
   Widget _buildHeader() {
