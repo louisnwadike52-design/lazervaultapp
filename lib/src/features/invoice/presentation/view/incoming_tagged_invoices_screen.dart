@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -476,8 +478,9 @@ class _IncomingTaggedInvoicesScreenState
               ],
             ),
           ],
-          // Quick Pay button
-          if (isPending) ...[
+          // Quick Pay button — hidden once THIS user has paid their share of a
+          // split invoice (the invoice may still be partially_paid for others).
+          if (isPending && !_myShareAlreadyPaid(invoice)) ...[
             SizedBox(height: 14.h),
             SizedBox(
               width: double.infinity,
@@ -572,6 +575,21 @@ class _IncomingTaggedInvoicesScreenState
         ],
       ),
     );
+  }
+
+  /// True when the current user is a tagged recipient who has already paid
+  /// their share of this (possibly split) invoice.
+  bool _myShareAlreadyPaid(TaggedInvoice invoice) {
+    final tags = invoice.invoice?.taggedUsers;
+    if (tags == null || tags.isEmpty) return false;
+    final authState = context.read<AuthenticationCubit>().state;
+    final uid =
+        authState is AuthenticationSuccess ? authState.profile.userId : null;
+    if (uid == null) return false;
+    for (final t in tags) {
+      if (t.userId == uid) return t.status == 'paid';
+    }
+    return false;
   }
 
   void _showPaymentDialog(TaggedInvoice invoice) {

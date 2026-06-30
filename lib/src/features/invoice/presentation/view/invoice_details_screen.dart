@@ -689,8 +689,10 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           SizedBox(height: 12.h),
         ],
 
-        // Pay button for receiver with pending invoice
-        if (!isSender && invoice.status == InvoiceStatus.pending && widget.isFromReceivedTab) ...[
+        // Pay button for a receiver who can still pay — pending OR partially_paid
+        // (a split invoice the others have started paying) while THIS user's
+        // share is unpaid.
+        if (!isSender && widget.isFromReceivedTab && _receiverCanPay(invoice, currentUserId)) ...[
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -702,7 +704,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _payInvoice(invoice),
               icon: Icon(Icons.payment, size: 20.sp),
-              label: Text('Pay $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}'),
+              label: Text('Pay $_currencySymbol${_receiverPayAmount(invoice, currentUserId).toStringAsFixed(2)}'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
@@ -1609,6 +1611,40 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   void _editInvoice(Invoice invoice) {
     // Navigate to edit screen
     // Get.to(() => CreateInvoiceScreen(editingInvoice: invoice));
+  }
+
+  /// THIS user's tagged entry on the invoice (or null if not tagged).
+  TaggedUserInfo? _myTag(Invoice invoice, String? uid) {
+    if (uid == null) return null;
+    for (final t in (invoice.taggedUsers ?? const <TaggedUserInfo>[])) {
+      if (t.userId == uid) return t;
+    }
+    return null;
+  }
+
+  /// A receiver can pay while the invoice is pending OR partially_paid and —
+  /// for a split (tagged) invoice — their OWN share is still unpaid. Without
+  /// the partially_paid case, the remaining payers would be locked out once the
+  /// first tagged user paid.
+  bool _receiverCanPay(Invoice invoice, String? uid) {
+    if (invoice.status != InvoiceStatus.pending &&
+        invoice.status != InvoiceStatus.partiallyPaid) {
+      return false;
+    }
+    final tags = invoice.taggedUsers;
+    if (tags != null && tags.isNotEmpty) {
+      final mine = _myTag(invoice, uid);
+      return mine != null && mine.status != 'paid';
+    }
+    return true; // untagged invoice — the receiver pays in full
+  }
+
+  /// Amount the receiver pays: their equal share for a split invoice, else the
+  /// full total.
+  double _receiverPayAmount(Invoice invoice, String? uid) {
+    final mine = _myTag(invoice, uid);
+    if (mine != null && mine.shareAmount > 0) return mine.shareAmount;
+    return invoice.totalAmount;
   }
 
   Future<void> _payInvoice(Invoice invoice) async {
