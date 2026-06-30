@@ -228,12 +228,33 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           options: options,
         );
 
+        final inv = response.invoice;
+        // Issuer ("From") + customer ("Bill To") names for the receipt, read
+        // from the structured blocks with sensible fallbacks.
+        String partyName(pb.InvoiceParty p) =>
+            p.businessName.isNotEmpty ? p.businessName : p.contactName;
+        final fromName = inv.hasSender() && partyName(inv.sender).isNotEmpty
+            ? partyName(inv.sender)
+            : '${inv.creatorFirstName} ${inv.creatorLastName}'.trim();
+        final toName = inv.hasReceiver() && partyName(inv.receiver).isNotEmpty
+            ? partyName(inv.receiver)
+            : inv.recipientName;
+
         return {
-          'transaction_id': response.paymentReference,
-          'invoice_id': response.invoice.id,
-          'amount': response.invoice.totalAmount,
-          'currency': currency,
+          'transaction_id': response.paymentReference.isNotEmpty
+              ? response.paymentReference
+              : inv.paymentReference,
+          'payment_reference': inv.paymentReference,
+          'invoice_id': inv.id,
+          'invoice_number': inv.invoiceNumber,
+          'amount': inv.totalAmount,
+          // Use the invoice's real currency (not a hard-coded USD default).
+          'currency': inv.currency.isNotEmpty ? inv.currency : currency,
           'new_balance': response.newBalance,
+          'status': inv.status,
+          'paid_at': inv.paidAt,
+          'from_name': fromName,
+          'to_name': toName,
           'message': response.message,
         };
       },

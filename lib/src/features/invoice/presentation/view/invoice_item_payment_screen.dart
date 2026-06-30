@@ -46,8 +46,29 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  double get _processingFee => widget.invoice.totalAmount * 0.005;
-  double get _totalAmount => widget.invoice.totalAmount + _processingFee;
+  /// The amount THIS payer owes: for a split (tagged to >1 users) invoice it's
+  /// the current user's equal share; otherwise the full invoice total. The
+  /// backend charges the same share, so the confirmation/receipt match the debit.
+  double get _baseAmount {
+    final tagged = widget.invoice.taggedUsers;
+    if (tagged == null || tagged.length <= 1) return widget.invoice.totalAmount;
+    String? uid;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) uid = authState.profile.userId;
+    if (uid == null) return widget.invoice.totalAmount;
+    for (final t in tagged) {
+      if (t.userId == uid) {
+        return t.shareAmount > 0 ? t.shareAmount : widget.invoice.totalAmount;
+      }
+    }
+    return widget.invoice.totalAmount;
+  }
+
+  bool get _isSplit =>
+      (widget.invoice.taggedUsers?.length ?? 0) > 1;
+
+  double get _processingFee => _baseAmount * 0.005;
+  double get _totalAmount => _baseAmount + _processingFee;
 
   String get _currencySymbol => _getCurrencySymbol(widget.invoice.currency);
 
@@ -131,7 +152,15 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
           _fetchAccounts();
           Get.offNamed(
             AppRoutes.invoicePaymentReceipt,
-            arguments: {...state.transaction, 'fromPaymentFlow': true},
+            arguments: {
+              ...state.transaction,
+              // The receipt shows the SHARE actually paid (and total for split
+              // invoices), not the backend's full-total amount field.
+              'amount': _baseAmount,
+              if (_isSplit) 'is_partial': true,
+              if (_isSplit) 'total_amount': widget.invoice.totalAmount,
+              'fromPaymentFlow': true,
+            },
           );
         } else if (state is TaggedInvoiceError) {
           setState(() => _isProcessingPayment = false);
@@ -307,7 +336,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                 ),
               ),
               Text(
-                '$_currencySymbol${widget.invoice.totalAmount.toStringAsFixed(2)}',
+                '$_currencySymbol${_baseAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF3B82F6),
                   fontSize: 24.sp,

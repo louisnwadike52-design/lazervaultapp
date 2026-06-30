@@ -216,6 +216,8 @@ message TaggedUser {
   string tagged_at = 7;
   string viewed_at = 8;
   string paid_at = 9;
+  double share_amount = 10;             // This user's equal share of the total
+  double amount_paid = 11;              // What this user has actually paid
 }
 
 // Invoice statistics

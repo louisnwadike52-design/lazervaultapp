@@ -195,6 +195,8 @@ const TaggedUser$json = {
     {'1': 'tagged_at', '3': 7, '4': 1, '5': 9, '10': 'taggedAt'},
     {'1': 'viewed_at', '3': 8, '4': 1, '5': 9, '10': 'viewedAt'},
     {'1': 'paid_at', '3': 9, '4': 1, '5': 9, '10': 'paidAt'},
+    {'1': 'share_amount', '3': 10, '4': 1, '5': 1, '10': 'shareAmount'},
+    {'1': 'amount_paid', '3': 11, '4': 1, '5': 1, '10': 'amountPaid'},
   ],
 };
 
@@ -204,7 +206,9 @@ final $typed_data.Uint8List taggedUserDescriptor = $convert.base64Decode(
     'IIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgE'
     'IAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUGljdHVyZR'
     'IWCgZzdGF0dXMYBiABKAlSBnN0YXR1cxIbCgl0YWdnZWRfYXQYByABKAlSCHRhZ2dlZEF0EhsK'
-    'CXZpZXdlZF9hdBgIIAEoCVIIdmlld2VkQXQSFwoHcGFpZF9hdBgJIAEoCVIGcGFpZEF0');
+    'CXZpZXdlZF9hdBgIIAEoCVIIdmlld2VkQXQSFwoHcGFpZF9hdBgJIAEoCVIGcGFpZEF0EiEKDH'
+    'NoYXJlX2Ftb3VudBgKIAEoAVILc2hhcmVBbW91bnQSHwoLYW1vdW50X3BhaWQYCyABKAFSCmFt'
+    'b3VudFBhaWQ=');
 
 @$core.Deprecated('Use invoiceStatisticsDescriptor instead')
 const InvoiceStatistics$json = {

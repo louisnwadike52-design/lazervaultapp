@@ -88,7 +88,10 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                         InvoiceThemeColors.alternativePurple,
                         InvoiceThemeColors.gradientPurple,
                       ],
-                      onTap: () => Get.toNamed(AppRoutes.payInvoice),
+                      // Route to the REAL received-invoices flow (incoming tagged
+                      // → PayTaggedInvoice with PIN), not the legacy pay_invoice
+                      // screen whose payment step is a simulated mock.
+                      onTap: () => Get.toNamed(AppRoutes.incomingTaggedInvoices),
                     ),
                   ],
                 ),

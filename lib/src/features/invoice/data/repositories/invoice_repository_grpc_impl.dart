@@ -637,6 +637,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
               taggedAt: tu.taggedAt.isNotEmpty ? DateTime.tryParse(tu.taggedAt) : null,
               viewedAt: tu.viewedAt.isNotEmpty ? DateTime.tryParse(tu.viewedAt) : null,
               paidAt: tu.paidAt.isNotEmpty ? DateTime.tryParse(tu.paidAt) : null,
+              shareAmount: tu.shareAmount,
+              amountPaid: tu.amountPaid,
             )).toList()
           : null,
     );

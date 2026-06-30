@@ -33,6 +33,9 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     final message = transaction['message'] as String?;
     final isPartial = transaction['is_partial'] == true;
     final totalAmount = (transaction['total_amount'] as num?)?.toDouble();
+    final invoiceNumber = transaction['invoice_number']?.toString();
+    final fromName = transaction['from_name']?.toString();
+    final toName = transaction['to_name']?.toString();
 
     final metadata = <String, dynamic>{};
 
@@ -40,8 +43,16 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
       metadata['Payment Type'] = 'Partial Invoice Payment';
       metadata['Total Invoice'] = '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(totalAmount)}';
     }
-    if (invoiceId.isNotEmpty && invoiceId != 'N/A') {
+    if (invoiceNumber != null && invoiceNumber.isNotEmpty) {
+      metadata['Invoice No.'] = invoiceNumber;
+    } else if (invoiceId.isNotEmpty && invoiceId != 'N/A') {
       metadata['Invoice ID'] = invoiceId;
+    }
+    if (fromName != null && fromName.isNotEmpty) {
+      metadata['From'] = fromName;
+    }
+    if (toName != null && toName.isNotEmpty) {
+      metadata['Bill To'] = toName;
     }
     if (newBalance != null && newBalance > 0) {
       metadata['New Balance'] = '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(newBalance)}';
@@ -56,12 +67,22 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
       title: isPartial ? 'Partial Invoice Payment' : 'Invoice Payment',
       amount: amount,
       currency: currency,
-      createdAt: DateTime.now(),
+      // Use the real server-side paid_at when present, not the device clock.
+      createdAt: _parsePaidAt(transaction['paid_at']) ?? DateTime.now(),
       status: UnifiedTransactionStatus.completed,
       flow: TransactionFlow.outgoing,
       transactionReference: transactionId.isNotEmpty ? transactionId : null,
       metadata: metadata.isNotEmpty ? metadata : null,
     );
+  }
+
+  /// Parses the backend paid_at ("2006-01-02 15:04:05", UTC) into a DateTime.
+  DateTime? _parsePaidAt(Object? raw) {
+    final s = raw?.toString().trim() ?? '';
+    if (s.isEmpty) return null;
+    // Try ISO first, then the backend's space-separated UTC format.
+    return DateTime.tryParse(s) ??
+        DateTime.tryParse('${s.replaceFirst(' ', 'T')}Z')?.toLocal();
   }
 
   String _currencySymbol(String currency) {

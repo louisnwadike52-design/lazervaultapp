@@ -39,8 +39,28 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
   String? _selectedAccountId;
   bool _isProcessing = false;
 
-  double get _processingFee => widget.invoice.amount * 0.005; // 0.5% fee
-  double get _totalAmount => widget.invoice.amount + _processingFee;
+  bool get _isSplit =>
+      (widget.invoice.invoice?.taggedUsers?.length ?? 0) > 1;
+
+  /// The amount THIS payer owes: their equal share for a split invoice, else
+  /// the full invoice amount. The backend charges the same share.
+  double get _baseAmount {
+    final tagged = widget.invoice.invoice?.taggedUsers;
+    if (tagged == null || tagged.length <= 1) return widget.invoice.amount;
+    String? uid;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) uid = authState.profile.userId;
+    if (uid == null) return widget.invoice.amount;
+    for (final t in tagged) {
+      if (t.userId == uid) {
+        return t.shareAmount > 0 ? t.shareAmount : widget.invoice.amount;
+      }
+    }
+    return widget.invoice.amount;
+  }
+
+  double get _processingFee => _baseAmount * 0.005; // 0.5% fee
+  double get _totalAmount => _baseAmount + _processingFee;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +77,15 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
           Get.back(); // Close dialog
           Get.toNamed(
             AppRoutes.invoicePaymentReceipt,
-            arguments: {...state.transaction, 'fromPaymentFlow': true},
+            arguments: {
+              ...state.transaction,
+              // Receipt shows the share actually paid (and the full total for a
+              // split invoice), not the backend's full-total amount field.
+              'amount': _baseAmount,
+              if (_isSplit) 'is_partial': true,
+              if (_isSplit) 'total_amount': widget.invoice.amount,
+              'fromPaymentFlow': true,
+            },
           );
         } else if (state is TaggedInvoiceError) {
           setState(() => _isProcessing = false);
@@ -395,7 +423,10 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
             ),
           ),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Invoice Amount', widget.invoice.formattedAmount),
+          _buildSummaryRow(
+            _isSplit ? 'Your Share' : 'Invoice Amount',
+            '${widget.invoice.currency} ${_baseAmount.toStringAsFixed(2)}',
+          ),
           SizedBox(height: 8.h),
           _buildSummaryRow(
             'Processing Fee (0.5%)',

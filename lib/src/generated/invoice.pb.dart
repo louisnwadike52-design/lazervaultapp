@@ -749,6 +749,8 @@ class TaggedUser extends $pb.GeneratedMessage {
     $core.String? taggedAt,
     $core.String? viewedAt,
     $core.String? paidAt,
+    $core.double? shareAmount,
+    $core.double? amountPaid,
   }) {
     final result = create();
     if (userId != null) result.userId = userId;
@@ -760,6 +762,8 @@ class TaggedUser extends $pb.GeneratedMessage {
     if (taggedAt != null) result.taggedAt = taggedAt;
     if (viewedAt != null) result.viewedAt = viewedAt;
     if (paidAt != null) result.paidAt = paidAt;
+    if (shareAmount != null) result.shareAmount = shareAmount;
+    if (amountPaid != null) result.amountPaid = amountPaid;
     return result;
   }
 
@@ -785,6 +789,10 @@ class TaggedUser extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'taggedAt')
     ..aOS(8, _omitFieldNames ? '' : 'viewedAt')
     ..aOS(9, _omitFieldNames ? '' : 'paidAt')
+    ..a<$core.double>(
+        10, _omitFieldNames ? '' : 'shareAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        11, _omitFieldNames ? '' : 'amountPaid', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -886,6 +894,24 @@ class TaggedUser extends $pb.GeneratedMessage {
   $core.bool hasPaidAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearPaidAt() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get shareAmount => $_getN(9);
+  @$pb.TagNumber(10)
+  set shareAmount($core.double value) => $_setDouble(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasShareAmount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearShareAmount() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.double get amountPaid => $_getN(10);
+  @$pb.TagNumber(11)
+  set amountPaid($core.double value) => $_setDouble(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasAmountPaid() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearAmountPaid() => $_clearField(11);
 }
 
 /// Invoice statistics

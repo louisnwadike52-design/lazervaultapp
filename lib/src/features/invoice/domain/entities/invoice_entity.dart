@@ -441,6 +441,8 @@ class TaggedUserInfo extends Equatable {
   final DateTime? taggedAt;
   final DateTime? viewedAt;
   final DateTime? paidAt;
+  final double shareAmount; // this user's equal share of the invoice total
+  final double amountPaid; // what this user has actually paid
 
   const TaggedUserInfo({
     required this.userId,
@@ -454,6 +456,8 @@ class TaggedUserInfo extends Equatable {
     this.taggedAt,
     this.viewedAt,
     this.paidAt,
+    this.shareAmount = 0,
+    this.amountPaid = 0,
   });
 
   bool get isPlatformUser => tagType == 'platform';
@@ -476,7 +480,7 @@ class TaggedUserInfo extends Equatable {
   }
 
   @override
-  List<Object?> get props => [userId, username, firstName, lastName, profilePicture, status, tagType, tagValue, taggedAt, viewedAt, paidAt];
+  List<Object?> get props => [userId, username, firstName, lastName, profilePicture, status, tagType, tagValue, taggedAt, viewedAt, paidAt, shareAmount, amountPaid];
 }
 
 class InvoiceItem extends Equatable {

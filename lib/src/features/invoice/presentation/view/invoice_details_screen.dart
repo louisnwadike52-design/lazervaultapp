@@ -1611,8 +1611,13 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     // Get.to(() => CreateInvoiceScreen(editingInvoice: invoice));
   }
 
-  void _payInvoice(Invoice invoice) {
-    Get.toNamed(AppRoutes.invoiceItemPayment, arguments: invoice);
+  Future<void> _payInvoice(Invoice invoice) async {
+    // Await the payment/receipt flow, then re-fetch so the details view drops
+    // the Pay button and reflects the paid status (payment runs on a different
+    // cubit, so the screen wouldn't otherwise refresh on return).
+    await Get.toNamed(AppRoutes.invoiceItemPayment, arguments: invoice);
+    if (!mounted) return;
+    context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId);
   }
 
   void _sendReminder(Invoice invoice) {
