@@ -1245,6 +1245,7 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     InvoiceParty? receiver,
     $core.String? invoiceType,
     $core.String? title,
+    $core.Iterable<TaggedShare>? taggedShares,
   }) {
     final result = create();
     if (accountId != null) result.accountId = accountId;
@@ -1268,6 +1269,7 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     if (receiver != null) result.receiver = receiver;
     if (invoiceType != null) result.invoiceType = invoiceType;
     if (title != null) result.title = title;
+    if (taggedShares != null) result.taggedShares.addAll(taggedShares);
     return result;
   }
 
@@ -1308,6 +1310,9 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
         subBuilder: InvoiceParty.create)
     ..aOS(20, _omitFieldNames ? '' : 'invoiceType')
     ..aOS(21, _omitFieldNames ? '' : 'title')
+    ..pc<TaggedShare>(
+        22, _omitFieldNames ? '' : 'taggedShares', $pb.PbFieldType.PM,
+        subBuilder: TaggedShare.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1514,6 +1519,79 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   $core.bool hasTitle() => $_has(20);
   @$pb.TagNumber(21)
   void clearTitle() => $_clearField(21);
+
+  /// Optional CUSTOM split: per-tagged-user amounts. Unspecified tagged users
+  /// split the remaining total equally; omit entirely for a full equal split.
+  @$pb.TagNumber(22)
+  $pb.PbList<TaggedShare> get taggedShares => $_getList(21);
+}
+
+/// TaggedShare assigns a specific amount of the invoice total to one tagged user.
+class TaggedShare extends $pb.GeneratedMessage {
+  factory TaggedShare({
+    $core.String? userId,
+    $core.double? amount,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (amount != null) result.amount = amount;
+    return result;
+  }
+
+  TaggedShare._();
+
+  factory TaggedShare.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TaggedShare.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TaggedShare',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TaggedShare clone() => TaggedShare()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TaggedShare copyWith(void Function(TaggedShare) updates) =>
+      super.copyWith((message) => updates(message as TaggedShare))
+          as TaggedShare;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TaggedShare create() => TaggedShare._();
+  @$core.override
+  TaggedShare createEmptyInstance() => create();
+  static $pb.PbList<TaggedShare> createRepeated() => $pb.PbList<TaggedShare>();
+  @$core.pragma('dart2js:noInline')
+  static TaggedShare getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TaggedShare>(create);
+  static TaggedShare? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double value) => $_setDouble(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => $_clearField(2);
 }
 
 class CreateInvoiceResponse extends $pb.GeneratedMessage {

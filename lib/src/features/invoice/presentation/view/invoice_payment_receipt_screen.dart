@@ -31,7 +31,11 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
         : localeManager.currentCurrency;
     final newBalance = (transaction['new_balance'] as num?)?.toDouble();
     final message = transaction['message'] as String?;
-    final isPartial = transaction['is_partial'] == true;
+    // A split invoice payment covers the payer's SHARE of the total. settledFull
+    // is true when THIS payment completed the invoice (the last payer).
+    final isSplit =
+        transaction['is_split'] == true || transaction['is_partial'] == true;
+    final settledFull = transaction['settled_full'] == true;
     final totalAmount = (transaction['total_amount'] as num?)?.toDouble();
     final invoiceNumber = transaction['invoice_number']?.toString();
     final fromName = transaction['from_name']?.toString();
@@ -39,9 +43,13 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
 
     final metadata = <String, dynamic>{};
 
-    if (isPartial && totalAmount != null) {
-      metadata['Payment Type'] = 'Partial Invoice Payment';
-      metadata['Total Invoice'] = '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(totalAmount)}';
+    if (isSplit && totalAmount != null) {
+      metadata['Your Share'] =
+          '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(amount)}';
+      metadata['Total Invoice'] =
+          '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(totalAmount)}';
+      metadata['Status'] =
+          settledFull ? 'Invoice fully paid' : 'Awaiting other recipients';
     }
     if (invoiceNumber != null && invoiceNumber.isNotEmpty) {
       metadata['Invoice No.'] = invoiceNumber;
@@ -64,7 +72,9 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     return UnifiedTransaction(
       id: transactionId,
       serviceType: TransactionServiceType.invoice,
-      title: isPartial ? 'Partial Invoice Payment' : 'Invoice Payment',
+      // Always "Invoice Payment" — a split share that completes the invoice is
+      // not a "partial" payment; the Status metadata conveys settled vs awaiting.
+      title: 'Invoice Payment',
       amount: amount,
       currency: currency,
       // Use the real server-side paid_at when present, not the device clock.

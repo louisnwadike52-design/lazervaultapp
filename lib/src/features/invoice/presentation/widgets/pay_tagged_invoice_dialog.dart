@@ -82,8 +82,10 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
               // Receipt shows the share actually paid (and the full total for a
               // split invoice), not the backend's full-total amount field.
               'amount': _baseAmount,
-              if (_isSplit) 'is_partial': true,
+              if (_isSplit) 'is_split': true,
               if (_isSplit) 'total_amount': widget.invoice.amount,
+              'settled_full':
+                  (state.transaction['status']?.toString() ?? '') == 'paid',
               'fromPaymentFlow': true,
             },
           );

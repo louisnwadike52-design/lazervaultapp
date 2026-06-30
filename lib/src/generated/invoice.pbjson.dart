@@ -330,6 +330,14 @@ const CreateInvoiceRequest$json = {
     },
     {'1': 'invoice_type', '3': 20, '4': 1, '5': 9, '10': 'invoiceType'},
     {'1': 'title', '3': 21, '4': 1, '5': 9, '10': 'title'},
+    {
+      '1': 'tagged_shares',
+      '3': 22,
+      '4': 3,
+      '5': 11,
+      '6': '.invoice.TaggedShare',
+      '10': 'taggedShares'
+    },
   ],
 };
 
@@ -348,7 +356,22 @@ final $typed_data.Uint8List createInvoiceRequestDescriptor = $convert.base64Deco
     'bBImCg9zZXJ2aWNlX2ZlZV9yZWYYESABKAlSDXNlcnZpY2VGZWVSZWYSLQoGc2VuZGVyGBIgAS'
     'gLMhUuaW52b2ljZS5JbnZvaWNlUGFydHlSBnNlbmRlchIxCghyZWNlaXZlchgTIAEoCzIVLmlu'
     'dm9pY2UuSW52b2ljZVBhcnR5UghyZWNlaXZlchIhCgxpbnZvaWNlX3R5cGUYFCABKAlSC2ludm'
-    '9pY2VUeXBlEhQKBXRpdGxlGBUgASgJUgV0aXRsZQ==');
+    '9pY2VUeXBlEhQKBXRpdGxlGBUgASgJUgV0aXRsZRI5Cg10YWdnZWRfc2hhcmVzGBYgAygLMhQu'
+    'aW52b2ljZS5UYWdnZWRTaGFyZVIMdGFnZ2VkU2hhcmVz');
+
+@$core.Deprecated('Use taggedShareDescriptor instead')
+const TaggedShare$json = {
+  '1': 'TaggedShare',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `TaggedShare`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List taggedShareDescriptor = $convert.base64Decode(
+    'CgtUYWdnZWRTaGFyZRIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSFgoGYW1vdW50GAIgASgBUg'
+    'ZhbW91bnQ=');
 
 @$core.Deprecated('Use createInvoiceResponseDescriptor instead')
 const CreateInvoiceResponse$json = {

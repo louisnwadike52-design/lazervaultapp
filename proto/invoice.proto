@@ -271,6 +271,15 @@ message CreateInvoiceRequest {
   InvoiceParty receiver = 19;
   string invoice_type = 20;             // "invoice" | "request" | "quote"
   string title = 21;                    // Distinct invoice title
+  // Optional CUSTOM split: per-tagged-user amounts. Unspecified tagged users
+  // split the remaining total equally; omit entirely for a full equal split.
+  repeated TaggedShare tagged_shares = 22;
+}
+
+// TaggedShare assigns a specific amount of the invoice total to one tagged user.
+message TaggedShare {
+  string user_id = 1;
+  double amount = 2;
 }
 
 message CreateInvoiceResponse {

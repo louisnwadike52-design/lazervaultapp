@@ -157,8 +157,12 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               // The receipt shows the SHARE actually paid (and total for split
               // invoices), not the backend's full-total amount field.
               'amount': _baseAmount,
-              if (_isSplit) 'is_partial': true,
+              if (_isSplit) 'is_split': true,
               if (_isSplit) 'total_amount': widget.invoice.totalAmount,
+              // Whether THIS payment settled the invoice in full — drives the
+              // receipt's status line (last payer sees "fully paid", not "partial").
+              'settled_full':
+                  (state.transaction['status']?.toString() ?? '') == 'paid',
               'fromPaymentFlow': true,
             },
           );
