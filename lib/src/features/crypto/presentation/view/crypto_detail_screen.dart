@@ -12,7 +12,7 @@ import '../../domain/entities/price_point.dart';
 import '../../domain/entities/crypto_entity.dart' show CryptoHolding;
 import '../widgets/asset_wallet_sheet.dart';
 import 'buy_crypto_screen.dart';
-import 'sell_crypto_screen.dart';
+import 'sell_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -2126,7 +2126,11 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   void _navigateToSellScreen() {
-    // Look up user's holding for this crypto
+    // The asset is already chosen on this detail page — never bounce the user
+    // back to a "pick a crypto" step. Open the streamlined sell bottom sheet
+    // pre-locked to this crypto (amount → live quote → PIN → outcome). The
+    // holding lookup is best-effort here; the sheet re-resolves + live-refreshes
+    // the balance itself, so a not-yet-loaded cubit doesn't strand the flow.
     final cubitState = context.read<CryptoCubit>().state;
     CryptoHolding? holding;
     if (cubitState is CryptosLoaded) {
@@ -2136,15 +2140,11 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         orElse: () => null,
       );
     }
-    Get.to(
-      () => BlocProvider(
-        create: (context) => serviceLocator<CryptoCubit>(),
-        child: SellCryptoScreen(
-          selectedHolding: holding,
-          lockHolding: holding != null,
-        ),
-      ),
-      transition: Transition.rightToLeft,
+    showSellCryptoSheet(
+      context,
+      crypto: widget.crypto,
+      holding: holding,
+      cubit: context.read<CryptoCubit>(),
     );
   }
 } 

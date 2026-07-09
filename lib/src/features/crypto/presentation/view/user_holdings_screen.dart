@@ -7,8 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
-import '../../../../../core/services/injection_container.dart';
-import 'crypto_detail_screen.dart';
+import 'sell_crypto_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Shows the user's crypto holdings filtered to Quidax-supported assets.
@@ -251,12 +250,8 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
 
     return GestureDetector(
       onTap: () {
-        final crypto = _resolveCrypto(holding, state);
-        if (crypto == null) return;
         if (!hasBalance) {
-          // Zero balance — disable Sell entry but still let the user
-          // open the asset detail so they can Buy or view the receive
-          // address.
+          // Zero balance — Sell stays locked until they hold something.
           Get.snackbar(
             'No ${holding.cryptoSymbol.toUpperCase()} balance',
             'Buy or receive ${holding.cryptoSymbol.toUpperCase()} first; the Sell action unlocks once you have a balance.',
@@ -267,15 +262,17 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
           );
           return;
         }
-        Get.to(
-          () => BlocProvider(
-            create: (_) => serviceLocator<CryptoCubit>(),
-            child: CryptoDetailScreen(
-              crypto: crypto,
-              entryMode: CryptoDetailEntryMode.sellOnly,
-            ),
-          ),
-          transition: Transition.rightToLeft,
+        // Streamlined: go straight to the pre-selected Sell sheet (amount →
+        // live quote → PIN → outcome). The crypto is resolved from the loaded
+        // market list, falling back to a minimal entry synthesized from the
+        // holding so a not-yet-loaded list never strands the tap.
+        final crypto =
+            _resolveCrypto(holding, state) ?? Crypto.fromHolding(holding);
+        showSellCryptoSheet(
+          context,
+          crypto: crypto,
+          holding: holding,
+          cubit: context.read<CryptoCubit>(),
         );
       },
       child: Opacity(

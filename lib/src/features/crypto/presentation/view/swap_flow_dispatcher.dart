@@ -89,18 +89,22 @@ Future<SwapFlowResult> runSwapFlow({
     fiatCurrency = fiatCurrency.toLowerCase();
   }
 
-  // Min-order pre-check (PR5a.4 + PR5d.4). Read the per-currency floor from
-  // CryptoConfigCubit which mirrors `crypto.min_order.*` system_settings —
-  // no hardcoded 1000 NGN / 0.9 USDT here. The server enforces the same
-  // floor again as the security boundary. Best-effort load to warm the
-  // cache before reading; it's idempotent under a 5-min TTL.
+  // Min-order pre-check applies to the FROM leg only — matching the backend
+  // (enforceMinOrder floors FromCurrency). For a BUY the from-leg is fiat, so
+  // the NGN/USDT floor applies as a fast client pre-flight. For a SELL/CONVERT
+  // the from-leg is crypto, which has NO app floor: the fiat *proceeds* must NOT
+  // be gated by the buy floor — Quidax is the single source of truth for the
+  // sell minimum and rejects a sub-minimum swap downstream. So only pre-check
+  // buys here.
   try {
     await GetIt.I<CryptoConfigCubit>().load();
   } catch (_) {}
   final cryptoConfig = _readCryptoConfig(context);
-  final minOrderError = _checkMinOrder(cryptoConfig, fiatCurrency, fiatAmount);
-  if (minOrderError != null) {
-    return SwapFlowResult.error(minOrderError);
+  if (side == 'buy') {
+    final minOrderError = _checkMinOrder(cryptoConfig, fiatCurrency, fiatAmount);
+    if (minOrderError != null) {
+      return SwapFlowResult.error(minOrderError);
+    }
   }
 
   // Step 1 — resolve the user's primary fiat account id.

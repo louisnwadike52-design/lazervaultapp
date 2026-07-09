@@ -462,7 +462,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       serviceType = _mapServiceNameToServiceType(protoTx.serviceName);
     } else {
       // Infer service type from category when service_name is missing
-      serviceType = _inferServiceTypeFromCategory(protoTx.category, protoTx.type);
+      serviceType = _inferServiceTypeFromCategory(
+          protoTx.category, protoTx.type, protoTx.description, protoTx.reference);
     }
 
     // Map status
@@ -480,11 +481,24 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       metadata['balance_after'] = protoTx.balanceAfter;
     }
 
-    // Extract counterparty info: prefer proto fields, fallback to metadata
+    // Counterparty name — DIRECTION-AWARE. For an OUTGOING (debit) transfer the
+    // counterparty to display is the RECEIVER; for an INCOMING (credit) transfer
+    // it's the SENDER. Prefer the backend's per-perspective `counterparty_name`,
+    // then fall back to the metadata key for the RIGHT side of THIS direction.
+    // (The old code always read `recipient_name` and — paired with the
+    // narration fallback below — surfaced the SENDER's name on outgoing rows,
+    // e.g. "Sent to <me>" instead of "Sent to <receiver>".)
+    final isIncoming = flow == TransactionFlow.incoming;
     String? counterpartyName = protoTx.counterpartyName.isNotEmpty
         ? protoTx.counterpartyName
-        : (metadata['recipient_name'] as String?
-            ?? metadata['counterparty_name'] as String?);
+        : (isIncoming
+            ? (metadata['sender_name'] as String?
+                ?? metadata['payer_name'] as String?
+                ?? metadata['counterparty_name'] as String?)
+            : (metadata['recipient_name'] as String?
+                ?? metadata['beneficiary_name'] as String?
+                ?? metadata['destination_name'] as String?
+                ?? metadata['counterparty_name'] as String?));
     String? counterpartyAccount = protoTx.counterpartyAccount.isNotEmpty
         ? protoTx.counterpartyAccount
         : (metadata['recipient_account'] as String?
@@ -514,10 +528,16 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     if ((counterpartyName == null || counterpartyName.isEmpty)
         && protoTx.description.isNotEmpty) {
       final desc = protoTx.description.trim();
+      final lower = desc.toLowerCase();
       String? recovered;
-      if (desc.toLowerCase().startsWith('transfer from ')) {
+      // DIRECTION-AWARE: only strip the prefix that names the COUNTERPARTY for
+      // this row's direction. On an OUTGOING (debit) row we want "Transfer to
+      // {receiver}" — NOT "Transfer from {sender}" (that's us). On an INCOMING
+      // (credit) row we want "Transfer from {sender}". Stripping the opposite
+      // prefix was the bug that showed the sender's name on sent transactions.
+      if (isIncoming && lower.startsWith('transfer from ')) {
         recovered = desc.substring('transfer from '.length).trim();
-      } else if (desc.toLowerCase().startsWith('transfer to ')) {
+      } else if (!isIncoming && lower.startsWith('transfer to ')) {
         recovered = desc.substring('transfer to '.length).trim();
       }
       if (recovered != null
@@ -540,7 +560,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     }
 
     // Generate title, enriched with counterparty name for transfers
-    String title = _generateTransactionTitle(protoTx.category, protoTx.type);
+    String title = _generateTransactionTitle(
+        protoTx.category, protoTx.type, protoTx.description, protoTx.reference);
     if (counterpartyName != null && counterpartyName.isNotEmpty) {
       final categoryLower = protoTx.category.toLowerCase();
       final typeLower = protoTx.type.toLowerCase();
@@ -568,10 +589,40 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     );
   }
 
+  /// Detects the true domain of a transaction whose accounts-service `category`
+  /// is the GENERIC shared bucket `hold_capture` — which giftcards, crypto,
+  /// insurance, etc. all use. The domain lives in the description/reference
+  /// (crypto → "crypto swap"/"CRYPTO-", giftcard → "gift"/"GC-",
+  /// insurance → "INS-"/"insurance"). Returns 'crypto' | 'giftcard' |
+  /// 'insurance' | ''.
+  String _domainFromText(String category, String description, String reference) {
+    final s = '$category $description $reference'.toLowerCase();
+    if (s.contains('crypto') || s.contains('crypto-')) return 'crypto';
+    if (s.contains('gift') || RegExp(r'\bgc-').hasMatch(s)) return 'giftcard';
+    if (s.contains('insurance') || RegExp(r'\bins-').hasMatch(s)) return 'insurance';
+    return '';
+  }
+
   /// Generate a user-friendly transaction title
-  String _generateTransactionTitle(String category, String type) {
+  String _generateTransactionTitle(
+      String category, String type, String description, String reference) {
     final categoryLower = category.toLowerCase();
     final typeLower = type.toLowerCase();
+
+    // Crypto first — a crypto buy captures a hold (category 'hold_capture',
+    // shared with giftcards/insurance) so it MUST be classified by content
+    // before the generic hold_capture→giftcard rule below, or every crypto buy
+    // reads as "Gift Card Purchase". Wallet history only ever shows the fiat
+    // legs: a debit is a BUY, a credit is a SELL (swap/send never touch the
+    // fiat wallet).
+    if (categoryLower.contains('crypto') ||
+        _domainFromText(category, description, reference) == 'crypto') {
+      return typeLower == 'credit' ? 'Crypto sell' : 'Crypto buy';
+    }
+    if (categoryLower.contains('insurance') ||
+        _domainFromText(category, description, reference) == 'insurance') {
+      return 'Insurance Payment';
+    }
 
     if (categoryLower.contains('airtime')) {
       return typeLower == 'credit' ? 'Airtime Top-up' : 'Airtime Purchase';
@@ -628,8 +679,18 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   }
 
   /// Infer service type from category when service_name is empty
-  TransactionServiceType _inferServiceTypeFromCategory(String category, String type) {
+  TransactionServiceType _inferServiceTypeFromCategory(
+      String category, String type, String description, String reference) {
     final cat = category.toLowerCase();
+    // Disambiguate the shared 'hold_capture' bucket by content FIRST, so a
+    // crypto buy / insurance premium hold isn't misclassified as a giftcard.
+    final domain = _domainFromText(category, description, reference);
+    if (cat.contains('crypto') || domain == 'crypto') {
+      return TransactionServiceType.crypto;
+    }
+    if (cat.contains('insurance') || domain == 'insurance') {
+      return TransactionServiceType.insurance;
+    }
     if (cat.contains('gift_card') || cat.contains('hold_capture') || cat.contains('giftcard')) {
       return TransactionServiceType.giftCard;
     } else if (cat.contains('transfer')) {

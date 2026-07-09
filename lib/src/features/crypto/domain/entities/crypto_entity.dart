@@ -68,6 +68,28 @@ class Crypto extends Equatable {
     this.isFavorite = false,
   });
 
+  /// Build a minimal [Crypto] from a user's [CryptoHolding]. Used when the
+  /// full market entry isn't loaded (e.g. opening the Sell flow straight from
+  /// the Your-Holdings picker) so the flow is never stranded by a null lookup.
+  /// Only the identity + price fields the Sell surfaces read (id, symbol, name,
+  /// currentPrice) are meaningful; the rest default to zero/empty.
+  factory Crypto.fromHolding(CryptoHolding h) => Crypto(
+        id: h.cryptoId,
+        symbol: h.cryptoSymbol,
+        name: h.cryptoName.isNotEmpty ? h.cryptoName : h.cryptoSymbol.toUpperCase(),
+        image: '',
+        currentPrice: h.currentPrice,
+        marketCap: 0,
+        marketCapRank: 0,
+        totalVolume: 0,
+        high24h: 0,
+        low24h: 0,
+        priceChange24h: 0,
+        priceChangePercentage24h: 0,
+        circulatingSupply: 0,
+        lastUpdated: h.lastUpdated,
+      );
+
   @override
   List<Object?> get props => [
         id,
