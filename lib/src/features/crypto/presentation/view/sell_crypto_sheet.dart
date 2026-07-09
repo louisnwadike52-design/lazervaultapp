@@ -524,6 +524,9 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     final netProceeds = _fiatAmount - fee;
     final quantity = _cryptoAmount;
     final intentId = 'CRYPTO-SELL-${DateTime.now().millisecondsSinceEpoch}';
+    // Capture the running cubit before the sheet closes — after
+    // onBeforeProcessing dismisses this sheet, `context` is defunct.
+    final cubit = context.read<CryptoCubit>();
 
     setState(() => _isTransacting = true);
 
@@ -540,6 +543,14 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
       description:
           'Sell ${quantity.toStringAsFixed(6)} ${h.cryptoSymbol.toUpperCase()}',
       clientIntentId: intentId,
+      // Dismiss this bottom sheet the instant the trade confirms, so the
+      // processing→receipt screens render on a clean stack (Get.off can't
+      // replace a route sitting under an open modal → receipt never shows).
+      onBeforeProcessing: () {
+        if (mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      },
       requestPin: () async {
         String? token;
         await validateTransactionPin(
@@ -562,15 +573,13 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
       },
     );
 
-    if (!mounted) return;
-    setState(() => _isTransacting = false);
+    // On success the sheet was already dismissed by onBeforeProcessing (so the
+    // receipt could show); only the pre-confirm error path leaves it open.
+    cubit.refreshHoldingsLive();
     if (!result.initiated && (result.message ?? '').isNotEmpty) {
       Get.snackbar('Trade failed', result.message!,
           snackPosition: SnackPosition.BOTTOM);
-    } else if (result.initiated) {
-      // Refresh holdings so the reduced balance reflects, then close the sheet.
-      context.read<CryptoCubit>().refreshHoldingsLive();
-      Get.back();
+      if (mounted) setState(() => _isTransacting = false);
     }
   }
 }

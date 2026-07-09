@@ -73,6 +73,13 @@ Future<SwapFlowResult> runSwapFlow({
   // is minted here, right before ConfirmSwap, so it can't expire during the
   // quote countdown.
   Future<String?> Function()? requestPin,
+  // Called AFTER the trade confirms and the running cubit is captured, but
+  // BEFORE navigating to the processing/receipt screen. Callers launched from a
+  // modal (e.g. the sell bottom sheet) use this to dismiss their sheet so the
+  // processing→receipt screens land on a clean navigation stack — otherwise
+  // Get.off can't replace a route sitting under an open modal and the receipt
+  // never shows.
+  void Function()? onBeforeProcessing,
 }) async {
   if (side != 'buy' && side != 'sell' && side != 'convert') {
     return const SwapFlowResult.error('Invalid side');
@@ -264,6 +271,9 @@ Future<SwapFlowResult> runSwapFlow({
   // Provider<CryptoCubit>" the moment the trade confirms. Re-inject the SAME
   // running cubit instance via BlocProvider.value.
   final cryptoCubit = context.read<CryptoCubit>();
+  // Dismiss the caller's modal (sell bottom sheet) now that the cubit is
+  // captured — the processing/receipt screens must not push over an open modal.
+  onBeforeProcessing?.call();
   await Get.to(() => BlocProvider<CryptoCubit>.value(
         value: cryptoCubit,
         child: CryptoSwapProcessingScreen(
