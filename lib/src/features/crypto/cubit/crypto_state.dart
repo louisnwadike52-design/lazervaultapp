@@ -259,6 +259,12 @@ class SwapPending extends CryptoState {
   final String fromAmount;
   final String toAmount;
 
+  /// True when the backend ran the trade ASYNC (ConfirmSwap returned
+  /// status=processing: it queued the saga to crypto.swap.requested and
+  /// returned immediately). The flow uses this to go STRAIGHT to a live
+  /// pending receipt instead of blocking on the processing screen.
+  final bool isAsync;
+
   const SwapPending({
     required this.transactionId,
     required this.quidaxSwapId,
@@ -266,10 +272,11 @@ class SwapPending extends CryptoState {
     required this.toCurrency,
     required this.fromAmount,
     required this.toAmount,
+    this.isAsync = false,
   });
 
   @override
-  List<Object?> get props => [transactionId, quidaxSwapId];
+  List<Object?> get props => [transactionId, quidaxSwapId, isAsync];
 }
 
 /// SwapCompleted is the terminal-success state — receipt screen renders this.

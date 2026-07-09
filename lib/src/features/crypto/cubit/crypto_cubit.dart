@@ -839,6 +839,9 @@ class CryptoCubit extends Cubit<CryptoState> {
           toCurrency: current.toCurrency,
           fromAmount: current.fromAmount,
           toAmount: current.toAmount,
+          // status=processing => backend queued the saga (async mode); the flow
+          // shows a live pending receipt instead of blocking on processing.
+          isAsync: receipt.status == 'processing',
         ));
       }
     } catch (e) {

@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
 
 /// CryptoReceiptScreen renders a crypto buy / sell / swap receipt using the
@@ -17,7 +22,7 @@ import '../models/crypto_transaction_models.dart';
 ///
 /// The public surface is unchanged — every call site still constructs a
 /// [CryptoTransactionReceipt] and pushes `CryptoReceiptScreen(receipt: …)`.
-class CryptoReceiptScreen extends StatelessWidget {
+class CryptoReceiptScreen extends StatefulWidget {
   final CryptoTransactionReceipt receipt;
 
   /// When true the back button returns to the previous screen (history);
@@ -31,10 +36,89 @@ class CryptoReceiptScreen extends StatelessWidget {
   });
 
   @override
+  State<CryptoReceiptScreen> createState() => _CryptoReceiptScreenState();
+}
+
+class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
+  late CryptoTransactionReceipt _receipt;
+  Timer? _pollTimer;
+  Timer? _stopTimer;
+  bool _terminal = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _receipt = widget.receipt;
+    _terminal = _isTerminal(_receipt.status);
+    // Live receipt: async trades land here in a pending/processing state. Poll
+    // the swap status until it resolves, then flip the badge to completed/failed
+    // AND refresh the wallet/holdings so both the receipt and the balance
+    // reflect the finished trade — without the user leaving this screen. Skip
+    // when opened from history (already terminal) or already terminal.
+    if (!widget.fromHistory && !_terminal) {
+      Future<void>.microtask(_pollOnce);
+      _pollTimer =
+          Timer.periodic(const Duration(seconds: 4), (_) => _pollOnce());
+      // Stop polling after a bounded window; background reconcilers still
+      // settle it and a history refresh will show the terminal state.
+      _stopTimer = Timer(const Duration(minutes: 5), () => _pollTimer?.cancel());
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _stopTimer?.cancel();
+    super.dispose();
+  }
+
+  bool _isTerminal(CryptoTransactionStatus s) =>
+      s == CryptoTransactionStatus.completed ||
+      s == CryptoTransactionStatus.failed ||
+      s == CryptoTransactionStatus.refunded;
+
+  Future<void> _pollOnce() async {
+    if (_terminal || !mounted) return;
+    CryptoCubit cubit;
+    try {
+      cubit = context.read<CryptoCubit>();
+    } catch (_) {
+      return; // no cubit in scope (e.g. deep-linked receipt) — nothing to poll
+    }
+    try {
+      await cubit.pollSwapStatus();
+    } catch (_) {}
+    if (!mounted) return;
+    final st = cubit.state;
+    if (st is SwapCompleted && st.transactionId == _receipt.transactionId) {
+      _applyTerminal(CryptoTransactionStatus.completed);
+      // Reflect the settled trade on the wallet + holdings.
+      unawaited(cubit.refreshHoldingsAfterSwap());
+    } else if (st is SwapFailed && st.transactionId == _receipt.transactionId) {
+      _applyTerminal(CryptoTransactionStatus.failed);
+    }
+  }
+
+  void _applyTerminal(CryptoTransactionStatus status) {
+    if (!mounted) return;
+    _terminal = true;
+    _pollTimer?.cancel();
+    _stopTimer?.cancel();
+    setState(() {
+      _receipt = CryptoTransactionReceipt(
+        transactionId: _receipt.transactionId,
+        transactionDetails: _receipt.transactionDetails,
+        timestamp: _receipt.timestamp,
+        status: status,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return UnifiedTransactionReceipt(
-      transaction: _toUnifiedTransaction(receipt),
-      fromHistory: fromHistory,
+      transaction: _toUnifiedTransaction(_receipt),
+      fromHistory: widget.fromHistory,
     );
   }
 

@@ -18,6 +18,7 @@ import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
 import '../widgets/quote_timer_card.dart';
 import 'crypto_swap_processing_screen.dart';
+import 'crypto_receipt_screen.dart';
 
 // ============================================================================
 // runSwapFlow — entry point used by buy_crypto_screen and sell_crypto_screen
@@ -252,7 +253,6 @@ Future<SwapFlowResult> runSwapFlow({
   final details = _buildReceiptDetails(side, fromCurrency, toCurrency,
       fromAmountMinor, cryptoSymbol, fromCryptoSymbol, cubit.state);
 
-  final initialStatus = (terminal is SwapCompleted) ? 'completed' : 'submitting';
   final transactionId = (terminal is SwapCompleted)
       ? terminal.transactionId
       : (terminal is SwapPending ? terminal.transactionId : '');
@@ -260,26 +260,44 @@ Future<SwapFlowResult> runSwapFlow({
       ? terminal.quidaxSwapId
       : (terminal is SwapPending ? terminal.quidaxSwapId : '');
 
-  // Navigate to processing screen. It polls cubit.pollSwapStatus every 3s
-  // and replaces itself with the crypto_receipt_screen on terminal state.
-  // Use Get.to (not offNamed) so the user can back-navigate to the buy
-  // screen if they want to make another trade after seeing the receipt.
-  //
-  // Get.to pushes a route OUTSIDE the crypto screen's widget subtree, so the
-  // CryptoCubit the processing screen reads (BlocListener + pollSwapStatus) is
-  // not in scope there — without this it throws "Could not find the correct
-  // Provider<CryptoCubit>" the moment the trade confirms. Re-inject the SAME
-  // running cubit instance via BlocProvider.value.
+  // Re-inject the SAME running cubit into the pushed route (Get.to pushes
+  // OUTSIDE the crypto screen's subtree, so the CryptoCubit the receipt/
+  // processing screen reads via BlocProvider isn't otherwise in scope).
   final cryptoCubit = context.read<CryptoCubit>();
   // Dismiss the caller's modal (sell bottom sheet) now that the cubit is
-  // captured — the processing/receipt screens must not push over an open modal.
+  // captured — the receipt/processing screen must not push over an open modal.
   onBeforeProcessing?.call();
+
+  // ASYNC (the default) or an already-completed trade: skip the blocking
+  // processing screen and go STRAIGHT to a LIVE receipt. It shows a pending
+  // badge and polls ITSELF to completed — refreshing the wallet/holdings — when
+  // settlement lands, so the user never waits on a spinner. Only a SYNC pending
+  // trade (admin toggled sync off) keeps the wait-on-processing screen.
+  final isAsyncPending = terminal is SwapPending && terminal.isAsync;
+  if (terminal is SwapCompleted || isAsyncPending) {
+    final receipt = CryptoTransactionReceipt(
+      transactionId: transactionId,
+      transactionDetails: details,
+      timestamp: DateTime.now(),
+      status: terminal is SwapCompleted
+          ? CryptoTransactionStatus.completed
+          : CryptoTransactionStatus.pending,
+    );
+    await Get.to(() => BlocProvider<CryptoCubit>.value(
+          value: cryptoCubit,
+          child: CryptoReceiptScreen(receipt: receipt),
+        ));
+    return const SwapFlowResult.initiated();
+  }
+
+  // SYNC pending: keep the processing screen. It polls and replaces itself with
+  // the receipt on terminal (or after its safety timeout).
   await Get.to(() => BlocProvider<CryptoCubit>.value(
         value: cryptoCubit,
         child: CryptoSwapProcessingScreen(
           details: details,
           transactionId: transactionId,
-          initialStatus: initialStatus,
+          initialStatus: 'submitting',
           quidaxSwapId: quidaxSwapId,
         ),
       ));
