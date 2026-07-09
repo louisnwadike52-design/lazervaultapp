@@ -1618,54 +1618,59 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     final total = fiat + fee;
     final quantity = _cryptoAmount;
 
-    // Show PIN bottom sheet first
-    final success = await validateTransactionPin(
+    // One id minted up-front: the PIN token is bound to it AND it's reused as
+    // the swap's clientIntentId, so ConfirmSwap can validate the token against
+    // the row's intent id (the server row's idempotency_key carries it).
+    final intentId = 'CRYPTO-BUY-${DateTime.now().millisecondsSinceEpoch}';
+
+    setState(() => _isTransacting = true);
+
+    // Quote-FIRST flow: show the live Quidax quote, then collect the PIN when
+    // the user taps Confirm — entering the PIN finalizes the purchase. The
+    // dispatcher calls `requestPin` from the quote sheet's Confirm button, so
+    // the token is minted right before ConfirmSwap (it can't expire during the
+    // countdown). createSwapQuote itself needs no PIN (it's display-only).
+    final result = await runSwapFlow(
       context: context,
-      transactionId: 'CRYPTO-BUY-${DateTime.now().millisecondsSinceEpoch}',
-      transactionType: 'buy',
-      amount: fiat,
-      currency: CurrencySymbols.currentCurrency,
-      title: 'Confirm Buy Order',
-      message: 'Confirm purchase of ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
-      fee: fee,
-      totalAmount: total,
-      showProcessingPhase: false, // We'll use our own processing screen
-      onPinValidated: (verificationToken) async {
-        if (!mounted) return;
-        setState(() => _isTransacting = true);
-
-        // PR4.7: PIN validated → route into the Quidax swap-quotation flow.
-        // The dispatcher resolves the fiat account id from
-        // AccountCardsSummaryCubit, calls cubit.createSwapQuote, shows the
-        // QuoteTimerCard, and surfaces a snackbar on terminal state.
-        // verificationToken is captured by the PIN service; the saga handles
-        // hold + push + quote without needing it explicitly.
-        final result = await runSwapFlow(
+      side: 'buy',
+      cryptoSymbol: _selectedCrypto!.symbol,
+      fiatAmount: fiat,
+      description:
+          'Buy ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
+      clientIntentId: intentId,
+      requestPin: () async {
+        String? token;
+        await validateTransactionPin(
           context: context,
-          side: 'buy',
-          cryptoSymbol: _selectedCrypto!.symbol,
-          fiatAmount: fiat,
-          description: 'Buy ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
-          transactionPin: verificationToken,
+          transactionId: intentId,
+          transactionType: 'buy',
+          amount: fiat,
+          currency: CurrencySymbols.currentCurrency,
+          title: 'Confirm Buy Order',
+          message:
+              'Confirm purchase of ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
+          fee: fee,
+          totalAmount: total,
+          showProcessingPhase: false,
+          onPinValidated: (verificationToken) async {
+            token = verificationToken;
+          },
         );
-
-        if (!mounted) return;
-        if (!result.initiated && (result.message ?? '').isNotEmpty) {
-          Get.snackbar(
-            'Trade failed',
-            result.message!,
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        } else {
-          _amountController.clear();
-        }
-        setState(() => _isTransacting = false);
+        return token;
       },
     );
 
-    if (!success && mounted) {
-      setState(() => _isTransacting = false);
+    if (!mounted) return;
+    if (!result.initiated && (result.message ?? '').isNotEmpty) {
+      Get.snackbar(
+        'Trade failed',
+        result.message!,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      _amountController.clear();
     }
+    setState(() => _isTransacting = false);
   }
 
   // Pick the user's personal account whose currency matches the active

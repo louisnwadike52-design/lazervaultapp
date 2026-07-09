@@ -108,6 +108,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   String get _formattedAmount {
+    // Crypto-denominated receipts (e.g. a send of "5.000000 USDT") pass a
+    // pre-formatted override so we don't force fiat 2-decimal formatting.
+    final override = tx.amountDisplayOverride;
+    if (override != null && override.isNotEmpty) {
+      if (tx.flow == TransactionFlow.incoming) return '+$override';
+      if (tx.flow == TransactionFlow.outgoing) return '-$override';
+      return override;
+    }
     final amt = NumberFormat('#,##0.00').format(tx.amount);
     if (tx.flow == TransactionFlow.incoming) return '+$_currencySymbol$amt';
     return '$_currencySymbol$amt';

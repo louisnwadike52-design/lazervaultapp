@@ -58,8 +58,24 @@ class _InactivityWatcherState extends State<InactivityWatcher>
 
   bool get _isAuthenticated => _authed(_auth.state);
 
-  Duration get _timeout =>
-      Duration(seconds: endpointRegistry.inactivityTimeoutSeconds);
+  // Inactivity auto-logout only applies once the user has reached the
+  // authenticated app (dashboard landing onwards). During the signup/onboarding
+  // journey the profile is already hydrated (authenticated) BEFORE the user
+  // finishes — transaction-PIN setup, KYC, the post-signup verification steps —
+  // so arming here would wrongly log the user out mid-onboarding. Suppress on
+  // the auth (`/auth/*`) and KYC (`/kyc/*`) route families; everything from the
+  // dashboard onwards is fair game.
+  bool get _inOnboardingFlow {
+    final r = Get.currentRoute;
+    return r.startsWith('/auth/') || r.startsWith('/kyc/');
+  }
+
+  // Auto-logout DISABLED for now (per request). Forcing 0 makes _armTimer
+  // never arm the inactivity timer and the resume path never log out,
+  // regardless of the backend-provided `session_inactivity_logout_seconds`.
+  // To re-enable, restore:
+  //   Duration(seconds: endpointRegistry.inactivityTimeoutSeconds);
+  Duration get _timeout => Duration.zero;
 
   // An active voice-agent session counts as activity: while the voice bottom
   // sheet / LiveKit session is engaged the user may be hands-free (speaking, or
@@ -95,19 +111,22 @@ class _InactivityWatcherState extends State<InactivityWatcher>
 
   void _armTimer() {
     _timer?.cancel();
-    if (!_isAuthenticated) return;
+    if (!_isAuthenticated || _inOnboardingFlow) return;
+    // A timeout of 0 (or less) means the admin disabled auto-logout
+    // (`session_inactivity_logout_seconds = 0`) — don't arm the timer at all.
+    if (_timeout.inSeconds <= 0) return;
     _timer = Timer(_timeout, _onInactive);
   }
 
   // Pointer/scroll callback. Fires very frequently, so keep it cheap: a single
   // bail-out when not authenticated, otherwise re-arm the (already short) timer.
   void _onUserInteraction([Object? _]) {
-    if (!_isAuthenticated) return;
+    if (!_isAuthenticated || _inOnboardingFlow) return;
     _armTimer();
   }
 
   Future<void> _onInactive() async {
-    if (_loggingOut || !_isAuthenticated) return;
+    if (_loggingOut || !_isAuthenticated || _inOnboardingFlow) return;
     // Defer logout while a voice session is active — re-arm and check again
     // after the next window instead of logging the user out mid-call.
     if (_voiceActive) {
@@ -118,8 +137,10 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     _timer?.cancel();
     try {
       await _auth.logout();
-      // Reuse the app's canonical post-logout destination (see themed_drawer).
-      Get.offAllNamed(AppRoutes.signIn);
+      // Logout KEEPS the cached identity (stored_email/stored_phone), so this is a
+      // RETURNING user — route to the mode-aware login entry (email → email login;
+      // phone → passcode lock), not a hardcoded passcode lock (wrong for email).
+      Get.offAllNamed(AppRoutes.loginEntry);
     } catch (_) {
       // Never let a logout failure crash the app shell.
     } finally {
@@ -141,7 +162,11 @@ class _InactivityWatcherState extends State<InactivityWatcher>
         final since = _backgroundedAt;
         _backgroundedAt = null;
         if (!_isAuthenticated) break;
-        if (since != null && DateTime.now().difference(since) >= _timeout) {
+        // Auto-logout disabled (timeout 0) → never log out on resume; just
+        // refresh. (Guard needed: diff >= Duration.zero is always true.)
+        if (_timeout.inSeconds > 0 &&
+            since != null &&
+            DateTime.now().difference(since) >= _timeout) {
           _onInactive();
         } else {
           _armTimer();

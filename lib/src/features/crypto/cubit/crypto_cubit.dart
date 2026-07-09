@@ -728,6 +728,10 @@ class CryptoCubit extends Cubit<CryptoState> {
     required int fromAmountMinorUnits,
     String description = '',
     String transactionPin = '',
+    // The id the PIN verification token was minted against (the screen's
+    // transaction id). We reuse it as the swap's clientIntentId so ConfirmSwap
+    // can validate the token against the row's intent id. Empty → generate one.
+    String clientIntentId = '',
   }) async {
     if (_isTransacting || isClosed) return;
     _isTransacting = true;
@@ -741,7 +745,8 @@ class CryptoCubit extends Cubit<CryptoState> {
         fromCurrency: fromCurrency,
         toCurrency: toCurrency,
         fromAmountMinorUnits: fromAmountMinorUnits,
-        clientIntentId: _newIntentId(),
+        clientIntentId:
+            clientIntentId.isEmpty ? _newIntentId() : clientIntentId,
         description: description,
       );
       if (isClosed) return;
@@ -803,13 +808,17 @@ class CryptoCubit extends Cubit<CryptoState> {
 
   /// Confirms the active quote. On success emits SwapPending; webhook + the
   /// receipt screen's GetSwapStatus poll drives the terminal state.
-  Future<void> confirmSwapQuote() async {
+  Future<void> confirmSwapQuote({String transactionPin = ''}) async {
     final current = state;
     if (current is! SwapQuotePending || _isTransacting) return;
     _isTransacting = true;
+    // The PIN now finalizes the trade — it's entered AFTER the user reviews the
+    // quote (quote sheet → Confirm → PIN sheet). Prefer the freshly-supplied
+    // token; fall back to any _swapPin captured at quote time (legacy path).
+    final pin = transactionPin.isNotEmpty ? transactionPin : _swapPin;
     try {
       final receipt = await repository.confirmSwap(current.transactionId,
-          transactionPin: _swapPin);
+          transactionPin: pin);
       _swapPin = null; // single-use: clear once consumed
       if (isClosed) return;
       if (receipt.status == 'completed') {

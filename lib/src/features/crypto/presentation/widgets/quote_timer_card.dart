@@ -20,11 +20,18 @@ class QuoteTimerCard extends StatefulWidget {
   final VoidCallback? onCommitted;
   final VoidCallback? onCancelled;
 
+  /// Called when the user taps Confirm. When provided, the trade is NOT
+  /// committed directly here — instead this runs (e.g. to show the PIN sheet)
+  /// and is responsible for calling CryptoCubit.confirmSwapQuote once the PIN
+  /// is entered. When null, Confirm commits directly (legacy behaviour).
+  final Future<void> Function()? onConfirm;
+
   const QuoteTimerCard({
     super.key,
     this.refreshGraceSeconds = 2.0,
     this.onCommitted,
     this.onCancelled,
+    this.onConfirm,
   });
 
   @override
@@ -151,7 +158,15 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                       child: ElevatedButton(
                         onPressed: secondsLeft <= 0
                             ? null
-                            : () => context.read<CryptoCubit>().confirmSwapQuote(),
+                            : () {
+                                if (widget.onConfirm != null) {
+                                  // Quote-first flow: run the PIN step, which
+                                  // finalizes via confirmSwapQuote(token).
+                                  widget.onConfirm!();
+                                } else {
+                                  context.read<CryptoCubit>().confirmSwapQuote();
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3B82F6),
                           foregroundColor: Colors.white,
@@ -221,7 +236,10 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
 
 /// Helper to present the timer card as a modal bottom sheet from a Buy/Sell
 /// screen. Pops the sheet when the trade transitions out of SwapQuotePending.
-Future<void> showQuoteTimerSheet(BuildContext context) async {
+Future<void> showQuoteTimerSheet(
+  BuildContext context, {
+  Future<void> Function()? onConfirm,
+}) async {
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -230,6 +248,7 @@ Future<void> showQuoteTimerSheet(BuildContext context) async {
       return BlocProvider.value(
         value: context.read<CryptoCubit>(),
         child: QuoteTimerCard(
+          onConfirm: onConfirm,
           onCommitted: () {
             if (Navigator.canPop(sheetCtx)) Navigator.of(sheetCtx).pop();
           },

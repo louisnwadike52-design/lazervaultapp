@@ -49,6 +49,12 @@ Future<SwapFlowResult> runSwapFlow({
   required String side, // "buy" | "sell" | "convert"
   required String cryptoSymbol, // e.g. "usdt"
   required double fiatAmount, // major units, e.g. 1000 NGN
+  // For a SELL, the exact crypto quantity the user is selling (major units,
+  // e.g. 0.5 SOL). Sent as the swap `from_amount` because Quidax quotes
+  // crypto->fiat with from_amount denominated in the CRYPTO. `fiatAmount`
+  // remains the fiat proceeds, used only for the min-order pre-check + display.
+  // Ignored for buy (from = fiat) and convert (uses fromCryptoSymbol path).
+  double cryptoAmount = 0,
   // When empty, resolved from LocaleManager.currentCurrency below.
   // Defaulting to a hardcoded "ngn" used to silently label every GHS
   // user's trade as NGN — the user's active locale is the source of truth.
@@ -57,9 +63,16 @@ Future<SwapFlowResult> runSwapFlow({
   // The dispatcher then routes the saga as a crypto-to-crypto swap.
   String fromCryptoSymbol = '',
   String description = '',
-  // Transaction PIN (verification token from the PIN sheet). Held by the
-  // cubit and forwarded to ConfirmSwap for the server-side PIN gate.
-  String transactionPin = '',
+  // The id the PIN token is minted against (the screen's transactionId).
+  // Threaded to createSwapQuote as the clientIntentId so the server row's
+  // intent id equals the token's binding id → ConfirmSwap can validate it.
+  String clientIntentId = '',
+  // Called when the user taps Confirm on the QUOTE sheet — shows the PIN sheet
+  // and returns the verification token (null/empty if cancelled). Entering the
+  // PIN finalizes the trade: the quote is shown first, then the PIN. The token
+  // is minted here, right before ConfirmSwap, so it can't expire during the
+  // quote countdown.
+  Future<String?> Function()? requestPin,
 }) async {
   if (side != 'buy' && side != 'sell' && side != 'convert') {
     return const SwapFlowResult.error('Invalid side');
@@ -131,24 +144,27 @@ Future<SwapFlowResult> runSwapFlow({
     toCurrency = lowerCrypto;
     fromAmountMinor = cryptoConfig.toMinorUnits(fiatAmount, lowerFiat);
   } else {
-    // For sell, the screen tells us the fiat value the user wants out; we
-    // approximate the from-amount in crypto by the same fiat figure
-    // converted to crypto minor units via the displayed price. The saga
-    // returns the precise execution via the swap_transaction webhook.
-    // The screen passes `fiatAmount` for both directions; we forward it as
-    // the from_amount in fiat minor units to keep the contract simple. The
-    // server-side spread + Quidax quote produce the exact crypto received.
-    //
-    // Practical effect: a Sell from this screen behaves identically to a
-    // Buy from a UX standpoint — user picks fiat target, sees a quote, and
-    // confirms. The saga handles the asymmetric ledger legs.
+    // Sell: the user is selling a specific CRYPTO quantity. Quidax quotes
+    // crypto->fiat with `from_amount` denominated in the crypto, and the saga
+    // reads `from_amount_minor_units` back as the crypto amount
+    // (minorToDecimal(fromMinor, fromCurrency)). So we MUST send the crypto
+    // quantity in the crypto's minor-unit scale — NOT the fiat proceeds.
+    // (Sending the fiat value here made the backend sell a wildly wrong
+    // quantity.) The fiat received and the platform spread are derived
+    // server-side from the quote's to_amount; `fiatAmount` above is used only
+    // for the min-order pre-check and receipt display.
+    if (cryptoAmount <= 0) {
+      return const SwapFlowResult.error('Enter the amount of crypto to sell.');
+    }
     fromCurrency = lowerCrypto;
     toCurrency = lowerFiat;
-    fromAmountMinor = cryptoConfig.toMinorUnits(fiatAmount, lowerFiat);
+    fromAmountMinor = cryptoConfig.toMinorUnits(cryptoAmount, lowerCrypto);
   }
 
   // Step 2 — create the quote. CryptoCubit emits SwapQuotePending on success
   // and SwapFailed on category error.
+  // Quote is display-only — no PIN needed here. The PIN is collected on the
+  // quote sheet's Confirm and finalizes the trade at ConfirmSwap.
   await cubit.createSwapQuote(
     accountId: accountId,
     side: side,
@@ -156,7 +172,7 @@ Future<SwapFlowResult> runSwapFlow({
     toCurrency: toCurrency,
     fromAmountMinorUnits: fromAmountMinor,
     description: description,
-    transactionPin: transactionPin,
+    clientIntentId: clientIntentId,
   );
 
   // Bail early if the create failed before the modal even opens.
@@ -178,9 +194,18 @@ Future<SwapFlowResult> runSwapFlow({
   // balance card after CreateSwapQuote would be a wasted RPC (and
   // momentarily misleading — there's no hold to show).
 
-  // Step 3 — modal: 15s timer, auto-refresh, Confirm/Cancel.
+  // Step 3 — modal: shows the quote (15s timer, auto-refresh). Its Confirm
+  // triggers the PIN sheet; entering the PIN finalizes the trade via
+  // confirmSwapQuote(token). Cancelling the PIN keeps the quote sheet open.
   if (!context.mounted) return const SwapFlowResult.initiated();
-  await showQuoteTimerSheet(context);
+  await showQuoteTimerSheet(
+    context,
+    onConfirm: () async {
+      final token = (await requestPin?.call()) ?? '';
+      if (token.isEmpty) return; // PIN cancelled — leave the quote sheet up
+      await cubit.confirmSwapQuote(transactionPin: token);
+    },
+  );
   if (!context.mounted) return const SwapFlowResult.initiated();
 
   // Step 4 — hand off to the processing screen. The cubit state is one of
@@ -228,11 +253,21 @@ Future<SwapFlowResult> runSwapFlow({
   // and replaces itself with the crypto_receipt_screen on terminal state.
   // Use Get.to (not offNamed) so the user can back-navigate to the buy
   // screen if they want to make another trade after seeing the receipt.
-  await Get.to(() => CryptoSwapProcessingScreen(
-        details: details,
-        transactionId: transactionId,
-        initialStatus: initialStatus,
-        quidaxSwapId: quidaxSwapId,
+  //
+  // Get.to pushes a route OUTSIDE the crypto screen's widget subtree, so the
+  // CryptoCubit the processing screen reads (BlocListener + pollSwapStatus) is
+  // not in scope there — without this it throws "Could not find the correct
+  // Provider<CryptoCubit>" the moment the trade confirms. Re-inject the SAME
+  // running cubit instance via BlocProvider.value.
+  final cryptoCubit = context.read<CryptoCubit>();
+  await Get.to(() => BlocProvider<CryptoCubit>.value(
+        value: cryptoCubit,
+        child: CryptoSwapProcessingScreen(
+          details: details,
+          transactionId: transactionId,
+          initialStatus: initialStatus,
+          quidaxSwapId: quidaxSwapId,
+        ),
       ));
   return const SwapFlowResult.initiated();
 }
@@ -256,17 +291,27 @@ CryptoTransactionDetails _buildReceiptDetails(
     _ => CryptoTransactionType.swap,
   };
 
-  String cryptoAmount = '';
+  // Pull the two legs from the terminal swap state (major-unit decimal
+  // strings). Buy: from = fiat, to = crypto. Sell: from = crypto, to = fiat.
+  // So the crypto amount and the fiat amount come from opposite legs depending
+  // on side — a buy-centric mapping would show a sell's crypto qty as fiat.
+  final isSell = side == 'sell';
+  String fromAmountStr = '';
+  String toAmountStr = '';
   double pricePerUnit = 0.0;
-  double fiatAmount = fromAmountMinor.toDouble() / 100.0; // best-effort minor→major
   if (state is SwapPending) {
-    cryptoAmount = state.toAmount;
-    fiatAmount = double.tryParse(state.fromAmount) ?? fiatAmount;
+    fromAmountStr = state.fromAmount;
+    toAmountStr = state.toAmount;
   } else if (state is SwapCompleted) {
-    cryptoAmount = state.receivedAmount;
+    fromAmountStr = state.fromAmount;
+    toAmountStr = state.receivedAmount;
     pricePerUnit = double.tryParse(state.executionPrice) ?? 0.0;
-    fiatAmount = double.tryParse(state.fromAmount) ?? fiatAmount;
   }
+
+  final String cryptoAmount = isSell ? fromAmountStr : toAmountStr;
+  final double fiatAmount = isSell
+      ? (double.tryParse(toAmountStr) ?? 0.0)
+      : (double.tryParse(fromAmountStr) ?? (fromAmountMinor.toDouble() / 100.0));
 
   return CryptoTransactionDetails(
     type: type,

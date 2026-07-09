@@ -12,11 +12,10 @@ import '../../domain/entities/crypto_entity.dart';
 import '../models/crypto_transaction_models.dart';
 import 'all_assets_screen.dart';
 import '../widgets/crypto_search_bar.dart';
-import '../widgets/voice_input_widget.dart';
 import 'crypto_detail_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
-import '../../../../core/grpc/voice_grpc_client.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'swap_crypto_screen.dart';
 import 'send_crypto_screen.dart';
 import 'user_holdings_screen.dart';
@@ -123,13 +122,18 @@ class _CryptoScreenState extends State<CryptoScreen> {
   }
 
   void _showVoiceInputBottomSheet() {
+    // Use the canonical voice path (same as ServiceVoiceButton everywhere else)
+    // — VoiceCommandSheet → VoiceSessionCubit → /voice/session/start, which
+    // passes the ACTIVE account (AccountManager) + ACTIVE locale/currency
+    // (LocaleManager) and actually connects to LiveKit. Replaces the legacy
+    // gRPC VoiceInputWidget stub that sent only serviceName+language and
+    // returned canned responses.
     Get.bottomSheet(
-      VoiceInputWidget(
-        voiceClient: serviceLocator<VoiceGrpcClient>(),
-      ),
+      const VoiceCommandSheet(serviceName: 'crypto'),
       isScrollControlled: true,
+      enableDrag: false,
       isDismissible: true,
-      enableDrag: true,
+      backgroundColor: Colors.transparent,
     );
   }
 
@@ -1230,7 +1234,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
       status: transaction.status,
     );
     
-    Get.to(() => CryptoReceiptScreen(receipt: receipt));
+    Get.to(() => CryptoReceiptScreen(receipt: receipt, fromHistory: true));
   }
 
   // Helper methods for transaction history

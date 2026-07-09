@@ -777,7 +777,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       status: transaction.status,
     );
     
-    Get.to(() => CryptoReceiptScreen(receipt: receipt));
+    Get.to(() => CryptoReceiptScreen(receipt: receipt, fromHistory: true));
   }
 
   Color _getTransactionTypeColor(CryptoTransactionType type) {

@@ -1335,50 +1335,58 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     final netProceeds = _fiatAmount - fee;
     final quantity = _cryptoAmount;
 
-    // Show PIN bottom sheet first
-    final success = await validateTransactionPin(
+    // One id minted up-front for both the PIN token binding and the swap's
+    // clientIntentId, so ConfirmSwap can validate the token against the row.
+    final intentId = 'CRYPTO-SELL-${DateTime.now().millisecondsSinceEpoch}';
+
+    setState(() => _isTransacting = true);
+
+    // Quote-FIRST flow: show the live quote, then collect the PIN on Confirm.
+    // We send the CRYPTO quantity as the swap from-amount (Quidax quotes
+    // crypto->fiat denominated in the crypto); `fiatAmount` carries the expected
+    // proceeds for the min-order check + receipt display. The PIN is collected
+    // via requestPin from the quote sheet's Confirm and finalizes the sale.
+    final result = await runSwapFlow(
       context: context,
-      transactionId: 'CRYPTO-SELL-${DateTime.now().millisecondsSinceEpoch}',
-      transactionType: 'sell',
-      amount: netProceeds,
-      currency: CurrencySymbols.currentCurrency,
-      title: 'Confirm Sell Order',
-      message: 'Confirm sale of ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
-      fee: fee,
-      totalAmount: netProceeds,
-      showProcessingPhase: false, // We'll use our own processing screen
-      onPinValidated: (verificationToken) async {
-        if (!mounted) return;
-        setState(() => _isTransacting = true);
-
-        // PR4.7: PIN validated → route into the Quidax swap-quotation flow.
-        // For Sell, fiatAmount represents the target NGN proceeds; the saga
-        // resolves the matching from-crypto amount via the Quidax quote.
-        final result = await runSwapFlow(
+      side: 'sell',
+      cryptoSymbol: _selectedHolding!.cryptoSymbol,
+      fiatAmount: netProceeds,
+      cryptoAmount: quantity,
+      description:
+          'Sell ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+      clientIntentId: intentId,
+      requestPin: () async {
+        String? token;
+        await validateTransactionPin(
           context: context,
-          side: 'sell',
-          cryptoSymbol: _selectedHolding!.cryptoSymbol,
-          fiatAmount: netProceeds,
-          description: 'Sell ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
-          transactionPin: verificationToken,
+          transactionId: intentId,
+          transactionType: 'sell',
+          amount: netProceeds,
+          currency: CurrencySymbols.currentCurrency,
+          title: 'Confirm Sell Order',
+          message:
+              'Confirm sale of ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+          fee: fee,
+          totalAmount: netProceeds,
+          showProcessingPhase: false,
+          onPinValidated: (verificationToken) async {
+            token = verificationToken;
+          },
         );
-
-        if (!mounted) return;
-        if (!result.initiated && (result.message ?? '').isNotEmpty) {
-          Get.snackbar(
-            'Trade failed',
-            result.message!,
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        } else {
-          _amountController.clear();
-        }
-        setState(() => _isTransacting = false);
+        return token;
       },
     );
 
-    if (!success && mounted) {
-      setState(() => _isTransacting = false);
+    if (!mounted) return;
+    if (!result.initiated && (result.message ?? '').isNotEmpty) {
+      Get.snackbar(
+        'Trade failed',
+        result.message!,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      _amountController.clear();
     }
+    setState(() => _isTransacting = false);
   }
 } 

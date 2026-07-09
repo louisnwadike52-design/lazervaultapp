@@ -1397,48 +1397,50 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     final toSymbol = _toCrypto!.symbol;
     final fromAmount = _fromAmount;
 
-    final success = await validateTransactionPin(
+    // One id minted up-front for both the PIN token binding and the swap's
+    // clientIntentId, so ConfirmSwap can validate the token against the row.
+    final intentId = 'CRYPTO-CONVERT-${DateTime.now().millisecondsSinceEpoch}';
+
+    setState(() => _isTransacting = true);
+
+    // Quote-FIRST flow: show the live convert quote, then collect the PIN on
+    // Confirm (which finalizes the convert). side="convert" with `fiatAmount`
+    // reinterpreted as the from-side major units (e.g. 0.001 BTC); the server
+    // saga handles min-order / pair support / hold lifecycle.
+    final result = await runSwapFlow(
       context: context,
-      transactionId: 'CRYPTO-CONVERT-${DateTime.now().millisecondsSinceEpoch}',
-      transactionType: 'swap',
-      amount: fromAmount,
-      currency: fromSymbol.toUpperCase(),
-      title: 'Confirm Convert',
-      message: 'Convert ${fromAmount.toStringAsFixed(6)} '
+      side: 'convert',
+      fromCryptoSymbol: fromSymbol,
+      cryptoSymbol: toSymbol,
+      fiatAmount: fromAmount,
+      description: 'Convert ${fromAmount.toStringAsFixed(6)} '
           '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
-      showProcessingPhase: false,
-      onPinValidated: (verificationToken) async {
-        if (!mounted) return;
-        setState(() => _isTransacting = true);
-
-        // PR9d — route through the swap_quotation pipeline (15s locked quote +
-        // confirm). The dispatcher accepts side="convert" with `fiatAmount`
-        // reinterpreted as the from-side major units (e.g. 0.001 BTC). The
-        // server's CreateSwapQuote saga handles min-order / pair support /
-        // hold lifecycle; the legacy `convertCrypto` RPC stays in place for
-        // chat/voice agents only.
-        final result = await runSwapFlow(
+      clientIntentId: intentId,
+      requestPin: () async {
+        String? token;
+        await validateTransactionPin(
           context: context,
-          side: 'convert',
-          fromCryptoSymbol: fromSymbol,
-          cryptoSymbol: toSymbol,
-          fiatAmount: fromAmount,
-          description: 'Convert ${fromAmount.toStringAsFixed(6)} '
+          transactionId: intentId,
+          transactionType: 'swap',
+          amount: fromAmount,
+          currency: fromSymbol.toUpperCase(),
+          title: 'Confirm Convert',
+          message: 'Convert ${fromAmount.toStringAsFixed(6)} '
               '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
-          transactionPin: verificationToken,
+          showProcessingPhase: false,
+          onPinValidated: (verificationToken) async {
+            token = verificationToken;
+          },
         );
-
-        if (!mounted) return;
-        if (!result.initiated && (result.message ?? '').isNotEmpty) {
-          Get.snackbar('Convert failed', result.message!,
-              snackPosition: SnackPosition.BOTTOM);
-        }
-        setState(() => _isTransacting = false);
+        return token;
       },
     );
 
-    if (!success && mounted) {
-      setState(() => _isTransacting = false);
+    if (!mounted) return;
+    if (!result.initiated && (result.message ?? '').isNotEmpty) {
+      Get.snackbar('Convert failed', result.message!,
+          snackPosition: SnackPosition.BOTTOM);
     }
+    setState(() => _isTransacting = false);
   }
 }

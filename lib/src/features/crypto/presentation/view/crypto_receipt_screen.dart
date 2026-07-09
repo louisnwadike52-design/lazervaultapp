@@ -1,769 +1,132 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 import '../models/crypto_transaction_models.dart';
-import 'crypto_transaction_history_screen.dart';
 
-class CryptoReceiptScreen extends StatefulWidget {
+/// CryptoReceiptScreen renders a crypto buy / sell / swap receipt using the
+/// shared, Revolut-style [UnifiedTransactionReceipt] so it looks and behaves
+/// exactly like every other receipt on the platform: dark card layout, a QR
+/// code of the reference, and Download / Share that produce a real PNG image
+/// (not a text blob or a stub).
+///
+/// The crypto-specific numbers (asset, filled amount, execution rate, fees,
+/// custody) are carried in the [UnifiedTransaction.metadata] map, which the
+/// unified receipt automatically renders as detail rows.
+///
+/// The public surface is unchanged — every call site still constructs a
+/// [CryptoTransactionReceipt] and pushes `CryptoReceiptScreen(receipt: …)`.
+class CryptoReceiptScreen extends StatelessWidget {
   final CryptoTransactionReceipt receipt;
+
+  /// When true the back button returns to the previous screen (history);
+  /// when false it lands the user on the dashboard (post-trade flow).
+  final bool fromHistory;
 
   const CryptoReceiptScreen({
     super.key,
     required this.receipt,
+    this.fromHistory = false,
   });
 
   @override
-  State<CryptoReceiptScreen> createState() => _CryptoReceiptScreenState();
-}
-
-class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    
-    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-              const Color(0xFF0A0A0A),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(20.w),
-                  child: AnimatedBuilder(
-                    animation: _slideAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _slideAnimation.value),
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Column(
-                            children: [
-                              _buildSuccessHeader(),
-                              SizedBox(height: 32.h),
-                              _buildReceiptCard(),
-                              SizedBox(height: 24.h),
-                              _buildActionButtons(),
-                              SizedBox(height: 24.h),
-                              _buildTransactionDetails(),
-                              SizedBox(height: 24.h),
-                              _buildSecurityInfo(),
-                              SizedBox(height: 32.h),
-                              _buildNavigationButtons(),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return UnifiedTransactionReceipt(
+      transaction: _toUnifiedTransaction(receipt),
+      fromHistory: fromHistory,
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: GestureDetector(
-              onTap: () => Get.back(),
-              child: Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 20.sp,
-              ),
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Text(
-              'Transaction Receipt',
-              style: GoogleFonts.inter(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: GestureDetector(
-              onTap: _shareReceipt,
-              child: Icon(
-                Icons.share,
-                color: Colors.white,
-                size: 20.sp,
-              ),
-            ),
-          ),
-        ],
-      ),
+  UnifiedTransaction _toUnifiedTransaction(CryptoTransactionReceipt r) {
+    final d = r.transactionDetails;
+    final fiatCurrency = CurrencySymbols.currentCurrency;
+    final sym = CurrencySymbols.currentSymbol;
+
+    final title = switch (d.type) {
+      CryptoTransactionType.buy => 'Buy ${d.cryptoSymbol}',
+      CryptoTransactionType.sell => 'Sell ${d.cryptoSymbol}',
+      CryptoTransactionType.swap =>
+        'Swap ${d.fromCrypto ?? ''} → ${d.toCrypto ?? d.cryptoSymbol}',
+    };
+
+    // Money direction: a buy spends fiat (debit), a sell returns fiat
+    // (credit), a crypto→crypto swap is neither.
+    final flow = switch (d.type) {
+      CryptoTransactionType.buy => TransactionFlow.outgoing,
+      CryptoTransactionType.sell => TransactionFlow.incoming,
+      CryptoTransactionType.swap => TransactionFlow.neutral,
+    };
+
+    // The hero amount is the fiat total the user paid / received. Fall back
+    // to the fiat subtotal when the total hasn't been populated yet.
+    final heroAmount = d.totalAmount > 0 ? d.totalAmount : d.fiatAmount;
+
+    final assetAmountLabel = switch (d.type) {
+      CryptoTransactionType.buy => 'You receive',
+      CryptoTransactionType.sell => 'You sell',
+      CryptoTransactionType.swap => 'You receive',
+    };
+
+    final metadata = <String, dynamic>{
+      'Asset': d.cryptoName,
+      if (d.type == CryptoTransactionType.swap && (d.fromCrypto ?? '').isNotEmpty)
+        'From asset': d.fromCrypto!,
+      if (d.type == CryptoTransactionType.swap && (d.toCrypto ?? '').isNotEmpty)
+        'To asset': d.toCrypto!,
+      if (d.cryptoAmount.isNotEmpty)
+        assetAmountLabel: '${d.cryptoAmount} ${d.cryptoSymbol}',
+      if (d.pricePerUnit > 0)
+        'Rate': '1 ${d.cryptoSymbol} = $sym${_money(d.pricePerUnit)}',
+      if (d.fiatAmount > 0) 'Subtotal': '$sym${_money(d.fiatAmount)}',
+      if (d.tradingFee > 0) 'Trading fee': '$sym${_money(d.tradingFee)}',
+      if (d.networkFee > 0) 'Network fee': '$sym${_money(d.networkFee)}',
+      if (heroAmount > 0) 'Total': '$sym${_money(heroAmount)}',
+      'Payment method': d.paymentMethod,
+      'Settlement': 'Instant',
+      'Custody': 'Managed by licensed partner',
+    };
+
+    return UnifiedTransaction(
+      id: r.transactionId,
+      serviceType: TransactionServiceType.crypto,
+      title: title,
+      description: d.cryptoAmount.isNotEmpty
+          ? '${d.cryptoAmount} ${d.cryptoSymbol}'
+          : null,
+      amount: heroAmount,
+      currency: fiatCurrency,
+      createdAt: r.timestamp,
+      status: _mapStatus(r.status),
+      flow: flow,
+      transactionReference: r.transactionId,
+      metadata: metadata,
     );
   }
 
-  Widget _buildSuccessHeader() {
-    final statusColor = _getStatusColor();
-    final statusIcon = _getStatusIcon();
-    return Container(
-      padding: EdgeInsets.all(32.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            statusColor.withValues(alpha: 0.2),
-            statusColor.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              statusIcon,
-              size: 48.sp,
-              color: statusColor,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            _getHeadline(),
-            style: GoogleFonts.inter(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            _getSuccessMessage(),
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReceiptCard() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Receipt',
-                style: GoogleFonts.inter(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: _getStatusColor().withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  widget.receipt.status.name.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: _getStatusColor(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          _buildReceiptRow('Transaction ID', widget.receipt.transactionId, canCopy: true),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Date & Time', _formatDateTime(widget.receipt.timestamp)),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Transaction Type', _getTransactionTypeDisplay()),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Cryptocurrency', widget.receipt.transactionDetails.cryptoName),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Amount', '${widget.receipt.transactionDetails.cryptoAmount} ${widget.receipt.transactionDetails.cryptoSymbol}'),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Price per ${widget.receipt.transactionDetails.cryptoSymbol}', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Subtotal', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.fiatAmount.toStringAsFixed(2)}'),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Trading Fee', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.tradingFee.toStringAsFixed(2)}'),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Network Fee', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.networkFee.toStringAsFixed(2)}'),
-          Divider(color: Colors.white.withValues(alpha: 0.2), height: 32.h),
-          _buildReceiptRow('Total Amount', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}', isTotal: true),
-          SizedBox(height: 16.h),
-          _buildReceiptRow('Payment Method', widget.receipt.transactionDetails.paymentMethod),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _downloadReceipt,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-              foregroundColor: const Color.fromARGB(255, 78, 3, 208),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                side: BorderSide(color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
-              ),
-              elevation: 0,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.download, size: 20.sp),
-                SizedBox(width: 8.w),
-                Text(
-                  'Download',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _shareReceipt,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              elevation: 0,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.share, color: Colors.white, size: 20.sp),
-                SizedBox(width: 8.w),
-                Text(
-                  'Share',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTransactionDetails() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Transaction Details',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildDetailRow('Executed at', _formatDateTime(widget.receipt.timestamp)),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Settlement', 'Instant'),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Blockchain Network', _getBlockchainNetwork()),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Exchange Rate', '1 ${widget.receipt.transactionDetails.cryptoSymbol} = ${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Custody', 'Managed by licensed partner'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecurityInfo() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.security,
-                color: Colors.green,
-                size: 24.sp,
-              ),
-              SizedBox(width: 12.w),
-              Text(
-                'Security & Compliance',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          _buildSecurityFeature('Transaction secured with 256-bit SSL encryption'),
-          SizedBox(height: 8.h),
-          _buildSecurityFeature('Funds stored in cold storage wallet'),
-          SizedBox(height: 8.h),
-          _buildSecurityFeature('Lazervault is FCA regulated and authorized'),
-          SizedBox(height: 8.h),
-          _buildSecurityFeature('Transaction recorded on blockchain'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavigationButtons() {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () => Get.to(() => const CryptoTransactionHistoryScreen()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'View Transaction History',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => Get.offAllNamed('/crypto'),
-            style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              'Back to Crypto',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReceiptRow(String label, String value, {bool canCopy = false, bool isTotal = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: isTotal ? 16.sp : 14.sp,
-            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.8),
-          ),
-        ),
-        Row(
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: isTotal ? 18.sp : 14.sp,
-                fontWeight: FontWeight.w600,
-                color: isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
-              ),
-            ),
-            if (canCopy) ...[
-              SizedBox(width: 8.w),
-              GestureDetector(
-                onTap: () => _copyToClipboard(value),
-                child: Icon(
-                  Icons.copy,
-                  size: 16.sp,
-                  color: const Color.fromARGB(255, 78, 3, 208),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, {bool canCopy = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            color: Colors.white.withValues(alpha: 0.8),
-          ),
-        ),
-        Row(
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-            if (canCopy) ...[
-              SizedBox(width: 8.w),
-              GestureDetector(
-                onTap: () => _copyToClipboard(value),
-                child: Icon(
-                  Icons.copy,
-                  size: 14.sp,
-                  color: const Color.fromARGB(255, 78, 3, 208),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSecurityFeature(String text) {
-    return Row(
-      children: [
-        Icon(
-          Icons.check_circle,
-          color: Colors.green,
-          size: 16.sp,
-        ),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Color _getStatusColor() {
-    switch (widget.receipt.status) {
+  UnifiedTransactionStatus _mapStatus(CryptoTransactionStatus status) {
+    switch (status) {
       case CryptoTransactionStatus.completed:
-        return Colors.green;
+        return UnifiedTransactionStatus.completed;
       case CryptoTransactionStatus.pending:
       case CryptoTransactionStatus.verifying:
-        return Colors.orange;
+      // Awaiting exchange settlement / reconciliation — "processing" reads
+      // more honestly to the user than "pending" for an in-flight trade.
+        return UnifiedTransactionStatus.processing;
       case CryptoTransactionStatus.failed:
-        return Colors.red;
+        return UnifiedTransactionStatus.failed;
       case CryptoTransactionStatus.refunded:
-        return const Color(0xFF9CA3AF);
+        return UnifiedTransactionStatus.refunded;
       case CryptoTransactionStatus.manualReview:
-        return const Color(0xFFFB923C);
+        return UnifiedTransactionStatus.pending;
     }
   }
 
-  /// Status-aware icon for the headline card. Mirrors the colour set
-  /// so a glance at the icon shape conveys the outcome before reading.
-  IconData _getStatusIcon() {
-    switch (widget.receipt.status) {
-      case CryptoTransactionStatus.completed:
-        return Icons.check_circle;
-      case CryptoTransactionStatus.pending:
-        return Icons.hourglass_top;
-      case CryptoTransactionStatus.verifying:
-        return Icons.sync;
-      case CryptoTransactionStatus.refunded:
-        return Icons.replay_circle_filled;
-      case CryptoTransactionStatus.failed:
-        return Icons.cancel;
-      case CryptoTransactionStatus.manualReview:
-        return Icons.flag;
-    }
-  }
-
-  /// Headline rendered in the success card. Status-aware so the user
-  /// sees an honest summary — pre-fix this always said "Transaction
-  /// Successful!" even when the row was actually refunded or under
-  /// admin review.
-  String _getHeadline() {
-    final t = widget.receipt.transactionDetails.type;
-    switch (widget.receipt.status) {
-      case CryptoTransactionStatus.completed:
-        switch (t) {
-          case CryptoTransactionType.buy:
-            return 'Buy Completed';
-          case CryptoTransactionType.sell:
-            return 'Sell Completed';
-          case CryptoTransactionType.swap:
-            return 'Swap Completed';
-        }
-      case CryptoTransactionStatus.pending:
-        return 'Processing…';
-      case CryptoTransactionStatus.verifying:
-        return 'Verifying with Exchange';
-      case CryptoTransactionStatus.refunded:
-        return 'Trade Refunded';
-      case CryptoTransactionStatus.failed:
-        return 'Trade Failed';
-      case CryptoTransactionStatus.manualReview:
-        return 'Under Admin Review';
-    }
-  }
-
-  String _getSuccessMessage() {
-    final details = widget.receipt.transactionDetails;
-    switch (widget.receipt.status) {
-      case CryptoTransactionStatus.completed:
-        switch (details.type) {
-          case CryptoTransactionType.buy:
-            return 'You have successfully purchased ${details.cryptoAmount} ${details.cryptoSymbol}';
-          case CryptoTransactionType.sell:
-            return 'You have successfully sold ${details.cryptoAmount} ${details.cryptoSymbol}';
-          case CryptoTransactionType.swap:
-            return 'You have successfully swapped ${details.fromCrypto} for ${details.toCrypto}';
-        }
-      case CryptoTransactionStatus.pending:
-        return 'Your trade is on its way. We\'ll update this receipt as soon as the exchange confirms.';
-      case CryptoTransactionStatus.verifying:
-        return 'The exchange returned an ambiguous response. We are reconciling automatically — your funds are safe.';
-      case CryptoTransactionStatus.refunded:
-        return 'The trade did not complete on the exchange. Your fiat has been returned to your account.';
-      case CryptoTransactionStatus.failed:
-        return 'The exchange rejected this trade. No funds were moved.';
-      case CryptoTransactionStatus.manualReview:
-        return 'This transaction is being reviewed by our operations team. You\'ll be notified by the time it\'s resolved.';
-    }
-  }
-
-  String _getTransactionTypeDisplay() {
-    switch (widget.receipt.transactionDetails.type) {
-      case CryptoTransactionType.buy:
-        return 'Buy ${widget.receipt.transactionDetails.cryptoSymbol}';
-      case CryptoTransactionType.sell:
-        return 'Sell ${widget.receipt.transactionDetails.cryptoSymbol}';
-      case CryptoTransactionType.swap:
-        return 'Swap ${widget.receipt.transactionDetails.fromCrypto} → ${widget.receipt.transactionDetails.toCrypto}';
-    }
-  }
-
-  String _getBlockchainNetwork() {
-    final symbol = widget.receipt.transactionDetails.cryptoSymbol.toUpperCase();
-    switch (symbol) {
-      case 'BTC':
-        return 'Bitcoin Network';
-      case 'ETH':
-        return 'Ethereum Network';
-      case 'BNB':
-        return 'Binance Smart Chain';
-      case 'SOL':
-        return 'Solana Network';
-      default:
-        return 'Ethereum Network (ERC-20)';
-    }
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
-
-  void _copyToClipboard(String text) {
-    Clipboard.setData(ClipboardData(text: text));
-    Get.snackbar(
-      'Copied',
-      'Copied to clipboard',
-      backgroundColor: Colors.green.withValues(alpha: 0.1),
-      colorText: Colors.green,
-      duration: const Duration(seconds: 2),
-    );
-  }
-
-  void _shareReceipt() {
-    final receiptText = '''
-LazerVault Crypto Transaction Receipt
-
-Transaction ID: ${widget.receipt.transactionId}
-Date: ${_formatDateTime(widget.receipt.timestamp)}
-Type: ${_getTransactionTypeDisplay()}
-Amount: ${widget.receipt.transactionDetails.cryptoAmount} ${widget.receipt.transactionDetails.cryptoSymbol}
-Total: ${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}
-Status: ${widget.receipt.status.name.toUpperCase()}
-
-Powered by LazerVault - Your trusted crypto platform
-''';
-
-    SharePlus.instance.share(ShareParams(text: receiptText, subject: 'Lazervault Transaction Receipt'));
-  }
-
-  void _downloadReceipt() {
-    // In a real implementation, this would generate a PDF or save the receipt
-    Get.snackbar(
-      'Download',
-      'Receipt saved to Downloads',
-      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-      colorText: const Color.fromARGB(255, 78, 3, 208),
-      duration: const Duration(seconds: 3),
-    );
-  }
+  String _money(double value) => NumberFormat('#,##0.00').format(value);
 }
 
-// Transaction receipt model
+/// Transaction receipt model — constructed by the buy/sell/swap flow and the
+/// transaction-history screen, then handed to [CryptoReceiptScreen].
 class CryptoTransactionReceipt {
   final String transactionId;
   final CryptoTransactionDetails transactionDetails;
@@ -776,4 +139,4 @@ class CryptoTransactionReceipt {
     required this.timestamp,
     required this.status,
   });
-} 
+}

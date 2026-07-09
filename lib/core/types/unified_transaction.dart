@@ -19,12 +19,20 @@ enum TransactionServiceType {
   splitBill('Split Bill', Icons.receipt_outlined, Color(0xFFFB923C)),
   tagPay('Tag Pay', Icons.local_offer, Color(0xFF14B8A6)),
   qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
-  idPay('Pay by ID', Icons.badge_outlined, Color(0xFF6366F1)),
+  idPay('PayID', Icons.badge_outlined, Color(0xFF6366F1)),
   contactlessPay('Tap to Pay', Icons.contactless_outlined, Color(0xFF6F42C1)),
 
   // Stored value / commerce.
   invoice('Invoice', Icons.receipt_long, Color(0xFF6366F1)),
   giftCard('Gift Card', Icons.card_giftcard, Color(0xFF6366F1)),
+
+  // Business (payroll, sales, expenses, tax, inventory) — receipts the business
+  // dashboard generates.
+  payroll('Payroll', Icons.groups_outlined, Color(0xFF6366F1)),
+  sale('Sale', Icons.point_of_sale_outlined, Color(0xFF10B981)),
+  expense('Expense', Icons.account_balance_wallet_outlined, Color(0xFFFB923C)),
+  tax('Tax', Icons.receipt_long_outlined, Color(0xFF8B5CF6)),
+  purchaseOrder('Purchase Order', Icons.inventory_2_outlined, Color(0xFF0EA5E9)),
 
   // Investments / savings.
   crypto('Crypto', Icons.currency_bitcoin, Color(0xFFF59E0B)),
@@ -32,7 +40,7 @@ enum TransactionServiceType {
   insurance('Insurance', Icons.security, Color(0xFF3B82F6)),
   crowdfund('Crowdfund', Icons.volunteer_activism, Color(0xFFF472B6)),
   autosave('AutoSave', Icons.savings, Color(0xFF22C55E)),
-  lockFunds('PiggyVault', Icons.lock_clock_outlined, Color(0xFF6366F1)),
+  lockFunds('Piggyvault', Icons.lock_clock_outlined, Color(0xFF6366F1)),
   groupFunds('Group Funds', Icons.groups_2_outlined, Color(0xFFA855F7)),
   exchange('Exchange', Icons.currency_exchange, Color(0xFFFB923C)),
 
@@ -124,6 +132,12 @@ class UnifiedTransaction extends Equatable {
   final String? counterpartyName;
   final String? counterpartyAccount;
 
+  /// Optional pre-formatted hero string that overrides the default fiat
+  /// formatting (`₦#,##0.00`). Used for crypto-denominated receipts (e.g. a
+  /// crypto send is "5.000000 USDT", not a 2-decimal fiat amount). When null,
+  /// the receipt formats [amount] with [currency] as before.
+  final String? amountDisplayOverride;
+
   const UnifiedTransaction({
     required this.id,
     required this.serviceType,
@@ -138,6 +152,7 @@ class UnifiedTransaction extends Equatable {
     this.metadata,
     this.counterpartyName,
     this.counterpartyAccount,
+    this.amountDisplayOverride,
   });
 
   /// Format amount with currency symbol and flow indicator
@@ -170,6 +185,7 @@ class UnifiedTransaction extends Equatable {
         metadata,
         counterpartyName,
         counterpartyAccount,
+        amountDisplayOverride,
       ];
 
   /// Convert to JSON
@@ -300,6 +316,7 @@ class UnifiedTransaction extends Equatable {
     Map<String, dynamic>? metadata,
     String? counterpartyName,
     String? counterpartyAccount,
+    String? amountDisplayOverride,
   }) {
     return UnifiedTransaction(
       id: id ?? this.id,
@@ -315,6 +332,8 @@ class UnifiedTransaction extends Equatable {
       metadata: metadata ?? this.metadata,
       counterpartyName: counterpartyName ?? this.counterpartyName,
       counterpartyAccount: counterpartyAccount ?? this.counterpartyAccount,
+      amountDisplayOverride:
+          amountDisplayOverride ?? this.amountDisplayOverride,
     );
   }
 }

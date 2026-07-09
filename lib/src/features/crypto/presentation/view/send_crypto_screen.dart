@@ -10,19 +10,23 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_state.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/generated/crypto.pbgrpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // SendCryptoScreen (PR6) — single-screen send flow:
 //   1. Pick asset (from user's holdings).
 //   2. Pick network from the holding's `networks` list.
-//   3. Enter recipient (address or LazerVault user_id for internal).
+//   3. Enter recipient (address or Lazervault user_id for internal).
 //   4. Enter amount + optional note/narration/destination tag.
 //   5. PIN bottom sheet via TransactionPinMixin.
 //   6. Submit → CryptoWithdrawCubit → receipt sheet.
@@ -53,6 +57,20 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   bool _isInternal = false;
   bool _isSubmitting = false;
 
+  // Network catalogue (dropdown sourced from GetSupportedAssetNetworks). Loaded
+  // once per asset; filtered to withdraw-enabled networks. Falls back to the
+  // free-text field when the asset has no configured networks.
+  List<QuidaxAssetNetwork> _networks = const [];
+  String? _selectedNetwork;
+  bool _loadingNetworks = false;
+
+  // Snapshot of the last submitted send, used to build the receipt screen once
+  // the cubit reports Processing / Completed.
+  _SentDetails? _lastSent;
+  bool _receiptShown = false;
+
+  CryptoGrpcClient get _client => GetIt.I<CryptoGrpcClient>();
+
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
@@ -73,6 +91,57 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       // ignore: use_build_context_synchronously
       context.read<CryptoCubit>().refreshHoldingsLive();
     });
+    if (_selected != null) _loadNetworks();
+  }
+
+  /// Load the withdraw-enabled network catalogue for the selected asset from
+  /// GetSupportedAssetNetworks. Picks the `is_default` network (or the first
+  /// withdraw-enabled one). On failure/empty the selector falls back to a
+  /// free-text field so the user is never blocked.
+  Future<void> _loadNetworks() async {
+    final sym = _selected?.cryptoSymbol.toLowerCase();
+    if (sym == null || sym.isEmpty) return;
+    setState(() => _loadingNetworks = true);
+    try {
+      final resp = await _client.getSupportedAssetNetworks(currency: sym);
+      final withdrawable =
+          resp.networks.where((n) => n.withdrawEnabled).toList();
+      String? def;
+      if (withdrawable.isNotEmpty) {
+        final d = withdrawable.firstWhere((n) => n.isDefault,
+            orElse: () => withdrawable.first);
+        def = d.network;
+      }
+      if (!mounted) return;
+      setState(() {
+        _networks = withdrawable;
+        _selectedNetwork = def;
+      });
+    } catch (_) {
+      // Leave _networks empty → the free-text fallback field renders.
+    } finally {
+      if (mounted) setState(() => _loadingNetworks = false);
+    }
+  }
+
+  /// Resolve the network string to submit: empty for internal transfers; the
+  /// dropdown selection when networks are configured; otherwise the free-text
+  /// fallback field.
+  String _networkValue() {
+    if (_isInternal) return '';
+    if (_networks.isNotEmpty) return _selectedNetwork ?? '';
+    return _networkController.text.trim();
+  }
+
+  /// Human label for the currently-selected network (for the review sheet).
+  String _networkLabel() {
+    final net = _networkValue();
+    if (net.isEmpty) return 'Default';
+    final match = _networks.where((n) => n.network == net);
+    if (match.isNotEmpty && match.first.networkName.isNotEmpty) {
+      return '${match.first.networkName} (${net.toUpperCase()})';
+    }
+    return net.toUpperCase();
   }
 
   @override
@@ -85,9 +154,6 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     _networkController.dispose();
     super.dispose();
   }
-
-  // Network metadata lives in PR7's `quidax_asset_networks` table — until
-  // that lands, the network is a free-text input on the form.
 
   int _toMinor(double major) {
     try {
@@ -124,6 +190,15 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
     setState(() => _isSubmitting = true);
 
+    // Review sheet FIRST (mirrors the buy/sell/swap quote sheet): the user
+    // reviews the send details, then entering the PIN finalizes. Send has no
+    // Quidax rate quote, so this is a plain summary rather than a timed quote.
+    final confirmed = await _showSendReviewSheet(amount, recipient);
+    if (confirmed != true || !mounted) {
+      if (mounted) setState(() => _isSubmitting = false);
+      return;
+    }
+
     final intentId =
         'WD-${DateTime.now().millisecondsSinceEpoch}-${_selected!.cryptoSymbol}';
     final cubit = context.read<CryptoWithdrawCubit>();
@@ -143,13 +218,24 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       showProcessingPhase: false,
       onPinValidated: (_) async {
         if (!mounted) return;
+        // Snapshot the submitted send so the receipt screen can render the
+        // crypto amount / recipient / network without re-reading the form.
+        _lastSent = _SentDetails(
+          amount: amount,
+          symbol: _selected!.cryptoSymbol.toUpperCase(),
+          recipient: recipient,
+          network: _networkValue(),
+          note: _noteController.text.trim(),
+          isInternal: _isInternal,
+        );
+        _receiptShown = false;
         await cubit.submit(
           accountId: accountId,
           recipientType: _isInternal ? 'internal' : 'coin_address',
           currency: _selected!.cryptoSymbol,
           amountMinor: _toMinor(amount),
           fundUid: recipient,
-          network: _isInternal ? '' : _networkController.text.trim(),
+          network: _networkValue(),
           destinationTag: _destinationTagController.text.trim(),
           transactionNote: _noteController.text.trim(),
           narration: _narrationController.text.trim(),
@@ -159,6 +245,113 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
+  }
+
+  /// Review-before-PIN sheet. Shows the send summary and returns `true` when
+  /// the user taps Confirm (proceed to PIN), `false`/`null` on cancel/dismiss.
+  Future<bool?> _showSendReviewSheet(double amount, String recipient) {
+    final symbol = _selected!.cryptoSymbol.toUpperCase();
+    final networkLabel = _networkLabel();
+    final note = _noteController.text.trim();
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return Material(
+          color: const Color(0xFF0A0A0A),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Confirm Send',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _reviewRow('Asset', symbol),
+                _reviewRow('Amount', '${amount.toStringAsFixed(6)} $symbol'),
+                _reviewRow(_isInternal ? 'To (Lazervault)' : 'To', recipient),
+                if (!_isInternal) _reviewRow('Network', networkLabel),
+                if (note.isNotEmpty) _reviewRow('Note', note),
+                const SizedBox(height: 8),
+                const Text(
+                  'A network fee is deducted by the provider and shown on your receipt.',
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(sheetCtx).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(sheetCtx).pop(true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B82F6),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Confirm'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _reviewRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Color(0xFF9CA3AF))),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   String? _resolveAccountId() {
@@ -267,16 +460,9 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
   void _onWithdrawState(BuildContext context, CryptoWithdrawState state) {
     switch (state) {
-      case CryptoWithdrawProcessing(:final reference):
-      case CryptoWithdrawCompleted(:final reference):
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: const Color(0xFF1F1F1F),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-          builder: (_) => _ReceiptSheet(state: state, reference: reference),
-        );
+      case CryptoWithdrawProcessing():
+      case CryptoWithdrawCompleted():
+        _openReceipt(state);
         break;
       case CryptoWithdrawFailed(:final reason):
         Get.snackbar('Send failed', reason,
@@ -288,6 +474,46 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       default:
         break;
     }
+  }
+
+  /// Navigate once to the Revolut-style send receipt, which polls
+  /// GetCryptoWithdrawalStatus until the send reaches a terminal state.
+  void _openReceipt(CryptoWithdrawState state) {
+    if (_receiptShown) return;
+    final sent = _lastSent;
+    if (sent == null) return;
+
+    String transactionId;
+    String reference;
+    String txid = '';
+    UnifiedTransactionStatus status;
+    if (state is CryptoWithdrawCompleted) {
+      transactionId = state.transactionId;
+      reference = state.reference;
+      txid = state.txid;
+      status = UnifiedTransactionStatus.completed;
+    } else if (state is CryptoWithdrawProcessing) {
+      transactionId = state.transactionId;
+      reference = state.reference;
+      status = UnifiedTransactionStatus.processing;
+    } else {
+      return;
+    }
+    _receiptShown = true;
+
+    Get.to(() => SendCryptoReceiptScreen(
+          transactionId: transactionId,
+          reference: reference,
+          amount: sent.amount,
+          symbol: sent.symbol,
+          recipient: sent.recipient,
+          network: sent.network,
+          note: sent.note,
+          isInternal: sent.isInternal,
+          createdAt: DateTime.now(),
+          initialStatus: status,
+          initialTxid: txid,
+        ));
   }
 
   /// Empty-state render when the user has zero spendable holdings.
@@ -421,12 +647,63 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   }
 
   Widget _buildNetworkSelector() {
-    // PR7 replaces this with a dropdown sourced from `quidax_asset_networks`.
-    // For now: free text input (e.g. trc20, erc20, bep20). Empty = Quidax's
-    // default network for the asset.
-    return _buildField(
-      _networkController,
-      'Network (e.g. trc20, erc20, bep20)',
+    // Dropdown sourced from GetSupportedAssetNetworks (withdraw-enabled rows).
+    // While loading: a compact loader. When the asset has no configured
+    // networks (or the call failed): fall back to a free-text field so the
+    // user is never blocked — an empty value means Quidax's default network.
+    if (_loadingNetworks) {
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 14.w),
+        decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r)),
+        child: Row(children: [
+          LazerVaultLoader.tiny(),
+          SizedBox(width: 12.w),
+          Text('Loading networks…',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+        ]),
+      );
+    }
+    if (_networks.isEmpty) {
+      return _buildField(
+        _networkController,
+        'Network (e.g. trc20, erc20, bep20)',
+      );
+    }
+    final selected = _networks.any((n) => n.network == _selectedNetwork)
+        ? _selectedNetwork
+        : null;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r)),
+      child: DropdownButton<String>(
+        value: selected,
+        isExpanded: true,
+        dropdownColor: const Color(0xFF1F1F1F),
+        underline: const SizedBox.shrink(),
+        hint: Text('Select network',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+        items: _networks.map((n) {
+          final fee = n.withdrawFeeDecimal;
+          final feeLabel = (fee.isNotEmpty && fee != '0')
+              ? ' · fee $fee ${_selected!.cryptoSymbol.toUpperCase()}'
+              : '';
+          final name = n.networkName.isEmpty
+              ? n.network.toUpperCase()
+              : '${n.networkName} (${n.network.toUpperCase()})';
+          return DropdownMenuItem(
+            value: n.network,
+            child: Text('$name$feeLabel', overflow: TextOverflow.ellipsis),
+          );
+        }).toList(),
+        onChanged: (v) => setState(() => _selectedNetwork = v),
+      ),
     );
   }
 
@@ -452,62 +729,22 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   }
 }
 
-class _ReceiptSheet extends StatelessWidget {
-  final CryptoWithdrawState state;
-  final String reference;
-  const _ReceiptSheet({required this.state, required this.reference});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDone = state is CryptoWithdrawCompleted;
-    return Padding(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isDone ? Icons.check_circle : Icons.timelapse,
-            size: 56.sp,
-            color: isDone ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            isDone ? 'Send complete' : 'Send processing',
-            style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            isDone
-                ? 'Quidax confirmed your withdrawal.'
-                : 'Your send is in flight. You\'ll get a notification when it lands on-chain.',
-            style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 13.sp),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 12.h),
-          SelectableText(reference,
-              style: GoogleFonts.robotoMono(
-                  color: Colors.white60, fontSize: 12.sp)),
-          SizedBox(height: 20.h),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r))),
-              child: Text('Done',
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontWeight: FontWeight.w600)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+/// Immutable snapshot of a submitted send — captured at PIN-confirm time so the
+/// receipt screen can render the crypto amount, recipient, and network without
+/// re-reading the (possibly-cleared) form controllers.
+class _SentDetails {
+  final double amount;
+  final String symbol;
+  final String recipient;
+  final String network;
+  final String note;
+  final bool isInternal;
+  const _SentDetails({
+    required this.amount,
+    required this.symbol,
+    required this.recipient,
+    required this.network,
+    required this.note,
+    required this.isInternal,
+  });
 }

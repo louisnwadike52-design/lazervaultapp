@@ -145,8 +145,9 @@ class _CryptoSwapProcessingScreenState extends State<CryptoSwapProcessingScreen>
       timestamp: DateTime.now(),
       status: status,
     );
-    Get.offNamed('/crypto/receipt', arguments: receipt);
-    // Fallback navigation if /crypto/receipt isn't registered.
+    // Replace the processing screen with the receipt. `/crypto/receipt` is
+    // not a registered named route, so navigate to the screen directly (the
+    // old Get.offNamed call here only logged a route-not-found before this).
     Get.off(() => CryptoReceiptScreen(receipt: receipt));
   }
 
