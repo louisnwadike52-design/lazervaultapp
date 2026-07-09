@@ -236,7 +236,6 @@ class _ProductivityInsightsScreenState
   }
 
   Widget _buildProductivityScoreCard() {
-    final fraction = _scoreFraction();
     final trend = (_insights?['score_trend'] ?? '').toString();
     final period = (_insights?['period'] ?? _period).toString();
     return Container(
@@ -285,8 +284,28 @@ class _ProductivityInsightsScreenState
               SizedBox(
                 width: 100.w,
                 height: 100.w,
-                child: Center(
-                  child: LazerVaultLoader(size: 80),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 88.w,
+                      height: 88.w,
+                      child: CircularProgressIndicator(
+                        value: _scoreFraction(),
+                        strokeWidth: 8,
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    Text(
+                      '${(_scoreFraction() * 100).round()}%',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

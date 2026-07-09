@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/event.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/time_block.dart';
-import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart' as plan;
+import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart'
+    as plan;
 import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summary.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
@@ -69,46 +68,6 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
     }
   }
 
-  Future<void> loadCalendarMonth(DateTime month) async {
-    try {
-      final startDate = DateTime(month.year, month.month, 1);
-      final endDate = DateTime(month.year, month.month + 1, 1);
-
-      final results = await Future.wait([
-        _repository.getEvents(startDate, endDate),
-        _repository.getTimeBlocks(
-          startDate: _toDateString(startDate),
-          endDate: _toDateString(endDate),
-        ),
-      ]);
-
-      if (!isClosed) {
-        emit(PlanMyDayCalendarView(
-          events: results[0] as List<Event>,
-          timeBlocks: results[1] as List<TimeBlock>,
-          selectedMonth: month,
-        ));
-      }
-    } catch (e) {
-      if (!isClosed) emit(_parseError(e, 'Failed to load calendar'));
-    }
-  }
-
-  Future<void> loadTasks({String status = '', DateTime? startDate, DateTime? endDate}) async {
-    try {
-      final tasks = await _repository.getTasks(
-        status: status,
-        startDate: startDate,
-        endDate: endDate,
-      );
-      if (!isClosed) {
-        emit(TaskListLoaded(tasks: tasks, filterStatus: status.isEmpty ? null : status));
-      }
-    } catch (e) {
-      if (!isClosed) emit(_parseError(e, 'Failed to load tasks'));
-    }
-  }
-
   Future<void> loadCategories() async {
     try {
       final categories = await _repository.getCategories(type: '');
@@ -132,9 +91,35 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
     String? recurringRule,
     String? estimatedDuration,
     List<String> reminderIds = const [],
+    // When set, a reminder is created for this timeframe and linked to the task;
+    // the planning-service worker fires it (push/email/SMS) at [remindAt].
+    DateTime? remindAt,
+    String? remindRepeat, // 'once' | 'daily' | 'weekly' | 'monthly'
   }) async {
     try {
-      final previousState = state;
+      final ids = List<String>.from(reminderIds);
+      var reminderFailed = false;
+      if (remindAt != null) {
+        try {
+          final reminder = await _repository.createReminder(Reminder(
+            id: '',
+            userId: '',
+            title: title.trim(),
+            remindAt: remindAt,
+            reminderType:
+                (remindRepeat ?? 'once') == 'once' ? 'absolute' : 'recurring',
+            repeatPattern:
+                (remindRepeat ?? 'once') == 'once' ? null : remindRepeat,
+            isActive: true,
+            createdAt: DateTime.now(),
+          ));
+          if (reminder.id.isNotEmpty) ids.add(reminder.id);
+        } catch (_) {
+          // Don't block task creation, but remember so we can tell the user the
+          // reminder wasn't set (previously this failed completely silently).
+          reminderFailed = true;
+        }
+      }
       final task = await _repository.createTask(
         title: title.trim(),
         description: description?.trim(),
@@ -144,7 +129,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
         parentTaskId: parentTaskId,
         recurringRule: recurringRule,
         estimatedDuration: estimatedDuration,
-        reminderIds: reminderIds,
+        reminderIds: ids,
       );
 
       if (!isClosed) {
@@ -152,6 +137,11 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
         // Reload data to get fresh state
         if (_cachedState != null) {
           await loadDayData(_cachedState!.selectedDate);
+        }
+        // The task saved; if only its reminder failed, tell the user (non-blocking).
+        if (reminderFailed && !isClosed) {
+          _emitAndRestore(PlanMyDayError(
+              "Task created, but its reminder couldn't be set. Add it again from the task if you need it."));
         }
       }
     } catch (e) {
@@ -222,6 +212,92 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
     }
   }
 
+  /// Move a task to another board column / status (CRM/Kanban drag or menu).
+  ///
+  /// Optimistic: the card jumps to the new column immediately; we reconcile
+  /// with the server result, or revert + surface an error if the call fails.
+  Future<void> moveTask(String id, String newStatus, {int? boardOrder}) async {
+    final cached = _cachedState;
+    if (cached == null) {
+      // No board loaded — fall back to a plain update/complete.
+      if (newStatus == 'completed') {
+        await completeTask(id);
+      } else {
+        await updateTask(id: id, status: newStatus);
+      }
+      return;
+    }
+
+    final idx = cached.tasks.indexWhere((t) => t.id == id);
+    if (idx == -1) return;
+    final original = cached.tasks[idx];
+    if (original.status == newStatus && boardOrder == null) return;
+
+    final isComplete = newStatus == 'completed';
+    final optimistic = original.copyWith(
+      status: newStatus,
+      completionPercentage: isComplete ? 100 : original.completionPercentage,
+      completedAt: isComplete ? DateTime.now() : original.completedAt,
+      boardOrder: boardOrder ?? original.boardOrder,
+    );
+
+    final optimisticTasks = List<Task>.from(cached.tasks)..[idx] = optimistic;
+    var working = cached.copyWith(tasks: optimisticTasks);
+    _cachedState = working;
+    if (!isClosed) emit(working);
+
+    try {
+      final saved =
+          await _repository.moveTask(id, newStatus, boardOrder: boardOrder);
+      final tasks = List<Task>.from(_cachedState!.tasks);
+      final ri = tasks.indexWhere((t) => t.id == id);
+      if (ri != -1) tasks[ri] = saved;
+      working = _cachedState!.copyWith(tasks: tasks);
+      _cachedState = working;
+      if (!isClosed) emit(working);
+    } catch (e) {
+      // Revert the optimistic move, then show the error briefly.
+      final tasks = List<Task>.from(_cachedState!.tasks);
+      final ri = tasks.indexWhere((t) => t.id == id);
+      if (ri != -1) tasks[ri] = original;
+      final reverted = _cachedState!.copyWith(tasks: tasks);
+      _cachedState = reverted;
+      if (!isClosed) {
+        emit(_parseError(e, 'Failed to move task'));
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!isClosed && state is PlanMyDayError) emit(reverted);
+        });
+      }
+    }
+  }
+
+  /// Reorder a single status column after a drag-reorder. [orderedIds] is the
+  /// new top-to-bottom order of that column. Optimistic: applies board_order
+  /// locally and re-emits, then persists; on failure reloads from the server.
+  Future<void> reorderColumn(String status, List<String> orderedIds) async {
+    final cached = _cachedState;
+    if (cached == null) return;
+
+    // Apply the new order optimistically by stamping board_order = index.
+    final orderIndex = {
+      for (var i = 0; i < orderedIds.length; i++) orderedIds[i]: i
+    };
+    final tasks = cached.tasks.map((t) {
+      final oi = orderIndex[t.id];
+      return oi == null ? t : t.copyWith(status: status, boardOrder: oi);
+    }).toList();
+    final working = cached.copyWith(tasks: tasks);
+    _cachedState = working;
+    if (!isClosed) emit(working);
+
+    try {
+      await _repository.reorderTasks(status, orderedIds);
+    } catch (e) {
+      // Reload authoritative order on failure.
+      await loadDayData(cached.selectedDate, forceRefresh: true);
+    }
+  }
+
   Future<void> toggleTaskStatus(String id) async {
     try {
       // Find the task first
@@ -258,15 +334,15 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
     required String title,
     String? description,
     required DateTime startTime,
-    required DateTime endTime,
+    DateTime? endTime, // optional — a point-in-time event has no end
     String? location,
     List<String> categoryIds = const [],
     bool isAllDay = false,
     String? recurrenceRule,
     List<String> reminderIds = const [],
   }) async {
-    // Validation
-    if (endTime.isBefore(startTime)) {
+    // Validation — only when an end time was actually provided.
+    if (endTime != null && endTime.isBefore(startTime)) {
       _emitAndRestore(PlanMyDayError('End time must be after start time'));
       return;
     }
@@ -539,7 +615,9 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
       // Detect error types
       if (message.contains('network') || message.contains('connection')) {
         errorCode = 'network_error';
-      } else if (message.contains('401') || message.contains('unauthorized') || message.contains('auth')) {
+      } else if (message.contains('401') ||
+          message.contains('unauthorized') ||
+          message.contains('auth')) {
         errorCode = 'auth_error';
       } else if (message.contains('400') || message.contains('validation')) {
         errorCode = 'validation_error';
@@ -583,7 +661,8 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
   Future<void> loadReminders({bool enabledOnly = false}) async {
     emit(PlanMyDayLoading());
     try {
-      final reminders = await _repository.getReminders(enabledOnly: enabledOnly);
+      final reminders =
+          await _repository.getReminders(enabledOnly: enabledOnly);
       emit(ReminderListLoaded(reminders: reminders));
     } catch (e) {
       emit(_parseError(e, 'Failed to load reminders'));
@@ -635,7 +714,8 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
   Future<void> loadProductivityInsights({String period = 'week'}) async {
     emit(PlanMyDayLoading());
     try {
-      final insights = await _repository.getProductivityInsights(period: period);
+      final insights =
+          await _repository.getProductivityInsights(period: period);
       emit(ProductivityInsightsLoaded(insights: insights));
     } catch (e) {
       emit(_parseError(e, 'Failed to load insights'));

@@ -483,15 +483,24 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
                     _syncing = false;
                   });
 
+                  // "Not configured" is not a failure — the server just doesn't
+                  // have Google sync set up yet. Show a calm, neutral message.
+                  final String text;
+                  final Color bg;
+                  if (result.success) {
+                    text = 'Google Calendar connected successfully';
+                    bg = const Color(0xFF10B981);
+                  } else if (result.notConfigured) {
+                    text = result.message?.isNotEmpty == true
+                        ? result.message!
+                        : 'Calendar sync is coming soon';
+                    bg = const Color(0xFF3B82F6);
+                  } else {
+                    text = 'Failed to connect Google Calendar';
+                    bg = const Color(0xFFEF4444);
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(result.success
-                          ? 'Google Calendar connected successfully'
-                          : 'Failed to connect Google Calendar'),
-                      backgroundColor: result.success
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
-                    ),
+                    SnackBar(content: Text(text), backgroundColor: bg),
                   );
                 }
               } catch (e) {

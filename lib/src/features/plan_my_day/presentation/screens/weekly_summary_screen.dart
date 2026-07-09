@@ -212,9 +212,9 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Focus Time', '18h 30m', Icons.timer_outlined),
-              _buildStatItem('Events', '8', Icons.event),
-              _buildStatItem('Streak', '5 days', Icons.local_fire_department),
+              _buildStatItem('Focus Time', _focusTimeLabel(), Icons.timer_outlined),
+              _buildStatItem('Avg Rate', '${_avgRate().round()}%', Icons.percent),
+              _buildStatItem('Top', _topCategory(), Icons.category),
             ],
           ),
         ],
@@ -252,8 +252,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     final dayName = dayData['dayName'] as String;
     final isToday = dayData['isToday'] as bool;
 
-    // Simulated completion data (in real app, fetch from API)
-    final completion = _getSimulatedCompletion(date);
+    // Real per-day completion from the backend's daily_summaries (0..1).
+    final completion = _completionForDate(date);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -361,29 +361,58 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             ],
           ),
           SizedBox(height: 16.h),
-          _buildInsightItem(
-            icon: Icons.trending_up,
-            color: const Color(0xFF10B981),
-            title: 'Great momentum!',
-            description: 'You\'re 20% more productive than last week',
-          ),
-          SizedBox(height: 12.h),
-          _buildInsightItem(
-            icon: Icons.schedule,
-            color: const Color(0xFF3B82F6),
-            title: 'Peak hours: 9 AM - 12 PM',
-            description: 'Schedule important tasks during this time',
-          ),
-          SizedBox(height: 12.h),
-          _buildInsightItem(
-            icon: Icons.category,
-            color: const Color(0xFF8B5CF6),
-            title: 'Top category: Work',
-            description: '12 tasks completed this week',
-          ),
+          ..._buildRealInsights(),
         ],
       ),
     );
+  }
+
+  /// Builds insight rows from real backend fields (trend, top_categories,
+  /// totals). Falls back to a neutral message when there's nothing yet.
+  List<Widget> _buildRealInsights() {
+    final items = <Widget>[];
+    final trend = (_summary?['trend'] as String?)?.trim() ?? '';
+    final completed = (_summary?['total_tasks_completed'] as num?)?.toInt() ?? 0;
+    final created = (_summary?['total_tasks_created'] as num?)?.toInt() ?? 0;
+    final cats = (_summary?['top_categories'] as List?)?.cast<dynamic>() ?? const [];
+
+    if (trend.isNotEmpty) {
+      items.add(_buildInsightItem(
+        icon: Icons.trending_up,
+        color: const Color(0xFF10B981),
+        title: 'Trend',
+        description: trend,
+      ));
+    }
+    if (created > 0) {
+      items.add(SizedBox(height: items.isEmpty ? 0 : 12.h));
+      items.add(_buildInsightItem(
+        icon: Icons.check_circle_outline,
+        color: const Color(0xFF3B82F6),
+        title: '$completed of $created tasks completed',
+        description: 'Average completion ${_avgRate().round()}% this week',
+      ));
+    }
+    if (cats.isNotEmpty) {
+      items.add(SizedBox(height: items.isEmpty ? 0 : 12.h));
+      items.add(_buildInsightItem(
+        icon: Icons.category,
+        color: const Color(0xFF8B5CF6),
+        title: 'Top category: ${cats.first}',
+        description: cats.length > 1
+            ? 'Also active: ${cats.skip(1).take(2).join(', ')}'
+            : 'Your most-used category this week',
+      ));
+    }
+    if (items.isEmpty) {
+      items.add(_buildInsightItem(
+        icon: Icons.insights_outlined,
+        color: Colors.grey,
+        title: 'No activity yet this week',
+        description: 'Complete tasks and log time to see insights here',
+      ));
+    }
+    return items;
   }
 
   Widget _buildInsightItem({
@@ -446,10 +475,42 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     return '${DateFormat('MMM d').format(_currentWeekStart)} - ${DateFormat('MMM d').format(endOfWeek)}';
   }
 
-  double _getSimulatedCompletion(DateTime date) {
-    // Simulated completion rates for demo
-    final dayOfWeek = date.weekday;
-    final completions = [0.8, 0.6, 0.9, 0.5, 0.7, 0.4, 0.3];
-    return completions[dayOfWeek - 1];
+  // ── Real-data helpers ──────────────────────────────────────────────
+
+  String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// Per-day completion (0..1) from the backend's `daily_summaries`
+  /// (`completion_rate` is a 0..100 percentage); 0 when the day has no data.
+  double _completionForDate(DateTime date) {
+    final daily = (_summary?['daily_summaries'] as List?) ?? const [];
+    final key = _dateKey(date);
+    for (final d in daily) {
+      if (d is Map && d['date'] == key) {
+        return (((d['completion_rate'] as num?)?.toDouble() ?? 0) / 100)
+            .clamp(0.0, 1.0);
+      }
+    }
+    return 0.0;
+  }
+
+  double _avgRate() =>
+      ((_summary?['average_completion_rate'] as num?)?.toDouble() ?? 0)
+          .clamp(0.0, 100.0);
+
+  String _focusTimeLabel() {
+    final hours = (_summary?['total_focus_hours'] as num?)?.toDouble() ?? 0;
+    if (hours <= 0) return '0h';
+    final h = hours.floor();
+    final m = ((hours - h) * 60).round();
+    if (h == 0) return '${m}m';
+    return m == 0 ? '${h}h' : '${h}h ${m}m';
+  }
+
+  String _topCategory() {
+    final cats = (_summary?['top_categories'] as List?) ?? const [];
+    if (cats.isEmpty) return '—';
+    final first = cats.first.toString();
+    return first.length > 10 ? '${first.substring(0, 9)}…' : first;
   }
 }

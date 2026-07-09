@@ -13,7 +13,7 @@ abstract class IPlanMyDayRepository {
     required String title,
     String? description,
     required DateTime startTime,
-    required DateTime endTime,
+    DateTime? endTime, // optional — a point-in-time event has no end
     String? location,
     List<String> categoryIds,
     bool isAllDay,
@@ -64,6 +64,16 @@ abstract class IPlanMyDayRepository {
   });
   Future<void> deleteTask(String id);
   Future<Task> completeTask(String id);
+
+  /// Move a task to another board column / status (CRM/Kanban).
+  /// status ∈ pending, in_progress, blocked, in_review, completed, cancelled.
+  /// [boardOrder], when given, sets the drop position in the target column.
+  Future<Task> moveTask(String id, String status, {int? boardOrder});
+
+  /// Persist a whole column's top-to-bottom order after a drag reorder.
+  /// [taskIds] is the new order; each task's board_order becomes its index and
+  /// its status is set to [status].
+  Future<void> reorderTasks(String status, List<String> taskIds);
 
   // Time Blocks
   Future<List<TimeBlock>> getTimeBlocks({
@@ -118,7 +128,11 @@ abstract class IPlanMyDayRepository {
   Future<DailySummary> getDailySummary(String date);
 
   // Reminders
-  Future<List<Reminder>> getReminders({bool enabledOnly = false});
+  Future<List<Reminder>> getReminders({
+    bool enabledOnly = false,
+    DateTime? startDate,
+    DateTime? endDate,
+  });
   Future<Reminder> createReminder(Reminder reminder);
   Future<Reminder> updateReminder(String id, Reminder reminder);
   Future<void> deleteReminder(String id);

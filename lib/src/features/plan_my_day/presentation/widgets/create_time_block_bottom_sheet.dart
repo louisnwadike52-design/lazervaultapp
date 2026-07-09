@@ -51,10 +51,12 @@ class _CreateTimeBlockBottomSheetState extends State<CreateTimeBlockBottomSheet>
   @override
   void initState() {
     super.initState();
-    // Default to current time rounded to next hour
+    // Default to the next hour, clamped so late-evening defaults don't roll
+    // past 23:00 into an invalid 24:00/25:00 (backend requires HH:MM 00-23).
     final now = TimeOfDay.now();
-    _startTime = TimeOfDay(hour: now.hour + 1, minute: 0);
-    _endTime = TimeOfDay(hour: now.hour + 2, minute: 0);
+    final startHour = (now.hour + 1).clamp(0, 22);
+    _startTime = TimeOfDay(hour: startHour, minute: 0);
+    _endTime = TimeOfDay(hour: startHour + 1, minute: 0);
   }
 
   @override

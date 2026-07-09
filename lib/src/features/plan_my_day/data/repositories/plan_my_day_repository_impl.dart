@@ -26,6 +26,17 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   static const Duration _receiveTimeout = Duration(seconds: 30);
   static const String _accessTokenKey = 'access_token';
 
+  // Canonical task statuses (CRM/Kanban board). Mirrors the planning-service
+  // valid_status CHECK constraint.
+  static const List<String> _validStatuses = [
+    'pending',
+    'in_progress',
+    'blocked',
+    'in_review',
+    'completed',
+    'cancelled',
+  ];
+
   /// The request paths below already carry the `/api/v1` prefix
   /// (`/api/v1/planning/...`). Both an injected `baseUrl` (DI passes
   /// `PLANNING_GATEWAY_URL`) and `endpointRegistry.httpPlanning` ALSO end in
@@ -163,7 +174,7 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     required String title,
     String? description,
     required DateTime startTime,
-    required DateTime endTime,
+    DateTime? endTime, // optional — a point-in-time event has no end
     String? location,
     List<String> categoryIds = const [],
     bool isAllDay = false,
@@ -171,7 +182,7 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     if (title.trim().isEmpty) {
       throw PlanMyDayValidationException('Title cannot be empty');
     }
-    if (endTime.isBefore(startTime)) {
+    if (endTime != null && endTime.isBefore(startTime)) {
       throw PlanMyDayValidationException('End time must be after start time');
     }
 
@@ -183,7 +194,8 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
         'title': title.trim(),
         'description': description?.trim(),
         'start_time': startTime.toIso8601String(),
-        'end_time': endTime.toIso8601String(),
+        // Omit end_time entirely when there's none — never send a fabricated end.
+        if (endTime != null) 'end_time': endTime.toIso8601String(),
         'location': location?.trim(),
         'category_ids': categoryIds,
         'is_all_day': isAllDay,
@@ -387,7 +399,7 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       body['priority'] = priority;
     }
     if (status != null) {
-      if (!['pending', 'in_progress', 'completed', 'cancelled'].contains(status)) {
+      if (!_validStatuses.contains(status)) {
         throw PlanMyDayValidationException('Invalid status value');
       }
       body['status'] = status;
@@ -443,6 +455,44 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
       }
     }
     throw PlanMyDayException('Failed to complete task');
+  }
+
+  @override
+  Future<Task> moveTask(String id, String status, {int? boardOrder}) async {
+    if (!_validStatuses.contains(status)) {
+      throw PlanMyDayValidationException('Invalid status value');
+    }
+    final headers = await _getAuthHeaders();
+    final body = <String, dynamic>{'status': status};
+    if (boardOrder != null) body['board_order'] = boardOrder;
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/api/v1/planning/tasks/$id/move'),
+      headers: headers,
+      body: jsonEncode(body),
+    ).timeout(_receiveTimeout);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['task'] != null) {
+        return Task.fromJson(data['task'] as Map<String, dynamic>);
+      }
+    }
+    throw PlanMyDayException('Failed to move task');
+  }
+
+  @override
+  Future<void> reorderTasks(String status, List<String> taskIds) async {
+    if (taskIds.isEmpty) return;
+    final headers = await _getAuthHeaders();
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/api/v1/planning/tasks/reorder'),
+      headers: headers,
+      body: jsonEncode({'status': status, 'task_ids': taskIds}),
+    ).timeout(_receiveTimeout);
+
+    if (response.statusCode != 200) {
+      throw PlanMyDayException('Failed to reorder tasks');
+    }
   }
 
   // ==================== TIME BLOCK METHODS ====================
@@ -751,10 +801,24 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   // ==================== REMINDERS ====================
 
   @override
-  Future<List<Reminder>> getReminders({bool enabledOnly = false}) async {
+  Future<List<Reminder>> getReminders({
+    bool enabledOnly = false,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     final headers = await _getAuthHeaders();
+    final qp = <String, String>{
+      if (enabledOnly) 'enabled_only': 'true',
+      // Backend filters reminder_time by YYYY-MM-DD (inclusive) when supplied.
+      if (startDate != null)
+        'start_date':
+            '${startDate.year.toString().padLeft(4, '0')}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}',
+      if (endDate != null)
+        'end_date':
+            '${endDate.year.toString().padLeft(4, '0')}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}',
+    };
     final uri = Uri.parse('$_baseUrl/api/v1/planning/reminders')
-        .replace(queryParameters: enabledOnly ? {'enabled_only': 'true'} : null);
+        .replace(queryParameters: qp.isEmpty ? null : qp);
     final response = await _client.get(uri, headers: headers).timeout(_connectTimeout);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

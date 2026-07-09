@@ -78,15 +78,23 @@ class Reminder {
 
     final repeatType = (json['repeat_type'] as String?) ?? 'once';
     final minutesBefore = (json['repeat_minutes_before'] as num?)?.toInt();
+    // The canonical reminderType is persisted in repeat_rule (see toBackendJson)
+    // so the absolute-vs-relative distinction survives a round-trip losslessly.
+    // Fall back to inference for older rows that predate this (empty repeat_rule).
+    const knownTypes = {'absolute', 'relative', 'recurring'};
+    final repeatRule = ((json['repeat_rule'] as String?) ?? '').trim();
+    final resolvedType = knownTypes.contains(repeatRule)
+        ? repeatRule
+        : (repeatType == 'once'
+            ? (minutesBefore != null && minutesBefore > 0 ? 'relative' : 'absolute')
+            : 'recurring');
     return Reminder(
       id: json['id'] as String? ?? '',
       userId: json['user_id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       remindAt: ts(json['reminder_time']),
       minutesBefore: minutesBefore,
-      reminderType: repeatType == 'once'
-          ? (minutesBefore != null && minutesBefore > 0 ? 'relative' : 'absolute')
-          : 'recurring',
+      reminderType: resolvedType,
       repeatPattern: repeatType == 'once' ? null : repeatType,
       isActive: json['enabled'] as bool? ?? true,
       createdAt: ts(json['created_at']),
@@ -100,7 +108,9 @@ class Reminder {
       'reminder_time': remindAt.toUtc().toIso8601String(),
       'repeat_type': reminderType == 'recurring' ? (repeatPattern ?? 'daily') : 'once',
       'repeat_minutes_before': minutesBefore ?? 0,
-      'repeat_rule': '',
+      // Persist the canonical type so fromBackendJson restores it exactly. The
+      // scheduling worker keys off repeat_type only, so repeat_rule is free here.
+      'repeat_rule': reminderType,
       'enabled': isActive,
     };
   }

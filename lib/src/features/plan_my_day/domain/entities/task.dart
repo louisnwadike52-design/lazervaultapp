@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/plan_my_day/domain/entities/plan_timestamp.dart';
+
 class Task {
   final String id;
   final String userId;
@@ -12,6 +14,7 @@ class Task {
   final String? estimatedDuration;
   final int completionPercentage;
   final DateTime? completedAt;
+  final int boardOrder; // Kanban position within its column (lower = higher)
   final List<String> reminderIds;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -30,6 +33,7 @@ class Task {
     this.estimatedDuration,
     this.completionPercentage = 0,
     this.completedAt,
+    this.boardOrder = 0,
     this.reminderIds = const [],
     required this.createdAt,
     required this.updatedAt,
@@ -41,9 +45,7 @@ class Task {
       userId: json['user_id'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
-      dueDate: json['due_date'] != null
-          ? DateTime.parse(json['due_date'] as String)
-          : null,
+      dueDate: parsePlanTimestamp(json['due_date']),
       priority: json['priority'] as int? ?? 2,
       status: json['status'] as String? ?? 'pending',
       categoryIds: (json['category_ids'] as List<dynamic>?)?.cast<String>() ?? [],
@@ -51,12 +53,11 @@ class Task {
       recurringRule: json['recurring_rule'] as String?,
       estimatedDuration: json['estimated_duration'] as String?,
       completionPercentage: json['completion_percentage'] as int? ?? 0,
-      completedAt: json['completed_at'] != null
-          ? DateTime.parse(json['completed_at'] as String)
-          : null,
+      completedAt: parsePlanTimestamp(json['completed_at']),
+      boardOrder: json['board_order'] as int? ?? 0,
       reminderIds: (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: parsePlanTimestampRequired(json['created_at']),
+      updatedAt: parsePlanTimestampRequired(json['updated_at']),
     );
   }
 
@@ -75,6 +76,7 @@ class Task {
       'estimated_duration': estimatedDuration,
       'completion_percentage': completionPercentage,
       'completed_at': completedAt?.toIso8601String(),
+      'board_order': boardOrder,
       'reminder_ids': reminderIds,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -84,6 +86,9 @@ class Task {
   bool get isCompleted => status == 'completed';
   bool get isPending => status == 'pending';
   bool get isInProgress => status == 'in_progress';
+  bool get isBlocked => status == 'blocked';
+  bool get isInReview => status == 'in_review';
+  bool get isCancelled => status == 'cancelled';
 
   Task copyWith({
     String? id,
@@ -99,6 +104,7 @@ class Task {
     String? estimatedDuration,
     int? completionPercentage,
     DateTime? completedAt,
+    int? boardOrder,
     List<String>? reminderIds,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -117,6 +123,7 @@ class Task {
       estimatedDuration: estimatedDuration ?? this.estimatedDuration,
       completionPercentage: completionPercentage ?? this.completionPercentage,
       completedAt: completedAt ?? this.completedAt,
+      boardOrder: boardOrder ?? this.boardOrder,
       reminderIds: reminderIds ?? this.reminderIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

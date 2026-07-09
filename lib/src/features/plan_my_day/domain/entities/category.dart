@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/plan_my_day/domain/entities/plan_timestamp.dart';
+
 class Category {
   final String id;
   final String userId;
@@ -25,7 +27,7 @@ class Category {
       icon: json['icon'] as String?,
       color: json['color'] as String?,
       type: json['type'] as String? ?? 'both',
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: parsePlanTimestampRequired(json['created_at']),
     );
   }
 

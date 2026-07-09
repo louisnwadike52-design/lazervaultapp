@@ -18,6 +18,13 @@ class PlanMyDayLoaded extends PlanMyDayState {
   final List<Category> categories;
   final DateTime selectedDate;
   final DailySummary? dailySummary;
+  // Calendar-tab-scoped data: the whole visible month's events/time-blocks.
+  // Kept SEPARATE from `events`/`timeBlocks` (which are the selected day only)
+  // so the Calendar tab can show month-wide markers without changing the state
+  // type — the Board/Day/Tasks tabs keep reading the day-scoped lists.
+  final List<Event> calendarEvents;
+  final List<TimeBlock> calendarTimeBlocks;
+  final DateTime? calendarMonth;
 
   PlanMyDayLoaded({
     required this.events,
@@ -26,6 +33,9 @@ class PlanMyDayLoaded extends PlanMyDayState {
     required this.categories,
     required this.selectedDate,
     this.dailySummary,
+    this.calendarEvents = const [],
+    this.calendarTimeBlocks = const [],
+    this.calendarMonth,
   });
 
   PlanMyDayLoaded copyWith({
@@ -35,6 +45,9 @@ class PlanMyDayLoaded extends PlanMyDayState {
     List<Category>? categories,
     DateTime? selectedDate,
     DailySummary? dailySummary,
+    List<Event>? calendarEvents,
+    List<TimeBlock>? calendarTimeBlocks,
+    DateTime? calendarMonth,
   }) {
     return PlanMyDayLoaded(
       events: events ?? this.events,
@@ -43,70 +56,26 @@ class PlanMyDayLoaded extends PlanMyDayState {
       categories: categories ?? this.categories,
       selectedDate: selectedDate ?? this.selectedDate,
       dailySummary: dailySummary ?? this.dailySummary,
+      calendarEvents: calendarEvents ?? this.calendarEvents,
+      calendarTimeBlocks: calendarTimeBlocks ?? this.calendarTimeBlocks,
+      calendarMonth: calendarMonth ?? this.calendarMonth,
     );
   }
 
   List<Task> get pendingTasks => tasks.where((t) => !t.isCompleted).toList();
   List<Task> get completedTasks => tasks.where((t) => t.isCompleted).toList();
-  List<Task> get highPriorityTasks => tasks.where((t) => t.priority >= 3 && !t.isCompleted).toList();
-  List<Task> get overdueTasks => tasks.where((t) => !t.isCompleted && t.dueDate != null && t.dueDate!.isBefore(DateTime.now())).toList();
-  List<Event> get upcomingEvents => events.where((e) => e.startTime.isAfter(DateTime.now())).toList();
-  List<Event> get todayEvents => events.where((e) => _isSameDay(e.startTime, selectedDate)).toList();
-}
-
-class PlanMyDayCalendarView extends PlanMyDayState {
-  final List<Event> events;
-  final List<TimeBlock> timeBlocks;
-  final DateTime selectedMonth;
-  final Map<String, List<Event>> eventsByDate;
-  final Map<String, List<TimeBlock>> timeBlocksByDate;
-
-  PlanMyDayCalendarView({
-    required this.events,
-    required this.timeBlocks,
-    required this.selectedMonth,
-    Map<String, List<Event>>? eventsByDate,
-    Map<String, List<TimeBlock>>? timeBlocksByDate,
-  })  : eventsByDate = eventsByDate ?? _groupEventsByDate(events),
-        timeBlocksByDate = timeBlocksByDate ?? _groupTimeBlocksByDate(timeBlocks);
-
-  static Map<String, List<Event>> _groupEventsByDate(List<Event> events) {
-    final Map<String, List<Event>> grouped = {};
-    for (final event in events) {
-      final dateKey = _formatDateKey(event.startTime);
-      grouped.putIfAbsent(dateKey, () => []).add(event);
-    }
-    return grouped;
-  }
-
-  static Map<String, List<TimeBlock>> _groupTimeBlocksByDate(List<TimeBlock> blocks) {
-    final Map<String, List<TimeBlock>> grouped = {};
-    for (final block in blocks) {
-      grouped.putIfAbsent(block.date, () => []).add(block);
-    }
-    return grouped;
-  }
-
-  static String _formatDateKey(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-}
-
-class TaskListLoaded extends PlanMyDayState {
-  final List<Task> tasks;
-  final String? filterStatus;
-
-  TaskListLoaded({
-    required this.tasks,
-    this.filterStatus,
-  });
-
-  List<Task> get filteredTasks {
-    if (filterStatus == null || filterStatus!.isEmpty) {
-      return tasks;
-    }
-    return tasks.where((t) => t.status == filterStatus).toList();
-  }
+  List<Task> get highPriorityTasks =>
+      tasks.where((t) => t.priority >= 3 && !t.isCompleted).toList();
+  List<Task> get overdueTasks => tasks
+      .where((t) =>
+          !t.isCompleted &&
+          t.dueDate != null &&
+          t.dueDate!.isBefore(DateTime.now()))
+      .toList();
+  List<Event> get upcomingEvents =>
+      events.where((e) => e.startTime.isAfter(DateTime.now())).toList();
+  List<Event> get todayEvents =>
+      events.where((e) => _isSameDay(e.startTime, selectedDate)).toList();
 }
 
 class TaskDetailLoaded extends PlanMyDayState {

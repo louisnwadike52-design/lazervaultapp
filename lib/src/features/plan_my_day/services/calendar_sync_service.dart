@@ -6,7 +6,8 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 
 /// Service for syncing with external calendars (Google, Outlook, etc.)
-/// Uses the planning-gateway backend for actual API calls to external providers
+/// Uses the lifestyle-gateway `/api/v1/planning/calendar/*` routes (Plan My Day
+/// was folded into the lifestyle-gateway; the standalone planning-gateway is gone).
 class CalendarSyncService {
   final String _baseUrl;
   final AccountManager _accountManager;
@@ -16,8 +17,8 @@ class CalendarSyncService {
   static const String _accessTokenKey = 'access_token';
 
   /// The request paths below already carry the `/api/v1` prefix
-  /// (`/api/v1/planning/calendar/...`). Both `PLANNING_GATEWAY_URL` and
-  /// `endpointRegistry.httpPlanning` ALSO end in `/api/v1`, so without this the
+  /// (`/api/v1/planning/calendar/...`). Both `LIFESTYLE_GATEWAY_URL` and
+  /// `endpointRegistry.httpLifestyle` ALSO end in `/api/v1`, so without this the
   /// URL doubled to `.../api/v1/api/v1/planning/...` and 404'd. Strip a trailing
   /// `/api/v1` (and any trailing slash) so the final URL has exactly one.
   static String _normalizeBase(String base) {
@@ -84,6 +85,22 @@ class CalendarSyncService {
         syncToken: data['sync_token'],
         eventsSynced: data['events_synced'] ?? 0,
       );
+    }
+
+    // 503 with configured:false → sync isn't set up on this server (no Google
+    // OAuth creds). Surface it as "not configured" so the UI shows a calm
+    // coming-soon state instead of a red failure.
+    if (response.statusCode == 503) {
+      try {
+        final data = jsonDecode(response.body);
+        if (data['configured'] == false) {
+          return GoogleCalendarConnectionResult(
+            success: false,
+            notConfigured: true,
+            message: data['error'] as String?,
+          );
+        }
+      } catch (_) {/* fall through */}
     }
 
     return GoogleCalendarConnectionResult(success: false);
@@ -197,11 +214,18 @@ class GoogleCalendarConnectionResult {
   final bool success;
   final String? syncToken;
   final int eventsSynced;
+  /// True when the backend responded that calendar sync isn't configured
+  /// (HTTP 503, `configured:false`) — the UI should show a "coming soon"
+  /// state rather than a hard connection error.
+  final bool notConfigured;
+  final String? message;
 
   GoogleCalendarConnectionResult({
     required this.success,
     this.syncToken,
     this.eventsSynced = 0,
+    this.notConfigured = false,
+    this.message,
   });
 }
 

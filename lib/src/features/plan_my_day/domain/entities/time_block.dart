@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/plan_my_day/domain/entities/plan_timestamp.dart';
+
 class TimeBlock {
   final String id;
   final String userId;
@@ -45,8 +47,8 @@ class TimeBlock {
       isLocked: json['is_locked'] as bool? ?? false,
       taskIds: (json['task_ids'] as List<dynamic>?)?.cast<String>() ?? [],
       eventIds: (json['event_ids'] as List<dynamic>?)?.cast<String>() ?? [],
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: parsePlanTimestampRequired(json['created_at']),
+      updatedAt: parsePlanTimestampRequired(json['updated_at']),
     );
   }
 

@@ -27,8 +27,13 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
   final _locationController = TextEditingController();
 
   DateTime _startTime = DateTime.now();
+  // End time is OPTIONAL. _hasEndTime gates whether it's sent — when off, the
+  // event is saved as a point in time with NO end (we never fabricate one).
+  // _endTime is only the picker's working value once the user opts in.
   DateTime _endTime = DateTime.now().add(const Duration(hours: 1));
+  bool _hasEndTime = false;
   bool _isAllDay = false;
+  bool _submitting = false;
 
   @override
   void dispose() {
@@ -109,9 +114,10 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
               },
             ),
             SizedBox(height: 16.h),
-            // Date and Time Row
+            // Date + All-day toggle Row
             Row(
               children: [
+                // Date picker
                 Expanded(
                   child: InkWell(
                     onTap: () => _selectDate(context),
@@ -131,7 +137,47 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
                           ),
                           SizedBox(width: 12.w),
                           Text(
-                            'All Day: ${_isAllDay ? 'Yes' : 'No'}',
+                            '${_startTime.day}/${_startTime.month}/${_startTime.year}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                // All-day toggle
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _isAllDay = !_isAllDay),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: _isAllDay
+                              ? const Color(0xFF3B82F6)
+                              : Colors.grey[800]!,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isAllDay
+                                ? Icons.check_box
+                                : Icons.check_box_outline_blank,
+                            color: _isAllDay
+                                ? const Color(0xFF3B82F6)
+                                : Colors.grey[400],
+                            size: 20,
+                          ),
+                          SizedBox(width: 12.w),
+                          Text(
+                            'All day',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16.sp,
@@ -145,31 +191,77 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
               ],
             ),
             SizedBox(height: 16.h),
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _selectStartTime(context),
-                  child: _buildTimeField(
-                    icon: Icons.access_time,
-                    label: 'Start',
-                    time: _startTime,
+            if (!_isAllDay)
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _selectStartTime(context),
+                      child: _buildTimeField(
+                        icon: Icons.access_time,
+                        label: 'Start',
+                        time: _startTime,
+                      ),
+                    ),
                   ),
-                ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _selectEndTime(context),
-                  child: _buildTimeField(
-                    icon: Icons.access_time,
-                    label: 'End',
-                    time: _endTime,
+                  SizedBox(width: 16.w),
+                  // End time is optional: tap to add, tap the x to clear.
+                  Expanded(
+                    child: _hasEndTime
+                        ? Stack(
+                            children: [
+                              InkWell(
+                                onTap: () => _selectEndTime(context),
+                                child: _buildTimeField(
+                                  icon: Icons.access_time,
+                                  label: 'End',
+                                  time: _endTime,
+                                ),
+                              ),
+                              Positioned(
+                                right: 4.w,
+                                top: 0,
+                                bottom: 0,
+                                child: IconButton(
+                                  icon: Icon(Icons.close, size: 16, color: Colors.grey[400]),
+                                  onPressed: () => setState(() => _hasEndTime = false),
+                                  tooltip: 'Remove end time',
+                                ),
+                              ),
+                            ],
+                          )
+                        : InkWell(
+                            onTap: () => setState(() {
+                              _hasEndTime = true;
+                              if (!_endTime.isAfter(_startTime)) {
+                                _endTime = _startTime.add(const Duration(hours: 1));
+                              }
+                            }),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2D2D2D),
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(color: Colors.grey[800]!),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.add, color: Colors.grey[400], size: 20),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Text(
+                                      'End time (optional)',
+                                      style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                   ),
-                ),
+                ],
               ),
-              ],
-            ),
             SizedBox(height: 16.h),
             TextFormField(
               controller: _descriptionController,
@@ -237,22 +329,32 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _submitEvent,
+                onPressed: _submitting ? null : _submitEvent,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
+                  disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
                   minimumSize: Size(double.infinity, 50.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
-                child: Text(
-                  'Create Event',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: _submitting
+                    ? SizedBox(
+                        height: 20.h,
+                        width: 20.h,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Create Event',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -315,7 +417,8 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
           _startTime.hour,
           _startTime.minute,
         );
-        _endTime = _startTime.add(const Duration(hours: 1));
+        // Keep the (opted-in) end time on the same day, after the start.
+        if (_hasEndTime) _endTime = _startTime.add(const Duration(hours: 1));
       });
     }
   }
@@ -369,18 +472,22 @@ class _CreateEventBottomSheetState extends State<CreateEventBottomSheet> {
     }
   }
 
-  void _submitEvent() {
+  Future<void> _submitEvent() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_submitting) return;
+    setState(() => _submitting = true);
 
-    context.read<PlanMyDayCubit>().createEvent(
+    await context.read<PlanMyDayCubit>().createEvent(
       title: _titleController.text,
       description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
       startTime: _startTime,
-      endTime: _endTime,
+      // Never fabricate an end — send it only when the user opted in.
+      endTime: _hasEndTime ? _endTime : null,
       location: _locationController.text.isEmpty ? null : _locationController.text,
       isAllDay: _isAllDay,
     );
 
+    if (!mounted) return;
     Navigator.pop(context);
     widget.onEventCreated();
   }

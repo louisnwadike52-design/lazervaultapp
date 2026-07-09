@@ -1,10 +1,14 @@
+import 'package:lazervault/src/features/plan_my_day/domain/entities/plan_timestamp.dart';
+
 class Event {
   final String id;
   final String userId;
   final String title;
   final String? description;
   final DateTime startTime;
-  final DateTime endTime;
+  // Optional — a point-in-time event (e.g. "Gym at 7am") has no end time.
+  // null renders as just the start; we never fabricate a default end.
+  final DateTime? endTime;
   final String? location;
   final String? color;
   final bool isAllDay;
@@ -22,7 +26,7 @@ class Event {
     required this.title,
     this.description,
     required this.startTime,
-    required this.endTime,
+    this.endTime,
     this.location,
     this.color,
     this.isAllDay = false,
@@ -41,8 +45,8 @@ class Event {
       userId: json['user_id'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
-      startTime: DateTime.parse(json['start_time'] as String),
-      endTime: DateTime.parse(json['end_time'] as String),
+      startTime: parsePlanTimestampRequired(json['start_time']),
+      endTime: parsePlanTimestamp(json['end_time']),
       location: json['location'] as String?,
       color: json['color'] as String?,
       isAllDay: json['is_all_day'] as bool? ?? false,
@@ -51,8 +55,8 @@ class Event {
       reminderIds: (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
       externalEventId: json['external_event_id'] as String?,
       externalCalendar: json['external_calendar'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: parsePlanTimestampRequired(json['created_at']),
+      updatedAt: parsePlanTimestampRequired(json['updated_at']),
     );
   }
 
@@ -63,7 +67,7 @@ class Event {
       'title': title,
       'description': description,
       'start_time': startTime.toIso8601String(),
-      'end_time': endTime.toIso8601String(),
+      'end_time': endTime?.toIso8601String(),
       'location': location,
       'color': color,
       'is_all_day': isAllDay,
