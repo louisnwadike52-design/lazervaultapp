@@ -14,8 +14,6 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
-import 'package:lazervault/core/utils/debouncer.dart';
-import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -23,8 +21,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
-import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
-import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -32,6 +28,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfe
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 class BatchRecipientItem {
   final RecipientModel recipient;
@@ -82,16 +79,9 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     with SingleTickerProviderStateMixin {
   final List<RecipientModel> _tempSelectedRecipients = [];
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _userSearchController = TextEditingController();
-  final Debouncer _userSearchDebouncer = Debouncer.snappy();
   String _searchQuery = '';
 
   late TabController _tabController;
-
-  // User search state
-  List<UserSearchResultEntity> _userSearchResults = [];
-  bool _isSearchingUsers = false;
-  String? _userSearchError;
 
   // Bank account tab state
   final TextEditingController _bankAccountController = TextEditingController();
@@ -148,8 +138,6 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   @override
   void dispose() {
     _searchController.dispose();
-    _userSearchController.dispose();
-    _userSearchDebouncer.dispose();
     _tabController.dispose();
     _bankAccountController.dispose();
     _bankAmountController.dispose();
@@ -162,83 +150,19 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     });
   }
 
-  void _onUserSearchChanged(String query) {
-    _userSearchDebouncer.cancel();
-
-    final cleanQuery = normalizeLazerVaultUserSearchQuery(query);
-
-    if (cleanQuery.isEmpty || cleanQuery.length < 2) {
-      setState(() {
-        _userSearchResults = [];
-        _isSearchingUsers = false;
-        _userSearchError = null;
-      });
-      return;
-    }
-
-    setState(() {
-      _isSearchingUsers = true;
-      _userSearchError = null;
-    });
-
-    _userSearchDebouncer.run(() => _performUserSearch(cleanQuery));
-  }
-
-  Future<void> _performUserSearch(String query) async {
-    if (!mounted) return;
-    setState(() {
-      _isSearchingUsers = true;
-      _userSearchError = null;
-    });
-    try {
-      final cubit = serviceLocator<ProfileCubit>();
-      final results = await cubit.searchUsers(query);
-      if (mounted) {
-        // Filter out current user from results
-        final filtered = results.where((u) {
-          if (_currentUserId != null && u.userId == _currentUserId) return false;
-          if (_currentUsername != null && u.username == _currentUsername) return false;
-          return true;
-        }).toList();
-        setState(() {
-          _userSearchResults = filtered;
-          _isSearchingUsers = false;
-          _userSearchError = filtered.isEmpty ? 'No users found for "$query"' : null;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _userSearchResults = [];
-          _isSearchingUsers = false;
-          _userSearchError = 'Search failed. Please try again.';
-        });
-      }
-    }
-  }
-
-  RecipientModel _userSearchResultToRecipient(UserSearchResultEntity user) {
-    // Use userId as the account identifier - backend resolves via GetPrimaryAccount fallback
-    final accountIdentifier = user.userId;
-    return RecipientModel(
-      id: user.userId,
-      name: user.fullName,
-      accountNumber: accountIdentifier,
-      bankName: 'LazerVault',
-      sortCode: '',
-      isFavorite: false,
-      isSaved: false,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      type: 'internal',
-      internalUserId: user.userId,
-    );
-  }
-
   bool _isSelfTransfer(RecipientModel recipient) {
     if (_currentUserId != null && recipient.id == _currentUserId) return true;
     if (_currentUsername != null && recipient.accountNumber == _currentUsername) return true;
     return false;
+  }
+
+  /// Opens the shared unified search (saved contacts incl. alias → global),
+  /// then toggles the picked user into the batch selection.
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Add recipient');
+    if (result == null || !mounted) return;
+    _toggleRecipientSelection(result.toRecipientModel());
   }
 
   void _toggleRecipientSelection(RecipientModel recipient) {
@@ -289,7 +213,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   /// Persist any newly-entered recipient (one that isn't already a saved
   /// beneficiary) to the user's beneficiaries via RecipientService. Fire and
   /// forget — the cubit refreshes its list so the new beneficiary appears in
-  /// the Saved tab + landing Beneficiaries section. Internal LazerVault users
+  /// the Saved tab + landing Beneficiaries section. Internal Lazervault users
   /// and external bank accounts both persist (the proto carries `type` +
   /// `internalUserId`).
   void _persistNewBeneficiaries() {
@@ -640,234 +564,56 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
 
   // --- User Search Tab ---
   Widget _buildUserSearchTab() {
-    return Column(
-      children: [
-        // Search input
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            decoration: BoxDecoration(
-              color: btCardElevated,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: TextField(
-              controller: _userSearchController,
-              style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
-              decoration: InputDecoration(
-                hintText: 'Search by @username, email, or phone...',
-                hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
-                prefixIcon: Icon(Icons.person_search_outlined, color: btTextTertiary, size: 20.sp),
-                suffixIcon: _userSearchController.text.isNotEmpty
-                    ? GestureDetector(
-                        onTap: () {
-                          _userSearchController.clear();
-                          _onUserSearchChanged('');
-                        },
-                        child: Icon(Icons.clear, color: btTextTertiary, size: 18.sp),
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14.h),
-              ),
-              onChanged: _onUserSearchChanged,
-            ),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Expanded(
-          child: _buildUserSearchResults(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUserSearchResults() {
-    if (_isSearchingUsers) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LazerVaultLoader.small(),
-            SizedBox(height: 16.h),
-            Text('Searching...', style: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp)),
-          ],
-        ),
-      );
-    }
-
-    if (_userSearchController.text.isEmpty) {
-      return _buildEmptySearchState(
-        icon: Icons.person_search_outlined,
-        title: 'Search LazerVault Users',
-        subtitle: 'Type a username, email, or phone number\n(minimum 2 characters)',
-      );
-    }
-
-    if (_userSearchError != null && _userSearchResults.isEmpty) {
-      final isNetworkError = _userSearchError!.contains('failed');
-      return isNetworkError
-          ? _buildErrorRetryState(
-              message: _userSearchError!,
-              onRetry: () => _performUserSearch(
-                normalizeLazerVaultUserSearchQuery(_userSearchController.text),
-              ),
-            )
-          : _buildEmptySearchState(
-              icon: Icons.person_off_outlined,
-              title: _userSearchError!,
-              subtitle: 'Try a different search term',
-            );
-    }
-
-    return ListView.builder(
+    // Uses the SAME shared UnifiedUserSearchSheet as the Send Funds flow —
+    // one seamless search over saved contacts, the global directory, AND
+    // members of your organizations (group accounts). Tapping the bar opens it;
+    // each pick is added to the batch, so you can add several in a row.
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      itemCount: _userSearchResults.length,
-      itemBuilder: (context, index) {
-        final user = _userSearchResults[index];
-        final recipient = _userSearchResultToRecipient(user);
-        final isSelected = _isRecipientSelected(recipient);
-        final isAlreadyAdded = _isAlreadyAdded(recipient);
-
-        return _buildUserSearchResultItem(
-          user: user,
-          recipient: recipient,
-          isSelected: isSelected,
-          isAlreadyAdded: isAlreadyAdded,
-          onTap: isAlreadyAdded ? null : () => _toggleRecipientSelection(recipient),
-        );
-      },
-    );
-  }
-
-  Widget _buildUserSearchResultItem({
-    required UserSearchResultEntity user,
-    required RecipientModel recipient,
-    required bool isSelected,
-    required bool isAlreadyAdded,
-    VoidCallback? onTap,
-  }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 8.h),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12.r),
-          child: Container(
-            padding: EdgeInsets.all(14.w),
-            decoration: BoxDecoration(
-              color: isSelected
-                ? btPurple.withValues(alpha: 0.1)
-                : isAlreadyAdded
-                  ? btBorder.withValues(alpha: 0.3)
-                  : btBackground,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: isSelected ? btPurple : btBorder,
-                width: isSelected ? 1.5 : 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: 4.h),
+          GestureDetector(
+            onTap: _openUnifiedSearch,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: btCardElevated,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: btBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.person_search_outlined,
+                      color: btTextTertiary, size: 20.sp),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Search people to add',
+                    style: GoogleFonts.inter(
+                        color: btTextTertiary, fontSize: 14.sp),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                // Avatar
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: isAlreadyAdded
-                      ? btBorder
-                      : btPurple.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(22.r),
-                  ),
-                  child: user.profilePicture.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(22.r),
-                          child: Image.network(
-                            user.profilePicture,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(
-                              child: Text(
-                                user.initials,
-                                style: GoogleFonts.inter(
-                                  color: isAlreadyAdded ? btTextTertiary : btPurple,
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Center(
-                          child: Text(
-                            user.initials,
-                            style: GoogleFonts.inter(
-                              color: isAlreadyAdded ? btTextTertiary : btPurple,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                ),
-                SizedBox(width: 12.w),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              user.fullName,
-                              style: GoogleFonts.inter(
-                                color: isAlreadyAdded ? btTextTertiary : btTextPrimary,
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 6.w),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                            decoration: BoxDecoration(
-                              color: btPurple.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4.r),
-                            ),
-                            child: Text(
-                              'LV',
-                              style: GoogleFonts.inter(
-                                color: btPurple,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        user.searchMatchInfo,
-                        style: GoogleFonts.inter(
-                          color: isAlreadyAdded ? btBorder : btTextSecondary,
-                          fontSize: 12.sp,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-
-                _buildSelectionIndicator(isSelected, isAlreadyAdded),
-              ],
-            ),
           ),
-        ),
+          SizedBox(height: 24.h),
+          Icon(Icons.groups_2_outlined,
+              size: 44.sp, color: btTextTertiary.withValues(alpha: 0.6)),
+          SizedBox(height: 12.h),
+          Text(
+            'Find recipients by name, @username, phone or email — including '
+            'members of your organizations. Each person you pick is added to '
+            'this batch.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+                color: btTextTertiary, fontSize: 13.sp, height: 1.4),
+          ),
+        ],
       ),
     );
   }
+
 
   // --- Bank Account Tab ---
   Widget _buildBankAccountTab() {
@@ -1661,11 +1407,24 @@ class BatchTransferForm extends StatefulWidget {
   final bool isRepeatTransaction;
   final String? batchReference;
 
+  /// Short-flow mode. When true, tapping Proceed does NOT navigate to the
+  /// Review screen — instead the built transferData map is handed to
+  /// [onShortSubmit] so the host (the short compose screen) can run
+  /// PIN → dispatch → receipt inline. Long flow (default) is unchanged.
+  final bool shortFlow;
+  final void Function(Map<String, dynamic> transferData)? onShortSubmit;
+
+  /// Optional override for the proceed button label (short flow uses "Send").
+  final String? proceedLabel;
+
   const BatchTransferForm({
     super.key,
     this.preSelectedRecipients,
     this.isRepeatTransaction = false,
     this.batchReference,
+    this.shortFlow = false,
+    this.onShortSubmit,
+    this.proceedLabel,
   });
 
   @override
@@ -2294,7 +2053,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       fromAccountId = accountManager.activeAccountDetails?.id ?? '0';
     }
 
-    Get.toNamed(AppRoutes.batchTransferReview, arguments: {
+    final arguments = <String, dynamic>{
       'recipients': recipients,
       'recipientItems': _selectedRecipients,
       'totalAmount': _totalAmount,
@@ -2309,7 +2068,16 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       'recipientNames': Map.fromEntries(
         _selectedRecipients.map((item) => MapEntry(item.recipient.accountNumber, item.recipient.name)),
       ),
-    });
+    };
+
+    // Short flow: hand the built payload to the host screen (compose → PIN →
+    // receipt inline). Long flow: navigate to the dedicated Review screen.
+    if (widget.shortFlow && widget.onShortSubmit != null) {
+      widget.onShortSubmit!(arguments);
+      return;
+    }
+
+    Get.toNamed(AppRoutes.batchTransferReview, arguments: arguments);
   }
 
   @override
@@ -2491,7 +2259,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   : Text(
                       _selectedRecipients.isEmpty
                         ? 'Add Recipients to Continue'
-                        : 'Continue to Review',
+                        : (widget.proceedLabel ?? 'Continue to Review'),
                       style: GoogleFonts.inter(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
@@ -2962,7 +2730,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
           ),
           SizedBox(height: 6.h),
           Text(
-            'Tap "Add" to select saved recipients\nor search for LazerVault users',
+            'Tap "Add" to select saved recipients\nor search for Lazervault users',
             style: GoogleFonts.inter(
               color: btTextSecondary,
               fontSize: 13.sp,
