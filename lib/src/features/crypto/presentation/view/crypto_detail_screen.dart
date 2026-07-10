@@ -11,10 +11,9 @@ import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/price_point.dart';
 import '../../domain/entities/crypto_entity.dart' show CryptoHolding;
 import '../widgets/asset_wallet_sheet.dart';
-import 'buy_crypto_screen.dart';
+import 'buy_crypto_sheet.dart';
 import 'sell_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Controls which action buttons appear on the detail screen.
@@ -2116,12 +2115,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   void _navigateToBuyScreen() {
-    Get.to(
-      () => BlocProvider(
-        create: (context) => serviceLocator<CryptoCubit>(),
-        child: BuyCryptoScreen(selectedCrypto: widget.crypto, lockAsset: true),
-      ),
-      transition: Transition.rightToLeft,
+    // The asset is already chosen on this detail page — open the streamlined
+    // buy bottom sheet pre-locked to it (amount + fiat/crypto toggle → live
+    // quote → PIN → async live receipt), mirroring the sell flow.
+    showBuyCryptoSheet(
+      context,
+      crypto: widget.crypto,
+      cubit: context.read<CryptoCubit>(),
     );
   }
 
