@@ -86,7 +86,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     _loadHolding();
     // Warm the per-token Quidax min-order limits for validation + display.
     try {
-      context.read<CryptoConfigCubit>().load();
+      GetIt.I<CryptoConfigCubit>().load();
     } catch (_) {}
   }
 
@@ -97,7 +97,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   double _minFiat() {
     int? minor;
     try {
-      final cfg = context.read<CryptoConfigCubit>().config;
+      final cfg = GetIt.I<CryptoConfigCubit>().config;
       minor = cfg.minOrderFor(widget.crypto.symbol) ??
           cfg.minOrderFor(CurrencySymbols.currentCurrency);
     } catch (_) {}
@@ -483,6 +483,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// the config that carries the per-token Quidax minimum is still fetching.
   Widget _buildLimitsHint(CryptoHolding? h) {
     return BlocBuilder<CryptoConfigCubit, CryptoConfigState>(
+      bloc: GetIt.I<CryptoConfigCubit>(),
       builder: (context, cfgState) {
         final loading = cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
         final sym = CurrencySymbols.currentSymbol;

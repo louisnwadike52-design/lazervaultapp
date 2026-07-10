@@ -70,7 +70,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     // BlocBuilder below reads its current spendable balance for the pay-from
     // card + validation. Warm the per-token Quidax min-order limits too.
     try {
-      context.read<CryptoConfigCubit>().load();
+      GetIt.I<CryptoConfigCubit>().load();
     } catch (_) {}
   }
 
@@ -79,7 +79,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   double _minFiat() {
     int? minor;
     try {
-      final cfg = context.read<CryptoConfigCubit>().config;
+      final cfg = GetIt.I<CryptoConfigCubit>().config;
       minor = cfg.minOrderFor(widget.crypto.symbol) ??
           cfg.minOrderFor(CurrencySymbols.currentCurrency);
     } catch (_) {}
@@ -385,6 +385,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   /// state while the config carrying the per-token minimum is still fetching.
   Widget _buildLimitsHint(double available) {
     return BlocBuilder<CryptoConfigCubit, CryptoConfigState>(
+      bloc: GetIt.I<CryptoConfigCubit>(),
       builder: (context, cfgState) {
         final loading = cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
         final sym = CurrencySymbols.currentSymbol;
