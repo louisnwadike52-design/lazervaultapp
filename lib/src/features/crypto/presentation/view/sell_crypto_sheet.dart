@@ -84,6 +84,24 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     // cubit is already CryptosLoaded, which a detail-screen's fresh cubit is
     // NOT, so relying on it strands the sheet on "Loading your balance…".
     _loadHolding();
+    // Warm the per-token Quidax min-order limits for validation + display.
+    try {
+      context.read<CryptoConfigCubit>().load();
+    } catch (_) {}
+  }
+
+  /// Quidax minimum order value for this token, in fiat major units. Sourced
+  /// from GetCryptoConfig's min_order map — per-token (from Quidax GET /markets
+  /// minimum_order_size) with the flat currency floor as fallback. 0 = unknown
+  /// (the backend still enforces Quidax's real floor on the quote).
+  double _minFiat() {
+    int? minor;
+    try {
+      final cfg = context.read<CryptoConfigCubit>().config;
+      minor = cfg.minOrderFor(widget.crypto.symbol) ??
+          cfg.minOrderFor(CurrencySymbols.currentCurrency);
+    } catch (_) {}
+    return (minor ?? 0) / 100.0;
   }
 
   Future<void> _loadHolding() async {
@@ -167,7 +185,25 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   bool get _hasValidAmount {
     final h = _holding;
     if (h == null) return false;
-    return _cryptoAmount > 0 && _cryptoAmount <= h.quantity;
+    final min = _minFiat();
+    return _cryptoAmount > 0 &&
+        _cryptoAmount <= h.quantity &&
+        (min <= 0 || _fiatAmount >= min);
+  }
+
+  /// Inline validation message (null when the amount is acceptable).
+  String? _amountError() {
+    final h = _holding;
+    if (h == null || _amountController.text.isEmpty) return null;
+    if (_cryptoAmount <= 0) return null;
+    if (_cryptoAmount > h.quantity) {
+      return 'You only hold ${h.quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}';
+    }
+    final min = _minFiat();
+    if (min > 0 && _fiatAmount < min) {
+      return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}';
+    }
+    return null;
   }
 
   @override
@@ -424,22 +460,46 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
           ),
         ),
         SizedBox(height: 8.h),
-        Text(
-          approx,
-          style: GoogleFonts.inter(
-            fontSize: 13.sp,
-            color: Colors.white.withValues(alpha: 0.6),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(approx,
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6))),
+            _buildLimitsHint(h),
+          ],
         ),
-        if (h != null && _cryptoAmount > h.quantity)
+        if (_amountError() != null)
           Padding(
             padding: EdgeInsets.only(top: 6.h),
-            child: Text(
-              'You only hold ${h.quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
-              style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.red),
-            ),
+            child: Text(_amountError()!,
+                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444))),
           ),
       ],
+    );
+  }
+
+  /// Min (Quidax) / Max (your holding value) hint with a loading state while
+  /// the config that carries the per-token Quidax minimum is still fetching.
+  Widget _buildLimitsHint(CryptoHolding? h) {
+    return BlocBuilder<CryptoConfigCubit, CryptoConfigState>(
+      builder: (context, cfgState) {
+        final loading = cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
+        final sym = CurrencySymbols.currentSymbol;
+        if (loading) {
+          return Text('Loading limits…',
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.4)));
+        }
+        final min = _minFiat();
+        final maxFiat = (h?.quantity ?? 0) * _price();
+        final parts = <String>[];
+        if (min > 0) parts.add('Min $sym${min.toStringAsFixed(0)}');
+        if (maxFiat > 0) parts.add('Max $sym${maxFiat.toStringAsFixed(0)}');
+        return Text(parts.join(' · '),
+            style: GoogleFonts.inter(
+                fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.45)));
+      },
     );
   }
 

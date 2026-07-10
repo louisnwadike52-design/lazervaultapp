@@ -68,7 +68,34 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     _amountController.addListener(() => setState(() {}));
     // The AccountCardsSummaryCubit is loaded app-wide (dashboard); the
     // BlocBuilder below reads its current spendable balance for the pay-from
-    // card + validation without needing a manual refresh here.
+    // card + validation. Warm the per-token Quidax min-order limits too.
+    try {
+      context.read<CryptoConfigCubit>().load();
+    } catch (_) {}
+  }
+
+  /// Quidax minimum order value for this token, in fiat major units (per-token
+  /// from GET /markets minimum_order_size, currency floor fallback). 0=unknown.
+  double _minFiat() {
+    int? minor;
+    try {
+      final cfg = context.read<CryptoConfigCubit>().config;
+      minor = cfg.minOrderFor(widget.crypto.symbol) ??
+          cfg.minOrderFor(CurrencySymbols.currentCurrency);
+    } catch (_) {}
+    return (minor ?? 0) / 100.0;
+  }
+
+  String? _amountError(double available) {
+    if (_amountController.text.isEmpty || _fiatAmount <= 0) return null;
+    final min = _minFiat();
+    if (min > 0 && _fiatAmount < min) {
+      return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}';
+    }
+    if (_fiatAmount > available) {
+      return 'Exceeds your wallet balance';
+    }
+    return null;
   }
 
   @override
@@ -155,7 +182,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
         final available = personal?.availableBalance ?? 0.0;
         final sym = CurrencySymbols.currentSymbol;
         final canCover = personal != null && available >= _fiatAmount && _fiatAmount > 0;
-        final enabled = canCover && !_isTransacting;
+        final min = _minFiat();
+        final meetsMin = min <= 0 || _fiatAmount >= min;
+        final enabled = canCover && meetsMin && !_isTransacting;
 
         return Container(
           decoration: BoxDecoration(
@@ -333,10 +362,45 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           ]),
         ),
         SizedBox(height: 8.h),
-        Text(approx,
-            style: GoogleFonts.inter(
-                fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6))),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(approx,
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6))),
+            _buildLimitsHint(available),
+          ],
+        ),
+        if (_amountError(available) != null)
+          Padding(
+            padding: EdgeInsets.only(top: 6.h),
+            child: Text(_amountError(available)!,
+                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444))),
+          ),
       ],
+    );
+  }
+
+  /// Min (Quidax per-token) / Max (your spendable wallet) hint, with a loading
+  /// state while the config carrying the per-token minimum is still fetching.
+  Widget _buildLimitsHint(double available) {
+    return BlocBuilder<CryptoConfigCubit, CryptoConfigState>(
+      builder: (context, cfgState) {
+        final loading = cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
+        final sym = CurrencySymbols.currentSymbol;
+        if (loading) {
+          return Text('Loading limits…',
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.4)));
+        }
+        final min = _minFiat();
+        final parts = <String>[];
+        if (min > 0) parts.add('Min $sym${min.toStringAsFixed(0)}');
+        if (available > 0) parts.add('Max $sym${available.toStringAsFixed(0)}');
+        return Text(parts.join(' · '),
+            style: GoogleFonts.inter(
+                fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.45)));
+      },
     );
   }
 
