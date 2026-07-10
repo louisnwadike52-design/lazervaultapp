@@ -226,6 +226,16 @@ Future<SwapFlowResult> runSwapFlow({
   // display) and navigate to the processing screen which polls until
   // terminal, then forwards to the crypto_receipt_screen.
   final terminal = cubit.state;
+  // CANCELLED: the user dismissed the quote sheet or tapped Cancel on the PIN
+  // before confirming, so confirmSwapQuote never ran and the state is still the
+  // pre-confirm quote state (SwapQuotePending). Abort quietly — do NOT push the
+  // processing/receipt screen. Only a confirmed outcome (Completed/Pending/
+  // Failed) proceeds below.
+  if (terminal is! SwapCompleted &&
+      terminal is! SwapPending &&
+      terminal is! SwapFailed) {
+    return const SwapFlowResult.initiated();
+  }
   if (terminal is SwapFailed) {
     // PR14: saga persisted the failed row + enqueued a rollback record.
     // Refresh transactions so the user sees "Trade failed" in history
