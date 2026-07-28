@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/chat_receipt_pdf_service.dart';
@@ -102,25 +104,111 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   }
 
   void _openDeeplink() {
-    final route = _s('deeplink_route');
-    if (route.isEmpty) return;
-    // Transfer / batch-transfer receipts fall back to '/transaction-history'
-    // because their native receipt screen needs a full Transaction object a
-    // reference can't build. But the user wants the RECEIPT, not the raw history
-    // list — so for that fallback open a full-screen receipt rendered from THIS
-    // payload (same look as the send-funds receipt, with download/share).
-    if (route == '/transaction-history') {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ChatReceiptFullScreen(payload: widget.payload),
-        ),
-      );
-      return;
+    // Open the ONE canonical, Revolut-style receipt every service already uses
+    // (UnifiedTransactionReceipt — Lazervault logo top-right, barcode, working
+    // share + download, real transaction status), built from THIS card's
+    // payload. `fromHistory: true` makes its close button pop back to the chat
+    // (proper back navigation), instead of resetting to the dashboard.
+    Get.to(
+      () => UnifiedTransactionReceipt(
+        transaction: _toUnifiedTransaction(),
+        fromHistory: true,
+      ),
+    );
+  }
+
+  /// Build a [UnifiedTransaction] from the chat receipt payload so the shared
+  /// receipt screen (used by transfers, crypto, RMB, betting, business…) can
+  /// render it identically. Missing/foreign fields degrade gracefully.
+  UnifiedTransaction _toUnifiedTransaction() {
+    final rawExtra = widget.payload['extra'];
+    final extra = rawExtra is Map
+        ? rawExtra.map((k, v) => MapEntry(k.toString(), v))
+        : <String, dynamic>{};
+    String ex(String k) => extra[k]?.toString() ?? '';
+
+    final amount = double.tryParse(_s('amount').replaceAll(',', '')) ?? 0.0;
+    DateTime created;
+    try {
+      created = DateTime.parse(_s('timestamp')).toLocal();
+    } catch (_) {
+      created = DateTime.now();
     }
-    // Get.toNamed is no-op on unknown routes; the receipt cards specify
-    // routes registered in app_routes.dart for each receipt-capable
-    // feature. Native screen receives the reference via path parameter.
-    Get.toNamed(route);
+
+    final recipient = ex('recipient_name');
+    final serviceType =
+        TransactionServiceType.fromString(_serviceSlug(_s('transaction_type')));
+
+    return UnifiedTransaction(
+      id: _s('reference'),
+      serviceType: serviceType,
+      title: recipient.isNotEmpty ? recipient : serviceType.displayName,
+      description: _s('summary_line').isNotEmpty ? _s('summary_line') : null,
+      amount: amount,
+      currency: _s('currency'),
+      createdAt: created,
+      status: UnifiedTransactionStatus.fromString(_s('status')),
+      flow: _flowFor(_s('transaction_type')),
+      transactionReference: _s('reference'),
+      counterpartyName: recipient.isNotEmpty ? recipient : null,
+      counterpartyAccount:
+          ex('recipient_account').isNotEmpty ? ex('recipient_account') : null,
+      metadata: <String, dynamic>{
+        'fee': _s('fee'),
+        'total_amount': _s('total_amount'),
+        'status': _s('status'),
+        ...extra,
+      },
+    );
+  }
+
+  /// Map the payload's snake_case `transaction_type` to a [TransactionServiceType]
+  /// enum name (camelCase). Unknown types fall back to `unknown` via fromString.
+  String _serviceSlug(String type) {
+    switch (type) {
+      case 'transfer':
+      case 'transfer_intl':
+        return 'transfer';
+      case 'batch_transfer':
+        return 'batchTransfer';
+      case 'crypto_buy':
+      case 'crypto_sell':
+      case 'crypto_swap':
+      case 'crypto_send':
+        return 'crypto';
+      case 'insurance_buy':
+      case 'insurance_claim':
+        return 'insurance';
+      case 'exchange_convert':
+      case 'exchange_international':
+        return 'exchange';
+      case 'split_bill_pay':
+        return 'splitBill';
+      case 'tag_pay':
+        return 'tagPay';
+      case 'qr_pay':
+        return 'qrPayment';
+      case 'id_pay':
+        return 'idPay';
+      case 'giftcard_buy':
+      case 'giftcard_sell':
+        return 'giftCard';
+      default:
+        // airtime/data/electricity/water/etc. already share the enum name.
+        return type;
+    }
+  }
+
+  /// Money the user RECEIVES reads as incoming; everything else is an outgoing
+  /// payment they initiated (direction only affects the +/- sign + colour).
+  TransactionFlow _flowFor(String type) {
+    switch (type) {
+      case 'crypto_sell':
+      case 'exchange_convert':
+        return TransactionFlow.incoming;
+      default:
+        return TransactionFlow.outgoing;
+    }
   }
 
   /// Generate a real PDF receipt and hand it to the native share sheet (so it
