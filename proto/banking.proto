@@ -1877,6 +1877,10 @@ message DirectDebitMandate {
     bool can_debit = 25;              // True if mandate is ready_to_debit and not expired
     bool is_expired = 26;             // True if past end_date
     int64 remaining_limit = 27;       // Remaining amount limit (if applicable)
+
+    // Deposit-method switch (Direct Debit <-> one-time DirectPay) tracking
+    bool switch_processing = 28;      // A pause/reinstate is awaiting Mono confirmation
+    string pending_method = 29;       // Method being switched TO: "direct_debit" / "one_time" / ""
 }
 
 // Get Mandate Request

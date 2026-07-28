@@ -99,17 +99,6 @@ class DocumentsTab extends StatelessWidget {
             trailing: 'Request →',
             onTap: () => _onRequestProofOfFunds(context),
           ),
-          SizedBox(height: 24.h),
-
-          // Transaction History
-          _buildDocumentButton(
-            context,
-            icon: Icons.history_outlined,
-            title: 'Transaction History',
-            subtitle: 'View all transactions',
-            trailing: 'View →',
-            onTap: () => _onViewTransactionHistory(context),
-          ),
           SizedBox(height: 32.h),
 
           // Recent statements (in-memory list maintained by
@@ -381,12 +370,6 @@ class DocumentsTab extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _onViewTransactionHistory(BuildContext context) {
-    // Navigate to transaction history screen
-    Get.back(); // Close bottom sheet first
-    Get.toNamed('/transactions');
   }
 
   Widget _buildDateRangeRow(String label, String value, {VoidCallback? onTap}) {

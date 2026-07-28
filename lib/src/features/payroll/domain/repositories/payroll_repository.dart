@@ -19,6 +19,8 @@ abstract class PayrollRepository {
     String jobTitle = '',
     String? startDate,
     String? userId,
+    String payoutType = 'external',
+    String bankAccountName = '',
   });
   Future<EmployeeEntity> updateEmployee({
     required String employeeId,
@@ -35,6 +37,9 @@ abstract class PayrollRepository {
     String? department,
     String? jobTitle,
     EmployeeStatus? status,
+    String? userId,
+    String? payoutType,
+    String? bankAccountName,
   });
   Future<void> removeEmployee(String employeeId);
   Future<EmployeeEntity> getEmployee(String employeeId);
@@ -67,8 +72,11 @@ abstract class PayrollRepository {
 
   // Payslips
   Future<PaySlipEntity> getPaySlip(String paySlipId);
+  /// Lists pay slips. Pass [payRunId] for a pay run's slips, OR [employeeId]
+  /// for that employee's pay history across all pay runs (employeeId wins).
   Future<PaySlipsPageResult> listPaySlips({
-    required String payRunId,
+    String payRunId = '',
+    String employeeId = '',
     int page = 1,
     int limit = 20,
   });

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
+import 'package:lazervault/core/services/app_activity_bus.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -12,6 +13,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
+import 'package:lazervault/src/features/voice_session/voice_session_activity.dart';
 
 /// App-wide inactivity auto-logout + refresh-on-resume.
 ///
@@ -70,18 +72,22 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     return r.startsWith('/auth/') || r.startsWith('/kyc/');
   }
 
-  // Auto-logout DISABLED for now (per request). Forcing 0 makes _armTimer
-  // never arm the inactivity timer and the resume path never log out,
-  // regardless of the backend-provided `session_inactivity_logout_seconds`.
-  // To re-enable, restore:
-  //   Duration(seconds: endpointRegistry.inactivityTimeoutSeconds);
-  Duration get _timeout => Duration.zero;
+  // Inactivity auto-logout is ENABLED and read LIVE from the registry (single
+  // source of truth, admin-tunable) on every (re)arm — defaults to 90s (1m30s);
+  // an admin can override, or set 0 to disable. See
+  // EndpointRegistry.inactivityTimeoutSeconds.
+  Duration get _timeout =>
+      Duration(seconds: endpointRegistry.inactivityTimeoutSeconds);
 
   // An active voice-agent session counts as activity: while the voice bottom
   // sheet / LiveKit session is engaged the user may be hands-free (speaking, or
   // the agent is processing/awaiting PIN), so we must NOT auto-logout. Treat any
   // VoiceSessionCubit state other than the clearly-idle/terminal ones as active.
   bool get _voiceActive {
+    // Process-global flag set by VoiceSessionCubit — authoritative regardless of
+    // BuildContext scope. Covers the minimized-into-floating-bubble case, where the
+    // sheet is popped and the cubit may sit outside this watcher's context.
+    if (VoiceSessionActivity.isActive) return true;
     try {
       final s = context.read<VoiceSessionCubit>().state;
       return s is! VoiceSessionInitial &&
@@ -92,7 +98,22 @@ class _InactivityWatcherState extends State<InactivityWatcher>
           s is! VoiceSessionMicPermissionDenied &&
           s is! VoiceSessionWebSocketFailed;
     } catch (_) {
-      return false; // Cubit not in scope → treat as not-active.
+      return false; // Cubit not in scope → rely on the global flag above.
+    }
+  }
+
+  // True when the soft keyboard is up (the user is composing a message/typing).
+  // Keyboard key-taps land on the OS keyboard overlay, NOT the Flutter pointer
+  // `Listener`, so without this the timer would fire mid-typing. Read straight
+  // from the platform view insets so it works even though this widget sits
+  // above MediaQuery (no MediaQuery.of here).
+  bool get _keyboardUp {
+    try {
+      final views = WidgetsBinding.instance.platformDispatcher.views;
+      if (views.isEmpty) return false;
+      return views.first.viewInsets.bottom > 0;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -100,17 +121,35 @@ class _InactivityWatcherState extends State<InactivityWatcher>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Non-pointer engagement (typing, chat send/receive, streaming AI reply,
+    // voice activity) pings this bus → re-arm the timer.
+    AppActivityBus.instance.tick.addListener(_onUserInteraction);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    AppActivityBus.instance.tick.removeListener(_onUserInteraction);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
+  @override
+  void didChangeMetrics() {
+    // Fires on keyboard show/hide/resize among other metric changes. A visible
+    // keyboard means the user is actively typing → count it as interaction.
+    if (_keyboardUp) _onUserInteraction();
+  }
+
+  // TESTING TOGGLE: when true, the inactivity auto-logout is fully disabled so
+  // the app never locks to the passcode screen mid-test. SET BACK TO false
+  // before shipping. (Production behaviour is admin-driven via
+  // session_inactivity_logout_seconds.)
+  static const bool _kDisableInactivityForTesting = false;
+
   void _armTimer() {
     _timer?.cancel();
+    if (_kDisableInactivityForTesting) return;
     if (!_isAuthenticated || _inOnboardingFlow) return;
     // A timeout of 0 (or less) means the admin disabled auto-logout
     // (`session_inactivity_logout_seconds = 0`) — don't arm the timer at all.
@@ -127,9 +166,13 @@ class _InactivityWatcherState extends State<InactivityWatcher>
 
   Future<void> _onInactive() async {
     if (_loggingOut || !_isAuthenticated || _inOnboardingFlow) return;
-    // Defer logout while a voice session is active — re-arm and check again
-    // after the next window instead of logging the user out mid-call.
-    if (_voiceActive) {
+    // Defer logout while the user is demonstrably engaged rather than idle:
+    //   * a voice-agent session is live (general or per-service) — hands-free,
+    //   * the soft keyboard is up (composing a chat/message/form).
+    // Re-arm and re-check after the next window instead of logging out mid-use.
+    // (Chat send/receive + streaming replies keep the timer fresh via
+    // AppActivityBus, so an active conversation never reaches this point.)
+    if (_voiceActive || _keyboardUp) {
       _armTimer();
       return;
     }

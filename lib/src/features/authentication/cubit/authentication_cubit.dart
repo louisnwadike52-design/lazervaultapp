@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:dartz/dartz.dart' hide State;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_snapshot_cache.dart';
+import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -14,13 +16,17 @@ import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/login_flow_resolver.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/remote_log_sink.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
-import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
@@ -153,16 +159,66 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
         if (isClosed) return;
 
-        result.fold(
-          (failure) {
-            // Token is invalid or expired, clear session
-            print('Auto login failed: ${failure.message}');
-            _clearSession();
-            emit(AuthenticationInitial());
+        await result.fold(
+          (failure) async {
+            // The ACCESS token failed validation — routine after its ~1h TTL.
+            // Do NOT nuke the session on that alone: first try a refresh-token
+            // rotation. Wiping here (the old behaviour) is what forced returning
+            // users back to the passcode AND dead-ended biometric unlock (the
+            // fingerprint succeeded but the refresh_token was already gone).
+            print('Auto login: access token invalid, attempting refresh: '
+                '${failure.message}');
+            final r = await _authRepository.refreshTokensWithReason();
+            if (isClosed) return;
+            final newAccess = r.tokens?['accessToken'];
+            if (r.tokens != null && newAccess != null && newAccess.isNotEmpty) {
+              final revalidate =
+                  await _validateTokenUseCase(accessToken: newAccess);
+              if (isClosed) return;
+              final restored = revalidate.fold((_) => false, (profile) {
+                _currentProfile = profile;
+                // Revalidated a real profile → refresh the Send Funds flow pin in
+                // the background (updates memory + storage only if it changed).
+                FeatureFlags.pinSendFlowForSession();
+                emit(AuthenticationAuthenticated(profile));
+                unawaited(_registerPushTokenIfReady());
+                // The rotated refresh token was already persisted by
+                // refreshTokensWithReason — that single `refresh_token` IS the
+                // biometric credential (no durable second copy).
+                return true;
+              });
+              if (restored) return;
+            }
+            if (r.authExpired) {
+              // The refresh token was DEFINITIVELY rejected (revoked / expired /
+              // invalid) → the session is genuinely gone → passcode required.
+              print('Auto login: refresh definitively rejected — clearing');
+              await _clearSession();
+              if (isClosed) return;
+              emit(AuthenticationInitial());
+            } else {
+              // TRANSIENT failure (network / timeout / 5xx / server down). The
+              // refresh token is STILL VALID — do NOT log the user out and do NOT
+              // wipe any token. This was the real cause of "fingerprint succeeds
+              // but then asks for my passcode": a mere network blip on cold start
+              // wiped a perfectly good session, so biometric had nothing to
+              // re-mint from. By preserving refresh_token + the durable biometric
+              // copy, the fingerprint fast-path rotates them the moment the
+              // network recovers. Stay logged in if we still hold the profile.
+              print('Auto login: transient refresh failure — session preserved');
+              if (_currentProfile != null) {
+                emit(AuthenticationAuthenticated(_currentProfile!));
+              } else {
+                emit(AuthenticationInitial());
+              }
+            }
           },
-          (profile) {
+          (profile) async {
             // Token is valid, restore session
             _currentProfile = profile;
+            // Revalidated on cold start → refresh the Send Funds flow pin in the
+            // background (memory + storage, only if it changed).
+            FeatureFlags.pinSendFlowForSession();
             emit(AuthenticationAuthenticated(profile));
             unawaited(_registerPushTokenIfReady());
           },
@@ -206,6 +262,23 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Hydrate the shared auth state from a profile obtained via an ALTERNATE
+  /// auth path (the phone+passcode flow uses its own [PhonePasscodeCubit]).
+  /// Without this, the app-wide AuthenticationCubit stays empty after a phone
+  /// signup and downstream screens that read [currentProfile] (KYC readiness,
+  /// dashboard, profile) see no email/user. No network round-trip — the caller
+  /// already holds the freshly-issued profile.
+  void hydrateProfile(ProfileEntity profile) {
+    _currentProfile = profile;
+    // Tag subsequent Loki logs with this user so a failed flow is traceable.
+    RemoteLogSink.instance.setUserId(profile.user.id);
+    // Pin the Send Funds flow for this session too — the phone+passcode path
+    // hydrates here instead of via `_saveSession`, so without this a phone
+    // signup/login would leave the flow unpinned (see `_saveSession`).
+    FeatureFlags.pinSendFlowForSession();
+    emit(AuthenticationSuccess(profile));
+  }
+
   Future<void> _saveSession(ProfileEntity profile) async {
     try {
       // CROSS-USER CACHE GUARD: if the profile we're about to store belongs to a
@@ -226,6 +299,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (isUserSwitch) {
         await _purgeStaleUserCache();
       }
+
+      // Tag subsequent Loki logs with this user (covers every passcode/email/
+      // phone login path that funnels through here).
+      RemoteLogSink.instance.setUserId(profile.user.id);
 
       await _storage.write(
         key: _accessTokenKey,
@@ -269,6 +346,49 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await _storage.delete(key: 'user_avatar_url');
       }
 
+      // Mirror the user's explicit login-method preference locally so the
+      // app-launch router can honor it without a GetMe round-trip. IMPORTANT:
+      // only WRITE when the backend actually has a value — do NOT delete on an
+      // empty value. Empty means "user never chose", not "clear the choice";
+      // deleting it was the main cause of the login flow flip-flopping, because
+      // it wiped the one stable signal for every user who never opened Settings.
+      final pref = profile.user.preferredLoginMethod;
+      if (pref != null && pref.isNotEmpty) {
+        await _storage.write(key: 'preferred_login_method', value: pref);
+      }
+      // Mirror password presence for Settings (its ProfileCubit user, sourced
+      // from user-service, doesn't carry has_password).
+      await _storage.write(
+        key: 'has_password',
+        value: profile.user.hasPassword ? 'true' : 'false',
+      );
+      // Mirror passcode presence too (used by the canonical flow resolver).
+      // NEVER downgrade a known passcode: a passcode credential doesn't vanish
+      // because one GetMe omitted/echoed hasPasscode=false, and a wrongful
+      // 'false' is exactly what sent returning users from the app lock to the
+      // full login page. Treat an existing 'true' — or a passcode-family
+      // login_method — as authoritative and keep it.
+      final existingHasPasscode =
+          (await _storage.read(key: 'has_passcode')) == 'true';
+      final method =
+          (await _storage.read(key: 'login_method'))?.toLowerCase().trim();
+      final passcodeKnown = profile.user.hasPasscode ||
+          existingHasPasscode ||
+          method == 'passcode' ||
+          method == 'phone_passcode';
+      await _storage.write(
+        key: 'has_passcode',
+        value: passcodeKnown ? 'true' : 'false',
+      );
+      // Resolve + cache the SINGLE canonical login flow from the account's real
+      // shape + explicit choice, so every screen/router agrees on the next
+      // launch (offline-safe, default phone_passcode). See LoginFlowResolver.
+      await LoginFlowResolver.record(
+        preferred: pref,
+        hasPasscode: profile.user.hasPasscode,
+        hasPassword: profile.user.hasPassword,
+      );
+
       // Reset locale/currency from registration country (in-memory, derived)
       final localeManager = serviceLocator<LocaleManager>();
       final country = profile.user.country;
@@ -277,6 +397,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       }
 
       _currentProfile = profile;
+
+      // Resolve + pin the Send Funds flow (short vs long) ONCE per session, right
+      // beside the login-flow resolution above. Every send ENTRY point then reads
+      // this in-memory value, so a mid-session background config refresh can't
+      // flip the user between flows mid-journey (e.g. switching right after the
+      // transaction-PIN sheet on a slow network). Re-resolved on the next login.
+      FeatureFlags.pinSendFlowForSession();
     } catch (e) {
       print('Error saving session: $e');
     }
@@ -320,6 +447,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await serviceLocator<SecureStorageService>().deleteIdentityNumbers();
       }
     } catch (_) {/* best-effort */}
+    // The durable biometric session belongs to the PRIOR user — never let the
+    // new user inherit it (biometric_user_id would also mismatch, but drop the
+    // token itself so a stale refresh token can't linger on a shared device).
+    try {
+      if (serviceLocator.isRegistered<SecureStorageService>()) {
+        await serviceLocator<SecureStorageService>().clearBiometricSession();
+      }
+    } catch (_) {/* best-effort */}
 
     // 2. SWR API cache (per-user profile/accounts/tier/limits/balances).
     try {
@@ -357,6 +492,32 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Clear active account to prevent using stale account_id from previous user
       _accountManager.clearActiveAccount();
       _currentProfile = null;
+      // NOTE: the Send Funds flow pin is deliberately KEPT across logout so the
+      // next launch (fast resumption / passcode) routes instantly with the
+      // last-known flow; it is re-resolved + re-persisted on the next login.
+      // Stop tagging Loki logs with the logged-out user.
+      RemoteLogSink.instance.setUserId(null);
+      // Drop the session "has transaction PIN" cache. Without this, if the next
+      // login (same process) is a user whose PIN was cleared server-side (e.g. a
+      // super-admin reset), the stale `true` would skip the required PIN setup.
+      if (serviceLocator.isRegistered<ITransactionPinService>()) {
+        try {
+          serviceLocator<ITransactionPinService>().resetPinCache();
+        } catch (_) {}
+      }
+      // Wipe in-memory P2P caches (conversation snapshots + saved contacts) so
+      // the NEXT user never briefly sees the previous user's chats/contacts.
+      clearAllP2PCaches();
+      // Drop the shared P2P realtime socket. It's a lazy singleton connected
+      // with THIS user's token; its `connect()` early-returns while connected,
+      // so without disconnecting here the next user would keep receiving the
+      // previous user's messages/badge events. Disconnecting forces a clean
+      // reconnect with the new user's token on the next conversations load.
+      if (serviceLocator.isRegistered<P2PChatWebSocketService>()) {
+        try {
+          serviceLocator<P2PChatWebSocketService>().disconnect();
+        } catch (_) {}
+      }
     } catch (e) {
       print('Error clearing session: $e');
     }
@@ -366,19 +527,41 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   Future<void> loginUser({
     required String email,
     required String password,
+    String countryIso = 'NG',
   }) async {
-    print('🔐 Login attempt with email: $email (length: ${email.length})');
+    // `email` is the raw identifier from the sign-in field — it may be an email
+    // OR a phone number. Split into the (email, phone) pair the Login RPC
+    // expects; phone is normalized to E.164 using the country selected in the
+    // login UI (default Nigeria).
+    final id = splitLoginIdentifier(email, countryIso: countryIso);
+    print('🔐 Login attempt (identifier resolved: '
+        '${id.phone.isNotEmpty ? 'phone' : 'email'})');
     if (isClosed) return;
     _isLoggingOut = false; // genuine login attempt — re-enable error surfacing
     emit(AuthenticationLoading());
 
-    final result = await _loginUseCase(email: email, password: password);
+    final result =
+        await _loginUseCase(email: id.email, phone: id.phone, password: password);
 
     if (isClosed) return;
 
     // Handle result properly - fold doesn't await async callbacks
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      // 2FA enabled: route to the 2FA verification flow.
+      if (failure is TwoFactorRequiredFailure) {
+        emit(LoginTwoFactorRequired(twoFactorToken: failure.twoFactorToken, method: failure.method));
+        return;
+      }
+      // Risk-based step-up: route to the OTP flow instead of an error.
+      if (failure is StepUpRequiredFailure) {
+        emit(LoginStepUpRequired(
+          stepUpToken: failure.stepUpToken,
+          method: failure.stepUpMethod,
+          destination: failure.destination,
+        ));
+        return;
+      }
       print('❌ Login failed for email: $email - ${failure.message}');
       // Network/server outages must not be mislabelled as a credential error.
       // Surface a friendly network message for those; otherwise keep the
@@ -419,6 +602,18 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // Handle result properly - fold doesn't await async callbacks
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      if (failure is TwoFactorRequiredFailure) {
+        emit(LoginTwoFactorRequired(twoFactorToken: failure.twoFactorToken, method: failure.method));
+        return;
+      }
+      if (failure is StepUpRequiredFailure) {
+        emit(LoginStepUpRequired(
+          stepUpToken: failure.stepUpToken,
+          method: failure.stepUpMethod,
+          destination: failure.destination,
+        ));
+        return;
+      }
       emit(AuthenticationError(failure.message));
     } else {
       final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
@@ -426,6 +621,29 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await _saveSession(profile);
       await _storage.write(key: 'login_method', value: 'passcode');
       await _storage.write(key: 'stored_email', value: email);
+      emit(AuthenticationSuccess(profile));
+    }
+  }
+
+  /// Complete an adaptive step-up login: verify the OTP and, on success, save the
+  /// session and emit [AuthenticationSuccess] (same as a normal login).
+  Future<void> verifyLoginOtp({
+    required String stepUpToken,
+    required String code,
+  }) async {
+    if (isClosed) return;
+    emit(const AuthenticationLoading());
+    final result = await _authRepository.verifyLoginOtp(
+      stepUpToken: stepUpToken,
+      code: code,
+    );
+    if (isClosed) return;
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      emit(AuthenticationError(failure.message));
+    } else {
+      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+      await _saveSession(profile);
       emit(AuthenticationSuccess(profile));
     }
   }
@@ -448,6 +666,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } else {
       // Store login method preference after successful registration
       await _storage.write(key: 'login_method', value: 'passcode');
+      // Local-authoritative passcode signal (see _registerPasscodeFromSetup).
+      await _storage.write(key: 'has_passcode', value: 'true');
       if (_currentProfile != null) {
         await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
         await _storage.write(key: 'user_first_name', value: _currentProfile!.user.firstName);
@@ -771,6 +991,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
 
     await _clearSession();
+    // Explicit logout revokes the session server-side above. Sweep any LEGACY
+    // durable-biometric keys left on old installs (there is no durable token
+    // anymore — biometric unlocks the single `refresh_token`, which _clearSession
+    // just wiped). The opt-in flag survives, so the next passcode login re-arms
+    // biometric unlock automatically.
+    try {
+      if (serviceLocator.isRegistered<SecureStorageService>()) {
+        await serviceLocator<SecureStorageService>().clearBiometricSession();
+      }
+    } catch (_) {/* best-effort */}
     // Clear currency sync state on logout
     _currencySyncService.clear();
     // Wipe per-user caches owned by long-lived singletons. The group-account
@@ -1350,6 +1580,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             // Determine if secondary verification is needed
             final hasSecondaryPhone = phoneNumber.isNotEmpty;
 
+            // Persist the step so a quit here resumes at email verification.
+            // Fire-and-forget (this fold callback is sync), like the virtual
+            // account creation above; the write completes before backgrounding.
+            _signupStateService?.markAccountCreated();
             // Navigate to email verification (codeSent: false - page will send email on load)
             Get.offAllNamed(AppRoutes.emailVerification, arguments: {
               'email': email,
@@ -1810,6 +2044,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           (profile) async {
             await _saveSession(profile);
             _currentProfile = profile;
+            // Persist the post-account-creation step so quitting during email
+            // verification resumes there (not the signup form). Clears the local
+            // draft; keeps has_incomplete_signup + pins EMAIL_PASSWORD.
+            await _signupStateService?.markAccountCreated();
             if (isClosed) return;
             emit(currentState.copyWith(
               isLoading: false,
@@ -1939,6 +2177,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Determine if secondary verification is needed
       final hasSecondaryPhone = phoneNumber.isNotEmpty;
 
+      // Persist the step so a quit here resumes at email verification.
+      await _signupStateService?.markAccountCreated();
       // Navigate to email verification (codeSent: false - page will send email on load)
       Get.offAllNamed(AppRoutes.emailVerification, arguments: {
         'email': email,
@@ -2214,8 +2454,38 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       print('Error storing passcode locally: $e');
     }
 
-    // Call backend API
-    final result = await _registerPasscodeUseCase(passcode: passcode);
+    // Call backend API. Bounded with a timeout: RegisterPasscode is issued with
+    // no gRPC deadline (CallOptions from withAuth() carry none) and the channel's
+    // keepalive keeps a stalled-but-live connection open, so without this a hung
+    // RPC would leave `isRegistering` true and spin the confirm screen forever.
+    // Any timeout/throw resets the flag so the user can retry.
+    final Either<Failure, void> result;
+    try {
+      result = await _registerPasscodeUseCase(passcode: passcode)
+          .timeout(const Duration(seconds: 20));
+    } on TimeoutException {
+      if (isClosed) return;
+      _showErrorSnackbar('Passcode Registration Failed',
+          'The request timed out. Check your connection and try again.');
+      emit(PasscodeSetupInProgress(
+        isConfirmMode: true,
+        initialPasscode: currentState.initialPasscode,
+        errorMessage: 'Request timed out. Please try again.',
+        isRegistering: false,
+      ));
+      return;
+    } catch (e) {
+      if (isClosed) return;
+      _showErrorSnackbar(
+          'Passcode Registration Failed', 'Something went wrong. Please try again.');
+      emit(PasscodeSetupInProgress(
+        isConfirmMode: true,
+        initialPasscode: currentState.initialPasscode,
+        errorMessage: 'Something went wrong. Please try again.',
+        isRegistering: false,
+      ));
+      return;
+    }
 
     if (isClosed) return;
     result.fold(
@@ -2229,6 +2499,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       (_) async {
         // Store login method preference
         await _storage.write(key: 'login_method', value: 'passcode');
+        // The user JUST set a passcode — record it locally as authoritative so
+        // the passcode lock recognises them even if a later GetMe echoes a stale
+        // hasPasscode=false (the source of the "app lock → login page" bug).
+        await _storage.write(key: 'has_passcode', value: 'true');
         if (_currentProfile != null) {
           await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
         }
@@ -2262,6 +2536,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   Future<void> skipPasscodeSetup() async {
     // Mark signup as complete even when skipping passcode
     await _signupStateService?.markSignupComplete();
+
+    // Flag KYC onboarding as pending, same as the register path — a user who
+    // SKIPS passcode setup is still a new signup that must be offered KYC on
+    // reaching the dashboard (previously only the register branch set this, so
+    // passcode-skippers silently missed the onboarding KYC gate).
+    await _storage.write(key: 'kyc_onboarding_pending', value: 'true');
 
     // Create default stablecoin wallets in background
     _triggerBackgroundWalletCreation();
@@ -2315,10 +2595,68 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     final currentState = state as PasscodeLoginInProgress;
 
+    final storedPhone = await _storage.read(key: 'stored_phone');
     // Try multiple keys for email (for backwards compatibility)
     String? email = await _storage.read(key: _userEmailKey);
     if (email == null || email.isEmpty) {
       email = await _storage.read(key: 'stored_email');
+    }
+
+    // Phone+passcode (passwordless) accounts MUST authenticate by phone
+    // (LoginWithPhonePasscode). Using the email path for them fails with
+    // "error finding user" when no email is stored. `stored_phone` is written
+    // ONLY by the phone+passcode flows (signup + phone login), so its presence
+    // reliably identifies a phone-primary account regardless of the (possibly
+    // stale) login_method or whether the platform-mode pref has loaded yet.
+    final usePhone = storedPhone != null && storedPhone.isNotEmpty;
+
+    if (usePhone) {
+      print('🔐 Passcode login attempt - using PHONE: $storedPhone');
+      if (isClosed) return;
+      emit(currentState.copyWith(isAuthenticating: true, clearError: true));
+
+      final result = await _authRepository.loginWithPhonePasscode(
+        phone: storedPhone,
+        passcode: passcode,
+      );
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          print('🔐 Phone passcode login failed: ${failure.message}');
+          // 2FA enabled: route to the 2FA verification flow. The lock screen
+          // listens for LoginTwoFactorRequired — this MUST NOT be swallowed as a
+          // generic "Login Failed", or a 2FA-enabled user is locked out of the
+          // daily unlock path (parity with the full phone-login screen).
+          if (failure is TwoFactorRequiredFailure) {
+            emit(LoginTwoFactorRequired(
+                twoFactorToken: failure.twoFactorToken, method: failure.method));
+            return;
+          }
+          // Risk-based step-up: route to the OTP flow instead of an error.
+          if (failure is StepUpRequiredFailure) {
+            emit(LoginStepUpRequired(
+              stepUpToken: failure.stepUpToken,
+              method: failure.stepUpMethod,
+              destination: failure.destination,
+            ));
+            return;
+          }
+          _showErrorSnackbar('Login Failed', failure.message);
+          emit(PasscodeLoginInProgress(
+            enteredPasscode: '',
+            isAuthenticating: false,
+            errorMessage: failure.message,
+          ));
+        },
+        (profile) async {
+          print('🔐 Phone passcode login successful for: $storedPhone');
+          await _saveSession(profile);
+          await _storage.write(key: 'login_method', value: 'phone_passcode');
+          await _storage.write(key: 'stored_phone', value: storedPhone);
+          emit(AuthenticationSuccess(profile));
+        },
+      );
+      return;
     }
 
     print('🔐 Passcode login attempt - Email from storage: $email');
@@ -2344,6 +2682,22 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     result.fold(
       (failure) {
         print('🔐 Passcode login failed: ${failure.message}');
+        // Same 2FA / step-up enforcement as the phone branch above — the email
+        // passcode lock screen must also route a 2FA-enabled user to the
+        // verification flow instead of swallowing the challenge as an error.
+        if (failure is TwoFactorRequiredFailure) {
+          emit(LoginTwoFactorRequired(
+              twoFactorToken: failure.twoFactorToken, method: failure.method));
+          return;
+        }
+        if (failure is StepUpRequiredFailure) {
+          emit(LoginStepUpRequired(
+            stepUpToken: failure.stepUpToken,
+            method: failure.stepUpMethod,
+            destination: failure.destination,
+          ));
+          return;
+        }
         _showErrorSnackbar('Login Failed', failure.message);
         emit(PasscodeLoginInProgress(
           enteredPasscode: '',
@@ -2390,7 +2744,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// Returns the setup data including QR code and backup codes
   Future<TwoFactorSetup> enableTwoFactor(TwoFactorMethod method) async {
     if (isClosed) throw Exception('Cubit is closed');
-    final result = await _authRepository.enableTwoFactor(method: method);
+    // Bounded — a stalled EnableTwoFactor RPC must not leave the "Enable" button
+    // spinning forever. On timeout return the empty setup (treated as failure by
+    // the caller, which already snackbar'd nothing yet) with a clear message.
+    final Either<Failure, TwoFactorSetup> result;
+    try {
+      result = await _authRepository
+          .enableTwoFactor(method: method)
+          .timeout(const Duration(seconds: 20));
+    } on TimeoutException {
+      _showErrorSnackbar(
+          '2FA setup failed', 'The request timed out. Please try again.');
+      return const TwoFactorSetup.empty();
+    }
     return result.fold(
       (failure) {
         _showErrorSnackbar('2FA setup failed', failure.message);
@@ -2403,7 +2769,20 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// Complete two-factor authentication setup by verifying the code
   Future<bool> completeTwoFactorSetup(String userId, String code) async {
     if (isClosed) return false;
-    final result = await _authRepository.completeTwoFactorSetup(code: code);
+    // Bounded — a stalled CompleteTwoFactorSetup RPC must not leave the setup
+    // sheet's verify spinner running forever.
+    final Either<Failure, void> result;
+    try {
+      result = await _authRepository
+          .completeTwoFactorSetup(code: code)
+          .timeout(const Duration(seconds: 20));
+    } on TimeoutException {
+      if (isClosed) return false;
+      _showErrorSnackbar(
+          'Verification failed', 'The request timed out. Please try again.');
+      return false;
+    }
+    if (isClosed) return false;
     return result.fold(
       (failure) {
         _showErrorSnackbar('Verification failed', failure.message);
@@ -2419,13 +2798,24 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
-  /// Verify two-factor authentication code during login
+  /// Verify a 2FA code during login. Verifies via the backend VerifyTwoFactor
+  /// RPC (TOTP / SMS / email / backup code), saves the session on success, emits
+  /// AuthenticationSuccess, and returns true so the screen can navigate.
   Future<bool> verifyTwoFactor(String twoFactorToken, String code) async {
     if (isClosed) return false;
-
-    // Login-flow 2FA verification is handled by the dedicated
-    // TwoFactorVerificationScreen path which calls a different RPC
-    // (verifyLoginTwoFactor) — kept here as a no-op for legacy callers.
+    final result = await _authRepository.verifyTwoFactor(
+      twoFactorToken: twoFactorToken,
+      code: code,
+    );
+    if (isClosed) return false;
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      _showErrorSnackbar('Verification failed', failure.message);
+      return false;
+    }
+    final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+    await _saveSession(profile);
+    emit(AuthenticationSuccess(profile));
     return true;
   }
 
@@ -2467,17 +2857,24 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
-  /// Send a new 2FA code (for SMS/Email methods)
-  Future<bool> sendTwoFactorCode() async {
+  /// (Re)send a 2FA code for SMS/Email methods. During LOGIN pass the temp
+  /// [twoFactorToken] from the login response (used as the Bearer); during 2FA
+  /// SETUP call with no argument (the authed session's access token is used).
+  /// No-op for TOTP.
+  Future<bool> sendTwoFactorCode([String? twoFactorToken]) async {
     if (isClosed) return false;
-
-    // EnableTwoFactor re-issues a fresh SMS/email code as a side-effect.
-    // For TOTP this is a no-op; we surface a friendly message either way.
-    _showSuccessSnackbar(
-      'Code Sent',
-      'A new verification code has been sent.',
+    final result = await _authRepository.sendTwoFactorLoginCode(twoFactorToken: twoFactorToken);
+    if (isClosed) return false;
+    return result.fold(
+      (failure) {
+        _showErrorSnackbar('Could not send code', failure.message);
+        return false;
+      },
+      (_) {
+        _showSuccessSnackbar('Code sent', 'A verification code has been sent.');
+        return true;
+      },
     );
-    return true;
   }
 
   /// Update profile after email/phone verification in signup flow
@@ -2593,20 +2990,60 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         newPassword: newPassword,
       );
 
+      // Feedback (success/error) is surfaced by the screen via an on-theme
+      // status bottom sheet — don't also fire a snackbar here (double feedback).
       result.fold(
-        (failure) {
-          emit(AuthenticationError(failure.message));
-          _showErrorSnackbar('Error', failure.message);
-        },
-        (_) {
-          emit(const PasswordResetSuccess());
-          _showSuccessSnackbar('Success', 'Password reset successfully');
-        },
+        (failure) => emit(AuthenticationError(failure.message)),
+        (_) => emit(const PasswordResetSuccess()),
       );
     } catch (e) {
       emit(AuthenticationError(e.toString()));
-      _showErrorSnackbar('Error', e.toString());
     }
+  }
+
+  // ===== Login-method preference + initial password (Settings) =====
+
+  /// Persist the user's login-method preference on the backend and mirror it to
+  /// secure storage so the next cold start honors it. Returns the applied
+  /// method on success (or a Failure). Does NOT emit AuthenticationSuccess (to
+  /// avoid navigation side-effects on the settings screen).
+  Future<Either<Failure, String>> setPreferredLoginMethod(String method) async {
+    final res = await _authRepository.setPreferredLoginMethod(method: method);
+    await res.fold(
+      (_) async {},
+      (applied) async {
+        // Explicit user choice from Settings — update BOTH the mirror and the
+        // canonical resolved flow so the login/signup screens switch immediately
+        // and consistently on the next launch.
+        await LoginFlowResolver.setExplicit(applied, storage: _storage);
+        if (_currentProfile != null) {
+          _currentProfile = ProfileEntity(
+            user: _currentProfile!.user.copyWith(preferredLoginMethod: applied),
+            session: _currentProfile!.session,
+          );
+        }
+      },
+    );
+    return res;
+  }
+
+  /// Set an initial password for a passwordless account, then reflect
+  /// has_password locally. Returns success/failure for the caller to render.
+  Future<Either<Failure, void>> setInitialPassword(String newPassword) async {
+    final res = await _authRepository.setPassword(newPassword: newPassword);
+    await res.fold(
+      (_) async {},
+      (_) async {
+        await _storage.write(key: 'has_password', value: 'true');
+        if (_currentProfile != null) {
+          _currentProfile = ProfileEntity(
+            user: _currentProfile!.user.copyWith(hasPassword: true),
+            session: _currentProfile!.session,
+          );
+        }
+      },
+    );
+    return res;
   }
 
   /// Parse delivery method string to enum

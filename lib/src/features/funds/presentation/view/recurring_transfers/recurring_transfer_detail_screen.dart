@@ -19,24 +19,44 @@ class RecurringTransferDetailScreen extends StatefulWidget {
 class _RecurringTransferDetailScreenState
     extends State<RecurringTransferDetailScreen> {
   late RecurringTransferEntity _transfer;
+  // True once [_transfer] holds a real entity. Starts false when the screen is
+  // opened with just an id (String) — we then show a loader until the cubit
+  // fetches the full record. Guards every read of the `late _transfer`.
+  bool _hasTransfer = false;
+  // The recurring-transfer id to load, whether the route passed a full entity
+  // or just its id.
+  String _transferId = '';
   bool _executionsLoaded = false;
   bool _isActionLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _transfer = Get.arguments as RecurringTransferEntity;
-    // Load fresh data and executions
-    _refreshDetail();
-    _loadExecutions();
+    // Accept EITHER a full RecurringTransferEntity (render immediately) OR a
+    // String id (fetch it, show a loader meanwhile). Callers used to crash here
+    // with "String is not a subtype of RecurringTransferEntity" when they
+    // passed `t.id`; this makes the screen tolerant of both.
+    final args = Get.arguments;
+    if (args is RecurringTransferEntity) {
+      _transfer = args;
+      _hasTransfer = true;
+      _transferId = args.id;
+    } else if (args is String) {
+      _transferId = args;
+    }
+    // Load fresh data and executions (works from the id alone).
+    if (_transferId.isNotEmpty) {
+      _refreshDetail();
+      _loadExecutions();
+    }
   }
 
   void _refreshDetail() {
-    context.read<RecurringTransferCubit>().loadRecurringTransfer(_transfer.id);
+    context.read<RecurringTransferCubit>().loadRecurringTransfer(_transferId);
   }
 
   void _loadExecutions() {
-    context.read<RecurringTransferCubit>().loadExecutions(_transfer.id);
+    context.read<RecurringTransferCubit>().loadExecutions(_transferId);
   }
 
   @override
@@ -65,11 +85,15 @@ class _RecurringTransferDetailScreenState
           if (state is RecurringTransferDetailLoaded) {
             setState(() {
               _transfer = state.transfer;
+              _hasTransfer = true;
+              _transferId = state.transfer.id;
               _isActionLoading = false;
             });
           } else if (state is RecurringTransferUpdated) {
             setState(() {
               _transfer = state.transfer;
+              _hasTransfer = true;
+              _transferId = state.transfer.id;
               _isActionLoading = false;
             });
             Get.snackbar('Success', state.message,
@@ -93,6 +117,14 @@ class _RecurringTransferDetailScreenState
           }
         },
         builder: (context, state) {
+          // Opened with only an id and not yet loaded → loader (or a friendly
+          // empty state if the fetch failed), instead of reading `late _transfer`.
+          if (!_hasTransfer) {
+            if (state is RecurringTransferError) {
+              return _buildLoadError(state.message);
+            }
+            return const Center(child: LazerVaultLoader());
+          }
           return SingleChildScrollView(
             padding: EdgeInsets.all(16.w),
             child: Column(
@@ -107,6 +139,55 @@ class _RecurringTransferDetailScreenState
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Shown when the screen was opened with only an id and the fetch failed —
+  /// avoids an infinite loader and offers a retry.
+  Widget _buildLoadError(String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                color: const Color(0xFFEF4444), size: 44.sp),
+            SizedBox(height: 12.h),
+            Text(
+              "Couldn't load this recurring payment",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp),
+            ),
+            SizedBox(height: 16.h),
+            TextButton.icon(
+              onPressed: _transferId.isEmpty
+                  ? null
+                  : () {
+                      _refreshDetail();
+                      _loadExecutions();
+                    },
+              icon: Icon(Icons.refresh_rounded,
+                  size: 18.sp, color: const Color(0xFF3B82F6)),
+              label: Text('Try again',
+                  style: TextStyle(
+                      color: const Color(0xFF3B82F6),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
       ),
     );
   }

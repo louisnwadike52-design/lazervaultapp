@@ -2,6 +2,7 @@ import '../entities/split_bill_entity.dart';
 
 abstract class SplitBillRepository {
   Future<SplitBillEntity> createSplitBill({
+    required String title,
     required double totalAmount,
     required String currency,
     required String description,
@@ -39,17 +40,29 @@ abstract class SplitBillRepository {
     String? reason,
   });
 
-  Future<int> sendSplitBillReminder({required String splitBillId});
+  /// Send reminders to unpaid participants. When [participantUserIds] is provided,
+  /// only those participants are reminded (the selective "choose who" flow); null/
+  /// empty reminds every pending participant.
+  Future<int> sendSplitBillReminder({
+    required String splitBillId,
+    List<String>? participantUserIds,
+  });
 }
 
 class SplitBillParticipantInput {
+  /// Preferred stable key (from the search result). When set, the backend keys
+  /// the participant by this and treats username/displayName as display-only.
+  final String userId;
   final String username;
+  final String displayName;
   final double amount;
   final double percentage;
 
   const SplitBillParticipantInput({
-    required this.username,
     required this.amount,
+    this.userId = '',
+    this.username = '',
+    this.displayName = '',
     this.percentage = 0.0,
   });
 }
@@ -58,12 +71,19 @@ class SplitBillParticipantInput {
 /// A null receiver means the receiver is the creator (legacy behaviour).
 class SplitBillReceiverInput {
   final String type;
-  final String username; // internal_user
+  final String userId; // internal_user: preferred stable key
+  final String username; // internal_user: optional (display / legacy)
+  final String displayName; // internal_user: display only
   final String bankCode; // external_bank
   final String accountNumber; // external_bank
 
-  const SplitBillReceiverInput.internalUser(this.username)
-      : type = 'internal_user',
+  /// Internal Lazervault receiver, keyed by a stable user id. [username] /
+  /// [displayName] are display-only; the account is resolved server-side.
+  const SplitBillReceiverInput.internalUser({
+    required this.userId,
+    this.username = '',
+    this.displayName = '',
+  })  : type = 'internal_user',
         bankCode = '',
         accountNumber = '';
 
@@ -71,7 +91,9 @@ class SplitBillReceiverInput {
     required this.bankCode,
     required this.accountNumber,
   })  : type = 'external_bank',
-        username = '';
+        userId = '',
+        username = '',
+        displayName = '';
 }
 
 class PaySplitBillResult {

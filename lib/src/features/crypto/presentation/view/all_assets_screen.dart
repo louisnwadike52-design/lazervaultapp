@@ -8,10 +8,16 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../widgets/asset_wallet_sheet.dart';
+import '../widgets/asset_network_badge.dart';
+import 'buy_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 /// Controls what happens when an asset is tapped.
-enum AssetSelectionMode { browse, buy, sell }
+///   - browse : expand an inline accordion (wallet / details CTAs).
+///   - buy    : open the streamlined buy bottom sheet locked to the asset.
+///   - sell   : go to the asset detail screen (sell entry).
+///   - receive: open the receive/deposit address sheet for the asset.
+enum AssetSelectionMode { browse, buy, sell, receive }
 
 class AllAssetsScreen extends StatefulWidget {
   final AssetSelectionMode mode;
@@ -43,6 +49,16 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Whether the user holds this asset, from the already-loaded holdings in
+  /// the shared cubit. Used to force the network badge visible even if the
+  /// server-side mirror balance lags.
+  bool _isHeld(String symbol) {
+    final s = context.read<CryptoCubit>().state;
+    if (s is! CryptosLoaded) return false;
+    final sym = symbol.toLowerCase();
+    return s.holdings.any((h) => h.cryptoSymbol.toLowerCase() == sym && h.quantity > 0);
   }
 
   List<Crypto> _filteredAssets(List<Crypto> assets) {
@@ -114,6 +130,33 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
     );
   }
 
+  /// Mode-aware header so the picker reads as the action the user is taking.
+  String get _headerTitle {
+    switch (widget.mode) {
+      case AssetSelectionMode.buy:
+        return 'Buy crypto';
+      case AssetSelectionMode.receive:
+        return 'Receive crypto';
+      case AssetSelectionMode.sell:
+        return 'Sell crypto';
+      case AssetSelectionMode.browse:
+        return 'All Assets';
+    }
+  }
+
+  String _headerSubtitle(int count) {
+    switch (widget.mode) {
+      case AssetSelectionMode.buy:
+        return 'Choose an asset to buy';
+      case AssetSelectionMode.receive:
+        return 'Choose an asset to deposit';
+      case AssetSelectionMode.sell:
+        return 'Choose an asset to sell';
+      case AssetSelectionMode.browse:
+        return '$count supported assets';
+    }
+  }
+
   Widget _buildHeader() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -136,7 +179,7 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'All Assets',
+                  _headerTitle,
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
@@ -147,7 +190,7 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                   builder: (context, state) {
                     final count = state is CryptosLoaded ? state.supportedAssets.length : 0;
                     return Text(
-                      '$count supported assets',
+                      _headerSubtitle(count),
                       style: GoogleFonts.inter(
                         fontSize: 13.sp,
                         color: Colors.white.withValues(alpha: 0.6),
@@ -305,18 +348,38 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-          if (widget.mode == AssetSelectionMode.browse) {
-            setState(() {
-              _expandedSymbol = isExpanded ? null : crypto.symbol;
-            });
-            return;
+          switch (widget.mode) {
+            case AssetSelectionMode.browse:
+              setState(() {
+                _expandedSymbol = isExpanded ? null : crypto.symbol;
+              });
+              return;
+            case AssetSelectionMode.buy:
+              // Direct integration of the canonical buy surface: open the
+              // streamlined buy bottom sheet pre-locked to this asset (live
+              // rate → runSwapFlow → PIN → async receipt), instead of routing
+              // through the detail screen. The shared CryptoCubit is in scope
+              // (passed via BlocProvider.value by the caller); the sheet reads
+              // the app-global AccountCardsSummaryCubit + GetIt CryptoConfigCubit.
+              showBuyCryptoSheet(
+                context,
+                crypto: crypto,
+                cubit: context.read<CryptoCubit>(),
+              );
+              return;
+            case AssetSelectionMode.receive:
+              // Open the receive/deposit address sheet for the picked asset
+              // (network picker + QR + copy). Provisions the address on demand.
+              _openWalletSheet(crypto);
+              return;
+            case AssetSelectionMode.sell:
+              // Sell selection goes to the asset detail screen (sell entry).
+              Get.toNamed(
+                AppRoutes.cryptoDetails,
+                arguments: crypto,
+              );
+              return;
           }
-          // Buy / sell selection modes go straight to the details
-          // route as before (those callers select an asset to act on).
-          Get.toNamed(
-            AppRoutes.cryptoDetails,
-            arguments: crypto,
-          );
         },
         borderRadius: BorderRadius.circular(14.r),
         child: Container(
@@ -461,6 +524,20 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                           color: Colors.white.withValues(alpha: 0.06),
                           height: 12.h,
                         ),
+                        // Network the user holds this asset on. Self-resolving on
+                        // expand (lazy, non-blocking); shimmers while loading and
+                        // hides itself when the asset isn't held.
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: AssetNetworkBadge(
+                            symbol: crypto.symbol,
+                            // Cross-check the already-loaded holdings so a held
+                            // asset's badge shows even when the server mirror
+                            // balance lags (Quidax is the source of truth).
+                            heldHint: _isHeld(crypto.symbol),
+                          ),
+                        ),
+                        SizedBox(height: 10.h),
                         Row(children: [
                           Expanded(child: _accordionCta(
                             label: 'Show wallet',

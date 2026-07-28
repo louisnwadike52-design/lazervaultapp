@@ -1,7 +1,7 @@
 import 'package:lazervault/src/features/contacts/data/models/lazervault_user_match_model.dart';
 import 'package:lazervault/src/features/contacts/data/repositories/contact_sync_repository.dart';
 
-/// Use case for finding LazerVault users from contacts
+/// Use case for finding Lazervault users from contacts
 class FindLazerVaultUsersUseCase {
   final ContactSyncRepository _repository;
 

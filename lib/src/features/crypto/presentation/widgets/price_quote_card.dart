@@ -142,7 +142,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     setState(() {
       _price = _lastGoodPrice;
       _error = _lastGoodPrice != null
-          ? 'Rate paused — retrying'
+          ? 'Rate paused, retrying'
           : 'Rate unavailable';
       _loading = false;
     });

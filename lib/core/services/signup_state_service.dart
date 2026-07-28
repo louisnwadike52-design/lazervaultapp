@@ -10,9 +10,60 @@ class SignupStateService {
   static const String _signupStepKey = 'current_signup_step';
   static const String _hasIncompleteSignupKey = 'has_incomplete_signup';
 
+  // Pins the auth mode for an IN-PROGRESS onboarding journey. Written when a
+  // phone (or email) signup starts so that an admin flipping the platform
+  // auth_mode mid-onboarding does NOT switch a user who is already partway
+  // through one flow into the other. Boot routing reads this to resume the
+  // correct flow. Values mirror the User.authType enum: 'PHONE_PASSCODE' |
+  // 'EMAIL_PASSWORD'.
+  static const String _onboardingAuthTypeKey = 'onboarding_auth_type';
+  static const String authTypePhonePasscode = 'PHONE_PASSCODE';
+  static const String authTypeEmailPassword = 'EMAIL_PASSWORD';
+
+  // Phone+passcode onboarding step markers (parallel to SignupDraft.step*).
+  // Persisted via [markPhoneStep] so a kill/restart resumes at the right
+  // phone screen.
+  static const String stepPhoneOtp = 'phone_otp';
+  static const String stepPhonePasscodeCreate = 'phone_passcode_create';
+  static const String stepPhonePersonalDetails = 'phone_personal_details';
+  static const String stepPhoneOptionalEmail = 'phone_optional_email';
+
   final FlutterSecureStorage _storage;
 
   SignupStateService(this._storage);
+
+  // ==================== Onboarding Auth Type (mode pinning) ====================
+
+  /// Pin the auth mode for the in-progress onboarding journey.
+  Future<void> saveOnboardingAuthType(String authType) async {
+    try {
+      await _storage.write(key: _onboardingAuthTypeKey, value: authType);
+    } catch (e) {
+      print('Error saving onboarding auth type: $e');
+    }
+  }
+
+  /// Read the pinned onboarding auth type (null if none).
+  Future<String?> getOnboardingAuthType() async {
+    try {
+      return await _storage.read(key: _onboardingAuthTypeKey);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Mark the current phone-onboarding step and flag the signup incomplete so
+  /// boot routing resumes the phone flow at this step.
+  Future<void> markPhoneStep(String step) async {
+    try {
+      await _storage.write(key: _signupStepKey, value: step);
+      await _storage.write(key: _hasIncompleteSignupKey, value: 'true');
+      await _storage.write(
+          key: _onboardingAuthTypeKey, value: authTypePhonePasscode);
+    } catch (e) {
+      print('Error saving phone step: $e');
+    }
+  }
 
   // ==================== Draft Operations (Pre-Account Creation) ====================
 
@@ -60,6 +111,7 @@ class SignupStateService {
       await _storage.delete(key: _signupDraftKey);
       await _storage.delete(key: _signupStepKey);
       await _storage.delete(key: _hasIncompleteSignupKey);
+      await _storage.delete(key: _onboardingAuthTypeKey);
     } catch (e) {
       print('Error clearing signup draft: $e');
     }
@@ -163,28 +215,43 @@ class SignupStateService {
 
   // ==================== Post-Account Creation State ====================
 
-  /// Mark that account has been created (move from draft to backend tracking)
-  /// This should clear the local draft as backend now tracks progress
+  /// Persist an EMAIL-flow onboarding step so a kill/restart resumes at the right
+  /// screen — the email-flow analogue of [markPhoneStep]. Writes the step, flags
+  /// the signup incomplete, and pins the auth type to EMAIL_PASSWORD (so an admin
+  /// flipping the platform auth_mode mid-onboarding can't switch flows).
+  Future<void> _markEmailStep(String step) async {
+    try {
+      await _storage.write(key: _signupStepKey, value: step);
+      await _storage.write(key: _hasIncompleteSignupKey, value: 'true');
+      await _storage.write(
+          key: _onboardingAuthTypeKey, value: authTypeEmailPassword);
+    } catch (e) {
+      print('Error saving email step: $e');
+    }
+  }
+
+  /// Mark that the account has been created (move from local draft to step
+  /// tracking). Clears the pre-account draft blob (backend now owns progress) but
+  /// KEEPS the incomplete-signup flag + step so a quit here resumes at email
+  /// verification.
   Future<void> markAccountCreated() async {
-    await saveCurrentStep(SignupDraft.stepAccountCreate);
-    // Clear the draft as we now rely on backend for progress
-    // but keep the hasIncompleteSignup flag until complete
+    await _markEmailStep(SignupDraft.stepAccountCreate);
     await _storage.delete(key: _signupDraftKey);
   }
 
-  /// Mark email verification step
+  /// Mark email verification step (resume → email verification screen).
   Future<void> markEmailVerificationStep() async {
-    await saveCurrentStep(SignupDraft.stepEmailVerify);
+    await _markEmailStep(SignupDraft.stepEmailVerify);
   }
 
-  /// Mark phone verification step
+  /// Mark phone verification step (email-flow with phone-primary contact).
   Future<void> markPhoneVerificationStep() async {
-    await saveCurrentStep(SignupDraft.stepPhoneVerify);
+    await _markEmailStep(SignupDraft.stepPhoneVerify);
   }
 
-  /// Mark passcode setup step
+  /// Mark passcode setup step (resume → passcode setup screen).
   Future<void> markPasscodeSetupStep() async {
-    await saveCurrentStep(SignupDraft.stepPasscodeSetup);
+    await _markEmailStep(SignupDraft.stepPasscodeSetup);
   }
 
   /// Mark signup as complete and clear all local state

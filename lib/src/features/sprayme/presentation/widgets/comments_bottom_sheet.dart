@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_comment.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/comment_feed_overlay.dart'
+    show buildMentionSpans;
 
 /// TikTok-style comments bottom sheet with DraggableScrollableSheet.
 /// Shows all comments in real-time, scrollable, with comment input at bottom.
@@ -24,6 +26,8 @@ class CommentsBottomSheet extends StatefulWidget {
 
 class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   final _inputController = TextEditingController();
+  final _inputFocus = FocusNode();
+  final _sheetController = DraggableScrollableController();
   bool _hasText = false;
   int _prevCommentCount = 0;
 
@@ -34,6 +38,18 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   void initState() {
     super.initState();
     _prevCommentCount = widget.comments.length;
+    // When the input gains focus (keyboard opens), grow the sheet so the input
+    // rises with the keyboard WITHOUT squeezing the comment list — otherwise
+    // the top comments get shoved up out of view.
+    _inputFocus.addListener(() {
+      if (_inputFocus.hasFocus && _sheetController.isAttached) {
+        _sheetController.animateTo(
+          0.92,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -48,6 +64,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   @override
   void dispose() {
     _inputController.dispose();
+    _inputFocus.dispose();
+    _sheetController.dispose();
     super.dispose();
   }
 
@@ -65,9 +83,10 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
+      controller: _sheetController,
       initialChildSize: 0.5,
       minChildSize: 0.3,
-      maxChildSize: 0.85,
+      maxChildSize: 0.95,
       expand: false,
       builder: (context, sheetScrollController) {
         final comments = _displayComments;
@@ -187,6 +206,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                           ),
                           child: TextField(
                             controller: _inputController,
+                            focusNode: _inputFocus,
                             maxLength: 500,
                             maxLengthEnforcement: MaxLengthEnforcement.enforced,
                             onChanged: (v) => setState(() => _hasText = v.trim().isNotEmpty),
@@ -320,12 +340,22 @@ class _CommentTileState extends State<_CommentTile>
                       ],
                     ),
                     SizedBox(height: 2.h),
-                    Text(
-                      widget.comment.text,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13.sp,
-                        height: 1.3,
+                    Text.rich(
+                      TextSpan(
+                        children: buildMentionSpans(
+                          widget.comment.text,
+                          base: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 13.sp,
+                            height: 1.3,
+                          ),
+                          mention: TextStyle(
+                            color: const Color(0xFF60A5FA),
+                            fontSize: 13.sp,
+                            height: 1.3,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],

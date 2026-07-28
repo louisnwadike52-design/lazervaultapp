@@ -37,13 +37,19 @@ class RecipientCubit extends Cubit<RecipientState> {
 
   // Pagination state
   int _currentPage = 1;
-  int _pageSize = 20;
+  final int _pageSize = 20;
   bool _hasMore = true;
   int _totalItems = 0;
   int _totalPages = 0;
   String? _lastCountryCode;
   String? _lastCurrency;
   bool? _lastFavoritesOnly;
+
+  // Monotonic token so a slow/failed fetch from a PREVIOUS screen mount (rapid
+  // back-and-forth navigation fires getRecipients on every re-entry) can't
+  // clobber a newer one's result — the root of the intermittent "something
+  // went wrong" after navigating in/out several times.
+  int _loadSeq = 0;
 
   RecipientCubit({
     required GetRecipientsUseCase getRecipientsUseCase,
@@ -74,6 +80,10 @@ class RecipientCubit extends Cubit<RecipientState> {
     bool forceRefresh = false,
   }) async {
     if (isClosed) return;
+    final seq = ++_loadSeq;
+    // Remember the last good list so a transient failure on re-entry doesn't
+    // wipe a working screen to a full error.
+    final priorState = state;
 
     // Reset pagination state for new fetch
     _currentPage = 1;
@@ -88,7 +98,17 @@ class RecipientCubit extends Cubit<RecipientState> {
     // Note: SWR cache was bypassed for paginated queries (added
     // complexity outweighed the win). The page-1 cache key derivation
     // lived here previously; it's removed since nothing reads it.
-    emit(RecipientLoading());
+    //
+    // Pull-to-refresh (forceRefresh) of an already-loaded view keeps the
+    // current list on screen while the new page loads — the RefreshIndicator
+    // spinner already signals progress, so blanking to a full loader would
+    // just make the list flicker empty. Initial loads and filter/account
+    // switches (forceRefresh=false) still show the loading state, so stale
+    // data from a different view is never shown.
+    final keepCurrentWhileLoading = forceRefresh && state is RecipientLoaded;
+    if (!keepCurrentWhileLoading) {
+      emit(RecipientLoading());
+    }
     try {
       final result = await _fetchRecipientsPaginated(
         accessToken: accessToken,
@@ -97,7 +117,7 @@ class RecipientCubit extends Cubit<RecipientState> {
         favoritesOnly: favoritesOnly,
         page: 1,
       );
-      if (isClosed) return;
+      if (isClosed || seq != _loadSeq) return; // a newer load superseded us
 
       _currentPage = result.currentPage;
       // If fewer items than page size returned, no more pages to fetch
@@ -113,8 +133,16 @@ class RecipientCubit extends Cubit<RecipientState> {
         totalPages: result.totalPages,
       ));
     } catch (e) {
-      if (isClosed) return;
-      emit(RecipientError(e.toString()));
+      if (isClosed || seq != _loadSeq) return; // stale failure — ignore
+      // Don't nuke a working screen to "something went wrong" on a transient
+      // failure during rapid re-navigation: if we already had recipients, keep
+      // them (a background re-fetch hiccup shouldn't blow away the list). Only a
+      // cold first load with no prior data surfaces the error state.
+      if (priorState is RecipientLoaded) {
+        emit(priorState);
+      } else {
+        emit(RecipientError(e.toString()));
+      }
     }
   }
 

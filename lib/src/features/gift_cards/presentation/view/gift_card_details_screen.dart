@@ -707,8 +707,15 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
 
           _divider(),
 
+          // Internal reference is the stable identifier the user can quote to
+          // support; the provider reference is the upstream (Reloadly/Prestmit)
+          // order id, shown separately when present so the two aren't conflated.
           _row('Reference',
-              giftCard.providerTransactionId ?? giftCard.id),
+              giftCard.reference.isNotEmpty ? giftCard.reference : giftCard.id),
+          if ((giftCard.providerTransactionId ?? '').isNotEmpty) ...[
+            SizedBox(height: 6.h),
+            _row('Provider Reference', giftCard.providerTransactionId!),
+          ],
           if (giftCard.purchaseDate.isNotEmpty) ...[
             SizedBox(height: 6.h),
             _row('Date', _safeFormat(displayDate, dateFormat)),
@@ -722,9 +729,22 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           SizedBox(height: 6.h),
           _row('Status', giftCard.status.toUpperCase(),
               valueColor: _statusColor()),
+          // Surface a refund note for terminal non-success states so the user
+          // understands why no code was issued (failure-reason detail is not
+          // carried on the buy entity — only the status is).
+          if (_isRefundedOrFailed()) ...[
+            SizedBox(height: 6.h),
+            _row('Refund', 'Amount refunded to wallet',
+                valueColor: const Color(0xFF10B981)),
+          ],
         ],
       ),
     );
+  }
+
+  bool _isRefundedOrFailed() {
+    final s = giftCard.status.toLowerCase();
+    return s.contains('refund') || s == 'failed' || s == 'reversed';
   }
 
   Widget _row(String label, String value,
@@ -785,7 +805,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     final raw = giftCard.purchaseDate.isNotEmpty
         ? giftCard.purchaseDate
         : giftCard.createdAt;
-    return DateTime.tryParse(raw) ?? DateTime.now();
+    return DateTime.tryParse(raw)?.toLocal() ?? DateTime.now();
   }
 
   String _safeFormat(DateTime ts, DateFormat fmt) {
@@ -868,7 +888,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   Future<void> _downloadReceipt() async {
     setState(() => _isDownloading = true);
     try {
-      await GiftCardPdfService.shareReceipt(giftCard: giftCard);
+      // Save the PDF to the device's Downloads (NOT share) — the Share button
+      // already covers sharing. This used to call shareReceipt, so "Download"
+      // opened the share sheet instead of saving a file.
+      final path = await GiftCardPdfService.downloadReceipt(giftCard: giftCard);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved to $path')),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

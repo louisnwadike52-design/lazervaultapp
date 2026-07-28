@@ -91,7 +91,7 @@ class _IDPayReceiptScreenState extends State<IDPayReceiptScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed('/id-pay'),
+          onPressed: () => Get.offAllNamed(AppRoutes.idPayHome),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,

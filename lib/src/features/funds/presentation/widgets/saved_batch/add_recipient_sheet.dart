@@ -20,7 +20,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// Bottom sheet that lets the user add ONE recipient to the saved batch
 /// via three add-methods:
 ///   1. Saved beneficiaries (existing RecipientCubit)
-///   2. Tag / phone / email LazerVault user (manual entry, recipient_type=tagpay)
+///   2. Tag / phone / email Lazervault user (manual entry, recipient_type=tagpay)
 ///   3. External bank NUBAN (uses AccountVerificationCubit + Paystack resolve)
 ///
 /// Device contacts is scoped as a follow-up — the platform's existing

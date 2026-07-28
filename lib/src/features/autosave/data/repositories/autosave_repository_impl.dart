@@ -512,6 +512,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       );
 
       if (customAmount != null) {
+        // Send kobo. The products-gateway autosave proxy is the kobo<->major
+        // boundary: it divides EVERY amount (incl. CustomAmount) by 100 before
+        // forwarding, and the fp backend then re-applies majorToKobo. So the
+        // full path is Flutter x100 -> gateway /100 -> backend x100 = stored
+        // kobo. Sending major here would land 100x too small.
         request.customAmount = customAmount * 100; // Naira -> kobo
       }
 
@@ -557,6 +562,8 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return autosave_pb.TriggerType.TRIGGER_ROUND_UP;
       case entity.TriggerType.externalInflow:
         return autosave_pb.TriggerType.TRIGGER_EXTERNAL_INFLOW;
+      case entity.TriggerType.scheduledExternal:
+        return autosave_pb.TriggerType.TRIGGER_SCHEDULED_EXTERNAL;
       default:
         return autosave_pb.TriggerType.TRIGGER_UNKNOWN;
     }

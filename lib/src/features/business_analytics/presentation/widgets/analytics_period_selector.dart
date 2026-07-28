@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class AnalyticsPeriodSelector extends StatelessWidget {
   final String selectedPeriod;
@@ -32,21 +34,33 @@ class AnalyticsPeriodSelector extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF3B82F6)
-                      : const Color(0xFF1F1F1F),
+                      ? InvoiceThemeColors.primaryPurple
+                      : InvoiceThemeColors.secondaryBackground,
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF3B82F6)
-                        : const Color(0xFF2D2D2D),
+                        ? InvoiceThemeColors.primaryPurple
+                        : InvoiceThemeColors.borderColor,
                   ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: InvoiceThemeColors.primaryPurple
+                                .withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Text(
                   p.$2,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 13.sp,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : InvoiceThemeColors.textGray400,
                   ),
                 ),
               ),

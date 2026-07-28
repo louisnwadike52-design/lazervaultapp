@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/utils/currency_utils.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_receipt_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_receipt_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
@@ -178,6 +179,9 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
 
   Widget _buildLoaded(BatchItemReceiptEntity r) {
     final it = r.item;
+    // Canonicalise the brand casing for display (LazerVault → Lazervault) and
+    // resolve bare codes to real names, matching the send-funds receipt.
+    final bankLabel = BanksData.displayName(it.bankName, it.bankCode);
     final symbol = CurrencyUtils.getSymbol(it.currency);
     final statusColor = batchStatusColor(it.status);
     final ts = it.transactionDate ?? it.updatedAt ?? it.createdAt;
@@ -222,9 +226,9 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
                         SizedBox(height: 2.h),
                         Row(
                           children: [
-                            if (it.bankName.isNotEmpty) ...[
+                            if (bankLabel.isNotEmpty) ...[
                               BankLogo(
-                                  bankName: it.bankName,
+                                  bankName: bankLabel,
                                   bankCode: it.bankCode,
                                   size: 14,
                                   borderRadius: 4),
@@ -232,9 +236,9 @@ class _BatchItemReceiptScreenState extends State<BatchItemReceiptScreen> {
                             ],
                             Flexible(
                               child: Text(
-                                  it.bankName.isEmpty
+                                  bankLabel.isEmpty
                                       ? it.recipientAccount
-                                      : '${it.bankName} • ${it.recipientAccount}',
+                                      : '$bankLabel • ${it.recipientAccount}',
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
                                       color: btTextSecondary, fontSize: 12.sp)),

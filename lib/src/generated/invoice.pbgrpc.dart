@@ -41,7 +41,7 @@ class InvoiceServiceClient extends $grpc.Client {
     return $createUnaryCall(_$createInvoice, request, options: options);
   }
 
-  /// Get all invoices for a user
+  /// Get all invoices for a user (sent invoices)
   $grpc.ResponseFuture<$0.GetInvoicesResponse> getInvoices(
     $0.GetInvoicesRequest request, {
     $grpc.CallOptions? options,
@@ -79,6 +79,14 @@ class InvoiceServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$sendInvoiceReminder, request, options: options);
+  }
+
+  /// Send invoice to email
+  $grpc.ResponseFuture<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail(
+    $0.SendInvoiceToEmailRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$sendInvoiceToEmail, request, options: options);
   }
 
   /// Update invoice status
@@ -155,12 +163,21 @@ class InvoiceServiceClient extends $grpc.Client {
     return $createUnaryCall(_$uploadInvoiceImage, request, options: options);
   }
 
-  /// Send invoice to email
-  $grpc.ResponseFuture<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail(
-    $0.SendInvoiceToEmailRequest request, {
+  /// Pay invoice service fee upfront (required before creating an invoice)
+  $grpc.ResponseFuture<$0.PayInvoiceServiceFeeResponse> payInvoiceServiceFee(
+    $0.PayInvoiceServiceFeeRequest request, {
     $grpc.CallOptions? options,
   }) {
-    return $createUnaryCall(_$sendInvoiceToEmail, request, options: options);
+    return $createUnaryCall(_$payInvoiceServiceFee, request, options: options);
+  }
+
+  /// Get the invoice service fee for an account (FX-converted into the account's
+  /// currency) for display before payment. Read-only, no PIN.
+  $grpc.ResponseFuture<$0.GetInvoiceServiceFeeResponse> getInvoiceServiceFee(
+    $0.GetInvoiceServiceFeeRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getInvoiceServiceFee, request, options: options);
   }
 
   // method descriptors
@@ -195,6 +212,11 @@ class InvoiceServiceClient extends $grpc.Client {
       '/invoice.InvoiceService/SendInvoiceReminder',
       ($0.SendInvoiceReminderRequest value) => value.writeToBuffer(),
       $0.SendInvoiceReminderResponse.fromBuffer);
+  static final _$sendInvoiceToEmail = $grpc.ClientMethod<
+          $0.SendInvoiceToEmailRequest, $0.SendInvoiceToEmailResponse>(
+      '/invoice.InvoiceService/SendInvoiceToEmail',
+      ($0.SendInvoiceToEmailRequest value) => value.writeToBuffer(),
+      $0.SendInvoiceToEmailResponse.fromBuffer);
   static final _$updateInvoiceStatus = $grpc.ClientMethod<
           $0.UpdateInvoiceStatusRequest, $0.UpdateInvoiceStatusResponse>(
       '/invoice.InvoiceService/UpdateInvoiceStatus',
@@ -241,11 +263,16 @@ class InvoiceServiceClient extends $grpc.Client {
       '/invoice.InvoiceService/UploadInvoiceImage',
       ($0.UploadInvoiceImageRequest value) => value.writeToBuffer(),
       $0.UploadInvoiceImageResponse.fromBuffer);
-  static final _$sendInvoiceToEmail = $grpc.ClientMethod<
-          $0.SendInvoiceToEmailRequest, $0.SendInvoiceToEmailResponse>(
-      '/invoice.InvoiceService/SendInvoiceToEmail',
-      ($0.SendInvoiceToEmailRequest value) => value.writeToBuffer(),
-      $0.SendInvoiceToEmailResponse.fromBuffer);
+  static final _$payInvoiceServiceFee = $grpc.ClientMethod<
+          $0.PayInvoiceServiceFeeRequest, $0.PayInvoiceServiceFeeResponse>(
+      '/invoice.InvoiceService/PayInvoiceServiceFee',
+      ($0.PayInvoiceServiceFeeRequest value) => value.writeToBuffer(),
+      $0.PayInvoiceServiceFeeResponse.fromBuffer);
+  static final _$getInvoiceServiceFee = $grpc.ClientMethod<
+          $0.GetInvoiceServiceFeeRequest, $0.GetInvoiceServiceFeeResponse>(
+      '/invoice.InvoiceService/GetInvoiceServiceFee',
+      ($0.GetInvoiceServiceFeeRequest value) => value.writeToBuffer(),
+      $0.GetInvoiceServiceFeeResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('invoice.InvoiceService')
@@ -303,6 +330,15 @@ abstract class InvoiceServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.SendInvoiceReminderRequest.fromBuffer(value),
         ($0.SendInvoiceReminderResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SendInvoiceToEmailRequest,
+            $0.SendInvoiceToEmailResponse>(
+        'SendInvoiceToEmail',
+        sendInvoiceToEmail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SendInvoiceToEmailRequest.fromBuffer(value),
+        ($0.SendInvoiceToEmailResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.UpdateInvoiceStatusRequest,
             $0.UpdateInvoiceStatusResponse>(
         'UpdateInvoiceStatus',
@@ -384,15 +420,24 @@ abstract class InvoiceServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.UploadInvoiceImageRequest.fromBuffer(value),
         ($0.UploadInvoiceImageResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SendInvoiceToEmailRequest,
-            $0.SendInvoiceToEmailResponse>(
-        'SendInvoiceToEmail',
-        sendInvoiceToEmail_Pre,
+    $addMethod($grpc.ServiceMethod<$0.PayInvoiceServiceFeeRequest,
+            $0.PayInvoiceServiceFeeResponse>(
+        'PayInvoiceServiceFee',
+        payInvoiceServiceFee_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.SendInvoiceToEmailRequest.fromBuffer(value),
-        ($0.SendInvoiceToEmailResponse value) => value.writeToBuffer()));
+            $0.PayInvoiceServiceFeeRequest.fromBuffer(value),
+        ($0.PayInvoiceServiceFeeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInvoiceServiceFeeRequest,
+            $0.GetInvoiceServiceFeeResponse>(
+        'GetInvoiceServiceFee',
+        getInvoiceServiceFee_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetInvoiceServiceFeeRequest.fromBuffer(value),
+        ($0.GetInvoiceServiceFeeResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateInvoiceResponse> createInvoice_Pre(
@@ -445,6 +490,15 @@ abstract class InvoiceServiceBase extends $grpc.Service {
 
   $async.Future<$0.SendInvoiceReminderResponse> sendInvoiceReminder(
       $grpc.ServiceCall call, $0.SendInvoiceReminderRequest request);
+
+  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SendInvoiceToEmailRequest> $request) async {
+    return sendInvoiceToEmail($call, await $request);
+  }
+
+  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail(
+      $grpc.ServiceCall call, $0.SendInvoiceToEmailRequest request);
 
   $async.Future<$0.UpdateInvoiceStatusResponse> updateInvoiceStatus_Pre(
       $grpc.ServiceCall $call,
@@ -527,12 +581,21 @@ abstract class InvoiceServiceBase extends $grpc.Service {
   $async.Future<$0.UploadInvoiceImageResponse> uploadInvoiceImage(
       $grpc.ServiceCall call, $0.UploadInvoiceImageRequest request);
 
-  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail_Pre(
+  $async.Future<$0.PayInvoiceServiceFeeResponse> payInvoiceServiceFee_Pre(
       $grpc.ServiceCall $call,
-      $async.Future<$0.SendInvoiceToEmailRequest> $request) async {
-    return sendInvoiceToEmail($call, await $request);
+      $async.Future<$0.PayInvoiceServiceFeeRequest> $request) async {
+    return payInvoiceServiceFee($call, await $request);
   }
 
-  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail(
-      $grpc.ServiceCall call, $0.SendInvoiceToEmailRequest request);
+  $async.Future<$0.PayInvoiceServiceFeeResponse> payInvoiceServiceFee(
+      $grpc.ServiceCall call, $0.PayInvoiceServiceFeeRequest request);
+
+  $async.Future<$0.GetInvoiceServiceFeeResponse> getInvoiceServiceFee_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInvoiceServiceFeeRequest> $request) async {
+    return getInvoiceServiceFee($call, await $request);
+  }
+
+  $async.Future<$0.GetInvoiceServiceFeeResponse> getInvoiceServiceFee(
+      $grpc.ServiceCall call, $0.GetInvoiceServiceFeeRequest request);
 }

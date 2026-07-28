@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
+import 'package:lazervault/src/features/account_actions/domain/repositories/i_account_actions_repository.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/utils/edge_case_validator.dart';
@@ -45,7 +46,11 @@ class SpendingLimitsTab extends StatelessWidget {
       // exposes it on LoginResponse.data.user — default to standard for
       // now (most post-signup users are Tier 2).
       const tier = KycLevel.standard;
-      final daily = country.dailyLimits[tier]?.toDouble();
+      final raw = country.dailyLimits[tier]?.toDouble();
+      // 0 (or negative) = Unlimited (Tier 3), matching the backend's
+      // shared/kyctiers convention — surface it as "no cap" (null), never as a
+      // literal ₦0 limit.
+      final daily = (raw == null || raw <= 0) ? null : raw;
       // Monthly heuristic: 4× daily for basic, 8× for standard, 20× for
       // advanced — matches the typical regulator spread. Replace when
       // CountryConfigs exposes an explicit monthly map.
@@ -94,7 +99,7 @@ class SpendingLimitsTab extends StatelessWidget {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    'Set limits to control your spending. Transactions above these limits will be declined.',
+                    'Set limits on the money you send from this account. Transfers above these limits are declined.',
                     style: TextStyle(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
@@ -140,9 +145,19 @@ class SpendingLimitsTab extends StatelessWidget {
           ),
           SizedBox(height: 32.h),
 
-          // Progress bars
-          if (details?.balance != null)
-            _buildUsageSection(details!),
+          // Real "Today's usage" bar — fetched from accounts-service
+          // (daily_spent vs daily_limit). Only shown when a daily limit is set.
+          Builder(
+            builder: (context) {
+              final accountId =
+                  AccountIdValidator.extractFromArgs(accountArgs);
+              if (accountId == null) return const SizedBox.shrink();
+              return _LimitUsageSection(
+                accountId: accountId,
+                currencySymbol: _getCurrencySymbol(),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -227,71 +242,6 @@ class SpendingLimitsTab extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildUsageSection(AccountDetailsEntity details) {
-    final dailyLimit = details.dailyLimit;
-    final balance = details.balance;
-
-    // Calculate percentage (assuming balance is daily spend for demo)
-    final usedPercentage = dailyLimit > 0 ? (balance / dailyLimit).clamp(0.0, 1.0) : 0.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Today\'s Usage',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Container(
-          height: 8.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2D2D2D),
-            borderRadius: BorderRadius.circular(4.r),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: usedPercentage,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF3B82F6),
-                    const Color.fromARGB(255, 78, 3, 208),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${_getCurrencySymbol()}${balance.toStringAsFixed(2)} spent',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
-              ),
-            ),
-            Text(
-              '${_getCurrencySymbol()}${dailyLimit.toStringAsFixed(2)} limit',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -466,5 +416,135 @@ class SpendingLimitsTab extends StatelessWidget {
       default:
         return '₦';
     }
+  }
+}
+
+/// Real "Today's usage" bar. Fetches actual daily spend vs the configured daily
+/// limit from accounts-service once on init. Renders nothing when no daily limit
+/// is set (a usage bar against "no limit" is meaningless).
+class _LimitUsageSection extends StatefulWidget {
+  final String accountId;
+  final String currencySymbol;
+
+  const _LimitUsageSection({
+    required this.accountId,
+    required this.currencySymbol,
+  });
+
+  @override
+  State<_LimitUsageSection> createState() => _LimitUsageSectionState();
+}
+
+class _LimitUsageSectionState extends State<_LimitUsageSection> {
+  SpendingUsageEntity? _usage;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final usage = await context
+        .read<AccountActionsCubit>()
+        .fetchSpendingUsage(accountId: widget.accountId);
+    if (!mounted) return;
+    setState(() {
+      _usage = usage;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const SizedBox.shrink();
+    }
+    final usage = _usage;
+    // No daily limit configured → no usage bar.
+    if (usage == null || usage.dailyLimit <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    final pct =
+        (usage.dailySpent / usage.dailyLimit).clamp(0.0, 1.0).toDouble();
+    final sym = widget.currencySymbol;
+    final over = usage.dailySpent >= usage.dailyLimit;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Today\'s usage',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (usage.remainingDaily >= 0)
+              Text(
+                '$sym${usage.remainingDaily.toStringAsFixed(2)} left',
+                style: TextStyle(
+                  color: over
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF10B981),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Container(
+          height: 8.h,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2D2D2D),
+            borderRadius: BorderRadius.circular(4.r),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: pct,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: over
+                      ? [const Color(0xFFEF4444), const Color(0xFFB91C1C)]
+                      : [
+                          const Color(0xFF3B82F6),
+                          const Color.fromARGB(255, 78, 3, 208),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '$sym${usage.dailySpent.toStringAsFixed(2)} spent today',
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
+            ),
+            Text(
+              '$sym${usage.dailyLimit.toStringAsFixed(2)} limit',
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

@@ -20,11 +20,22 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
   late Animation<Offset> _slideAnimation;
 
   Map<String, dynamic> ruleData = {};
+  bool _invalidArgs = false;
 
   @override
   void initState() {
     super.initState();
     ruleData = Get.arguments as Map<String, dynamic>? ?? {};
+    // Guard: the review screen only exists mid-creation with a full rule map.
+    // On a blank/deep-link entry the trigger/amount casts in build would crash.
+    if (ruleData['triggerType'] == null ||
+        ruleData['amountType'] == null ||
+        ruleData['amountValue'] == null) {
+      _invalidArgs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+      });
+    }
     _setupAnimations();
   }
 
@@ -94,6 +105,29 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
         return bank != null && bank.isNotEmpty
             ? 'Automatically save when money enters $bank'
             : 'Automatically save when money enters your linked bank';
+      case TriggerType.scheduledExternal:
+        final frequency = ruleData['frequency'] as ScheduleFrequency?;
+        final time = ruleData['scheduleTime'] as String?;
+        final bank = ruleData['sourceBankName'] as String?;
+        String freqText = '';
+        switch (frequency) {
+          case ScheduleFrequency.daily:
+            freqText = 'Daily';
+            break;
+          case ScheduleFrequency.weekly:
+            freqText = 'Weekly';
+            break;
+          case ScheduleFrequency.biweekly:
+            freqText = 'Bi-Weekly';
+            break;
+          case ScheduleFrequency.monthly:
+            freqText = 'Monthly';
+            break;
+          default:
+            freqText = 'Scheduled';
+        }
+        final where = bank != null && bank.isNotEmpty ? bank : 'your linked bank';
+        return '$freqText standing order from $where${time != null ? ' at $time' : ''}';
       default:
         return 'Unknown trigger';
     }
@@ -112,6 +146,12 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (_invalidArgs) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: SizedBox.shrink(),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: Container(

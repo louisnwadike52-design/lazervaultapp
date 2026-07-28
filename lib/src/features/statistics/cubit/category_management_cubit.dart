@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:lazervault/src/features/statistics/data/financial_analytics_repository.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 // ===== States =====
 
@@ -89,7 +90,7 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
         allCategories: uniqueCategories,
       ));
     } catch (e) {
-      emit(CategoryManagementError('Failed to load categories: $e'));
+      emit(CategoryManagementError(friendlyError(e, context: 'load your categories')));
     }
   }
 
@@ -107,7 +108,7 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
           '"$originalCategory" renamed to "$customCategory"'));
       await loadCategories();
     } catch (e) {
-      emit(CategoryManagementError('Failed to rename category: $e'));
+      emit(CategoryManagementError(friendlyError(e, context: 'rename the category')));
     }
   }
 
@@ -126,7 +127,7 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
           '"$originalCategory" moved under "$parentCategory"'));
       await loadCategories();
     } catch (e) {
-      emit(CategoryManagementError('Failed to move category: $e'));
+      emit(CategoryManagementError(friendlyError(e, context: 'move the category')));
     }
   }
 
@@ -138,7 +139,7 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
       emit(const CategoriesReordered());
       await loadCategories();
     } catch (e) {
-      emit(CategoryManagementError('Failed to reorder categories: $e'));
+      emit(CategoryManagementError(friendlyError(e, context: 'reorder your categories')));
     }
   }
 }

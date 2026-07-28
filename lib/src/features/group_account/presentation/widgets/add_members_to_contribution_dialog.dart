@@ -14,6 +14,7 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 class AddMembersToContributionDialog extends StatefulWidget {
   final Contribution contribution;
@@ -307,6 +308,15 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
     });
   }
 
+  /// Opens the shared unified search (saved contacts incl. alias → global),
+  /// then adds the picked user to the new-members list.
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Add member');
+    if (result == null || !mounted) return;
+    _selectNewUser(result.toUserSearchResultEntity());
+  }
+
   void _addPendingInvite() {
     final email = _searchController.text.trim();
     final fullName = _fullNameController.text.trim();
@@ -367,7 +377,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
 
       for (final newMember in _newMembersToAdd) {
         if (newMember.user != null) {
-          // Add existing LazerVault user to the group
+          // Add existing Lazervault user to the group
           await cubit.addMemberToGroupAccount(
             groupId: widget.contribution.groupId,
             userId: newMember.user!.userId,
@@ -379,7 +389,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
           );
           newMemberUserIds.add(newMember.user!.userId);
         } else if (newMember.email != null && newMember.fullName != null) {
-          // Invite non-LazerVault user
+          // Invite non-Lazervault user
           await cubit.inviteUserToGroup(
             groupId: widget.contribution.groupId,
             identifier: newMember.email!,
@@ -425,7 +435,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
       debugPrint('🔵 AddMembers: validSelectedUserIds=$validSelectedUserIds');
       allUserIdsToAdd.addAll(validSelectedUserIds);
 
-      // Add newly added LazerVault users
+      // Add newly added Lazervault users
       allUserIdsToAdd.addAll(newMemberUserIds);
 
       debugPrint('🔵 AddMembers: Final allUserIdsToAdd=$allUserIdsToAdd');
@@ -915,9 +925,11 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             child: TextField(
               controller: _searchController,
               focusNode: _focusNode,
+              readOnly: true,
+              onTap: _openUnifiedSearch,
               style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Enter email, @username, or phone',
+                hintText: 'Search people to add',
                 hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
                 prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
                 suffixIcon: _searchController.text.isNotEmpty

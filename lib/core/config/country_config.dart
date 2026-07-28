@@ -5,7 +5,10 @@ enum CountryCode {
   usa('US', 'United States', '🇺🇸', 'USD', r'$', '+1'),
   ghana('GH', 'Ghana', '🇬🇭', 'GHS', 'GH₵', '+233'),
   kenya('KE', 'Kenya', '🇰🇪', 'KES', 'KSh', '+254'),
-  southAfrica('ZA', 'South Africa', '🇿🇦', 'ZAR', 'R', '+27');
+  southAfrica('ZA', 'South Africa', '🇿🇦', 'ZAR', 'R', '+27'),
+  // Klasha-provisioned countries (Flutterwave has no coverage).
+  philippines('PH', 'Philippines', '🇵🇭', 'PHP', '₱', '+63'),
+  canada('CA', 'Canada', '🇨🇦', 'CAD', r'C$', '+1');
 
   final String code;
   final String name;
@@ -40,7 +43,44 @@ enum CountryCode {
         return 9;
       case CountryCode.southAfrica:
         return 9;
+      case CountryCode.philippines:
+        return 10; // PH mobile NSN, e.g. 9XXXXXXXXX
+      case CountryCode.canada:
+        return 10; // NANP 10-digit
     }
+  }
+
+  /// Country-specific mobile-number pattern over the National Significant
+  /// Number (NSN — digits after the dialing code and trunk "0"). Null means we
+  /// don't (yet) have a strict prefix rule for the country, so only the length
+  /// check applies. Kept conservative to avoid rejecting valid numbers.
+  RegExp? get _mobilePattern {
+    switch (this) {
+      case CountryCode.nigeria:
+        // NG mobile prefixes 070/071/080/081/090/091 -> NSN starts [789][01].
+        return RegExp(r'^[789][01]\d{8}$');
+      default:
+        return null;
+    }
+  }
+
+  /// Validate a National Significant Number. Returns a user-friendly error
+  /// message, or null when the number is acceptable. Checks BOTH the length
+  /// AND (where known) the mobile prefix, so a right-length but otherwise
+  /// invalid number (e.g. "1234567890") is rejected instead of silently
+  /// proceeding.
+  String? validateNationalNumber(String nsn) {
+    final digits = nsn.replaceAll(RegExp(r'[^\d]'), '');
+    if (digits.length != nationalNumberLength) {
+      return 'Enter a valid $name phone number '
+          '($nationalNumberLength digits after $dialingCode).';
+    }
+    final pattern = _mobilePattern;
+    if (pattern != null && !pattern.hasMatch(digits)) {
+      return 'That doesn\'t look like a valid $name mobile number. '
+          'Please check it and try again.';
+    }
+    return null;
   }
 
   /// Get CountryCode enum from string code
@@ -184,6 +224,11 @@ class CountryConfig {
   /// National Significant Number length for this country (see CountryCode).
   int get nationalNumberLength => country.nationalNumberLength;
 
+  /// Validate a National Significant Number for this country (length + mobile
+  /// prefix where known). Returns a user-friendly error, or null when valid.
+  String? validateNationalNumber(String nsn) =>
+      country.validateNationalNumber(nsn);
+
   /// Get country flag emoji
   String get flag => country.flag;
 
@@ -237,10 +282,14 @@ class CountryConfigs {
       ),
     ],
     requiredKycLevel: KycLevel.standard,
+    // Display baseline ONLY — the authoritative per-tier limits live in the
+    // backend (auth-service, sourced from shared/kyctiers). Kept in lock-step
+    // with the CBN canonical model so the UI never contradicts enforcement:
+    // Tier 1 ₦50,000/day, Tier 2 ₦200,000/day, Tier 3 UNLIMITED (0 = no cap).
     dailyLimits: {
       KycLevel.basic: 50000, // ₦50,000
-      KycLevel.standard: 500000, // ₦500,000
-      KycLevel.advanced: 5000000, // ₦5,000,000
+      KycLevel.standard: 200000, // ₦200,000 (CBN Tier-2 daily)
+      KycLevel.advanced: 0, // Unlimited
     },
     regulatoryNotes: [
       'BVN verification required for Tier 2 (CBN mandate)',
@@ -286,7 +335,7 @@ class CountryConfigs {
     dailyLimits: {
       KycLevel.basic: 500, // £500
       KycLevel.standard: 10000, // £10,000
-      KycLevel.advanced: 250000, // £250,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
     },
     regulatoryNotes: [
       'PSD2 compliant, FSCS protection via ClearBank',
@@ -342,7 +391,7 @@ class CountryConfigs {
     dailyLimits: {
       KycLevel.basic: 500, // $500
       KycLevel.standard: 10000, // $10,000
-      KycLevel.advanced: 250000, // $250,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
     },
     regulatoryNotes: [
       'FDIC insured via Stripe partner banks',
@@ -388,7 +437,7 @@ class CountryConfigs {
     dailyLimits: {
       KycLevel.basic: 500, // GHS 500
       KycLevel.standard: 10000, // GHS 10,000
-      KycLevel.advanced: 100000, // GHS 100,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
     },
     regulatoryNotes: [
       'Bank of Ghana regulated',
@@ -434,7 +483,7 @@ class CountryConfigs {
     dailyLimits: {
       KycLevel.basic: 100, // KES 100
       KycLevel.standard: 300000, // KES 300,000
-      KycLevel.advanced: 500000, // KES 500,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
     },
     regulatoryNotes: [
       'Central Bank of Kenya (CBK) regulated',
@@ -478,13 +527,82 @@ class CountryConfigs {
     dailyLimits: {
       KycLevel.basic: 1000, // R1,000
       KycLevel.standard: 50000, // R50,000
-      KycLevel.advanced: 500000, // R500,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
     },
     regulatoryNotes: [
       'South African Reserve Bank (SARB) / FSCA regulated',
       'FSCA License via Stitch partnership',
     ],
     isActive: true,
+    isBeta: true,
+  );
+
+  /// Philippines Configuration (Klasha)
+  static const philippines = CountryConfig(
+    country: CountryCode.philippines,
+    supportedIdTypes: [
+      IdentityDocumentType.intlPassport,
+    ],
+    defaultIdType: IdentityDocumentType.intlPassport,
+    documentRequirements: [
+      DocumentRequirement(
+        documentTypeId: 'intl_passport',
+        documentType: IdentityDocumentType.intlPassport,
+        isRequired: true,
+        description: 'Passport number',
+        needsOcrExtraction: true,
+        needsFrontPhoto: true,
+        needsBackPhoto: false,
+        needsSelfie: true,
+      ),
+    ],
+    requiredKycLevel: KycLevel.standard,
+    dailyLimits: {
+      KycLevel.basic: 25000, // ₱25,000
+      KycLevel.standard: 500000, // ₱500,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
+    },
+    regulatoryNotes: [
+      'International-transfer destination only (via Klasha)',
+    ],
+    // NOT a signup country: Klasha virtual accounts cover only NGN+GHS, so a PHP
+    // wallet can't be created. PH is exchange-INTERNATIONAL-only (send to a PH
+    // bank). isActive:false keeps it out of the signup country dropdown.
+    isActive: false,
+    isBeta: true,
+  );
+
+  /// Canada Configuration (Klasha)
+  static const canada = CountryConfig(
+    country: CountryCode.canada,
+    supportedIdTypes: [
+      IdentityDocumentType.intlPassport,
+    ],
+    defaultIdType: IdentityDocumentType.intlPassport,
+    documentRequirements: [
+      DocumentRequirement(
+        documentTypeId: 'intl_passport',
+        documentType: IdentityDocumentType.intlPassport,
+        isRequired: true,
+        description: 'Passport number',
+        needsOcrExtraction: true,
+        needsFrontPhoto: true,
+        needsBackPhoto: false,
+        needsSelfie: true,
+      ),
+    ],
+    requiredKycLevel: KycLevel.standard,
+    dailyLimits: {
+      KycLevel.basic: 500, // C$500
+      KycLevel.standard: 10000, // C$10,000
+      KycLevel.advanced: 0, // Unlimited (backend Tier 3 = unlimited)
+    },
+    regulatoryNotes: [
+      'International-transfer destination only (via Klasha)',
+    ],
+    // NOT a signup country (see PH): Klasha VAs cover only NGN+GHS. CA is
+    // exchange-INTERNATIONAL-only. isActive:false keeps it out of the dropdown.
+    isActive: false,
     isBeta: true,
   );
 
@@ -496,6 +614,8 @@ class CountryConfigs {
     ghana,
     kenya,
     southAfrica,
+    philippines,
+    canada,
   ];
 
   /// Get all active countries available for signup

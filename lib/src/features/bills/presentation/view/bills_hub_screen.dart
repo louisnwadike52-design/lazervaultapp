@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
@@ -43,17 +44,30 @@ class BillsHubScreen extends StatelessWidget {
         description: 'Smile, Spectranet & more',
         route: AppRoutes.internetBillHome,
       ),
-      _BillType(
-        icon: Icons.water_drop,
-        title: 'Water Bill',
-        description: 'Water corporation bills',
-        route: AppRoutes.waterBillHome,
-      ),
+      // Water Bill hidden from the Bills Hub for now (re-enable by uncommenting).
+      // _BillType(
+      //   icon: Icons.water_drop,
+      //   title: 'Water Bill',
+      //   description: 'Water corporation bills',
+      //   route: AppRoutes.waterBillHome,
+      // ),
       _BillType(
         icon: Icons.school,
         title: 'Education PINs',
         description: 'WAEC, NECO & JAMB PINs',
         route: AppRoutes.educationHome,
+      ),
+      _BillType(
+        icon: Icons.confirmation_number,
+        title: 'Recharge card printing',
+        description: 'Generate airtime PINs',
+        route: AppRoutes.epinHome,
+      ),
+      _BillType(
+        icon: Icons.sports_soccer,
+        title: 'Fund betting account',
+        description: 'Top up your betting wallet',
+        route: AppRoutes.bettingHome,
       ),
     ];
 
@@ -120,22 +134,24 @@ class BillsHubScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SafeArea(
+      body: ServiceEntranceAnimation(
+        child: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeaderCard(),
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 16.w,
-                  mainAxisSpacing: 16.h,
-                  childAspectRatio: 0.85,
+                  crossAxisSpacing: 12.w,
+                  mainAxisSpacing: 12.h,
+                  // Compact tiles so all 8 bill types fit on screen at a glance.
+                  childAspectRatio: 1.18,
                 ),
                 itemCount: bills.length,
                 itemBuilder: (context, index) {
@@ -151,6 +167,7 @@ class BillsHubScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
       ),
     );
@@ -266,10 +283,10 @@ class _BillTileState extends State<_BillTile> {
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: InvoiceThemeColors.secondaryBackground,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: _pressed
                 ? InvoiceThemeColors.primaryPurple
@@ -290,8 +307,8 @@ class _BillTileState extends State<_BillTile> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 60.w,
-              height: 60.w,
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -308,31 +325,33 @@ class _BillTileState extends State<_BillTile> {
               child: Center(
                 child: Icon(
                   widget.icon,
-                  size: 28.sp,
+                  size: 22.sp,
                   color: InvoiceThemeColors.primaryPurple,
                 ),
               ),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 8.h),
             Text(
               widget.title,
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 3.h),
             Text(
               widget.description,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                fontSize: 11.sp,
+                fontSize: 10.sp,
                 color: InvoiceThemeColors.textGray400,
-                height: 1.3,
+                height: 1.25,
               ),
             ),
           ],

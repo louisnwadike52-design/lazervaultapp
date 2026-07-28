@@ -461,9 +461,11 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
         style: GoogleFonts.inter(color: Colors.black87, fontSize: 14.sp),
         decoration: InputDecoration(
           hintText: _getSearchHintText(),
+          // Smaller hint + icon so the longer hints (e.g. "Search by username,
+          // email, phone, or name") stay on a single line.
           hintStyle: GoogleFonts.inter(
             color: Colors.grey[500],
-            fontSize: 14.sp,
+            fontSize: 12.sp,
           ),
           prefixIcon: Icon(
             _currentTab == RecipientSelectionTab.lazertag
@@ -472,8 +474,9 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                     ? Icons.alternate_email
                     : Icons.search,
             color: Colors.grey[500],
-            size: 20.sp,
+            size: 18.sp,
           ),
+          prefixIconConstraints: BoxConstraints(minWidth: 38.w, minHeight: 38.w),
           suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
                 onPressed: () {
@@ -570,7 +573,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               children: [
                 Icon(Icons.alternate_email, size: 16.sp),
                 SizedBox(width: 6.w),
-                Text('LazerTag'),
+                Text('Lazertag'),
               ],
             ),
           ),

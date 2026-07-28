@@ -1,21 +1,22 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:camera/camera.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
+import '../../domain/services/on_device_scan_extractor.dart';
+import '../widgets/live_scan_camera_view.dart';
 import 'ai_scan_to_pay_screen.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart'
+    show SmartScanResult;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-// Removed ServiceVoiceButton import per #212 — voice icon lives on
-// the AI Scan landing only; this camera sub-screen inherits the
-// session pinned from the parent.
 
+/// AI Scan-to-Pay camera. The live "hover to detect" scanning + camera controls
+/// live in [LiveScanCameraView]; this screen only feeds captured stills into the
+/// unified [AiScanCubit.analyzeImage] pipeline and reacts to its states
+/// (analysis started / bank-details extracted / chat handoff) by navigating.
 class AiScanCameraScreen extends StatefulWidget {
   const AiScanCameraScreen({super.key});
 
@@ -23,210 +24,15 @@ class AiScanCameraScreen extends StatefulWidget {
   State<AiScanCameraScreen> createState() => _AiScanCameraScreenState();
 }
 
-class _AiScanCameraScreenState extends State<AiScanCameraScreen>
-    with WidgetsBindingObserver {
-  CameraController? _cameraController;
-  List<CameraDescription> _cameras = [];
-  bool _isCameraInitialized = false;
-  // Set when the camera can't start (no permission, no camera, init failed or
-  // timed out) so the UI shows a clear fallback instead of hanging on the
-  // "Initializing camera…" loader forever.
-  bool _cameraError = false;
-  String _cameraErrorMsg = '';
-  bool _isCapturing = false;
-  bool _isFlashOn = false;
-  int _selectedCameraIndex = 0;
-  final ImagePicker _picker = ImagePicker();
-  bool _isDisposing = false;
-  
-  // Store the cubit reference to ensure context preservation
+class _AiScanCameraScreenState extends State<AiScanCameraScreen> {
+  // Captured in initState so no BuildContext crosses an async gap when the
+  // LiveScanCameraView hands back a still.
   AiScanCubit? _aiScanCubit;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _aiScanCubit = context.read<AiScanCubit>();
-    _initializeCamera();
-  }
-
-  @override
-  void dispose() {
-    _isDisposing = true;
-    WidgetsBinding.instance.removeObserver(this);
-    _disposeCamera();
-    super.dispose();
-  }
-
-  Future<void> _disposeCamera() async {
-    if (_cameraController != null) {
-      await _cameraController!.dispose();
-      _cameraController = null;
-    }
-    if (mounted) {
-      setState(() {
-        _isCameraInitialized = false;
-      });
-    }
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_isDisposing) return;
-    
-    final CameraController? cameraController = _cameraController;
-
-    if (cameraController == null || !cameraController.value.isInitialized) {
-      return;
-    }
-
-    if (state == AppLifecycleState.inactive) {
-      _disposeCamera();
-    } else if (state == AppLifecycleState.resumed) {
-      _initializeCamera();
-    }
-  }
-
-  Future<void> _initializeCamera() async {
-    if (_isDisposing) return;
-
-    // Reset error/loading state for this attempt.
-    if (mounted) {
-      setState(() {
-        _cameraError = false;
-        _cameraErrorMsg = '';
-        _isCameraInitialized = false;
-      });
-    }
-
-    try {
-      // Dispose existing controller first
-      await _disposeCamera();
-
-      // Request camera permission
-      final status = await Permission.camera.request();
-      if (!status.isGranted) {
-        _setCameraError(
-          'Camera permission is needed to take a photo. You can grant it in '
-          'Settings, or upload an image from your device instead.',
-        );
-        return;
-      }
-
-      // Get available cameras
-      _cameras = await availableCameras();
-      if (_cameras.isEmpty) {
-        _setCameraError(
-          'No camera is available on this device. Upload an image from your '
-          'device instead.',
-        );
-        return;
-      }
-
-      // Initialize camera controller. ResolutionPreset.medium is the most
-      // broadly-compatible preset (high/veryHigh fail on some devices and the
-      // Android emulator's virtual camera).
-      _cameraController = CameraController(
-        _cameras[_selectedCameraIndex],
-        ResolutionPreset.medium,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.jpeg,
-      );
-
-      // Guard against a hung initialize() (emulator camera can stall) so the
-      // UI never sticks on the loader — fall back to the error view + upload.
-      await _cameraController!.initialize().timeout(
-        const Duration(seconds: 12),
-        onTimeout: () => throw TimeoutException('camera init timed out'),
-      );
-
-      if (mounted && !_isDisposing) {
-        setState(() {
-          _isCameraInitialized = true;
-          _cameraError = false;
-        });
-      }
-    } catch (e) {
-      _setCameraError(
-        'Couldn\'t start the camera. Tap retry, or upload an image from your '
-        'device instead.',
-      );
-    }
-  }
-
-  void _setCameraError(String message) {
-    if (mounted && !_isDisposing) {
-      setState(() {
-        _cameraError = true;
-        _cameraErrorMsg = message;
-        _isCameraInitialized = false;
-      });
-    }
-  }
-
-  Future<void> _switchCamera() async {
-    if (_cameras.length < 2 || _isDisposing) return;
-
-    setState(() {
-      _isCameraInitialized = false;
-    });
-
-    await _disposeCamera();
-
-    _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
-
-    _cameraController = CameraController(
-      _cameras[_selectedCameraIndex],
-      ResolutionPreset.high,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
-
-    try {
-      await _cameraController!.initialize();
-      if (mounted && !_isDisposing) {
-        setState(() {
-          _isCameraInitialized = true;
-        });
-      }
-    } catch (e) {
-      if (mounted && !_isDisposing) {
-        Get.snackbar(
-          'Camera Error',
-          'Failed to switch camera: ${e.toString()}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-        );
-      }
-    }
-  }
-
-  Future<void> _toggleFlash() async {
-    if (_cameraController == null || _isDisposing) return;
-
-    try {
-      setState(() {
-        _isFlashOn = !_isFlashOn;
-      });
-
-      await _cameraController!.setFlashMode(
-        _isFlashOn ? FlashMode.torch : FlashMode.off,
-      );
-    } catch (e) {
-      if (mounted && !_isDisposing) {
-        setState(() {
-          _isFlashOn = !_isFlashOn; // Revert state on error
-        });
-        Get.snackbar(
-          'Flash Error',
-          'Failed to toggle flash: ${e.toString()}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-        );
-      }
-    }
   }
 
   @override
@@ -236,356 +42,69 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
       body: BlocConsumer<AiScanCubit, AiScanState>(
         listener: (context, state) {
           if (state is AiScanAnalyzing) {
-            // Unified flow: analysis started — dispose the camera and pop
-            // back to the host screen (still alive beneath us), which holds
-            // the BlocConsumer that routes AiScanIntentResolved / Ambiguous /
-            // NoData and the subsequent pay states.
+            // Analysis started — pop back to the host screen (alive beneath us),
+            // which routes AiScanIntentResolved / Ambiguous / NoData and the
+            // subsequent pay states. The camera view self-disposes on removal.
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                _disposeCamera();
-                if (Navigator.canPop(context)) {
-                  Get.back();
-                }
-              }
-            });
-          } else if (state is AiScanChatActive) {
-            // Navigate specifically to AI scan screen and dispose camera
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                // Dispose camera immediately
-                _disposeCamera();
-                // Navigate specifically to AI scan to pay screen
-                Get.offAll(() => BlocProvider.value(
-                  value: context.read<AiScanCubit>(),
-                  child: const AiScanToPayScreen(),
-                ));
-              }
+              if (mounted && Navigator.canPop(context)) Get.back();
             });
           } else if (state is AiScanBankDetailsExtracted) {
-            // Bank-details path: hand back to the main scan screen
-            // which holds the BlocListener that opens the
-            // BankDetailsBottomSheet for confirmation + amount entry.
+            // Bank-details path: hand back to the main scan screen which holds
+            // the listener that opens the prefilled-editable BankDetailsBottomSheet.
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _disposeCamera();
                 Get.offAll(() => BlocProvider.value(
-                  value: context.read<AiScanCubit>(),
-                  child: const AiScanToPayScreen(),
-                ));
+                      value: context.read<AiScanCubit>(),
+                      child: const AiScanToPayScreen(),
+                    ));
               }
             });
           } else if (state is AiScanError) {
-            Get.snackbar(
-              'Error',
-              state.message,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-            );
+            Get.snackbar('Error', state.message,
+                backgroundColor: Colors.red,
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP);
           }
         },
         builder: (context, state) {
-          // Don't show camera if we're disposing
-          if (_isDisposing) {
-            return _buildLoadingCameraView();
+          if (state is AiScanBankDetailsExtracted) {
+            return _buildCompletionView();
           }
-          
-          // For navigation states (chat handoff or bank-details
-          // extraction completed), show the completion view instead
-          // of loading while we transition back to the main screen.
-          if (state is AiScanChatActive || state is AiScanBankDetailsExtracted) {
-            return Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.black,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 80.w,
-                      height: 80.w,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 78, 3, 208),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 40.sp,
-                      ),
-                    ),
-                    SizedBox(height: 24.h),
-                    Text(
-                      'Scan Complete!',
-                      style: GoogleFonts.inter(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Redirecting...',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
+          if (state is AiScanAnalyzing) {
+            return _buildProcessingView('Reading the details…');
           }
-          
-          if (state is AiScanProcessing) {
-            return _buildProcessingState(state);
-          }
-          // Camera readiness drives the preview — NOT the cubit state. The
-          // unified flow pushes this screen directly (no AiScanCamera emit), so
-          // gating on `state is AiScanCamera` left it stuck on the loader.
-          if (_cameraError) {
-            return _buildCameraErrorView();
-          }
-          if (_isCameraInitialized && _cameraController != null) {
-            return _buildCameraState();
-          }
-
-          return _buildLoadingCameraView();
+          return LiveScanCameraView(
+            title: 'Scan to Pay',
+            // All scan paths use the lean per-service OCR route (/scan/extract):
+            // the heavy vision inference runs on chat-transfers-service and the
+            // busy general-gateway orchestration tail (multi-agent resolution +
+            // history + QR concurrency) is bypassed, so extraction is faster.
+            // The AI-scan flow resolves recipients itself at pay time and keeps
+            // its own history, so it needs none of that tail.
+            onCapture: (path) =>
+                _aiScanCubit?.analyzeImage(path, ScanSource.camera, lean: true),
+            onImagePicked: (path) =>
+                _aiScanCubit?.analyzeImage(path, ScanSource.upload, lean: true),
+            onManualCapture: (path) =>
+                _aiScanCubit?.analyzeImage(path, ScanSource.camera, lean: true),
+            // On-device fast path: parse the still on-device and, when it yields
+            // a clean identifier, route it through the SAME sheet + verify path
+            // WITHOUT the backend GPT-vision call. Falls back to onCapture above
+            // (the /scan/extract GPT route) for invoices / ambiguous / unclear.
+            onDeviceResolve: (text) =>
+                const OnDeviceScanExtractor().extract(text),
+            onResolved: (obj) {
+              if (obj is SmartScanResult) {
+                _aiScanCubit?.resolveOnDeviceScan(obj);
+              }
+            },
+          );
         },
       ),
     );
   }
 
-  Widget _buildCameraState() {
-    return Stack(
-      children: [
-        // Camera preview
-        if (_isCameraInitialized && _cameraController != null)
-          Positioned.fill(
-            child: AspectRatio(
-              aspectRatio: _cameraController!.value.aspectRatio,
-              child: CameraPreview(_cameraController!),
-            ),
-          )
-        else
-          _buildLoadingCameraView(),
-
-        // Camera overlay with viewfinder
-        Positioned.fill(
-          child: CustomPaint(
-            painter: CameraOverlayPainter(),
-          ),
-        ),
-
-        // Scan type indicator and instructions
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 20.h,
-          left: 0,
-          right: 0,
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.qr_code_scanner,
-                      color: const Color.fromARGB(255, 78, 3, 208),
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Scan to Pay',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 32.w),
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  'Position the bank details or payment QR within the frame and tap capture',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Top controls
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 16.h,
-          left: 16.w,
-          right: 16.w,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Back button
-              _buildControlButton(
-                Icons.arrow_back,
-                () => Get.back(),
-              ),
-              
-              const Spacer(),
-              
-              // Flash toggle
-              _buildControlButton(
-                _isFlashOn ? Icons.flash_on : Icons.flash_off,
-                _toggleFlash,
-                isActive: _isFlashOn,
-              ),
-            ],
-          ),
-        ),
-
-        // Bottom controls
-        Positioned(
-          bottom: MediaQuery.of(context).padding.bottom + 32.h,
-          left: 0,
-          right: 0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Gallery button
-              _buildActionButton(
-                Icons.photo_library,
-                'Gallery',
-                () => _pickImageFromGallery(),
-              ),
-              
-              // Capture button
-              GestureDetector(
-                onTap: (_isCapturing || !_isCameraInitialized) ? null : () => _captureImage(),
-                child: Container(
-                  width: 80.w,
-                  height: 80.w,
-                  decoration: BoxDecoration(
-                    color: (_isCapturing || !_isCameraInitialized)
-                        ? Colors.grey
-                        : const Color.fromARGB(255, 78, 3, 208),
-                    shape: BoxShape.circle,                    boxShadow: [
-                      BoxShadow(
-                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: _isCapturing
-                      ? LazerVaultLoader.small()
-                      : Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 32.sp,
-                        ),
-                ),
-              ),
-              
-              // Switch camera button
-              _buildActionButton(
-                Icons.flip_camera_ios,
-                'Switch',
-                _cameras.length > 1 ? _switchCamera : null,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildControlButton(
-    IconData icon,
-    VoidCallback? onTap, {
-    bool isActive = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: isActive
-              ? const Color.fromARGB(255, 78, 3, 208)
-              : Colors.black.withValues(alpha: 0.5),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24.sp,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(
-    IconData icon,
-    String label,
-    VoidCallback? onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 60.w,
-            height: 60.w,
-            decoration: BoxDecoration(
-              color: onTap != null
-                  ? Colors.white.withValues(alpha: 0.2)
-                  : Colors.white.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-              boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-            ),
-            child: Icon(
-              icon,
-              color: onTap != null ? Colors.white : Colors.white.withValues(alpha: 0.5),
-              size: 28.sp,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              color: onTap != null ? Colors.white : Colors.white.withValues(alpha: 0.5),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProcessingState(AiScanProcessing state) {
+  Widget _buildCompletionView() {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -594,317 +113,63 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Processing animation
+            Container(
+              width: 80.w,
+              height: 80.w,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 78, 3, 208),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.check, color: Colors.white, size: 40.sp),
+            ),
+            SizedBox(height: 24.h),
+            Text('Scan complete',
+                style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white)),
+            SizedBox(height: 8.h),
+            Text('Redirecting…',
+                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white70)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProcessingView(String status) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             Container(
               width: 120.w,
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color.fromARGB(255, 78, 3, 208),
-                  width: 2,
-                ),
+                    color: const Color.fromARGB(255, 78, 3, 208), width: 2),
               ),
-              child: Center(
-                child: LazerVaultLoader.small(),
-              ),
+              child: Center(child: LazerVaultLoader.small()),
             ),
             SizedBox(height: 32.h),
-            
-            Text(
-              state.status,
-              style: GoogleFonts.inter(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            
-            Text(
-              'Please wait while AI analyzes your image...',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.white70,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingCameraView() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.black,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            LazerVaultLoader.small(),
-            SizedBox(height: 16.h),
-            Text(
-              'Initializing camera...',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Shown when the camera can't start — never leave the user on an endless
-  /// loader. Offers Retry + Upload-from-device (which works without a camera).
-  Widget _buildCameraErrorView() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.black,
-      padding: EdgeInsets.symmetric(horizontal: 32.w),
-      child: Stack(
-        children: [
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 12.h,
-            left: 4.w,
-            child: _buildControlButton(Icons.arrow_back, () => Get.back()),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.no_photography_outlined,
-                    color: const Color(0xFF9CA3AF), size: 56.sp),
-                SizedBox(height: 16.h),
-                Text(
-                  'Camera unavailable',
-                  style: GoogleFonts.inter(
+            Text(status,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
                     fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  _cameraErrorMsg,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                      fontSize: 13.sp, color: const Color(0xFF9CA3AF), height: 1.4),
-                ),
-                SizedBox(height: 28.h),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: ElevatedButton.icon(
-                    onPressed: _isDisposing ? null : _initializeCamera,
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    label: Text('Retry',
-                        style: GoogleFonts.inter(
-                            fontSize: 15.sp, fontWeight: FontWeight.w600)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _pickImageFromGallery(),
-                    icon: const Icon(Icons.photo_library_outlined,
-                        color: Colors.white),
-                    label: Text('Upload from device',
-                        style: GoogleFonts.inter(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF2D2D2D)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white)),
+            SizedBox(height: 8.h),
+            Text('Please wait while we analyze your image…',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white70)),
+          ],
+        ),
       ),
     );
   }
-
-  Future<void> _captureImage() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized || _isDisposing) {
-      return;
-    }
-
-    try {
-      setState(() {
-        _isCapturing = true;
-      });
-
-      // Capture image
-      final XFile image = await _cameraController!.takePicture();
-
-      // Unified intelligent-scan: hand the captured image to analyzeImage
-      // which runs QR-decode + OCR in parallel and routes to the right
-      // payment target (bank details / qr-pay / invoice / recipient).
-      // _aiScanCubit was captured in initState, so no BuildContext is needed
-      // across the await.
-      _aiScanCubit?.analyzeImage(image.path, ScanSource.camera);
-    } catch (e) {
-      if (mounted && !_isDisposing) {
-        Get.snackbar(
-          'Capture Error',
-          'Failed to capture image: ${e.toString()}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-        );
-      }
-    } finally {
-      if (mounted && !_isDisposing) {
-        setState(() {
-          _isCapturing = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _pickImageFromGallery() async {
-    if (_isDisposing) return;
-    
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-      
-      if (image != null && !_isDisposing) {
-        // Same unified analysis path as the camera capture. _aiScanCubit was
-        // captured in initState, so no BuildContext crosses the await.
-        _aiScanCubit?.analyzeImage(image.path, ScanSource.upload);
-      }
-    } catch (e) {
-      if (mounted && !_isDisposing) {
-        Get.snackbar(
-          'Gallery Error',
-          'Failed to pick image: ${e.toString()}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-        );
-      }
-    }
-  }
-
 }
-
-// Custom painter for camera overlay
-class CameraOverlayPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.5)
-      ..style = PaintingStyle.fill;
-
-    final borderPaint = Paint()
-      ..color = const Color.fromARGB(255, 78, 3, 208)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
-
-    // Calculate viewfinder dimensions
-    final viewfinderWidth = size.width * 0.8;
-    final viewfinderHeight = viewfinderWidth * 1.2;
-    final left = (size.width - viewfinderWidth) / 2;
-    final top = (size.height - viewfinderHeight) / 2;
-
-    final viewfinderRect = Rect.fromLTWH(left, top, viewfinderWidth, viewfinderHeight);
-
-    // Draw overlay with cutout
-    final path = Path()
-      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..addRRect(RRect.fromRectAndRadius(viewfinderRect, const Radius.circular(20)));
-    path.fillType = PathFillType.evenOdd;
-
-    canvas.drawPath(path, paint);
-
-    // Draw viewfinder border
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(viewfinderRect, const Radius.circular(20)),
-      borderPaint,
-    );
-
-    // Draw corner indicators
-    final cornerPaint = Paint()
-      ..color = const Color.fromARGB(255, 78, 3, 208)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0
-      ..strokeCap = StrokeCap.round;
-
-    const cornerLength = 20.0;
-    const cornerRadius = 20.0;
-
-    // Top-left corner
-    canvas.drawLine(
-      Offset(left + cornerRadius, top),
-      Offset(left + cornerRadius + cornerLength, top),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left, top + cornerRadius),
-      Offset(left, top + cornerRadius + cornerLength),
-      cornerPaint,
-    );
-
-    // Top-right corner
-    canvas.drawLine(
-      Offset(left + viewfinderWidth - cornerRadius - cornerLength, top),
-      Offset(left + viewfinderWidth - cornerRadius, top),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + viewfinderWidth, top + cornerRadius),
-      Offset(left + viewfinderWidth, top + cornerRadius + cornerLength),
-      cornerPaint,
-    );
-
-    // Bottom-left corner
-    canvas.drawLine(
-      Offset(left, top + viewfinderHeight - cornerRadius - cornerLength),
-      Offset(left, top + viewfinderHeight - cornerRadius),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + cornerRadius, top + viewfinderHeight),
-      Offset(left + cornerRadius + cornerLength, top + viewfinderHeight),
-      cornerPaint,
-    );
-
-    // Bottom-right corner
-    canvas.drawLine(
-      Offset(left + viewfinderWidth, top + viewfinderHeight - cornerRadius - cornerLength),
-      Offset(left + viewfinderWidth, top + viewfinderHeight - cornerRadius),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + viewfinderWidth - cornerRadius - cornerLength, top + viewfinderHeight),
-      Offset(left + viewfinderWidth - cornerRadius, top + viewfinderHeight),
-      cornerPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-} 

@@ -14,6 +14,7 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
 
   @override
   Future<SplitBillEntity> createSplitBill({
+    required String title,
     required double totalAmount,
     required String currency,
     required String description,
@@ -26,6 +27,7 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
     return retryWithBackoff(
       operation: () async {
         final request = pb.CreateSplitBillRequest()
+          ..title = title
           ..totalAmount = totalAmount
           ..currency = currency
           ..description = description
@@ -36,14 +38,18 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
         if (receiver != null) {
           request.receiver = pb.ReceiverInput()
             ..type = receiver.type
+            ..userId = receiver.userId
             ..username = receiver.username
+            ..displayName = receiver.displayName
             ..bankCode = receiver.bankCode
             ..accountNumber = receiver.accountNumber;
         }
 
         for (final p in participants) {
           request.participants.add(pb.SplitBillParticipantInput()
+            ..userId = p.userId
             ..username = p.username
+            ..displayName = p.displayName
             ..amount = p.amount
             ..percentage = p.percentage);
         }
@@ -264,11 +270,17 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
   }
 
   @override
-  Future<int> sendSplitBillReminder({required String splitBillId}) async {
+  Future<int> sendSplitBillReminder({
+    required String splitBillId,
+    List<String>? participantUserIds,
+  }) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.SendSplitBillReminderRequest()
           ..splitBillId = splitBillId;
+        if (participantUserIds != null && participantUserIds.isNotEmpty) {
+          request.participantUserIds.addAll(participantUserIds);
+        }
 
         final options = await grpcClient.callOptions;
         try {
@@ -324,6 +336,7 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
       totalAmount: proto.totalAmount,
       creatorShare: proto.creatorShare,
       currency: proto.currency,
+      title: proto.title,
       description: proto.description,
       splitMethod: _splitMethodFromProto(proto.splitMethod),
       status: _statusFromProto(proto.status),
@@ -402,6 +415,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
       case pb_enum.SplitBillParticipantStatus
             .SPLIT_BILL_PARTICIPANT_STATUS_DECLINED:
         return SplitBillParticipantStatus.declined;
+      case pb_enum.SplitBillParticipantStatus
+            .SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS:
+        return SplitBillParticipantStatus.inProgress;
       default:
         return SplitBillParticipantStatus.pending;
     }

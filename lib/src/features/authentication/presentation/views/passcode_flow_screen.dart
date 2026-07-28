@@ -638,8 +638,15 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 32.w),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            // Two zones split by a flexible gap (mirrors the passcode LOGIN
+            // screen): heading + dots on top, keypad anchored LOW like a system
+            // keyboard rather than floating in the middle.
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // ===== TOP zone: heading + subtitle + dots =====
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
               SizedBox(height: 16.h),
               Text(
                 _stepTitle,
@@ -692,20 +699,24 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              SizedBox(height: 36.h),
+                ],
+              ),
+              // ===== BOTTOM zone: keypad anchored low (system-keyboard feel) =====
               // Disable + dim the keypad during a rate-limit lockout.
-              IgnorePointer(
-                ignoring: _locked,
-                child: AnimatedOpacity(
-                  opacity: _locked ? 0.4 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: PasscodeKeypad(
-                    onDigit: _onDigit,
-                    onBackspace: _onBackspace,
+              Padding(
+                padding: EdgeInsets.only(bottom: 24.h),
+                child: IgnorePointer(
+                  ignoring: _locked,
+                  child: AnimatedOpacity(
+                    opacity: _locked ? 0.4 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: PasscodeKeypad(
+                      onDigit: _onDigit,
+                      onBackspace: _onBackspace,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(height: 24.h),
             ],
           ),
         ),

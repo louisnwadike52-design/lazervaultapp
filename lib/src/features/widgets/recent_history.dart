@@ -10,6 +10,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/widgets/recent_history_list.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class RecentHistory extends StatefulWidget {
   const RecentHistory({super.key});
@@ -23,10 +24,17 @@ class _RecentHistoryState extends State<RecentHistory> {
   StreamSubscription<String?>? _accountSub;
   StreamSubscription<String>? _localeSub;
 
+  // Tracks scroll-into-view so we refetch each time the section becomes visible.
+  bool _wasVisible = false;
+  DateTime? _lastAutoFetch;
+
   @override
   void initState() {
     super.initState();
     _cubit = serviceLocator<TransactionHistoryCubit>();
+    // Seed the throttle so the initial account/locale load isn't immediately
+    // duplicated by the first visibility callback on the same frame.
+    _lastAutoFetch = DateTime.now();
 
     final accountManager = serviceLocator<AccountManager>();
     final localeManager = serviceLocator<LocaleManager>();
@@ -43,6 +51,32 @@ class _RecentHistoryState extends State<RecentHistory> {
         .listen((_) => _cubit.loadAllTransactions());
   }
 
+  /// Fires as the section scrolls in/out of view. On each fresh entry into view
+  /// we pull the latest transactions (bypassing the cache) so the dashboard
+  /// never shows stale history. Guarded so it triggers once per entry and at
+  /// most every couple of seconds (jitter / rapid up-down scrolls).
+  void _onVisibilityChanged(VisibilityInfo info) {
+    if (!mounted) return;
+    final visible = info.visibleFraction > 0.2;
+    if (!visible) {
+      _wasVisible = false;
+      return;
+    }
+    if (_wasVisible) return; // already counted this entry
+    _wasVisible = true;
+
+    final now = DateTime.now();
+    if (_lastAutoFetch != null &&
+        now.difference(_lastAutoFetch!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastAutoFetch = now;
+    // Background refresh: pull the latest transactions WITHOUT flashing a loading
+    // skeleton — the current list stays on screen and updates in place, so the
+    // section doesn't flicker each time it scrolls into view.
+    _cubit.refreshTransactions(background: true);
+  }
+
   @override
   void dispose() {
     _accountSub?.cancel();
@@ -54,7 +88,10 @@ class _RecentHistoryState extends State<RecentHistory> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
-      child: Container(
+      child: VisibilityDetector(
+        key: const Key('dashboard-recent-history'),
+        onVisibilityChanged: _onVisibilityChanged,
+        child: Container(
         padding: EdgeInsets.fromLTRB(20.w, 14.w, 20.w, 10.w),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -95,6 +132,7 @@ class _RecentHistoryState extends State<RecentHistory> {
             SizedBox(height: 18.h),
             const RecentHistoryList(),
           ],
+        ),
         ),
       ),
     );

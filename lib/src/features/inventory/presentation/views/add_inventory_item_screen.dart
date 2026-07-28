@@ -154,7 +154,9 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
               backgroundColor: const Color(0xFF10B981),
             ),
           );
-          Get.back(result: true);
+          // Return the created item so a caller (e.g. the Sell item picker's
+          // "+ New item") can auto-select it. List screens check `!= null`.
+          Get.back(result: state.item);
         } else if (state is InventoryError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -22,7 +22,7 @@ String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
   'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
 
   // PiggyVault (Lock Funds) — savings product
-  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'PiggyVault',
+  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'Piggyvault',
   'autosave' => 'AutoSave',
   'savings & products' => 'Savings & Products',
 

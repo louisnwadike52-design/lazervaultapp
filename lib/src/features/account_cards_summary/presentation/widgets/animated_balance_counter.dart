@@ -1,6 +1,29 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'package:just_audio/just_audio.dart';
+
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/panic_balance_service.dart';
+import 'package:lazervault/core/services/haptics_service.dart';
+
+/// Repeated haptic pulses for the life of a balance-roll animation — the
+/// vibration counterpart to the money-counting sound. Fires a pulse every
+/// ~180ms until [duration] elapses (the timer is self-cancelling), so it reads
+/// as a continuous "counting" buzz on devices whose only API is discrete taps.
+Timer _runAnimationVibration(Duration duration) {
+  Haptics.success();
+  final end = DateTime.now().add(duration);
+  return Timer.periodic(const Duration(milliseconds: 180), (t) {
+    if (DateTime.now().isAfter(end)) {
+      t.cancel();
+      return;
+    }
+    Haptics.keyTap();
+  });
+}
 
 /// Animated balance counter widget with Revolut-style rolling digits
 /// Digits fall/roll from top to bottom as the value changes
@@ -12,6 +35,10 @@ class AnimatedBalanceCounter extends StatefulWidget {
   final Duration startDelay;
   final Curve curve;
 
+  /// When true, a money-counting sound plays while the balance rolls UP
+  /// (a credit). Toggled by the user in Security → Panic Balance settings.
+  final bool enableSound;
+
   const AnimatedBalanceCounter({
     super.key,
     required this.balance,
@@ -20,6 +47,7 @@ class AnimatedBalanceCounter extends StatefulWidget {
     this.duration = const Duration(seconds: 3), // 3 seconds for visible animation
     this.startDelay = const Duration(milliseconds: 500), // Small delay so user sees dashboard first
     this.curve = Curves.easeOutCubic,
+    this.enableSound = false,
   });
 
   @override
@@ -31,12 +59,40 @@ class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter> {
   double _previousBalance = 0;
   bool _isIncreasing = true;
   bool _isAnimating = false;
+  AudioPlayer? _sfx;
 
   @override
   void initState() {
     super.initState();
     _displayBalance = widget.balance;
     _previousBalance = widget.balance;
+  }
+
+  @override
+  void dispose() {
+    _sfx?.dispose();
+    super.dispose();
+  }
+
+  /// Play the money-counting riffle for the duration of the roll (looped short
+  /// tick), then stop. Best-effort: audio init/playback failures never break the
+  /// balance render.
+  Future<void> _playMoneySound() async {
+    try {
+      final player = _sfx ??= AudioPlayer();
+      await player.setLoopMode(LoopMode.all);
+      await player.setAsset(serviceLocator<PanicBalanceService>().soundChoice);
+      await player.setVolume(0.6);
+      await player.seek(Duration.zero);
+      unawaited(player.play());
+      Future.delayed(widget.duration, () async {
+        try {
+          await _sfx?.stop();
+        } catch (_) {}
+      });
+    } catch (_) {
+      // ignore — sound is a nice-to-have, never a hard dependency
+    }
   }
 
   @override
@@ -54,6 +110,11 @@ class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter> {
             _isAnimating = true;
             _displayBalance = widget.balance;
           });
+
+          // Money-counting sound only on a CREDIT (rolling up), when enabled.
+          if (widget.enableSound && _isIncreasing) {
+            _playMoneySound();
+          }
 
           // Reset animating flag after animation completes
           Future.delayed(widget.duration, () {
@@ -139,6 +200,20 @@ class CompactAnimatedBalance extends StatefulWidget {
   final Duration duration;
   final Duration startDelay;
 
+  /// Play the money-counting sound while rolling UP (a credit), when enabled.
+  final bool enableSound;
+
+  /// Vibrate while the balance-change animation plays, when enabled (the
+  /// vibration counterpart to [enableSound]; user toggle in Panic Balance).
+  final bool enableVibration;
+
+  /// When false, balance changes apply INSTANTLY — no roll/flip animation, no
+  /// start delay, no pulse, no sound. Used for the panic/decoy balance so the
+  /// camouflage amount shows immediately on login instead of counting toward
+  /// it, AND so a real→decoy switch never rolls THROUGH the real balance and
+  /// briefly leaks it to someone watching.
+  final bool animate;
+
   const CompactAnimatedBalance({
     super.key,
     required this.balance,
@@ -147,6 +222,9 @@ class CompactAnimatedBalance extends StatefulWidget {
     this.color,
     this.duration = const Duration(seconds: 3), // 3 seconds for visible animation
     this.startDelay = const Duration(milliseconds: 500), // Small delay so user sees dashboard first
+    this.enableSound = false,
+    this.enableVibration = false,
+    this.animate = true,
   });
 
   @override
@@ -161,6 +239,26 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
   double _previousBalance = 0;
   bool _isIncreasing = true;
   bool _isAnimating = false;
+  AudioPlayer? _sfx;
+  Timer? _vibrationTimer;
+
+  Future<void> _playMoneySound() async {
+    try {
+      final player = _sfx ??= AudioPlayer();
+      await player.setLoopMode(LoopMode.all);
+      await player.setAsset(serviceLocator<PanicBalanceService>().soundChoice);
+      await player.setVolume(0.6);
+      await player.seek(Duration.zero);
+      unawaited(player.play());
+      Future.delayed(widget.duration, () async {
+        try {
+          await _sfx?.stop();
+        } catch (_) {}
+      });
+    } catch (_) {
+      // best-effort — sound never blocks the balance render
+    }
+  }
 
   @override
   void initState() {
@@ -187,6 +285,19 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.balance != widget.balance) {
+      // Panic/decoy (or any non-animated) mode: snap instantly — no roll, no
+      // delay, no pulse, no sound. This is what makes the panic balance show
+      // immediately on login with no "countdown", and prevents a real→decoy
+      // roll from counting through (and leaking) the real balance.
+      if (!widget.animate) {
+        setState(() {
+          _isAnimating = false;
+          _previousBalance = widget.balance;
+          _displayBalance = widget.balance;
+        });
+        return;
+      }
+
       _previousBalance = _displayBalance;
       _isIncreasing = widget.balance > _previousBalance;
 
@@ -200,6 +311,16 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
 
           // Pulse animation at the start
           _pulseController.forward(from: 0);
+
+          // Money-counting sound only on a CREDIT (rolling up), when enabled.
+          if (widget.enableSound && _isIncreasing) {
+            _playMoneySound();
+          }
+          // Vibration accompanies ANY animated balance change, when enabled.
+          if (widget.enableVibration) {
+            _vibrationTimer?.cancel();
+            _vibrationTimer = _runAnimationVibration(widget.duration);
+          }
 
           // Reset animating flag after animation completes
           Future.delayed(widget.duration, () {
@@ -217,6 +338,8 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
   @override
   void dispose() {
     _pulseController.dispose();
+    _sfx?.dispose();
+    _vibrationTimer?.cancel();
     super.dispose();
   }
 
@@ -251,7 +374,8 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
               ),
               AnimatedFlipCounter(
                 value: _displayBalance,
-                duration: widget.duration,
+                // Snap (no roll) when animation is disabled — e.g. panic decoy.
+                duration: widget.animate ? widget.duration : Duration.zero,
                 curve: Curves.easeOutCubic,
                 fractionDigits: 2,
                 thousandSeparator: ',',

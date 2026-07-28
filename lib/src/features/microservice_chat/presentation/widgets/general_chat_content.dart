@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
+import 'package:lazervault/core/services/pending_message_highlight.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/chat_sessions_cubit.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/chat_sessions_state.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_cubit.dart';
@@ -677,6 +678,56 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     );
   }
 
+  /// "Show in chat" action for the AI jump-to-message flow. Queues the located
+  /// anchors for the conversation and closes the assistant, so the P2P chat
+  /// page beneath scrolls to + highlights the match(es).
+  Widget _buildJumpToMessageAction(
+      BuildContext context, Map<String, dynamic> metadata) {
+    final rawAnchors = (metadata['jump_to_messages'] as List?) ?? const [];
+    final cid = metadata['jump_conversation_id'] as String?;
+    final anchors = <MessageHighlightAnchor>[];
+    for (final a in rawAnchors) {
+      if (a is Map) {
+        final id = (a['id'] ?? a['message_id'])?.toString() ?? '';
+        if (id.isEmpty) continue;
+        anchors.add(MessageHighlightAnchor(
+          messageId: id,
+          snippet: (a['snippet'] ?? '').toString(),
+          createdAt: (a['created_at'] ?? '').toString(),
+        ));
+      }
+    }
+    if (anchors.isEmpty || cid == null || cid.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final label = anchors.length > 1
+        ? 'Show ${anchors.length} messages in chat'
+        : 'Show in chat';
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          onPressed: () {
+            PendingMessageHighlight.instance.set(cid, anchors);
+            // Close the assistant so the user lands on the highlighted message
+            // in the conversation beneath (the P2P page consumes it on return).
+            Navigator.of(context).maybePop();
+          },
+          icon: const Icon(Icons.my_location_rounded, size: 16),
+          label: Text(label),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF7C3AED),
+            side: const BorderSide(color: Color(0xFF7C3AED)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPinPromptCard(Map<String, dynamic> payload) {
     final callbackIntent = payload['callback_intent']?.toString() ?? '';
     final callbackArgsRaw = payload['callback_args'];
@@ -820,11 +871,15 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                           ),
                   // Receipt card for successful transfers (legacy shape)
                   if (!isUser && message.metadata?['receipt_data'] != null)
-                    _buildReceiptCard(message.metadata!['receipt_data']),
+                    _buildReceiptCard(message.metadata!['receipt_data'])
                   // ReceiptCard V2 — generic shape emitted by
                   // chat_services_shared/receipt_protocol.py. Single
                   // dict OR list (batch transfer produces N cards).
-                  if (!isUser && message.metadata?['receipt_card'] != null)
+                  // Rendered ONLY when there's no receipt_data: a successful
+                  // transfer surfaces both, but we show the single receipt_data
+                  // card above; V2 is the fallback for flows that emit only
+                  // receipt_card (e.g. batch transfers).
+                  else if (!isUser && message.metadata?['receipt_card'] != null)
                     _buildReceiptCardV2(message.metadata!['receipt_card']),
                   // PinPromptIntent — money-moving tools emit this when
                   // they need a PIN. The card opens the native
@@ -838,6 +893,13 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                         message.metadata!['pin_prompt'] as Map,
                       ),
                     ),
+                  // AI "jump to message": the locate tool found message(s) in
+                  // this conversation — offer to close the assistant and scroll
+                  // to + highlight them in the P2P chat beneath.
+                  if (!isUser &&
+                      message.metadata?['jump_to_messages'] is List &&
+                      (message.metadata!['jump_to_messages'] as List).isNotEmpty)
+                    _buildJumpToMessageAction(context, message.metadata!),
                   // "Open full receipt" deep-link under any bill purchase.
                   // Routes to the existing Flutter receipt screen for the bill type.
                   if (!isUser &&

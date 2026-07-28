@@ -2,6 +2,8 @@
 // physical-vs-emulator detection. The tier is now a build-time decision
 // via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
+import 'dart:ui' show PlatformDispatcher;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,15 +11,24 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/login_flow_resolver.dart';
+import 'package:lazervault/core/services/pending_chat_navigation.dart';
+import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/data/datasources/cms_data.dart';
+import 'package:lazervault/src/features/app_status/widgets/app_startup_gate.dart';
 import 'package:lazervault/src/features/presentation/app_router.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'core/services/endpoint_registry.dart';
 import 'core/services/inactivity_watcher.dart';
+import 'core/services/remote_log_sink.dart';
+import 'src/core/services/analytics_service.dart';
+import 'src/features/admin_alerts/admin_alerts_screen.dart';
 import 'src/core/config/app_environment.dart' show currentAppEnvironment;
 import 'core/services/injection_container.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'core/services/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
@@ -61,8 +72,48 @@ Future<void> _initializeAndroidAudioSettings() async {
       webrtc.AndroidAudioConfiguration.communication);
 }
 
-void main() async {
+void main() {
+  // Run the whole app inside a guarded zone so uncaught async ("zone") errors
+  // and Flutter framework errors are routed to telemetry (→ Prometheus
+  // app_runtime_errors_total → Grafana). Best-effort: telemetry never blocks.
+  runZonedGuarded(() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Framework (build/layout/paint) errors → telemetry, after the default handler
+  // (which still prints to the console / red screen in debug).
+  final priorFlutterOnError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    priorFlutterOnError?.call(details);
+    AnalyticsService.instance.trackRuntimeError(kind: 'flutter_error');
+    // Ship the actual error text + stack to Loki so a crash on a store device
+    // is readable, not just an aggregate counter. Fail-silent.
+    RemoteLogSink.instance.log(
+      level: 'error',
+      flow: 'crash',
+      message: details.exceptionAsString(),
+      fields: {
+        'kind': 'flutter_error',
+        'library': details.library ?? '',
+        'stack': details.stack?.toString() ?? '',
+      },
+    );
+  };
+
+  // Uncaught PLATFORM-dispatched errors (outside the guarded zone / framework).
+  // Log then keep running — consistent with the zone handler's "last-resort net"
+  // philosophy below (the app already survives uncaught zone errors).
+  final priorPlatformOnError = PlatformDispatcher.instance.onError;
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    AnalyticsService.instance.trackRuntimeError(kind: 'platform_error');
+    RemoteLogSink.instance.log(
+      level: 'error',
+      flow: 'crash',
+      message: error.toString(),
+      fields: {'kind': 'platform_error', 'stack': stack.toString()},
+    );
+    return priorPlatformOnError?.call(error, stack) ?? true;
+  };
+
   FlutterNativeSplash.preserve(
       widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
 
@@ -89,14 +140,62 @@ void main() async {
   // asynchronously and updates the cache for the NEXT cold start.
   await endpointRegistry.ensureReady();
 
+  // Start the remote log sink now that the URL registry + admin flags are
+  // cached — it reads the client-logs endpoint + gating from there. This makes
+  // AppLogger + the crash handlers above start shipping to Loki. Fast (a
+  // SharedPreferences read + package info); never blocks on the network.
+  await RemoteLogSink.instance.init();
+
   // Hydrate the feature-flag cache from SharedPreferences before any widget
   // reads a synchronous flag (e.g. dashboard's `FeatureFlags.dashboardCardsVisible`).
   // The admin-side refresh that bulk-updates flags via
   // `FeatureFlags.applyRemoteSnapshot` rides on top of this baseline.
   await FeatureFlags.init();
+  // Hydrate admin-toggled flags from the endpoint registry's cached snapshot
+  // (same /internal/voice-agents/settings poll that feeds the URL cache). On a
+  // brand-new install the keys aren't cached yet, so flags hold their safe
+  // OFF default until the first background refresh + next launch.
+  await FeatureFlags.applyRemoteSnapshot(endpointRegistry.nonUrlSnapshot());
+  // NOTE: the Send Funds flow pin is loaded from storage inside FeatureFlags.init
+  // above (instant, offline routing with the last-known value). It is re-resolved
+  // + re-persisted on the next login/session-revalidation (authentication_cubit),
+  // so we deliberately do NOT recompute it here at boot.
+
+  // Hydrate P2P chat sound/vibration preferences so the first outgoing message
+  // fires the correct (per-chat or global) feedback without a cold read.
+  await ChatSoundSettings.instance.init();
 
   // Initialize dependency injection (after env vars are loaded)
   await init();
+
+  // Refresh the platform auth mode from the authoritative GET /auth/config
+  // BEFORE boot routing, so an admin flip (email_password ⇄ phone_passcode)
+  // takes effect on the very NEXT launch rather than the one after. Capped with
+  // a short timeout and falls back to the cached value (hydrated above from the
+  // settings poll) so a slow/absent network never blocks startup.
+  // Give the authoritative fetch enough time to survive a cold/just-recreated
+  // gRPC channel (a 2.5s cap frequently timed out on the first call after a
+  // channel reset and left boot routing on a STALE cached auth_mode — e.g. the
+  // email screen showing while the backend is in phone_passcode mode). 5s still
+  // falls back to the cached value if the network is genuinely down.
+  try {
+    final res = await serviceLocator<IAuthRepository>()
+        .getAuthenticationMode()
+        .timeout(const Duration(milliseconds: 5000));
+    await res.fold(
+      (_) async {/* keep cached value */},
+      (mode) => FeatureFlags.setAuthenticationMode(mode),
+    );
+  } catch (_) {/* best-effort — boot routing uses the cached value */}
+
+  // Resolve the SINGLE canonical login flow once, offline, before routing. If it
+  // was never cached (fresh install or first launch after this change), seed it
+  // from the legacy secure-storage signals so an existing account still lands on
+  // the correct screen without a network call. Every login/signup site then
+  // reads FeatureFlags.loginFlow — no more per-site re-derivation / flip-flop.
+  try {
+    await LoginFlowResolver.seedFromLegacyIfUnset();
+  } catch (_) {/* default (phone_passcode) applies */}
 
   // Hydrate the panic-balance decoy state from local storage BEFORE the first
   // balance render, so a previously-triggered decoy is restored on cold start.
@@ -118,7 +217,43 @@ void main() async {
   // Initialize push notifications (Firebase + FCM). Fire-and-forget so we don't
   // block first frame on permission prompts or token retrieval — the token is
   // re-registered post-login via authentication_cubit.
-  unawaited(serviceLocator<PushNotificationsService>().initialize());
+  // Deep-link ops-alert pushes (data.type == ops_alert) to the admin-only
+  // Admin Alerts screen; everything else falls through to default handling.
+  final pushSvc = serviceLocator<PushNotificationsService>();
+  pushSvc.onMessageTap = (m) {
+    if (m.data['type'] == 'ops_alert') {
+      Get.to(() => const AdminAlertsScreen());
+      return;
+    }
+    // Security: a super-admin cleared this user's transaction PIN. Invalidate the
+    // session "has PIN" cache and route straight to setup so an already-logged-in
+    // user can re-enrol immediately (a not-yet-logged-in user is routed to setup
+    // by the login flow anyway, since the login response reports has PIN = false).
+    if (m.data['type'] == 'security' &&
+        m.data['event_type'] == 'transaction_pin.admin_reset') {
+      if (serviceLocator.isRegistered<ITransactionPinService>()) {
+        try {
+          serviceLocator<ITransactionPinService>().resetPinCache();
+        } catch (_) {}
+      }
+      Get.toNamed(AppRoutes.transactionPinSetup);
+      return;
+    }
+    // P2P chat push: open the conversation with the SENDER (the other party).
+    // Stash the target then try to route now — if the app isn't authenticated
+    // yet (cold start from a terminated tap), it stays stashed and the
+    // dashboard consumes it after login. Get.toNamed pushes over the dashboard
+    // so Back returns to the dashboard, never to the login gate.
+    if (m.data['type'] == 'p2p_message') {
+      PendingChatNavigation.instance.set(
+        otherUserId: m.data['sender_user_id']?.toString() ?? '',
+        otherUserName: m.data['sender_name']?.toString(),
+        conversationId: m.data['conversation_id']?.toString(),
+      );
+      PendingChatNavigation.instance.consumeAndNavigate();
+    }
+  };
+  unawaited(pushSvc.initialize());
 
   // Permissions + audio settings are fire-and-forget: they don't gate
   // anything on first frame (the permission check just logs on denial;
@@ -153,6 +288,14 @@ void main() async {
 
   runApp(MyApp(initialRoute: initialRoute));
 
+  // Flush buffered Loki logs when the app is backgrounded/detached so
+  // breadcrumbs land before the OS may freeze the process. Kept alive by the
+  // top-level [_logLifecycleListener] reference.
+  _logLifecycleListener = AppLifecycleListener(
+    onPause: () => RemoteLogSink.instance.flushNow(),
+    onDetach: () => RemoteLogSink.instance.flushNow(),
+  );
+
   // Initialize app icon quick actions (long-press shortcuts)
   QuickActionsService.instance.initialize();
 
@@ -160,7 +303,27 @@ void main() async {
   // (Previously this fired inside SplashScreen.initState; with the
   // splash removed it lands here so the shortcut still gets honoured.)
   QuickActionsService.instance.processPendingShortcut();
+  }, (Object error, StackTrace stack) {
+    // Uncaught async error escaped to the zone — record and swallow (the app
+    // keeps running; this is the last-resort net, not a crash handler).
+    AnalyticsService.instance.trackRuntimeError(kind: 'zone_error');
+    RemoteLogSink.instance.log(
+      level: 'error',
+      flow: 'crash',
+      message: error.toString(),
+      fields: {'kind': 'zone_error', 'stack': stack.toString()},
+    );
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print('Uncaught zone error: $error\n$stack');
+    }
+  });
 }
+
+/// Keeps the app-lifecycle listener that flushes Loki logs on pause alive for
+/// the process lifetime (an unreferenced [AppLifecycleListener] would be GC'd).
+// ignore: unused_element
+AppLifecycleListener? _logLifecycleListener;
 
 /// Helper function to determine the initial route based on authentication status
 /// IMPORTANT: Users must authenticate on every app restart for security
@@ -186,21 +349,125 @@ Future<String> _determineInitialRoute() async {
       await storage.delete(key: 'has_incomplete_signup');
       await storage.delete(key: 'signup_draft');
       await storage.delete(key: 'current_signup_step');
-      print('🔄 Onboarding reset for development - showing onboarding screens');
-      return AppRoutes.root; // Show onboarding
+      print('🔄 Onboarding reset for development — routing to the fresh-user entry');
+      // Intro onboarding carousel removed — fall through to the normal fresh-user
+      // routing below (phone signup / email sign-in) rather than a slides screen.
     }
 
-    // Check if user has seen onboarding
-    final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
-    if (hasSeenOnboarding != 'true') {
-      print('👋 First-time user - showing onboarding screens');
-      return AppRoutes.root; // Show onboarding for first-time users
+    // NOTE: the intro onboarding carousel has been removed. First-time users are
+    // no longer shown slides; they fall through to the brand-new-user routing at
+    // the end of this function (phone signup in phone+passcode mode, email
+    // sign-in otherwise).
+
+    // SELF-LOCK / EMERGENCY LOCK: arming the lock wipes the cached identity
+    // (clearAll) and writes this local deadline mirror. While it's still in the
+    // future, route STRAIGHT to the mode's login screen — which shows the live
+    // countdown modal on arrival — bypassing the onboarding/fresh routing below
+    // (which would otherwise land a locked user on the carousel because clearAll
+    // also wiped has_seen_onboarding). Self-clears once elapsed. The backend login
+    // gate remains the real enforcement; this is the proactive reflection.
+    final selfLockRaw = await storage.read(key: 'self_lock_until');
+    if (selfLockRaw != null && selfLockRaw.isNotEmpty) {
+      final until = DateTime.tryParse(selfLockRaw);
+      if (until != null && until.toUtc().isAfter(DateTime.now().toUtc())) {
+        print('🔒 Account self-locked until $until — routing to login for the lock countdown');
+        return AppRoutes.freshLoginEntry;
+      }
+      // Elapsed or unparseable — drop the stale mirror and continue normally.
+      await storage.delete(key: 'self_lock_until');
     }
 
     // Read stored auth/session state up front.
     final loginMethod = await storage.read(key: 'login_method');
     final storedEmail = await storage.read(key: 'stored_email');
+    final storedPhone = await storage.read(key: 'stored_phone');
     final userId = await storage.read(key: 'user_id');
+    final hasIncompleteSignup = await storage.read(key: 'has_incomplete_signup');
+    final currentSignupStep = await storage.read(key: 'current_signup_step');
+    final onboardingAuthType = await storage.read(key: 'onboarding_auth_type');
+    // User-selectable login-method preference (set in Settings, mirrored from
+    // GetMe/login). Overrides the platform default; see the explicit check below.
+    final preferredLoginMethod = await storage.read(key: 'preferred_login_method');
+
+    // Resume a GENUINE in-progress phone+passcode signup BEFORE the per-account
+    // login checks, so quitting mid-signup returns the user to where they left
+    // off even on a device that also holds a previously-completed account. Gated
+    // on a REAL draft (a verified token, a recorded skip, or an active OTP step)
+    // so a stale `has_incomplete_signup` flag still falls through to login.
+    if (hasIncompleteSignup == 'true' &&
+        onboardingAuthType == 'PHONE_PASSCODE' &&
+        currentSignupStep != null) {
+      final phoneDraft = await storage.read(key: 'phone_signup_phone');
+      final phoneToken = await storage.read(key: 'phone_signup_token');
+      final phoneSkipped = await storage.read(key: 'phone_signup_skipped');
+      final hasRealDraft = (phoneDraft?.isNotEmpty ?? false) &&
+          ((phoneToken?.isNotEmpty ?? false) ||
+              phoneSkipped == 'true' ||
+              currentSignupStep == 'phone_otp');
+      if (hasRealDraft) {
+        print('📲 Resuming in-progress phone signup at $currentSignupStep');
+        final phoneRoute =
+            await _getRouteForPhoneSignupStep(storage, currentSignupStep);
+        if (phoneRoute != null) return phoneRoute;
+      }
+    }
+
+    // Resume a GENUINE in-progress EMAIL signup BEFORE the per-account login
+    // checks below — a user who quit during email verification / passcode setup
+    // must return there, not be sent to a login screen by the stored_email /
+    // preferred_login_method that _saveSession writes at account creation. Gated
+    // on login_method being ABSENT: a fully-registered account has it set (written
+    // only after passcode setup / login), so a returning user with a stale
+    // incomplete flag still falls through to the login routing below.
+    if (hasIncompleteSignup == 'true' &&
+        currentSignupStep != null &&
+        onboardingAuthType != 'PHONE_PASSCODE' &&
+        (loginMethod == null || loginMethod.isEmpty)) {
+      final route = _getRouteForSignupStep(currentSignupStep);
+      if (route != null && route != AppRoutes.dashboard) {
+        print('📝 Resuming in-progress email signup at $currentSignupStep');
+        return route;
+      }
+    }
+
+    // EXPLICIT PER-USER PREFERENCE (highest priority for a returning account).
+    // When the user has deliberately chosen email+password in Settings, honor it
+    // over the passcode-first routing below — "force email_password and not
+    // passcode". The email sign-in screen still offers "Use passcode instead" as
+    // a fallback. A stored 'phone_passcode' preference simply falls through to
+    // the passcode routing. This only fires for an established account (has a
+    // stored identifier), so fresh users still get onboarding.
+    if (preferredLoginMethod == 'email_password' &&
+        ((storedEmail != null && storedEmail.isNotEmpty) ||
+            (storedPhone != null && storedPhone.isNotEmpty) ||
+            (userId != null && userId.isNotEmpty))) {
+      print('🔐 User forced email+password login → email sign-in');
+      return AppRoutes.emailSignIn;
+    }
+    // Symmetric branch: an explicit phone+passcode preference routes to the
+    // passcode login screen (the backend guarantees a passcode exists before it
+    // lets a user pick this method, so we don't strand them). Requires a stored
+    // identifier so a fresh user still gets onboarding.
+    if (preferredLoginMethod == 'phone_passcode' &&
+        ((storedEmail != null && storedEmail.isNotEmpty) ||
+            (storedPhone != null && storedPhone.isNotEmpty))) {
+      print('🔐 User forced phone+passcode login → passcode login');
+      return AppRoutes.passcodeLogin;
+    }
+
+    // PHONE+PASSCODE accounts log in via the SAME passcode login screen as
+    // email/passcode accounts (the canonical dark "Enter your Passcode"
+    // screen). Because email is required at phone signup, the account has a
+    // stored email + passcode, so the shared passcode login authenticates them
+    // unchanged — no separate phone field on the login screen. Checked here
+    // (login_method survives logout) so phone accounts aren't bounced into the
+    // email flow.
+    if (loginMethod == 'phone_passcode' &&
+        storedPhone != null &&
+        storedPhone.isNotEmpty) {
+      print('🔐 Phone+passcode account → passcode login screen');
+      return AppRoutes.passcodeLogin;
+    }
 
     // HIGHEST PRIORITY (after onboarding): a user who has a passcode credential
     // has, by definition, already completed signup. Always send them to passcode
@@ -217,13 +484,21 @@ Future<String> _determineInitialRoute() async {
     }
 
     // Check for incomplete signup (local draft) — only reached for users who
-    // have NOT yet established a passcode credential.
-    final hasIncompleteSignup = await storage.read(key: 'has_incomplete_signup');
-    final currentSignupStep = await storage.read(key: 'current_signup_step');
-
+    // have NOT yet established a passcode credential. (A genuine in-progress
+    // PHONE signup is already handled by the early-resume block above; this
+    // covers the EMAIL flow and any phone draft that fell through.)
     if (hasIncompleteSignup == 'true' && currentSignupStep != null) {
-      // User has an incomplete signup - route based on step
+      // Resume using the auth type PINNED when the journey started, so an admin
+      // flipping the platform auth_mode mid-onboarding can't switch an
+      // in-progress user between the email and phone flows.
       print('📝 Found incomplete signup at step: $currentSignupStep');
+      if (onboardingAuthType == 'PHONE_PASSCODE') {
+        final phoneRoute =
+            await _getRouteForPhoneSignupStep(storage, currentSignupStep);
+        if (phoneRoute != null) {
+          return phoneRoute;
+        }
+      }
       final route = _getRouteForSignupStep(currentSignupStep);
       if (route != null) {
         return route;
@@ -241,15 +516,66 @@ Future<String> _determineInitialRoute() async {
         return AppRoutes.kycBVNVerification;
       }
 
-      print('🔐 User was previously logged in, requiring re-authentication via email');
-      return AppRoutes.emailSignIn;
+      // Re-authenticate via the account's OWN canonical flow (default
+      // phone_passcode), not a hardcoded email screen.
+      print('🔐 User was previously logged in, requiring re-authentication');
+      return AppRoutes.loginEntry;
     }
 
-    // New user or logged out, show email sign in
+    // Brand-new / logged-out user with NO stored account: show the intro
+    // carousel ONCE per install before the auth entry (the email path then
+    // begins with country selection). Reaching here means every returning-user
+    // / resume check above already fell through, so this is genuinely a fresh
+    // user. Gated by has_seen_onboarding (reset by the force_onboarding dev
+    // trigger above); set to 'true' when the carousel finishes or is skipped.
+    final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
+    if (hasSeenOnboarding != 'true') {
+      print('🎠 First launch — showing onboarding carousel');
+      return AppRoutes.onboarding;
+    }
+
+    // Fresh user: follow the canonical flow (default phone_passcode → phone
+    // signup; email_password → email sign-in landing with its sign-up link).
+    if (!FeatureFlags.isEmailPasswordLogin) {
+      print('📱 Phone+passcode flow — starting phone signup');
+      return AppRoutes.phoneEntry;
+    }
     return AppRoutes.emailSignIn;
   } catch (e) {
     print('Error determining initial route: $e');
-    return AppRoutes.emailSignIn;
+    // On any failure, fall back to the canonical flow (default phone_passcode)
+    // instead of a hardcoded email screen, so behavior is consistent.
+    return AppRoutes.loginEntry;
+  }
+}
+
+/// Map a persisted phone-onboarding step to its resume route. The PASSCODE is
+/// never persisted (security), so any resume past OTP verification must return
+/// the user to passcode creation rather than the details screen (which would
+/// otherwise have no passcode to submit). Gated on proof of the phone — a
+/// verified signup token OR a recorded "skip" — else we restart phone entry.
+/// Returns null for unknown steps so the caller falls through to the email map.
+Future<String?> _getRouteForPhoneSignupStep(
+    FlutterSecureStorage storage, String? step) async {
+  final hasPhone =
+      (await storage.read(key: 'phone_signup_phone'))?.isNotEmpty ?? false;
+  final hasToken =
+      (await storage.read(key: 'phone_signup_token'))?.isNotEmpty ?? false;
+  final skipped = (await storage.read(key: 'phone_signup_skipped')) == 'true';
+  switch (step) {
+    case 'phone_otp':
+      // Still verifying — resume at the OTP screen (the user can resend if the
+      // code has lapsed). No phone draft → restart entry.
+      return hasPhone ? AppRoutes.phoneOtp : AppRoutes.phoneEntry;
+    case 'phone_passcode_create':
+    case 'phone_personal_details':
+    // The former separate optional-email step is merged into details.
+    case 'phone_optional_email':
+      return (hasToken || skipped)
+          ? AppRoutes.phonePasscodeCreate
+          : AppRoutes.phoneEntry;
+    default:
+      return null;
   }
 }
 
@@ -417,6 +743,18 @@ class _MyAppState extends State<MyApp> {
           fallbackLocale: const Locale('en', 'UK'),
           locale: Get.deviceLocale,
           debugShowCheckedModeBanner: false,
+          // Global "tap outside to dismiss the keyboard": tapping any empty area
+          // unfocuses the active field and hides the soft keyboard. translucent
+          // behaviour means buttons/fields/lists still receive their own taps —
+          // only taps that reach empty space trigger the unfocus. Covers every
+          // bills-hub input screen (and the rest of the app) in one place.
+          builder: (context, child) => GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            // Startup gate: on launch/resume, show a maintenance screen if the
+            // backend is down and prompt for store updates (forced/optional).
+            child: AppStartupGate(child: child ?? const SizedBox.shrink()),
+          ),
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
           themeMode: serviceLocator<ThemeController>().mode,

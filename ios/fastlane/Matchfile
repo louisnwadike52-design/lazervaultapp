@@ -18,7 +18,7 @@
 # git's credential helper will fetch the gh token transparently. SSH would
 # require us to push an SSH key to GitHub first, which adds an extra step
 # this codebase doesn't need.
-git_url("https://github.com/lazervault-app/ios-certs.git")
+git_url("https://github.com/louisnwadike52-design/ios-certs.git")
 storage_mode("git")
 
 type("appstore") # default; staging + production lanes pass type explicitly

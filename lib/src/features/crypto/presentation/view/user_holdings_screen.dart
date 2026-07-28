@@ -22,6 +22,14 @@ class UserHoldingsScreen extends StatefulWidget {
 class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  // Last successful holdings snapshot. Kept so the list stays on screen while
+  // the shared CryptoCubit is transiently in a NON-CryptosLoaded state — which
+  // it is for the entire sell flow (SwapQuotePending → SwapPending/Completed).
+  // Without this cache the screen collapsed to a bare centered loader the moment
+  // a sell started, and that loader showed through underneath the receipt →
+  // the "blank screen with loader after PIN" report. We only fall back to the
+  // spinner on the very first load, before any holdings have ever arrived.
+  CryptosLoaded? _lastLoaded;
 
   @override
   void initState() {
@@ -94,8 +102,14 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
             SizedBox(height: 12.h),
             Expanded(
               child: BlocBuilder<CryptoCubit, CryptoState>(
-                builder: (context, state) {
-                  if (state is! CryptosLoaded) {
+                builder: (context, rawState) {
+                  // Cache the freshest holdings snapshot; render from it while a
+                  // sell (or any other flow) has driven the shared cubit into a
+                  // transient non-CryptosLoaded state, so the picker never blinks
+                  // to a bare loader mid-trade.
+                  if (rawState is CryptosLoaded) _lastLoaded = rawState;
+                  final state = _lastLoaded;
+                  if (state == null) {
                     return const Center(child: LazerVaultLoader.small());
                   }
 

@@ -114,7 +114,14 @@ class RecipientRepositoryImpl implements IRecipientRepository {
           ..sortCode = recipient.sortCode
           ..isFavorite = recipient.isFavorite
           ..isSaved = recipient.isSaved
-          ..type = recipient.type ?? 'external';
+          // Infer 'internal' from a Lazervault bank name when type is unset —
+          // matches the app-wide rule (type=='internal' || bankName=='lazervault')
+          // so a Lazervault payee always hits the server's internal_user_id dedup
+          // instead of being saved as an external row that can duplicate.
+          ..type = recipient.type ??
+              (recipient.bankName.toLowerCase() == 'lazervault'
+                  ? 'internal'
+                  : 'external');
 
         print("DEBUG RecipientRepository: Creating recipient - name: ${recipient.name}, bank: ${recipient.bankName}, type: ${recipient.type}, request.type: ${request.type}");
 

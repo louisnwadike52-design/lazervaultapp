@@ -22,7 +22,16 @@ class GrpcErrorHandler {
   /// meaningful context (e.g., failedPrecondition, permissionDenied, notFound,
   /// alreadyExists, invalidArgument). Falls back to generic messages for
   /// infrastructure-level errors.
+  /// True when the server error is the accounts-service frozen/suspended-account
+  /// rejection. Delegates to the canonical [isFrozenAccountError] so every error
+  /// path shares one definition.
+  static bool isAccountFrozenError(GrpcError error) =>
+      isFrozenAccountError(error);
+
   static String userFriendlyMessage(GrpcError error) {
+    // Frozen/suspended source is a first-class, actionable case — surface a
+    // clean message regardless of the status code the server used.
+    if (isFrozenAccountError(error)) return frozenAccountMessage;
     switch (error.code) {
       case StatusCode.failedPrecondition:
         return error.message ??

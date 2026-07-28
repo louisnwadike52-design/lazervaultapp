@@ -1,6 +1,6 @@
 import 'package:lazervault/src/generated/contact_sync.pb.dart' as pb;
 
-/// Model representing a LazerVault user matched from contacts
+/// Model representing a Lazervault user matched from contacts
 class LazerVaultUserMatchModel {
   final String contactId;
   final String userId;

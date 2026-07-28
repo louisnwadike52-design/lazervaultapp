@@ -96,6 +96,51 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     );
   }
 
+  /// Canonical "start setup for the pending / first family account" resolver.
+  ///
+  /// A user's very first "Family & Friends" account exists as an auto-provisioned
+  /// virtual wallet (VirtualAccountType.family) that may or may not yet have a
+  /// backing `family_accounts` record. TWO surfaces let the user begin setup —
+  /// the account-carousel card's "Get Started" button and the services-area
+  /// "Setup Now" card — and they historically diverged (one auto-created the
+  /// record then opened activation setup, the other dead-ended into the separate
+  /// "create another family" carousel). That divergence is the flow/backend
+  /// confusion this consolidates: both now call THIS single method and land on
+  /// the same activation-setup screen.
+  ///
+  /// Returns the family account id to open in familyActivationSetup, or null on
+  /// failure (a [FamilyAccountError] is emitted for the caller to surface).
+  Future<String?> resolveOrCreatePendingFamilyId({
+    required String currency,
+  }) async {
+    await loadFamilyAccounts();
+    final loaded = state;
+    if (loaded is FamilyAccountsLoaded && loaded.familyAccounts.isNotEmpty) {
+      // Prefer the pending "Family & Friends" record (the default name for a
+      // legacy virtual NUBAN), then any pending one, then the first account.
+      final pending =
+          loaded.familyAccounts.where((a) => a.isPendingSetup).toList();
+      final target = pending.where((a) => a.name == 'Family & Friends').firstOrNull ??
+          pending.firstOrNull ??
+          loaded.familyAccounts.first;
+      return target.id;
+    }
+    if (loaded is FamilyAccountsLoaded) {
+      // The lookup succeeded but no family_accounts record exists yet — only the
+      // auto-provisioned virtual wallet. Create it, then continue into the SAME
+      // activation setup so both entry points converge on one backend flow.
+      await createAccount(
+        name: 'Family & Friends',
+        initialCurrency: currency,
+        initialFunding: 0.0,
+        allowMemberContributions: true,
+      );
+      final created = state;
+      if (created is FamilyAccountCreated) return created.familyAccount.id;
+    }
+    return null; // FamilyAccountError already emitted; caller surfaces it.
+  }
+
   // Add member to family account
   Future<void> addMember({
     required String familyId,

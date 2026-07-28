@@ -9,6 +9,8 @@ import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/generated/crypto.pbgrpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_asset_avatar.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/network_picker_sheet.dart';
 
 // ReceiveCryptoScreen (PR7) — pick an asset, pick its network, ensure the
 // deposit address exists, and render it for the user to copy / share.
@@ -147,6 +149,8 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
             : ListView(
                 padding: EdgeInsets.all(16.w),
                 children: [
+                  _assetHeader(symbol),
+                  SizedBox(height: 16.h),
                   if (_error.isNotEmpty) _errorBanner(),
                   _networkSelector(),
                   SizedBox(height: 16.h),
@@ -162,6 +166,33 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
     );
   }
 
+  // Top section: the actual asset's logo (or its initials chip) + name, so the
+  // user sees which asset they're receiving — never a shared Bitcoin icon.
+  Widget _assetHeader(String symbol) {
+    final name = widget.holding.cryptoName.isNotEmpty
+        ? widget.holding.cryptoName
+        : symbol;
+    return Column(
+      children: [
+        CryptoAssetAvatar(symbol: symbol, size: 56),
+        SizedBox(height: 10.h),
+        Text(
+          name,
+          style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          symbol,
+          style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+        ),
+      ],
+    );
+  }
+
   Widget _errorBanner() => Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(12.w),
@@ -174,6 +205,35 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
                 color: const Color(0xFFEF4444), fontSize: 12.sp)),
       );
 
+  /// Human name for a network slug (no fee suffix), for the selector row.
+  String _receiveNetworkName(String? slug) {
+    if (slug == null) return 'Select network';
+    for (final n in _networks) {
+      if (n.network == slug) {
+        return n.networkName.isEmpty ? n.network.toUpperCase() : n.networkName;
+      }
+    }
+    return slug.toUpperCase();
+  }
+
+  Future<void> _pickReceiveNetwork() async {
+    final deposit =
+        _networks.where((n) => n.depositEnabled).toList(growable: false);
+    if (deposit.isEmpty) return;
+    final sym = widget.holding.cryptoSymbol.toUpperCase();
+    final chosen = await showNetworkPickerSheet(
+      context,
+      currency: widget.holding.cryptoSymbol.toLowerCase(),
+      networks: deposit,
+      selectedNetwork: _selectedNetwork,
+      title: 'Receive $sym on',
+      subtitle:
+          'Only send $sym to this address on the chosen network. Sending on another network can lose funds.',
+    );
+    if (chosen == null || !mounted) return;
+    _onNetworkChange(chosen);
+  }
+
   Widget _networkSelector() {
     if (_networks.isEmpty) {
       return Text(
@@ -182,29 +242,35 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
             color: const Color(0xFF9CA3AF), fontSize: 12.sp),
       );
     }
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w),
-      decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r)),
-      child: DropdownButton<String>(
-        value: _selectedNetwork,
-        isExpanded: true,
-        dropdownColor: const Color(0xFF1F1F1F),
-        underline: const SizedBox.shrink(),
-        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-        items: _networks
-            .where((n) => n.depositEnabled)
-            .map((n) => DropdownMenuItem(
-                  value: n.network,
-                  child: Text(
-                    n.networkName.isEmpty
-                        ? n.network.toUpperCase()
-                        : '${n.networkName} (${n.network.toUpperCase()})',
-                  ),
-                ))
-            .toList(),
-        onChanged: _onNetworkChange,
+    // Opens the shared picker (deposit-enabled networks) instead of a raw
+    // dropdown, matching the rest of the crypto network surface. Selection
+    // flows through the existing _onNetworkChange handler.
+    final label = _receiveNetworkName(_selectedNetwork);
+    return Material(
+      color: const Color(0xFF1F1F1F),
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        onTap: _pickReceiveNetwork,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+          child: Row(
+            children: [
+              Icon(Icons.lan_rounded,
+                  color: const Color(0xFF93C5FD), size: 18.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontSize: 14.sp),
+                ),
+              ),
+              Icon(Icons.keyboard_arrow_down_rounded,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
+            ],
+          ),
+        ),
       ),
     );
   }

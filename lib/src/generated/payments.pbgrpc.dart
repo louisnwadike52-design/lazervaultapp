@@ -1,1611 +1,1745 @@
-///
-//  Generated code. Do not modify.
-//  source: payments.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from payments.proto.
+
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:async' as $async;
-
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'payments.pb.dart' as $29;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'payments.pb.dart' as $0;
+
 export 'payments.pb.dart';
 
+/// Payments Service - All payment and transfer operations
+@$pb.GrpcServiceName('payments.PaymentsService')
 class PaymentsServiceClient extends $grpc.Client {
-  static final _$sendFunds =
-      $grpc.ClientMethod<$29.SendFundsRequest, $29.SendFundsResponse>(
-          '/payments.PaymentsService/SendFunds',
-          ($29.SendFundsRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.SendFundsResponse.fromBuffer(value));
-  static final _$batchTransfer =
-      $grpc.ClientMethod<$29.BatchTransferRequest, $29.BatchTransferResponse>(
-          '/payments.PaymentsService/BatchTransfer',
-          ($29.BatchTransferRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.BatchTransferResponse.fromBuffer(value));
-  static final _$withdraw =
-      $grpc.ClientMethod<$29.WithdrawRequest, $29.WithdrawResponse>(
-          '/payments.PaymentsService/Withdraw',
-          ($29.WithdrawRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.WithdrawResponse.fromBuffer(value));
-  static final _$deposit =
-      $grpc.ClientMethod<$29.DepositRequest, $29.DepositResponse>(
-          '/payments.PaymentsService/Deposit',
-          ($29.DepositRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.DepositResponse.fromBuffer(value));
-  static final _$payWithTag =
-      $grpc.ClientMethod<$29.PayWithTagRequest, $29.PayWithTagResponse>(
-          '/payments.PaymentsService/PayWithTag',
-          ($29.PayWithTagRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.PayWithTagResponse.fromBuffer(value));
-  static final _$payElectricityBill = $grpc.ClientMethod<
-          $29.PayElectricityBillRequest, $29.PayElectricityBillResponse>(
-      '/payments.PaymentsService/PayElectricityBill',
-      ($29.PayElectricityBillRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.PayElectricityBillResponse.fromBuffer(value));
-  static final _$buyAirtime =
-      $grpc.ClientMethod<$29.BuyAirtimeRequest, $29.BuyAirtimeResponse>(
-          '/payments.PaymentsService/BuyAirtime',
-          ($29.BuyAirtimeRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.BuyAirtimeResponse.fromBuffer(value));
-  static final _$barcodePay =
-      $grpc.ClientMethod<$29.BarcodePayRequest, $29.BarcodePayResponse>(
-          '/payments.PaymentsService/BarcodePay',
-          ($29.BarcodePayRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.BarcodePayResponse.fromBuffer(value));
-  static final _$scanToPay =
-      $grpc.ClientMethod<$29.ScanToPayRequest, $29.ScanToPayResponse>(
-          '/payments.PaymentsService/ScanToPay',
-          ($29.ScanToPayRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.ScanToPayResponse.fromBuffer(value));
-  static final _$getPaymentHistory = $grpc.ClientMethod<
-          $29.GetPaymentHistoryRequest, $29.GetPaymentHistoryResponse>(
-      '/payments.PaymentsService/GetPaymentHistory',
-      ($29.GetPaymentHistoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetPaymentHistoryResponse.fromBuffer(value));
-  static final _$getBillProviders = $grpc.ClientMethod<
-          $29.GetBillProvidersRequest, $29.GetBillProvidersResponse>(
-      '/payments.PaymentsService/GetBillProviders',
-      ($29.GetBillProvidersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetBillProvidersResponse.fromBuffer(value));
-  static final _$getAirtimeProviders = $grpc.ClientMethod<
-          $29.GetAirtimeProvidersRequest, $29.GetAirtimeProvidersResponse>(
-      '/payments.PaymentsService/GetAirtimeProviders',
-      ($29.GetAirtimeProvidersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetAirtimeProvidersResponse.fromBuffer(value));
-  static final _$payWithBankDetails = $grpc.ClientMethod<
-          $29.PayWithBankDetailsRequest, $29.PayWithBankDetailsResponse>(
-      '/payments.PaymentsService/PayWithBankDetails',
-      ($29.PayWithBankDetailsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.PayWithBankDetailsResponse.fromBuffer(value));
-  static final _$resolveTag =
-      $grpc.ClientMethod<$29.ResolveTagRequest, $29.ResolveTagResponse>(
-          '/payments.PaymentsService/ResolveTag',
-          ($29.ResolveTagRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.ResolveTagResponse.fromBuffer(value));
-  static final _$verifyBankAccount = $grpc.ClientMethod<
-          $29.VerifyBankAccountRequest, $29.VerifyBankAccountResponse>(
-      '/payments.PaymentsService/VerifyBankAccount',
-      ($29.VerifyBankAccountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.VerifyBankAccountResponse.fromBuffer(value));
-  static final _$getTransferSuccessPrediction = $grpc.ClientMethod<
-          $29.GetTransferSuccessPredictionRequest,
-          $29.GetTransferSuccessPredictionResponse>(
-      '/payments.PaymentsService/GetTransferSuccessPrediction',
-      ($29.GetTransferSuccessPredictionRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetTransferSuccessPredictionResponse.fromBuffer(value));
-  static final _$initiateDomesticTransfer = $grpc.ClientMethod<
-          $29.InitiateDomesticTransferRequest, $29.InitiateTransferResponse>(
-      '/payments.PaymentsService/InitiateDomesticTransfer',
-      ($29.InitiateDomesticTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.InitiateTransferResponse.fromBuffer(value));
-  static final _$initiateInternalTransfer = $grpc.ClientMethod<
-          $29.InitiateInternalTransferRequest, $29.InitiateTransferResponse>(
-      '/payments.PaymentsService/InitiateInternalTransfer',
-      ($29.InitiateInternalTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.InitiateTransferResponse.fromBuffer(value));
-  static final _$initiateInternationalTransfer = $grpc.ClientMethod<
-          $29.InitiateInternationalTransferRequest,
-          $29.InitiateTransferResponse>(
-      '/payments.PaymentsService/InitiateInternationalTransfer',
-      ($29.InitiateInternationalTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.InitiateTransferResponse.fromBuffer(value));
-  static final _$initiateUserTransfer = $grpc.ClientMethod<
-          $29.InitiateUserTransferRequest, $29.InitiateTransferResponse>(
-      '/payments.PaymentsService/InitiateUserTransfer',
-      ($29.InitiateUserTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.InitiateTransferResponse.fromBuffer(value));
-  static final _$initiatePhoneTransfer = $grpc.ClientMethod<
-          $29.InitiatePhoneTransferRequest, $29.InitiateTransferResponse>(
-      '/payments.PaymentsService/InitiatePhoneTransfer',
-      ($29.InitiatePhoneTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.InitiateTransferResponse.fromBuffer(value));
-  static final _$getTransferStatus = $grpc.ClientMethod<
-          $29.GetTransferStatusRequest, $29.GetTransferStatusResponse>(
-      '/payments.PaymentsService/GetTransferStatus',
-      ($29.GetTransferStatusRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetTransferStatusResponse.fromBuffer(value));
-  static final _$getUserTransfers = $grpc.ClientMethod<
-          $29.GetUserTransfersRequest, $29.GetUserTransfersResponse>(
-      '/payments.PaymentsService/GetUserTransfers',
-      ($29.GetUserTransfersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetUserTransfersResponse.fromBuffer(value));
-  static final _$getTransferFee =
-      $grpc.ClientMethod<$29.GetTransferFeeRequest, $29.GetTransferFeeResponse>(
-          '/payments.PaymentsService/GetTransferFee',
-          ($29.GetTransferFeeRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.GetTransferFeeResponse.fromBuffer(value));
-  static final _$getDailyUsage =
-      $grpc.ClientMethod<$29.GetDailyUsageRequest, $29.GetDailyUsageResponse>(
-          '/payments.PaymentsService/GetDailyUsage',
-          ($29.GetDailyUsageRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.GetDailyUsageResponse.fromBuffer(value));
-  static final _$getExchangeRate = $grpc.ClientMethod<
-          $29.GetExchangeRateRequest, $29.GetExchangeRateResponse>(
-      '/payments.PaymentsService/GetExchangeRate',
-      ($29.GetExchangeRateRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetExchangeRateResponse.fromBuffer(value));
-  static final _$handleTransferWebhook = $grpc.ClientMethod<
-          $29.HandleTransferWebhookRequest, $29.HandleTransferWebhookResponse>(
-      '/payments.PaymentsService/HandleTransferWebhook',
-      ($29.HandleTransferWebhookRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.HandleTransferWebhookResponse.fromBuffer(value));
-  static final _$payPlatformFee =
-      $grpc.ClientMethod<$29.PayPlatformFeeRequest, $29.PayPlatformFeeResponse>(
-          '/payments.PaymentsService/PayPlatformFee',
-          ($29.PayPlatformFeeRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.PayPlatformFeeResponse.fromBuffer(value));
-  static final _$refundFromPlatformWallet = $grpc.ClientMethod<
-          $29.RefundFromPlatformWalletRequest,
-          $29.RefundFromPlatformWalletResponse>(
-      '/payments.PaymentsService/RefundFromPlatformWallet',
-      ($29.RefundFromPlatformWalletRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.RefundFromPlatformWalletResponse.fromBuffer(value));
-  static final _$generateQRPaymentToken = $grpc.ClientMethod<
-          $29.GenerateQRTokenRequest, $29.GenerateQRTokenResponse>(
-      '/payments.PaymentsService/GenerateQRPaymentToken',
-      ($29.GenerateQRTokenRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GenerateQRTokenResponse.fromBuffer(value));
-  static final _$validateQRPaymentToken = $grpc.ClientMethod<
-          $29.ValidateQRTokenRequest, $29.ValidateQRTokenResponse>(
-      '/payments.PaymentsService/ValidateQRPaymentToken',
-      ($29.ValidateQRTokenRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.ValidateQRTokenResponse.fromBuffer(value));
-  static final _$getBatchTransfers = $grpc.ClientMethod<
-          $29.GetBatchTransfersRequest, $29.GetBatchTransfersResponse>(
-      '/payments.PaymentsService/GetBatchTransfers',
-      ($29.GetBatchTransfersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetBatchTransfersResponse.fromBuffer(value));
-  static final _$getBatchTransferDetail = $grpc.ClientMethod<
-          $29.GetBatchTransferDetailRequest,
-          $29.GetBatchTransferDetailResponse>(
-      '/payments.PaymentsService/GetBatchTransferDetail',
-      ($29.GetBatchTransferDetailRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetBatchTransferDetailResponse.fromBuffer(value));
-  static final _$verifyMultiCountryIdentity = $grpc.ClientMethod<
-          $29.VerifyMultiCountryIdentityRequest,
-          $29.VerifyMultiCountryIdentityResponse>(
-      '/payments.PaymentsService/VerifyMultiCountryIdentity',
-      ($29.VerifyMultiCountryIdentityRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.VerifyMultiCountryIdentityResponse.fromBuffer(value));
-  static final _$getIdentityVerificationStatus = $grpc.ClientMethod<
-          $29.GetKYCVerificationStatusRequest,
-          $29.GetKYCVerificationStatusResponse>(
-      '/payments.PaymentsService/GetIdentityVerificationStatus',
-      ($29.GetKYCVerificationStatusRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetKYCVerificationStatusResponse.fromBuffer(value));
-  static final _$createRecurringTransfer = $grpc.ClientMethod<
-          $29.CreateRecurringTransferRequest,
-          $29.CreateRecurringTransferResponse>(
-      '/payments.PaymentsService/CreateRecurringTransfer',
-      ($29.CreateRecurringTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.CreateRecurringTransferResponse.fromBuffer(value));
-  static final _$getRecurringTransfers = $grpc.ClientMethod<
-          $29.GetRecurringTransfersRequest, $29.GetRecurringTransfersResponse>(
-      '/payments.PaymentsService/GetRecurringTransfers',
-      ($29.GetRecurringTransfersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetRecurringTransfersResponse.fromBuffer(value));
-  static final _$getRecurringTransfer = $grpc.ClientMethod<
-          $29.GetRecurringTransferRequest, $29.GetRecurringTransferResponse>(
-      '/payments.PaymentsService/GetRecurringTransfer',
-      ($29.GetRecurringTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetRecurringTransferResponse.fromBuffer(value));
-  static final _$updateRecurringTransfer = $grpc.ClientMethod<
-          $29.UpdateRecurringTransferRequest,
-          $29.UpdateRecurringTransferResponse>(
-      '/payments.PaymentsService/UpdateRecurringTransfer',
-      ($29.UpdateRecurringTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.UpdateRecurringTransferResponse.fromBuffer(value));
-  static final _$deleteRecurringTransfer = $grpc.ClientMethod<
-          $29.DeleteRecurringTransferRequest,
-          $29.DeleteRecurringTransferResponse>(
-      '/payments.PaymentsService/DeleteRecurringTransfer',
-      ($29.DeleteRecurringTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.DeleteRecurringTransferResponse.fromBuffer(value));
-  static final _$getRecurringTransferExecutions = $grpc.ClientMethod<
-          $29.GetRecurringTransferExecutionsRequest,
-          $29.GetRecurringTransferExecutionsResponse>(
-      '/payments.PaymentsService/GetRecurringTransferExecutions',
-      ($29.GetRecurringTransferExecutionsRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetRecurringTransferExecutionsResponse.fromBuffer(value));
-  static final _$getRecurringTransfersByRecipient = $grpc.ClientMethod<
-          $29.GetRecurringTransfersByRecipientRequest,
-          $29.GetRecurringTransfersByRecipientResponse>(
-      '/payments.PaymentsService/GetRecurringTransfersByRecipient',
-      ($29.GetRecurringTransfersByRecipientRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.GetRecurringTransfersByRecipientResponse.fromBuffer(value));
-  static final _$saveBatchDraft =
-      $grpc.ClientMethod<$29.SaveBatchDraftRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/SaveBatchDraft',
-          ($29.SaveBatchDraftRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$listSavedBatches = $grpc.ClientMethod<
-          $29.ListSavedBatchesRequest, $29.ListSavedBatchesResponse>(
-      '/payments.PaymentsService/ListSavedBatches',
-      ($29.ListSavedBatchesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.ListSavedBatchesResponse.fromBuffer(value));
-  static final _$getSavedBatch =
-      $grpc.ClientMethod<$29.GetSavedBatchRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/GetSavedBatch',
-          ($29.GetSavedBatchRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$updateSavedBatch =
-      $grpc.ClientMethod<$29.UpdateSavedBatchRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/UpdateSavedBatch',
-          ($29.UpdateSavedBatchRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$deleteSavedBatch = $grpc.ClientMethod<
-          $29.DeleteSavedBatchRequest, $29.DeleteSavedBatchResponse>(
-      '/payments.PaymentsService/DeleteSavedBatch',
-      ($29.DeleteSavedBatchRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.DeleteSavedBatchResponse.fromBuffer(value));
-  static final _$addSavedBatchItem =
-      $grpc.ClientMethod<$29.AddSavedBatchItemRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/AddSavedBatchItem',
-          ($29.AddSavedBatchItemRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$removeSavedBatchItem =
-      $grpc.ClientMethod<$29.RemoveSavedBatchItemRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/RemoveSavedBatchItem',
-          ($29.RemoveSavedBatchItemRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$updateSavedBatchItemAmount =
-      $grpc.ClientMethod<$29.UpdateSavedBatchItemAmountRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/UpdateSavedBatchItemAmount',
-          ($29.UpdateSavedBatchItemAmountRequest value) =>
-              value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$applyCollectiveAmount =
-      $grpc.ClientMethod<$29.ApplyCollectiveAmountRequest, $29.SavedBatch>(
-          '/payments.PaymentsService/ApplyCollectiveAmount',
-          ($29.ApplyCollectiveAmountRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.SavedBatch.fromBuffer(value));
-  static final _$executeFromSavedBatch = $grpc.ClientMethod<
-          $29.ExecuteFromSavedBatchRequest, $29.BatchTransferResponse>(
-      '/payments.PaymentsService/ExecuteFromSavedBatch',
-      ($29.ExecuteFromSavedBatchRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $29.BatchTransferResponse.fromBuffer(value));
-  static final _$getBatchReceipt =
-      $grpc.ClientMethod<$29.GetBatchReceiptRequest, $29.BatchReceipt>(
-          '/payments.PaymentsService/GetBatchReceipt',
-          ($29.GetBatchReceiptRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) => $29.BatchReceipt.fromBuffer(value));
-  static final _$getBatchItemReceipt =
-      $grpc.ClientMethod<$29.GetBatchItemReceiptRequest, $29.BatchItemReceipt>(
-          '/payments.PaymentsService/GetBatchItemReceipt',
-          ($29.GetBatchItemReceiptRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $29.BatchItemReceipt.fromBuffer(value));
+  /// The hostname for this service.
+  static const $core.String defaultHost = '';
 
-  PaymentsServiceClient($grpc.ClientChannel channel,
-      {$grpc.CallOptions? options,
-      $core.Iterable<$grpc.ClientInterceptor>? interceptors})
-      : super(channel, options: options, interceptors: interceptors);
+  /// OAuth scopes needed for the client.
+  static const $core.List<$core.String> oauthScopes = [
+    '',
+  ];
 
-  $grpc.ResponseFuture<$29.SendFundsResponse> sendFunds(
-      $29.SendFundsRequest request,
-      {$grpc.CallOptions? options}) {
+  PaymentsServiceClient(super.channel, {super.options, super.interceptors});
+
+  /// Transfer funds to another account (sendFunds from AppServiceName)
+  $grpc.ResponseFuture<$0.SendFundsResponse> sendFunds(
+    $0.SendFundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$sendFunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.BatchTransferResponse> batchTransfer(
-      $29.BatchTransferRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Batch transfer to multiple recipients (batchTransfer from AppServiceName)
+  $grpc.ResponseFuture<$0.BatchTransferResponse> batchTransfer(
+    $0.BatchTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$batchTransfer, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.WithdrawResponse> withdraw(
-      $29.WithdrawRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Withdraw cash from account
+  $grpc.ResponseFuture<$0.WithdrawResponse> withdraw(
+    $0.WithdrawRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$withdraw, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.DepositResponse> deposit($29.DepositRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Deposit cash to account
+  $grpc.ResponseFuture<$0.DepositResponse> deposit(
+    $0.DepositRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$deposit, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.PayWithTagResponse> payWithTag(
-      $29.PayWithTagRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Pay using tag/username (tagPay from AppServiceName)
+  $grpc.ResponseFuture<$0.PayWithTagResponse> payWithTag(
+    $0.PayWithTagRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$payWithTag, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.PayElectricityBillResponse> payElectricityBill(
-      $29.PayElectricityBillRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Pay electricity bill (payElectricityBill from AppServiceName)
+  $grpc.ResponseFuture<$0.PayElectricityBillResponse> payElectricityBill(
+    $0.PayElectricityBillRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$payElectricityBill, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.BuyAirtimeResponse> buyAirtime(
-      $29.BuyAirtimeRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Buy airtime/data (airtime from AppServiceName)
+  $grpc.ResponseFuture<$0.BuyAirtimeResponse> buyAirtime(
+    $0.BuyAirtimeRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$buyAirtime, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.BarcodePayResponse> barcodePay(
-      $29.BarcodePayRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Pay by scanning barcode (barcodeQuickPay from AppServiceName)
+  $grpc.ResponseFuture<$0.BarcodePayResponse> barcodePay(
+    $0.BarcodePayRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$barcodePay, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.ScanToPayResponse> scanToPay(
-      $29.ScanToPayRequest request,
-      {$grpc.CallOptions? options}) {
+  /// AI-powered scan to pay (aiScanToPay from AppServiceName)
+  $grpc.ResponseFuture<$0.ScanToPayResponse> scanToPay(
+    $0.ScanToPayRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$scanToPay, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetPaymentHistoryResponse> getPaymentHistory(
-      $29.GetPaymentHistoryRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get payment history
+  $grpc.ResponseFuture<$0.GetPaymentHistoryResponse> getPaymentHistory(
+    $0.GetPaymentHistoryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getPaymentHistory, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetBillProvidersResponse> getBillProviders(
-      $29.GetBillProvidersRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get bill providers
+  $grpc.ResponseFuture<$0.GetBillProvidersResponse> getBillProviders(
+    $0.GetBillProvidersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getBillProviders, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetAirtimeProvidersResponse> getAirtimeProviders(
-      $29.GetAirtimeProvidersRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get airtime providers
+  $grpc.ResponseFuture<$0.GetAirtimeProvidersResponse> getAirtimeProviders(
+    $0.GetAirtimeProvidersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getAirtimeProviders, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.PayWithBankDetailsResponse> payWithBankDetails(
-      $29.PayWithBankDetailsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Pay using scanned bank details (scan-to-pay feature)
+  $grpc.ResponseFuture<$0.PayWithBankDetailsResponse> payWithBankDetails(
+    $0.PayWithBankDetailsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$payWithBankDetails, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.ResolveTagResponse> resolveTag(
-      $29.ResolveTagRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Resolve tag to account
+  $grpc.ResponseFuture<$0.ResolveTagResponse> resolveTag(
+    $0.ResolveTagRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$resolveTag, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.VerifyBankAccountResponse> verifyBankAccount(
-      $29.VerifyBankAccountRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Verify bank account details (Lemfi-style verification)
+  $grpc.ResponseFuture<$0.VerifyBankAccountResponse> verifyBankAccount(
+    $0.VerifyBankAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$verifyBankAccount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetTransferSuccessPredictionResponse>
+  /// Suggest matching bank(s) for a bare account number (account-number-first UX).
+  $grpc.ResponseFuture<$0.SuggestBankAccountsResponse> suggestBankAccounts(
+    $0.SuggestBankAccountsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$suggestBankAccounts, request, options: options);
+  }
+
+  /// Informational, READ-ONLY transfer success prediction for an EXTERNAL
+  /// (other-bank) transfer. Shown on the confirmation screen before PIN entry.
+  /// NEVER moves money, blocks, or alters a transfer.
+  $grpc.ResponseFuture<$0.GetTransferSuccessPredictionResponse>
       getTransferSuccessPrediction(
-          $29.GetTransferSuccessPredictionRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetTransferSuccessPredictionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getTransferSuccessPrediction, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.InitiateTransferResponse> initiateDomesticTransfer(
-      $29.InitiateDomesticTransferRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.InitiateTransferResponse> initiateDomesticTransfer(
+    $0.InitiateDomesticTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$initiateDomesticTransfer, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.InitiateTransferResponse> initiateInternalTransfer(
-      $29.InitiateInternalTransferRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.InitiateTransferResponse> initiateInternalTransfer(
+    $0.InitiateInternalTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$initiateInternalTransfer, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.InitiateTransferResponse>
+  $grpc.ResponseFuture<$0.InitiateTransferResponse>
       initiateInternationalTransfer(
-          $29.InitiateInternationalTransferRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.InitiateInternationalTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$initiateInternationalTransfer, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.InitiateTransferResponse> initiateUserTransfer(
-      $29.InitiateUserTransferRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.InitiateTransferResponse> initiateUserTransfer(
+    $0.InitiateUserTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$initiateUserTransfer, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.InitiateTransferResponse> initiatePhoneTransfer(
-      $29.InitiatePhoneTransferRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.InitiateTransferResponse> initiatePhoneTransfer(
+    $0.InitiatePhoneTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$initiatePhoneTransfer, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetTransferStatusResponse> getTransferStatus(
-      $29.GetTransferStatusRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetTransferStatusResponse> getTransferStatus(
+    $0.GetTransferStatusRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getTransferStatus, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetUserTransfersResponse> getUserTransfers(
-      $29.GetUserTransfersRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetUserTransfersResponse> getUserTransfers(
+    $0.GetUserTransfersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getUserTransfers, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetTransferFeeResponse> getTransferFee(
-      $29.GetTransferFeeRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetTransferFeeResponse> getTransferFee(
+    $0.GetTransferFeeRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getTransferFee, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetDailyUsageResponse> getDailyUsage(
-      $29.GetDailyUsageRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetDailyUsageResponse> getDailyUsage(
+    $0.GetDailyUsageRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getDailyUsage, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetExchangeRateResponse> getExchangeRate(
-      $29.GetExchangeRateRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetExchangeRateResponse> getExchangeRate(
+    $0.GetExchangeRateRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getExchangeRate, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.HandleTransferWebhookResponse> handleTransferWebhook(
-      $29.HandleTransferWebhookRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.HandleTransferWebhookResponse> handleTransferWebhook(
+    $0.HandleTransferWebhookRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$handleTransferWebhook, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.PayPlatformFeeResponse> payPlatformFee(
-      $29.PayPlatformFeeRequest request,
-      {$grpc.CallOptions? options}) {
+  /// PayPlatformFee - Debit user account, credit platform revenue wallet
+  $grpc.ResponseFuture<$0.PayPlatformFeeResponse> payPlatformFee(
+    $0.PayPlatformFeeRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$payPlatformFee, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.RefundFromPlatformWalletResponse>
-      refundFromPlatformWallet($29.RefundFromPlatformWalletRequest request,
-          {$grpc.CallOptions? options}) {
+  /// RefundFromPlatformWallet - Refund from platform wallet to user account
+  $grpc.ResponseFuture<$0.RefundFromPlatformWalletResponse>
+      refundFromPlatformWallet(
+    $0.RefundFromPlatformWalletRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$refundFromPlatformWallet, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GenerateQRTokenResponse> generateQRPaymentToken(
-      $29.GenerateQRTokenRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Generate a QR payment token for receiving payments
+  $grpc.ResponseFuture<$0.GenerateQRTokenResponse> generateQRPaymentToken(
+    $0.GenerateQRTokenRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$generateQRPaymentToken, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.ValidateQRTokenResponse> validateQRPaymentToken(
-      $29.ValidateQRTokenRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Validate a QR payment token before initiating transfer
+  $grpc.ResponseFuture<$0.ValidateQRTokenResponse> validateQRPaymentToken(
+    $0.ValidateQRTokenRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$validateQRPaymentToken, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetBatchTransfersResponse> getBatchTransfers(
-      $29.GetBatchTransfersRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetBatchTransfersResponse> getBatchTransfers(
+    $0.GetBatchTransfersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getBatchTransfers, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetBatchTransferDetailResponse>
-      getBatchTransferDetail($29.GetBatchTransferDetailRequest request,
-          {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetBatchTransferDetailResponse>
+      getBatchTransferDetail(
+    $0.GetBatchTransferDetailRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getBatchTransferDetail, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.VerifyMultiCountryIdentityResponse>
-      verifyMultiCountryIdentity($29.VerifyMultiCountryIdentityRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Verify identity using country-specific provider (Smile ID, Onfido, Persona)
+  $grpc.ResponseFuture<$0.VerifyMultiCountryIdentityResponse>
+      verifyMultiCountryIdentity(
+    $0.VerifyMultiCountryIdentityRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$verifyMultiCountryIdentity, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetKYCVerificationStatusResponse>
-      getIdentityVerificationStatus($29.GetKYCVerificationStatusRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get status of an async identity verification (Onfido/Persona)
+  $grpc.ResponseFuture<$0.GetKYCVerificationStatusResponse>
+      getIdentityVerificationStatus(
+    $0.GetKYCVerificationStatusRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getIdentityVerificationStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.CreateRecurringTransferResponse>
-      createRecurringTransfer($29.CreateRecurringTransferRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Create a recurring transfer rule
+  $grpc.ResponseFuture<$0.CreateRecurringTransferResponse>
+      createRecurringTransfer(
+    $0.CreateRecurringTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$createRecurringTransfer, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetRecurringTransfersResponse> getRecurringTransfers(
-      $29.GetRecurringTransfersRequest request,
-      {$grpc.CallOptions? options}) {
+  /// List user's recurring transfers
+  $grpc.ResponseFuture<$0.GetRecurringTransfersResponse> getRecurringTransfers(
+    $0.GetRecurringTransfersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getRecurringTransfers, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetRecurringTransferResponse> getRecurringTransfer(
-      $29.GetRecurringTransferRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get single recurring transfer detail
+  $grpc.ResponseFuture<$0.GetRecurringTransferResponse> getRecurringTransfer(
+    $0.GetRecurringTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getRecurringTransfer, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.UpdateRecurringTransferResponse>
-      updateRecurringTransfer($29.UpdateRecurringTransferRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Update a recurring transfer (pause, resume, edit)
+  $grpc.ResponseFuture<$0.UpdateRecurringTransferResponse>
+      updateRecurringTransfer(
+    $0.UpdateRecurringTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateRecurringTransfer, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.DeleteRecurringTransferResponse>
-      deleteRecurringTransfer($29.DeleteRecurringTransferRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Cancel a recurring transfer
+  $grpc.ResponseFuture<$0.DeleteRecurringTransferResponse>
+      deleteRecurringTransfer(
+    $0.DeleteRecurringTransferRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$deleteRecurringTransfer, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetRecurringTransferExecutionsResponse>
+  /// Get execution history for a recurring transfer
+  $grpc.ResponseFuture<$0.GetRecurringTransferExecutionsResponse>
       getRecurringTransferExecutions(
-          $29.GetRecurringTransferExecutionsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetRecurringTransferExecutionsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getRecurringTransferExecutions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetRecurringTransfersByRecipientResponse>
+  /// Get recurring transfers by recipient (for badge display)
+  $grpc.ResponseFuture<$0.GetRecurringTransfersByRecipientResponse>
       getRecurringTransfersByRecipient(
-          $29.GetRecurringTransfersByRecipientRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetRecurringTransfersByRecipientRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getRecurringTransfersByRecipient, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> saveBatchDraft(
-      $29.SaveBatchDraftRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> saveBatchDraft(
+    $0.SaveBatchDraftRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$saveBatchDraft, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.ListSavedBatchesResponse> listSavedBatches(
-      $29.ListSavedBatchesRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.ListSavedBatchesResponse> listSavedBatches(
+    $0.ListSavedBatchesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$listSavedBatches, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> getSavedBatch(
-      $29.GetSavedBatchRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> getSavedBatch(
+    $0.GetSavedBatchRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getSavedBatch, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> updateSavedBatch(
-      $29.UpdateSavedBatchRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> updateSavedBatch(
+    $0.UpdateSavedBatchRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateSavedBatch, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.DeleteSavedBatchResponse> deleteSavedBatch(
-      $29.DeleteSavedBatchRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.DeleteSavedBatchResponse> deleteSavedBatch(
+    $0.DeleteSavedBatchRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$deleteSavedBatch, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> addSavedBatchItem(
-      $29.AddSavedBatchItemRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> addSavedBatchItem(
+    $0.AddSavedBatchItemRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$addSavedBatchItem, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> removeSavedBatchItem(
-      $29.RemoveSavedBatchItemRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> removeSavedBatchItem(
+    $0.RemoveSavedBatchItemRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$removeSavedBatchItem, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> updateSavedBatchItemAmount(
-      $29.UpdateSavedBatchItemAmountRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> updateSavedBatchItemAmount(
+    $0.UpdateSavedBatchItemAmountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateSavedBatchItemAmount, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.SavedBatch> applyCollectiveAmount(
-      $29.ApplyCollectiveAmountRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SavedBatch> applyCollectiveAmount(
+    $0.ApplyCollectiveAmountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$applyCollectiveAmount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.BatchTransferResponse> executeFromSavedBatch(
-      $29.ExecuteFromSavedBatchRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.BatchTransferResponse> executeFromSavedBatch(
+    $0.ExecuteFromSavedBatchRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$executeFromSavedBatch, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.BatchReceipt> getBatchReceipt(
-      $29.GetBatchReceiptRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.BatchReceipt> getBatchReceipt(
+    $0.GetBatchReceiptRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getBatchReceipt, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.BatchItemReceipt> getBatchItemReceipt(
-      $29.GetBatchItemReceiptRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.BatchItemReceipt> getBatchItemReceipt(
+    $0.GetBatchItemReceiptRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getBatchItemReceipt, request, options: options);
   }
+
+  // method descriptors
+
+  static final _$sendFunds =
+      $grpc.ClientMethod<$0.SendFundsRequest, $0.SendFundsResponse>(
+          '/payments.PaymentsService/SendFunds',
+          ($0.SendFundsRequest value) => value.writeToBuffer(),
+          $0.SendFundsResponse.fromBuffer);
+  static final _$batchTransfer =
+      $grpc.ClientMethod<$0.BatchTransferRequest, $0.BatchTransferResponse>(
+          '/payments.PaymentsService/BatchTransfer',
+          ($0.BatchTransferRequest value) => value.writeToBuffer(),
+          $0.BatchTransferResponse.fromBuffer);
+  static final _$withdraw =
+      $grpc.ClientMethod<$0.WithdrawRequest, $0.WithdrawResponse>(
+          '/payments.PaymentsService/Withdraw',
+          ($0.WithdrawRequest value) => value.writeToBuffer(),
+          $0.WithdrawResponse.fromBuffer);
+  static final _$deposit =
+      $grpc.ClientMethod<$0.DepositRequest, $0.DepositResponse>(
+          '/payments.PaymentsService/Deposit',
+          ($0.DepositRequest value) => value.writeToBuffer(),
+          $0.DepositResponse.fromBuffer);
+  static final _$payWithTag =
+      $grpc.ClientMethod<$0.PayWithTagRequest, $0.PayWithTagResponse>(
+          '/payments.PaymentsService/PayWithTag',
+          ($0.PayWithTagRequest value) => value.writeToBuffer(),
+          $0.PayWithTagResponse.fromBuffer);
+  static final _$payElectricityBill = $grpc.ClientMethod<
+          $0.PayElectricityBillRequest, $0.PayElectricityBillResponse>(
+      '/payments.PaymentsService/PayElectricityBill',
+      ($0.PayElectricityBillRequest value) => value.writeToBuffer(),
+      $0.PayElectricityBillResponse.fromBuffer);
+  static final _$buyAirtime =
+      $grpc.ClientMethod<$0.BuyAirtimeRequest, $0.BuyAirtimeResponse>(
+          '/payments.PaymentsService/BuyAirtime',
+          ($0.BuyAirtimeRequest value) => value.writeToBuffer(),
+          $0.BuyAirtimeResponse.fromBuffer);
+  static final _$barcodePay =
+      $grpc.ClientMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
+          '/payments.PaymentsService/BarcodePay',
+          ($0.BarcodePayRequest value) => value.writeToBuffer(),
+          $0.BarcodePayResponse.fromBuffer);
+  static final _$scanToPay =
+      $grpc.ClientMethod<$0.ScanToPayRequest, $0.ScanToPayResponse>(
+          '/payments.PaymentsService/ScanToPay',
+          ($0.ScanToPayRequest value) => value.writeToBuffer(),
+          $0.ScanToPayResponse.fromBuffer);
+  static final _$getPaymentHistory = $grpc.ClientMethod<
+          $0.GetPaymentHistoryRequest, $0.GetPaymentHistoryResponse>(
+      '/payments.PaymentsService/GetPaymentHistory',
+      ($0.GetPaymentHistoryRequest value) => value.writeToBuffer(),
+      $0.GetPaymentHistoryResponse.fromBuffer);
+  static final _$getBillProviders = $grpc.ClientMethod<
+          $0.GetBillProvidersRequest, $0.GetBillProvidersResponse>(
+      '/payments.PaymentsService/GetBillProviders',
+      ($0.GetBillProvidersRequest value) => value.writeToBuffer(),
+      $0.GetBillProvidersResponse.fromBuffer);
+  static final _$getAirtimeProviders = $grpc.ClientMethod<
+          $0.GetAirtimeProvidersRequest, $0.GetAirtimeProvidersResponse>(
+      '/payments.PaymentsService/GetAirtimeProviders',
+      ($0.GetAirtimeProvidersRequest value) => value.writeToBuffer(),
+      $0.GetAirtimeProvidersResponse.fromBuffer);
+  static final _$payWithBankDetails = $grpc.ClientMethod<
+          $0.PayWithBankDetailsRequest, $0.PayWithBankDetailsResponse>(
+      '/payments.PaymentsService/PayWithBankDetails',
+      ($0.PayWithBankDetailsRequest value) => value.writeToBuffer(),
+      $0.PayWithBankDetailsResponse.fromBuffer);
+  static final _$resolveTag =
+      $grpc.ClientMethod<$0.ResolveTagRequest, $0.ResolveTagResponse>(
+          '/payments.PaymentsService/ResolveTag',
+          ($0.ResolveTagRequest value) => value.writeToBuffer(),
+          $0.ResolveTagResponse.fromBuffer);
+  static final _$verifyBankAccount = $grpc.ClientMethod<
+          $0.VerifyBankAccountRequest, $0.VerifyBankAccountResponse>(
+      '/payments.PaymentsService/VerifyBankAccount',
+      ($0.VerifyBankAccountRequest value) => value.writeToBuffer(),
+      $0.VerifyBankAccountResponse.fromBuffer);
+  static final _$suggestBankAccounts = $grpc.ClientMethod<
+          $0.SuggestBankAccountsRequest, $0.SuggestBankAccountsResponse>(
+      '/payments.PaymentsService/SuggestBankAccounts',
+      ($0.SuggestBankAccountsRequest value) => value.writeToBuffer(),
+      $0.SuggestBankAccountsResponse.fromBuffer);
+  static final _$getTransferSuccessPrediction = $grpc.ClientMethod<
+          $0.GetTransferSuccessPredictionRequest,
+          $0.GetTransferSuccessPredictionResponse>(
+      '/payments.PaymentsService/GetTransferSuccessPrediction',
+      ($0.GetTransferSuccessPredictionRequest value) => value.writeToBuffer(),
+      $0.GetTransferSuccessPredictionResponse.fromBuffer);
+  static final _$initiateDomesticTransfer = $grpc.ClientMethod<
+          $0.InitiateDomesticTransferRequest, $0.InitiateTransferResponse>(
+      '/payments.PaymentsService/InitiateDomesticTransfer',
+      ($0.InitiateDomesticTransferRequest value) => value.writeToBuffer(),
+      $0.InitiateTransferResponse.fromBuffer);
+  static final _$initiateInternalTransfer = $grpc.ClientMethod<
+          $0.InitiateInternalTransferRequest, $0.InitiateTransferResponse>(
+      '/payments.PaymentsService/InitiateInternalTransfer',
+      ($0.InitiateInternalTransferRequest value) => value.writeToBuffer(),
+      $0.InitiateTransferResponse.fromBuffer);
+  static final _$initiateInternationalTransfer = $grpc.ClientMethod<
+          $0.InitiateInternationalTransferRequest, $0.InitiateTransferResponse>(
+      '/payments.PaymentsService/InitiateInternationalTransfer',
+      ($0.InitiateInternationalTransferRequest value) => value.writeToBuffer(),
+      $0.InitiateTransferResponse.fromBuffer);
+  static final _$initiateUserTransfer = $grpc.ClientMethod<
+          $0.InitiateUserTransferRequest, $0.InitiateTransferResponse>(
+      '/payments.PaymentsService/InitiateUserTransfer',
+      ($0.InitiateUserTransferRequest value) => value.writeToBuffer(),
+      $0.InitiateTransferResponse.fromBuffer);
+  static final _$initiatePhoneTransfer = $grpc.ClientMethod<
+          $0.InitiatePhoneTransferRequest, $0.InitiateTransferResponse>(
+      '/payments.PaymentsService/InitiatePhoneTransfer',
+      ($0.InitiatePhoneTransferRequest value) => value.writeToBuffer(),
+      $0.InitiateTransferResponse.fromBuffer);
+  static final _$getTransferStatus = $grpc.ClientMethod<
+          $0.GetTransferStatusRequest, $0.GetTransferStatusResponse>(
+      '/payments.PaymentsService/GetTransferStatus',
+      ($0.GetTransferStatusRequest value) => value.writeToBuffer(),
+      $0.GetTransferStatusResponse.fromBuffer);
+  static final _$getUserTransfers = $grpc.ClientMethod<
+          $0.GetUserTransfersRequest, $0.GetUserTransfersResponse>(
+      '/payments.PaymentsService/GetUserTransfers',
+      ($0.GetUserTransfersRequest value) => value.writeToBuffer(),
+      $0.GetUserTransfersResponse.fromBuffer);
+  static final _$getTransferFee =
+      $grpc.ClientMethod<$0.GetTransferFeeRequest, $0.GetTransferFeeResponse>(
+          '/payments.PaymentsService/GetTransferFee',
+          ($0.GetTransferFeeRequest value) => value.writeToBuffer(),
+          $0.GetTransferFeeResponse.fromBuffer);
+  static final _$getDailyUsage =
+      $grpc.ClientMethod<$0.GetDailyUsageRequest, $0.GetDailyUsageResponse>(
+          '/payments.PaymentsService/GetDailyUsage',
+          ($0.GetDailyUsageRequest value) => value.writeToBuffer(),
+          $0.GetDailyUsageResponse.fromBuffer);
+  static final _$getExchangeRate =
+      $grpc.ClientMethod<$0.GetExchangeRateRequest, $0.GetExchangeRateResponse>(
+          '/payments.PaymentsService/GetExchangeRate',
+          ($0.GetExchangeRateRequest value) => value.writeToBuffer(),
+          $0.GetExchangeRateResponse.fromBuffer);
+  static final _$handleTransferWebhook = $grpc.ClientMethod<
+          $0.HandleTransferWebhookRequest, $0.HandleTransferWebhookResponse>(
+      '/payments.PaymentsService/HandleTransferWebhook',
+      ($0.HandleTransferWebhookRequest value) => value.writeToBuffer(),
+      $0.HandleTransferWebhookResponse.fromBuffer);
+  static final _$payPlatformFee =
+      $grpc.ClientMethod<$0.PayPlatformFeeRequest, $0.PayPlatformFeeResponse>(
+          '/payments.PaymentsService/PayPlatformFee',
+          ($0.PayPlatformFeeRequest value) => value.writeToBuffer(),
+          $0.PayPlatformFeeResponse.fromBuffer);
+  static final _$refundFromPlatformWallet = $grpc.ClientMethod<
+          $0.RefundFromPlatformWalletRequest,
+          $0.RefundFromPlatformWalletResponse>(
+      '/payments.PaymentsService/RefundFromPlatformWallet',
+      ($0.RefundFromPlatformWalletRequest value) => value.writeToBuffer(),
+      $0.RefundFromPlatformWalletResponse.fromBuffer);
+  static final _$generateQRPaymentToken =
+      $grpc.ClientMethod<$0.GenerateQRTokenRequest, $0.GenerateQRTokenResponse>(
+          '/payments.PaymentsService/GenerateQRPaymentToken',
+          ($0.GenerateQRTokenRequest value) => value.writeToBuffer(),
+          $0.GenerateQRTokenResponse.fromBuffer);
+  static final _$validateQRPaymentToken =
+      $grpc.ClientMethod<$0.ValidateQRTokenRequest, $0.ValidateQRTokenResponse>(
+          '/payments.PaymentsService/ValidateQRPaymentToken',
+          ($0.ValidateQRTokenRequest value) => value.writeToBuffer(),
+          $0.ValidateQRTokenResponse.fromBuffer);
+  static final _$getBatchTransfers = $grpc.ClientMethod<
+          $0.GetBatchTransfersRequest, $0.GetBatchTransfersResponse>(
+      '/payments.PaymentsService/GetBatchTransfers',
+      ($0.GetBatchTransfersRequest value) => value.writeToBuffer(),
+      $0.GetBatchTransfersResponse.fromBuffer);
+  static final _$getBatchTransferDetail = $grpc.ClientMethod<
+          $0.GetBatchTransferDetailRequest, $0.GetBatchTransferDetailResponse>(
+      '/payments.PaymentsService/GetBatchTransferDetail',
+      ($0.GetBatchTransferDetailRequest value) => value.writeToBuffer(),
+      $0.GetBatchTransferDetailResponse.fromBuffer);
+  static final _$verifyMultiCountryIdentity = $grpc.ClientMethod<
+          $0.VerifyMultiCountryIdentityRequest,
+          $0.VerifyMultiCountryIdentityResponse>(
+      '/payments.PaymentsService/VerifyMultiCountryIdentity',
+      ($0.VerifyMultiCountryIdentityRequest value) => value.writeToBuffer(),
+      $0.VerifyMultiCountryIdentityResponse.fromBuffer);
+  static final _$getIdentityVerificationStatus = $grpc.ClientMethod<
+          $0.GetKYCVerificationStatusRequest,
+          $0.GetKYCVerificationStatusResponse>(
+      '/payments.PaymentsService/GetIdentityVerificationStatus',
+      ($0.GetKYCVerificationStatusRequest value) => value.writeToBuffer(),
+      $0.GetKYCVerificationStatusResponse.fromBuffer);
+  static final _$createRecurringTransfer = $grpc.ClientMethod<
+          $0.CreateRecurringTransferRequest,
+          $0.CreateRecurringTransferResponse>(
+      '/payments.PaymentsService/CreateRecurringTransfer',
+      ($0.CreateRecurringTransferRequest value) => value.writeToBuffer(),
+      $0.CreateRecurringTransferResponse.fromBuffer);
+  static final _$getRecurringTransfers = $grpc.ClientMethod<
+          $0.GetRecurringTransfersRequest, $0.GetRecurringTransfersResponse>(
+      '/payments.PaymentsService/GetRecurringTransfers',
+      ($0.GetRecurringTransfersRequest value) => value.writeToBuffer(),
+      $0.GetRecurringTransfersResponse.fromBuffer);
+  static final _$getRecurringTransfer = $grpc.ClientMethod<
+          $0.GetRecurringTransferRequest, $0.GetRecurringTransferResponse>(
+      '/payments.PaymentsService/GetRecurringTransfer',
+      ($0.GetRecurringTransferRequest value) => value.writeToBuffer(),
+      $0.GetRecurringTransferResponse.fromBuffer);
+  static final _$updateRecurringTransfer = $grpc.ClientMethod<
+          $0.UpdateRecurringTransferRequest,
+          $0.UpdateRecurringTransferResponse>(
+      '/payments.PaymentsService/UpdateRecurringTransfer',
+      ($0.UpdateRecurringTransferRequest value) => value.writeToBuffer(),
+      $0.UpdateRecurringTransferResponse.fromBuffer);
+  static final _$deleteRecurringTransfer = $grpc.ClientMethod<
+          $0.DeleteRecurringTransferRequest,
+          $0.DeleteRecurringTransferResponse>(
+      '/payments.PaymentsService/DeleteRecurringTransfer',
+      ($0.DeleteRecurringTransferRequest value) => value.writeToBuffer(),
+      $0.DeleteRecurringTransferResponse.fromBuffer);
+  static final _$getRecurringTransferExecutions = $grpc.ClientMethod<
+          $0.GetRecurringTransferExecutionsRequest,
+          $0.GetRecurringTransferExecutionsResponse>(
+      '/payments.PaymentsService/GetRecurringTransferExecutions',
+      ($0.GetRecurringTransferExecutionsRequest value) => value.writeToBuffer(),
+      $0.GetRecurringTransferExecutionsResponse.fromBuffer);
+  static final _$getRecurringTransfersByRecipient = $grpc.ClientMethod<
+          $0.GetRecurringTransfersByRecipientRequest,
+          $0.GetRecurringTransfersByRecipientResponse>(
+      '/payments.PaymentsService/GetRecurringTransfersByRecipient',
+      ($0.GetRecurringTransfersByRecipientRequest value) =>
+          value.writeToBuffer(),
+      $0.GetRecurringTransfersByRecipientResponse.fromBuffer);
+  static final _$saveBatchDraft =
+      $grpc.ClientMethod<$0.SaveBatchDraftRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/SaveBatchDraft',
+          ($0.SaveBatchDraftRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$listSavedBatches = $grpc.ClientMethod<
+          $0.ListSavedBatchesRequest, $0.ListSavedBatchesResponse>(
+      '/payments.PaymentsService/ListSavedBatches',
+      ($0.ListSavedBatchesRequest value) => value.writeToBuffer(),
+      $0.ListSavedBatchesResponse.fromBuffer);
+  static final _$getSavedBatch =
+      $grpc.ClientMethod<$0.GetSavedBatchRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/GetSavedBatch',
+          ($0.GetSavedBatchRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$updateSavedBatch =
+      $grpc.ClientMethod<$0.UpdateSavedBatchRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/UpdateSavedBatch',
+          ($0.UpdateSavedBatchRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$deleteSavedBatch = $grpc.ClientMethod<
+          $0.DeleteSavedBatchRequest, $0.DeleteSavedBatchResponse>(
+      '/payments.PaymentsService/DeleteSavedBatch',
+      ($0.DeleteSavedBatchRequest value) => value.writeToBuffer(),
+      $0.DeleteSavedBatchResponse.fromBuffer);
+  static final _$addSavedBatchItem =
+      $grpc.ClientMethod<$0.AddSavedBatchItemRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/AddSavedBatchItem',
+          ($0.AddSavedBatchItemRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$removeSavedBatchItem =
+      $grpc.ClientMethod<$0.RemoveSavedBatchItemRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/RemoveSavedBatchItem',
+          ($0.RemoveSavedBatchItemRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$updateSavedBatchItemAmount =
+      $grpc.ClientMethod<$0.UpdateSavedBatchItemAmountRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/UpdateSavedBatchItemAmount',
+          ($0.UpdateSavedBatchItemAmountRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$applyCollectiveAmount =
+      $grpc.ClientMethod<$0.ApplyCollectiveAmountRequest, $0.SavedBatch>(
+          '/payments.PaymentsService/ApplyCollectiveAmount',
+          ($0.ApplyCollectiveAmountRequest value) => value.writeToBuffer(),
+          $0.SavedBatch.fromBuffer);
+  static final _$executeFromSavedBatch = $grpc.ClientMethod<
+          $0.ExecuteFromSavedBatchRequest, $0.BatchTransferResponse>(
+      '/payments.PaymentsService/ExecuteFromSavedBatch',
+      ($0.ExecuteFromSavedBatchRequest value) => value.writeToBuffer(),
+      $0.BatchTransferResponse.fromBuffer);
+  static final _$getBatchReceipt =
+      $grpc.ClientMethod<$0.GetBatchReceiptRequest, $0.BatchReceipt>(
+          '/payments.PaymentsService/GetBatchReceipt',
+          ($0.GetBatchReceiptRequest value) => value.writeToBuffer(),
+          $0.BatchReceipt.fromBuffer);
+  static final _$getBatchItemReceipt =
+      $grpc.ClientMethod<$0.GetBatchItemReceiptRequest, $0.BatchItemReceipt>(
+          '/payments.PaymentsService/GetBatchItemReceipt',
+          ($0.GetBatchItemReceiptRequest value) => value.writeToBuffer(),
+          $0.BatchItemReceipt.fromBuffer);
 }
 
+@$pb.GrpcServiceName('payments.PaymentsService')
 abstract class PaymentsServiceBase extends $grpc.Service {
   $core.String get $name => 'payments.PaymentsService';
 
   PaymentsServiceBase() {
-    $addMethod($grpc.ServiceMethod<$29.SendFundsRequest, $29.SendFundsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.SendFundsRequest, $0.SendFundsResponse>(
         'SendFunds',
         sendFunds_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $29.SendFundsRequest.fromBuffer(value),
-        ($29.SendFundsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.BatchTransferRequest,
-            $29.BatchTransferResponse>(
-        'BatchTransfer',
-        batchTransfer_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $29.BatchTransferRequest.fromBuffer(value),
-        ($29.BatchTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.WithdrawRequest, $29.WithdrawResponse>(
+        ($core.List<$core.int> value) => $0.SendFundsRequest.fromBuffer(value),
+        ($0.SendFundsResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.BatchTransferRequest, $0.BatchTransferResponse>(
+            'BatchTransfer',
+            batchTransfer_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.BatchTransferRequest.fromBuffer(value),
+            ($0.BatchTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawRequest, $0.WithdrawResponse>(
         'Withdraw',
         withdraw_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $29.WithdrawRequest.fromBuffer(value),
-        ($29.WithdrawResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.DepositRequest, $29.DepositResponse>(
+        ($core.List<$core.int> value) => $0.WithdrawRequest.fromBuffer(value),
+        ($0.WithdrawResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DepositRequest, $0.DepositResponse>(
         'Deposit',
         deposit_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $29.DepositRequest.fromBuffer(value),
-        ($29.DepositResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$29.PayWithTagRequest, $29.PayWithTagResponse>(
-            'PayWithTag',
-            payWithTag_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $29.PayWithTagRequest.fromBuffer(value),
-            ($29.PayWithTagResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.PayElectricityBillRequest,
-            $29.PayElectricityBillResponse>(
+        ($core.List<$core.int> value) => $0.DepositRequest.fromBuffer(value),
+        ($0.DepositResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayWithTagRequest, $0.PayWithTagResponse>(
+        'PayWithTag',
+        payWithTag_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.PayWithTagRequest.fromBuffer(value),
+        ($0.PayWithTagResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayElectricityBillRequest,
+            $0.PayElectricityBillResponse>(
         'PayElectricityBill',
         payElectricityBill_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.PayElectricityBillRequest.fromBuffer(value),
-        ($29.PayElectricityBillResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$29.BuyAirtimeRequest, $29.BuyAirtimeResponse>(
-            'BuyAirtime',
-            buyAirtime_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $29.BuyAirtimeRequest.fromBuffer(value),
-            ($29.BuyAirtimeResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$29.BarcodePayRequest, $29.BarcodePayResponse>(
-            'BarcodePay',
-            barcodePay_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $29.BarcodePayRequest.fromBuffer(value),
-            ($29.BarcodePayResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.ScanToPayRequest, $29.ScanToPayResponse>(
+            $0.PayElectricityBillRequest.fromBuffer(value),
+        ($0.PayElectricityBillResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.BuyAirtimeRequest, $0.BuyAirtimeResponse>(
+        'BuyAirtime',
+        buyAirtime_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.BuyAirtimeRequest.fromBuffer(value),
+        ($0.BuyAirtimeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
+        'BarcodePay',
+        barcodePay_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.BarcodePayRequest.fromBuffer(value),
+        ($0.BarcodePayResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ScanToPayRequest, $0.ScanToPayResponse>(
         'ScanToPay',
         scanToPay_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $29.ScanToPayRequest.fromBuffer(value),
-        ($29.ScanToPayResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetPaymentHistoryRequest,
-            $29.GetPaymentHistoryResponse>(
+        ($core.List<$core.int> value) => $0.ScanToPayRequest.fromBuffer(value),
+        ($0.ScanToPayResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPaymentHistoryRequest,
+            $0.GetPaymentHistoryResponse>(
         'GetPaymentHistory',
         getPaymentHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetPaymentHistoryRequest.fromBuffer(value),
-        ($29.GetPaymentHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetBillProvidersRequest,
-            $29.GetBillProvidersResponse>(
+            $0.GetPaymentHistoryRequest.fromBuffer(value),
+        ($0.GetPaymentHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBillProvidersRequest,
+            $0.GetBillProvidersResponse>(
         'GetBillProviders',
         getBillProviders_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetBillProvidersRequest.fromBuffer(value),
-        ($29.GetBillProvidersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetAirtimeProvidersRequest,
-            $29.GetAirtimeProvidersResponse>(
+            $0.GetBillProvidersRequest.fromBuffer(value),
+        ($0.GetBillProvidersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAirtimeProvidersRequest,
+            $0.GetAirtimeProvidersResponse>(
         'GetAirtimeProviders',
         getAirtimeProviders_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetAirtimeProvidersRequest.fromBuffer(value),
-        ($29.GetAirtimeProvidersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.PayWithBankDetailsRequest,
-            $29.PayWithBankDetailsResponse>(
+            $0.GetAirtimeProvidersRequest.fromBuffer(value),
+        ($0.GetAirtimeProvidersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayWithBankDetailsRequest,
+            $0.PayWithBankDetailsResponse>(
         'PayWithBankDetails',
         payWithBankDetails_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.PayWithBankDetailsRequest.fromBuffer(value),
-        ($29.PayWithBankDetailsResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$29.ResolveTagRequest, $29.ResolveTagResponse>(
-            'ResolveTag',
-            resolveTag_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $29.ResolveTagRequest.fromBuffer(value),
-            ($29.ResolveTagResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.VerifyBankAccountRequest,
-            $29.VerifyBankAccountResponse>(
+            $0.PayWithBankDetailsRequest.fromBuffer(value),
+        ($0.PayWithBankDetailsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ResolveTagRequest, $0.ResolveTagResponse>(
+        'ResolveTag',
+        resolveTag_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ResolveTagRequest.fromBuffer(value),
+        ($0.ResolveTagResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyBankAccountRequest,
+            $0.VerifyBankAccountResponse>(
         'VerifyBankAccount',
         verifyBankAccount_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.VerifyBankAccountRequest.fromBuffer(value),
-        ($29.VerifyBankAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetTransferSuccessPredictionRequest,
-            $29.GetTransferSuccessPredictionResponse>(
+            $0.VerifyBankAccountRequest.fromBuffer(value),
+        ($0.VerifyBankAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SuggestBankAccountsRequest,
+            $0.SuggestBankAccountsResponse>(
+        'SuggestBankAccounts',
+        suggestBankAccounts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SuggestBankAccountsRequest.fromBuffer(value),
+        ($0.SuggestBankAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTransferSuccessPredictionRequest,
+            $0.GetTransferSuccessPredictionResponse>(
         'GetTransferSuccessPrediction',
         getTransferSuccessPrediction_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetTransferSuccessPredictionRequest.fromBuffer(value),
-        ($29.GetTransferSuccessPredictionResponse value) =>
+            $0.GetTransferSuccessPredictionRequest.fromBuffer(value),
+        ($0.GetTransferSuccessPredictionResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.InitiateDomesticTransferRequest,
-            $29.InitiateTransferResponse>(
+    $addMethod($grpc.ServiceMethod<$0.InitiateDomesticTransferRequest,
+            $0.InitiateTransferResponse>(
         'InitiateDomesticTransfer',
         initiateDomesticTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.InitiateDomesticTransferRequest.fromBuffer(value),
-        ($29.InitiateTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.InitiateInternalTransferRequest,
-            $29.InitiateTransferResponse>(
+            $0.InitiateDomesticTransferRequest.fromBuffer(value),
+        ($0.InitiateTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateInternalTransferRequest,
+            $0.InitiateTransferResponse>(
         'InitiateInternalTransfer',
         initiateInternalTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.InitiateInternalTransferRequest.fromBuffer(value),
-        ($29.InitiateTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.InitiateInternationalTransferRequest,
-            $29.InitiateTransferResponse>(
+            $0.InitiateInternalTransferRequest.fromBuffer(value),
+        ($0.InitiateTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateInternationalTransferRequest,
+            $0.InitiateTransferResponse>(
         'InitiateInternationalTransfer',
         initiateInternationalTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.InitiateInternationalTransferRequest.fromBuffer(value),
-        ($29.InitiateTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.InitiateUserTransferRequest,
-            $29.InitiateTransferResponse>(
+            $0.InitiateInternationalTransferRequest.fromBuffer(value),
+        ($0.InitiateTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateUserTransferRequest,
+            $0.InitiateTransferResponse>(
         'InitiateUserTransfer',
         initiateUserTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.InitiateUserTransferRequest.fromBuffer(value),
-        ($29.InitiateTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.InitiatePhoneTransferRequest,
-            $29.InitiateTransferResponse>(
+            $0.InitiateUserTransferRequest.fromBuffer(value),
+        ($0.InitiateTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiatePhoneTransferRequest,
+            $0.InitiateTransferResponse>(
         'InitiatePhoneTransfer',
         initiatePhoneTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.InitiatePhoneTransferRequest.fromBuffer(value),
-        ($29.InitiateTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetTransferStatusRequest,
-            $29.GetTransferStatusResponse>(
+            $0.InitiatePhoneTransferRequest.fromBuffer(value),
+        ($0.InitiateTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTransferStatusRequest,
+            $0.GetTransferStatusResponse>(
         'GetTransferStatus',
         getTransferStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetTransferStatusRequest.fromBuffer(value),
-        ($29.GetTransferStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetUserTransfersRequest,
-            $29.GetUserTransfersResponse>(
+            $0.GetTransferStatusRequest.fromBuffer(value),
+        ($0.GetTransferStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserTransfersRequest,
+            $0.GetUserTransfersResponse>(
         'GetUserTransfers',
         getUserTransfers_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetUserTransfersRequest.fromBuffer(value),
-        ($29.GetUserTransfersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetTransferFeeRequest,
-            $29.GetTransferFeeResponse>(
+            $0.GetUserTransfersRequest.fromBuffer(value),
+        ($0.GetUserTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTransferFeeRequest,
+            $0.GetTransferFeeResponse>(
         'GetTransferFee',
         getTransferFee_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetTransferFeeRequest.fromBuffer(value),
-        ($29.GetTransferFeeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetDailyUsageRequest,
-            $29.GetDailyUsageResponse>(
-        'GetDailyUsage',
-        getDailyUsage_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $29.GetDailyUsageRequest.fromBuffer(value),
-        ($29.GetDailyUsageResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetExchangeRateRequest,
-            $29.GetExchangeRateResponse>(
+            $0.GetTransferFeeRequest.fromBuffer(value),
+        ($0.GetTransferFeeResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetDailyUsageRequest, $0.GetDailyUsageResponse>(
+            'GetDailyUsage',
+            getDailyUsage_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetDailyUsageRequest.fromBuffer(value),
+            ($0.GetDailyUsageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetExchangeRateRequest,
+            $0.GetExchangeRateResponse>(
         'GetExchangeRate',
         getExchangeRate_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetExchangeRateRequest.fromBuffer(value),
-        ($29.GetExchangeRateResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.HandleTransferWebhookRequest,
-            $29.HandleTransferWebhookResponse>(
+            $0.GetExchangeRateRequest.fromBuffer(value),
+        ($0.GetExchangeRateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HandleTransferWebhookRequest,
+            $0.HandleTransferWebhookResponse>(
         'HandleTransferWebhook',
         handleTransferWebhook_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.HandleTransferWebhookRequest.fromBuffer(value),
-        ($29.HandleTransferWebhookResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.PayPlatformFeeRequest,
-            $29.PayPlatformFeeResponse>(
+            $0.HandleTransferWebhookRequest.fromBuffer(value),
+        ($0.HandleTransferWebhookResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayPlatformFeeRequest,
+            $0.PayPlatformFeeResponse>(
         'PayPlatformFee',
         payPlatformFee_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.PayPlatformFeeRequest.fromBuffer(value),
-        ($29.PayPlatformFeeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.RefundFromPlatformWalletRequest,
-            $29.RefundFromPlatformWalletResponse>(
+            $0.PayPlatformFeeRequest.fromBuffer(value),
+        ($0.PayPlatformFeeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RefundFromPlatformWalletRequest,
+            $0.RefundFromPlatformWalletResponse>(
         'RefundFromPlatformWallet',
         refundFromPlatformWallet_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.RefundFromPlatformWalletRequest.fromBuffer(value),
-        ($29.RefundFromPlatformWalletResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GenerateQRTokenRequest,
-            $29.GenerateQRTokenResponse>(
+            $0.RefundFromPlatformWalletRequest.fromBuffer(value),
+        ($0.RefundFromPlatformWalletResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateQRTokenRequest,
+            $0.GenerateQRTokenResponse>(
         'GenerateQRPaymentToken',
         generateQRPaymentToken_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GenerateQRTokenRequest.fromBuffer(value),
-        ($29.GenerateQRTokenResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.ValidateQRTokenRequest,
-            $29.ValidateQRTokenResponse>(
+            $0.GenerateQRTokenRequest.fromBuffer(value),
+        ($0.GenerateQRTokenResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ValidateQRTokenRequest,
+            $0.ValidateQRTokenResponse>(
         'ValidateQRPaymentToken',
         validateQRPaymentToken_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.ValidateQRTokenRequest.fromBuffer(value),
-        ($29.ValidateQRTokenResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetBatchTransfersRequest,
-            $29.GetBatchTransfersResponse>(
+            $0.ValidateQRTokenRequest.fromBuffer(value),
+        ($0.ValidateQRTokenResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBatchTransfersRequest,
+            $0.GetBatchTransfersResponse>(
         'GetBatchTransfers',
         getBatchTransfers_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetBatchTransfersRequest.fromBuffer(value),
-        ($29.GetBatchTransfersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetBatchTransferDetailRequest,
-            $29.GetBatchTransferDetailResponse>(
+            $0.GetBatchTransfersRequest.fromBuffer(value),
+        ($0.GetBatchTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBatchTransferDetailRequest,
+            $0.GetBatchTransferDetailResponse>(
         'GetBatchTransferDetail',
         getBatchTransferDetail_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetBatchTransferDetailRequest.fromBuffer(value),
-        ($29.GetBatchTransferDetailResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.VerifyMultiCountryIdentityRequest,
-            $29.VerifyMultiCountryIdentityResponse>(
+            $0.GetBatchTransferDetailRequest.fromBuffer(value),
+        ($0.GetBatchTransferDetailResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyMultiCountryIdentityRequest,
+            $0.VerifyMultiCountryIdentityResponse>(
         'VerifyMultiCountryIdentity',
         verifyMultiCountryIdentity_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.VerifyMultiCountryIdentityRequest.fromBuffer(value),
-        ($29.VerifyMultiCountryIdentityResponse value) =>
+            $0.VerifyMultiCountryIdentityRequest.fromBuffer(value),
+        ($0.VerifyMultiCountryIdentityResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetKYCVerificationStatusRequest,
-            $29.GetKYCVerificationStatusResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetKYCVerificationStatusRequest,
+            $0.GetKYCVerificationStatusResponse>(
         'GetIdentityVerificationStatus',
         getIdentityVerificationStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetKYCVerificationStatusRequest.fromBuffer(value),
-        ($29.GetKYCVerificationStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.CreateRecurringTransferRequest,
-            $29.CreateRecurringTransferResponse>(
+            $0.GetKYCVerificationStatusRequest.fromBuffer(value),
+        ($0.GetKYCVerificationStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateRecurringTransferRequest,
+            $0.CreateRecurringTransferResponse>(
         'CreateRecurringTransfer',
         createRecurringTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.CreateRecurringTransferRequest.fromBuffer(value),
-        ($29.CreateRecurringTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetRecurringTransfersRequest,
-            $29.GetRecurringTransfersResponse>(
+            $0.CreateRecurringTransferRequest.fromBuffer(value),
+        ($0.CreateRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransfersRequest,
+            $0.GetRecurringTransfersResponse>(
         'GetRecurringTransfers',
         getRecurringTransfers_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetRecurringTransfersRequest.fromBuffer(value),
-        ($29.GetRecurringTransfersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetRecurringTransferRequest,
-            $29.GetRecurringTransferResponse>(
+            $0.GetRecurringTransfersRequest.fromBuffer(value),
+        ($0.GetRecurringTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransferRequest,
+            $0.GetRecurringTransferResponse>(
         'GetRecurringTransfer',
         getRecurringTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetRecurringTransferRequest.fromBuffer(value),
-        ($29.GetRecurringTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.UpdateRecurringTransferRequest,
-            $29.UpdateRecurringTransferResponse>(
+            $0.GetRecurringTransferRequest.fromBuffer(value),
+        ($0.GetRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateRecurringTransferRequest,
+            $0.UpdateRecurringTransferResponse>(
         'UpdateRecurringTransfer',
         updateRecurringTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.UpdateRecurringTransferRequest.fromBuffer(value),
-        ($29.UpdateRecurringTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.DeleteRecurringTransferRequest,
-            $29.DeleteRecurringTransferResponse>(
+            $0.UpdateRecurringTransferRequest.fromBuffer(value),
+        ($0.UpdateRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteRecurringTransferRequest,
+            $0.DeleteRecurringTransferResponse>(
         'DeleteRecurringTransfer',
         deleteRecurringTransfer_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.DeleteRecurringTransferRequest.fromBuffer(value),
-        ($29.DeleteRecurringTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetRecurringTransferExecutionsRequest,
-            $29.GetRecurringTransferExecutionsResponse>(
+            $0.DeleteRecurringTransferRequest.fromBuffer(value),
+        ($0.DeleteRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransferExecutionsRequest,
+            $0.GetRecurringTransferExecutionsResponse>(
         'GetRecurringTransferExecutions',
         getRecurringTransferExecutions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetRecurringTransferExecutionsRequest.fromBuffer(value),
-        ($29.GetRecurringTransferExecutionsResponse value) =>
+            $0.GetRecurringTransferExecutionsRequest.fromBuffer(value),
+        ($0.GetRecurringTransferExecutionsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetRecurringTransfersByRecipientRequest,
-            $29.GetRecurringTransfersByRecipientResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransfersByRecipientRequest,
+            $0.GetRecurringTransfersByRecipientResponse>(
         'GetRecurringTransfersByRecipient',
         getRecurringTransfersByRecipient_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetRecurringTransfersByRecipientRequest.fromBuffer(value),
-        ($29.GetRecurringTransfersByRecipientResponse value) =>
+            $0.GetRecurringTransfersByRecipientRequest.fromBuffer(value),
+        ($0.GetRecurringTransfersByRecipientResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.SaveBatchDraftRequest, $29.SavedBatch>(
+    $addMethod($grpc.ServiceMethod<$0.SaveBatchDraftRequest, $0.SavedBatch>(
         'SaveBatchDraft',
         saveBatchDraft_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.SaveBatchDraftRequest.fromBuffer(value),
-        ($29.SavedBatch value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.ListSavedBatchesRequest,
-            $29.ListSavedBatchesResponse>(
+            $0.SaveBatchDraftRequest.fromBuffer(value),
+        ($0.SavedBatch value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListSavedBatchesRequest,
+            $0.ListSavedBatchesResponse>(
         'ListSavedBatches',
         listSavedBatches_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.ListSavedBatchesRequest.fromBuffer(value),
-        ($29.ListSavedBatchesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetSavedBatchRequest, $29.SavedBatch>(
+            $0.ListSavedBatchesRequest.fromBuffer(value),
+        ($0.ListSavedBatchesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSavedBatchRequest, $0.SavedBatch>(
         'GetSavedBatch',
         getSavedBatch_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetSavedBatchRequest.fromBuffer(value),
-        ($29.SavedBatch value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.UpdateSavedBatchRequest, $29.SavedBatch>(
+            $0.GetSavedBatchRequest.fromBuffer(value),
+        ($0.SavedBatch value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateSavedBatchRequest, $0.SavedBatch>(
         'UpdateSavedBatch',
         updateSavedBatch_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.UpdateSavedBatchRequest.fromBuffer(value),
-        ($29.SavedBatch value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.DeleteSavedBatchRequest,
-            $29.DeleteSavedBatchResponse>(
+            $0.UpdateSavedBatchRequest.fromBuffer(value),
+        ($0.SavedBatch value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteSavedBatchRequest,
+            $0.DeleteSavedBatchResponse>(
         'DeleteSavedBatch',
         deleteSavedBatch_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.DeleteSavedBatchRequest.fromBuffer(value),
-        ($29.DeleteSavedBatchResponse value) => value.writeToBuffer()));
+            $0.DeleteSavedBatchRequest.fromBuffer(value),
+        ($0.DeleteSavedBatchResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AddSavedBatchItemRequest, $0.SavedBatch>(
+        'AddSavedBatchItem',
+        addSavedBatchItem_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AddSavedBatchItemRequest.fromBuffer(value),
+        ($0.SavedBatch value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$29.AddSavedBatchItemRequest, $29.SavedBatch>(
-            'AddSavedBatchItem',
-            addSavedBatchItem_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $29.AddSavedBatchItemRequest.fromBuffer(value),
-            ($29.SavedBatch value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$29.RemoveSavedBatchItemRequest, $29.SavedBatch>(
+        $grpc.ServiceMethod<$0.RemoveSavedBatchItemRequest, $0.SavedBatch>(
             'RemoveSavedBatchItem',
             removeSavedBatchItem_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $29.RemoveSavedBatchItemRequest.fromBuffer(value),
-            ($29.SavedBatch value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.UpdateSavedBatchItemAmountRequest,
-            $29.SavedBatch>(
+                $0.RemoveSavedBatchItemRequest.fromBuffer(value),
+            ($0.SavedBatch value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateSavedBatchItemAmountRequest,
+            $0.SavedBatch>(
         'UpdateSavedBatchItemAmount',
         updateSavedBatchItemAmount_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.UpdateSavedBatchItemAmountRequest.fromBuffer(value),
-        ($29.SavedBatch value) => value.writeToBuffer()));
+            $0.UpdateSavedBatchItemAmountRequest.fromBuffer(value),
+        ($0.SavedBatch value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$29.ApplyCollectiveAmountRequest, $29.SavedBatch>(
+        $grpc.ServiceMethod<$0.ApplyCollectiveAmountRequest, $0.SavedBatch>(
             'ApplyCollectiveAmount',
             applyCollectiveAmount_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $29.ApplyCollectiveAmountRequest.fromBuffer(value),
-            ($29.SavedBatch value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.ExecuteFromSavedBatchRequest,
-            $29.BatchTransferResponse>(
+                $0.ApplyCollectiveAmountRequest.fromBuffer(value),
+            ($0.SavedBatch value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ExecuteFromSavedBatchRequest,
+            $0.BatchTransferResponse>(
         'ExecuteFromSavedBatch',
         executeFromSavedBatch_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.ExecuteFromSavedBatchRequest.fromBuffer(value),
-        ($29.BatchTransferResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$29.GetBatchReceiptRequest, $29.BatchReceipt>(
-            'GetBatchReceipt',
-            getBatchReceipt_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $29.GetBatchReceiptRequest.fromBuffer(value),
-            ($29.BatchReceipt value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetBatchItemReceiptRequest,
-            $29.BatchItemReceipt>(
-        'GetBatchItemReceipt',
-        getBatchItemReceipt_Pre,
+            $0.ExecuteFromSavedBatchRequest.fromBuffer(value),
+        ($0.BatchTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBatchReceiptRequest, $0.BatchReceipt>(
+        'GetBatchReceipt',
+        getBatchReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetBatchItemReceiptRequest.fromBuffer(value),
-        ($29.BatchItemReceipt value) => value.writeToBuffer()));
+            $0.GetBatchReceiptRequest.fromBuffer(value),
+        ($0.BatchReceipt value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetBatchItemReceiptRequest, $0.BatchItemReceipt>(
+            'GetBatchItemReceipt',
+            getBatchItemReceipt_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetBatchItemReceiptRequest.fromBuffer(value),
+            ($0.BatchItemReceipt value) => value.writeToBuffer()));
   }
 
-  $async.Future<$29.SendFundsResponse> sendFunds_Pre($grpc.ServiceCall call,
-      $async.Future<$29.SendFundsRequest> request) async {
-    return sendFunds(call, await request);
+  $async.Future<$0.SendFundsResponse> sendFunds_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.SendFundsRequest> $request) async {
+    return sendFunds($call, await $request);
   }
 
-  $async.Future<$29.BatchTransferResponse> batchTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.BatchTransferRequest> request) async {
-    return batchTransfer(call, await request);
+  $async.Future<$0.SendFundsResponse> sendFunds(
+      $grpc.ServiceCall call, $0.SendFundsRequest request);
+
+  $async.Future<$0.BatchTransferResponse> batchTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.BatchTransferRequest> $request) async {
+    return batchTransfer($call, await $request);
   }
 
-  $async.Future<$29.WithdrawResponse> withdraw_Pre($grpc.ServiceCall call,
-      $async.Future<$29.WithdrawRequest> request) async {
-    return withdraw(call, await request);
+  $async.Future<$0.BatchTransferResponse> batchTransfer(
+      $grpc.ServiceCall call, $0.BatchTransferRequest request);
+
+  $async.Future<$0.WithdrawResponse> withdraw_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.WithdrawRequest> $request) async {
+    return withdraw($call, await $request);
   }
 
-  $async.Future<$29.DepositResponse> deposit_Pre(
-      $grpc.ServiceCall call, $async.Future<$29.DepositRequest> request) async {
-    return deposit(call, await request);
+  $async.Future<$0.WithdrawResponse> withdraw(
+      $grpc.ServiceCall call, $0.WithdrawRequest request);
+
+  $async.Future<$0.DepositResponse> deposit_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.DepositRequest> $request) async {
+    return deposit($call, await $request);
   }
 
-  $async.Future<$29.PayWithTagResponse> payWithTag_Pre($grpc.ServiceCall call,
-      $async.Future<$29.PayWithTagRequest> request) async {
-    return payWithTag(call, await request);
+  $async.Future<$0.DepositResponse> deposit(
+      $grpc.ServiceCall call, $0.DepositRequest request);
+
+  $async.Future<$0.PayWithTagResponse> payWithTag_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.PayWithTagRequest> $request) async {
+    return payWithTag($call, await $request);
   }
 
-  $async.Future<$29.PayElectricityBillResponse> payElectricityBill_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.PayElectricityBillRequest> request) async {
-    return payElectricityBill(call, await request);
+  $async.Future<$0.PayWithTagResponse> payWithTag(
+      $grpc.ServiceCall call, $0.PayWithTagRequest request);
+
+  $async.Future<$0.PayElectricityBillResponse> payElectricityBill_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.PayElectricityBillRequest> $request) async {
+    return payElectricityBill($call, await $request);
   }
 
-  $async.Future<$29.BuyAirtimeResponse> buyAirtime_Pre($grpc.ServiceCall call,
-      $async.Future<$29.BuyAirtimeRequest> request) async {
-    return buyAirtime(call, await request);
+  $async.Future<$0.PayElectricityBillResponse> payElectricityBill(
+      $grpc.ServiceCall call, $0.PayElectricityBillRequest request);
+
+  $async.Future<$0.BuyAirtimeResponse> buyAirtime_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.BuyAirtimeRequest> $request) async {
+    return buyAirtime($call, await $request);
   }
 
-  $async.Future<$29.BarcodePayResponse> barcodePay_Pre($grpc.ServiceCall call,
-      $async.Future<$29.BarcodePayRequest> request) async {
-    return barcodePay(call, await request);
+  $async.Future<$0.BuyAirtimeResponse> buyAirtime(
+      $grpc.ServiceCall call, $0.BuyAirtimeRequest request);
+
+  $async.Future<$0.BarcodePayResponse> barcodePay_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.BarcodePayRequest> $request) async {
+    return barcodePay($call, await $request);
   }
 
-  $async.Future<$29.ScanToPayResponse> scanToPay_Pre($grpc.ServiceCall call,
-      $async.Future<$29.ScanToPayRequest> request) async {
-    return scanToPay(call, await request);
+  $async.Future<$0.BarcodePayResponse> barcodePay(
+      $grpc.ServiceCall call, $0.BarcodePayRequest request);
+
+  $async.Future<$0.ScanToPayResponse> scanToPay_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.ScanToPayRequest> $request) async {
+    return scanToPay($call, await $request);
   }
 
-  $async.Future<$29.GetPaymentHistoryResponse> getPaymentHistory_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetPaymentHistoryRequest> request) async {
-    return getPaymentHistory(call, await request);
+  $async.Future<$0.ScanToPayResponse> scanToPay(
+      $grpc.ServiceCall call, $0.ScanToPayRequest request);
+
+  $async.Future<$0.GetPaymentHistoryResponse> getPaymentHistory_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetPaymentHistoryRequest> $request) async {
+    return getPaymentHistory($call, await $request);
   }
 
-  $async.Future<$29.GetBillProvidersResponse> getBillProviders_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetBillProvidersRequest> request) async {
-    return getBillProviders(call, await request);
+  $async.Future<$0.GetPaymentHistoryResponse> getPaymentHistory(
+      $grpc.ServiceCall call, $0.GetPaymentHistoryRequest request);
+
+  $async.Future<$0.GetBillProvidersResponse> getBillProviders_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetBillProvidersRequest> $request) async {
+    return getBillProviders($call, await $request);
   }
 
-  $async.Future<$29.GetAirtimeProvidersResponse> getAirtimeProviders_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetAirtimeProvidersRequest> request) async {
-    return getAirtimeProviders(call, await request);
+  $async.Future<$0.GetBillProvidersResponse> getBillProviders(
+      $grpc.ServiceCall call, $0.GetBillProvidersRequest request);
+
+  $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetAirtimeProvidersRequest> $request) async {
+    return getAirtimeProviders($call, await $request);
   }
 
-  $async.Future<$29.PayWithBankDetailsResponse> payWithBankDetails_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.PayWithBankDetailsRequest> request) async {
-    return payWithBankDetails(call, await request);
+  $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders(
+      $grpc.ServiceCall call, $0.GetAirtimeProvidersRequest request);
+
+  $async.Future<$0.PayWithBankDetailsResponse> payWithBankDetails_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.PayWithBankDetailsRequest> $request) async {
+    return payWithBankDetails($call, await $request);
   }
 
-  $async.Future<$29.ResolveTagResponse> resolveTag_Pre($grpc.ServiceCall call,
-      $async.Future<$29.ResolveTagRequest> request) async {
-    return resolveTag(call, await request);
+  $async.Future<$0.PayWithBankDetailsResponse> payWithBankDetails(
+      $grpc.ServiceCall call, $0.PayWithBankDetailsRequest request);
+
+  $async.Future<$0.ResolveTagResponse> resolveTag_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.ResolveTagRequest> $request) async {
+    return resolveTag($call, await $request);
   }
 
-  $async.Future<$29.VerifyBankAccountResponse> verifyBankAccount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.VerifyBankAccountRequest> request) async {
-    return verifyBankAccount(call, await request);
+  $async.Future<$0.ResolveTagResponse> resolveTag(
+      $grpc.ServiceCall call, $0.ResolveTagRequest request);
+
+  $async.Future<$0.VerifyBankAccountResponse> verifyBankAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.VerifyBankAccountRequest> $request) async {
+    return verifyBankAccount($call, await $request);
   }
 
-  $async.Future<$29.GetTransferSuccessPredictionResponse>
+  $async.Future<$0.VerifyBankAccountResponse> verifyBankAccount(
+      $grpc.ServiceCall call, $0.VerifyBankAccountRequest request);
+
+  $async.Future<$0.SuggestBankAccountsResponse> suggestBankAccounts_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SuggestBankAccountsRequest> $request) async {
+    return suggestBankAccounts($call, await $request);
+  }
+
+  $async.Future<$0.SuggestBankAccountsResponse> suggestBankAccounts(
+      $grpc.ServiceCall call, $0.SuggestBankAccountsRequest request);
+
+  $async.Future<$0.GetTransferSuccessPredictionResponse>
       getTransferSuccessPrediction_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$29.GetTransferSuccessPredictionRequest>
-              request) async {
-    return getTransferSuccessPrediction(call, await request);
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetTransferSuccessPredictionRequest>
+              $request) async {
+    return getTransferSuccessPrediction($call, await $request);
   }
 
-  $async.Future<$29.InitiateTransferResponse> initiateDomesticTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.InitiateDomesticTransferRequest> request) async {
-    return initiateDomesticTransfer(call, await request);
-  }
-
-  $async.Future<$29.InitiateTransferResponse> initiateInternalTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.InitiateInternalTransferRequest> request) async {
-    return initiateInternalTransfer(call, await request);
-  }
-
-  $async.Future<$29.InitiateTransferResponse> initiateInternationalTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.InitiateInternationalTransferRequest> request) async {
-    return initiateInternationalTransfer(call, await request);
-  }
-
-  $async.Future<$29.InitiateTransferResponse> initiateUserTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.InitiateUserTransferRequest> request) async {
-    return initiateUserTransfer(call, await request);
-  }
-
-  $async.Future<$29.InitiateTransferResponse> initiatePhoneTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.InitiatePhoneTransferRequest> request) async {
-    return initiatePhoneTransfer(call, await request);
-  }
-
-  $async.Future<$29.GetTransferStatusResponse> getTransferStatus_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetTransferStatusRequest> request) async {
-    return getTransferStatus(call, await request);
-  }
-
-  $async.Future<$29.GetUserTransfersResponse> getUserTransfers_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetUserTransfersRequest> request) async {
-    return getUserTransfers(call, await request);
-  }
-
-  $async.Future<$29.GetTransferFeeResponse> getTransferFee_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetTransferFeeRequest> request) async {
-    return getTransferFee(call, await request);
-  }
-
-  $async.Future<$29.GetDailyUsageResponse> getDailyUsage_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetDailyUsageRequest> request) async {
-    return getDailyUsage(call, await request);
-  }
-
-  $async.Future<$29.GetExchangeRateResponse> getExchangeRate_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetExchangeRateRequest> request) async {
-    return getExchangeRate(call, await request);
-  }
-
-  $async.Future<$29.HandleTransferWebhookResponse> handleTransferWebhook_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.HandleTransferWebhookRequest> request) async {
-    return handleTransferWebhook(call, await request);
-  }
-
-  $async.Future<$29.PayPlatformFeeResponse> payPlatformFee_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.PayPlatformFeeRequest> request) async {
-    return payPlatformFee(call, await request);
-  }
-
-  $async.Future<$29.RefundFromPlatformWalletResponse>
-      refundFromPlatformWallet_Pre($grpc.ServiceCall call,
-          $async.Future<$29.RefundFromPlatformWalletRequest> request) async {
-    return refundFromPlatformWallet(call, await request);
-  }
-
-  $async.Future<$29.GenerateQRTokenResponse> generateQRPaymentToken_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GenerateQRTokenRequest> request) async {
-    return generateQRPaymentToken(call, await request);
-  }
-
-  $async.Future<$29.ValidateQRTokenResponse> validateQRPaymentToken_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.ValidateQRTokenRequest> request) async {
-    return validateQRPaymentToken(call, await request);
-  }
-
-  $async.Future<$29.GetBatchTransfersResponse> getBatchTransfers_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetBatchTransfersRequest> request) async {
-    return getBatchTransfers(call, await request);
-  }
-
-  $async.Future<$29.GetBatchTransferDetailResponse> getBatchTransferDetail_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetBatchTransferDetailRequest> request) async {
-    return getBatchTransferDetail(call, await request);
-  }
-
-  $async.Future<$29.VerifyMultiCountryIdentityResponse>
-      verifyMultiCountryIdentity_Pre($grpc.ServiceCall call,
-          $async.Future<$29.VerifyMultiCountryIdentityRequest> request) async {
-    return verifyMultiCountryIdentity(call, await request);
-  }
-
-  $async.Future<$29.GetKYCVerificationStatusResponse>
-      getIdentityVerificationStatus_Pre($grpc.ServiceCall call,
-          $async.Future<$29.GetKYCVerificationStatusRequest> request) async {
-    return getIdentityVerificationStatus(call, await request);
-  }
-
-  $async.Future<$29.CreateRecurringTransferResponse>
-      createRecurringTransfer_Pre($grpc.ServiceCall call,
-          $async.Future<$29.CreateRecurringTransferRequest> request) async {
-    return createRecurringTransfer(call, await request);
-  }
-
-  $async.Future<$29.GetRecurringTransfersResponse> getRecurringTransfers_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetRecurringTransfersRequest> request) async {
-    return getRecurringTransfers(call, await request);
-  }
-
-  $async.Future<$29.GetRecurringTransferResponse> getRecurringTransfer_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetRecurringTransferRequest> request) async {
-    return getRecurringTransfer(call, await request);
-  }
-
-  $async.Future<$29.UpdateRecurringTransferResponse>
-      updateRecurringTransfer_Pre($grpc.ServiceCall call,
-          $async.Future<$29.UpdateRecurringTransferRequest> request) async {
-    return updateRecurringTransfer(call, await request);
-  }
-
-  $async.Future<$29.DeleteRecurringTransferResponse>
-      deleteRecurringTransfer_Pre($grpc.ServiceCall call,
-          $async.Future<$29.DeleteRecurringTransferRequest> request) async {
-    return deleteRecurringTransfer(call, await request);
-  }
-
-  $async.Future<$29.GetRecurringTransferExecutionsResponse>
-      getRecurringTransferExecutions_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$29.GetRecurringTransferExecutionsRequest>
-              request) async {
-    return getRecurringTransferExecutions(call, await request);
-  }
-
-  $async.Future<$29.GetRecurringTransfersByRecipientResponse>
-      getRecurringTransfersByRecipient_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$29.GetRecurringTransfersByRecipientRequest>
-              request) async {
-    return getRecurringTransfersByRecipient(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> saveBatchDraft_Pre($grpc.ServiceCall call,
-      $async.Future<$29.SaveBatchDraftRequest> request) async {
-    return saveBatchDraft(call, await request);
-  }
-
-  $async.Future<$29.ListSavedBatchesResponse> listSavedBatches_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.ListSavedBatchesRequest> request) async {
-    return listSavedBatches(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> getSavedBatch_Pre($grpc.ServiceCall call,
-      $async.Future<$29.GetSavedBatchRequest> request) async {
-    return getSavedBatch(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> updateSavedBatch_Pre($grpc.ServiceCall call,
-      $async.Future<$29.UpdateSavedBatchRequest> request) async {
-    return updateSavedBatch(call, await request);
-  }
-
-  $async.Future<$29.DeleteSavedBatchResponse> deleteSavedBatch_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.DeleteSavedBatchRequest> request) async {
-    return deleteSavedBatch(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> addSavedBatchItem_Pre($grpc.ServiceCall call,
-      $async.Future<$29.AddSavedBatchItemRequest> request) async {
-    return addSavedBatchItem(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> removeSavedBatchItem_Pre($grpc.ServiceCall call,
-      $async.Future<$29.RemoveSavedBatchItemRequest> request) async {
-    return removeSavedBatchItem(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> updateSavedBatchItemAmount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.UpdateSavedBatchItemAmountRequest> request) async {
-    return updateSavedBatchItemAmount(call, await request);
-  }
-
-  $async.Future<$29.SavedBatch> applyCollectiveAmount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.ApplyCollectiveAmountRequest> request) async {
-    return applyCollectiveAmount(call, await request);
-  }
-
-  $async.Future<$29.BatchTransferResponse> executeFromSavedBatch_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.ExecuteFromSavedBatchRequest> request) async {
-    return executeFromSavedBatch(call, await request);
-  }
-
-  $async.Future<$29.BatchReceipt> getBatchReceipt_Pre($grpc.ServiceCall call,
-      $async.Future<$29.GetBatchReceiptRequest> request) async {
-    return getBatchReceipt(call, await request);
-  }
-
-  $async.Future<$29.BatchItemReceipt> getBatchItemReceipt_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$29.GetBatchItemReceiptRequest> request) async {
-    return getBatchItemReceipt(call, await request);
-  }
-
-  $async.Future<$29.SendFundsResponse> sendFunds(
-      $grpc.ServiceCall call, $29.SendFundsRequest request);
-  $async.Future<$29.BatchTransferResponse> batchTransfer(
-      $grpc.ServiceCall call, $29.BatchTransferRequest request);
-  $async.Future<$29.WithdrawResponse> withdraw(
-      $grpc.ServiceCall call, $29.WithdrawRequest request);
-  $async.Future<$29.DepositResponse> deposit(
-      $grpc.ServiceCall call, $29.DepositRequest request);
-  $async.Future<$29.PayWithTagResponse> payWithTag(
-      $grpc.ServiceCall call, $29.PayWithTagRequest request);
-  $async.Future<$29.PayElectricityBillResponse> payElectricityBill(
-      $grpc.ServiceCall call, $29.PayElectricityBillRequest request);
-  $async.Future<$29.BuyAirtimeResponse> buyAirtime(
-      $grpc.ServiceCall call, $29.BuyAirtimeRequest request);
-  $async.Future<$29.BarcodePayResponse> barcodePay(
-      $grpc.ServiceCall call, $29.BarcodePayRequest request);
-  $async.Future<$29.ScanToPayResponse> scanToPay(
-      $grpc.ServiceCall call, $29.ScanToPayRequest request);
-  $async.Future<$29.GetPaymentHistoryResponse> getPaymentHistory(
-      $grpc.ServiceCall call, $29.GetPaymentHistoryRequest request);
-  $async.Future<$29.GetBillProvidersResponse> getBillProviders(
-      $grpc.ServiceCall call, $29.GetBillProvidersRequest request);
-  $async.Future<$29.GetAirtimeProvidersResponse> getAirtimeProviders(
-      $grpc.ServiceCall call, $29.GetAirtimeProvidersRequest request);
-  $async.Future<$29.PayWithBankDetailsResponse> payWithBankDetails(
-      $grpc.ServiceCall call, $29.PayWithBankDetailsRequest request);
-  $async.Future<$29.ResolveTagResponse> resolveTag(
-      $grpc.ServiceCall call, $29.ResolveTagRequest request);
-  $async.Future<$29.VerifyBankAccountResponse> verifyBankAccount(
-      $grpc.ServiceCall call, $29.VerifyBankAccountRequest request);
-  $async.Future<$29.GetTransferSuccessPredictionResponse>
+  $async.Future<$0.GetTransferSuccessPredictionResponse>
       getTransferSuccessPrediction($grpc.ServiceCall call,
-          $29.GetTransferSuccessPredictionRequest request);
-  $async.Future<$29.InitiateTransferResponse> initiateDomesticTransfer(
-      $grpc.ServiceCall call, $29.InitiateDomesticTransferRequest request);
-  $async.Future<$29.InitiateTransferResponse> initiateInternalTransfer(
-      $grpc.ServiceCall call, $29.InitiateInternalTransferRequest request);
-  $async.Future<$29.InitiateTransferResponse> initiateInternationalTransfer(
-      $grpc.ServiceCall call, $29.InitiateInternationalTransferRequest request);
-  $async.Future<$29.InitiateTransferResponse> initiateUserTransfer(
-      $grpc.ServiceCall call, $29.InitiateUserTransferRequest request);
-  $async.Future<$29.InitiateTransferResponse> initiatePhoneTransfer(
-      $grpc.ServiceCall call, $29.InitiatePhoneTransferRequest request);
-  $async.Future<$29.GetTransferStatusResponse> getTransferStatus(
-      $grpc.ServiceCall call, $29.GetTransferStatusRequest request);
-  $async.Future<$29.GetUserTransfersResponse> getUserTransfers(
-      $grpc.ServiceCall call, $29.GetUserTransfersRequest request);
-  $async.Future<$29.GetTransferFeeResponse> getTransferFee(
-      $grpc.ServiceCall call, $29.GetTransferFeeRequest request);
-  $async.Future<$29.GetDailyUsageResponse> getDailyUsage(
-      $grpc.ServiceCall call, $29.GetDailyUsageRequest request);
-  $async.Future<$29.GetExchangeRateResponse> getExchangeRate(
-      $grpc.ServiceCall call, $29.GetExchangeRateRequest request);
-  $async.Future<$29.HandleTransferWebhookResponse> handleTransferWebhook(
-      $grpc.ServiceCall call, $29.HandleTransferWebhookRequest request);
-  $async.Future<$29.PayPlatformFeeResponse> payPlatformFee(
-      $grpc.ServiceCall call, $29.PayPlatformFeeRequest request);
-  $async.Future<$29.RefundFromPlatformWalletResponse> refundFromPlatformWallet(
-      $grpc.ServiceCall call, $29.RefundFromPlatformWalletRequest request);
-  $async.Future<$29.GenerateQRTokenResponse> generateQRPaymentToken(
-      $grpc.ServiceCall call, $29.GenerateQRTokenRequest request);
-  $async.Future<$29.ValidateQRTokenResponse> validateQRPaymentToken(
-      $grpc.ServiceCall call, $29.ValidateQRTokenRequest request);
-  $async.Future<$29.GetBatchTransfersResponse> getBatchTransfers(
-      $grpc.ServiceCall call, $29.GetBatchTransfersRequest request);
-  $async.Future<$29.GetBatchTransferDetailResponse> getBatchTransferDetail(
-      $grpc.ServiceCall call, $29.GetBatchTransferDetailRequest request);
-  $async.Future<$29.VerifyMultiCountryIdentityResponse>
-      verifyMultiCountryIdentity($grpc.ServiceCall call,
-          $29.VerifyMultiCountryIdentityRequest request);
-  $async.Future<$29.GetKYCVerificationStatusResponse>
+          $0.GetTransferSuccessPredictionRequest request);
+
+  $async.Future<$0.InitiateTransferResponse> initiateDomesticTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.InitiateDomesticTransferRequest> $request) async {
+    return initiateDomesticTransfer($call, await $request);
+  }
+
+  $async.Future<$0.InitiateTransferResponse> initiateDomesticTransfer(
+      $grpc.ServiceCall call, $0.InitiateDomesticTransferRequest request);
+
+  $async.Future<$0.InitiateTransferResponse> initiateInternalTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.InitiateInternalTransferRequest> $request) async {
+    return initiateInternalTransfer($call, await $request);
+  }
+
+  $async.Future<$0.InitiateTransferResponse> initiateInternalTransfer(
+      $grpc.ServiceCall call, $0.InitiateInternalTransferRequest request);
+
+  $async.Future<$0.InitiateTransferResponse> initiateInternationalTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.InitiateInternationalTransferRequest> $request) async {
+    return initiateInternationalTransfer($call, await $request);
+  }
+
+  $async.Future<$0.InitiateTransferResponse> initiateInternationalTransfer(
+      $grpc.ServiceCall call, $0.InitiateInternationalTransferRequest request);
+
+  $async.Future<$0.InitiateTransferResponse> initiateUserTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.InitiateUserTransferRequest> $request) async {
+    return initiateUserTransfer($call, await $request);
+  }
+
+  $async.Future<$0.InitiateTransferResponse> initiateUserTransfer(
+      $grpc.ServiceCall call, $0.InitiateUserTransferRequest request);
+
+  $async.Future<$0.InitiateTransferResponse> initiatePhoneTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.InitiatePhoneTransferRequest> $request) async {
+    return initiatePhoneTransfer($call, await $request);
+  }
+
+  $async.Future<$0.InitiateTransferResponse> initiatePhoneTransfer(
+      $grpc.ServiceCall call, $0.InitiatePhoneTransferRequest request);
+
+  $async.Future<$0.GetTransferStatusResponse> getTransferStatus_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetTransferStatusRequest> $request) async {
+    return getTransferStatus($call, await $request);
+  }
+
+  $async.Future<$0.GetTransferStatusResponse> getTransferStatus(
+      $grpc.ServiceCall call, $0.GetTransferStatusRequest request);
+
+  $async.Future<$0.GetUserTransfersResponse> getUserTransfers_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetUserTransfersRequest> $request) async {
+    return getUserTransfers($call, await $request);
+  }
+
+  $async.Future<$0.GetUserTransfersResponse> getUserTransfers(
+      $grpc.ServiceCall call, $0.GetUserTransfersRequest request);
+
+  $async.Future<$0.GetTransferFeeResponse> getTransferFee_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetTransferFeeRequest> $request) async {
+    return getTransferFee($call, await $request);
+  }
+
+  $async.Future<$0.GetTransferFeeResponse> getTransferFee(
+      $grpc.ServiceCall call, $0.GetTransferFeeRequest request);
+
+  $async.Future<$0.GetDailyUsageResponse> getDailyUsage_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetDailyUsageRequest> $request) async {
+    return getDailyUsage($call, await $request);
+  }
+
+  $async.Future<$0.GetDailyUsageResponse> getDailyUsage(
+      $grpc.ServiceCall call, $0.GetDailyUsageRequest request);
+
+  $async.Future<$0.GetExchangeRateResponse> getExchangeRate_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetExchangeRateRequest> $request) async {
+    return getExchangeRate($call, await $request);
+  }
+
+  $async.Future<$0.GetExchangeRateResponse> getExchangeRate(
+      $grpc.ServiceCall call, $0.GetExchangeRateRequest request);
+
+  $async.Future<$0.HandleTransferWebhookResponse> handleTransferWebhook_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.HandleTransferWebhookRequest> $request) async {
+    return handleTransferWebhook($call, await $request);
+  }
+
+  $async.Future<$0.HandleTransferWebhookResponse> handleTransferWebhook(
+      $grpc.ServiceCall call, $0.HandleTransferWebhookRequest request);
+
+  $async.Future<$0.PayPlatformFeeResponse> payPlatformFee_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.PayPlatformFeeRequest> $request) async {
+    return payPlatformFee($call, await $request);
+  }
+
+  $async.Future<$0.PayPlatformFeeResponse> payPlatformFee(
+      $grpc.ServiceCall call, $0.PayPlatformFeeRequest request);
+
+  $async.Future<$0.RefundFromPlatformWalletResponse>
+      refundFromPlatformWallet_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.RefundFromPlatformWalletRequest> $request) async {
+    return refundFromPlatformWallet($call, await $request);
+  }
+
+  $async.Future<$0.RefundFromPlatformWalletResponse> refundFromPlatformWallet(
+      $grpc.ServiceCall call, $0.RefundFromPlatformWalletRequest request);
+
+  $async.Future<$0.GenerateQRTokenResponse> generateQRPaymentToken_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GenerateQRTokenRequest> $request) async {
+    return generateQRPaymentToken($call, await $request);
+  }
+
+  $async.Future<$0.GenerateQRTokenResponse> generateQRPaymentToken(
+      $grpc.ServiceCall call, $0.GenerateQRTokenRequest request);
+
+  $async.Future<$0.ValidateQRTokenResponse> validateQRPaymentToken_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ValidateQRTokenRequest> $request) async {
+    return validateQRPaymentToken($call, await $request);
+  }
+
+  $async.Future<$0.ValidateQRTokenResponse> validateQRPaymentToken(
+      $grpc.ServiceCall call, $0.ValidateQRTokenRequest request);
+
+  $async.Future<$0.GetBatchTransfersResponse> getBatchTransfers_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetBatchTransfersRequest> $request) async {
+    return getBatchTransfers($call, await $request);
+  }
+
+  $async.Future<$0.GetBatchTransfersResponse> getBatchTransfers(
+      $grpc.ServiceCall call, $0.GetBatchTransfersRequest request);
+
+  $async.Future<$0.GetBatchTransferDetailResponse> getBatchTransferDetail_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetBatchTransferDetailRequest> $request) async {
+    return getBatchTransferDetail($call, await $request);
+  }
+
+  $async.Future<$0.GetBatchTransferDetailResponse> getBatchTransferDetail(
+      $grpc.ServiceCall call, $0.GetBatchTransferDetailRequest request);
+
+  $async.Future<$0.VerifyMultiCountryIdentityResponse>
+      verifyMultiCountryIdentity_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.VerifyMultiCountryIdentityRequest> $request) async {
+    return verifyMultiCountryIdentity($call, await $request);
+  }
+
+  $async.Future<$0.VerifyMultiCountryIdentityResponse>
+      verifyMultiCountryIdentity(
+          $grpc.ServiceCall call, $0.VerifyMultiCountryIdentityRequest request);
+
+  $async.Future<$0.GetKYCVerificationStatusResponse>
+      getIdentityVerificationStatus_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetKYCVerificationStatusRequest> $request) async {
+    return getIdentityVerificationStatus($call, await $request);
+  }
+
+  $async.Future<$0.GetKYCVerificationStatusResponse>
       getIdentityVerificationStatus(
-          $grpc.ServiceCall call, $29.GetKYCVerificationStatusRequest request);
-  $async.Future<$29.CreateRecurringTransferResponse> createRecurringTransfer(
-      $grpc.ServiceCall call, $29.CreateRecurringTransferRequest request);
-  $async.Future<$29.GetRecurringTransfersResponse> getRecurringTransfers(
-      $grpc.ServiceCall call, $29.GetRecurringTransfersRequest request);
-  $async.Future<$29.GetRecurringTransferResponse> getRecurringTransfer(
-      $grpc.ServiceCall call, $29.GetRecurringTransferRequest request);
-  $async.Future<$29.UpdateRecurringTransferResponse> updateRecurringTransfer(
-      $grpc.ServiceCall call, $29.UpdateRecurringTransferRequest request);
-  $async.Future<$29.DeleteRecurringTransferResponse> deleteRecurringTransfer(
-      $grpc.ServiceCall call, $29.DeleteRecurringTransferRequest request);
-  $async.Future<$29.GetRecurringTransferExecutionsResponse>
+          $grpc.ServiceCall call, $0.GetKYCVerificationStatusRequest request);
+
+  $async.Future<$0.CreateRecurringTransferResponse> createRecurringTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateRecurringTransferRequest> $request) async {
+    return createRecurringTransfer($call, await $request);
+  }
+
+  $async.Future<$0.CreateRecurringTransferResponse> createRecurringTransfer(
+      $grpc.ServiceCall call, $0.CreateRecurringTransferRequest request);
+
+  $async.Future<$0.GetRecurringTransfersResponse> getRecurringTransfers_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetRecurringTransfersRequest> $request) async {
+    return getRecurringTransfers($call, await $request);
+  }
+
+  $async.Future<$0.GetRecurringTransfersResponse> getRecurringTransfers(
+      $grpc.ServiceCall call, $0.GetRecurringTransfersRequest request);
+
+  $async.Future<$0.GetRecurringTransferResponse> getRecurringTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetRecurringTransferRequest> $request) async {
+    return getRecurringTransfer($call, await $request);
+  }
+
+  $async.Future<$0.GetRecurringTransferResponse> getRecurringTransfer(
+      $grpc.ServiceCall call, $0.GetRecurringTransferRequest request);
+
+  $async.Future<$0.UpdateRecurringTransferResponse> updateRecurringTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateRecurringTransferRequest> $request) async {
+    return updateRecurringTransfer($call, await $request);
+  }
+
+  $async.Future<$0.UpdateRecurringTransferResponse> updateRecurringTransfer(
+      $grpc.ServiceCall call, $0.UpdateRecurringTransferRequest request);
+
+  $async.Future<$0.DeleteRecurringTransferResponse> deleteRecurringTransfer_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DeleteRecurringTransferRequest> $request) async {
+    return deleteRecurringTransfer($call, await $request);
+  }
+
+  $async.Future<$0.DeleteRecurringTransferResponse> deleteRecurringTransfer(
+      $grpc.ServiceCall call, $0.DeleteRecurringTransferRequest request);
+
+  $async.Future<$0.GetRecurringTransferExecutionsResponse>
+      getRecurringTransferExecutions_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetRecurringTransferExecutionsRequest>
+              $request) async {
+    return getRecurringTransferExecutions($call, await $request);
+  }
+
+  $async.Future<$0.GetRecurringTransferExecutionsResponse>
       getRecurringTransferExecutions($grpc.ServiceCall call,
-          $29.GetRecurringTransferExecutionsRequest request);
-  $async.Future<$29.GetRecurringTransfersByRecipientResponse>
+          $0.GetRecurringTransferExecutionsRequest request);
+
+  $async.Future<$0.GetRecurringTransfersByRecipientResponse>
+      getRecurringTransfersByRecipient_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetRecurringTransfersByRecipientRequest>
+              $request) async {
+    return getRecurringTransfersByRecipient($call, await $request);
+  }
+
+  $async.Future<$0.GetRecurringTransfersByRecipientResponse>
       getRecurringTransfersByRecipient($grpc.ServiceCall call,
-          $29.GetRecurringTransfersByRecipientRequest request);
-  $async.Future<$29.SavedBatch> saveBatchDraft(
-      $grpc.ServiceCall call, $29.SaveBatchDraftRequest request);
-  $async.Future<$29.ListSavedBatchesResponse> listSavedBatches(
-      $grpc.ServiceCall call, $29.ListSavedBatchesRequest request);
-  $async.Future<$29.SavedBatch> getSavedBatch(
-      $grpc.ServiceCall call, $29.GetSavedBatchRequest request);
-  $async.Future<$29.SavedBatch> updateSavedBatch(
-      $grpc.ServiceCall call, $29.UpdateSavedBatchRequest request);
-  $async.Future<$29.DeleteSavedBatchResponse> deleteSavedBatch(
-      $grpc.ServiceCall call, $29.DeleteSavedBatchRequest request);
-  $async.Future<$29.SavedBatch> addSavedBatchItem(
-      $grpc.ServiceCall call, $29.AddSavedBatchItemRequest request);
-  $async.Future<$29.SavedBatch> removeSavedBatchItem(
-      $grpc.ServiceCall call, $29.RemoveSavedBatchItemRequest request);
-  $async.Future<$29.SavedBatch> updateSavedBatchItemAmount(
-      $grpc.ServiceCall call, $29.UpdateSavedBatchItemAmountRequest request);
-  $async.Future<$29.SavedBatch> applyCollectiveAmount(
-      $grpc.ServiceCall call, $29.ApplyCollectiveAmountRequest request);
-  $async.Future<$29.BatchTransferResponse> executeFromSavedBatch(
-      $grpc.ServiceCall call, $29.ExecuteFromSavedBatchRequest request);
-  $async.Future<$29.BatchReceipt> getBatchReceipt(
-      $grpc.ServiceCall call, $29.GetBatchReceiptRequest request);
-  $async.Future<$29.BatchItemReceipt> getBatchItemReceipt(
-      $grpc.ServiceCall call, $29.GetBatchItemReceiptRequest request);
+          $0.GetRecurringTransfersByRecipientRequest request);
+
+  $async.Future<$0.SavedBatch> saveBatchDraft_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.SaveBatchDraftRequest> $request) async {
+    return saveBatchDraft($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> saveBatchDraft(
+      $grpc.ServiceCall call, $0.SaveBatchDraftRequest request);
+
+  $async.Future<$0.ListSavedBatchesResponse> listSavedBatches_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListSavedBatchesRequest> $request) async {
+    return listSavedBatches($call, await $request);
+  }
+
+  $async.Future<$0.ListSavedBatchesResponse> listSavedBatches(
+      $grpc.ServiceCall call, $0.ListSavedBatchesRequest request);
+
+  $async.Future<$0.SavedBatch> getSavedBatch_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.GetSavedBatchRequest> $request) async {
+    return getSavedBatch($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> getSavedBatch(
+      $grpc.ServiceCall call, $0.GetSavedBatchRequest request);
+
+  $async.Future<$0.SavedBatch> updateSavedBatch_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.UpdateSavedBatchRequest> $request) async {
+    return updateSavedBatch($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> updateSavedBatch(
+      $grpc.ServiceCall call, $0.UpdateSavedBatchRequest request);
+
+  $async.Future<$0.DeleteSavedBatchResponse> deleteSavedBatch_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DeleteSavedBatchRequest> $request) async {
+    return deleteSavedBatch($call, await $request);
+  }
+
+  $async.Future<$0.DeleteSavedBatchResponse> deleteSavedBatch(
+      $grpc.ServiceCall call, $0.DeleteSavedBatchRequest request);
+
+  $async.Future<$0.SavedBatch> addSavedBatchItem_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.AddSavedBatchItemRequest> $request) async {
+    return addSavedBatchItem($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> addSavedBatchItem(
+      $grpc.ServiceCall call, $0.AddSavedBatchItemRequest request);
+
+  $async.Future<$0.SavedBatch> removeSavedBatchItem_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.RemoveSavedBatchItemRequest> $request) async {
+    return removeSavedBatchItem($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> removeSavedBatchItem(
+      $grpc.ServiceCall call, $0.RemoveSavedBatchItemRequest request);
+
+  $async.Future<$0.SavedBatch> updateSavedBatchItemAmount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateSavedBatchItemAmountRequest> $request) async {
+    return updateSavedBatchItemAmount($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> updateSavedBatchItemAmount(
+      $grpc.ServiceCall call, $0.UpdateSavedBatchItemAmountRequest request);
+
+  $async.Future<$0.SavedBatch> applyCollectiveAmount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ApplyCollectiveAmountRequest> $request) async {
+    return applyCollectiveAmount($call, await $request);
+  }
+
+  $async.Future<$0.SavedBatch> applyCollectiveAmount(
+      $grpc.ServiceCall call, $0.ApplyCollectiveAmountRequest request);
+
+  $async.Future<$0.BatchTransferResponse> executeFromSavedBatch_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ExecuteFromSavedBatchRequest> $request) async {
+    return executeFromSavedBatch($call, await $request);
+  }
+
+  $async.Future<$0.BatchTransferResponse> executeFromSavedBatch(
+      $grpc.ServiceCall call, $0.ExecuteFromSavedBatchRequest request);
+
+  $async.Future<$0.BatchReceipt> getBatchReceipt_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.GetBatchReceiptRequest> $request) async {
+    return getBatchReceipt($call, await $request);
+  }
+
+  $async.Future<$0.BatchReceipt> getBatchReceipt(
+      $grpc.ServiceCall call, $0.GetBatchReceiptRequest request);
+
+  $async.Future<$0.BatchItemReceipt> getBatchItemReceipt_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetBatchItemReceiptRequest> $request) async {
+    return getBatchItemReceipt($call, await $request);
+  }
+
+  $async.Future<$0.BatchItemReceipt> getBatchItemReceipt(
+      $grpc.ServiceCall call, $0.GetBatchItemReceiptRequest request);
 }

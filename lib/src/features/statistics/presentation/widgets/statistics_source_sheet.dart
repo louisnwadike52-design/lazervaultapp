@@ -103,7 +103,7 @@ class _OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Color(0xFF3B82F6);
+    const accent = Color(0xFF4E03D0);
     return GestureDetector(
       onTap: onTap,
       child: Container(

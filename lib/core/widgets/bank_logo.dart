@@ -54,6 +54,11 @@ class BankLogo extends StatelessWidget {
   /// (direct or via the Flutterwave→logo alias map), [bankName] when it stores a
   /// bare code, and finally a name→code lookup against the static bank list.
   String? _resolveLogoAsset() {
+    // Internal Lazervault transfers show OUR logo rather than a bank logo/tile.
+    if (bankName.toLowerCase().contains('lazervault') ||
+        (bankCode ?? '').toLowerCase().contains('lazervault')) {
+      return 'assets/images/logo.png';
+    }
     final byCode = bundledBankLogoAsset(bankCode);
     if (byCode != null) return byCode;
     final byNameAsCode = bundledBankLogoAsset(bankName.trim());

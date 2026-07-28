@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -88,11 +88,31 @@ class SprayMeWebSocketService {
     _reconnectAttempts = 0;
     _currentAccessToken = accessToken;
 
-    final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final port = int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088') ?? 8088;
-    // Port 443 == public tunnel which terminates TLS → must speak wss.
-    // Loopback dev (port 8088) keeps plain ws as before.
-    final tlsTunnel = port == 443;
+    // Prefer LIFESTYLE_GATEWAY_URL (the cloudflare-aware base, e.g.
+    // https://dev.lazervault.app/api/v1) to derive scheme/host/port — same as
+    // the Plan My Day email WS. Deriving from LIFESTYLE_GATEWAY_HOST/PORT
+    // instead defaulted to <host>:8088 (plain ws), which the public tunnel does
+    // NOT expose (only 443/wss) → the realtime gift/live plane never connected
+    // on real devices. Fall back to HOST/PORT only when the URL is unset (local).
+    String host;
+    int? port;
+    bool tlsTunnel;
+    final gwUrl = dotenv.env['LIFESTYLE_GATEWAY_URL'];
+    if (gwUrl != null && gwUrl.isNotEmpty) {
+      final u = Uri.parse(gwUrl);
+      host = u.host;
+      tlsTunnel = u.scheme == 'https';
+      // Omit the port for the public TLS tunnel (443) so it's wss://host/…;
+      // keep an explicit non-standard port for local dev.
+      port = u.hasPort ? u.port : (tlsTunnel ? null : 8088);
+    } else {
+      host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??
+          dotenv.env['PAYMENT_GRPC_HOST'] ??
+          endpointRegistry.grpcHost;
+      final p = int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088') ?? 8088;
+      tlsTunnel = p == 443;
+      port = tlsTunnel ? null : p;
+    }
 
     final wsUrl = Uri(
       scheme: tlsTunnel ? 'wss' : 'ws',
@@ -113,6 +133,10 @@ class SprayMeWebSocketService {
         headers: {
           'Authorization': 'Bearer $accessToken',
         },
+        // Fail fast instead of hanging forever if the gateway is unreachable, and
+        // let the socket detect dead connections so onDone fires and we reconnect.
+        connectTimeout: const Duration(seconds: 15),
+        pingInterval: const Duration(seconds: 30),
       );
     }
 
@@ -176,7 +200,11 @@ class SprayMeWebSocketService {
       if (event.type.isNotEmpty && !_eventController.isClosed) {
         _eventController.add(event);
       }
-    } catch (_) {}
+    } catch (e) {
+      // Malformed frame — don't crash the socket, but surface it in debug builds
+      // rather than swallowing silently.
+      debugPrint('SprayMe WS: failed to parse message: $e');
+    }
   }
 
   void _handleError(dynamic error) {

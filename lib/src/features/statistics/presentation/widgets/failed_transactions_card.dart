@@ -145,7 +145,7 @@ class _FailedTransactionsCardState extends State<FailedTransactionsCard> {
                           ? 'Show less'
                           : 'Show all ${widget.transactions.length} issues',
                       style: TextStyle(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -155,7 +155,7 @@ class _FailedTransactionsCardState extends State<FailedTransactionsCard> {
                       _isExpanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       size: 16.sp,
                     ),
                   ],
@@ -187,7 +187,7 @@ class _FailedTransactionsCardState extends State<FailedTransactionsCard> {
     } else if (totalAmount > 0) {
       insight = 'Review these transactions to understand failure patterns. Contact support if issues persist.';
       icon = Icons.lightbulb_outline;
-      color = const Color(0xFF3B82F6);
+      color = const Color(0xFF4E03D0);
     } else {
       return const SizedBox.shrink();
     }

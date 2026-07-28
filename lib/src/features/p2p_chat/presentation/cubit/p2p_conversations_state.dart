@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_conversation_entity.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/entities/connection_birthday_entity.dart';
 
 sealed class P2PConversationsState {}
 
@@ -11,12 +12,14 @@ class P2PConversationsLoaded extends P2PConversationsState {
   final List<P2PConversationEntity> incomingRequests;
   final int totalUnread;
   final int requestCount;
+  final List<ConnectionBirthdayEntity> upcomingBirthdays;
 
   P2PConversationsLoaded({
     required this.conversations,
     this.incomingRequests = const [],
     this.totalUnread = 0,
     this.requestCount = 0,
+    this.upcomingBirthdays = const [],
   });
 }
 

@@ -208,6 +208,17 @@ class _VoiceNotePlayer extends StatelessWidget {
     );
   }
 
+  void _seekAt(double localX, double width) {
+    if (width <= 0) return;
+    ChatVoiceNotePlayer.instance.seekTo(
+      _noteId,
+      localX / width,
+      localPath: localMediaPath,
+      mediaUrl: mediaUrl,
+      fallbackDurationMs: audioDurationMs,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final player = ChatVoiceNotePlayer.instance;
@@ -222,12 +233,31 @@ class _VoiceNotePlayer extends StatelessWidget {
           builder: (context, currentId, _) {
             final isCurrent = currentId == _noteId;
             if (!isCurrent) {
-              return _buildRow(
-                accentColor: accentColor,
-                isPlaying: false,
-                progress: 0.0,
-                timeLabel: _formatDuration(_fallbackDuration),
-                hasError: false,
+              // Not the active note. Show the real clip length: prefer the
+              // duration the sender provided, else the lazily-probed value from
+              // the cache (fixes the "00:00 until played" bug on received
+              // notes). Trigger a one-time probe when we still have nothing.
+              return ValueListenableBuilder<Duration?>(
+                valueListenable:
+                    VoiceNoteDurationCache.instance.listenable(_noteId),
+                builder: (context, cached, _) {
+                  var dur = _fallbackDuration;
+                  if (dur <= Duration.zero && cached != null) dur = cached;
+                  if (dur <= Duration.zero) {
+                    VoiceNoteDurationCache.instance.probe(
+                      _noteId,
+                      localPath: localMediaPath,
+                      mediaUrl: mediaUrl,
+                    );
+                  }
+                  return _buildRow(
+                    accentColor: accentColor,
+                    isPlaying: false,
+                    progress: 0.0,
+                    timeLabel: _formatDuration(dur),
+                    hasError: false,
+                  );
+                },
               );
             }
             // This is the active note — reflect error / live position.
@@ -320,14 +350,24 @@ class _VoiceNotePlayer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 24,
-                width: 140,
-                child: CustomPaint(
-                  painter: _WaveformPainter(
-                    progress: progress,
-                    activeColor: accentColor,
-                    inactiveColor: const Color(0xFF4B5563),
+              // Tap a position on the waveform to seek there (maps the local
+              // x-offset to a 0..1 fraction, loading the note first if it isn't
+              // active). Uses onTapUp — NOT a drag handler — so a horizontal
+              // drag on the waveform is NOT consumed here and bubbles up to the
+              // bubble's swipe-to-reply gesture. Disabled when the clip errored.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp:
+                    hasError ? null : (d) => _seekAt(d.localPosition.dx, 140),
+                child: SizedBox(
+                  height: 24,
+                  width: 140,
+                  child: CustomPaint(
+                    painter: _WaveformPainter(
+                      progress: progress,
+                      activeColor: accentColor,
+                      inactiveColor: const Color(0xFF4B5563),
+                    ),
                   ),
                 ),
               ),

@@ -113,7 +113,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
   /// [page] - Page number (0-indexed)
   /// [pageSize] - Number of contacts per page
   /// [searchQuery] - Optional search filter
-  /// [onlyLazervaultUsers] - If true, only returns contacts that are LazerVault users
+  /// [onlyLazervaultUsers] - If true, only returns contacts that are Lazervault users
   Future<void> getSyncedContacts({
     int page = 0,
     int pageSize = 50,
@@ -148,7 +148,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     }
   }
 
-  /// Finds LazerVault users from contacts
+  /// Finds Lazervault users from contacts
   ///
   /// [phoneNumbers] - List of phone numbers to match
   /// [emails] - List of email addresses to match
@@ -176,7 +176,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     }
   }
 
-  /// Finds LazerVault users from all device contacts
+  /// Finds Lazervault users from all device contacts
   Future<void> findLazerVaultUsersFromDeviceContacts() async {
     try {
       if (isClosed) return;

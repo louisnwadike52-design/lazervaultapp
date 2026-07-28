@@ -9,7 +9,12 @@ import 'package:uuid/uuid.dart';
 /// Abstract class defining transaction PIN operations
 abstract class ITransactionPinService {
   /// Check if user has a transaction PIN set up
-  Future<bool> checkUserHasPin();
+  Future<bool> checkUserHasPin({bool forceRefresh = false});
+
+  /// Clear the cached "has PIN" flag. MUST be called on logout (and after a
+  /// server-side PIN clear) so a stale cached `true` can't skip a genuinely
+  /// required setup for the next session / user.
+  void resetPinCache();
 
   /// Verify transaction PIN before payment
   Future<TransactionPinVerificationResult> verifyPin({
@@ -83,6 +88,11 @@ class TransactionPinVerificationResult {
   final bool isLockedUntil;
   final DateTime? lockedUntil;
 
+  /// True when the server reports the user has NO transaction PIN (e.g. an admin
+  /// cleared it). This is NOT a wrong-PIN attempt — callers must route the user
+  /// to PIN SETUP rather than count it as a failure or claim the PIN is locked.
+  final bool noPinSet;
+
   TransactionPinVerificationResult({
     required this.success,
     this.message,
@@ -91,7 +101,19 @@ class TransactionPinVerificationResult {
     this.remainingAttempts = 3,
     this.isLocked = false,
     this.lockedUntil,
+    this.noPinSet = false,
   }) : isLockedUntil = lockedUntil != null && lockedUntil.isAfter(DateTime.now());
+
+  /// Server says the user has no PIN (cleared / never set) — route to setup.
+  factory TransactionPinVerificationResult.noPinSet({String? message}) {
+    return TransactionPinVerificationResult(
+      success: false,
+      noPinSet: true,
+      message: message ??
+          'Your transaction PIN needs to be set up. Please create a new PIN.',
+      remainingAttempts: 0,
+    );
+  }
 
   factory TransactionPinVerificationResult.success({
     required String token,
@@ -187,6 +209,16 @@ class TransactionPinService implements ITransactionPinService {
   final TransactionPinServiceClient _client;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
+  // Once we've confirmed the user has a PIN, cache it for the session — a PIN
+  // doesn't disappear, so we can skip the (slow) gRPC check on subsequent
+  // payments. This is what makes the PIN sheet appear instantly after the
+  // first check / pre-warm. Reset on PIN clear/logout via [resetPinCache].
+  bool _hasPinConfirmed = false;
+
+  /// Clear the cached "has PIN" flag (call on logout / PIN removal).
+  @override
+  void resetPinCache() => _hasPinConfirmed = false;
+
   TransactionPinService({
     required TransactionPinServiceClient client,
     required GrpcCallOptionsHelper callOptionsHelper,
@@ -269,10 +301,14 @@ class TransactionPinService implements ITransactionPinService {
   }
 
   @override
-  Future<bool> checkUserHasPin() async {
+  Future<bool> checkUserHasPin({bool forceRefresh = false}) async {
+    // Fast path: already confirmed this session — no network round-trip.
+    // forceRefresh bypasses the cache (used after a login / PIN-reset enforcement
+    // so a stale "true" can't skip a genuinely-required setup).
+    if (_hasPinConfirmed && !forceRefresh) return true;
     try {
       final userId = await _getUserId();
-      print('[TransactionPinService] checkUserHasPin for userId: $userId');
+      print('[TransactionPinService] checkUserHasPin for userId: $userId (forceRefresh=$forceRefresh)');
 
       final request = CheckUserHasPinRequest()..userId = userId;
 
@@ -286,6 +322,9 @@ class TransactionPinService implements ITransactionPinService {
       }));
 
       print('[TransactionPinService] checkUserHasPin response: hasPin=${response.hasPin}, isActive=${response.isActive}');
+      // Keep the cache authoritative in BOTH directions so a forceRefresh after a
+      // reset flips a stale true → false (and vice-versa).
+      _hasPinConfirmed = response.hasPin;
       return response.hasPin;
     } on GrpcError catch (e) {
       print('[TransactionPinService] gRPC Error checking PIN: ${e.codeName} - ${e.message}');
@@ -327,6 +366,20 @@ class TransactionPinService implements ITransactionPinService {
       }));
 
       if (!response.success) {
+        // "No PIN set up" (e.g. an admin cleared it) comes back as a NORMAL
+        // response (success=false, not locked), NOT a gRPC error — so detect it
+        // here and signal setup, not a failed attempt. Also invalidate the
+        // session cache so checkUserHasPin() stops fast-pathing to true.
+        final msg = response.message.toLowerCase();
+        if (!response.isLocked &&
+            (msg.contains('does not have a pin') ||
+                msg.contains('no pin') ||
+                msg.contains('not set up') ||
+                msg.contains('pin needs to be set'))) {
+          _hasPinConfirmed = false;
+          return TransactionPinVerificationResult.noPinSet(message: response.message);
+        }
+
         // Check if PIN is locked
         if (response.isLocked) {
           return TransactionPinVerificationResult.locked(
@@ -349,12 +402,12 @@ class TransactionPinService implements ITransactionPinService {
     } on GrpcError catch (e) {
       print('gRPC Error verifying PIN: $e');
 
-      // Handle specific error codes
+      // Handle specific error codes. A NOT_FOUND means the user has no PIN
+      // (e.g. an admin cleared it) — signal setup, not a generic failure, and
+      // clear the session cache so checkUserHasPin() stops returning stale true.
       if (e.code == StatusCode.notFound) {
-        return TransactionPinVerificationResult.failure(
-          message: 'Transaction PIN not set up. Please create a PIN first.',
-          remainingAttempts: 0,
-        );
+        _hasPinConfirmed = false;
+        return TransactionPinVerificationResult.noPinSet();
       }
 
       throw Exception('Failed to verify PIN: ${e.message ?? "Unknown error"}');
@@ -425,6 +478,10 @@ class TransactionPinService implements ITransactionPinService {
       });
 
       print('[TransactionPinService] createPin response: success=${response.success}, message=${response.message}');
+      // A PIN now exists — warm the session cache so the very next PIN-gated
+      // action (e.g. the payment we bounced out of, or a resumed login flow)
+      // doesn't need another round-trip to discover it.
+      if (response.success) _hasPinConfirmed = true;
       return response.success;
     } on GrpcError catch (e) {
       // RE-THROW the GrpcError unchanged so the caller can branch on

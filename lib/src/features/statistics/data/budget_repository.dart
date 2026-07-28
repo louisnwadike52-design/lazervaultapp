@@ -1,4 +1,5 @@
 import 'package:fixnum/fixnum.dart';
+import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/generated/statistics.pbgrpc.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/core/services/account_manager.dart';
@@ -273,13 +274,37 @@ class BudgetRepository {
     });
   }
 
-  /// Update financial goal progress (add contribution)
+  /// Update financial goal progress. A positive [amountToAdd] is a wallet-
+  /// debited contribution (requires [pinToken] + [pinTxnId] from the device PIN
+  /// sheet); a negative amount is a withdrawal back to the wallet (no PIN).
+  ///
+  /// The PIN token, its transaction id, and the account to move money on ride
+  /// as gRPC metadata (same shape crypto swaps use) so statistics-service can
+  /// validate + debit without a proto change.
   Future<pb.UpdateFinancialGoalProgressResponse> updateFinancialGoalProgress({
     required String goalId,
     required double amountToAdd,
+    String? pinToken,
+    String? pinTxnId,
+    String? accountId,
   }) async {
     return _callOptionsHelper.executeWithTokenRotation(() async {
-      final callOptions = await _callOptionsHelper.withAuth();
+      var callOptions = await _callOptionsHelper.withAuth();
+      final metadata = <String, String>{};
+      final resolvedAccount = accountId ?? _accountManager.activeAccountId;
+      if (resolvedAccount != null && resolvedAccount.isNotEmpty) {
+        metadata['x-account-id'] = resolvedAccount;
+      }
+      if (pinToken != null && pinToken.isNotEmpty) {
+        metadata['x-transaction-pin'] = pinToken;
+      }
+      if (pinTxnId != null && pinTxnId.isNotEmpty) {
+        metadata['x-transaction-id'] = pinTxnId;
+      }
+      if (metadata.isNotEmpty) {
+        callOptions = callOptions.mergedWith(CallOptions(metadata: metadata));
+      }
+
       final request = pb.UpdateFinancialGoalProgressRequest()
         ..goalId = goalId
         ..amountToAdd = amountToAdd;

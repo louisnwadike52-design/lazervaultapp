@@ -45,8 +45,7 @@ abstract class CryptoRepository {
     required String transactionPin,
     String? fiatCurrency,
   });
-  Future<List<CryptoTransaction>> getTransactions();
-  Future<void> toggleFavorite(String cryptoId);
+  Future<List<CryptoTransaction>> getTransactions({int limit = 50, int offset = 0});
   Future<GlobalMarketData> getGlobalMarketData();
   Future<List<CryptoNews>> getCryptoNews(String cryptoSymbol);
 

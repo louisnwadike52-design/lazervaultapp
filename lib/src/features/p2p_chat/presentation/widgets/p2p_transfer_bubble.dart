@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -72,6 +73,9 @@ class P2PTransferBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSent = _isSentByMe;
     final isRequest = message.isTransferRequest;
+    // A future-dated send that hasn't fired yet — you always schedule your OWN
+    // send, so this only applies to outgoing bubbles.
+    final isScheduled = message.transferStatus?.toLowerCase() == 'scheduled';
 
     final Color iconColor;
     final IconData icon;
@@ -81,6 +85,10 @@ class P2PTransferBubble extends StatelessWidget {
       iconColor = const Color(0xFFFB923C); // orange
       icon = Icons.request_page_outlined;
       label = isMe ? 'Money Requested' : 'Payment Request';
+    } else if (isScheduled) {
+      iconColor = const Color(0xFFF59E0B); // amber
+      icon = Icons.schedule;
+      label = 'Money Scheduled';
     } else if (isSent) {
       iconColor = const Color(0xFFEF4444); // red
       icon = Icons.arrow_upward;
@@ -115,12 +123,20 @@ class P2PTransferBubble extends StatelessWidget {
       child: GestureDetector(
         onTap: isRequest ? null : () => _showTransferDetailsSheet(context),
         child: Container(
-          constraints: BoxConstraints(maxWidth: 260.w),
+          constraints: BoxConstraints(maxWidth: 230.w),
           margin: EdgeInsets.symmetric(vertical: 4.h),
-          padding: EdgeInsets.all(12.w),
+          padding: EdgeInsets.all(10.w),
           decoration: BoxDecoration(
             color: const Color(0xFF2D2D2D),
-            borderRadius: BorderRadius.circular(16.r),
+            // Same per-party "tail" as the text bubble: the OUTER bottom corner
+            // (right for the sender, left for the receiver) is tucked in so the
+            // bubble reads as pointing to its owner. Top + inner-bottom stay round.
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16.r),
+              topRight: Radius.circular(16.r),
+              bottomLeft: Radius.circular(isSent ? 16.r : 4.r),
+              bottomRight: Radius.circular(isSent ? 4.r : 16.r),
+            ),
             border: Border.all(
               color: iconColor.withOpacity(0.3),
               width: 1,
@@ -131,15 +147,15 @@ class P2PTransferBubble extends StatelessWidget {
             children: [
               // Transfer icon
               Container(
-                width: 36.w,
-                height: 36.w,
+                width: 30.w,
+                height: 30.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: iconColor.withOpacity(0.15),
                 ),
-                child: Icon(icon, color: iconColor, size: 20.w),
+                child: Icon(icon, color: iconColor, size: 17.w),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 10.w),
               // Amount and label
               Flexible(
                 child: Column(
@@ -157,7 +173,7 @@ class P2PTransferBubble extends StatelessWidget {
                       formattedAmount,
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 18.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -182,7 +198,9 @@ class P2PTransferBubble extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4.r),
                             ),
                             child: Text(
-                              transferStatus,
+                              // Natural-cased ("Scheduled", not "scheduled").
+                              transferStatus[0].toUpperCase() +
+                                  transferStatus.substring(1),
                               style: GoogleFonts.inter(
                                 color: const Color(0xFFFB923C),
                                 fontSize: 9.sp,
@@ -370,17 +388,46 @@ class P2PTransferBubble extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Navigator.of(ctx).pop();
+                            // Legal-grade proof: "From"/"To" must carry real
+                            // FULL names (never "You"), since this receipt is
+                            // shareable evidence. Current user comes from the
+                            // auth cubit; the counterparty is the conversation
+                            // display name. P2P chat transfers are always
+                            // LazerVault→LazerVault (internal), so we surface
+                            // the same internal-wallet rail the direct receipt
+                            // shows — which also makes the "From" row render
+                            // (TransferProof gates it on sourceAccountInfo).
+                            String myName = 'You';
+                            try {
+                              final me = ctx
+                                  .read<AuthenticationCubit>()
+                                  .currentProfile
+                                  ?.user;
+                              if (me != null) {
+                                final full =
+                                    '${me.firstName} ${me.lastName}'.trim();
+                                if (full.isNotEmpty) myName = full;
+                              }
+                            } catch (_) {/* provider not in tree → keep 'You' */}
+                            final fromName = isSent ? myName : _displayName;
+                            final toName = isSent ? _displayName : myName;
                             Get.toNamed(
                               AppRoutes.transferProof,
                               arguments: <String, dynamic>{
                                 'amount': message.transferAmountMajor ?? 0,
                                 'currency': currency,
                                 'reference': ref ?? '',
-                                'recipientName':
-                                    isSent ? _displayName : 'You',
-                                'senderName': isSent ? 'You' : _displayName,
+                                'transferId': (ref != null && ref.isNotEmpty)
+                                    ? ref
+                                    : message.id,
+                                'recipientName': toName,
+                                'recipientBankName': 'Lazervault',
+                                'sourceAccountName': fromName,
+                                'sourceAccountInfo': 'Lazervault',
                                 'timestamp': message.createdAt,
                                 'status': statusLabel.toLowerCase(),
+                                'network': 'Lazervault Internal Transfer',
+                                'transferType': 'Internal Transfer',
                                 'type': isSent ? 'debit' : 'credit',
                               },
                             );

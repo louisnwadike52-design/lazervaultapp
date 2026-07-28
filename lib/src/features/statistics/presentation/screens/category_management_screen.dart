@@ -191,15 +191,15 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           child: Container(
             padding: EdgeInsets.all(12.r),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
                 Icon(Icons.info_outline,
-                    color: const Color(0xFF3B82F6), size: 18.sp),
+                    color: const Color(0xFF4E03D0), size: 18.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -394,7 +394,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+              borderSide: const BorderSide(color: Color(0xFF4E03D0)),
             ),
           ),
         ),

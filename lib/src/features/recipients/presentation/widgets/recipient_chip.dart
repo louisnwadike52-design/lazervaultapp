@@ -50,6 +50,19 @@ class RecipientChip extends StatelessWidget {
                         child: Image.network(
                           recipient.profileImageUrl!,
                           fit: BoxFit.cover,
+                          // Decode to ~display size (40.w circle), not full res,
+                          // so a batch of recipient chips doesn't hold large
+                          // bitmaps in the image cache.
+                          cacheWidth:
+                              (40 * MediaQuery.of(context).devicePixelRatio)
+                                  .round(),
+                          // Never leave a broken-image icon or an infinite
+                          // spinner if the avatar URL fails/stalls.
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person_outline,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            size: 24.sp,
+                          ),
                         ),
                       )
                     : Icon(

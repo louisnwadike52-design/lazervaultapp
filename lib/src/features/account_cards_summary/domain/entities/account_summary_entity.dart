@@ -61,6 +61,7 @@ class AccountSummaryEntity extends Equatable {
   final bool isUp; // Derived from trendPercentage > 0
   final bool isPrimary; // Whether this is the user's primary account
   final String? accountLabel; // Custom label for the account
+  final String status; // active | frozen | suspended | closed (from accounts-service)
 
   // Family account specific fields
   final bool isFamilyAccount;
@@ -101,6 +102,7 @@ class AccountSummaryEntity extends Equatable {
     required this.trendPercentage,
     this.isPrimary = false,
     this.accountLabel,
+    this.status = 'active',
     this.isFamilyAccount = false,
     this.familyTotalBalance,
     this.memberAllocatedBalance,
@@ -119,6 +121,18 @@ class AccountSummaryEntity extends Equatable {
 
   /// Whether there are pending funds
   bool get hasPendingBalance => pendingBalance > 0.01;
+
+  /// Whether this account is frozen/suspended and therefore CANNOT be used as a
+  /// transfer source. Mirrors the accounts-service enforcement (which rejects
+  /// debits/holds/transfers on `frozen`/`suspended` accounts), so the UI can
+  /// reflect the block before the user reaches the PIN step.
+  bool get isFrozen {
+    final s = status.toLowerCase();
+    if (s == 'frozen' || s == 'suspended') return true;
+    // Family cards carry their freeze state on familyStatus (the pool VA).
+    final fs = (familyStatus ?? '').toLowerCase();
+    return fs == 'frozen' || fs == 'suspended';
+  }
 
   /// Get the display name for the account type
   String get displayName => accountLabel ?? accountType;
@@ -151,6 +165,7 @@ class AccountSummaryEntity extends Equatable {
         isUp,
         isPrimary,
         accountLabel,
+        status,
         isFamilyAccount,
         familyTotalBalance,
         memberAllocatedBalance,
@@ -176,6 +191,7 @@ class AccountSummaryEntity extends Equatable {
     required int memberCount,
     required bool allowMemberContributions,
     required double trendPercentage,
+    String? name, // the family account's actual name (shown as the card subtitle)
     String? accountNumberLast4,
     String? familyAccountId,
     String? virtualAccountId,
@@ -202,6 +218,9 @@ class AccountSummaryEntity extends Equatable {
       availableBalance: displayBalance, // Match balance to avoid false pending
       accountNumberLast4: accountNumberLast4 ?? '••••',
       trendPercentage: trendPercentage,
+      // The account's real name — surfaced as the card subtitle. Null/blank
+      // falls back to the generic "Family Balance" label in the UI.
+      accountLabel: (name != null && name.trim().isNotEmpty) ? name.trim() : null,
       isFamilyAccount: true,
       familyTotalBalance: totalBalance,
       memberAllocatedBalance: memberAllocatedBalance,
@@ -229,6 +248,7 @@ class AccountSummaryEntity extends Equatable {
     double? trendPercentage,
     bool? isPrimary,
     String? accountLabel,
+    String? status,
     bool? isFamilyAccount,
     double? familyTotalBalance,
     double? memberAllocatedBalance,
@@ -255,6 +275,7 @@ class AccountSummaryEntity extends Equatable {
       trendPercentage: trendPercentage ?? this.trendPercentage,
       isPrimary: isPrimary ?? this.isPrimary,
       accountLabel: accountLabel ?? this.accountLabel,
+      status: status ?? this.status,
       isFamilyAccount: isFamilyAccount ?? this.isFamilyAccount,
       familyTotalBalance: familyTotalBalance ?? this.familyTotalBalance,
       memberAllocatedBalance: memberAllocatedBalance ?? this.memberAllocatedBalance,

@@ -4,10 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/two_factor_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/two_factor_widgets.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 
 /// Screen for managing two-factor authentication settings
 class TwoFactorSettingsScreen extends StatefulWidget {
@@ -20,8 +23,8 @@ class TwoFactorSettingsScreen extends StatefulWidget {
 class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
   TwoFactorStatus? _status;
   bool _isLoading = true;
-  bool _isDisabling = false;
-  String _disableCode = '';
+  TwoFactorMethod _selectedMethod = TwoFactorMethod.totp; // inline-enable picker
+  bool _enabling = false;
 
   @override
   void initState() {
@@ -56,83 +59,244 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     }
   }
 
-  Future<void> _disableTwoFactor() async {
-    if (_disableCode.length != 6) {
+  /// Enable the picked method entirely from THIS screen via bottom sheets — no
+  /// separate setup screen. TOTP: enable → show the QR/secret/backup-codes +
+  /// verify sheet. SMS/Email: enable (sends a code) → verify sheet. All finish
+  /// by reloading status in place.
+  Future<void> _enableSelected() async {
+    final cubit = context.read<AuthenticationCubit>();
+
+    // Authenticator (TOTP) enrollment is gated behind the transaction PIN: an
+    // enrolled authenticator can RESET the transaction PIN (see ForgotPinScreen),
+    // so enabling one must prove ownership of the current PIN first. This closes
+    // the loop where a hijacked session could enroll its own authenticator and
+    // use it to take over the PIN. Skipped when the user has no PIN yet (nothing
+    // to protect — they can set one later, and the reset path needs a PIN to
+    // exist anyway).
+    if (_selectedMethod == TwoFactorMethod.totp) {
+      final passed = await _confirmTransactionPinForEnrollment();
+      if (!mounted || !passed) return;
+    }
+
+    setState(() => _enabling = true);
+    final setup = await cubit.enableTwoFactor(_selectedMethod);
+    if (!mounted) return;
+    setState(() => _enabling = false);
+    if (!setup.verificationRequired) return; // failure (cubit already snackbar'd)
+
+    final bool? ok;
+    if (_selectedMethod == TwoFactorMethod.totp) {
+      // Authenticator: QR + manual key + backup codes + verify, all in one sheet.
+      ok = await TotpSetupSheet.show(
+        context,
+        setup: setup,
+        onVerify: (code) async {
+          final userId = cubit.currentProfile?.user.id ?? '';
+          return cubit.completeTwoFactorSetup(userId, code);
+        },
+      );
+    } else {
+      // SMS/Email: the code was just sent — collect + verify.
+      ok = await TwoFactorVerifySheet.show(
+        context,
+        subtitle: 'Enter the 6-digit code we just sent you to finish.',
+        onVerify: (code) async {
+          final userId = cubit.currentProfile?.user.id ?? '';
+          return cubit.completeTwoFactorSetup(userId, code);
+        },
+      );
+    }
+    if (ok == true && mounted) {
+      // Refresh the cached profile so `user.twoFactorEnabled/twoFactorMethod`
+      // reflect the new enrollment immediately — the transaction-PIN reset flow
+      // reads them to decide whether the authenticator option is available.
+      await cubit.refreshProfile();
+      if (mounted) await _loadStatus();
+    }
+  }
+
+  /// Gate authenticator enrollment behind the transaction PIN.
+  ///
+  /// Returns true if enrollment may proceed:
+  ///   • the user has no transaction PIN yet (nothing to confirm), OR
+  ///   • they entered the correct PIN (verified server-side via
+  ///     [ITransactionPinService.verifyPin], which also enforces lockout).
+  /// Returns false if they cancelled or failed verification.
+  Future<bool> _confirmTransactionPinForEnrollment() async {
+    final pinService = serviceLocator<ITransactionPinService>();
+
+    bool hasPin;
+    try {
+      // Bounded — a stalled check must not hang enrollment. Fail-open (treat as
+      // "no PIN" → skip the gate) on error/timeout, matching the existing catch.
+      hasPin = await pinService
+          .checkUserHasPin()
+          .timeout(const Duration(seconds: 10));
+    } catch (_) {
+      // If we can't determine PIN status, don't hard-block enabling 2FA.
+      hasPin = false;
+    }
+    if (!hasPin) return true;
+    if (!mounted) return false;
+
+    final pin = await showTransactionPinModal(
+      context,
+      title: 'Confirm your PIN',
+      message:
+          'Enter your transaction PIN to enable an authenticator app. You can '
+          'use it to reset your PIN later, so we confirm it now.',
+    );
+    if (pin == null || pin.length != 4) return false; // cancelled / dismissed
+
+    try {
+      // Bounded — on timeout the catch below fails CLOSED (aborts enrollment),
+      // which is correct: if we can't verify the PIN we must not enroll.
+      final res = await pinService
+          .verifyPin(
+            pin: pin,
+            transactionId: '2fa-enroll',
+            transactionType: '2fa_enrollment',
+            amount: 0,
+            currency: 'NGN',
+          )
+          .timeout(const Duration(seconds: 15));
+      if (res.success) return true;
+
+      if (mounted) {
+        final locked = res.isLocked || res.isLockedUntil;
+        _snack(
+          locked
+              ? 'Your PIN is temporarily locked. Try again later.'
+              : (res.remainingAttempts > 0
+                  ? 'Incorrect PIN. ${res.remainingAttempts} '
+                      '${res.remainingAttempts == 1 ? "attempt" : "attempts"} remaining.'
+                  : 'Incorrect PIN. Please try again.'),
+          isError: true,
+        );
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        _snack('Could not verify your PIN. Please try again.', isError: true);
+      }
+      return false;
+    }
+  }
+
+  void _snack(String message, {bool isError = false}) {
+    Get.snackbar(
+      isError ? 'Error' : 'Success',
+      message,
+      backgroundColor: isError ? Colors.redAccent : Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      margin: EdgeInsets.all(15.w),
+      borderRadius: 10.r,
+    );
+  }
+
+  /// Where the current 2FA code comes from, phrased for the active method — the
+  /// same wording used during setup ("from your authenticator app", etc.).
+  String _codeSourceHint(TwoFactorMethod method) {
+    switch (method) {
+      case TwoFactorMethod.totp:
+        return 'Enter the 6-digit code from your authenticator app to confirm.';
+      case TwoFactorMethod.sms:
+        return 'Enter the 6-digit code we sent to your phone to confirm.';
+      case TwoFactorMethod.email:
+        return 'Enter the 6-digit code we sent to your email to confirm.';
+    }
+  }
+
+  /// Confirm-disable via a proper 6-box PIN sheet (matching the setup UI) with
+  /// method-aware copy. On success flips the screen back to the disabled state.
+  Future<void> _showDisableDialog() async {
+    final cubit = context.read<AuthenticationCubit>();
+    final method = _status?.method ?? TwoFactorMethod.totp;
+    // SMS/Email: make sure a fresh code is on its way before we ask for it.
+    if (method != TwoFactorMethod.totp) {
+      await cubit.sendTwoFactorCode();
+    }
+    if (!mounted) return;
+
+    final ok = await TwoFactorVerifySheet.show(
+      context,
+      title: 'Confirm disable',
+      subtitle: _codeSourceHint(method),
+      actionLabel: 'Disable 2FA',
+      icon: Icons.gpp_bad_rounded,
+      iconColor: Colors.red,
+      destructive: true,
+      onVerify: (code) async {
+        try {
+          return await cubit.disableTwoFactor(code);
+        } catch (_) {
+          return false;
+        }
+      },
+    );
+
+    if (ok == true && mounted) {
+      // Keep the cached profile in sync so downstream flows (e.g. PIN reset)
+      // no longer offer the authenticator as a verification option.
+      await cubit.refreshProfile();
+      if (!mounted) return;
+      setState(() => _status = const TwoFactorStatus.disabled());
       Get.snackbar(
-        'Invalid Code',
-        'Please enter a valid 6-digit verification code',
-        backgroundColor: Colors.orange,
+        'Success',
+        'Two-factor authentication disabled',
+        backgroundColor: Colors.green,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: EdgeInsets.all(15.w),
         borderRadius: 10.r,
       );
-      return;
     }
+  }
 
-    final confirmed = await showDialog<bool>(
+  /// Only one 2FA method can be active at a time. If the user picks a different
+  /// method while one is enabled, explain and offer to disable the active one
+  /// first (which then reveals the picker so they can enable the new one).
+  Future<void> _promptSwitchMethod(TwoFactorMethod target) async {
+    final active = _status?.method;
+    if (active == null || active == target) return;
+
+    final proceed = await showDialog<bool>(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Disable Two-Factor Authentication?'),
-        content: const Text(
-          'Your account will be less secure without 2FA. Are you sure you want to disable it?',
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(Icons.swap_horiz_rounded, color: Colors.orange.shade800, size: 22.sp),
+            SizedBox(width: 10.w),
+            const Expanded(child: Text('Switch 2FA method?')),
+          ],
+        ),
+        content: Text(
+          '${active.displayName} is currently active. Only one method can be on at '
+          'a time — disable ${active.displayName} first, then set up ${target.displayName}.',
+          style: TextStyle(fontSize: 14.sp, height: 1.4),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('Disable'),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text('Disable ${active.displayName}'),
           ),
         ],
       ),
     );
+    if (proceed != true || !mounted) return;
 
-    if (confirmed != true) return;
-
-    if (!mounted) return;
-
-    setState(() => _isDisabling = true);
-
-    try {
-      final cubit = context.read<AuthenticationCubit>();
-      final success = await cubit.disableTwoFactor(_disableCode);
-
-      setState(() => _isDisabling = false);
-
-      if (success && mounted) {
-        setState(() {
-          _status = const TwoFactorStatus.disabled();
-          _disableCode = '';
-        });
-
-        Get.snackbar(
-          'Success',
-          'Two-factor authentication disabled',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-          margin: EdgeInsets.all(15.w),
-          borderRadius: 10.r,
-        );
-      }
-    } catch (e) {
-      setState(() => _isDisabling = false);
-      Get.snackbar(
-        'Error',
-        'Failed to disable 2FA: ${e.toString()}',
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: EdgeInsets.all(15.w),
-        borderRadius: 10.r,
-      );
+    // Run the disable flow; on success the screen shows the disabled state with
+    // the method picker, pre-selecting the target so the user just taps Enable.
+    await _showDisableDialog();
+    if (mounted && !(_status?.enabled ?? false)) {
+      setState(() => _selectedMethod = target);
     }
   }
 
@@ -161,88 +325,40 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
 
-    // Show code input dialog
-    final code = await _showCodeInputDialog(
-      'Enter Current 2FA Code',
-      'Enter your current 6-digit verification code to confirm:',
-    );
-
-    if (code == null) return;
-
-    if (!mounted) return;
-
-    try {
-      final cubit = context.read<AuthenticationCubit>();
-      final newCodes = await cubit.regenerateBackupCodes(code);
-
-      if (mounted) {
-        _showBackupCodesDialog(newCodes);
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to regenerate codes: ${e.toString()}',
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: EdgeInsets.all(15.w),
-        borderRadius: 10.r,
-      );
+    // Collect the current code via the same 6-box PIN sheet, then regenerate.
+    final method = _status?.method ?? TwoFactorMethod.totp;
+    if (method != TwoFactorMethod.totp) {
+      await context.read<AuthenticationCubit>().sendTwoFactorCode();
+      if (!mounted) return;
     }
-  }
-
-  Future<String?> _showCodeInputDialog(
-    String title,
-    String message,
-  ) async {
-    String code = '';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message),
-            SizedBox(height: 16.h),
-            TextField(
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: InputDecoration(
-                hintText: '000000',
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 12.h,
-                ),
-              ),
-              onChanged: (value) => code = value,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.blue,
-            ),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
+    List<String>? newCodes;
+    await TwoFactorVerifySheet.show(
+      context,
+      title: 'Confirm your identity',
+      subtitle: _codeSourceHint(method),
+      actionLabel: 'Regenerate codes',
+      icon: Icons.key_rounded,
+      iconColor: Colors.orange.shade700,
+      onVerify: (code) async {
+        try {
+          final codes =
+              await context.read<AuthenticationCubit>().regenerateBackupCodes(code);
+          if (codes.isNotEmpty) {
+            newCodes = codes;
+            return true;
+          }
+          return false;
+        } catch (_) {
+          return false;
+        }
+      },
     );
 
-    return confirmed == true ? code : null;
+    if (newCodes != null && mounted) {
+      _showBackupCodesDialog(newCodes!);
+    }
   }
 
   void _showBackupCodesDialog(List<String> codes) {
@@ -335,6 +451,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
               SizedBox(height: 24.h),
               if (_status?.enabled ?? false) ...[
                 _buildCurrentMethodInfo(),
+                SizedBox(height: 24.h),
+                _buildOtherMethods(),
                 SizedBox(height: 24.h),
                 _buildBackupCodesSection(),
                 SizedBox(height: 24.h),
@@ -559,6 +677,100 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     );
   }
 
+  /// Shown while 2FA is enabled: lists every method with the active one marked,
+  /// so the user can see and switch options in one place. Because only one
+  /// method may be active at a time, tapping a different one opens the
+  /// switch-method modal (disable active → enable new) rather than silently
+  /// changing anything.
+  Widget _buildOtherMethods() {
+    final active = _status?.method;
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.tune_rounded, color: Colors.blue.shade700, size: 20.sp),
+              SizedBox(width: 12.w),
+              Text('Authentication methods',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Only one method can be active at a time. Tap another to switch — '
+            'you\'ll disable the current one first.',
+            style: TextStyle(fontSize: 12.5.sp, color: Colors.grey.shade600),
+          ),
+          SizedBox(height: 12.h),
+          ...TwoFactorMethod.values.map((m) {
+            final isActive = m == active;
+            return Container(
+              margin: EdgeInsets.only(bottom: 8.h),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10.r),
+                onTap: isActive ? null : () => _promptSwitchMethod(m),
+                child: Container(
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: isActive ? Colors.green.shade50 : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(
+                      color: isActive ? Colors.green.shade300 : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(_getMethodIcon(m),
+                          color: isActive ? Colors.green.shade700 : Colors.grey.shade600,
+                          size: 20.sp),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(m.displayName,
+                                style: TextStyle(
+                                    fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                            SizedBox(height: 2.h),
+                            Text(_getMethodDescription(m),
+                                style: TextStyle(
+                                    fontSize: 12.sp, color: Colors.grey.shade600)),
+                          ],
+                        ),
+                      ),
+                      if (isActive)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade600,
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Text('Active',
+                              style: GoogleFonts.inter(
+                                  fontSize: 11.sp,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600)),
+                        )
+                      else
+                        Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDangerZone() {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -601,23 +813,21 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
             width: double.infinity,
             height: 48.h,
             child: ElevatedButton(
-              onPressed: _isDisabling ? null : _showDisableDialog,
+              onPressed: _showDisableDialog,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _isDisabling ? Colors.red.shade400 : Colors.red,
+                backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: _isDisabling
-                  ? LazerVaultLoader.small()
-                  : Text(
-                      'Disable Two-Factor Authentication',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              child: Text(
+                'Disable Two-Factor Authentication',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -652,7 +862,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Enable 2FA to add an extra layer of security to your account',
+            'Choose a method below to add an extra layer of security',
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey.shade500,
@@ -660,19 +870,27 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 24.h),
+          // Options shown inline — no extra CTA to reveal them.
+          TwoFactorMethodPicker(
+            selected: _selectedMethod,
+            enabled: !_enabling,
+            onSelect: (m) => setState(() => _selectedMethod = m),
+          ),
+          SizedBox(height: 20.h),
           SizedBox(
             width: double.infinity,
             height: 50.h,
             child: ElevatedButton.icon(
-              icon: const Icon(Icons.add_rounded),
-              label: Text(
-                'Enable Two-Factor Authentication',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              onPressed: () => Get.toNamed(AppRoutes.twoFactorSetup),
+              icon: _enabling
+                  ? const SizedBox.shrink()
+                  : const Icon(Icons.add_rounded),
+              label: _enabling
+                  ? LazerVaultLoader.small()
+                  : Text(
+                      'Enable ${_selectedMethod.displayName}',
+                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    ),
+              onPressed: _enabling ? null : _enableSelected,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4834D4),
                 foregroundColor: Colors.white,
@@ -687,15 +905,4 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     );
   }
 
-  Future<void> _showDisableDialog() async {
-    final code = await _showCodeInputDialog(
-      'Confirm Disable',
-      'Enter your 6-digit 2FA code to confirm:',
-    );
-
-    if (code != null) {
-      setState(() => _disableCode = code);
-      _disableTwoFactor();
-    }
-  }
 }

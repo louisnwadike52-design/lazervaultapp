@@ -32,7 +32,11 @@ class EmployeeLoaded extends PayrollState {
 
 class EmployeeAdded extends PayrollState {
   final String message;
-  EmployeeAdded({required this.message});
+
+  /// The created employee, so callers (e.g. the pay-run "Add employee" sheet)
+  /// can auto-select it. Null-safe for older listeners that only read [message].
+  final EmployeeEntity? employee;
+  EmployeeAdded({required this.message, this.employee});
 }
 
 class EmployeeUpdated extends PayrollState {
@@ -54,7 +58,12 @@ class PayRunsLoaded extends PayrollState {
 
 class PayRunLoaded extends PayrollState {
   final PayRunEntity payRun;
-  PayRunLoaded({required this.payRun});
+
+  /// The per-employee pay slip breakdown for this pay run (empty until the run
+  /// is calculated). Loaded alongside the pay run so the details screen always
+  /// shows the breakdown without a separate "View Pay Slips" round-trip.
+  final List<PaySlipEntity> paySlips;
+  PayRunLoaded({required this.payRun, this.paySlips = const []});
 }
 
 class PayRunCreated extends PayrollState {

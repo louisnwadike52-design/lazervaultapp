@@ -6,6 +6,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
+import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
@@ -30,7 +31,7 @@ class DashboardHeader extends StatefulWidget {
 }
 
 class _DashboardHeaderState extends State<DashboardHeader>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   /// Drives the continuous "breathing" glow/halo around the voice mic icon, so
   /// users always notice there's an AI assistant they can talk to.
   AnimationController? _voiceGlowController;
@@ -54,12 +55,26 @@ class _DashboardHeaderState extends State<DashboardHeader>
       if (!mounted) return;
       _voiceGlowController?.repeat(reverse: true);
     });
+    // Load the unread-notifications count so the bell badge reflects the
+    // server the moment the dashboard paints.
+    WidgetsBinding.instance.addObserver(this);
+    serviceLocator<NotificationBadgeCubit>().refresh();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _voiceGlowController?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-sync the bell badge when the app returns to the foreground — a push
+    // may have arrived (or notifications been read elsewhere) while backgrounded.
+    if (state == AppLifecycleState.resumed) {
+      serviceLocator<NotificationBadgeCubit>().refresh();
+    }
   }
 
   @override
@@ -85,39 +100,41 @@ class _DashboardHeaderState extends State<DashboardHeader>
 
         return Row(
           children: [
-            // Profile Picture - Clickable to open drawer. Renders
-            // brand-purple initials when the user hasn't set a picture.
+            // Profile Picture - tap opens the app drawer. The profile-picture
+            // actions (view full screen / change photo / account / settings)
+            // live on the avatar INSIDE the drawer. Renders brand-purple
+            // initials when no picture is set.
             GestureDetector(
               onTap: () {
                 Scaffold.of(context).openDrawer();
               },
               child: Container(
+                // Frosted circle to match the notification / mic / settings
+                // icon buttons on this purple top bar — a subtle white ring +
+                // frosted fill, not a heavy drop-shadow "sticker".
+                padding: EdgeInsets.all(2.w),
                 decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    width: 1.2,
+                  ),
                 ),
                 child: UserAvatar(
-                  size: 32.w,
+                  size: 28.w,
                   imageUrl: user?.profilePicture,
                   firstName: user?.firstName,
                   lastName: user?.lastName,
                   fallbackMode: UserAvatarFallback.initials,
-                  // Match the frosted-white style of the notification
-                  // / mic / settings icon buttons on this purple top
-                  // bar — orange or solid brand-purple both read as
-                  // out-of-place stickers on the dashboard header.
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
                 ),
               ),
             ),
             Spacer(),
-            // Country Selector
+            // Country Selector (the locale dropdown — single source for the
+            // active region/currency; the separate currency badge that sat here
+            // was redundant with it and was removed).
             _buildCountrySelector(context),
             SizedBox(width: 8.w),
             // Action Icons
@@ -283,7 +300,53 @@ class _DashboardHeaderState extends State<DashboardHeader>
     if (icon == Icons.mic_rounded && _voiceGlowController != null) {
       return _buildVoiceGlow(button);
     }
+    // The notification bell gets an unread-count badge at its top-right, driven
+    // by the app-wide NotificationBadgeCubit.
+    if (icon == Icons.notifications_outlined) {
+      return _buildBellWithBadge(button);
+    }
     return button;
+  }
+
+  /// Overlays a live unread-count badge on the notification bell. Hidden when
+  /// the count is zero; caps the label at "99+". The badge carries a purple
+  /// ring so it reads clearly against the purple top bar.
+  Widget _buildBellWithBadge(Widget bell) {
+    return BlocBuilder<NotificationBadgeCubit, int>(
+      bloc: serviceLocator<NotificationBadgeCubit>(),
+      builder: (context, count) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            bell,
+            if (count > 0)
+              Positioned(
+                top: -4.h,
+                right: -4.w,
+                child: Container(
+                  constraints: BoxConstraints(minWidth: 16.w, minHeight: 16.w),
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444),
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(color: const Color(0xFF4E03D0), width: 1.5),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 
   /// Wraps the voice mic button in a soft, continuously pulsing brand-purple
@@ -401,7 +464,7 @@ class _DashboardHeaderState extends State<DashboardHeader>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Voice service is currently unavailable. Please try again later.',
+            'The voice assistant is currently turned off. Please use chat instead.',
             style: GoogleFonts.inter(fontSize: 13),
           ),
           backgroundColor: const Color(0xFFEF4444),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -738,12 +739,39 @@ class LockFundsPdfService {
     }
   }
 
+  // ── iOS share-sheet anchor ────────────────────────────────────────────
+  //
+  // share_plus on iOS REQUIRES a non-zero `sharePositionOrigin` (the rect the
+  // share popover anchors to). An unset/zero rect throws
+  // PlatformException("sharePositionOrigin: argument must be set, {{0,0},{0,0}}
+  // must be non-zero …") — the "Share Failed" the user hit on the lock receipt.
+  // Callers pass the tapped widget's global rect via [shareOriginFromContext];
+  // when unavailable we fall back to a small valid rect so the sheet still opens.
+  static Rect _resolveShareOrigin(Rect? origin) {
+    if (origin != null && origin.width > 0 && origin.height > 0) {
+      return origin;
+    }
+    return const Rect.fromLTWH(0, 0, 1, 1);
+  }
+
+  /// Build a share-sheet anchor rect from a widget's [context] (its global
+  /// bounds). Returns null when the render box isn't ready; the share methods
+  /// then fall back to a safe default.
+  static Rect? shareOriginFromContext(BuildContext context) {
+    final obj = context.findRenderObject();
+    if (obj is RenderBox && obj.hasSize) {
+      return obj.localToGlobal(Offset.zero) & obj.size;
+    }
+    return null;
+  }
+
   /// Share the withdrawal receipt via system share sheet
   static Future<void> shareWithdrawalReceipt({
     required LockFund lockFund,
     required double amountReturned,
     required double penaltyAmount,
     required double interestEarned,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generateWithdrawalReceipt(
@@ -759,6 +787,7 @@ class LockFundsPdfService {
         files: [XFile(file.path)],
         text: 'Lock Fund Withdrawal Receipt - $currencySymbol${amountReturned.toStringAsFixed(2)} from ${lockFund.displayName}',
         subject: 'Lazervault Lock Fund Withdrawal Receipt',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
@@ -802,6 +831,7 @@ class LockFundsPdfService {
   /// Share the lock confirmation via system share sheet
   static Future<void> shareLockConfirmation({
     required LockFund lockFund,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final file = await generateLockConfirmation(lockFund: lockFund);
@@ -812,6 +842,7 @@ class LockFundsPdfService {
         files: [XFile(file.path)],
         text: 'Lock Fund Confirmation - $currencySymbol${lockFund.amount.toStringAsFixed(2)} locked in ${lockFund.displayName}',
         subject: 'Lazervault Lock Fund Confirmation',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share confirmation: $e');

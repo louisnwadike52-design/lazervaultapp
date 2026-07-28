@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
@@ -16,6 +17,9 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
@@ -121,6 +125,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   // fire two concurrent status fetches / two Mono launches / two KYC saves.
   bool _kycCheckInFlight = false;
 
+  // Whether the "resolving" loading overlay (spinner shown while the KYC
+  // pre-check runs, before we know whether to launch Mono or ask for KYC) is on
+  // screen. Kept as a guard so show/hide are idempotent and we never pop the
+  // wrong route.
+  bool _resolvingOverlayShown = false;
+
   // Watchdog: if linking/initiating stalls (e.g. a provider call hangs), flip the
   // progress sheet to a retryable failure instead of spinning on "Linking Account"
   // forever. Cancelled as soon as the flow advances to authorizing/processing.
@@ -187,6 +197,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   @override
   void initState() {
     super.initState();
+    // Telemetry: deposit screen view (currency is bounded server-side).
+    AnalyticsService.instance.trackDepositScreen(_currency);
     _initializeSpeech();
     _loadBanks();
     // Load the user's saved mandates + previously-linked bank accounts so the
@@ -354,6 +366,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     }
   }
 
+  /// Swipe-down-to-refresh: re-pull linked accounts, mandates and live
+  /// balances so the saved-banks carousel + method list reflect the latest
+  /// state. Awaits the bank list so the spinner stays until real work lands.
+  Future<void> _pullToRefresh() async {
+    _loadLinkedAccounts();
+    _loadUserMandates();
+    _refreshAccountBalances(context);
+    await _loadBanks();
+    // Small settle so the refresh spinner doesn't blink out before the
+    // async cubit emits repaint the carousel.
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+  }
+
   /// Load supported banks from Mono API
   ///
   /// Fetches the list of banks/institutions that Mono actually supports.
@@ -462,13 +487,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       ],
       child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
         listener: (context, authState) {
-          if (authState is! AuthenticationSuccess) {
-            Get.snackbar('Authentication Error', 'You need to be logged in to make a deposit.',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red.withValues(alpha: 0.7),
-              colorText: Colors.white
-            );
-          }
+          // Intentionally silent on de-auth: when the session ends (auto
+          // sign-out / expiry) the user is navigated away anyway, so a
+          // "You need to be logged in" toast here is just noise.
         },
         builder: (authContext, authState) {
           // Gradient lives on a full-screen Container BEHIND a transparent
@@ -497,7 +518,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   final openBankingState = context.watch<OpenBankingCubit>().state;
                   final isOpenBankingLoading = openBankingState is OpenBankingLoading ||
                                                openBankingState is AccountLinkingInProgress;
-                  return SingleChildScrollView(
+                  return RefreshIndicator(
+                    onRefresh: _pullToRefresh,
+                    color: const Color(0xFF8B5CF6),
+                    backgroundColor: const Color(0xFF1A1A1A),
+                    child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: Padding(
                       padding: EdgeInsets.all(24.w),
                       child: Column(
@@ -532,6 +558,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                         ],
                       ),
                     ),
+                  ),
                   );
                 },
               ),
@@ -1015,7 +1042,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // While Direct Debit is still activating, the top chip honestly reads
     // "One-time" (that's the rail this deposit uses now); the amber "Setting up
     // Direct Debit" badge below carries the recurring-setup signal + info modal.
-    final chipMode = mode == 'persistent' ? 'persistent' : 'onetime';
+    // A switch awaiting Mono confirmation shows its own "Switching…" chip.
+    final chipMode = mode == 'persistent'
+        ? 'persistent'
+        : mode == 'switching'
+            ? 'switching'
+            : 'onetime';
     final accent = _cardAccentColor(mode);
     return InkWell(
       borderRadius: BorderRadius.circular(16.r),
@@ -1499,18 +1531,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   void _switchToOneTime(LinkedBankAccount account, MandateEntity mandate) {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
+    final userId = authState.profile.user.id;
     serviceLocator<MandateCubit>().pauseMandate(
       mandateId: mandate.id,
-      userId: authState.profile.user.id,
+      userId: userId,
     );
     Get.snackbar(
-      'Switched to one-time',
-      'Deposits from ${account.bankName} will use one-time approval. You can switch back anytime.',
+      'Switching to one-time',
+      'We’re confirming with your bank. Deposits from ${account.bankName} will '
+          'use one-time approval — you can switch back anytime.',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: const Color(0xFF1F1F1F),
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
     );
+    // Refresh once the pause response lands; the cubit's pauseMandate already
+    // polls until Mono confirms so the "Switching…" chip settles to "One-time".
     Future.delayed(const Duration(milliseconds: 700), () {
       if (mounted) _loadUserMandates();
     });
@@ -1532,13 +1568,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         userId: user.id,
       );
       Get.snackbar(
-        'Switched to Direct Debit',
-        'Future deposits from ${account.bankName} will skip bank login.',
+        'Switching to Direct Debit',
+        'We’re reactivating your Direct Debit with ${account.bankName}. Future '
+            'deposits will skip bank login once it’s confirmed.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
         colorText: Colors.white,
         duration: const Duration(seconds: 3),
       );
+      // The cubit's reinstateMandate already polls until Mono confirms, so the
+      // "Switching…" chip settles to "Direct Debit" on its own.
       Future.delayed(const Duration(milliseconds: 700), () {
         if (mounted) _loadUserMandates();
       });
@@ -1555,6 +1594,161 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       userName: '${user.firstName} ${user.lastName}'.trim(),
     );
     if (ok && mounted) _loadUserMandates();
+  }
+
+  /// Well-styled confirmation before flipping a linked account's deposit
+  /// method. Both directions are reversible; the switch is applied on Mono
+  /// (pause / reinstate the mandate) AND our backend — this sheet makes that
+  /// explicit before we call it. Returns true only if the user confirms.
+  Future<bool> _confirmPaymentMethodSwitch({
+    required LinkedBankAccount account,
+    required bool toDirectDebit,
+  }) async {
+    final accent =
+        toDirectDebit ? const Color(0xFF10B981) : const Color(0xFF6366F1);
+    final title = toDirectDebit
+        ? 'Switch to Direct Debit?'
+        : 'Switch to one-time (DirectPay)?';
+    final currentLabel = toDirectDebit ? 'One-time' : 'Direct Debit';
+    final newLabel = toDirectDebit ? 'Direct Debit' : 'One-time';
+    final body = toDirectDebit
+        ? 'Future deposits from ${account.bankName} will reuse your saved '
+            'authorization — no bank login each time. We’ll reactivate '
+            'your Direct Debit with ${account.bankName} instantly.'
+        : 'You’ll approve each deposit from ${account.bankName} at your '
+            'bank. We’ll pause your Direct Debit with ${account.bankName} '
+            '— you can switch back anytime with no re-authorization.';
+    final confirmLabel =
+        toDirectDebit ? 'Switch to Direct Debit' : 'Switch to one-time';
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 18.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 44.w,
+                      height: 44.w,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(
+                        toDirectDebit
+                            ? Icons.autorenew_rounded
+                            : Icons.touch_app_rounded,
+                        color: accent,
+                        size: 22.sp,
+                      ),
+                    ),
+                    SizedBox(width: 14.w),
+                    Expanded(
+                      child: Text(title,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    _switchMethodChip(currentLabel, const Color(0xFF6B7280)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                      child: Icon(Icons.arrow_forward_rounded,
+                          color: Colors.white.withValues(alpha: 0.5),
+                          size: 18.sp),
+                    ),
+                    _switchMethodChip(newLabel, accent),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Text(body,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 13.sp,
+                        height: 1.45)),
+                SizedBox(height: 22.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50.h,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(sheetCtx).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r)),
+                    ),
+                    child: Text(confirmLabel,
+                        style: TextStyle(
+                            fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(sheetCtx).pop(false),
+                    child: Text('Cancel',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 14.sp)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    return result ?? false;
+  }
+
+  /// A pill showing a payment-method label (current vs new) in the switch
+  /// confirmation sheet.
+  Widget _switchMethodChip(String label, Color color) {
+    final isMuted = color == const Color(0xFF6B7280);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              color: isMuted ? Colors.white.withValues(alpha: 0.8) : color,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600)),
+    );
   }
 
   /// In-app authorization for a freshly created e-mandate (the recurring
@@ -1665,6 +1859,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // Direct Debit authorized but still activating with NIBSS — it's already
     // being set up, so we show status (not a "switch to Direct Debit" CTA).
     final isActivating = rawMandate != null && rawMandate.isActivating;
+    // A deposit-method switch is mid-flight (awaiting Mono confirmation) — show a
+    // read-only "in progress" tile instead of a switch CTA so we don't fire a
+    // second pause/reinstate before the first settles.
+    final isSwitching = rawMandate != null && rawMandate.switchProcessing;
+    final switchingToDirectDebit = isSwitching && rawMandate.isSwitchingToDirectDebit;
     showModalBottomSheet(
       context: screenCtx,
       backgroundColor: Colors.transparent,
@@ -1694,14 +1893,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                 },
               ),
               // Switch between one-time (DirectPay) and persistent (Direct Debit).
-              if (isPersistent)
+              if (isSwitching)
+                ListTile(
+                  leading: const Icon(Icons.sync, color: Color(0xFF818CF8)),
+                  title: Text(
+                      switchingToDirectDebit
+                          ? 'Switching to Direct Debit…'
+                          : 'Switching to one-time…',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text(
+                      'We’re confirming this change with your bank. It’ll settle shortly.',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  onTap: () => Navigator.of(sheetCtx).pop(),
+                )
+              else if (isPersistent)
                 ListTile(
                   leading: Icon(Icons.schedule, color: const Color(0xFF9CA3AF)),
                   title: Text('Switch to DirectPay (one-time)', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text('Approve each deposit at your bank; switch back anytime', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.of(sheetCtx).pop();
-                    _switchToOneTime(account, rawMandate);
+                    final ok = await _confirmPaymentMethodSwitch(
+                        account: account, toDirectDebit: false);
+                    if (ok && mounted) _switchToOneTime(account, rawMandate);
                   },
                 )
               else if (isActivating)
@@ -1723,8 +1937,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   leading: Icon(Icons.link, color: const Color(0xFF10B981)),
                   title: Text('Switch to Direct Debit (persistent)', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text('Skip bank login on future deposits', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.of(sheetCtx).pop();
+                    // A paused mandate reinstates instantly (a real Mono state
+                    // change) — confirm first. With no reusable mandate,
+                    // _switchToDirectDebit opens the Mono authorization setup
+                    // sheet, which is itself the confirmation + auth step.
+                    final hasReusable = rawMandate != null && rawMandate.isPaused;
+                    if (hasReusable) {
+                      final ok = await _confirmPaymentMethodSwitch(
+                          account: account, toDirectDebit: true);
+                      if (!ok || !mounted) return;
+                    }
                     _switchToDirectDebit(account, rawMandate);
                   },
                 ),
@@ -1859,6 +2083,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   String _accessModeForAccount(LinkedBankAccount account) {
     final m = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
     if (m == null) return 'onetime';
+    // A deposit-method switch awaiting Mono confirmation takes precedence over
+    // the (still-transitioning) status so the card shows "Switching…" instead of
+    // prematurely flipping to the destination and then reverting.
+    if (m.switchProcessing) return 'switching';
     if (m.isActive) return 'persistent';
     if (m.isActivating) return 'pending';
     return 'onetime';
@@ -1872,6 +2100,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         return const Color(0xFF10B981); // green — active Direct Debit
       case 'pending':
         return const Color(0xFFFB923C); // amber — setting up
+      case 'switching':
+        return const Color(0xFF818CF8); // indigo — switch awaiting confirmation
       default:
         return const Color(0xFF7C5CFF); // soft purple — one-time
     }
@@ -1883,9 +2113,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   Widget _accessChip({required String mode, VoidCallback? onTap, bool showInfo = false}) {
     final state = mode == 'persistent'
         ? LinkedAccountState.directDebit
-        : mode == 'pending'
-            ? LinkedAccountState.settingUp
-            : LinkedAccountState.oneTime;
+        : mode == 'switching'
+            ? LinkedAccountState.switching
+            : mode == 'pending'
+                ? LinkedAccountState.settingUp
+                : LinkedAccountState.oneTime;
     return LinkedAccountStateChip(state: state, onTap: onTap, showInfoAffordance: showInfo);
   }
 
@@ -2254,28 +2486,27 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       isDismissible: false,
       enableDrag: false,
       isScrollControlled: true,
+      // NOTE: the sheet POPS ITS OWN modal route (DirectPayProgressBottomsheet
+      // ._dismiss) before invoking these callbacks — so these are POST-dismiss
+      // side effects ONLY and must NOT pop again (double-pop would remove the
+      // wrong route). whenComplete below resets _isProgressSheetShown.
       builder: (sheetContext) => DirectPayProgressBottomsheet(
         controller: _progressController,
         onSuccess: () {
           _isProgressSheetShown = false;
-          Navigator.of(sheetContext).pop();
-          // Navigate back to dashboard, then surface the success snackbar so it
-          // lands over the dashboard (Get.snackbar is a global overlay that
-          // survives the route change).
+          // The dashboard's WebSocket "Funds Received" banner is the SINGLE
+          // in-app deposit confirmation (dashboard_card_summary). The sheet
+          // already showed "Deposit Successful", so we don't stack a second
+          // snackbar here (that was the double-snackbar bug).
           _navigateToDashboard();
-          _showDepositCompletedSnackbar();
         },
         onDismiss: () {
           _isProgressSheetShown = false;
-          Navigator.of(sheetContext).pop();
           // Stays on the deposit form so the user can adjust the amount /
-          // bank and try again.
+          // bank and try again. (Route already popped by the sheet.)
         },
         onRetry: () {
           _isProgressSheetShown = false;
-          if (Navigator.of(sheetContext).canPop()) {
-            Navigator.of(sheetContext).pop();
-          }
           // Re-run the exact deposit the user last started.
           final retry = _retryDeposit;
           if (retry != null) {
@@ -2284,20 +2515,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         },
         onExit: () {
           _isProgressSheetShown = false;
-          // _navigateToDashboard clears the whole stack (incl. this sheet),
-          // so no explicit pop needed.
           _navigateToDashboard();
         },
         onKycVerify: () {
-          // KYC-required terminal state: the sheet has already hidden itself.
-          // Pop the modal route, then save the in-flight deposit + route into
-          // BVN verification. The sheet is gone, so backing out of KYC without
-          // completing returns the user to a clean deposit screen (no spinner).
+          // KYC-required terminal state: the sheet already popped its route;
+          // save the in-flight deposit + route into BVN verification. Backing
+          // out of KYC returns the user to a clean deposit screen (no spinner).
           _isProgressSheetShown = false;
           _cancelLinkWatchdog();
-          if (Navigator.of(sheetContext).canPop()) {
-            Navigator.of(sheetContext).pop();
-          }
           _saveAndGoToKyc();
         },
       ),
@@ -2305,6 +2530,31 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       _isProgressSheetShown = false;
       _cancelLinkWatchdog();
     });
+  }
+
+  /// Single, idempotent handler for a CONFIRMED-credited deposit. Driven only
+  /// by DepositStatusUpdated(successful) (banking's authoritative post-credit
+  /// status) — so the success UI (balance refresh, navigation, snackbar) can
+  /// never fire merely because the card payment sheet closed. Shows the success
+  /// only once real money has credited the wallet.
+  bool _depositSettledHandled = false;
+  void _handleDepositSettled(BuildContext context) {
+    if (_depositSettledHandled) return;
+    _depositSettledHandled = true;
+
+    // Pull fresh, server-authoritative balances.
+    _refreshAccountBalances(context);
+
+    if (_isProgressSheetShown) {
+      // Mono DirectPay/mandate: the black progress sheet shows "Deposit
+      // Successful" here, then its onSuccess callback navigates (no flash).
+      _progressController.updateStage(DirectPayStage.success);
+    } else {
+      // Card / Apple Pay (no progress sheet): route to the dashboard, where the
+      // WebSocket "Funds Received" banner + animated balance update are the
+      // single in-app deposit confirmation (no second screen snackbar).
+      _navigateToDashboard();
+    }
   }
 
   /// Navigate back to dashboard after successful deposit
@@ -2331,30 +2581,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// Success snackbar shown AFTER navigating to the dashboard. Get.snackbar
   /// is a global overlay, so it renders over the dashboard regardless of the
   /// route change. Guarded so the same deposit only shows it once.
-  bool _completedSnackbarShown = false;
-
-  void _showDepositCompletedSnackbar() {
-    if (_completedSnackbarShown) return;
-    _completedSnackbarShown = true;
-    Get.closeAllSnackbars();
-    Get.snackbar(
-      'Deposit Completed',
-      'Your deposit has been completed successfully.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.withValues(alpha: 0.9),
-      colorText: Colors.white,
-      isDismissible: true,
-      duration: const Duration(seconds: 3),
-      margin: EdgeInsets.all(16.w),
-      borderRadius: 12.r,
-      icon: Icon(
-        Icons.check_circle_rounded,
-        color: Colors.white,
-        size: 28.sp,
-      ),
-    );
-  }
-
   /// The deposit action to re-run when the user taps "Try Again" on a
   /// retryable failure. Set whenever a deposit is launched so the retry
   /// reproduces the same flow (same launcher) the user started.
@@ -2410,6 +2636,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       return const _DepositFailureInfo(
         'Authorization Needed',
         'Your saved bank authorization is no longer active. Link your bank again to continue.',
+        retryable: true,
+      );
+    }
+    // Backend refused to run an unpinned debit because it couldn't confirm the
+    // linked bank's account details — surfaced so we NEVER charge the wrong bank.
+    // Re-linking re-fetches a clean NUBAN + bank code.
+    if (has([
+      'bank_details_unverified',
+      "couldn't confirm your",
+      're-link your bank',
+      'relink your bank',
+      'account details for this deposit',
+    ])) {
+      return const _DepositFailureInfo(
+        'Re-link Your Bank',
+        "We couldn't confirm your linked bank's details for this deposit, so we didn't charge any account. Please re-link your bank and try again.",
         retryable: true,
       );
     }
@@ -2551,6 +2793,125 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// `linkedAccountId`/`linkedBankName` are passed for the redeposit-from-an-
   /// already-linked-account entry point so a KYC detour resumes by re-depositing
   /// (not re-linking). They're null for the fresh link-and-deposit entry point.
+  /// Full-screen, non-dismissible spinner shown for the brief window between
+  /// tapping a link/deposit action and the next phase resolving (Mono sheet or
+  /// the verify-KYC prompt). Without it the user taps and sees "nothing" for a
+  /// few seconds while the KYC status call runs. Idempotent via
+  /// [_resolvingOverlayShown]; always paired with [_hideResolvingOverlay] before
+  /// the next UI is shown.
+  void _showResolvingOverlay() {
+    if (_resolvingOverlayShown || !mounted) return;
+    _resolvingOverlayShown = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      barrierColor: Colors.black.withValues(alpha: 0.72),
+      builder: (_) => PopScope(
+        canPop: false,
+        child: Center(
+          // Material ancestor is REQUIRED: without it the Text widgets below
+          // inherit no DefaultTextStyle and render with the debug yellow
+          // double-underline on the black barrier. It also gives us the card
+          // surface + elevation for free.
+          child: Material(
+            color: Colors.transparent,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40.w),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 320.w),
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(28.w, 30.h, 28.w, 26.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF161616),
+                    borderRadius: BorderRadius.circular(24.r),
+                    border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 34,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 16),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Brand loader on a soft tinted disc for emphasis.
+                      Container(
+                        width: 74.w,
+                        height: 74.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF2962FF).withValues(alpha: 0.10),
+                          border: Border.all(
+                            color: const Color(0xFF2962FF).withValues(alpha: 0.18),
+                            width: 1,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: LazerVaultLoader(size: 40),
+                      ),
+                      SizedBox(height: 20.h),
+                      Text(
+                        'Setting up your deposit',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Just a moment while we check your account.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.5.sp,
+                          fontWeight: FontWeight.w400,
+                          height: 1.4,
+                        ),
+                      ),
+                      SizedBox(height: 22.h),
+                      // Slim indeterminate progress conveys ongoing work.
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4.r),
+                        child: SizedBox(
+                          height: 4.h,
+                          width: 150.w,
+                          child: const LinearProgressIndicator(
+                            backgroundColor: Color(0xFF262626),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Color(0xFF2962FF)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Dismiss the resolving overlay if it's up. Safe to call unconditionally and
+  /// more than once — the next phase (Mono sheet / KYC dialog / error) always
+  /// calls this first so the spinner never lingers behind it.
+  void _hideResolvingOverlay() {
+    if (!_resolvingOverlayShown) return;
+    _resolvingOverlayShown = false;
+    if (!mounted) return;
+    final nav = Navigator.of(context, rootNavigator: true);
+    if (nav.canPop()) nav.pop();
+  }
+
   Future<void> _ensureKycThenDeposit({
     String? linkedAccountId,
     String? linkedBankName,
@@ -2579,23 +2940,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     }
 
     _kycCheckInFlight = true;
-    // Lightweight, non-blocking progress hint (NOT the DirectPay progress sheet,
-    // which is reserved for the deposit itself).
-    Get.snackbar(
-      'Checking your account',
-      'One moment…',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.black.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 1),
-      showProgressIndicator: true,
-    );
+    // Show a loading state for the whole resolution window (KYC status call can
+    // take a few seconds). It's dismissed the instant the next phase is known —
+    // right before the Mono sheet, the verify prompt, or an error — so the user
+    // is never left staring at a screen that appears to be doing nothing.
+    _showResolvingOverlay();
 
     try {
       final status = await ProveKycHttpService(serviceLocator<SecureStorageService>())
           .status()
           .timeout(const Duration(seconds: 8));
-      if (!mounted) return;
+      if (!mounted) {
+        _hideResolvingOverlay();
+        return;
+      }
+      _hideResolvingOverlay();
       if (status.tier >= 2) {
         proceed();
       } else {
@@ -2605,6 +2964,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       // Network / timeout / parse error → fail open. The backend re-gates and
       // the reactive KYC net will catch an unverified user after linking.
       debugPrint('[Deposit] KYC pre-check failed, proceeding (backend re-gates): $e');
+      _hideResolvingOverlay();
       if (!mounted) return;
       proceed();
     } finally {
@@ -2927,21 +3287,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         _pollDepositSettlement(context);
       }
     } else if (state is DepositStatusUpdated) {
-      // Check deposit status
+      // DepositStatusUpdated comes from banking's GetDepositStatus, which only
+      // returns `successful` AFTER the wallet was actually credited (webhook or
+      // verify-on-return → processSuccessfulDeposit). This is the AUTHORITATIVE
+      // "real money credited" signal — so it (not a payment-sheet-closed event)
+      // is what drives the success UI.
       final deposit = state.deposit;
       debugPrint('[Deposit] DepositStatusUpdated: status=${deposit.status}');
       if (deposit.status == DepositStatus.successful) {
-        // Deposit completed - refresh balances
-        _refreshAccountBalances(context);
-
-        // Mark the sheet terminal. DO NOT navigate from here — that used to
-        // call _navigateToDashboard() synchronously, tearing the progress sheet
-        // down before it ever rendered its success state (the dashboard flashed
-        // instead of the black sheet completing on the deposit screen). The
-        // sheet's own onSuccess callback drives the pop + navigation AFTER it
-        // shows "Deposit Successful", so the user sees it complete here first.
-        _progressController.updateStage(DirectPayStage.success);
+        // Telemetry: authoritative terminal settlement.
+        AnalyticsService.instance.trackDepositSettled(status: 'successful');
+        _handleDepositSettled(context);
       } else if (deposit.status == DepositStatus.failed) {
+        AnalyticsService.instance.trackDepositSettled(status: 'failed');
         _showDepositFailure(deposit.failureReason);
       }
       // pending/processing → keep the sheet on "processing"; the poll
@@ -2973,6 +3331,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           snackbarMessage:
               'Complete a quick BVN verification to deposit from your bank account.',
         );
+        return;
+      }
+      // Code-first: unverified linked-bank details. Route on the structured code
+      // so it holds regardless of the message text (the exception may carry a
+      // generic userMessage). Pass a canonical, classifier-recognizable message
+      // so _classifyDepositFailure deterministically renders the re-link CTA.
+      if (state.errorCode == 'BANK_DETAILS_UNVERIFIED') {
+        _showDepositFailure(
+            "We couldn't confirm your bank account details. Re-link your bank to continue.");
         return;
       }
       _showDepositFailure(state.message);
@@ -3043,20 +3410,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       setState(() {
         _selectedBank = '';
       });
-
-      // Refresh account balances
-      _refreshAccountBalances(context);
-
-      if (_isProgressSheetShown) {
-        // Mono DirectPay/mandate: let the black progress sheet show "Deposit
-        // Successful" ON the deposit screen, then navigate via its onSuccess
-        // (shares the P1 terminal→navigate path). No dashboard flash.
-        _progressController.updateStage(DirectPayStage.success);
-      } else {
-        // Flutterwave (no progress sheet): go straight to the dashboard, then
-        // show the snackbar over it. (_navigateToDashboard is idempotent.)
-        _navigateToDashboard();
-        _showDepositCompletedSnackbar();
+      // A real-time "completed" push is NOT proof the wallet was credited — it
+      // can arrive on payment capture before settlement. Re-verify with banking
+      // (authoritative); the resulting DepositStatusUpdated(successful) is what
+      // actually drives the success UI (navigate + snackbar). This guarantees
+      // the success snackbar only shows once real money has credited the wallet.
+      final depId = _currentDepositId;
+      final auth = context.read<AuthenticationCubit>().state;
+      if (depId != null && depId.isNotEmpty && auth is AuthenticationSuccess) {
+        serviceLocator<OpenBankingCubit>().checkDepositStatus(
+          depositId: depId,
+          userId: auth.profile.user.id,
+          accessToken: auth.profile.session.accessToken,
+        );
       }
     } else if (state is DepositReversed) {
       Get.closeAllSnackbars();
@@ -3180,8 +3546,37 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     return 0.0;
   }
 
+  /// Resolve the live account summary for the deposit card from the global
+  /// AccountCardsSummaryCubit state (kept fresh by the balance WebSocket), or
+  /// null if not loaded / no match.
+  AccountSummaryEntity? _liveSelectedSummary(AccountCardsSummaryState state) {
+    final id = widget.selectedCard['id']?.toString() ?? '';
+    if (id.isEmpty) return null;
+    final List<AccountSummaryEntity> list = switch (state) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => const <AccountSummaryEntity>[],
+    };
+    for (final s in list) {
+      if (s.id == id) return s;
+    }
+    return null;
+  }
+
   Widget _buildSelectedCardSummary() {
-    return Container(
+    // Live-bind to the balance cubit so the deposit card's balance + trend %
+    // animate/refresh in real time when a deposit credits (same WS feed the
+    // dashboard uses), instead of showing the static snapshot it opened with.
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      bloc: serviceLocator<AccountCardsSummaryCubit>(),
+      builder: (context, summaryState) {
+        final live = _liveSelectedSummary(summaryState);
+        final double cardBalance = live?.balance ?? _cardBalance();
+        final bool cardIsUp = live?.isUp ?? (widget.selectedCard['isUp'] == true);
+        final String cardTrend = live != null
+            ? '${live.trendPercentage >= 0 ? '+' : ''}${live.trendPercentage.toStringAsFixed(1)}%'
+            : (widget.selectedCard['trend']?.toString() ?? '—');
+        return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -3238,13 +3633,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             ],
           ),
           SizedBox(height: 20.h),
-          Text(
-            "$_currencySymbol${_cardBalance().toStringAsFixed(2)}",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
+          TweenAnimationBuilder<double>(
+            // begin = the snapshot the screen opened with; end = the live
+            // balance. TweenAnimationBuilder re-animates from the current value
+            // to `end` whenever it changes, so a credit counts up smoothly.
+            tween: Tween<double>(begin: _cardBalance(), end: cardBalance),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOut,
+            builder: (context, value, _) => Text(
+              "$_currencySymbol${value.toStringAsFixed(2)}",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 32.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
           SizedBox(height: 8.h),
@@ -3256,17 +3659,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   vertical: 6.h,
                 ),
                 decoration: BoxDecoration(
-                  color: (widget.selectedCard['isUp'] == true)
+                  color: cardIsUp
                       ? Colors.green.withValues(alpha: 0.2)
                       : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  widget.selectedCard['trend']?.toString() ?? '—',
+                  cardTrend,
                   style: TextStyle(
-                    color: (widget.selectedCard['isUp'] == true)
-                        ? Colors.green[300]
-                        : Colors.red[300],
+                    color: cardIsUp ? Colors.green[300] : Colors.red[300],
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -3276,6 +3677,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 

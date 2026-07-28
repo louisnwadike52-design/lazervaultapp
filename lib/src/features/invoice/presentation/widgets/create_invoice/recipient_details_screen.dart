@@ -364,11 +364,12 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
 
   Widget _buildPhoneField(CreateInvoiceCubit cubit) {
     final country = cubit.invoiceCountry;
-    final maxLen = PhoneValidator.getMaxLength(country);
     final hint = PhoneValidator.getHintText(country);
     final phone = cubit.recipientPhone;
-    final error = phone.isNotEmpty && country.isNotEmpty
-        ? PhoneValidator.validate(phone, country)
+    // Optional field, any country: don't enforce a per-country max length.
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final error = digits.isNotEmpty && digits.length < 4
+        ? 'Enter a valid phone number'
         : null;
 
     return Column(
@@ -387,8 +388,9 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(maxLen),
+            // Allow international numbers: digits, leading +, and spaces.
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
+            LengthLimitingTextInputFormatter(20),
           ],
           onChanged: (value) => cubit.updateRecipientPhone(value),
           style: GoogleFonts.inter(

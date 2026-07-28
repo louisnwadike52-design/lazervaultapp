@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 import '../../domain/entities/account_verification_result.dart';
+import '../../domain/entities/account_suggestion.dart';
 
 /// Custom exceptions for account verification.
 class AccountNotFoundException implements Exception {
@@ -54,6 +55,14 @@ abstract class RecipientVerificationRemoteDataSource {
 
   /// Get list of supported banks.
   Future<List<Map<String, String>>> getSupportedBanks({
+    String country = 'NG',
+  });
+
+  /// Suggest matching bank(s) for a bare 10-digit account number. Best-effort:
+  /// returns an empty list when the backend can't infer a bank or the endpoint
+  /// isn't available. Never throws for the caller to handle inline.
+  Future<List<AccountSuggestion>> suggestAccounts({
+    required String accountNumber,
     String country = 'NG',
   });
 
@@ -263,6 +272,17 @@ class RecipientVerificationRemoteDataSourceImpl
       if (e is NetworkException) rethrow;
       throw Exception('Unexpected error: ${e.toString()}');
     }
+  }
+
+  /// The REST backend has no account-suggestion endpoint; the account-number-
+  /// first UX is served exclusively by the gRPC datasource. Return empty so the
+  /// UI simply falls back to manual bank selection.
+  @override
+  Future<List<AccountSuggestion>> suggestAccounts({
+    required String accountNumber,
+    String country = 'NG',
+  }) async {
+    return const <AccountSuggestion>[];
   }
 
   /// Close the Dio client.

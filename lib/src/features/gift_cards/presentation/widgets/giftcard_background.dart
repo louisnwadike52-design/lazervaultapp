@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Top colour of the gift-card page background. Set a Scaffold's
 /// `backgroundColor` to this so the status-bar area matches the body.
-/// Flat near-black per the CLAUDE.md dark-theme palette so the page reads
+/// Flat near-black per the the platform conventions dark-theme palette so the page reads
 /// as one surface (the receipt screen previously layered a #1F1F1F card
 /// over a purple gradient, producing a multi-coloured look the user flagged).
 const Color kGiftCardBgTop = Color(0xFF0A0A0A);

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:lazervault/core/services/app_activity_bus.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/chat_session_manager.dart';
 import '../domain/usecases/process_ai_chat_usecase.dart';
@@ -13,6 +14,23 @@ class AIChatCubit extends Cubit<AIChatState> {
   final ProcessChatUseCase _processChatUseCase;
   final GetAIChatHistoryUseCase _getAIChatHistoryUseCase;
   final ChatSessionManager? _chatSessionManager;
+
+  /// Decode the `_receipt_card` passthrough (JSON-encoded single dict OR a list
+  /// for a batch transfer) from the proto entities map, removing the key so it
+  /// doesn't leak into the displayed entities. Returns a Map, a List, or null.
+  dynamic _decodeReceiptCard(Map<String, String>? entitiesMap) {
+    if (entitiesMap == null || !entitiesMap.containsKey('_receipt_card')) {
+      return null;
+    }
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(entitiesMap['_receipt_card']!);
+    } catch (_) {
+      decoded = null;
+    }
+    entitiesMap.remove('_receipt_card');
+    return (decoded is Map || decoded is List) ? decoded : null;
+  }
 
   // Internal state to hold the current messages
   List<ChatMessageEntity> _currentMessages = [];
@@ -86,6 +104,9 @@ class AIChatCubit extends Cubit<AIChatState> {
   // Send message to the backend
   Future<void> sendMessage(String text, {required String accessToken}) async {
     if (text.trim().isEmpty) return;
+    // Chatting is engagement — keep the inactivity auto-logout from firing
+    // mid-conversation (the reply lands within the next window).
+    AppActivityBus.instance.ping();
 
     // Mask PIN-like input (4-6 digits) in the displayed message for security
     final displayText = RegExp(r'^\d{4,6}$').hasMatch(text.trim()) ? 'Sensitive data ****' : text;
@@ -188,6 +209,10 @@ class AIChatCubit extends Cubit<AIChatState> {
             entitiesMap.remove('_pin_prompt');
           }
 
+          // Extract receipt_card (single dict or list for a batch) — drives the
+          // ChatReceiptCardV2 / ChatReceiptCardV2List so batch receipts render.
+          final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
+
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
             isUser: false,
@@ -201,6 +226,7 @@ class AIChatCubit extends Cubit<AIChatState> {
             conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
             sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
             receiptData: receiptData,
+            receiptCard: receiptCard,
             pinPrompt: pinPrompt,
           );
           _currentMessages.add(aiMessageEntity);
@@ -278,6 +304,7 @@ class AIChatCubit extends Cubit<AIChatState> {
           } catch (_) {}
           entitiesMap.remove('_pin_prompt');
         }
+        final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
         _currentMessages.add(ChatMessageEntity(
           text: response.response,
           isUser: false,
@@ -287,6 +314,7 @@ class AIChatCubit extends Cubit<AIChatState> {
           conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
           sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
           receiptData: receiptData,
+          receiptCard: receiptCard,
           pinPrompt: pinPrompt,
         ));
         emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
@@ -397,6 +425,8 @@ class AIChatCubit extends Cubit<AIChatState> {
               mediaReceiptData = jsonDecode(response.entities['_receipt_data']!) as Map<String, dynamic>;
             } catch (_) {}
           }
+          final dynamic mediaReceiptCard =
+              _decodeReceiptCard(Map<String, String>.from(response.entities));
 
           final aiMessage = ChatMessageEntity(
             text: response.response,
@@ -404,6 +434,7 @@ class AIChatCubit extends Cubit<AIChatState> {
             timestamp: DateTime.now(),
             sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
             receiptData: mediaReceiptData,
+            receiptCard: mediaReceiptCard,
           );
           _currentMessages.add(aiMessage);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));

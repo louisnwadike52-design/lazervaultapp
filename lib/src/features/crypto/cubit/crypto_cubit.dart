@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../core/services/injection_container.dart';
-import '../../../generated/crypto.pb.dart' show PriceAlert;
 import '../domain/entities/crypto_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/repositories/crypto_repository.dart';
@@ -13,6 +12,9 @@ import 'crypto_state.dart';
 
 class CryptoCubit extends Cubit<CryptoState> {
   final CryptoRepository repository;
+
+  /// Page size for the paginated transactions list (View All screen).
+  static const int txPageSize = 20;
 
   /// Guard against concurrent financial operations (buy/sell/convert).
   /// Prevents double-tap / rapid re-invocation from executing two transactions.
@@ -27,103 +29,346 @@ class CryptoCubit extends Cubit<CryptoState> {
   /// hammer the gRPC endpoint on every pull-to-refresh.
   bool _walletProvisioningAttempted = false;
 
+  /// Stale-while-revalidate cache of the last fully/partly loaded landing
+  /// snapshot. STATIC so it survives across CryptoCubit instances (the cubit
+  /// is a DI factory — a fresh one is built on every navigation). On re-entry
+  /// we paint this instantly, then revalidate in the background, instead of
+  /// flashing the full-screen shimmer every single time. Bounded by a short
+  /// TTL so we never show materially stale holdings/prices (and a logout→login
+  /// within the window still self-corrects on the immediate revalidate pass).
+  static CryptosLoaded? _cachedSnapshot;
+  static DateTime? _cachedAt;
+  static const Duration _snapshotTtl = Duration(seconds: 90);
+
   CryptoCubit({required this.repository}) : super(CryptoInitial());
 
+  /// Capture the freshest loaded snapshot for the SWR cache. Cheap: BLoC calls
+  /// this on every state transition; we only stash the loaded variant.
+  @override
+  void onChange(Change<CryptoState> change) {
+    super.onChange(change);
+    final next = change.nextState;
+    if (next is CryptosLoaded) {
+      _cachedSnapshot = next;
+      _cachedAt = DateTime.now();
+    }
+  }
+
+  /// Clears the cross-instance snapshot cache. Call on logout / account switch
+  /// so a different user never briefly sees the previous user's holdings.
+  static void invalidateSnapshot() {
+    _cachedSnapshot = null;
+    _cachedAt = null;
+  }
+
   Future<void> loadCryptos() async {
+    // SWR fast path: if we have a recent snapshot, paint it immediately and
+    // refresh quietly underneath (no shimmer). Bounded by _snapshotTtl.
+    final cached = _cachedSnapshot;
+    final cachedAt = _cachedAt;
+    if (cached != null &&
+        cachedAt != null &&
+        DateTime.now().difference(cachedAt) < _snapshotTtl) {
+      if (isClosed) return;
+      emit(cached);
+      unawaited(_revalidate());
+      return;
+    }
+    await _initialLoad();
+  }
+
+  /// Full first-load path: shimmer → asset list → lazy sections.
+  Future<void> _initialLoad() async {
     try {
       if (isClosed) return;
       emit(CryptoLoading());
 
-      // Public data (no auth required) — parallel to reduce wall-clock time
-      final results = await Future.wait([
-        repository.getCryptos(),
-        repository.getTrendingCryptos(),
-        repository.getTopCryptos(),
-      ]);
-      final cryptos = results[0] as List<Crypto>;
-      final trendingCryptos = results[1] as List<Crypto>;
-      final topCryptos = results[2] as List<Crypto>;
-
-      // Global market data (non-critical, graceful failure)
-      GlobalMarketData? globalMarketData;
+      // ── PHASE A (fast, primary render) ──────────────────────────────────
+      // Fetch ONLY the tradable asset list (Quidax-first backend: catalogue +
+      // one bulk /markets/tickers, no CoinGecko universe fetch). This is the
+      // thing the user came for; everything else lazy-loads below with its own
+      // spinner. We no longer fetch getCryptos()/getTopCryptos() (the full,
+      // non-tradable CoinGecko top-N) at all — the landing shows only assets
+      // users can actually trade.
+      List<Crypto> assets;
       try {
-        globalMarketData = await repository.getGlobalMarketData();
+        assets = await repository.getSupportedAssets();
       } catch (e) {
-        // CoinGecko rate limit or unavailable — continue without
+        if (isClosed) return;
+        emit(CryptoError(message: friendlyCryptoError(e)));
+        return;
       }
-
-      // Load Quidax-supported assets for buy/sell filtering
-      List<Crypto> supportedAssets = [];
-      try {
-        supportedAssets = await repository.getSupportedAssets();
-      } catch (e) {
-        // Non-critical — continue without
-      }
-
-      // Authenticated data — graceful failure if not logged in
-      List<CryptoWatchlist> watchlists = [];
-      List<CryptoHolding> holdings = [];
-      List<CryptoTransaction> transactions = [];
-      bool authedOk = false;
-      try {
-        watchlists = await repository.getWatchlists();
-        // Lazy holdings: the server returns balances only, leaving fiat
-        // values as 0 + priceLoading=true. The fan-out below populates
-        // each holding's fiat value via parallel rate fetches, emitting
-        // a copyWith'd state per arrival. Lets the landing page render
-        // units in ~50ms instead of waiting for N serial price lookups.
-        holdings = await repository.getHoldings(unitsOnly: true);
-        transactions = await repository.getTransactions();
-        authedOk = true;
-      } catch (e) {
-        // Auth calls failed (user not logged in) — continue with public data
-      }
-
-      // Price alerts — non-critical, fetched via gRPC client directly
-      // (proxied through investment-gateway). Empty on failure so the
-      // landing-page card still renders.
-      List<PriceAlert> priceAlerts = [];
-      if (authedOk) {
-        try {
-          final client = serviceLocator<CryptoGrpcClient>();
-          final res = await client.getPriceAlerts(activeOnly: false);
-          priceAlerts = res.alerts.toList();
-        } catch (_) {
-          // Non-critical — landing renders an empty state.
-        }
-      }
-
-      // Landing-page wallet provisioning fallback. The signup Kafka consumer
-      // normally creates wallets in the background within ~2 min of signup,
-      // but if it raced/failed the user lands here with no holdings. Trigger
-      // BatchCreateWallets in the background and re-fetch — the gRPC call is
-      // idempotent server-side so calling it on a healthy user is a no-op.
-      if (authedOk && holdings.isEmpty && supportedAssets.isNotEmpty && !_walletProvisioningAttempted) {
-        _walletProvisioningAttempted = true;
-        unawaited(_provisionWalletsAndRefresh());
-      }
-
       if (isClosed) return;
+
+      // Movers = the tradable assets sorted by 24h change (client-side; no
+      // extra call, and never shows a coin we can't trade).
+      final movers = List<Crypto>.from(assets)
+        ..sort((a, b) =>
+            b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
+
       emit(CryptosLoaded(
-        cryptos: cryptos,
-        trendingCryptos: trendingCryptos,
-        topCryptos: topCryptos,
-        supportedAssets: supportedAssets,
-        watchlists: watchlists,
-        holdings: holdings,
-        transactions: transactions,
-        priceAlerts: priceAlerts,
-        globalMarketData: globalMarketData,
+        cryptos: assets,
+        supportedAssets: assets,
+        topCryptos: movers,
+        trendingCryptos: movers.take(10).toList(),
+        // Every auxiliary section starts in its own loading state.
+        portfolioLoading: true,
+        statsLoading: true,
+        watchlistLoading: true,
+        transactionsLoading: true,
+        priceAlertsLoading: true,
+        autoOrdersLoading: true,
+        topMoversLoading: true,
       ));
-      // Lazy fiat hydration: emits a fresh state per asset as its rate
-      // arrives so the portfolio total + per-row fiat values fill in
-      // progressively without blocking the landing page render.
-      if (authedOk && holdings.isNotEmpty) {
-        unawaited(_hydrateHoldingFiatValues(holdings));
-      }
+
+      // ── PHASE B (lazy, independent, non-blocking) ───────────────────────
+      unawaited(_loadStatistics());
+      unawaited(_loadAuthedSections());
+      // Top movers data is already in state (derived from assets), but we hold
+      // its shimmer for a beat so the critical landing content paints first —
+      // then reveal it non-blocking, after the initial frame.
+      unawaited(_revealTopMovers());
     } catch (e) {
       if (isClosed) return;
       emit(CryptoError(message: friendlyCryptoError(e)));
+    }
+  }
+
+  /// SWR revalidate pass: refresh the asset list + every lazy section WITHOUT
+  /// flipping any loading flag (the cached snapshot is already on screen), so
+  /// data updates in place with no shimmer. Runs after an instant cache paint.
+  Future<void> _revalidate() async {
+    try {
+      final assets = await repository.getSupportedAssets();
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        final movers = List<Crypto>.from(assets)
+          ..sort((a, b) =>
+              b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
+        emit(s.copyWith(
+          cryptos: assets,
+          supportedAssets: assets,
+          topCryptos: movers,
+          trendingCryptos: movers.take(10).toList(),
+        ));
+      }
+    } catch (_) {
+      // Keep the cached asset list on a transient failure.
+    }
+    // Refresh the auxiliary sections quietly (their loading flags stay false).
+    unawaited(_loadStatistics());
+    unawaited(_loadAuthedSections());
+  }
+
+  /// Reveal the Top Movers section shortly after the initial frame so the
+  /// critical landing content (portfolio, quick actions, supported assets)
+  /// paints first. The data is already in state — this only drops the shimmer.
+  Future<void> _revealTopMovers() async {
+    await Future.delayed(const Duration(milliseconds: 350));
+    if (isClosed) return;
+    final s = state;
+    if (s is CryptosLoaded) emit(s.copyWith(topMoversLoading: false));
+  }
+
+  /// Lazy: global market data (statistics header). Flips [statsLoading] off.
+  Future<void> _loadStatistics() async {
+    GlobalMarketData? g;
+    try {
+      g = await repository.getGlobalMarketData();
+    } catch (_) {
+      // CoinGecko rate limit / unavailable — render without stats.
+    }
+    if (isClosed) return;
+    final s = state;
+    if (s is CryptosLoaded) {
+      emit(s.copyWith(globalMarketData: g, statsLoading: false));
+    }
+  }
+
+  /// Lazy: the authenticated sections — watchlists, holdings, transactions,
+  /// price alerts, auto-orders. These are INDEPENDENT gateway round-trips, so
+  /// they run CONCURRENTLY (previously they awaited one another sequentially,
+  /// which serialised ~5 RTTs). Each flips ONLY its own loading flag, so one
+  /// slow/failed call never blocks the others (or the asset list). Concurrent
+  /// emits are safe: each section does a synchronous `state`-read + `emit`
+  /// with no `await` in between, so copyWith never reads a stale slice.
+  Future<void> _loadAuthedSections() async {
+    await Future.wait([
+      _loadWatchlistsSection(),
+      _loadHoldingsSection(),
+      _loadTransactionsSection(),
+      _loadPriceAlertsSection(),
+      _loadAutoOrdersSection(),
+    ]);
+  }
+
+  /// Watchlists. The watchlist is the SINGLE source of truth for "saved
+  /// assets" — the old favorites path (isFavorite / ToggleFavorite) is gone.
+  /// We derive each asset's isFavorite flag from real watchlist membership so
+  /// the detail-screen star and the watchlist section stay consistent.
+  Future<void> _loadWatchlistsSection() async {
+    try {
+      final w = await repository.getWatchlists();
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(_applyWatchlistMembership(
+            s.copyWith(watchlists: w, watchlistLoading: false)));
+      }
+    } catch (_) {
+      final s = state;
+      if (s is CryptosLoaded) emit(s.copyWith(watchlistLoading: false));
+    }
+  }
+
+  /// Holdings WITH fiat values in a SINGLE round-trip. The backend now values
+  /// every holding off the one bulk /markets/tickers snapshot it already warms
+  /// for the asset list, so we no longer fetch units-only then fan out N
+  /// per-asset GetCryptoFiatRate calls — one call returns units + fiat.
+  Future<void> _loadHoldingsSection() async {
+    try {
+      final h = await repository.getHoldings(unitsOnly: false);
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(s.copyWith(holdings: h, portfolioLoading: false));
+      }
+      if (h.isEmpty) {
+        // Provisioning fallback: idempotent server-side; no-op for healthy users.
+        final s2 = state;
+        if (s2 is CryptosLoaded &&
+            s2.supportedAssets.isNotEmpty &&
+            !_walletProvisioningAttempted) {
+          _walletProvisioningAttempted = true;
+          unawaited(_provisionWalletsAndRefresh());
+        }
+      }
+    } catch (_) {
+      final s = state;
+      if (s is CryptosLoaded) emit(s.copyWith(portfolioLoading: false));
+    }
+  }
+
+  /// Transactions (first page; View All paginates via loadMoreTransactions).
+  Future<void> _loadTransactionsSection() async {
+    try {
+      final t = await repository.getTransactions(limit: txPageSize, offset: 0);
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(s.copyWith(
+          transactions: t,
+          transactionsLoading: false,
+          transactionsHasMore: t.length >= txPageSize,
+        ));
+      }
+    } catch (_) {
+      final s = state;
+      if (s is CryptosLoaded) emit(s.copyWith(transactionsLoading: false));
+    }
+  }
+
+  /// Price alerts (via gRPC client, gateway-proxied).
+  Future<void> _loadPriceAlertsSection() async {
+    try {
+      final client = serviceLocator<CryptoGrpcClient>();
+      final res = await client.getPriceAlerts(activeOnly: false);
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(s.copyWith(
+            priceAlerts: res.alerts.toList(), priceAlertsLoading: false));
+      }
+    } catch (_) {
+      final s = state;
+      if (s is CryptosLoaded) emit(s.copyWith(priceAlertsLoading: false));
+    }
+  }
+
+  /// Auto-orders (price-triggered trades).
+  Future<void> _loadAutoOrdersSection() async {
+    try {
+      final client = serviceLocator<CryptoGrpcClient>();
+      final res = await client.listAutoOrders();
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(s.copyWith(
+            autoOrders: res.orders.toList(), autoOrdersLoading: false));
+      }
+    } catch (_) {
+      final s = state;
+      if (s is CryptosLoaded) emit(s.copyWith(autoOrdersLoading: false));
+    }
+  }
+
+  /// Refreshes just the auto-orders list (after create/cancel).
+  Future<void> refreshAutoOrders() async {
+    try {
+      final client = serviceLocator<CryptoGrpcClient>();
+      final res = await client.listAutoOrders();
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(s.copyWith(autoOrders: res.orders.toList(), autoOrdersLoading: false));
+      }
+    } catch (_) {
+      // keep existing list on failure
+    }
+  }
+
+  /// Creates a price-triggered auto-order. Returns true on success. The BUY
+  /// path reserves fiat up front (a fund hold) after PIN verification; the
+  /// worker executes automatically when the target price is crossed.
+  Future<bool> createAutoOrder({
+    required String accountId,
+    required String side,
+    required String cryptoId,
+    required String fiatCurrency,
+    required String triggerDirection,
+    required double targetPrice,
+    required int amountMinor,
+    required String transactionPin,
+    int expiresInSeconds = 0,
+  }) async {
+    try {
+      final client = serviceLocator<CryptoGrpcClient>();
+      await client.createAutoOrder(
+        accountId: accountId,
+        side: side,
+        cryptoId: cryptoId,
+        fiatCurrency: fiatCurrency,
+        triggerDirection: triggerDirection,
+        targetPrice: targetPrice,
+        amountMinor: amountMinor,
+        transactionPin: transactionPin,
+        idempotencyKey: '',
+        expiresInSeconds: expiresInSeconds,
+      );
+      await refreshAutoOrders();
+      return true;
+    } catch (e) {
+      if (isClosed) return false;
+      emit(CryptoError(message: friendlyCryptoError(e)));
+      return false;
+    }
+  }
+
+  /// Cancels an auto-order (releases the reserved funds for a buy).
+  Future<void> cancelAutoOrder(String orderId) async {
+    final current = state;
+    if (current is! CryptosLoaded) return;
+    // Optimistic removal.
+    final next = current.autoOrders.where((o) => o.id != orderId).toList();
+    emit(current.copyWith(autoOrders: next));
+    try {
+      final client = serviceLocator<CryptoGrpcClient>();
+      await client.cancelAutoOrder(orderId);
+      await refreshAutoOrders();
+    } catch (e) {
+      // Reload to restore truth on failure.
+      await refreshAutoOrders();
     }
   }
 
@@ -134,29 +379,31 @@ class CryptoCubit extends Cubit<CryptoState> {
       if (isClosed) return;
       emit(currentState.copyWith(isSearching: true));
 
+      // Search ONLY the tradable (Quidax-supported) assets — client-side over
+      // the already-loaded list. Instant (no backend round-trip) AND it can
+      // never surface a coin the user can't actually buy/sell on the platform
+      // (the old repository.searchCryptos hit CoinGecko's full universe).
+      final pool = currentState.supportedAssets.isNotEmpty
+          ? currentState.supportedAssets
+          : currentState.cryptos;
       if (query.isEmpty) {
-        final cryptos = await repository.getCryptos();
-        if (isClosed) return;
-        // Re-check state after async gap -- another emit may have changed it
-        final postState = state;
-        if (postState is CryptosLoaded) {
-          emit(postState.copyWith(
-            cryptos: cryptos,
-            clearSearchQuery: true,
-            isSearching: false,
-          ));
-        }
+        emit(currentState.copyWith(
+          cryptos: pool,
+          clearSearchQuery: true,
+          isSearching: false,
+        ));
       } else {
-        final searchResults = await repository.searchCryptos(query);
-        if (isClosed) return;
-        final postState = state;
-        if (postState is CryptosLoaded) {
-          emit(postState.copyWith(
-            cryptos: searchResults,
-            searchQuery: query,
-            isSearching: false,
-          ));
-        }
+        final q = query.toLowerCase().trim();
+        final results = pool
+            .where((c) =>
+                c.name.toLowerCase().contains(q) ||
+                c.symbol.toLowerCase().contains(q))
+            .toList();
+        emit(currentState.copyWith(
+          cryptos: results,
+          searchQuery: query,
+          isSearching: false,
+        ));
       }
     } catch (e) {
       if (isClosed) return;
@@ -208,18 +455,70 @@ class CryptoCubit extends Cubit<CryptoState> {
     final current = state;
     if (current is! CryptosLoaded) return;
     try {
-      final freshHoldings = await repository.getHoldings(unitsOnly: true);
+      // One round-trip returns units + fiat (backend values off the bulk
+      // ticker snapshot), so no separate hydration fan-out is needed.
+      final freshHoldings = await repository.getHoldings(unitsOnly: false);
       if (isClosed) return;
       final s = state;
       if (s is! CryptosLoaded) return;
       emit(s.copyWith(holdings: freshHoldings));
-      // Kick lazy fiat hydration so totals update without blocking
-      // the screen mount on N serial provider lookups.
-      unawaited(_hydrateHoldingFiatValues(freshHoldings));
     } catch (_) {
       // Silent — the next landing-page pull-to-refresh will pick
       // up the truth; we never want a refresh blip to blank out a
       // working holdings UI.
+    }
+  }
+
+  /// Pull-to-refresh for the transaction history screen: re-fetch the
+  /// transactions list and fold it into state. Silent on failure so a refresh
+  /// blip never blanks a working list.
+  Future<void> refreshTransactions() async {
+    final s0 = state;
+    if (s0 is! CryptosLoaded) return;
+    try {
+      final txns = await repository.getTransactions(limit: txPageSize, offset: 0);
+      if (isClosed) return;
+      final s = state;
+      if (s is CryptosLoaded) {
+        emit(s.copyWith(
+          transactions: txns,
+          transactionsHasMore: txns.length >= txPageSize,
+          transactionsLoadingMore: false,
+        ));
+      }
+    } catch (_) {
+      // Silent — keep the existing list on a transient failure.
+    }
+  }
+
+  /// Load the next page of transactions (View All screen, load-more on scroll).
+  /// Appends to the existing list, deduping by id; flips `transactionsHasMore`
+  /// off when a short page comes back. No-op while already loading or drained.
+  Future<void> loadMoreTransactions() async {
+    final s = state;
+    if (s is! CryptosLoaded) return;
+    if (s.transactionsLoadingMore || !s.transactionsHasMore) return;
+    emit(s.copyWith(transactionsLoadingMore: true));
+    try {
+      final next = await repository.getTransactions(
+        limit: txPageSize,
+        offset: s.transactions.length,
+      );
+      if (isClosed) return;
+      final cur = state;
+      if (cur is! CryptosLoaded) return;
+      final seen = cur.transactions.map((t) => t.id).toSet();
+      final fresh = next.where((t) => !seen.contains(t.id)).toList();
+      emit(cur.copyWith(
+        transactions: [...cur.transactions, ...fresh],
+        transactionsLoadingMore: false,
+        transactionsHasMore: next.length >= txPageSize,
+      ));
+    } catch (_) {
+      final cur = state;
+      if (cur is CryptosLoaded) {
+        emit(cur.copyWith(transactionsLoadingMore: false));
+      }
     }
   }
 
@@ -228,71 +527,26 @@ class CryptoCubit extends Cubit<CryptoState> {
     if (current is! CryptosLoaded) return;
     try {
       final results = await Future.wait([
-        repository.getHoldings(unitsOnly: true),
-        repository.getTransactions(),
+        repository.getHoldings(unitsOnly: false),
+        repository.getTransactions(limit: txPageSize, offset: 0),
       ]);
       if (isClosed) return;
       final s = state;
       if (s is! CryptosLoaded) return;
       final freshHoldings = results[0] as List<CryptoHolding>;
+      final freshTxns = results[1] as List<CryptoTransaction>;
       emit(s.copyWith(
         holdings: freshHoldings,
-        transactions: results[1] as List<CryptoTransaction>,
+        transactions: freshTxns,
+        // A new trade resets the paginated list to its first page.
+        transactionsHasMore: freshTxns.length >= txPageSize,
+        transactionsLoadingMore: false,
       ));
-      // Kick lazy fiat hydration so the receipt's holdings card updates
-      // without blocking navigation on N serial provider lookups.
-      unawaited(_hydrateHoldingFiatValues(freshHoldings));
     } catch (_) {
       // Silent — the dashboard's own pull-to-refresh / next loadCryptos
       // will pick up the truth. We never want a refresh failure to leak
       // into the receipt UX.
     }
-  }
-
-  /// Fans out per-asset fiat-rate fetches in parallel for every holding
-  /// the server returned with priceLoading=true. As each rate resolves the
-  /// matching holding is patched via copyWith and the state is re-emitted,
-  /// so the landing-page fiat totals fill in progressively instead of all-
-  /// or-nothing at the end. Failures per asset leave the holding at
-  /// priceLoading=true; the next pull-to-refresh tries again.
-  Future<void> _hydrateHoldingFiatValues(List<CryptoHolding> initial) async {
-    if (initial.isEmpty) return;
-    // We use the existing GetCryptoFiatRate RPC (provider router picks
-    // Quidax first, falls back to CoinGecko) one call per asset.
-    final client = serviceLocator<CryptoGrpcClient>();
-    const fiat = 'NGN';
-    final pending = initial.where((h) => h.priceLoading && h.quantity > 0).toList();
-    if (pending.isEmpty) return;
-
-    Future<void> fetchOne(CryptoHolding h) async {
-      try {
-        final res = await client.getExchangeRate(
-          cryptoId: h.cryptoId,
-          fiatCurrency: fiat,
-        );
-        final rate = res.rate;
-        if (isClosed) return;
-        final s = state;
-        if (s is! CryptosLoaded) return;
-        final updated = s.holdings.map((row) {
-          if (row.cryptoId != h.cryptoId) return row;
-          final total = row.quantity * rate;
-          return row.copyWith(
-            currentPrice: rate,
-            totalValue: total,
-            priceLoading: false,
-            lastUpdated: DateTime.now(),
-          );
-        }).toList();
-        emit(s.copyWith(holdings: updated));
-      } catch (_) {
-        // Leave priceLoading=true so a later refresh can retry; do not
-        // emit a partial state with totalValue=0 (would visually flash).
-      }
-    }
-
-    // Fire all rate requests in parallel.
-    await Future.wait(pending.map(fetchOne));
   }
 
   /// Removes a price alert (PriceAlertWorker won't fire it again) and
@@ -660,14 +914,114 @@ class CryptoCubit extends Cubit<CryptoState> {
     }
   }
 
-  Future<void> toggleFavorite(String cryptoId) async {
-    try {
-      await repository.toggleFavorite(cryptoId);
-      await loadCryptos(); // Reload to reflect changes
-    } catch (e) {
-      if (isClosed) return;
-      emit(CryptoError(message: friendlyCryptoError(e)));
+  /// Toggles an asset's membership in the user's watchlist. This is the SINGLE
+  /// consolidated "save/unsave asset" path — it operates on the real Watchlist
+  /// CRUD (the same store the watchlist manager sheet uses), replacing the old
+  /// dead ToggleFavorite RPC. If the user has no watchlist yet, a default
+  /// "My Watchlist" is created on first save.
+  ///
+  /// STATE-INDEPENDENT: works whether the current state is the landing page's
+  /// [CryptosLoaded] or the detail screen's [CryptoDetailsLoaded] (which does
+  /// NOT extend CryptosLoaded and carries no watchlists). It sources the
+  /// watchlists from state when they're already loaded, otherwise fetches them,
+  /// so the detail-screen bookmark actually persists instead of silently
+  /// no-opping. Returns the new membership (`true` = now saved) so the caller
+  /// can set its local UI authoritatively. On failure it rethrows WITHOUT
+  /// emitting [CryptoError] — that would blank whichever screen is showing;
+  /// the caller reverts its optimistic UI and surfaces the error instead.
+  Future<bool> toggleFavorite(String cryptoId) async {
+    // Prefer already-loaded watchlists (landing page); otherwise fetch them
+    // (detail screen, whose fresh cubit never loaded them). Errors propagate to
+    // the caller, which reverts its optimistic UI — we deliberately do NOT emit
+    // CryptoError here, as that would blank whichever screen is showing.
+    final s = state;
+    List<CryptoWatchlist> watchlists;
+    if (s is CryptosLoaded && s.watchlists.isNotEmpty) {
+      watchlists = s.watchlists;
+    } else {
+      watchlists = await repository.getWatchlists();
     }
+
+    // Is the asset already in ANY of the user's watchlists?
+    String? containingWatchlistId;
+    for (final wl in watchlists) {
+      if (wl.cryptoIds.contains(cryptoId)) {
+        containingWatchlistId = wl.id;
+        break;
+      }
+    }
+
+    final bool nowSaved;
+    if (containingWatchlistId != null) {
+      await repository.removeFromWatchlist(containingWatchlistId, cryptoId);
+      nowSaved = false;
+    } else {
+      // Resolve (or create) the default watchlist, then add.
+      String targetId;
+      if (watchlists.isNotEmpty) {
+        targetId = watchlists.first.id;
+      } else {
+        final wl = await repository.createWatchlist('My Watchlist', '');
+        targetId = wl.id;
+      }
+      await repository.addToWatchlist(targetId, cryptoId);
+      nowSaved = true;
+    }
+
+    // Reload watchlists and re-derive membership flags into the active list
+    // state. No-op when the detail screen (CryptoDetailsLoaded) is showing —
+    // the landing page re-syncs via refreshWatchlists() when it regains focus.
+    final w = await repository.getWatchlists();
+    if (!isClosed) {
+      final cur = state;
+      if (cur is CryptosLoaded) {
+        emit(_applyWatchlistMembership(cur.copyWith(watchlists: w)));
+      }
+    }
+    return nowSaved;
+  }
+
+  /// Public re-fetch of the user's watchlists + re-derived membership flags.
+  /// The detail screen's bookmark toggle runs on a SEPARATE CryptoCubit
+  /// instance (it's opened via a named route that builds its own cubit), so
+  /// the landing page's cubit never learns about a save/unsave made there.
+  /// The landing page calls this when it regains focus after visiting a
+  /// detail screen, keeping the "Your Watchlist" section and every saved
+  /// indicator in sync with the backend.
+  Future<void> refreshWatchlists() async {
+    final s = state;
+    if (s is! CryptosLoaded) return;
+    try {
+      final w = await repository.getWatchlists();
+      if (isClosed) return;
+      final cur = state;
+      if (cur is CryptosLoaded) {
+        emit(_applyWatchlistMembership(cur.copyWith(watchlists: w)));
+      }
+    } catch (_) {
+      // Non-critical: keep showing the last known watchlist.
+    }
+  }
+
+  /// Re-derives each asset's `isFavorite` flag from real watchlist membership
+  /// across every crypto list in the state, so the UI's saved/unsaved
+  /// indicators reflect the single watchlist source of truth.
+  CryptosLoaded _applyWatchlistMembership(CryptosLoaded s) {
+    final ids = <String>{};
+    for (final wl in s.watchlists) {
+      ids.addAll(wl.cryptoIds);
+    }
+    List<Crypto> mark(List<Crypto> list) => list
+        .map((c) => c.isFavorite == ids.contains(c.id)
+            ? c
+            : c.copyWith(isFavorite: ids.contains(c.id)))
+        .toList();
+    return s.copyWith(
+      cryptos: mark(s.cryptos),
+      supportedAssets: mark(s.supportedAssets),
+      topCryptos: mark(s.topCryptos),
+      trendingCryptos: mark(s.trendingCryptos),
+    );
   }
 
   Future<void> loadSupportedAssets({int page = 1, int perPage = 50}) async {

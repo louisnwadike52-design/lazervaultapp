@@ -153,6 +153,10 @@ class SplitBillCard extends StatelessWidget {
           const Color(0xFF10B981),
           'You have paid',
         ),
+      SplitBillParticipantStatus.inProgress => (
+          const Color(0xFF4834D4),
+          'Payment in progress',
+        ),
       SplitBillParticipantStatus.declined => (
           const Color(0xFFEF4444),
           'You declined',

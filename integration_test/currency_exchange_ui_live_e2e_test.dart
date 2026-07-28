@@ -22,7 +22,7 @@
 // Prereqs (same as currency_exchange_e2e_test.dart):
 //   auth-service (50051), accounts-service (50052),
 //   exchange-service (50081), financial-gateway (8016 HTTP / 50071 gRPC),
-//   core-gateway (50070), webhook-gateway (8090) + ngrok tunnel,
+//   core-gateway (50070), webhook-gateway (8090) + Cloudflare tunnel,
 //   admin-gateway (8096) — for blocklist seeding if exercised.
 //
 // Launch:

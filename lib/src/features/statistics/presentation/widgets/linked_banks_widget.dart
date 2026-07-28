@@ -6,6 +6,7 @@ import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/linked_banks_empty_state.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -211,49 +212,7 @@ class LinkedBanksWidget extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _linkNewBank(context),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.h),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              Icons.link_rounded,
-              size: 32.sp,
-              color: const Color(0xFF6B7280),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Link a bank to track all your finances',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 13.sp,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Text(
-                'Link Bank Account',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return LinkedBanksEmptyState(onLink: () => _linkNewBank(context));
   }
 
   Widget _buildAccountsList(
@@ -452,13 +411,13 @@ class _BankAccountItem extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                            color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
                             'Default',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF3B82F6),
+                              color: const Color(0xFF4E03D0),
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w600,
                             ),

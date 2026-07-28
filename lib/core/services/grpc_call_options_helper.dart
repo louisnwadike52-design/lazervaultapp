@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/app_check_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 class GrpcCallOptionsHelper {
   static const String _accessTokenKey = 'access_token';
@@ -35,7 +37,23 @@ class GrpcCallOptionsHelper {
   /// - X-Locale: locale (e.g., "en-US", "en-NG")
   /// - X-Account-Id: active account UUID (if account manager available)
   Future<CallOptions> withAuth([CallOptions? options]) async {
-    final accessToken = await storage.read(key: _accessTokenKey);
+    var accessToken = await storage.read(key: _accessTokenKey);
+
+    // The access token can be TRANSIENTLY absent right after app-start or during
+    // auth restore — it's written to secure storage asynchronously. Any RPC that
+    // fires in that window (e.g. the insurance home screen's parallel companion
+    // reads: statistics / payments / user-insurances) would otherwise send NO
+    // authorization header and the gateway rejects it with "authorization token
+    // not provided". Briefly retry the read so a token that's moments away from
+    // being written is picked up. Zero delay in the common case (token already
+    // present); bounded to ~0.6s only when it's initially empty.
+    if (accessToken == null || accessToken.isEmpty) {
+      for (var attempt = 0; attempt < 5; attempt++) {
+        await Future.delayed(const Duration(milliseconds: 120));
+        accessToken = await storage.read(key: _accessTokenKey);
+        if (accessToken != null && accessToken.isNotEmpty) break;
+      }
+    }
 
     print('=== GrpcCallOptionsHelper.withAuth ===');
     print('Access token present: ${accessToken != null && accessToken.isNotEmpty}');
@@ -51,6 +69,22 @@ class GrpcCallOptionsHelper {
       metadata['authorization'] = 'Bearer $accessToken';
     } else {
       print('WARNING: No access token found in secure storage');
+    }
+
+    // Add the Firebase App Check token (device attestation). Lowercase key for
+    // gRPC metadata; the gateway forwards/reads `x-firebase-appcheck`. Bounded
+    // by a short timeout so a slow/first attestation never blocks the RPC —
+    // the gateway runs App Check report-only until enforce, so a missing token
+    // is non-fatal.
+    try {
+      final appCheckToken = await AppCheckService.instance
+          .getToken()
+          .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      if (appCheckToken != null && appCheckToken.isNotEmpty) {
+        metadata['x-firebase-appcheck'] = appCheckToken;
+      }
+    } catch (_) {
+      // Non-fatal: proceed without the attestation header.
     }
 
     // Add locale metadata if LocaleManager is available
@@ -93,6 +127,41 @@ class GrpcCallOptionsHelper {
     return CallOptions(metadata: metadata);
   }
 
+  /// Call options for UNAUTHENTICATED endpoints (login / signup / phone-OTP):
+  /// attaches the Firebase App Check device-attestation token + locale/country/
+  /// currency, but NO bearer (there is no session yet). Without this, App Check
+  /// never reaches the server on the auth calls it most needs to protect — the
+  /// gateway verifies `x-firebase-appcheck` ahead of JWT auth, in report mode by
+  /// default (a missing token is non-fatal until an operator flips to enforce).
+  Future<CallOptions> withAppCheck([CallOptions? options]) async {
+    final metadata = <String, String>{};
+
+    try {
+      final appCheckToken = await AppCheckService.instance
+          .getToken()
+          .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      if (appCheckToken != null && appCheckToken.isNotEmpty) {
+        metadata['x-firebase-appcheck'] = appCheckToken;
+      }
+    } catch (_) {
+      // Non-fatal: proceed without the attestation header.
+    }
+
+    if (localeManager != null) {
+      metadata.addAll(localeManager!.getLocaleMetadata());
+      final country = localeManager!.currentCountry;
+      if (country.isNotEmpty) metadata['x-user-country'] = country;
+      final currency = localeManager!.currentCurrency;
+      if (currency.isNotEmpty) metadata['x-currency'] = currency;
+    }
+
+    if (options != null && options.metadata.isNotEmpty) {
+      metadata.addAll(options.metadata);
+    }
+
+    return CallOptions(metadata: metadata);
+  }
+
   /// Backward compatibility: withAuthAndLocale is now the same as withAuth
   @Deprecated('Use withAuth() instead - it now includes locale automatically')
   Future<CallOptions> withAuthAndLocale([CallOptions? options]) async {
@@ -124,16 +193,20 @@ class GrpcCallOptionsHelper {
       // PIN token validation (single-use tokens) and retrying would fail.
       if (e.code == StatusCode.unauthenticated && maxRetries > 0) {
         print('Authentication error detected (${e.code}). Attempting token refresh...');
+        AppLogger.event('token_rotation', 'unauthenticated_retry',
+            level: 'warn', fields: {'code': e.code});
 
         // Try to refresh the token
         final refreshed = await _attemptTokenRefresh();
 
         if (refreshed) {
           print('Token refreshed successfully. Retrying request...');
+          AppLogger.event('token_rotation', 'refresh_ok');
           // Retry the call with the new token
           return await executeWithTokenRotation(call, maxRetries: maxRetries - 1);
         } else {
           print('Token refresh failed. Request cannot be retried.');
+          AppLogger.event('token_rotation', 'refresh_failed', level: 'error');
           rethrow;
         }
       }

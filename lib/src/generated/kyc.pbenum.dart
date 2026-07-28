@@ -1,43 +1,60 @@
-///
-//  Generated code. Do not modify.
-//  source: kyc.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from kyc.proto.
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
+/// KYC Tier levels
 class KYCTier extends $pb.ProtobufEnum {
-  static const KYCTier TIER_UNKNOWN = KYCTier._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIER_UNKNOWN');
-  static const KYCTier TIER_1 = KYCTier._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIER_1');
-  static const KYCTier TIER_2 = KYCTier._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIER_2');
-  static const KYCTier TIER_3 = KYCTier._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIER_3');
+  static const KYCTier TIER_UNKNOWN =
+      KYCTier._(0, _omitEnumNames ? '' : 'TIER_UNKNOWN');
+  static const KYCTier TIER_1 = KYCTier._(1, _omitEnumNames ? '' : 'TIER_1');
+  static const KYCTier TIER_2 = KYCTier._(2, _omitEnumNames ? '' : 'TIER_2');
+  static const KYCTier TIER_3 = KYCTier._(3, _omitEnumNames ? '' : 'TIER_3');
 
-  static const $core.List<KYCTier> values = <KYCTier> [
+  static const $core.List<KYCTier> values = <KYCTier>[
     TIER_UNKNOWN,
     TIER_1,
     TIER_2,
     TIER_3,
   ];
 
-  static final $core.Map<$core.int, KYCTier> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static KYCTier? valueOf($core.int value) => _byValue[value];
+  static final $core.List<KYCTier?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static KYCTier? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const KYCTier._($core.int v, $core.String n) : super(v, n);
+  const KYCTier._(super.value, super.name);
 }
 
+/// KYC Verification status
 class KYCStatus extends $pb.ProtobufEnum {
-  static const KYCStatus STATUS_UNKNOWN = KYCStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'STATUS_UNKNOWN');
-  static const KYCStatus NOT_STARTED = KYCStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOT_STARTED');
-  static const KYCStatus IN_PROGRESS = KYCStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IN_PROGRESS');
-  static const KYCStatus PENDING_REVIEW = KYCStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PENDING_REVIEW');
-  static const KYCStatus APPROVED = KYCStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'APPROVED');
-  static const KYCStatus REJECTED = KYCStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'REJECTED');
-  static const KYCStatus EXPIRED = KYCStatus._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPIRED');
+  static const KYCStatus STATUS_UNKNOWN =
+      KYCStatus._(0, _omitEnumNames ? '' : 'STATUS_UNKNOWN');
+  static const KYCStatus NOT_STARTED =
+      KYCStatus._(1, _omitEnumNames ? '' : 'NOT_STARTED');
+  static const KYCStatus IN_PROGRESS =
+      KYCStatus._(2, _omitEnumNames ? '' : 'IN_PROGRESS');
+  static const KYCStatus PENDING_REVIEW =
+      KYCStatus._(3, _omitEnumNames ? '' : 'PENDING_REVIEW');
+  static const KYCStatus APPROVED =
+      KYCStatus._(4, _omitEnumNames ? '' : 'APPROVED');
+  static const KYCStatus REJECTED =
+      KYCStatus._(5, _omitEnumNames ? '' : 'REJECTED');
+  static const KYCStatus EXPIRED =
+      KYCStatus._(6, _omitEnumNames ? '' : 'EXPIRED');
 
-  static const $core.List<KYCStatus> values = <KYCStatus> [
+  static const $core.List<KYCStatus> values = <KYCStatus>[
     STATUS_UNKNOWN,
     NOT_STARTED,
     IN_PROGRESS,
@@ -47,31 +64,58 @@ class KYCStatus extends $pb.ProtobufEnum {
     EXPIRED,
   ];
 
-  static final $core.Map<$core.int, KYCStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static KYCStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<KYCStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 6);
+  static KYCStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const KYCStatus._($core.int v, $core.String n) : super(v, n);
+  const KYCStatus._(super.value, super.name);
 }
 
+/// ID Type for different countries
 class IDType extends $pb.ProtobufEnum {
-  static const IDType ID_UNKNOWN = IDType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ID_UNKNOWN');
-  static const IDType BVN = IDType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'BVN');
-  static const IDType NIN = IDType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NIN');
-  static const IDType DRIVERS_LICENSE = IDType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DRIVERS_LICENSE');
-  static const IDType INTERNATIONAL_PASSPORT = IDType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'INTERNATIONAL_PASSPORT');
-  static const IDType VOTERS_CARD = IDType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VOTERS_CARD');
-  static const IDType GHANA_CARD = IDType._(10, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'GHANA_CARD');
-  static const IDType KENYA_NATIONAL_ID = IDType._(20, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'KENYA_NATIONAL_ID');
-  static const IDType KRA_PIN = IDType._(21, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'KRA_PIN');
-  static const IDType SA_ID_CARD = IDType._(30, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SA_ID_CARD');
-  static const IDType SA_PASSPORT = IDType._(31, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SA_PASSPORT');
-  static const IDType UK_PASSPORT = IDType._(40, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'UK_PASSPORT');
-  static const IDType UK_DRIVING_LICENSE = IDType._(41, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'UK_DRIVING_LICENSE');
-  static const IDType US_SSN = IDType._(50, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'US_SSN');
-  static const IDType US_STATE_ID = IDType._(51, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'US_STATE_ID');
-  static const IDType US_PASSPORT = IDType._(52, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'US_PASSPORT');
+  static const IDType ID_UNKNOWN =
+      IDType._(0, _omitEnumNames ? '' : 'ID_UNKNOWN');
 
-  static const $core.List<IDType> values = <IDType> [
+  /// Nigeria
+  static const IDType BVN = IDType._(1, _omitEnumNames ? '' : 'BVN');
+  static const IDType NIN = IDType._(2, _omitEnumNames ? '' : 'NIN');
+  static const IDType DRIVERS_LICENSE =
+      IDType._(3, _omitEnumNames ? '' : 'DRIVERS_LICENSE');
+  static const IDType INTERNATIONAL_PASSPORT =
+      IDType._(4, _omitEnumNames ? '' : 'INTERNATIONAL_PASSPORT');
+  static const IDType VOTERS_CARD =
+      IDType._(5, _omitEnumNames ? '' : 'VOTERS_CARD');
+
+  /// Ghana
+  static const IDType GHANA_CARD =
+      IDType._(10, _omitEnumNames ? '' : 'GHANA_CARD');
+
+  /// Kenya
+  static const IDType KENYA_NATIONAL_ID =
+      IDType._(20, _omitEnumNames ? '' : 'KENYA_NATIONAL_ID');
+  static const IDType KRA_PIN = IDType._(21, _omitEnumNames ? '' : 'KRA_PIN');
+
+  /// South Africa
+  static const IDType SA_ID_CARD =
+      IDType._(30, _omitEnumNames ? '' : 'SA_ID_CARD');
+  static const IDType SA_PASSPORT =
+      IDType._(31, _omitEnumNames ? '' : 'SA_PASSPORT');
+
+  /// UK
+  static const IDType UK_PASSPORT =
+      IDType._(40, _omitEnumNames ? '' : 'UK_PASSPORT');
+  static const IDType UK_DRIVING_LICENSE =
+      IDType._(41, _omitEnumNames ? '' : 'UK_DRIVING_LICENSE');
+
+  /// USA
+  static const IDType US_SSN = IDType._(50, _omitEnumNames ? '' : 'US_SSN');
+  static const IDType US_STATE_ID =
+      IDType._(51, _omitEnumNames ? '' : 'US_STATE_ID');
+  static const IDType US_PASSPORT =
+      IDType._(52, _omitEnumNames ? '' : 'US_PASSPORT');
+
+  static const $core.List<IDType> values = <IDType>[
     ID_UNKNOWN,
     BVN,
     NIN,
@@ -90,21 +134,29 @@ class IDType extends $pb.ProtobufEnum {
     US_PASSPORT,
   ];
 
-  static final $core.Map<$core.int, IDType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static final $core.Map<$core.int, IDType> _byValue =
+      $pb.ProtobufEnum.initByValue(values);
   static IDType? valueOf($core.int value) => _byValue[value];
 
-  const IDType._($core.int v, $core.String n) : super(v, n);
+  const IDType._(super.value, super.name);
 }
 
+/// Document status enum
 class DocumentStatus extends $pb.ProtobufEnum {
-  static const DocumentStatus DOC_STATUS_UNKNOWN = DocumentStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOC_STATUS_UNKNOWN');
-  static const DocumentStatus DOC_PENDING_UPLOAD = DocumentStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOC_PENDING_UPLOAD');
-  static const DocumentStatus DOC_UPLOADED = DocumentStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOC_UPLOADED');
-  static const DocumentStatus DOC_UNDER_REVIEW = DocumentStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOC_UNDER_REVIEW');
-  static const DocumentStatus DOC_APPROVED = DocumentStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOC_APPROVED');
-  static const DocumentStatus DOC_REJECTED = DocumentStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOC_REJECTED');
+  static const DocumentStatus DOC_STATUS_UNKNOWN =
+      DocumentStatus._(0, _omitEnumNames ? '' : 'DOC_STATUS_UNKNOWN');
+  static const DocumentStatus DOC_PENDING_UPLOAD =
+      DocumentStatus._(1, _omitEnumNames ? '' : 'DOC_PENDING_UPLOAD');
+  static const DocumentStatus DOC_UPLOADED =
+      DocumentStatus._(2, _omitEnumNames ? '' : 'DOC_UPLOADED');
+  static const DocumentStatus DOC_UNDER_REVIEW =
+      DocumentStatus._(3, _omitEnumNames ? '' : 'DOC_UNDER_REVIEW');
+  static const DocumentStatus DOC_APPROVED =
+      DocumentStatus._(4, _omitEnumNames ? '' : 'DOC_APPROVED');
+  static const DocumentStatus DOC_REJECTED =
+      DocumentStatus._(5, _omitEnumNames ? '' : 'DOC_REJECTED');
 
-  static const $core.List<DocumentStatus> values = <DocumentStatus> [
+  static const $core.List<DocumentStatus> values = <DocumentStatus>[
     DOC_STATUS_UNKNOWN,
     DOC_PENDING_UPLOAD,
     DOC_UPLOADED,
@@ -113,9 +165,13 @@ class DocumentStatus extends $pb.ProtobufEnum {
     DOC_REJECTED,
   ];
 
-  static final $core.Map<$core.int, DocumentStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static DocumentStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<DocumentStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 5);
+  static DocumentStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const DocumentStatus._($core.int v, $core.String n) : super(v, n);
+  const DocumentStatus._(super.value, super.name);
 }
 
+const $core.bool _omitEnumNames =
+    $core.bool.fromEnvironment('protobuf.omit_enum_names');

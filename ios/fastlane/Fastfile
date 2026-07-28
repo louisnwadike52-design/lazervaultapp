@@ -247,6 +247,17 @@ platform :ios do
     # Refresh ios/Flutter/Generated.xcconfig from pubspec (build number/name) so
     # gym picks up the freshly bumped CFBundleVersion — see staging lane for why.
     Dir.chdir(FLUTTER_DIR) { sh("flutter pub get") }
+    # `flutter clean` (run before deploys) wipes ios/Pods + the CocoaPods
+    # sandbox, but `flutter pub get` does NOT reinstall pods — so gym fails with
+    # "The sandbox is not in sync with the Podfile.lock". Reinstall pods here so
+    # the Pods sandbox always matches Podfile.lock before the Xcode build.
+    # Run OUTSIDE the bundler env: this lane is invoked via `bundle exec`, but
+    # CocoaPods is NOT in this Gemfile, so bundler can't resolve the `pod`
+    # executable ("can't find executable pod for gem cocoapods"). with_unbundled_env
+    # restores the system gem PATH where `pod` is installed.
+    Bundler.with_unbundled_env do
+      Dir.chdir("#{FLUTTER_DIR}/ios") { sh("pod install") }
+    end
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "Runner.xcodeproj",

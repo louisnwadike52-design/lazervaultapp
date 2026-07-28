@@ -165,6 +165,64 @@ class VoiceSettingsService {
     }
   }
 
+  /// Read the per-user voice transaction-PIN override (through the voice gateway,
+  /// which forwards the JWT to auth-service). Returns null on failure.
+  Future<VoiceTxPinSettings?> getTxPinSettings() async {
+    try {
+      final token = await _getAuthToken();
+      final response = await _client.get(
+        Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        return VoiceTxPinSettings.fromJson(
+            json.decode(response.body) as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      AppLogger.error('Error fetching voice txpin settings', error: e);
+      return null;
+    }
+  }
+
+  /// Update the per-user voice transaction-PIN override. Pass null for require_pin/
+  /// threshold_kobo to CLEAR that override (defer to the platform default). [entryMode]
+  /// is tri-state: null = leave untouched, '' = clear the override (defer to admin),
+  /// 'sheet'/'voice' = pin the choice. Returns true on success.
+  Future<bool> updateTxPinSettings({
+    required bool? requirePin,
+    required int? thresholdKobo,
+    String? entryMode,
+  }) async {
+    try {
+      final token = await _getAuthToken();
+      final body = <String, dynamic>{
+        'require_pin': requirePin,
+        'threshold_kobo': thresholdKobo,
+      };
+      // Only include entry_mode when the caller is changing it, so a require_pin /
+      // threshold save never wipes the entry-mode choice server-side.
+      if (entryMode != null) {
+        body['entry_mode'] = entryMode;
+      }
+      final response = await _client.put(
+        Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 8));
+      return response.statusCode == 200;
+    } catch (e) {
+      AppLogger.error('Error updating voice txpin settings', error: e);
+      return false;
+    }
+  }
+
   Future<String?> _getAuthToken() async {
     // Get auth token from secure storage
     try {
@@ -179,4 +237,56 @@ class VoiceSettingsService {
       return null;
     }
   }
+}
+
+/// Per-user voice transaction-PIN override + the resolved platform defaults.
+class VoiceTxPinSettings {
+  /// null = defer to the platform default; true = always ask the PIN in voice;
+  /// false = always skip (session-auth-only) for this user.
+  final bool? requirePin;
+
+  /// null = defer to the platform default; otherwise, when a PIN is required, still
+  /// skip it for voice amounts at/below this many kobo.
+  final int? thresholdKobo;
+
+  /// Per-user PIN-entry override: '' = defer to the admin default; 'sheet' = enter on
+  /// the on-screen sheet; 'voice' = say the digits.
+  final String entryMode;
+
+  /// Resolved platform defaults (for showing "(default: skip)" hints).
+  final bool adminRequirePin;
+  final int adminThresholdKobo;
+
+  /// Resolved platform default entry mode ('sheet'|'voice').
+  final String adminEntryMode;
+
+  const VoiceTxPinSettings({
+    this.requirePin,
+    this.thresholdKobo,
+    this.entryMode = '',
+    this.adminRequirePin = false,
+    this.adminThresholdKobo = 0,
+    this.adminEntryMode = 'sheet',
+  });
+
+  factory VoiceTxPinSettings.fromJson(Map<String, dynamic> j) => VoiceTxPinSettings(
+        requirePin: j['require_pin'] as bool?,
+        thresholdKobo: (j['threshold_kobo'] as num?)?.toInt(),
+        entryMode: (j['entry_mode'] as String?) ?? '',
+        adminRequirePin: j['admin_require_pin'] as bool? ?? false,
+        adminThresholdKobo: (j['admin_threshold_kobo'] as num?)?.toInt() ?? 0,
+        adminEntryMode: (j['admin_entry_mode'] as String?)?.isNotEmpty == true
+            ? j['admin_entry_mode'] as String
+            : 'sheet',
+      );
+
+  /// The effective "PIN required in voice" the user experiences right now.
+  bool get effectiveRequirePin => requirePin ?? adminRequirePin;
+
+  /// The effective threshold in kobo.
+  int get effectiveThresholdKobo => thresholdKobo ?? adminThresholdKobo;
+
+  /// The effective PIN-entry mode ('sheet'|'voice') — per-user override wins.
+  String get effectiveEntryMode =>
+      entryMode.isNotEmpty ? entryMode : adminEntryMode;
 }

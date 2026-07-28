@@ -112,8 +112,11 @@ class CountryKYCRequirements extends Equatable {
     this.mandatoryIdTypes = const [],
     this.addressProofRequired = false,
     this.livenessCheckRequired = false,
-    this.tier1DailyLimit = 5000000, // 50,000 in kobo
-    this.tier2DailyLimit = 50000000, // 500,000 in kobo
+    // Fallback defaults ONLY — the real per-tier limits come from the backend
+    // (auth-service, sourced from shared/kyctiers). Kept in sync with the CBN
+    // canonical model: Tier 1 ₦50,000/day, Tier 2 ₦200,000/day, Tier 3 unlimited.
+    this.tier1DailyLimit = 5000000, // ₦50,000 in kobo
+    this.tier2DailyLimit = 20000000, // ₦200,000 in kobo (CBN Tier-2 daily)
     this.tier3DailyLimit = 0, // Unlimited
   });
 

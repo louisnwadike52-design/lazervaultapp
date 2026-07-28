@@ -69,9 +69,68 @@ class PanicBalanceSettings extends StatelessWidget {
               _infoBox(
                 muted,
                 Icons.info_outline,
-                'To show or hide the decoy: long-press your balance, or shake '
-                'your phone. It stays on until you toggle it off — even after '
-                'closing and reopening the app.',
+                'Use the triggers below to show or hide the decoy. It stays on '
+                'until you toggle it off — even after closing and reopening the '
+                'app.',
+              ),
+              SizedBox(height: 16.h),
+              Text('Triggers',
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, fontWeight: FontWeight.w700)),
+              SizedBox(height: 2.h),
+              Text('Choose how the decoy is shown/hidden — enable either or both.',
+                  style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
+              _toggleTile(
+                icon: Icons.vibration,
+                title: 'Shake to toggle',
+                subtitle: 'Shake your phone to flip the decoy',
+                value: _panic.shakeTriggerEnabled,
+                onChanged: _panic.setShakeTrigger,
+              ),
+              _toggleTile(
+                icon: Icons.touch_app_outlined,
+                title: 'Long-press balance',
+                subtitle: 'Long-press the balance on your dashboard',
+                value: _panic.longPressTriggerEnabled,
+                onChanged: _panic.setLongPressTrigger,
+              ),
+              if (!_panic.shakeTriggerEnabled && !_panic.longPressTriggerEnabled)
+                Padding(
+                  padding: EdgeInsets.only(top: 4.h),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded,
+                          size: 15.sp, color: _warn),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          'No trigger enabled — you won\'t be able to show the '
+                          'decoy until you turn one on.',
+                          style: GoogleFonts.inter(fontSize: 11.sp, color: _warn),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              SizedBox(height: 12.h),
+              Text('Sound',
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, fontWeight: FontWeight.w700)),
+              _toggleTile(
+                icon: Icons.volume_up_outlined,
+                title: 'Money-counting sound',
+                subtitle: 'Play a counting sound when your balance goes up',
+                value: _panic.soundEnabled,
+                onChanged: _panic.setSoundEnabled,
+              ),
+              if (_panic.soundEnabled) _soundPicker(muted),
+              _toggleTile(
+                icon: Icons.vibration,
+                title: 'Vibrate on animation',
+                subtitle:
+                    'Buzz while the balance animates and when you switch to the decoy',
+                value: _panic.vibrationEnabled,
+                onChanged: _panic.setVibrationEnabled,
               ),
               if (_panic.isVisible)
                 Padding(
@@ -114,7 +173,8 @@ class PanicBalanceSettings extends StatelessWidget {
                     side: const BorderSide(color: _primary),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r)),
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                   ),
                 ),
               ],
@@ -123,6 +183,63 @@ class PanicBalanceSettings extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _toggleTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      secondary: Icon(icon, color: _primary, size: 22.sp),
+      title: Text(title,
+          style: GoogleFonts.inter(
+              fontSize: 14.sp, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle,
+          style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[600])),
+      value: value,
+      activeColor: _primary,
+      onChanged: onChanged,
+    );
+  }
+
+  /// Picker for which sound plays as the balance animates up. Only shown when
+  /// the money-counting sound toggle is on.
+  Widget _soundPicker(Color? muted) {
+    final options = _panic.panicSoundOptions;
+    final current = _panic.soundChoice;
+    return Padding(
+      padding: EdgeInsets.only(left: 34.w, top: 2.h, bottom: 4.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Choose a sound',
+              style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
+          ...options.entries.map((e) {
+            final selected = e.value == current;
+            return RadioListTile<String>(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              activeColor: _primary,
+              value: e.value,
+              groupValue: current,
+              title: Text(e.key,
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.w500)),
+              onChanged: (v) {
+                if (v != null) _panic.setSoundChoice(v);
+              },
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -353,6 +470,38 @@ class PanicBalanceSettings extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Dedicated screen host for [PanicBalanceSettings], opened from
+/// Settings → Security → Panic Balance. Matches the light Settings theme.
+class PanicBalanceScreen extends StatelessWidget {
+  const PanicBalanceScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const bg = Color(0xFFF9FAFB);
+    const textPrimary = Color(0xFF1F2937);
+    return Scaffold(
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: textPrimary),
+        title: Text(
+          'Panic Balance',
+          style: GoogleFonts.inter(
+            color: textPrimary,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: const SafeArea(
+        child: SingleChildScrollView(child: PanicBalanceSettings()),
       ),
     );
   }

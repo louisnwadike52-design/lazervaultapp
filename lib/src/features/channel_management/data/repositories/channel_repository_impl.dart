@@ -31,7 +31,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
   Future<String> _getUserId() async {
     final userId = await _secureStorage.getUserId();
     if (userId == null || userId.isEmpty) {
-      throw const ServerFailure(
+      throw ServerFailure(
           message: 'User not authenticated', statusCode: 401);
     }
     return userId;
@@ -273,9 +273,13 @@ class ChannelRepositoryImpl implements IChannelRepository {
     } on ServerFailure catch (e) {
       return Left(e);
     } on GrpcError catch (e) {
-      return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to change channel PIN'),
-          statusCode: e.code));
+      // auth-service classifyPinError returns Unauthenticated for a wrong
+      // CURRENT PIN; the generic mapper would mislabel that as "Session
+      // expired. Please log in again." Mirror the main PIN-change screen's copy.
+      final message = e.code == StatusCode.unauthenticated
+          ? 'Current PIN is incorrect.'
+          : friendlyGrpcError(e, 'Failed to change channel PIN');
+      return Left(ServerFailure(message: message, statusCode: e.code));
     } catch (e) {
       return Left(
           ServerFailure(message: 'An unexpected error occurred', statusCode: 500));

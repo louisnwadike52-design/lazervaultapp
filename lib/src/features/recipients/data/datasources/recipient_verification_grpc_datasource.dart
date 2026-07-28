@@ -2,6 +2,7 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/generated/payments.pbgrpc.dart';
 import '../../domain/entities/account_verification_result.dart';
+import '../../domain/entities/account_suggestion.dart';
 import 'recipient_verification_remote_datasource.dart';
 
 /// gRPC-based data source for recipient account verification.
@@ -119,6 +120,39 @@ class RecipientVerificationGrpcDataSource
         rethrow;
       }
       throw VerificationException('Unexpected error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<AccountSuggestion>> suggestAccounts({
+    required String accountNumber,
+    String country = 'NG',
+  }) async {
+    // Best-effort: the backend runs a NUBAN check-digit pass + provider
+    // name-resolve. Any failure just yields no suggestions (manual fallback).
+    try {
+      final request = SuggestBankAccountsRequest(
+        accountNumber: accountNumber,
+        country: country,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.suggestBankAccounts(
+        request,
+        options: callOptions,
+      );
+      if (!response.success) return const <AccountSuggestion>[];
+      return response.matches
+          .map((m) => AccountSuggestion(
+                bankCode: m.bankCode,
+                bankName: m.bankName,
+                accountName: m.accountName,
+                accountNumber: m.accountNumber.isNotEmpty
+                    ? m.accountNumber
+                    : accountNumber,
+              ))
+          .toList();
+    } catch (_) {
+      return const <AccountSuggestion>[];
     }
   }
 

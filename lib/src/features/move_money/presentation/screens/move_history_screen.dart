@@ -9,9 +9,14 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../cubit/move_money_cubit.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/move_transfer.dart';
+import '../receipts/beam_receipt_payload.dart';
+import '../widgets/beam_style.dart';
+import '../../data/datasources/move_money_grpc_datasource.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import '../widgets/move_status_badge.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -120,7 +125,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'LazerBeam History',
+          'Lazerbeam History',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -274,19 +279,28 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
   // Transfer item
   // ---------------------------------------------------------------------------
 
+  void _openReceipt(MoveTransfer transfer) {
+    Future<MoveTransfer> Function()? fetch;
+    if (!transfer.status.isTerminal) {
+      final authState = context.read<AuthenticationCubit>().state;
+      final userId =
+          authState is AuthenticationSuccess ? authState.profile.userId : '';
+      final ds = serviceLocator<MoveMoneyGrpcDataSource>();
+      fetch =
+          () => ds.getMoveTransferStatus(transferId: transfer.id, userId: userId);
+    }
+    Get.toNamed(
+      AppRoutes.transferProof,
+      arguments: beamReceiptPayloadFromMoveTransfer(transfer, statusFetch: fetch),
+    );
+  }
+
   Widget _buildTransferItem(MoveTransfer transfer) {
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        '/move-money/detail',
-        arguments: transfer,
-      ),
+      onTap: () => _openReceipt(transfer),
       child: Container(
         padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
+        decoration: BeamStyle.card(radius: 14),
         child: Row(
           children: [
             // Icon
@@ -294,12 +308,12 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                color: BeamStyle.purple.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 Icons.swap_horiz_rounded,
-                color: const Color(0xFF60A5FA),
+                color: BeamStyle.purpleLight,
                 size: 22.sp,
               ),
             ),

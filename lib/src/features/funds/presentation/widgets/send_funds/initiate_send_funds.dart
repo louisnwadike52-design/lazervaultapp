@@ -9,6 +9,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // For serviceLocator
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -25,6 +26,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/pending_chat_transfers.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
@@ -40,33 +42,6 @@ import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:uuid/uuid.dart';
-
-/// Maps a service-category subcategory name to the analytics label that the
-/// accounts-service SQL `subCategoryExpr` expects (e.g. "food" → "Food & Drinks").
-/// These labels must match the CASE expressions in transaction_repository.go.
-String _categoryToAnalyticsLabel(String subCategoryName) {
-  return switch (subCategoryName.toLowerCase()) {
-    'food' => 'Food & Drinks',
-    'shopping' => 'Shopping',
-    'transport' => 'Transportation',
-    'entertainment' => 'Entertainment',
-    'healthcare' => 'Healthcare',
-    'education' => 'Education',
-    'rent' => 'Rent & Mortgage',
-    'gifts' => 'Gifts & Donations',
-    'travel' => 'Travel',
-    'groceries' => 'Groceries',
-    'insurance' => 'Insurance',
-    'personal_care' => 'Personal Care',
-    'subscriptions' => 'Subscriptions',
-    'bills' || 'utilities' => 'Bills & Utilities',
-    _ => subCategoryName
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-        .join(' '),
-  };
-}
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -152,6 +127,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   @override
   void initState() {
     super.initState();
+
+    // Freeze the short/long flow decision for the duration of this send journey
+    // (released in dispose, when the user is back on the dashboard) so a login
+    // revalidation / admin flip can never switch the flow mid-journey.
+    FeatureFlags.beginSendFlow();
+
+    // Telemetry: long-flow send-funds screen view.
+    AnalyticsService.instance.trackSendFundsScreen('initiate', 'long');
 
     // Resolve recipient. Constructor param wins; otherwise fall back
     // to Get.arguments (RecipientModel or Map).
@@ -496,13 +479,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       }
     }
 
-    return SizedBox(
-      height: 100.h,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: displayOrder.length,
-        itemBuilder: (context, displayIndex) {
-          final index = displayOrder[displayIndex];
+    // Height-intrinsic horizontal scroller: each card sizes to its own content
+    // so the balance line at the bottom is never clipped. The old
+    // `SizedBox(height: 78.h)` forced every card to one fixed height that, on
+    // shorter phones (where `.h` scales the box down but the inner text/icon
+    // sizes stay fixed pixels), fell below the content height and truncated the
+    // bottom row. A plain horizontal Row stays just as compact — the numbers
+    // pad below still has room — while letting the card grow to fit.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final index in displayOrder)
+            Builder(builder: (context) {
           final account = summaries[index];
             final isSelected = selectedCardIndex == index;
             // Disabled = not the active dashboard account. You send from the
@@ -511,6 +500,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 activeId.isNotEmpty &&
                 account.spendingAccountId != activeId &&
                 account.id != activeId;
+            // A frozen/suspended account can't be a transfer source — reflect
+            // it and refuse selection (accounts-service would reject the debit).
+            final isFrozen = account.isFrozen;
 
             // Determine account type display
             String accountTypeDisplay = 'Personal';
@@ -543,22 +535,32 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             String last4 = account.accountNumberLast4;
 
             return GestureDetector(
-              onTap: isLocked
+              onTap: isFrozen
                   ? () => Get.snackbar(
-                        'Locked to current account',
-                        'Switch accounts on the dashboard to send from a different wallet.',
+                        'Account frozen',
+                        'This account is frozen. Unfreeze it in Account settings to send money.',
                         snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.black87,
+                        backgroundColor: const Color(0xFFEF4444),
                         colorText: Colors.white,
                         margin: EdgeInsets.all(12.w),
-                        duration: const Duration(seconds: 2),
+                        duration: const Duration(seconds: 3),
                       )
-                  : () => setState(() => selectedCardIndex = index),
+                  : isLocked
+                      ? () => Get.snackbar(
+                            'Locked to current account',
+                            'Switch accounts on the dashboard to send from a different wallet.',
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.black87,
+                            colorText: Colors.white,
+                            margin: EdgeInsets.all(12.w),
+                            duration: const Duration(seconds: 2),
+                          )
+                      : () => setState(() => selectedCardIndex = index),
               child: Opacity(
-                opacity: isLocked ? 0.4 : 1.0,
+                opacity: (isLocked || isFrozen) ? 0.4 : 1.0,
                 child: Container(
                 margin: EdgeInsets.only(right: 12.w),
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
                 width: 160.w,
                 decoration: BoxDecoration(
                   color: isSelected
@@ -578,7 +580,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Size to content (no fixed parent height anymore), so the
+                  // balance line is always laid out fully instead of clipped.
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -591,13 +595,17 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: accountTypeColor.withValues(alpha: 0.2),
+                            color: isFrozen
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
+                                : accountTypeColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            accountTypeDisplay,
+                            isFrozen ? 'Frozen' : accountTypeDisplay,
                             style: TextStyle(
-                              color: accountTypeColor,
+                              color: isFrozen
+                                  ? const Color(0xFFEF4444)
+                                  : accountTypeColor,
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
@@ -605,7 +613,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                         ),
                       ],
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 4.h),
                     Text(
                       '•••• $last4',
                       style: TextStyle(
@@ -630,9 +638,51 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               ),
               ),
             );
-          },
-        ),
-      );
+            }),
+        ],
+      ),
+    );
+  }
+
+  /// Inline banner shown when the selected/active source account is frozen, so
+  /// the block is visible in-flow (the card is dimmed + pre-selected, and the
+  /// Send action is refused). Renders nothing when the source is usable.
+  Widget _buildFrozenSourceBanner(AccountCardsSummaryState accountState) {
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+    if (selectedCardIndex < 0 || selectedCardIndex >= summaries.length) {
+      return const SizedBox.shrink();
+    }
+    if (!summaries[selectedCardIndex].isFrozen) return const SizedBox.shrink();
+    return Container(
+      margin: EdgeInsets.only(top: 12.h),
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.ac_unit, color: Color(0xFFEF4444), size: 18),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'This account is frozen. Unfreeze it in Account settings to send money.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildQuickAmounts(AccountCardsSummaryState accountState) {
@@ -824,6 +874,24 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     final selectedAccount = summaries[selectedCardIndex];
+
+    // 3b. Frozen source guard — a frozen/suspended account cannot send money
+    // (accounts-service rejects the debit). Reflect it here BEFORE the user
+    // reaches the PIN step, with a clear, actionable message.
+    if (selectedAccount.isFrozen) {
+      Get.snackbar(
+        'Account frozen',
+        'This account is frozen, so you can\'t send money from it. '
+            'Unfreeze it in Account settings to continue.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        margin: EdgeInsets.all(12.w),
+        duration: const Duration(seconds: 5),
+      );
+      return;
+    }
+
     double transferAmountMajor = double.parse(amount) / 100.0;
 
     // 4. Validate minimum transfer amount (e.g., 0.01)
@@ -1125,10 +1193,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               _buildConfirmationRow(
                                 'To',
                                 _recipient!.name,
-                                _recipient!.accountNumber.length >
-                                        4 // Mask account number
-                                    ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
-                                    : _recipient!.accountNumber,
+                                // Empty for internal user recipients (no real
+                                // account number → don't mask the user-id UUID).
+                                _recipient!.maskedAccount,
                               ),
                               if (selectedCategory != null)
                                 _buildConfirmationRow(
@@ -1389,14 +1456,24 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           : 'NGN';
 
                                       if (FeatureFlags.sendFundsPinIsRequired) {
+                                        AnalyticsService.instance.trackSendFundsScreen('pin', 'long');
+                                        // Fee quoted live while the amount was typed (same
+                                        // TransferCubit) — shown on the PIN sheet so the user
+                                        // confirms the TOTAL debit. Internal transfers are free.
+                                        final longFeeQuote = context.read<TransferCubit>().lastFeeLoaded;
+                                        final longFeeMajor = (longFeeQuote?.fee ?? 0) / 100.0;
                                         final pinSuccess = await validateTransactionPin(
                                           context: context,
                                           transactionId: transactionId,
                                           transactionType: 'transfer',
                                           amount: transferAmountMajor,
                                           currency: accountCurrency,
+                                          fee: longFeeMajor > 0 ? longFeeMajor : null,
                                           title: 'Confirm Transfer',
                                           message: 'Confirm transfer of $accountCurrency ${transferAmountMajor.toStringAsFixed(2)}',
+                                          // Outcome confirmed on the receipt (external transfers
+                                          // return `pending`), so don't claim success here.
+                                          successMessage: 'Transfer Initiated',
                                           onPinValidated: (verificationToken) async {
                                             // Execute transfer inside callback — PIN modal stays open
                                             // showing processing phase while backend works
@@ -1620,18 +1697,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         : '';
     final String defaultNarration = senderFullName.isNotEmpty
         ? 'Transfer from $senderFullName'
-        : 'Transfer from LazerVault';
+        : 'Transfer from Lazervault';
 
-    final String narration;
-    if (selectedCategory != null) {
-      final categoryLabel = _categoryToAnalyticsLabel(selectedCategory!.subCategoryName);
-      final detail = userNarration.isNotEmpty ? userNarration : 'Transfer';
-      narration = '$categoryLabel: $detail';
-    } else if (userNarration.isNotEmpty) {
-      narration = userNarration;
-    } else {
-      narration = defaultNarration;
-    }
+    // Shared with the short flow (ServiceCategory.buildTransferNarration) so both
+    // flows stamp the category prefix identically for subcategory analytics.
+    final String narration = ServiceCategory.buildTransferNarration(
+      category: selectedCategory,
+      note: userNarration,
+      defaultNarration: defaultNarration,
+    );
 
     // Re-validate scheduled date hasn't become stale while user was in PIN flow
     if (scheduledDate != null && !scheduledDate!.isAfter(DateTime.now())) {
@@ -1668,6 +1742,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       beneficiaryName: transferType == 'external' ? _recipient!.name : null,
       scheduledAt: scheduledDate,
       expenseCategory: selectedCategory?.budgetCategory,
+      flow: 'long',
     );
     print("_executeTransferWithPin: Transfer initiated.");
 
@@ -1717,17 +1792,24 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
     String sourceAccountInfo = 'Unknown Card';
     String senderCurrency = 'NGN';
-    String sourceAccountName = '';
+    // From-name on the receipt = the sender's REAL name (not the account-type
+    // label like "personal").
+    final senderProfile = context.read<AuthenticationCubit>().currentProfile;
+    String sourceAccountName = senderProfile != null
+        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
+        : '';
     if (summaries.isNotEmpty && selectedCardIndex < summaries.length) {
       final selectedAccount = summaries[selectedCardIndex];
       sourceAccountInfo = '${selectedAccount.accountType} •••• ${selectedAccount.accountNumberLast4}';
       senderCurrency = selectedAccount.currency;
-      sourceAccountName = selectedAccount.accountName ?? '';
+      if (sourceAccountName.isEmpty) {
+        sourceAccountName = selectedAccount.accountName ?? '';
+      }
     }
 
-    String recipientAccountMasked = _recipient!.accountNumber.length > 4
-        ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
-        : _recipient!.accountNumber;
+    // Empty for internal user recipients (no real account number) → the receipt
+    // hides the Account row instead of masking the user-id UUID.
+    String recipientAccountMasked = _recipient!.maskedAccount;
 
     final transferDetails = {
       'amount': transferAmount,
@@ -1735,13 +1817,17 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       'totalAmount': totalAmount,
       'recipientName': _recipient!.name,
       'recipientAccountMasked': recipientAccountMasked,
-      'recipientBankName': _recipient!.bankName,
+      'recipientBankName': _recipient!.displayBankName,
+      'recipientBankCode': _recipient!.sortCode,
       'sourceAccountInfo': sourceAccountInfo,
       'sourceAccountName': sourceAccountName,
       'currency': senderCurrency,
       'transferId': transferState.response.transferId.toString(),
       'timestamp': transferState.response.createdAt,
       'category': selectedCategory?.displayName,
+      // Carry the send-funds flow (long|short) so the processing & receipt
+      // screens emit real telemetry instead of 'unknown'.
+      'flow': AnalyticsService.instance.currentSendFlow,
       'reference': _referenceController.text.trim().isNotEmpty
           ? _referenceController.text.trim()
           : null,
@@ -1749,7 +1835,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       'internalReference': transferState.response.internalReference,
       'status': transferState.response.status,
       'network': _recipient!.bankName == 'LazerVault'
-          ? 'LazerVault Internal Transfer'
+          ? 'Lazervault Internal Transfer'
           : 'External Bank Transfer',
       'transferType': _recipient!.bankName == 'LazerVault'
           ? 'Internal Transfer'
@@ -1769,6 +1855,26 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // listeners when this screen is revisited
     context.read<TransferCubit>().resetState();
 
+    // Internal (Lazervault→Lazervault) send: hand the completed transfer to the
+    // P2P chat with this user so the money bubble renders the moment they open
+    // the chat (the receipt wipes the stack, so the chat can't reload on return).
+    final peerId = _recipient!.internalUserId?.trim().isNotEmpty == true
+        ? _recipient!.internalUserId!.trim()
+        : (_recipient!.type == 'internal' ? _recipient!.id : '');
+    if (peerId.isNotEmpty) {
+      PendingChatTransfers.instance.record(
+        peerUserId: peerId,
+        amountMinor: transferState.response.amount.toInt(),
+        currency: senderCurrency,
+        reference: transferState.response.internalReference,
+        note: transferDetails['reference'] as String?,
+        // Carry the real status so a scheduled (not-yet-fired) send renders the
+        // chat bubble as "Money Scheduled" instead of "Money Sent".
+        status: transferState.response.status,
+        scheduledAt: scheduledDate,
+      );
+    }
+
     // Navigate directly to receipt
     Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
   }
@@ -1778,6 +1884,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   void _ensureFinancialConnection({
     required String otherUserId,
     required String otherUserName,
+    String? myName,
   }) {
     Future(() async {
       try {
@@ -1785,6 +1892,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         await repo.getOrCreateConversation(
           otherUserId,
           otherUserName: otherUserName,
+          myName: myName,
         );
         debugPrint('[P2P] Financial connection ensured for $otherUserName');
       } catch (e) {
@@ -2010,6 +2118,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
     _resetRecurringState();
     _predictionCubit.close();
+    // Release the flow-pin freeze taken in initState.
+    FeatureFlags.endSendFlow();
     super.dispose();
   }
 
@@ -2148,9 +2258,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               _recipient!.internalUserId != null &&
               _recipient!.internalUserId!.isNotEmpty &&
               _recipient!.bankName == 'LazerVault') {
+            // Sender's own real name seeds the RECEIVER's view of us so their
+            // connection isn't left as "Unknown User" (same source the receipt
+            // uses at line ~1815).
+            final senderProfile =
+                context.read<AuthenticationCubit>().currentProfile;
+            final senderName = senderProfile != null
+                ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'
+                    .trim()
+                : '';
             _ensureFinancialConnection(
               otherUserId: _recipient!.internalUserId!,
               otherUserName: _recipient!.name,
+              myName: senderName.isNotEmpty ? senderName : null,
             );
           }
           // --- End P2P Connection ---
@@ -2213,10 +2333,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               sourceAccountName = selectedAccount.accountName ?? '';
             }
 
-            String recipientAccountMasked = _recipient!.accountNumber.length >
-                    4
-                ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
-                : _recipient!.accountNumber;
+            // Empty for internal user recipients (no real account number) → the
+            // receipt hides the Account row instead of masking the user-id UUID.
+            String recipientAccountMasked = _recipient!.maskedAccount;
 
             final transferDetails = {
               'amount': transferAmount,
@@ -2224,7 +2343,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'totalAmount': totalAmount,
               'recipientName': _recipient!.name,
               'recipientAccountMasked': recipientAccountMasked,
-              'recipientBankName': _recipient!.bankName,
+              'recipientBankName': _recipient!.displayBankName,
+              'recipientBankCode': _recipient!.sortCode,
               'sourceAccountInfo': sourceAccountInfo,
               'sourceAccountName': sourceAccountName,
               'currency': senderCurrency,
@@ -2232,6 +2352,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   transferState.response.transferId.toString(),
               'timestamp': transferState.response.createdAt,
               'category': selectedCategory?.displayName,
+              // Carry the send-funds flow (long|short) so the processing &
+              // receipt screens emit real telemetry instead of 'unknown'.
+              'flow': AnalyticsService.instance.currentSendFlow,
               'reference': _referenceController.text.trim().isNotEmpty
                   ? _referenceController.text.trim()
                   : null,
@@ -2239,7 +2362,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'internalReference': transferState.response.internalReference,
               'status': transferState.response.status,
               'network': _recipient!.bankName == 'LazerVault'
-                  ? 'LazerVault Internal Transfer'
+                  ? 'Lazervault Internal Transfer'
                   : 'External Bank Transfer',
               'transferType': _recipient!.bankName == 'LazerVault'
                   ? 'Internal Transfer'
@@ -2554,7 +2677,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 24.h),
+                            SizedBox(height: 16.h),
 
                             // Pay with Card Selector
                             Column(
@@ -2569,9 +2692,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 ),
                                 SizedBox(height: 8.h),
                                 _buildCardSelector(accountState),
+                                _buildFrozenSourceBanner(accountState),
                               ],
                             ),
-                            SizedBox(height: 24.h),
+                            SizedBox(height: 16.h),
 
                             // Amount Entry Box
                             Container(
@@ -2839,19 +2963,20 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16.0.h),
+                            SizedBox(height: 12.h),
 
                             // Number pad
                             Expanded(
                               child: GridView.count(
                                 crossAxisCount: 3,
-                                mainAxisSpacing: 16.h,
+                                mainAxisSpacing: 12.h,
                                 crossAxisSpacing: 16.w,
                                 childAspectRatio:
                                     2.5, // Adjust aspect ratio for better spacing
-                                // Bottom padding so the last row (0 / ⌫) isn't
-                                // clipped by the device nav bar on phones.
-                                padding: EdgeInsets.only(bottom: 24.h),
+                                // Extra bottom padding lifts the last row (0 / ⌫)
+                                // clear of the device nav bar / home indicator so
+                                // it isn't hidden below the screen edge.
+                                padding: EdgeInsets.only(bottom: 32.h),
                                 physics: const NeverScrollableScrollPhysics(),
                                 children: [
                                   for (var i = 1; i <= 9; i++)

@@ -23,7 +23,8 @@ class RevenueExpenseBarChart extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,7 +177,8 @@ class RevenueExpenseBarChart extends StatelessWidget {
       padding: EdgeInsets.all(32.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Center(
         child: Text(

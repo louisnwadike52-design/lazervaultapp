@@ -10,6 +10,7 @@ import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/app_error_view.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 /// Budget Detail Screen
 class BudgetDetailScreen extends StatefulWidget {
@@ -109,7 +110,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
             Get.snackbar(
               'Deleted',
               state.message,
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
             );
@@ -117,7 +118,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
             Get.snackbar(
               'Updated',
               state.message,
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
             );
@@ -181,7 +182,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                   ElevatedButton(
                     onPressed: () => Get.back(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: InvoiceThemeColors.primaryPurple,
                       foregroundColor: Colors.white,
                     ),
                     child: const Text('Go Back'),
@@ -198,7 +199,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.toNamed(AppRoutes.budgetAIInsights),
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: InvoiceThemeColors.primaryPurple,
         icon: const Icon(Icons.auto_awesome, color: Colors.white),
         label: const Text('AI Insights', style: TextStyle(color: Colors.white)),
       ),
@@ -268,7 +269,7 @@ class _BudgetDetailView extends StatelessWidget {
                               ? const Color(0xFFEF4444)
                               : percentage >= 70
                                   ? const Color(0xFFFB923C)
-                                  : const Color(0xFF10B981),
+                                  : InvoiceThemeColors.primaryPurple,
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),

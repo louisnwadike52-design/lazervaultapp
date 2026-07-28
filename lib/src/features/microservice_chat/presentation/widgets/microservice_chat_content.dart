@@ -542,11 +542,15 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                   ],
                   // Inline receipt card for successful transfers (lazy — PDF generated on tap)
                   if (!isUser && message.metadata?['receipt_data'] != null)
-                    _buildReceiptCard(message.metadata!['receipt_data']),
+                    _buildReceiptCard(message.metadata!['receipt_data'])
                   // ReceiptCard V2 — generic shape emitted by
                   // chat_services_shared/receipt_protocol.py. Single
                   // dict OR list (batch transfer produces N cards).
-                  if (!isUser && message.metadata?['receipt_card'] != null)
+                  // Rendered ONLY when there's no receipt_data: a successful
+                  // transfer surfaces both, but we show the single receipt_data
+                  // card above; V2 is the fallback for flows that emit only
+                  // receipt_card (e.g. batch transfers).
+                  else if (!isUser && message.metadata?['receipt_card'] != null)
                     _buildReceiptCardV2(message.metadata!['receipt_card']),
                   // PinPromptIntent — money-moving tools emit this
                   // when they need the user's PIN. The card opens the

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
@@ -25,15 +26,40 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   final int _pinLength = 4;
   String _enteredPin = '';
   String _confirmedPin = '';
-  String _currentPin = ''; // For change PIN flow
   bool _isConfirmMode = false;
   bool _isCreating = false;
   bool _isLoading = true;
-  bool _userHasPin = false;
-  bool _isChangePinMode = false; // true when user already has PIN and wants to change
-  bool _hasEnteredCurrentPin = false; // for change flow
   String? _errorMessage;
-  bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
+
+  /// When true, this screen was PUSHED mid-flow (e.g. from a payment that
+  /// needs a PIN — see TransactionPinMixin) and must POP back to the caller on
+  /// completion/skip so that flow can resume. When false (signup/onboarding /
+  /// login-resume, reached via offAllNamed), it routes FORWARD to KYC/dashboard.
+  bool get _returnToCaller =>
+      (Get.arguments as Map<String, dynamic>?)?['returnOnComplete'] == true;
+
+  // KYC-onboarding flags. The signup cubit writes with the DEFAULT config while
+  // main.dart reads with encryptedSharedPreferences:true — different Android
+  // backends — so read from both (mirrors bvn_verification_screen).
+  static const _flagsDefault = FlutterSecureStorage();
+  static const _flagsEncrypted = FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+      resetOnError: true,
+    ),
+  );
+
+  Future<String?> _readFlag(String key) async {
+    try {
+      final v = await _flagsDefault.read(key: key);
+      if (v != null) return v;
+    } catch (_) {/* fall through */}
+    try {
+      return await _flagsEncrypted.read(key: key);
+    } catch (_) {
+      return null;
+    }
+  }
 
   late TransactionPinCubit _transactionPinCubit;
 
@@ -56,18 +82,24 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
 
   Future<void> _checkUserHasPin() async {
     try {
-      await _transactionPinCubit.checkUserHasPin();
+      // ALWAYS hit the server here (forceRefresh) — never trust the session
+      // "has PIN" cache on the setup screen. Otherwise a stale cached `true`
+      // (e.g. after a super-admin cleared the PIN and the user logged back in
+      // on the same process) would make us skip setup and strand the user with
+      // no PIN. The setup screen must be authoritative about whether a PIN
+      // genuinely exists.
+      await _transactionPinCubit.checkUserHasPin(forceRefresh: true);
       if (mounted) {
         final hasPin = _transactionPinCubit.state.hasPin;
-        if (_fromLoginFlow && hasPin) {
-          // User already has a PIN during login flow — skip directly
+        if (hasPin) {
+          // A PIN already exists (returning user / resumed signup). This screen
+          // only CREATES a PIN — changing one lives in Settings
+          // (PinManagementScreen). Never re-prompt or turn into a change flow;
+          // just move forward.
           _proceedToNextStep();
           return;
         }
         setState(() {
-          _userHasPin = hasPin;
-          // Only enter change-PIN mode if NOT in login flow
-          _isChangePinMode = hasPin && !_fromLoginFlow;
           _isLoading = false;
         });
       }
@@ -81,12 +113,9 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     }
   }
 
-  /// New-PIN policy for setup/change: reject trivially guessable PINs and (in
-  /// change mode) reusing the current PIN. Returns an error to show, or null.
+  /// New-PIN policy for setup: reject trivially guessable PINs. Returns an
+  /// error to show, or null.
   String? _newPinSetupError(String pin) {
-    if (_isChangePinMode && pin == _currentPin) {
-      return 'New PIN must be different from your current one.';
-    }
     if (isWeakNumericCode(pin)) {
       return 'Choose a less predictable PIN (avoid 1111 or 1234).';
     }
@@ -99,32 +128,13 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     setState(() {
       _errorMessage = null;
 
-      // For change PIN flow, first collect current PIN
-      if (_isChangePinMode && !_hasEnteredCurrentPin) {
-        if (_currentPin.length < _pinLength) {
-          _currentPin += number;
-
-          // Move to new PIN entry when current PIN is complete
-          if (_currentPin.length == _pinLength) {
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (mounted) {
-                setState(() {
-                  _hasEnteredCurrentPin = true;
-                });
-              }
-            });
-          }
-        }
-        return;
-      }
-
       if (!_isConfirmMode) {
         if (_enteredPin.length < _pinLength) {
           _enteredPin += number;
 
           // Validate the new PIN the moment it's complete (before confirm) so
-          // the user isn't asked to confirm a PIN we'll reject — weak codes and
-          // (in change mode) reusing the current PIN are rejected up front.
+          // the user isn't asked to confirm a PIN we'll reject — weak codes are
+          // rejected up front.
           if (_enteredPin.length == _pinLength) {
             final pinErr = _newPinSetupError(_enteredPin);
             if (pinErr != null) {
@@ -164,20 +174,9 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     setState(() {
       _errorMessage = null;
 
-      // For change PIN flow, handle current PIN backspace
-      if (_isChangePinMode && !_hasEnteredCurrentPin) {
-        if (_currentPin.isNotEmpty) {
-          _currentPin = _currentPin.substring(0, _currentPin.length - 1);
-        }
-        return;
-      }
-
       if (!_isConfirmMode) {
         if (_enteredPin.isNotEmpty) {
           _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1);
-        } else if (_isChangePinMode && _hasEnteredCurrentPin) {
-          // Go back to current PIN entry in change flow
-          _hasEnteredCurrentPin = false;
         }
       } else {
         if (_confirmedPin.isNotEmpty) {
@@ -207,38 +206,25 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     });
 
     try {
-      bool success;
-
-      if (_isChangePinMode) {
-        // Change existing PIN
-        success = await _transactionPinCubit.changePin(
-          currentPin: _currentPin,
-          newPin: _enteredPin,
-          confirmNewPin: _confirmedPin,
-        );
-      } else {
-        // Create new PIN
-        success = await _transactionPinCubit.createPin(
-          pin: _enteredPin,
-          confirmPin: _confirmedPin,
-        );
-      }
+      // Create new PIN. Bounded so a stalled CreateTransactionPin RPC (no gRPC
+      // deadline on the write path) can't leave the confirm step spinning
+      // forever — a timeout throws TimeoutException, caught below like any error.
+      final success = await _transactionPinCubit
+          .createPin(
+            pin: _enteredPin,
+            confirmPin: _confirmedPin,
+          )
+          .timeout(const Duration(seconds: 20));
 
       if (success) {
         _showSuccessDialog();
       } else {
         setState(() {
           _isCreating = false;
-          _errorMessage = _isChangePinMode
-              ? 'Failed to change PIN. Please check your current PIN.'
-              : 'Failed to create PIN. Please try again.';
+          _errorMessage = 'Failed to create PIN. Please try again.';
           _confirmedPin = '';
           _isConfirmMode = false;
           _enteredPin = '';
-          if (_isChangePinMode) {
-            _hasEnteredCurrentPin = false;
-            _currentPin = '';
-          }
         });
       }
     } on GrpcError catch (e) {
@@ -262,8 +248,15 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
         case StatusCode.invalidArgument:
           msg = e.message ?? 'Invalid PIN.';
           break;
+        case StatusCode.unavailable:
+        case StatusCode.deadlineExceeded:
+          // Server unreachable / timed out — never surface the raw
+          // "transport: Error while dialing …" string to the user.
+          msg = 'Can\'t reach the server right now. Check your connection and try again.';
+          break;
         default:
-          msg = e.message ?? 'Could not save your PIN. Try again.';
+          // Don't leak raw gRPC transport text; keep it short + actionable.
+          msg = 'Could not save your PIN. Please try again.';
       }
       setState(() {
         _isCreating = false;
@@ -271,24 +264,17 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
         _confirmedPin = '';
         _isConfirmMode = false;
         _enteredPin = '';
-        if (_isChangePinMode) {
-          _hasEnteredCurrentPin = false;
-          _currentPin = '';
-        }
       });
     } catch (e) {
       setState(() {
         _isCreating = false;
-        _errorMessage = _isChangePinMode
-            ? 'Error changing PIN: ${e.toString().replaceAll('Exception:', '').trim()}'
-            : 'Error creating PIN: ${e.toString().replaceAll('Exception:', '').trim()}';
+        // Keep it short + actionable — never dump the raw exception text, which
+        // can be a long "transport: Error while dialing …" string that distorts
+        // the layout.
+        _errorMessage = 'Could not save your PIN. Please try again.';
         _confirmedPin = '';
         _isConfirmMode = false;
         _enteredPin = '';
-        if (_isChangePinMode) {
-          _hasEnteredCurrentPin = false;
-          _currentPin = '';
-        }
       });
     }
   }
@@ -338,7 +324,6 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   }
 
   void _showSuccessDialog() {
-    final isChange = _isChangePinMode;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -349,15 +334,13 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
               Icon(Icons.check_circle, color: Colors.green, size: 28.sp),
               SizedBox(width: 8.w),
               Text(
-                isChange ? 'PIN Changed!' : 'PIN Created!',
+                'PIN Created!',
                 style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           content: Text(
-            isChange
-                ? 'Your Transaction PIN has been changed successfully.'
-                : 'Your Transaction PIN has been set up successfully. You can now make secure payments and transfers.',
+            'Your Transaction PIN has been set up successfully. You can now make secure payments and transfers.',
             style: TextStyle(fontSize: 14.sp),
           ),
           actions: [
@@ -382,50 +365,61 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   }
 
   void _proceedToNextStep() {
-    if (_fromLoginFlow) {
-      // Login flow — go directly to dashboard
-      Get.offAllNamed(AppRoutes.dashboard);
-      return;
-    }
-
-    // If user already had a PIN (change flow from settings), just go back
-    if (_userHasPin) {
+    // Pushed mid-flow (e.g. from a payment via TransactionPinMixin) — pop back
+    // so the caller can re-check the PIN and resume its transaction. Never
+    // offAllNamed here, which would wipe the stack and strand the payment.
+    if (_returnToCaller) {
       Get.back();
       return;
     }
 
-    // Signup flow — proceed to KYC progressive onboarding
-    Get.offAllNamed(AppRoutes.kycBVNVerification);
+    // First-time signup, login/resume, and "PIN already exists → skip" all
+    // funnel here. Honor the ONE-TIME KYC onboarding gate before the dashboard
+    // (same `kyc_onboarding_pending` signal the boot router uses).
+    _routeAfterPin();
+  }
+
+  /// Route after PIN setup. The KYC (BVN) onboarding step is shown ONLY while
+  /// the user is still completing onboarding for the first time — i.e. the
+  /// per-signup `kyc_onboarding_pending` flag is still set. That flag is written
+  /// at signup and CLEARED the moment KYC is finished OR skipped (see
+  /// bvn_verification_screen), so once the user first reaches the dashboard,
+  /// subsequent logins go straight there — KYC is then updated via Settings.
+  ///
+  /// We intentionally do NOT consult `has_skipped_kyc` here: it's a GLOBAL
+  /// (not per-user) flag, so a prior user/session skipping KYC would otherwise
+  /// suppress the first-time KYC step for a brand-new signup. `kyc_onboarding_pending`
+  /// is the per-signup source of truth and is sufficient on its own.
+  Future<void> _routeAfterPin() async {
+    final kycPending = await _readFlag('kyc_onboarding_pending');
+    if (!mounted) return;
+    if (kycPending == 'true') {
+      // First-time onboarding — show the (skippable) KYC step. Reached via
+      // offAllNamed, so its Skip/Done routes FORWARD to the dashboard.
+      Get.offAllNamed(AppRoutes.kycBVNVerification);
+    } else {
+      Get.offAllNamed(AppRoutes.dashboard);
+    }
   }
 
   String _getTitle() {
-    if (_isChangePinMode && !_hasEnteredCurrentPin) {
-      return 'Enter Current PIN';
-    } else if (_isConfirmMode) {
+    if (_isConfirmMode) {
       return 'Confirm New PIN';
-    } else if (_isChangePinMode) {
-      return 'Enter New PIN';
     } else {
       return 'Set Up Transaction PIN';
     }
   }
 
   String _getSubtitle() {
-    if (_isChangePinMode && !_hasEnteredCurrentPin) {
-      return 'Enter your current 4-digit PIN to continue';
-    } else if (_isConfirmMode) {
+    if (_isConfirmMode) {
       return 'Enter your new PIN again to confirm';
-    } else if (_isChangePinMode) {
-      return 'Enter a new 4-digit PIN';
     } else {
       return 'Create a 4-digit PIN for secure payments';
     }
   }
 
   String _getCurrentDisplayPin() {
-    if (_isChangePinMode && !_hasEnteredCurrentPin) {
-      return _currentPin;
-    } else if (_isConfirmMode) {
+    if (_isConfirmMode) {
       return _confirmedPin;
     } else {
       return _enteredPin;
@@ -453,18 +447,16 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
 
     final currentPin = _getCurrentDisplayPin();
 
-    return Scaffold(
+    // Signup/onboarding is forward-only (nothing to pop to): block the hardware
+    // back gesture — users advance via "Skip for now" or by completing the PIN.
+    // When pushed mid-flow (returnToCaller), allow back so the caller resumes,
+    // except while a create is in flight.
+    return PopScope(
+      canPop: _returnToCaller && !_isCreating,
+      child: Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: _isChangePinMode
-          ? AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Get.back(),
-              ),
-            )
-          : null,
+      // No AppBar/back button: this is a forward-only signup step. Users move on
+      // via "Skip for now" or by completing the PIN.
       body: Stack(
         children: [
           // Background image
@@ -493,9 +485,15 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                     minHeight: availableHeight,
                   ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    // Two zones (like the passcode LOGIN screen): header + dots
+                    // on top, number pad anchored LOW like a system keyboard.
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(height: _isChangePinMode ? 20.h : 60.h),
+                      // ===== TOP zone: logo + heading + dots =====
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                      SizedBox(height: 40.h),
                       Center(
                         child: UniversalImageLoader(
                           imagePath: AppData.appLogo,
@@ -529,8 +527,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 8.h),
-                      // Info text (only for new PIN setup, not change flow)
-                      if (!_isConfirmMode && !_isChangePinMode)
+                      // Info text (only on the initial PIN-entry step)
+                      if (!_isConfirmMode)
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.w),
                           child: Text(
@@ -559,6 +557,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                               Expanded(
                                 child: Text(
                                   _errorMessage!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.red.shade200,
                                     fontSize: 13.sp,
@@ -587,7 +587,12 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 35.h),
+                        ],
+                      ),
+                      // ===== BOTTOM zone: number pad anchored low =====
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                       // Number pad
                       GridView.count(
                         physics: const NeverScrollableScrollPhysics(),
@@ -610,8 +615,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                         ],
                       ),
                       SizedBox(height: 30.h),
-                      // Skip button (only on first entry during signup, not for change flow)
-                      if (!_isConfirmMode && !_isCreating && !_isChangePinMode)
+                      // Skip button (only on the initial PIN-entry step)
+                      if (!_isConfirmMode && !_isCreating)
                         TextButton(
                           onPressed: _skipPinSetup,
                           child: Text(
@@ -630,7 +635,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                               const LazerVaultLoader.small(),
                               SizedBox(height: 12.h),
                               Text(
-                                _isChangePinMode ? 'Changing your PIN...' : 'Creating your PIN...',
+                                'Creating your PIN...',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 14.sp,
@@ -640,6 +645,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
                           ),
                         ),
                       SizedBox(height: 24.h),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -647,6 +654,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

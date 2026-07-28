@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/business/presentation/receipts/business_receipt.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 /// Receipt shown after a pay run is processed (money is debited from the
@@ -26,13 +29,13 @@ class PayRunReceiptScreen extends StatefulWidget {
 
 class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
     with TickerProviderStateMixin {
-  static const _bg = Color(0xFF0A0A0A);
-  static const _card = Color(0xFF1F1F1F);
-  static const _border = Color(0xFF2D2D2D);
-  static const _label = Color(0xFF9CA3AF);
-  static const _green = Color(0xFF10B981);
-  static const _red = Color(0xFFEF4444);
-  static const _orange = Color(0xFFFB923C);
+  static const _bg = InvoiceThemeColors.primaryBackground;
+  static const _card = InvoiceThemeColors.secondaryBackground;
+  static const _border = InvoiceThemeColors.borderColor;
+  static const _label = InvoiceThemeColors.textGray400;
+  static const _green = InvoiceThemeColors.successGreen;
+  static const _red = InvoiceThemeColors.errorRed;
+  static const _orange = InvoiceThemeColors.warningOrange;
 
   late final AnimationController _fadeController;
   late final AnimationController _checkController;
@@ -404,12 +407,58 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
     );
   }
 
+  void _shareReceipt() {
+    final status = _allPaid
+        ? UnifiedTransactionStatus.completed
+        : (_nonePaid
+            ? UnifiedTransactionStatus.failed
+            : UnifiedTransactionStatus.processing);
+    final tx = buildBusinessReceipt(
+      type: TransactionServiceType.payroll,
+      title: 'Payroll processed',
+      amountMajor: _totalNet,
+      currency: (_data['currency'] ?? 'NGN').toString(),
+      flow: TransactionFlow.outgoing,
+      status: status,
+      reference: _reference.isNotEmpty ? _reference : null,
+      description: (_data['name'] ?? 'Pay run').toString(),
+      metadata: {
+        'Employees': '$_employeeCount',
+        'Paid': '$_successful',
+        if (_failed > 0) 'Failed / pending': '$_failed',
+      },
+    );
+    showBusinessReceipt(context, tx);
+  }
+
   Widget _buildActions() {
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
       decoration: const BoxDecoration(color: _bg),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _shareReceipt,
+              icon: const Icon(Icons.ios_share, color: Colors.white, size: 18),
+              label: Text('Download / Share receipt',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: _border),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.r)),
+              ),
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
           Expanded(
             child: OutlinedButton(
               onPressed: () {
@@ -449,6 +498,8 @@ class _PayRunReceiptScreenState extends State<PayRunReceiptScreen>
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700)),
             ),
+          ),
+            ],
           ),
         ],
       ),

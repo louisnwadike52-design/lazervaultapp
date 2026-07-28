@@ -118,6 +118,8 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         return Icons.shield_outlined;
       case 'exchange_convert':
         return Icons.swap_horiz_rounded;
+      case 'exchange_international':
+        return Icons.public_rounded;
       case 'split_bill_pay':
         return Icons.group;
       default:
@@ -147,6 +149,8 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         return 'Submit insurance claim';
       case 'exchange_convert':
         return 'Confirm currency conversion';
+      case 'exchange_international':
+        return 'Confirm international transfer';
       case 'split_bill_pay':
         return 'Confirm split-bill payment';
       default:

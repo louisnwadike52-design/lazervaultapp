@@ -7,15 +7,89 @@ import '../entities/two_factor_entity.dart';
 import '../usecases/sign_up_usecase.dart';
 
 abstract class IAuthRepository {
-  // Authentication methods - return ProfileEntity on success
+  // Authentication methods - return ProfileEntity on success.
+  // Exactly one of [email] / [phone] identifies the account (the email+password
+  // login accepts either); [phone] must be E.164 when provided.
   Future<Either<Failure, ProfileEntity>> login({
-    required String email,
+    String email,
+    String phone,
     required String password,
   });
 
   Future<Either<Failure, ProfileEntity>> loginWithPasscode({
     required String email,
     required String passcode,
+  });
+
+  // ── Phone + Passcode authentication mode ─────────────────────────────────
+  /// Returns the active platform auth mode ('email_password' | 'phone_passcode').
+  Future<Either<Failure, String>> getAuthenticationMode();
+
+  /// Start phone+passcode signup: send a 6-digit SMS OTP to the phone.
+  Future<Either<Failure, PhoneSignupOtpResult>> requestSignupPhoneOtp({
+    required String phone,
+    required String countryCode,
+  });
+
+  /// Verify the signup OTP; returns a single-use signup token on success.
+  Future<Either<Failure, String>> verifySignupPhoneOtp({
+    required String phone,
+    required String code,
+  });
+
+  /// Create a phone-primary account (email optional). Returns a session.
+  Future<Either<Failure, ProfileEntity>> signUpWithPhone({
+    required String phone,
+    required String signupToken,
+    required String passcode,
+    required String firstName,
+    required String lastName,
+    String? email,
+    required String countryCode,
+    String? locale,
+    String? username,
+    String? referralCode,
+    String? dateOfBirth,
+  });
+
+  /// Login a phone-primary user with phone + passcode.
+  Future<Either<Failure, ProfileEntity>> loginWithPhonePasscode({
+    required String phone,
+    required String passcode,
+  });
+
+  /// Forgot passcode (phone+passcode): send a 6-digit SMS OTP to a phone-primary
+  /// account to begin a passcode reset.
+  Future<Either<Failure, PhoneSignupOtpResult>> requestPasscodeReset({
+    required String phone,
+    required String countryCode,
+  });
+
+  /// Validate the reset OTP WITHOUT consuming it, so the code can be confirmed
+  /// the instant it is entered (before choosing a new passcode).
+  Future<Either<Failure, void>> verifyPasscodeReset({
+    required String phone,
+    required String code,
+    required String countryCode,
+  });
+
+  /// Verify the reset OTP and set a new login passcode in one call.
+  Future<Either<Failure, void>> resetPasscodeWithOtp({
+    required String phone,
+    required String code,
+    required String newPasscode,
+  });
+
+  /// Set the calling user's preferred login method ("email_password" |
+  /// "phone_passcode"). Returns the applied method on success.
+  Future<Either<Failure, String>> setPreferredLoginMethod({
+    required String method,
+  });
+
+  /// Set an INITIAL password for a passwordless account (enables the
+  /// email+password login method).
+  Future<Either<Failure, void>> setPassword({
+    required String newPassword,
   });
 
   Future<Either<Failure, void>> registerPasscode({
@@ -26,6 +100,83 @@ abstract class IAuthRepository {
     required String oldPasscode,
     required String newPasscode,
   });
+
+  /// Complete an adaptive step-up login by verifying the OTP that was sent when
+  /// a login returned [StepUpRequiredFailure]. Returns a full session.
+  Future<Either<Failure, ProfileEntity>> verifyLoginOtp({
+    required String stepUpToken,
+    required String code,
+  });
+
+  /// Complete a 2FA login by verifying the code, using the temp [twoFactorToken]
+  /// returned when a login responded with [TwoFactorRequiredFailure]. Works for
+  /// authenticator (TOTP), SMS and email methods (+ backup codes).
+  Future<Either<Failure, ProfileEntity>> verifyTwoFactor({
+    required String twoFactorToken,
+    required String code,
+  });
+
+  /// (Re)send a 2FA code for SMS/email methods. Pass the temp [twoFactorToken]
+  /// during LOGIN (used as the Bearer). Pass null during SETUP (already authed —
+  /// the normal access token is used). No-op-safe for TOTP.
+  Future<Either<Failure, void>> sendTwoFactorLoginCode({
+    String? twoFactorToken,
+  });
+
+  // ===== Trusted devices (security center) =====
+  /// Enroll/refresh THIS device in the backend registry. Fire-and-forget after
+  /// login; failures are non-fatal.
+  Future<Either<Failure, void>> registerDevice();
+
+  /// List the user's known devices for the security center.
+  Future<Either<Failure, List<TrustedDevice>>> listDevices();
+
+  /// Revoke a device (ends its sessions). [deviceUuid] from [listDevices].
+  Future<Either<Failure, void>> revokeDevice({required String deviceUuid});
+
+  /// Recent sign-in activity (successes + failures) for the security center.
+  /// [offset] skips rows for bottom-reach pagination (load-more).
+  Future<Either<Failure, List<LoginActivity>>> getLoginActivity(
+      {int limit, int offset});
+
+  /// Refresh the access/refresh tokens using the stored refresh token. Returns
+  /// the new token metadata on success, or null when the session is no longer
+  /// valid (revoked/expired). Used to re-validate after a biometric/voice unlock.
+  Future<Map<String, String>?> refreshTokensSimple();
+
+  /// Like [refreshTokensSimple], but DISTINGUISHES a definitive auth failure
+  /// from a transient one so the caller never logs a user out over a network
+  /// blip. Returns `authExpired: true` ONLY when the refresh token was actually
+  /// rejected (Unauthenticated / PermissionDenied / InvalidArgument / NotFound /
+  /// 401) — the session is genuinely gone → clear + passcode. On a transient
+  /// failure (Unavailable / DeadlineExceeded / Internal / network / 5xx) it
+  /// returns `authExpired: false` with null tokens — the refresh token is STILL
+  /// VALID, so the caller MUST keep the session intact (a later retry / the next
+  /// gRPC call / a biometric unlock will rotate it). On success it persists the
+  /// rotated tokens and rolls the durable biometric copy forward, like
+  /// [refreshTokensWithToken], and returns them.
+  Future<({Map<String, String>? tokens, bool authExpired})>
+      refreshTokensWithReason();
+
+  /// Rotate the session from an EXPLICIT refresh token (e.g. the durable
+  /// biometric token) rather than the volatile `refresh_token` key. Persists the
+  /// rotated access/refresh tokens on success and returns the new token metadata,
+  /// or null when that token is no longer valid. Used by biometric unlock to
+  /// re-mint a live session after the volatile refresh token was wiped.
+  Future<Map<String, String>?> refreshTokensWithToken(String refreshToken);
+
+  /// Request in-app deletion of the current account (30-day cancellable grace).
+  /// The user is identified by the bearer token. On the server this revokes
+  /// sessions; the client should clear the local session on success.
+  Future<Either<Failure, AccountDeletionOutcome>> requestAccountDeletion({String? reason});
+
+  /// Arm a self-imposed account lock for [durationSeconds] (Settings → Security).
+  /// Blocks login + transactions until it elapses; no early unlock. Returns the
+  /// ISO-8601 unlock time on success. The current session is revoked server-side.
+  Future<Either<Failure, DateTime>> requestAccountLock({required int durationSeconds, String? reason});
+
+  /// Cancel a pending account deletion within the grace window.
+  Future<Either<Failure, String>> cancelAccountDeletion();
 
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
@@ -118,6 +269,22 @@ abstract class IAuthRepository {
   Future<Either<Failure, VerifyPhoneEntity>> verifyPhoneNumber({
     required String phoneNumber,
     required String verificationCode,
+  });
+
+  /// Change the signed-in user's phone to a brand-new number. Sends an SMS OTP
+  /// to the NEW number; the change only applies after [verifyPhoneChange].
+  /// Returns a status message on success.
+  Future<Either<Failure, String>> requestPhoneChange({
+    required String newPhone,
+    String countryCode,
+  });
+
+  /// Verify the OTP sent to the new number and apply the change. Returns the
+  /// newly-applied phone number on success.
+  Future<Either<Failure, String>> verifyPhoneChange({
+    required String newPhone,
+    required String code,
+    String countryCode,
   });
 
   /// Verify identity (BVN, NIN, SSN, etc.) with the banking service
@@ -239,3 +406,109 @@ class PasswordResetVerificationResult {
     required this.expiresInSeconds,
   });
 } 
+/// Result of requesting a phone signup OTP.
+class PhoneSignupOtpResult {
+  final int expiresInSeconds;   // OTP validity window
+  final int resendAfterSeconds; // cooldown before another request is allowed
+  const PhoneSignupOtpResult({
+    required this.expiresInSeconds,
+    required this.resendAfterSeconds,
+  });
+}
+
+/// Returned (as a Left) when a login needs an adaptive step-up OTP before a
+/// session is issued. Carries everything the OTP screen needs. The cubit
+/// inspects for this type and routes to the OTP flow instead of showing an error.
+class StepUpRequiredFailure extends Failure {
+  final String stepUpToken;
+  final String stepUpMethod;  // "email" | "sms"
+  final String destination;   // masked, for display
+  StepUpRequiredFailure({
+    required this.stepUpToken,
+    required this.stepUpMethod,
+    required this.destination,
+  }) : super(message: 'Verification required', statusCode: 0);
+}
+
+/// One sign-in event (success or failure) for the Login Activity feed.
+class LoginActivity {
+  final bool success;
+  final String ipAddress;
+  final String deviceName;
+  final String userAgent;
+  final String failReason; // populated when success == false
+  final DateTime? at;
+
+  const LoginActivity({
+    required this.success,
+    required this.ipAddress,
+    required this.deviceName,
+    required this.userAgent,
+    required this.failReason,
+    this.at,
+  });
+}
+
+/// Returned (as a Left) when a login needs 2FA verification before a session is
+/// issued. Carries the temp token + method so the UI can prompt correctly (TOTP
+/// = enter authenticator code; sms/email = a code is sent).
+class TwoFactorRequiredFailure extends Failure {
+  final String twoFactorToken;
+  final String method; // "totp" | "sms" | "email"
+  TwoFactorRequiredFailure({
+    required this.twoFactorToken,
+    required this.method,
+  }) : super(message: '2FA required', statusCode: 0);
+}
+
+/// A device the user has logged in from (security center / trusted devices).
+class TrustedDevice {
+  final String deviceUuid;
+  final String platform;     // ios | android
+  final String model;
+  final String osVersion;
+  final String appVersion;
+  final String trustStatus;  // pending | trusted | revoked | compromised
+  final String lastIp;
+  final String lastLocation;
+  final DateTime? firstSeenAt;
+  final DateTime? lastLoginAt;
+  final bool isCurrent;      // true when this is the requesting device
+
+  const TrustedDevice({
+    required this.deviceUuid,
+    required this.platform,
+    required this.model,
+    required this.osVersion,
+    required this.appVersion,
+    required this.trustStatus,
+    required this.lastIp,
+    required this.lastLocation,
+    this.firstSeenAt,
+    this.lastLoginAt,
+    this.isCurrent = false,
+  });
+
+  bool get isTrusted => trustStatus == 'trusted';
+}
+
+/// Outcome of an in-app account-deletion request.
+class AccountDeletionOutcome {
+  final bool success;
+  final String status;          // "pending_deletion" on success
+  final String scheduledAt;     // ISO 8601 — when the account is finalized
+  final int gracePeriodDays;
+  final String message;
+  final String errorCode;       // "FUNDS_PRESENT" when blocked by a balance/hold
+
+  const AccountDeletionOutcome({
+    required this.success,
+    this.status = '',
+    this.scheduledAt = '',
+    this.gracePeriodDays = 0,
+    this.message = '',
+    this.errorCode = '',
+  });
+
+  bool get isFundsBlocked => errorCode == 'FUNDS_PRESENT';
+}

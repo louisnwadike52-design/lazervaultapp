@@ -72,6 +72,8 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     try {
       await LockFundsPdfService.shareLockConfirmation(
         lockFund: lockFund,
+        sharePositionOrigin:
+            LockFundsPdfService.shareOriginFromContext(context),
       );
     } catch (e) {
       Get.snackbar(

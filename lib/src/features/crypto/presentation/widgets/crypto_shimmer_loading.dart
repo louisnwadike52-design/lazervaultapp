@@ -2,6 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
+/// Reusable inline shimmer skeleton box for LAZY-LOADED values (portfolio
+/// total, market stats, per-asset fiat, chart, etc). Drop this in wherever a
+/// value is still loading INSTEAD of rendering a misleading "0.00" / "--".
+///
+/// [onGradient] uses a brighter, semi-transparent white shimmer so the skeleton
+/// stays visible on the purple portfolio gradient (the default dark base blends
+/// into the card backgrounds).
+class CryptoSkeleton extends StatelessWidget {
+  final double width;
+  final double height;
+  final double radius;
+  final bool onGradient;
+  const CryptoSkeleton({
+    super.key,
+    required this.width,
+    required this.height,
+    this.radius = 6,
+    this.onGradient = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: onGradient
+          ? Colors.white.withValues(alpha: 0.20)
+          : const Color(0xFF2A2A2A),
+      highlightColor: onGradient
+          ? Colors.white.withValues(alpha: 0.45)
+          : const Color(0xFF3D3D3D),
+      period: const Duration(milliseconds: 1200),
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+    );
+  }
+}
+
 /// Full-page shimmer loading skeleton for the Crypto landing page.
 /// Each section mirrors the real widget layout so the user sees a
 /// recognisable placeholder while data loads.

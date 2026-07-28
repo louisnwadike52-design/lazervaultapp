@@ -99,13 +99,19 @@ class _ChannelPinSetupScreenState extends State<ChannelPinSetupScreen> {
         ),
         body: BlocConsumer<ChannelManagementCubit, ChannelManagementState>(
           listener: (context, state) {
-            if (state is ChannelPinCreated) {
-              // Show the centralized success view briefly, then continue.
-              Future.delayed(const Duration(milliseconds: 1200),
-                  () => Get.offAllNamed(AppRoutes.dashboard));
-            } else if (state is ChannelPinChanged) {
+            if (state is ChannelPinCreated || state is ChannelPinChanged) {
+              // Show the centralized success view briefly, then pop back to the
+              // Banking Channels screen (depth-agnostic: works whether we came
+              // here directly via "Set/Change PIN" or through the activation
+              // flow). Its .then reload listener refreshes the channel + PIN
+              // state. Falls back to the root route if Banking Channels somehow
+              // isn't on the stack (e.g. a deep link).
               Future.delayed(
-                  const Duration(milliseconds: 1200), () => Get.back());
+                const Duration(milliseconds: 1200),
+                () => Get.until((route) =>
+                    route.settings.name == AppRoutes.channelManagement ||
+                    route.isFirst),
+              );
             } else if (state is ChannelManagementError) {
               Get.snackbar(
                 'Error',

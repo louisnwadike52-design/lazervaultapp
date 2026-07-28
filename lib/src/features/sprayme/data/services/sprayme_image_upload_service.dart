@@ -20,7 +20,14 @@ class SpraymeImageUploadService {
 
   String get _baseUrl {
     final url = dotenv.env['LIFESTYLE_GATEWAY_URL'];
-    if (url != null && url.isNotEmpty) return url;
+    if (url != null && url.isNotEmpty) {
+      // The upload path below already adds `/api/v1`; LIFESTYLE_GATEWAY_URL also
+      // ends in `/api/v1`, so return it stripped of a trailing `/api/v1` (+
+      // slashes) to avoid `.../api/v1/api/v1/sprayme/upload-cover-image` (404).
+      return url
+          .replaceAll(RegExp(r'/+$'), '')
+          .replaceAll(RegExp(r'/api/v1$'), '');
+    }
     // LIFESTYLE_GATEWAY_HOST defaults differ per platform:
     // Android emulator: 10.0.2.2, iOS simulator: localhost, real device: actual IP
     final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??

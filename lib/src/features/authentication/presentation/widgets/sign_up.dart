@@ -6,9 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
@@ -18,9 +20,11 @@ import 'package:local_auth/local_auth.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/legal_consent_text.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -119,10 +123,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   Future<void> _requestSimHint({required bool silent}) async {
     if (!Platform.isAndroid) {
       if (!silent) {
-        Get.snackbar(
+        showAppSnackbar(
           'Unavailable',
           'SIM-based phone fill is only supported on Android.',
-          snackPosition: SnackPosition.TOP,
+          type: AppSnackbarType.info,
         );
       }
       return;
@@ -131,10 +135,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       final hint = await SmsAutoFill().hint;
       if (!mounted || hint == null || hint.isEmpty) {
         if (!silent) {
-          Get.snackbar(
+          showAppSnackbar(
             'No number found',
             'No phone number is associated with this device.',
-            snackPosition: SnackPosition.TOP,
+            type: AppSnackbarType.error,
           );
         }
         return;
@@ -144,10 +148,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       final cleanHint = hint.replaceAll(RegExp(r'[^\d+]'), '');
       if (cleanHint.startsWith('+1555')) {
         if (!silent) {
-          Get.snackbar(
+          showAppSnackbar(
             'Test number ignored',
-            'The emulator returned a placeholder number — please type yours.',
-            snackPosition: SnackPosition.TOP,
+            'The emulator returned a placeholder number, please type yours.',
+            type: AppSnackbarType.info,
           );
         }
         return;
@@ -169,10 +173,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           .signUpPhoneNumberChanged(_buildE164Phone());
     } catch (_) {
       if (!silent) {
-        Get.snackbar(
+        showAppSnackbar(
           'Couldn\'t read SIM',
           'Try typing your number manually.',
-          snackPosition: SnackPosition.TOP,
+          type: AppSnackbarType.error,
         );
       }
     }
@@ -228,6 +232,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     'GB': (10, 10),
     'US': (10, 10),
     'CA': (10, 10),
+    'PH': (10, 10),
     'IN': (10, 10),
     'EG': (10, 10),
     'TZ': (9, 9),
@@ -448,14 +453,35 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
              }
              break;
           case AuthenticationError(message: final msg): // Destructure error message
+            final lower = msg.toLowerCase();
+            final alreadyRegistered = lower.contains('already registered') ||
+                lower.contains('already in use') ||
+                lower.contains('already exists');
             Get.snackbar(
-              'Error',
+              alreadyRegistered ? 'Account exists' : 'Error',
               msg,
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.redAccent,
               colorText: Colors.white,
               margin: EdgeInsets.all(15.w),
               borderRadius: 10.r,
+              duration: Duration(seconds: alreadyRegistered ? 6 : 3),
+              // Phone/email already registered → offer to log in instead.
+              mainButton: alreadyRegistered
+                  ? TextButton(
+                      onPressed: () async {
+                        // Account exists on the server but may not be cached on
+                        // THIS device (fresh install trying to sign up) — send
+                        // them to the full login screen for the mode, not the
+                        // passcode lock (which needs a cached identity).
+                        final route =
+                            await LoginFlowResolver.resolveLoginRoute();
+                        Get.offAllNamed(route);
+                      },
+                      child: const Text('Log in',
+                          style: TextStyle(color: Colors.white)),
+                    )
+                  : null,
             );
             // IMPORTANT: Ensure the Cubit emits SignUpInProgress state with previous
             // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
@@ -492,21 +518,21 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // Navigate based on PRIMARY contact type
             // Note: No "Account Created" snackbar here since email is sent after ID verification
             if (primaryType == PrimaryContactType.phone) {
-              // Navigate to phone OTP (required) - pass secondary email info
+              // Phone OTP — skippable unless the admin requires phone verification.
               Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
                 'phoneNumber': phoneNumber,
                 'codeSent': true,
                 'expiresIn': 600,
-                'isRequired': true,
+                'isRequired': FeatureFlags.isPhoneVerificationRequired,
                 'secondaryEmail': hasSecondaryEmail ? email : null,
               });
             } else {
-              // Default to email verification (email is primary)
-              // Navigate to email OTP (required) - pass secondary phone info
+              // Email OTP (email is primary) — skippable unless the admin
+              // requires email verification.
               Get.offAllNamed(AppRoutes.emailVerification, arguments: {
                 'email': email,
                 'codeSent': true,
-                'isRequired': true,
+                'isRequired': FeatureFlags.isEmailVerificationRequired,
                 'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
               });
             }
@@ -702,8 +728,16 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          onPressed: () =>
-                              Get.toNamed(AppRoutes.emailSignIn),
+                          onPressed: () async {
+                            // Route to the correct login screen for the mode +
+                            // whether a returning user is cached: fresh install →
+                            // full phone+passcode / email+password login; returning
+                            // user → passcode lock. Never dead-ends a fresh user on
+                            // the passcode lock screen.
+                            final route =
+                                await LoginFlowResolver.resolveLoginRoute();
+                            Get.toNamed(route);
+                          },
                           child: Text(
                             "Sign In",
                             style: TextStyle(
@@ -730,7 +764,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
   // Helper method for Country Selection Page (Page 0)
   Widget _buildCountrySelectionPage(BuildContext context, {required String countryCode, required String countryName, required bool isLoading}) {
-    // Get active countries from CountryConfigs
+    // Get active signup countries. PH/CA are isActive:false in CountryConfigs
+    // (exchange-international-only, no Klasha wallet/VA), so they're excluded
+    // here automatically.
     final activeCountries = CountryConfigs.activeCountries;
 
     return Column(
@@ -1053,24 +1089,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               ),
             ],
             SizedBox(height: 24.0.h),
-            // OR divider — explicitly centered (the underlying asset image
-            // can read off-centre if its intrinsic width doesn't match the
-            // parent's full width).
-            Center(
-              child: UniversalImageLoader(imagePath: AppData.orDivider),
-            ),
-            SizedBox(height: 16.0.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _socialLoginButton(AppData.googleLogo),
-                SizedBox(width: 10.w),
-                _socialLoginButton(AppData.appleLogo),
-              ],
-            ),
-            // More breathing room between the social row and the action
-            // button below so the eye lands cleanly on the primary CTA.
-            SizedBox(height: 36.0.h),
+            // NOTE: the "OR" divider + Google/Apple social buttons were removed
+            // here — on signup they were placeholders ("Social login not yet
+            // implemented"), which Apple rejects as incomplete UI. Functional
+            // Google + Apple sign-in lives on the email sign-in screen (which
+            // keeps us Apple-4.8 compliant).
+            SizedBox(height: 12.0.h),
             // In-page Continue button — sits under the social icons so the
             // user finishes this page with a clear primary CTA. The sticky
             // bottom panel intentionally suppresses its own Continue on
@@ -1218,10 +1242,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               onChanged: (value) => context.read<AuthenticationCubit>().signUpLastNameChanged(value),
             ),
             SizedBox(height: 10.0.h),
-            // Username / LazerTag field
+            // Username / Lazertag field
             BuildFormField(
               name: "username",
-              placeholder: "Username / LazerTag (optional)",
+              placeholder: "Username / Lazertag (optional)",
               prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
               maxLength: 30,
               autocorrect: false,
@@ -1339,6 +1363,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
             ),
             SizedBox(height: 16.0.h),
+            // Implicit legal consent at the point of account creation (this is
+            // the final signup page — the sticky Continue submits the account).
+            // Store-review requirement; links open the admin-configured Terms
+            // and Privacy documents in the themed webview.
+            const LegalConsentText(action: 'Continue'),
+            SizedBox(height: 8.0.h),
             // Continue button moved to the sticky themed bottom panel.
           ],
         );
@@ -1503,35 +1533,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     );
   }
 
-  // ── Phone country picker bottomsheet ────────────────────────────────
-  // Inline widget so phone capture on signup page 2 doesn't need to
-  // import the (now-deleted) AddPhoneNumber screen. Lists every entry
-  // from CountryLocales.all with a flag, name, and dial code.
-
-  Widget _socialLoginButton(String imagePath) {
-    return InkWell(
-      onTap: () {
-        print("Social login tapped for: $imagePath");
-        Get.snackbar(
-          'Social Login',
-          'Social login not yet implemented.',
-          snackPosition: SnackPosition.TOP,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 50.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32.0),
-          border: Border.all(color: Colors.black, width: 1.2),
-        ),
-        child: UniversalImageLoader(
-          imagePath: imagePath,
-          height: 24.0.h,
-          width: 24.0.w,
-        ),
-      ),
-    );
-  }
+  // (_socialLoginButton removed — the placeholder social buttons it rendered on
+  // signup were deleted; functional social sign-in is on the email sign-in
+  // screen. See the note where the social row used to be.)
 }
 
 /// Country picker bottomsheet for the phone field on signup page 2.
@@ -1661,7 +1665,7 @@ class _PhoneCountryPickerSheetState extends State<_PhoneCountryPickerSheet> {
 }
 
 /// Forces all typed input to lowercase as the user types. Used on the username
-/// / LazerTag field so the on-screen handle matches the lowercased value the
+/// / Lazertag field so the on-screen handle matches the lowercased value the
 /// backend stores and looks up — a case mismatch on a @tag transfer could
 /// otherwise miss the recipient.
 class _LowercaseTextFormatter extends TextInputFormatter {

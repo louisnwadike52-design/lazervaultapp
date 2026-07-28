@@ -8,9 +8,15 @@ import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.da
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_stats.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_transaction.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_participant.dart';
+import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
+import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_replay_player.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Comprehensive session detail screen showing all activity for a past session.
@@ -98,6 +104,24 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     await _loadData();
   }
 
+  /// Enter the live room directly from the detail screen (active sessions only).
+  /// Mirrors the My-Sessions re-entry: fresh SprayRoomCubit + the stored access
+  /// token, no session-code retype.
+  Future<void> _enterRoom() async {
+    HapticFeedback.lightImpact();
+    final token = await serviceLocator<SecureStorageService>().getAccessToken();
+    if (token == null || !mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<SprayRoomCubit>(),
+          child: SprayRoomScreen(sessionId: widget.sessionId, accessToken: token),
+        ),
+      ),
+    );
+  }
+
   String _formatAmount(double amount) {
     if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
     if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}K';
@@ -110,6 +134,19 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
+      // Active sessions are NOT a dead-end: offer a direct "Enter live room" CTA
+      // that jumps straight into the room (no code retype). Hidden on the
+      // Comments tab so it can't overlap the comment input bar.
+      floatingActionButton:
+          (_session != null && _session!.isActive && _selectedTabIndex != 1)
+              ? FloatingActionButton.extended(
+                  onPressed: _enterRoom,
+                  backgroundColor: const Color(0xFF7C3AED),
+                  icon: const Icon(Icons.podcasts_rounded, color: Colors.white),
+                  label: const Text('Enter live room',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                )
+              : null,
       body: BlocConsumer<SprayMeCubit, SprayMeState>(
         listener: (context, state) {
           if (state is SessionLoaded) {
@@ -132,7 +169,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
           }
         },
         builder: (context, state) {
-          if (_isLoading && state is SprayMeLoading) {
+          // Only take over the whole screen with a spinner when we have NOTHING
+          // to show yet. When the session was passed in (the normal path from the
+          // home/my-sessions tiles), render the header + stats immediately and let
+          // each tab show its own empty/loading state — no full-screen flicker.
+          if (_isLoading && state is SprayMeLoading && _session == null) {
             return const Center(child: LazerVaultLoader.small());
           }
 
@@ -291,22 +332,24 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
                     _formatDate(_session!.createdAt),
                     const Color(0xFF9CA3AF),
                   ),
-                  SizedBox(width: 8.w),
-                  _buildMetaChip(
-                    Icons.code,
-                    _session!.sessionCode,
-                    const Color(0xFF10B981),
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: _session!.sessionCode));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Code ${_session!.sessionCode} copied!'),
-                          backgroundColor: const Color(0xFF10B981),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  ),
+                  if (_session!.sessionCode.isNotEmpty) ...[
+                    SizedBox(width: 8.w),
+                    _buildMetaChip(
+                      Icons.code,
+                      _session!.sessionCode,
+                      const Color(0xFF10B981),
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: _session!.sessionCode));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Code ${_session!.sessionCode} copied!'),
+                            backgroundColor: const Color(0xFF10B981),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
               if (_session!.description.isNotEmpty) ...[
@@ -319,6 +362,33 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              // Watch replay — shown only when this session has a stored recording.
+              if (_session!.recordingUrl.isNotEmpty) ...[
+                SizedBox(height: 14.h),
+                GestureDetector(
+                  onTap: () => SprayReplayPlayer.open(
+                    context,
+                    url: _session!.recordingUrl,
+                    title: _session!.title,
+                  ),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB91C1C)]),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.play_circle_fill, color: Colors.white, size: 18.sp),
+                        SizedBox(width: 8.w),
+                        Text('Watch replay',
+                            style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -534,19 +604,36 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   final _commentInputController = TextEditingController();
   bool _isSendingComment = false;
 
-  void _submitComment() {
+  Future<void> _submitComment() async {
     final text = _commentInputController.text.trim();
     if (text.isEmpty || _isSendingComment) return;
     setState(() => _isSendingComment = true);
-    context.read<SprayMeCubit>().addComment(
-      sessionId: widget.sessionId,
-      text: text,
-    );
-    _commentInputController.clear();
-    // Reset after a short delay (comment will appear via reload)
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) setState(() => _isSendingComment = false);
-    });
+    // Await the repository directly so we KNOW the outcome: on success clear the
+    // field + optimistically show the comment; on failure keep the text and tell
+    // the user (the old fire-and-forget + fixed 1s timer silently dropped failed
+    // comments and could re-enable send before the reload, causing duplicates).
+    try {
+      final comment = await serviceLocator<ISprayMeRepository>()
+          .addComment(sessionId: widget.sessionId, text: text);
+      if (!mounted) return;
+      setState(() {
+        if (!_comments.any((c) => c.id == comment.id)) {
+          _comments = [comment, ..._comments];
+        }
+        _commentInputController.clear();
+        _isSendingComment = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSendingComment = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't post your comment. Tap send to try again."),
+          backgroundColor: Color(0xFFEF4444),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Widget _buildCommentsTab() {

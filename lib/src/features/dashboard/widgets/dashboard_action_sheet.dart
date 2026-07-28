@@ -24,6 +24,8 @@ Future<void> showDashboardActionSheet(
   required VoidCallback onOpenAiChat,
   required VoidCallback onOpenVoiceAgent,
   required VoidCallback onOpenProfile,
+  required VoidCallback onMessageFinancialConnections,
+  required VoidCallback onSearchServices,
 }) async {
   final navState = Navigator.of(context, rootNavigator: true);
   if (_DashboardActionSheetGate.isOpen) return;
@@ -41,6 +43,8 @@ Future<void> showDashboardActionSheet(
         onOpenAiChat: onOpenAiChat,
         onOpenVoiceAgent: onOpenVoiceAgent,
         onOpenProfile: onOpenProfile,
+        onMessageFinancialConnections: onMessageFinancialConnections,
+        onSearchServices: onSearchServices,
       ),
     );
   } finally {
@@ -58,12 +62,16 @@ class _DashboardActionSheet extends StatefulWidget {
   final VoidCallback onOpenAiChat;
   final VoidCallback onOpenVoiceAgent;
   final VoidCallback onOpenProfile;
+  final VoidCallback onMessageFinancialConnections;
+  final VoidCallback onSearchServices;
 
   const _DashboardActionSheet({
     required this.onRefreshAccounts,
     required this.onOpenAiChat,
     required this.onOpenVoiceAgent,
     required this.onOpenProfile,
+    required this.onMessageFinancialConnections,
+    required this.onSearchServices,
   });
 
   @override
@@ -119,6 +127,22 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
     });
   }
 
+  void _runFinancialConnections() {
+    if (_busy) return;
+    Navigator.of(context).maybePop();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onMessageFinancialConnections();
+    });
+  }
+
+  void _runSearch() {
+    if (_busy) return;
+    Navigator.of(context).maybePop();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onSearchServices();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -157,6 +181,35 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
               color: const Color(0xFF9CA3AF),
               fontSize: 12.sp,
               height: 1.3,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          // Search across ALL platform services (quick tiles, bottom-nav +
+          // drawer destinations). Opens the searchable all-services sheet that
+          // filters in real time; tapping a result navigates to that service.
+          GestureDetector(
+            onTap: _busy ? null : _runSearch,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF111113),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.search_rounded,
+                      color: const Color(0xFF9CA3AF), size: 20.sp),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'Search all services…',
+                    style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           SizedBox(height: 16.h),
@@ -200,6 +253,16 @@ class _DashboardActionSheetState extends State<_DashboardActionSheet> {
             label: 'Go to profile',
             description: 'Manage account, security and preferences.',
             onTap: _runProfile,
+            enabled: !_busy,
+          ),
+          SizedBox(height: 10.h),
+          _ActionTile(
+            icon: Icons.forum_outlined,
+            iconColor: const Color(0xFF8B5CF6),
+            iconBackground: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+            label: 'Message financial connections',
+            description: 'Chat with people you\'ve transacted with.',
+            onTap: _runFinancialConnections,
             enabled: !_busy,
           ),
           SizedBox(height: 16.h),

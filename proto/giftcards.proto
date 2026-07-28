@@ -293,6 +293,47 @@ service GiftCardsService {
     };
   }
 
+  // ===== PROVIDER FLOAT TOP-UP (H3) =====
+
+  // AdminFloatTopUp records or executes a provider float top-up.
+  //   mode = "preview"  → dry-run; returns the would-be effect, no money moves
+  //   mode = "record"   → books a manual top-up to the internal ledger
+  //                       (Reloadly: funded out-of-band via Reloadly's dashboard,
+  //                       there is NO funding API — we record that ops funded it)
+  //   mode = "execute"  → moves money via the provider's transfer/funding API
+  //                       (Flutterwave/Prestmit). Idempotent on `reference`.
+  // Approval: when the provider requires approval, execute without approved=true
+  //           returns status="pending_approval".
+  rpc AdminFloatTopUp(AdminFloatTopUpRequest) returns (AdminFloatTopUpResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/float/topup"
+      body: "*"
+    };
+  }
+
+  // AdminListFloatTopUps lists the float top-up audit trail.
+  rpc AdminListFloatTopUps(AdminListFloatTopUpsRequest) returns (AdminListFloatTopUpsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/float/topups"
+    };
+  }
+
+  // AdminGetFloatStatus returns the current provider float balance + thresholds
+  // + a suggested top-up amount (preferred − current) for the CTA.
+  rpc AdminGetFloatStatus(AdminGetFloatStatusRequest) returns (AdminGetFloatStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/float/status"
+    };
+  }
+
+  // AdminListOutbox lists outbox events (operator visibility into the
+  // transactional-outbox publish pipeline). Filterable by status.
+  rpc AdminListOutbox(AdminListOutboxRequest) returns (AdminListOutboxResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/outbox"
+    };
+  }
+
   // Get supported countries for gift cards (from Reloadly)
   rpc GetSupportedCountries(GetSupportedCountriesRequest) returns (GetSupportedCountriesResponse) {
     option (google.api.http) = {
@@ -967,6 +1008,16 @@ message SellGiftCardRequest {
   // behind a checkbox; the backend rejects when false to enforce the
   // operator's audit trail of explicit user acceptance.
   bool disclaimer_accepted = 25;
+  // balance_attested MUST be true. No gift-card issuer (Apple, Amazon,
+  // Steam, …) nor either trade-in provider (Prestmit, Reloadly) exposes
+  // a public API to check a customer-supplied card's remaining balance,
+  // so the balance can only be verified out-of-band AFTER the card is
+  // submitted (provider redemption / admin review). The dedicated
+  // "Verify balance" step in the sell flow makes the user declare the
+  // card's available balance (== denomination) and accept the
+  // liability/privacy terms; this flag is the audit-trail signal that
+  // the user completed that step. Backend rejects when false.
+  bool balance_attested = 26;
 }
 
 message SellGiftCardResponse {
@@ -1763,4 +1814,97 @@ message UpdateSystemSettingResponse {
   bool   success = 1;
   string message = 2;
   SystemSetting setting = 3;
+}
+
+// ===== Provider float top-up (H3) =====
+
+message FloatTopUp {
+  string id              = 1;
+  string provider        = 2;   // reloadly | flutterwave | prestmit
+  string mode            = 3;   // record | execute
+  double amount          = 4;   // major units, provider/wallet currency
+  string currency        = 5;
+  string reference       = 6;   // idempotency reference
+  string status          = 7;   // recorded | pending_approval | executing | executed | failed | reversed
+  string note            = 8;
+  string created_by      = 9;
+  string created_at      = 10;
+  string executed_at     = 11;
+  string provider_ref    = 12;  // provider's transfer id, when executed
+  string failure_reason  = 13;
+}
+
+message AdminFloatTopUpRequest {
+  string provider  = 1;   // reloadly | flutterwave | prestmit
+  string mode      = 2;   // preview | record | execute
+  double amount    = 3;
+  string currency  = 4;
+  string reference = 5;   // optional; server generates when empty
+  string note      = 6;
+  bool   approved  = 7;   // required for execute when approval is on
+}
+
+message AdminFloatTopUpResponse {
+  bool       success = 1;
+  string     status  = 2;   // previewed | recorded | pending_approval | executed | failed
+  string     message = 3;
+  FloatTopUp topup   = 4;
+}
+
+message AdminListFloatTopUpsRequest {
+  string provider = 1;   // optional filter
+  int32  page     = 2;
+  int32  limit    = 3;
+}
+
+message AdminListFloatTopUpsResponse {
+  repeated FloatTopUp topups = 1;
+  int64 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+message AdminGetFloatStatusRequest {
+  string provider = 1;   // optional; default reloadly
+}
+
+message AdminGetFloatStatusResponse {
+  string provider           = 1;
+  double balance            = 2;
+  string wallet_currency    = 3;
+  double low_threshold      = 4;
+  double critical_threshold = 5;
+  double preferred_balance  = 6;
+  bool   is_low             = 7;
+  bool   is_critical        = 8;
+  double suggested_topup    = 9;   // max(0, preferred − balance)
+  string last_checked_at    = 10;
+}
+
+// ===== Outbox visibility (H5) =====
+
+message OutboxEvent {
+  string id              = 1;
+  string aggregate_type  = 2;
+  string aggregate_id    = 3;
+  string event_type      = 4;
+  string status          = 5;   // pending | published | failed
+  int32  retry_count     = 6;
+  int32  max_retries     = 7;
+  string last_error      = 8;
+  string processed_at    = 9;
+  string created_at      = 10;
+}
+
+message AdminListOutboxRequest {
+  string status = 1;   // optional filter: pending | published | failed
+  int32  page   = 2;
+  int32  limit  = 3;
+}
+
+message AdminListOutboxResponse {
+  repeated OutboxEvent events = 1;
+  int64 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
 }

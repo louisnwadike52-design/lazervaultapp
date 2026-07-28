@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/statements/domain/entities/statement_entity.dart';
@@ -30,6 +33,12 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
   final StatementFileService _fileService = serviceLocator<StatementFileService>();
   bool _isPreparingFile = false;
 
+  // Locally-persisted recent statements (no backend history RPC exists). Each
+  // entry captures the params needed to re-generate + re-download/share, since
+  // the backend download URL is short-lived.
+  static const String _recentKey = 'recent_statements_v1';
+  List<Map<String, dynamic>> _recent = [];
+
   @override
   void initState() {
     super.initState();
@@ -38,32 +47,264 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
       userId: userId,
       accessToken: null,
     );
+    _loadRecent();
   }
 
-  Future<void> _selectDateRange() async {
-    final DateTimeRange? picked = await showDateRangePicker(
+  Future<void> _loadRecent() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_recentKey);
+      if (raw != null && raw.isNotEmpty) {
+        final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+        if (mounted) setState(() => _recent = list);
+      }
+    } catch (_) {/* start empty */}
+  }
+
+  Future<void> _recordRecent(StatementEntity s) async {
+    final entry = {
+      'accountId': s.accountId,
+      'startMs': s.startDate.millisecondsSinceEpoch,
+      'endMs': s.endDate.millisecondsSinceEpoch,
+      'format': s.format == StatementFormat.csv ? 'csv' : 'pdf',
+      'generatedMs': DateTime.now().millisecondsSinceEpoch,
+    };
+    // De-dupe identical (account + range + format); newest first; cap at 20.
+    _recent.removeWhere((e) =>
+        e['accountId'] == entry['accountId'] &&
+        e['startMs'] == entry['startMs'] &&
+        e['endMs'] == entry['endMs'] &&
+        e['format'] == entry['format']);
+    _recent.insert(0, entry);
+    if (_recent.length > 20) _recent = _recent.sublist(0, 20);
+    if (mounted) setState(() {});
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_recentKey, jsonEncode(_recent));
+    } catch (_) {/* non-fatal */}
+  }
+
+  void _redownloadRecent(Map<String, dynamic> e) {
+    setState(() {
+      _selectedAccountId = e['accountId'] as String;
+      _startDate = DateTime.fromMillisecondsSinceEpoch(e['startMs'] as int);
+      _endDate = DateTime.fromMillisecondsSinceEpoch(e['endMs'] as int);
+      _selectedFormat =
+          e['format'] == 'csv' ? StatementFormat.csv : StatementFormat.pdf;
+    });
+    // Regenerate — the previous signed URL has expired; the backend's 10-min
+    // idempotency cache makes a repeat cheap.
+    context.read<StatementCubit>().downloadStatement(
+          accountId: _selectedAccountId!,
+          startDate: _startDate!,
+          endDate: _endDate!,
+          format: _selectedFormat,
+        );
+  }
+
+  static const Color _purple = Color(0xFF4E03D0);
+
+  Future<DateTime?> _pickSingleDate(DateTime? initial, DateTime first, DateTime last) {
+    return showDatePicker(
       context: context,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-      initialDateRange: _startDate != null && _endDate != null
-          ? DateTimeRange(start: _startDate!, end: _endDate!)
-          : null,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF4E03D0),
-            ),
-          ),
-          child: child!,
+      initialDate: initial ?? last,
+      firstDate: first,
+      lastDate: last,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(primary: _purple),
+        ),
+        child: child!,
+      ),
+    );
+  }
+
+  /// Bottom-sheet date-range picker: quick presets + explicit Start / End
+  /// fields. Replaces the full-screen Material range dialog.
+  Future<void> _selectDateRange() async {
+    final now = DateTime.now();
+    final firstAllowed = DateTime(2000);
+    DateTime? start = _startDate;
+    DateTime? end = _endDate;
+
+    final applied = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (sheetCtx, setSheet) {
+            Widget dateField(String label, DateTime? value, VoidCallback onTap) {
+              return Expanded(
+                child: InkWell(
+                  onTap: onTap,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label,
+                            style: GoogleFonts.inter(
+                                fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
+                        SizedBox(height: 4.h),
+                        Text(
+                          value != null
+                              ? DateFormat('MMM dd, yyyy').format(value)
+                              : 'Select',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: value != null
+                                ? const Color(0xFF1F2937)
+                                : const Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            Widget presetChip(String label, VoidCallback onTap) {
+              return InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(20.r),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                  decoration: BoxDecoration(
+                    color: _purple.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: _purple.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(label,
+                      style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: _purple)),
+                ),
+              );
+            }
+
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    Text('Select date range',
+                        style: GoogleFonts.inter(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1F2937))),
+                    SizedBox(height: 16.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: [
+                        presetChip('Last 30 days', () {
+                          setSheet(() {
+                            end = now;
+                            start = now.subtract(const Duration(days: 30));
+                          });
+                        }),
+                        presetChip('Last 90 days', () {
+                          setSheet(() {
+                            end = now;
+                            start = now.subtract(const Duration(days: 90));
+                          });
+                        }),
+                        presetChip('This year', () {
+                          setSheet(() {
+                            end = now;
+                            start = DateTime(now.year, 1, 1);
+                          });
+                        }),
+                      ],
+                    ),
+                    SizedBox(height: 16.h),
+                    Row(
+                      children: [
+                        dateField('Start', start, () async {
+                          final d = await _pickSingleDate(
+                              start, firstAllowed, end ?? now);
+                          if (d != null) setSheet(() => start = d);
+                        }),
+                        SizedBox(width: 12.w),
+                        dateField('End', end, () async {
+                          final d = await _pickSingleDate(
+                              end, start ?? firstAllowed, now);
+                          if (d != null) setSheet(() => end = d);
+                        }),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48.h,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _purple,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                        onPressed: () {
+                          if (start == null || end == null) {
+                            LVSnackbar.showError(
+                              title: 'Incomplete',
+                              message: 'Pick both a start and end date.',
+                            );
+                            return;
+                          }
+                          if (start!.isAfter(end!)) {
+                            LVSnackbar.showError(
+                              title: 'Invalid range',
+                              message: 'Start date must be before the end date.',
+                            );
+                            return;
+                          }
+                          Navigator.pop(sheetCtx, true);
+                        },
+                        child: Text('Apply',
+                            style: GoogleFonts.inter(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
 
-    if (picked != null) {
+    if (applied == true && start != null && end != null) {
       setState(() {
-        _startDate = picked.start;
-        _endDate = picked.end;
+        _startDate = start;
+        _endDate = end;
       });
     }
   }
@@ -133,6 +374,8 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
         expectedSha256: statement.sha256,
       );
 
+      if (!mounted) return;
+      await _recordRecent(statement);
       if (!mounted) return;
       LVSnackbar.showSuccess(
         title: 'Statement ready',
@@ -272,12 +515,6 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
             listener: (context, state) {
               if (state is StatementDownloadSuccess) {
                 _handleDownloadSuccess(state.statement);
-                // Load statement history after successful download
-                if (_selectedAccountId != null) {
-                  context.read<StatementCubit>().getStatementHistory(
-                        accountId: _selectedAccountId!,
-                      );
-                }
               } else if (state is StatementDownloadFailure) {
                 Get.snackbar(
                   'Error',
@@ -379,12 +616,6 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                           }).toList(),
                           onChanged: (value) {
                             setState(() => _selectedAccountId = value);
-                            if (value != null) {
-                              // Load statement history for selected account
-                              context.read<StatementCubit>().getStatementHistory(
-                                    accountId: value,
-                                  );
-                            }
                           },
                         ),
                       ),
@@ -481,15 +712,6 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
                       onTap: () => setState(() => _selectedFormat = StatementFormat.csv),
                     ),
                   ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: _FormatButton(
-                      label: 'Excel',
-                      icon: Icons.grid_on,
-                      isSelected: _selectedFormat == StatementFormat.excel,
-                      onTap: () => setState(() => _selectedFormat = StatementFormat.excel),
-                    ),
-                  ),
                 ],
               ),
               SizedBox(height: 32.h),
@@ -534,113 +756,18 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
               ),
               SizedBox(height: 32.h),
 
-              // Statement History
-              if (_selectedAccountId != null) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recent Statements',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
-                      ),
-                    ),
-                  ],
+              // Recent statements — locally persisted, tap to re-download/share.
+              if (_recent.isNotEmpty) ...[
+                Text(
+                  'Recent Statements',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1F2937),
+                  ),
                 ),
                 SizedBox(height: 16.h),
-                BlocBuilder<StatementCubit, StatementState>(
-                  builder: (context, state) {
-                    if (state is StatementHistoryLoading) {
-                      return const Center(child: LazerVaultLoader.small());
-                    }
-
-                    if (state is StatementHistoryLoaded) {
-                      final statements = state.statements;
-
-                      if (statements.isEmpty) {
-                        return Container(
-                          padding: EdgeInsets.all(32.w),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFB),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'No previous statements',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-
-                      return Column(
-                        children: statements.map((statement) {
-                          return Container(
-                            margin: EdgeInsets.only(bottom: 12.h),
-                            padding: EdgeInsets.all(16.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12.r),
-                              border: Border.all(color: const Color(0xFFE5E7EB)),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40.w,
-                                  height: 40.h,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                  child: Icon(
-                                    _getFormatIcon(statement.format),
-                                    color: const Color(0xFF4E03D0),
-                                    size: 20.sp,
-                                  ),
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        statement.message,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: const Color(0xFF1F2937),
-                                        ),
-                                      ),
-                                      SizedBox(height: 4.h),
-                                      Text(
-                                        '${DateFormat('MMM dd, yyyy').format(statement.startDate)} - ${DateFormat('MMM dd, yyyy').format(statement.endDate)}',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12.sp,
-                                          color: const Color(0xFF6B7280),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.download,
-                                  color: const Color(0xFF4E03D0),
-                                  size: 20.sp,
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    }
-
-                    return const SizedBox.shrink();
-                  },
-                ),
+                ..._recent.map(_recentTile),
               ],
             ],
           ),
@@ -658,6 +785,79 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
       case StatementFormat.excel:
         return Icons.grid_on;
     }
+  }
+
+  Widget _recentTile(Map<String, dynamic> e) {
+    final fmt = e['format'] == 'csv' ? StatementFormat.csv : StatementFormat.pdf;
+    final start = DateTime.fromMillisecondsSinceEpoch(e['startMs'] as int);
+    final end = DateTime.fromMillisecondsSinceEpoch(e['endMs'] as int);
+    final generated = DateTime.fromMillisecondsSinceEpoch(e['generatedMs'] as int);
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.r),
+          onTap: () => _redownloadRecent(e),
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(_getFormatIcon(fmt),
+                      color: const Color(0xFF4E03D0), size: 20.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Statement (${fmt == StatementFormat.csv ? 'CSV' : 'PDF'})',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1F2937),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        '${DateFormat('MMM dd, yyyy').format(start)} - ${DateFormat('MMM dd, yyyy').format(end)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'Generated ${DateFormat('MMM dd, yyyy').format(generated)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.download_rounded,
+                    color: const Color(0xFF4E03D0), size: 20.sp),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

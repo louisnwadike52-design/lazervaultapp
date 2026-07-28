@@ -24,6 +24,12 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class AppServicesBuilder extends StatefulWidget {
   const AppServicesBuilder({super.key});
 
+  /// Every platform service across all account types (deduped) — the corpus the
+  /// dashboard swipe-down search filters over. Public forwarder to the State's
+  /// static list (same library).
+  static List<AppService> getAllServices() =>
+      _AppServicesBuilderState.getAllServices();
+
   @override
   State<AppServicesBuilder> createState() => _AppServicesBuilderState();
 }
@@ -54,6 +60,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.tagPay,
         serviceImg: AppServiceImg.tagPay),
     AppService(
+        serviceName: AppServiceName.escrow,
+        serviceImg: AppServiceImg.escrow),
+    AppService(
         serviceName: AppServiceName.invoice,
         serviceImg: AppServiceImg.invoice),
     AppService(
@@ -68,6 +77,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.crypto,
         serviceImg: AppServiceImg.crypto),
+    AppService(
+        serviceName: AppServiceName.rmb,
+        serviceImg: AppServiceImg.rmb),
     AppService(
         serviceName: AppServiceName.giftCards,
         serviceImg: AppServiceImg.giftCards),
@@ -96,6 +108,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.crowdfund,
         serviceImg: AppServiceImg.crowdfund),
     AppService(
+        serviceName: AppServiceName.uplift,
+        serviceImg: AppServiceImg.uplift),
+    AppService(
         serviceName: AppServiceName.lockFunds,
         serviceImg: AppServiceImg.lockFunds),
     AppService(
@@ -116,6 +131,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.businessAnalytics,
         serviceImg: AppServiceImg.businessAnalytics),
+    // Sell — the revenue engine (record a sale → credits the business balance,
+    // decrements stock, optionally links a customer + issues an invoice). Also
+    // reachable from the business dashboard quick actions; surfaced here so the
+    // core money-in action is one tap from the Business card.
+    AppService(
+        serviceName: AppServiceName.sales, serviceImg: AppServiceImg.sales),
     AppService(
         serviceName: AppServiceName.payroll,
         serviceImg: AppServiceImg.payroll),
@@ -181,6 +202,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.crypto,
         serviceImg: AppServiceImg.crypto),
+    AppService(
+        serviceName: AppServiceName.rmb,
+        serviceImg: AppServiceImg.rmb),
     AppService(
         serviceName: AppServiceName.exchange,
         serviceImg: AppServiceImg.exchange),
@@ -249,6 +273,25 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // Services tile is duplicate surface area.
     AppServiceName.airtime,
   };
+
+  /// Every service across all account types, deduped by name — the corpus the
+  /// dashboard swipe-down search filters over so the user can find ANY platform
+  /// service (not just the current account's quick tiles).
+  static List<AppService> getAllServices() {
+    final seen = <AppServiceName>{};
+    final out = <AppService>[];
+    for (final s in [
+      ..._personalServices,
+      ..._businessServices,
+      ..._savingsServices,
+      ..._investmentServices,
+      ..._multiCurrencyServices,
+      ..._familyServices,
+    ]) {
+      if (seen.add(s.serviceName)) out.add(s);
+    }
+    return out;
+  }
 
   List<AppService> get _activeServices {
     final raw = switch (_activeAccountType) {
@@ -322,6 +365,24 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     super.dispose();
   }
 
+  /// Currency of the active family wallet, used when the canonical resolver has
+  /// to CREATE the family_accounts record. Falls back to NGN (the currency of
+  /// the auto-provisioned family wallet) if the summary isn't available.
+  String _activeFamilyCurrency() {
+    try {
+      final st = context.read<AccountCardsSummaryCubit>().state;
+      if (st is AccountCardsSummaryLoaded) {
+        final activeId = _accountManager.activeAccountId;
+        final acct = st.accountSummaries.firstWhere(
+          (a) => a.spendingAccountId == activeId || a.id == activeId,
+          orElse: () => st.accountSummaries.first,
+        );
+        return acct.currency;
+      }
+    } catch (_) {}
+    return 'NGN';
+  }
+
   void _checkActiveAccountType() {
     if (!mounted) return;
     final activeId = _accountManager.activeAccountId;
@@ -353,12 +414,22 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
 
         if (accountType != _activeAccountType ||
             isFamilyPending != _isFamilyPendingSetup) {
+          // Reset the services carousel to the first page ONLY on a real
+          // account-type SWITCH (one known type → a different one). On the
+          // INITIAL resolution (_activeAccountType == null — e.g. this widget
+          // was rebuilt when returning from a service's landing page such as
+          // Joint Funds) we must PRESERVE the persisted carousel index so
+          // "back" lands on the slide the user launched the service from,
+          // instead of snapping to the first slide.
+          final isInitialResolution = _activeAccountType == null;
           setState(() {
             _activeAccountType = accountType;
             _isFamilyPendingSetup = isFamilyPending;
             _activeFamilyAccountId = familyId;
-            _currentIndex = 0; // Reset carousel position on account type switch
-            _stateManager.setServicesCarouselIndex(0);
+            if (!isInitialResolution) {
+              _currentIndex = 0; // Reset carousel position on account type switch
+              _stateManager.setServicesCarouselIndex(0);
+            }
           });
         }
       }
@@ -629,32 +700,28 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   Get.toNamed(AppRoutes.familyActivationSetup,
                       arguments: {'familyId': _activeFamilyAccountId});
                 } else {
-                  // familyAccountId unknown — resolve via GetFamilyAccounts
+                  // familyAccountId unknown — resolve-or-create through the SAME
+                  // canonical path the account-card "Get Started" uses, so this
+                  // "Setup Now" card converges on the same activation-setup screen
+                  // instead of dead-ending into the separate "create another"
+                  // carousel (the flow/backend divergence this consolidates).
                   setState(() => _isResolvingFamilyId = true);
                   try {
                     final familyCubit = serviceLocator<FamilyAccountCubit>();
-                    await familyCubit.loadFamilyAccounts();
-                    final state = familyCubit.state;
-                    if (state is FamilyAccountsLoaded && state.familyAccounts.isNotEmpty) {
-                      final target = state.familyAccounts.firstWhere(
-                        (a) => a.isPendingSetup,
-                        orElse: () => state.familyAccounts.first,
-                      );
+                    final familyId =
+                        await familyCubit.resolveOrCreatePendingFamilyId(
+                      currency: _activeFamilyCurrency(),
+                    );
+                    if (familyId != null) {
                       Get.toNamed(AppRoutes.familyActivationSetup,
-                          arguments: {'familyId': target.id});
-                    } else if (state is FamilyAccountsLoaded) {
-                      // The lookup succeeded but the user has no family GROUP
-                      // account yet (only the auto-provisioned "family" virtual
-                      // wallet exists, which is what surfaces this setup card).
-                      // Route them into the creation flow instead of dead-
-                      // ending on an error — they tapped "set up", so let them.
-                      Get.toNamed(AppRoutes.familySetup);
+                          arguments: {'familyId': familyId});
                     } else {
-                      // state is FamilyAccountError (load failed) — surface a
-                      // real retry, not a misleading "not found".
+                      final s = familyCubit.state;
                       Get.snackbar(
                         'Error',
-                        'Could not load your family account. Please try again.',
+                        s is FamilyAccountError
+                            ? s.message
+                            : 'Could not set up your family account. Please try again.',
                         backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
                         colorText: Colors.white,
                         snackPosition: SnackPosition.TOP,

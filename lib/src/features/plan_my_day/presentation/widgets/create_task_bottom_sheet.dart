@@ -277,6 +277,22 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
                 ),
               ),
             ),
+            if (widget.categories.isNotEmpty) ...[
+              SizedBox(height: 16.h),
+              Text(
+                'Category (Optional)',
+                style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+              ),
+              SizedBox(height: 8.h),
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: [
+                  for (final cat in widget.categories)
+                    _buildCategoryChip(cat),
+                ],
+              ),
+            ],
             SizedBox(height: 24.h),
             // Create Button
             SizedBox(
@@ -501,6 +517,40 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
     );
   }
 
+  Widget _buildCategoryChip(Category cat) {
+    final isSelected = _selectedCategoryId == cat.id;
+    Color chipColor = const Color(0xFF8B5CF6);
+    if ((cat.color ?? '').isNotEmpty) {
+      try {
+        chipColor = Color(int.parse(cat.color!.replaceAll('#', '0xFF')));
+      } catch (_) {}
+    }
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          // Tap again to clear the selection.
+          _selectedCategoryId = isSelected ? null : cat.id;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isSelected ? chipColor : const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: isSelected ? chipColor : Colors.grey[800]!),
+        ),
+        child: Text(
+          cat.name,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[400],
+            fontSize: 13.sp,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _selectDueDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
@@ -589,6 +639,7 @@ class _CreateTaskBottomSheetState extends State<CreateTaskBottomSheet> {
       dueDate: _dueDate,
       priority: int.parse(_priority),
       estimatedDuration: _estimatedDuration,
+      categoryIds: _selectedCategoryId != null ? [_selectedCategoryId!] : const [],
       remindAt: _remindAt,
     );
 

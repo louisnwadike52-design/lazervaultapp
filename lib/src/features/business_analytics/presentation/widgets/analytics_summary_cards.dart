@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 
 class AnalyticsSummaryCards extends StatelessWidget {
@@ -19,10 +21,10 @@ class AnalyticsSummaryCards extends StatelessWidget {
             analytics.periodLabel.isNotEmpty
                 ? analytics.periodLabel
                 : 'This Period',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: InvoiceThemeColors.textWhite,
             ),
           ),
         ),
@@ -51,7 +53,7 @@ class AnalyticsSummaryCards extends StatelessWidget {
                 amount: current.net,
                 changePercent: null,
                 color: current.net >= 0
-                    ? const Color(0xFF3B82F6)
+                    ? InvoiceThemeColors.primaryPurpleLight
                     : const Color(0xFFFB923C),
               ),
               SizedBox(width: 12.w),
@@ -83,9 +85,16 @@ class AnalyticsSummaryCards extends StatelessWidget {
       width: 160.w,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: color.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,9 +112,9 @@ class AnalyticsSummaryCards extends StatelessWidget {
               SizedBox(width: 6.w),
               Text(
                 label,
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                 ),
               ),
             ],
@@ -116,10 +125,10 @@ class AnalyticsSummaryCards extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               displayValue,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: InvoiceThemeColors.textWhite,
               ),
             ),
           ),
@@ -139,7 +148,7 @@ class AnalyticsSummaryCards extends StatelessWidget {
                 SizedBox(width: 4.w),
                 Text(
                   '${changePercent.abs().toStringAsFixed(1)}%',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     color: changePercent >= 0
                         ? const Color(0xFF10B981)

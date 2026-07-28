@@ -4,6 +4,43 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_comment.dart';
 
+/// Matches an @mention token (e.g. "@louis"). Kept single-token so it renders
+/// as a clean, standard tag.
+final RegExp mentionRegExp = RegExp(r'@[A-Za-z0-9_.]+');
+
+/// True if [text] @mentions [userName] (case-insensitive), e.g. "@louis".
+bool commentMentions(String text, String userName) {
+  if (userName.trim().isEmpty) return false;
+  final handle = '@${userName.trim().split(RegExp(r"\s+")).first}'.toLowerCase();
+  for (final m in mentionRegExp.allMatches(text)) {
+    if (m.group(0)!.toLowerCase() == handle) return true;
+  }
+  return false;
+}
+
+/// Split [text] into styled spans, rendering @mentions with [mention] so they
+/// look like a standard highlighted tag.
+List<InlineSpan> buildMentionSpans(
+  String text, {
+  required TextStyle base,
+  required TextStyle mention,
+}) {
+  final spans = <InlineSpan>[];
+  var last = 0;
+  for (final m in mentionRegExp.allMatches(text)) {
+    if (m.start > last) {
+      spans.add(TextSpan(text: text.substring(last, m.start), style: base));
+    }
+    spans.add(TextSpan(text: m.group(0), style: mention));
+    last = m.end;
+  }
+  if (last < text.length) {
+    spans.add(TextSpan(text: text.substring(last), style: base));
+  }
+  if (spans.isEmpty) spans.add(TextSpan(text: text, style: base));
+  return spans;
+}
+
 /// TikTok-style comment feed overlay that shows scrolling comments
 /// from bottom-left with slide-in animation and auto-dismiss.
 /// Comments stack from bottom (newest at bottom) like TikTok live chat.
@@ -140,11 +177,17 @@ class _CommentItemState extends State<_CommentItem>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        TextSpan(
-                          text: ' ${widget.comment.text}',
-                          style: TextStyle(
+                        const TextSpan(text: ' '),
+                        ...buildMentionSpans(
+                          widget.comment.text,
+                          base: TextStyle(
                             color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 12.sp,
+                          ),
+                          mention: TextStyle(
+                            color: const Color(0xFF60A5FA),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -160,11 +203,19 @@ class _CommentItemState extends State<_CommentItem>
   }
 }
 
-/// TikTok-style comment input bar at the bottom of the screen.
+/// TikTok-style comment input bar at the bottom of the screen. Supports @mention
+/// tagging — type "@" to pick from [mentionCandidates] (session participants).
 class CommentInputBar extends StatefulWidget {
   final ValueChanged<String> onSubmit;
 
-  const CommentInputBar({super.key, required this.onSubmit});
+  /// Display names that can be @tagged (usually the live's participants).
+  final List<String> mentionCandidates;
+
+  const CommentInputBar({
+    super.key,
+    required this.onSubmit,
+    this.mentionCandidates = const [],
+  });
 
   @override
   State<CommentInputBar> createState() => _CommentInputBarState();
@@ -173,6 +224,7 @@ class CommentInputBar extends StatefulWidget {
 class _CommentInputBarState extends State<CommentInputBar> {
   final _controller = TextEditingController();
   bool _hasText = false;
+  List<String> _suggestions = const [];
 
   @override
   void dispose() {
@@ -185,11 +237,126 @@ class _CommentInputBarState extends State<CommentInputBar> {
     if (text.isEmpty) return;
     widget.onSubmit(text);
     _controller.clear();
-    setState(() => _hasText = false);
+    setState(() {
+      _hasText = false;
+      _suggestions = const [];
+    });
+  }
+
+  /// The @token being typed at the cursor, or null.
+  String? _activeMentionQuery() {
+    final sel = _controller.selection;
+    if (!sel.isValid || sel.start != sel.end) return null;
+    final upToCursor = _controller.text.substring(0, sel.start);
+    final at = upToCursor.lastIndexOf('@');
+    if (at < 0) return null;
+    // '@' must start the token (start of text or after whitespace).
+    if (at > 0 && !RegExp(r'\s').hasMatch(upToCursor[at - 1])) return null;
+    final token = upToCursor.substring(at + 1);
+    if (token.contains(RegExp(r'\s'))) return null; // token ended
+    return token; // may be empty right after '@'
+  }
+
+  void _onChanged(String v) {
+    final q = _activeMentionQuery();
+    List<String> sug = const [];
+    if (q != null && widget.mentionCandidates.isNotEmpty) {
+      final ql = q.toLowerCase();
+      sug = widget.mentionCandidates
+          .where((n) => n.trim().isNotEmpty && n.toLowerCase().contains(ql))
+          .toSet()
+          .take(6)
+          .toList();
+    }
+    setState(() {
+      _hasText = v.trim().isNotEmpty;
+      _suggestions = sug;
+    });
+  }
+
+  void _applyMention(String name) {
+    // Insert @handle (first word of the display name — a clean single token).
+    final handle = name.trim().split(RegExp(r'\s+')).first;
+    final sel = _controller.selection;
+    final text = _controller.text;
+    final upToCursor = text.substring(0, sel.start);
+    final at = upToCursor.lastIndexOf('@');
+    if (at < 0) return;
+    final before = text.substring(0, at);
+    final after = text.substring(sel.start);
+    final inserted = '$before@$handle ';
+    _controller.text = '$inserted$after';
+    _controller.selection =
+        TextSelection.collapsed(offset: inserted.length);
+    setState(() {
+      _suggestions = const [];
+      _hasText = _controller.text.trim().isNotEmpty;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_suggestions.isNotEmpty)
+          Container(
+            margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 4.h),
+            constraints: BoxConstraints(maxHeight: 160.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.symmetric(vertical: 4.h),
+              children: [
+                for (final name in _suggestions)
+                  InkWell(
+                    onTap: () => _applyMention(name),
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 12.r,
+                            backgroundColor: const Color(0xFF3B82F6),
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 11.sp),
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Text('@${name.trim().split(RegExp(r"\s+")).first}',
+                              style: TextStyle(
+                                  color: const Color(0xFF60A5FA),
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600)),
+                          SizedBox(width: 6.w),
+                          Flexible(
+                            child: Text(name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 12.sp)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        _buildInputRow(),
+      ],
+    );
+  }
+
+  Widget _buildInputRow() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       child: Row(
@@ -209,7 +376,7 @@ class _CommentInputBarState extends State<CommentInputBar> {
                 controller: _controller,
                 maxLength: 500,
                 maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                onChanged: (v) => setState(() => _hasText = v.trim().isNotEmpty),
+                onChanged: _onChanged,
                 onSubmitted: (_) => _submit(),
                 style: TextStyle(
                   color: Colors.white,

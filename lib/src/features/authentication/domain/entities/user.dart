@@ -29,11 +29,26 @@ class User extends Equatable {
   final bool hasPasscode;
   final bool hasTransactionPin;
 
+  /// Whether the user has a password set (mirrors password_hash != "" on the
+  /// backend). Drives the "set password" gate before switching to the
+  /// email+password login method, and the visibility of "Change password".
+  final bool hasPassword;
+
+  /// User-selectable login-method preference: "email_password" |
+  /// "phone_passcode" | "" (empty = follow platform default). Overrides the
+  /// platform default on subsequent logins when set.
+  final String? preferredLoginMethod;
+
   /// Two-factor authentication state (mirrors users.two_factor_enabled /
   /// two_factor_method on the backend). Surfaced so Settings reflects the
   /// current 2FA state without an extra round-trip.
   final bool twoFactorEnabled;
   final String? twoFactorMethod;
+
+  /// Date of birth as ISO `YYYY-MM-DD` (mirrors `users.date_of_birth` on the
+  /// backend). Nullable when not yet captured. Used to surface the birthday
+  /// celebration on the Settings page.
+  final String? dateOfBirth;
 
   const User({
     required this.id,
@@ -56,8 +71,11 @@ class User extends Equatable {
     this.currentSignupStep,
     this.hasPasscode = false,
     this.hasTransactionPin = false,
+    this.hasPassword = false,
+    this.preferredLoginMethod,
     this.twoFactorEnabled = false,
     this.twoFactorMethod,
+    this.dateOfBirth,
   });
 
   /// An empty user which represents an unauthenticated user.
@@ -82,8 +100,11 @@ class User extends Equatable {
     currentSignupStep: null,
     hasPasscode: false,
     hasTransactionPin: false,
+    hasPassword: false,
+    preferredLoginMethod: null,
     twoFactorEnabled: false,
     twoFactorMethod: null,
+    dateOfBirth: null,
   );
 
   /// Convenience getter to determine whether the current user is empty.
@@ -116,8 +137,11 @@ class User extends Equatable {
     String? currentSignupStep,
     bool? hasPasscode,
     bool? hasTransactionPin,
+    bool? hasPassword,
+    String? preferredLoginMethod,
     bool? twoFactorEnabled,
     String? twoFactorMethod,
+    String? dateOfBirth,
   }) {
     return User(
       id: id ?? this.id,
@@ -142,8 +166,11 @@ class User extends Equatable {
       currentSignupStep: currentSignupStep ?? this.currentSignupStep,
       hasPasscode: hasPasscode ?? this.hasPasscode,
       hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin,
+      hasPassword: hasPassword ?? this.hasPassword,
+      preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
       twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
       twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
     );
   }
 
@@ -169,8 +196,11 @@ class User extends Equatable {
         currentSignupStep,
         hasPasscode,
         hasTransactionPin,
+        hasPassword,
+        preferredLoginMethod,
         twoFactorEnabled,
         twoFactorMethod,
+        dateOfBirth,
       ];
 }
 

@@ -12,12 +12,34 @@ import '../../cubit/create_lock_cubit.dart';
 class LockTypeSelector extends StatelessWidget {
   const LockTypeSelector({super.key});
 
+  // Cosmetic icon + premium-tag per plan slug. Plans are identified
+  // by their config id; this map only drives decoration and safely
+  // defaults for admin-defined slugs the app doesn't recognise.
+  static (IconData, bool) _decorFor(String lockType) {
+    switch (lockType.trim().toLowerCase()) {
+      case 'savings':
+        return (Icons.savings_rounded, false);
+      case 'investment':
+        return (Icons.trending_up_rounded, true);
+      case 'goal_based':
+        return (Icons.flag_rounded, true);
+      default:
+        return (Icons.lock_rounded, true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CreateLockCubit, CreateLockState>(
       builder: (context, state) {
         final cubit = context.read<CreateLockCubit>();
-        final selectedType = cubit.lockType;
+        // Render one card per active backend plan, identified by its
+        // config id — so whatever plans ops publish (including new or
+        // renamed ones) appear here without a client change. When the
+        // config list hasn't loaded yet (cold start / offline) fall
+        // back to the three canonical enum plans so the wizard still
+        // renders something.
+        final plans = cubit.activePlans;
 
         return SingleChildScrollView(
           padding: EdgeInsets.all(20.w),
@@ -34,7 +56,7 @@ class LockTypeSelector extends StatelessWidget {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Select a PiggyVault that suits your financial goals',
+                'Select a Piggyvault that suits your financial goals',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
@@ -42,34 +64,44 @@ class LockTypeSelector extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 24.h),
-              // Build cards dynamically from available lock types
-              // Only show active types from backend config
-              // Only the three plans the platform supports today.
-              // Each plan's display name / rate / description / amount
-              // rules come from PiggyVaultConfig via the cubit — the
-              // icon + premium-tag flag stay here as cosmetic decoration.
-              for (final entry in [
-                (LockType.savings, Icons.savings_rounded, false),
-                (LockType.investment, Icons.trending_up_rounded, true),
-                (LockType.goalBased, Icons.flag_rounded, true),
-              ]) ...[
-                if (cubit.isTypeActive(entry.$1))
+              if (plans.isNotEmpty)
+                for (final config in plans) ...[
+                  Builder(builder: (_) {
+                    final decor = _decorFor(config.lockType);
+                    return _buildLockTypeCard(
+                      context: context,
+                      icon: decor.$1,
+                      title: config.displayName,
+                      description: config.description,
+                      baseRate: config.baseRatePercent,
+                      maxRate: config.maxRatePercent,
+                      isPremium: decor.$2,
+                      isSelected: cubit.selectedConfigId == config.id,
+                      onTap: () => cubit.selectConfig(config),
+                    );
+                  }),
+                  SizedBox(height: 16.h),
+                ]
+              else
+                // Offline / pre-load fallback: canonical enum plans.
+                for (final entry in [
+                  (LockType.savings, Icons.savings_rounded, false),
+                  (LockType.investment, Icons.trending_up_rounded, true),
+                  (LockType.goalBased, Icons.flag_rounded, true),
+                ]) ...[
                   _buildLockTypeCard(
                     context: context,
-                    lockType: entry.$1,
                     icon: entry.$2,
-                    // All display values come from cubit (backend config → fallback)
                     title: cubit.getDisplayName(entry.$1),
                     description: cubit.getDescription(entry.$1),
                     baseRate: cubit.getBaseRate(entry.$1),
                     maxRate: cubit.getMaxRate(entry.$1),
                     isPremium: entry.$3,
-                    isSelected: selectedType == entry.$1,
+                    isSelected: cubit.lockType == entry.$1,
                     onTap: () => cubit.updateLockType(entry.$1),
                   ),
-                if (cubit.isTypeActive(entry.$1))
                   SizedBox(height: 16.h),
-              ],
+                ],
             ],
           ),
         );
@@ -79,7 +111,6 @@ class LockTypeSelector extends StatelessWidget {
 
   Widget _buildLockTypeCard({
     required BuildContext context,
-    required LockType lockType,
     required IconData icon,
     required String title,
     required String description,

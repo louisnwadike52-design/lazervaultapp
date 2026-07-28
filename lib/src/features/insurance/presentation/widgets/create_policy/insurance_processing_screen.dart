@@ -5,12 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:get_it/get_it.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../../domain/repositories/insurance_repository.dart';
+import '../insurance_terms_bottom_sheet.dart';
 import '../../../../account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -34,6 +35,12 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
   static const Duration _hangTimeout = Duration(seconds: 60);
   Timer? _hangTimer;
   bool _hangTimedOut = false;
+
+  // When the purchase fails we keep the user ON this screen and render a
+  // persistent, unmissable error panel (not a transient snackbar that a
+  // pop() dismisses before it's read). This holds the friendly, field-level
+  // message from the cubit so the user can see EXACTLY what to correct.
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -143,6 +150,87 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     );
   }
 
+  /// Persistent, unmissable failure panel. Shows the exact friendly message
+  /// (field-level where the provider tells us the field) so the user knows
+  /// precisely what to correct, with a clear "Edit details" action that
+  /// returns them to the form rather than silently dropping them out.
+  Widget _buildErrorPanel(String message) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 72.w,
+                height: 72.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                ),
+                child: Icon(Icons.error_outline,
+                    color: const Color(0xFFEF4444), size: 38.sp),
+              ),
+              SizedBox(height: 20.h),
+              Text("We couldn't complete your policy",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white)),
+              SizedBox(height: 12.h),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                ),
+                child: Text(message,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: Colors.white,
+                        height: 1.45)),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                  'Your payment was not taken. Fix the details above and '
+                  'try again.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9CA3AF),
+                      height: 1.4)),
+              SizedBox(height: 28.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 15.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Edit details',
+                      style: GoogleFonts.inter(
+                          fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CreatePolicyCubit, CreatePolicyState>(
@@ -166,18 +254,19 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
           );
         } else if (state is CreatePolicyError) {
           _pulseController.stop();
-          // Show error and go back
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text((state as CreatePolicyError).message),
-              backgroundColor: const Color(0xFFEF4444),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          Navigator.of(context).pop();
+          _hangTimer?.cancel();
+          // DON'T pop with a transient snackbar the user never sees. Keep them
+          // here and render a persistent error panel with the exact message so
+          // they know which field to fix.
+          setState(() {
+            _errorMessage = (state as CreatePolicyError).message;
+          });
         }
       },
       builder: (context, state) {
+        if (_errorMessage != null) {
+          return _buildErrorPanel(_errorMessage!);
+        }
         if (state is! InsurancePurchaseProcessing &&
             state is! InsurancePurchaseSuccess) {
           return _buildInitialSpinner();
@@ -721,6 +810,24 @@ class _InsurancePurchaseReceiptScreenState
                   color: const Color(0xFF9CA3AF),
                 ),
               ),
+              SizedBox(height: 28.h),
+
+              // Hero premium amount — mirrors the send-funds receipt.
+              Text(
+                'Premium paid',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
+                style: GoogleFonts.inter(
+                  fontSize: 34.sp,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1.0,
+                ),
+              ),
               SizedBox(height: 32.h),
 
               // Policy details card
@@ -830,39 +937,38 @@ class _InsurancePurchaseReceiptScreenState
                 SizedBox(height: 24.h),
               ],
 
-              // Action buttons
-              if (certificateUrl.isNotEmpty) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final uri = Uri.tryParse(certificateUrl);
-                      if (uri != null) {
-                        await launchUrl(uri,
-                            mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF6366F1)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    icon: Icon(Icons.description_outlined,
-                        color: const Color(0xFF6366F1), size: 18.sp),
-                    label: Text(
-                      'View Certificate',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6366F1),
+              // Action buttons — Share + View Certificate (themed in-app
+              // webview sheet), then a full-width Done.
+              Row(
+                children: [
+                  Expanded(
+                    child: _outlinedCta(
+                      icon: Icons.ios_share_rounded,
+                      label: 'Share',
+                      onTap: () => _shareReceipt(
+                        policyNumber: policyNumber,
+                        productName: product.name,
+                        provider: product.providerName,
+                        amount:
+                            '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
+                        reference: _referenceStr(),
+                        status: status,
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 12.h),
-              ],
+                  if (certificateUrl.isNotEmpty) ...[
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: _outlinedCta(
+                        icon: Icons.workspace_premium_rounded,
+                        label: 'Certificate',
+                        onTap: () => _viewCertificate(certificateUrl),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              SizedBox(height: 12.h),
               SizedBox(
                 width: double.infinity,
                 height: 52.h,
@@ -877,7 +983,7 @@ class _InsurancePurchaseReceiptScreenState
                     ),
                   ),
                   child: Text(
-                    'Back to Dashboard',
+                    'Done',
                     style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -901,6 +1007,64 @@ class _InsurancePurchaseReceiptScreenState
         ),
       ),
     );
+  }
+
+  Widget _outlinedCta({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      height: 52.h,
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFF6366F1)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
+        icon: Icon(icon, color: const Color(0xFF6366F1), size: 18.sp),
+        label: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF6366F1),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Opens the policy certificate in the app's themed in-app webview sheet
+  /// (reuses [InsuranceTermsBottomSheet]) instead of kicking out to a browser.
+  void _viewCertificate(String url) {
+    InsuranceTermsBottomSheet.show(
+      context,
+      urlResolver: () async => url,
+      title: 'Insurance Certificate',
+      subtitle: 'Your policy document',
+      icon: Icons.workspace_premium_rounded,
+    );
+  }
+
+  void _shareReceipt({
+    required String policyNumber,
+    required String productName,
+    required String provider,
+    required String amount,
+    required String reference,
+    required String status,
+  }) {
+    final text = 'Insurance Policy Receipt\n\n'
+        'Product: $productName\n'
+        'Provider: $provider\n'
+        'Policy Number: $policyNumber\n'
+        'Premium: $amount\n'
+        'Reference: $reference\n'
+        'Status: ${status.replaceAll('_', ' ').toUpperCase()}\n\n'
+        'Purchased on Lazervault.';
+    SharePlus.instance.share(ShareParams(text: text));
   }
 
   Widget _buildReceiptRow(String label, String value, {bool isAmount = false}) {

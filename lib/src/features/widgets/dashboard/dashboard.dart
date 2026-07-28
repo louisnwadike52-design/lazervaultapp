@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
+import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/view/dashboard_card_summary.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -27,8 +28,8 @@ import 'package:lazervault/src/features/group_account/presentation/cubit/group_a
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
-import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/dashboard/widgets/dashboard_action_sheet.dart';
 import 'package:get/get.dart';
@@ -129,14 +130,22 @@ class _DashboardState extends State<Dashboard> {
     return null;
   }
 
-  /// True when the account currently shown in the top carousel is Family & Friends.
+  /// True when the account currently shown in the top carousel is Family &
+  /// Friends — detected by the [isFamilyAccount] flag (name-independent), not
+  /// the card's label.
+  ///
+  /// The carousel activates a family card by its [spendingAccountId] (the
+  /// family virtual/pool account), which is NOT the same as the summary [id].
+  /// So we match the active id against BOTH — exactly like [AccountCarousel]
+  /// does when it restores the active page. Matching only [id] meant a family
+  /// card never registered as active and the "create another" CTA stayed hidden.
   bool _activeCarouselAccountIsFamily(
     List<AccountSummaryEntity> summaries,
     String? activeAccountId,
   ) {
     if (activeAccountId == null || activeAccountId.isEmpty) return false;
     for (final a in summaries) {
-      if (a.id == activeAccountId) {
+      if (a.id == activeAccountId || a.spendingAccountId == activeAccountId) {
         return a.isFamilyAccount ||
             a.accountTypeEnum == VirtualAccountType.family;
       }
@@ -206,6 +215,17 @@ class _DashboardState extends State<Dashboard> {
         if (!mounted) return;
         widget.onOpenVoiceAgent?.call();
       },
+      // Open the P2P financial-connections list. Pushed (Get.toNamed) so Back
+      // pops straight back to the dashboard — same route the Send Funds →
+      // Select Recipient flow uses, so back-navigation is consistent from
+      // every entry point.
+      onMessageFinancialConnections: () =>
+          Get.toNamed(AppRoutes.financialConnections),
+      // Search across EVERY platform service (deduped across account types) via
+      // the existing searchable all-services sheet (real-time filter + tap-to-
+      // navigate).
+      onSearchServices: () =>
+          showAllServicesBottomSheet(context, AppServicesBuilder.getAllServices()),
     );
   }
 
@@ -386,8 +406,9 @@ class _DashboardState extends State<Dashboard> {
   }
 
   /// CTA card for creating Family & Friends accounts (max 3).
-  /// Only visible when the Family & Friends account card is active in the top carousel
-  /// (same selection as [AccountManager] / [AccountCarousel]) and user has fewer than 3 family accounts.
+  /// Only visible when a Family & Friends card is the active card in the top
+  /// carousel (swipe to a family card to reveal it) and the user has fewer than
+  /// 3 family accounts. Tapping "+" opens the consolidated create flow.
   Widget _buildFamilyFriendsCTA() {
     final accountManager = serviceLocator<AccountManager>();
 
@@ -406,6 +427,27 @@ class _DashboardState extends State<Dashboard> {
             if (!_activeCarouselAccountIsFamily(summaries, activeId)) {
               return const SizedBox.shrink();
             }
+
+            // Consolidation: don't offer "create ANOTHER family account" while
+            // the active Family & Friends account is still PENDING SETUP. The
+            // user should finish setting up this first account — via the card's
+            // "Get Started" or the services "Setup Now", which now share one
+            // canonical flow — before starting a second. Otherwise three
+            // overlapping CTAs (get started / setup now / add-another) compete on
+            // the same pending slide, with divergent destinations.
+            AccountSummaryEntity? activeFamily;
+            for (final a in summaries) {
+              if ((a.id == activeId || a.spendingAccountId == activeId) &&
+                  (a.isFamilyAccount ||
+                      a.accountTypeEnum == VirtualAccountType.family)) {
+                activeFamily = a;
+                break;
+              }
+            }
+            final isPendingSetup = activeFamily == null ||
+                activeFamily.isFamilyPendingSetup ||
+                !activeFamily.isFamilyAccount;
+            if (isPendingSetup) return const SizedBox.shrink();
 
             final familyCount = summaries
                 .where((a) => a.accountTypeEnum == VirtualAccountType.family)
@@ -476,10 +518,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                      onTap: () {
-                        if (Get.isBottomSheetOpen == true) return;
-                        _showCreateFamilyAccountSheet(context);
-                      },
+                      onTap: () => Get.toNamed(AppRoutes.familyCreate),
                       child: Container(
                         width: 40.w,
                         height: 40.w,
@@ -508,188 +547,6 @@ class _DashboardState extends State<Dashboard> {
           },
         );
       },
-    );
-  }
-
-  void _showCreateFamilyAccountSheet(BuildContext ctx) {
-    final nameController = TextEditingController();
-    bool isCreating = false;
-
-    // Determine currency from user profile
-    String currentCurrency = 'NGN';
-    final profileState = ctx.read<ProfileCubit>().state;
-    if (profileState is ProfileLoaded) {
-      final currency = profileState.preferences.currency;
-      if (currency.isNotEmpty) currentCurrency = currency;
-    }
-
-    Get.bottomSheet(
-      StatefulBuilder(
-        builder: (context, setSheetState) {
-          return Container(
-            padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 24.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Drag handle
-                Center(
-                  child: Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Text(
-                  'Create Family & Friends Account',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                TextField(
-                  controller: nameController,
-                  maxLength: 50,
-                  style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                  decoration: InputDecoration(
-                    labelText: 'Account Name',
-                    labelStyle: TextStyle(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 14.sp,
-                    ),
-                    hintText: 'e.g., Kids Allowance, Friend Group, Family Pool',
-                    hintStyle: TextStyle(
-                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
-                      fontSize: 13.sp,
-                    ),
-                    counterStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF3B82F6)),
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFF0A0A0A),
-                  ),
-                ),
-                SizedBox(height: 24.h),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50.h,
-                  child: ElevatedButton(
-                    onPressed: isCreating
-                        ? null
-                        : () async {
-                            final name = nameController.text.trim();
-                            if (name.isEmpty) {
-                              Get.snackbar(
-                                'Required',
-                                'Please enter a name for the account',
-                                backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-                                colorText: Colors.white,
-                                snackPosition: SnackPosition.TOP,
-                              );
-                              return;
-                            }
-
-                            setSheetState(() => isCreating = true);
-
-                            try {
-                              final familyCubit = serviceLocator<FamilyAccountCubit>();
-                              await familyCubit.createAccount(
-                                name: name,
-                                initialCurrency: currentCurrency,
-                                initialFunding: 0.0,
-                                allowMemberContributions: true,
-                              );
-
-                              if (Get.isBottomSheetOpen != true) return;
-
-                              final state = familyCubit.state;
-                              if (state is FamilyAccountCreated) {
-                                Get.back(); // Close bottom sheet
-                                Get.snackbar(
-                                  'Success',
-                                  '"$name" account created!',
-                                  backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
-                                  colorText: Colors.white,
-                                  snackPosition: SnackPosition.TOP,
-                                );
-                                // Refresh dashboard accounts so new family card appears in carousel
-                                final accountsCubit = ctx.read<AccountCardsSummaryCubit>();
-                                if (accountsCubit.currentUserId != null) {
-                                  accountsCubit.fetchAccountSummaries(
-                                      userId: accountsCubit.currentUserId!);
-                                }
-                                // Navigate to family setup
-                                Get.toNamed(
-                                  AppRoutes.familyActivationSetup,
-                                  arguments: {'familyId': state.familyAccount.id},
-                                );
-                              } else if (state is FamilyAccountError) {
-                                setSheetState(() => isCreating = false);
-                                Get.snackbar(
-                                  'Error',
-                                  state.message,
-                                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-                                  colorText: Colors.white,
-                                  snackPosition: SnackPosition.TOP,
-                                );
-                              } else {
-                                setSheetState(() => isCreating = false);
-                              }
-                            } catch (e) {
-                              if (Get.isBottomSheetOpen == true) {
-                                setSheetState(() => isCreating = false);
-                              }
-                              Get.snackbar(
-                                'Error',
-                                'Failed to create account. Please try again.',
-                                backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-                                colorText: Colors.white,
-                                snackPosition: SnackPosition.TOP,
-                              );
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: isCreating
-                        ? LazerVaultLoader.small()
-                        : Text(
-                            'Create Account',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-                SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
-              ],
-            ),
-          );
-        },
-      ),
-      isScrollControlled: true,
     );
   }
 

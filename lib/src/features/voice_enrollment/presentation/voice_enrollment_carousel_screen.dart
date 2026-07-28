@@ -16,10 +16,22 @@ class VoiceEnrollmentCarouselScreen extends StatefulWidget {
   final String? userId;
   final VoidCallback? onEnrollmentComplete;
 
+  /// Controls the "done" completion navigation so back-navigation respects who
+  /// launched enrollment. When true (general voice-agent onboarding — the
+  /// voiceEnrollment route, voice_activation_manager, voice settings), finishing
+  /// clears the stack to the dashboard and auto-opens the voice command sheet.
+  /// When false (in-transaction "Register Voice" + the voice status badge —
+  /// anywhere the user should return to where they came from), finishing simply
+  /// pops back to the launcher and lets [onEnrollmentComplete] drive next steps.
+  /// (Biometric-login Settings uses the separate VoiceEnrollmentScreen, not this
+  /// carousel.) Enrollment logic + backend are identical either way.
+  final bool openVoiceSheetOnComplete;
+
   const VoiceEnrollmentCarouselScreen({
     super.key,
     this.userId,
     this.onEnrollmentComplete,
+    this.openVoiceSheetOnComplete = true,
   });
 
   @override
@@ -103,7 +115,11 @@ class _VoiceEnrollmentCarouselScreenState
             } else if (state is VoiceEnrollmentPoorQuality) {
               _showPoorQualitySheet(context, state);
             } else if (state is VoiceEnrollmentSkipped) {
-              widget.onEnrollmentComplete?.call();
+              // SKIP is NOT completion. Firing onEnrollmentComplete here would
+              // make callers (voice-transaction / status-badge) mark a user who
+              // explicitly opted out as enrolled — enabling voice login they
+              // declined and driving verification against a missing/poor
+              // voiceprint. Just close; enrollment did not happen.
               Navigator.of(context).pop();
             } else if (state is VoiceEnrollmentError) {
               _showErrorSnackbar(context, state.message);
@@ -447,7 +463,7 @@ class _VoiceEnrollmentCarouselScreenState
   }
 
   Widget _buildProcessingIndicator() {
-    return LazerVaultLoader(size: 100);
+    return LazerVaultLoader(size: 64);
   }
 
   Widget _buildSoundLevelBars(double level) {
@@ -1418,12 +1434,21 @@ class _VoiceEnrollmentCarouselScreenState
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(sheetContext).pop();
-                      widget.onEnrollmentComplete?.call();
-                      // Navigate to dashboard and auto-open voice command sheet
-                      Get.offAllNamed(
-                        AppRoutes.dashboard,
-                        arguments: {'openVoiceSheet': true},
-                      );
+                      if (widget.openVoiceSheetOnComplete) {
+                        widget.onEnrollmentComplete?.call();
+                        // General voice-agent onboarding: land on the dashboard
+                        // and auto-open the voice command sheet.
+                        Get.offAllNamed(
+                          AppRoutes.dashboard,
+                          arguments: {'openVoiceSheet': true},
+                        );
+                      } else {
+                        // Launched from settings / a transaction / the status
+                        // badge → return to the launcher; the caller's
+                        // onEnrollmentComplete decides what happens next.
+                        Navigator.of(context).pop();
+                        widget.onEnrollmentComplete?.call();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,

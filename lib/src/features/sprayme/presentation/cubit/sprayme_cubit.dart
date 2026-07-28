@@ -106,14 +106,14 @@ class SprayMeCubit extends Cubit<SprayMeState> {
   Future<void> fundWallet({
     required int amount,
     required String sourceAccountId,
-    required String pin,
+    required String verificationToken,
   }) async {
     emit(SprayMeLoading());
     try {
       final wallet = await _repository.fundWallet(
         amount: amount,
         sourceAccountId: sourceAccountId,
-        pin: pin,
+        verificationToken: verificationToken,
       );
       emit(WalletFunded(
         wallet: wallet,
@@ -130,7 +130,7 @@ class SprayMeCubit extends Cubit<SprayMeState> {
   Future<void> buyGiftCredit({
     required List<Map<String, dynamic>> items,
     required String sourceAccountId,
-    required String pin,
+    required String verificationToken,
     String sessionId = '',
     String currency = 'NGN',
   }) async {
@@ -139,7 +139,7 @@ class SprayMeCubit extends Cubit<SprayMeState> {
       final wallet = await _repository.buyGiftCredit(
         items: items,
         sourceAccountId: sourceAccountId,
-        pin: pin,
+        verificationToken: verificationToken,
         idempotencyKey: const Uuid().v4(),
         sessionId: sessionId,
         currency: currency,
@@ -156,14 +156,14 @@ class SprayMeCubit extends Cubit<SprayMeState> {
   Future<void> withdrawFromWallet({
     required int amount,
     required String destinationAccountId,
-    required String pin,
+    required String verificationToken,
   }) async {
     emit(SprayMeLoading());
     try {
       final wallet = await _repository.withdrawFromWallet(
         amount: amount,
         destinationAccountId: destinationAccountId,
-        pin: pin,
+        verificationToken: verificationToken,
       );
       emit(WalletWithdrawn(
         wallet: wallet,
@@ -225,8 +225,10 @@ class SprayMeCubit extends Cubit<SprayMeState> {
 
   Future<void> sendLike(String sessionId) async {
     try {
-      final totalLikes = await _repository.sendLike(sessionId);
-      emit(LikeSent(totalLikes));
+      final r = await _repository.sendLike(sessionId);
+      // Surface the accumulated lifetime tap count (falls back to distinct
+      // likers if the backend hasn't populated taps yet).
+      emit(LikeSent(r.totalLikeTaps > 0 ? r.totalLikeTaps : r.totalLikes));
     } catch (e) {
       // Silently ignore like errors
     }

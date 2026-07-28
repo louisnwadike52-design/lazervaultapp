@@ -2622,12 +2622,14 @@ class BanksResponse extends $pb.GeneratedMessage {
     $core.String? errorCode,
     $core.String? errorMessage,
     $core.Iterable<Bank>? banks,
+    $core.String? provider,
   }) {
     final result = create();
     if (success != null) result.success = success;
     if (errorCode != null) result.errorCode = errorCode;
     if (errorMessage != null) result.errorMessage = errorMessage;
     if (banks != null) result.banks.addAll(banks);
+    if (provider != null) result.provider = provider;
     return result;
   }
 
@@ -2649,6 +2651,7 @@ class BanksResponse extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
     ..pc<Bank>(4, _omitFieldNames ? '' : 'banks', $pb.PbFieldType.PM,
         subBuilder: Bank.create)
+    ..aOS(5, _omitFieldNames ? '' : 'provider')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2701,6 +2704,18 @@ class BanksResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(4)
   $pb.PbList<Bank> get banks => $_getList(3);
+
+  /// provider is the account-verification/bank-list provider that served this
+  /// response (mono | flutterwave | paystack), selected from the admin-tunable
+  /// `account_verify_provider` system setting. Observability only.
+  @$pb.TagNumber(5)
+  $core.String get provider => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set provider($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasProvider() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearProvider() => $_clearField(5);
 }
 
 class Bank extends $pb.GeneratedMessage {
@@ -5621,6 +5636,8 @@ class TransactionsResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== CONNECT FINANCIAL DATA (Mono Bank Data) =====
+/// Mono's statement/insights/income/creditworthiness payloads are rich and
+/// variable, so they are returned as a raw JSON string the client decodes.
 class GetAccountStatementRequest extends $pb.GeneratedMessage {
   factory GetAccountStatementRequest({
     $core.String? accountId,
@@ -6349,6 +6366,10 @@ class InitiateProveKYCRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   void clearAddress() => $_clearField(8);
 
+  /// ADVISORY ONLY — no longer selects the Mono billing level. The Mono Prove
+  /// PRODUCT level (kyc_level, billed per the SLA) is admin-pinned server-side
+  /// via the kyc.mono.prove_level system_setting (default tier_1). Kept for
+  /// wire compatibility; banking-service ignores it when calling Mono.
   @$pb.TagNumber(9)
   $core.String get tier => $_getSZ(8);
   @$pb.TagNumber(9)
@@ -6580,6 +6601,13 @@ class CompleteProveKYCResponse extends $pb.GeneratedMessage {
     $core.String? firstName,
     $core.String? lastName,
     $core.String? dateOfBirth,
+    $core.int? tier,
+    $core.String? tierName,
+    $core.String? message,
+    $core.Iterable<$core.String>? completedSteps,
+    $core.int? nextTier,
+    $core.Iterable<$core.String>? nextRequirements,
+    $fixnum.Int64? dailyLimitKobo,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -6592,6 +6620,14 @@ class CompleteProveKYCResponse extends $pb.GeneratedMessage {
     if (firstName != null) result.firstName = firstName;
     if (lastName != null) result.lastName = lastName;
     if (dateOfBirth != null) result.dateOfBirth = dateOfBirth;
+    if (tier != null) result.tier = tier;
+    if (tierName != null) result.tierName = tierName;
+    if (message != null) result.message = message;
+    if (completedSteps != null) result.completedSteps.addAll(completedSteps);
+    if (nextTier != null) result.nextTier = nextTier;
+    if (nextRequirements != null)
+      result.nextRequirements.addAll(nextRequirements);
+    if (dailyLimitKobo != null) result.dailyLimitKobo = dailyLimitKobo;
     return result;
   }
 
@@ -6618,6 +6654,13 @@ class CompleteProveKYCResponse extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'firstName')
     ..aOS(9, _omitFieldNames ? '' : 'lastName')
     ..aOS(10, _omitFieldNames ? '' : 'dateOfBirth')
+    ..a<$core.int>(11, _omitFieldNames ? '' : 'tier', $pb.PbFieldType.O3)
+    ..aOS(12, _omitFieldNames ? '' : 'tierName')
+    ..aOS(13, _omitFieldNames ? '' : 'message')
+    ..pPS(14, _omitFieldNames ? '' : 'completedSteps')
+    ..a<$core.int>(15, _omitFieldNames ? '' : 'nextTier', $pb.PbFieldType.O3)
+    ..pPS(16, _omitFieldNames ? '' : 'nextRequirements')
+    ..aInt64(17, _omitFieldNames ? '' : 'dailyLimitKobo')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6732,6 +6775,319 @@ class CompleteProveKYCResponse extends $pb.GeneratedMessage {
   $core.bool hasDateOfBirth() => $_has(9);
   @$pb.TagNumber(10)
   void clearDateOfBirth() => $_clearField(10);
+
+  /// Tier tracking: what the completed steps leave the user at + what's next.
+  @$pb.TagNumber(11)
+  $core.int get tier => $_getIZ(10);
+  @$pb.TagNumber(11)
+  set tier($core.int value) => $_setSignedInt32(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasTier() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearTier() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get tierName => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set tierName($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasTierName() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearTierName() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get message => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set message($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasMessage() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearMessage() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $pb.PbList<$core.String> get completedSteps => $_getList(13);
+
+  @$pb.TagNumber(15)
+  $core.int get nextTier => $_getIZ(14);
+  @$pb.TagNumber(15)
+  set nextTier($core.int value) => $_setSignedInt32(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasNextTier() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearNextTier() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $pb.PbList<$core.String> get nextRequirements => $_getList(15);
+
+  @$pb.TagNumber(17)
+  $fixnum.Int64 get dailyLimitKobo => $_getI64(16);
+  @$pb.TagNumber(17)
+  set dailyLimitKobo($fixnum.Int64 value) => $_setInt64(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasDailyLimitKobo() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearDailyLimitKobo() => $_clearField(17);
+}
+
+class GetProveKYCStatusRequest extends $pb.GeneratedMessage {
+  factory GetProveKYCStatusRequest({
+    $core.String? userId,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    return result;
+  }
+
+  GetProveKYCStatusRequest._();
+
+  factory GetProveKYCStatusRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetProveKYCStatusRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetProveKYCStatusRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetProveKYCStatusRequest clone() =>
+      GetProveKYCStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetProveKYCStatusRequest copyWith(
+          void Function(GetProveKYCStatusRequest) updates) =>
+      super.copyWith((message) => updates(message as GetProveKYCStatusRequest))
+          as GetProveKYCStatusRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetProveKYCStatusRequest create() => GetProveKYCStatusRequest._();
+  @$core.override
+  GetProveKYCStatusRequest createEmptyInstance() => create();
+  static $pb.PbList<GetProveKYCStatusRequest> createRepeated() =>
+      $pb.PbList<GetProveKYCStatusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetProveKYCStatusRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetProveKYCStatusRequest>(create);
+  static GetProveKYCStatusRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+}
+
+class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
+  factory GetProveKYCStatusResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.bool? verified,
+    $core.int? tier,
+    $core.String? tierName,
+    $core.Iterable<$core.String>? completedSteps,
+    $core.int? nextTier,
+    $core.Iterable<$core.String>? nextRequirements,
+    $core.String? message,
+    $fixnum.Int64? dailyLimitKobo,
+    $core.String? bvnMasked,
+    $core.String? ninMasked,
+    $core.String? reference,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (errorCode != null) result.errorCode = errorCode;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (verified != null) result.verified = verified;
+    if (tier != null) result.tier = tier;
+    if (tierName != null) result.tierName = tierName;
+    if (completedSteps != null) result.completedSteps.addAll(completedSteps);
+    if (nextTier != null) result.nextTier = nextTier;
+    if (nextRequirements != null)
+      result.nextRequirements.addAll(nextRequirements);
+    if (message != null) result.message = message;
+    if (dailyLimitKobo != null) result.dailyLimitKobo = dailyLimitKobo;
+    if (bvnMasked != null) result.bvnMasked = bvnMasked;
+    if (ninMasked != null) result.ninMasked = ninMasked;
+    if (reference != null) result.reference = reference;
+    return result;
+  }
+
+  GetProveKYCStatusResponse._();
+
+  factory GetProveKYCStatusResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetProveKYCStatusResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetProveKYCStatusResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOB(4, _omitFieldNames ? '' : 'verified')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'tier', $pb.PbFieldType.O3)
+    ..aOS(6, _omitFieldNames ? '' : 'tierName')
+    ..pPS(7, _omitFieldNames ? '' : 'completedSteps')
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'nextTier', $pb.PbFieldType.O3)
+    ..pPS(9, _omitFieldNames ? '' : 'nextRequirements')
+    ..aOS(10, _omitFieldNames ? '' : 'message')
+    ..aInt64(11, _omitFieldNames ? '' : 'dailyLimitKobo')
+    ..aOS(12, _omitFieldNames ? '' : 'bvnMasked')
+    ..aOS(13, _omitFieldNames ? '' : 'ninMasked')
+    ..aOS(14, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetProveKYCStatusResponse clone() =>
+      GetProveKYCStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetProveKYCStatusResponse copyWith(
+          void Function(GetProveKYCStatusResponse) updates) =>
+      super.copyWith((message) => updates(message as GetProveKYCStatusResponse))
+          as GetProveKYCStatusResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetProveKYCStatusResponse create() => GetProveKYCStatusResponse._();
+  @$core.override
+  GetProveKYCStatusResponse createEmptyInstance() => create();
+  static $pb.PbList<GetProveKYCStatusResponse> createRepeated() =>
+      $pb.PbList<GetProveKYCStatusResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetProveKYCStatusResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetProveKYCStatusResponse>(create);
+  static GetProveKYCStatusResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get verified => $_getBF(3);
+  @$pb.TagNumber(4)
+  set verified($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasVerified() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVerified() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get tier => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set tier($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTier() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTier() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get tierName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set tierName($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasTierName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTierName() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $pb.PbList<$core.String> get completedSteps => $_getList(6);
+
+  @$pb.TagNumber(8)
+  $core.int get nextTier => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set nextTier($core.int value) => $_setSignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasNextTier() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearNextTier() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $pb.PbList<$core.String> get nextRequirements => $_getList(8);
+
+  @$pb.TagNumber(10)
+  $core.String get message => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set message($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasMessage() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearMessage() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get dailyLimitKobo => $_getI64(10);
+  @$pb.TagNumber(11)
+  set dailyLimitKobo($fixnum.Int64 value) => $_setInt64(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasDailyLimitKobo() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDailyLimitKobo() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get bvnMasked => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set bvnMasked($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasBvnMasked() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearBvnMasked() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get ninMasked => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set ninMasked($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasNinMasked() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearNinMasked() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get reference => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set reference($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasReference() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearReference() => $_clearField(14);
 }
 
 class Transaction extends $pb.GeneratedMessage {
@@ -11412,6 +11768,8 @@ class GetExternalBankAnalyticsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearEndDate() => $_clearField(4);
 
+  /// Previous comparison window (for trend %). Optional; when empty the
+  /// service mirrors the current window length immediately before start.
   @$pb.TagNumber(5)
   $core.String get prevStartDate => $_getSZ(4);
   @$pb.TagNumber(5)
@@ -11824,6 +12182,7 @@ class GetExternalBankAnalyticsResponse extends $pb.GeneratedMessage {
   void clearErrorMessage() => $_clearField(8);
 }
 
+/// Get Account With Transactions
 class GetAccountWithTransactionsRequest extends $pb.GeneratedMessage {
   factory GetAccountWithTransactionsRequest({
     $core.String? accountId,
@@ -12173,6 +12532,163 @@ class RefreshAccountTransactionsResponse extends $pb.GeneratedMessage {
   void clearSyncId() => $_clearField(4);
 }
 
+/// Refresh a single linked account (service-to-service, targeted inflow detection)
+class RefreshLinkedAccountRequest extends $pb.GeneratedMessage {
+  factory RefreshLinkedAccountRequest({
+    $core.String? userId,
+    $core.String? linkedAccountId,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (linkedAccountId != null) result.linkedAccountId = linkedAccountId;
+    return result;
+  }
+
+  RefreshLinkedAccountRequest._();
+
+  factory RefreshLinkedAccountRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RefreshLinkedAccountRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RefreshLinkedAccountRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'linkedAccountId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefreshLinkedAccountRequest clone() =>
+      RefreshLinkedAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefreshLinkedAccountRequest copyWith(
+          void Function(RefreshLinkedAccountRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as RefreshLinkedAccountRequest))
+          as RefreshLinkedAccountRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RefreshLinkedAccountRequest create() =>
+      RefreshLinkedAccountRequest._();
+  @$core.override
+  RefreshLinkedAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<RefreshLinkedAccountRequest> createRepeated() =>
+      $pb.PbList<RefreshLinkedAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RefreshLinkedAccountRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RefreshLinkedAccountRequest>(create);
+  static RefreshLinkedAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get linkedAccountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set linkedAccountId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLinkedAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLinkedAccountId() => $_clearField(2);
+}
+
+class RefreshLinkedAccountResponse extends $pb.GeneratedMessage {
+  factory RefreshLinkedAccountResponse({
+    $core.bool? success,
+    $fixnum.Int64? newCredits,
+    $core.String? errorMessage,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (newCredits != null) result.newCredits = newCredits;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    return result;
+  }
+
+  RefreshLinkedAccountResponse._();
+
+  factory RefreshLinkedAccountResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RefreshLinkedAccountResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RefreshLinkedAccountResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aInt64(2, _omitFieldNames ? '' : 'newCredits')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefreshLinkedAccountResponse clone() =>
+      RefreshLinkedAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefreshLinkedAccountResponse copyWith(
+          void Function(RefreshLinkedAccountResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as RefreshLinkedAccountResponse))
+          as RefreshLinkedAccountResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RefreshLinkedAccountResponse create() =>
+      RefreshLinkedAccountResponse._();
+  @$core.override
+  RefreshLinkedAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<RefreshLinkedAccountResponse> createRepeated() =>
+      $pb.PbList<RefreshLinkedAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RefreshLinkedAccountResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RefreshLinkedAccountResponse>(create);
+  static RefreshLinkedAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get newCredits => $_getI64(1);
+  @$pb.TagNumber(2)
+  set newCredits($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasNewCredits() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNewCredits() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+}
+
 /// Initiate Deposit
 class InitiateDepositRequest extends $pb.GeneratedMessage {
   factory InitiateDepositRequest({
@@ -12185,6 +12701,11 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     $core.bool? useRecurringAccess,
     $core.String? countryCode,
     $core.String? currency,
+    $core.String? paymentMethod,
+    $core.String? creditTypeOverride,
+    $core.String? creditDescriptionOverride,
+    $core.String? externalReference,
+    $core.bool? recurringOnly,
   }) {
     final result = create();
     if (userId != null) result.userId = userId;
@@ -12198,6 +12719,13 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
       result.useRecurringAccess = useRecurringAccess;
     if (countryCode != null) result.countryCode = countryCode;
     if (currency != null) result.currency = currency;
+    if (paymentMethod != null) result.paymentMethod = paymentMethod;
+    if (creditTypeOverride != null)
+      result.creditTypeOverride = creditTypeOverride;
+    if (creditDescriptionOverride != null)
+      result.creditDescriptionOverride = creditDescriptionOverride;
+    if (externalReference != null) result.externalReference = externalReference;
+    if (recurringOnly != null) result.recurringOnly = recurringOnly;
     return result;
   }
 
@@ -12223,6 +12751,11 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     ..aOB(7, _omitFieldNames ? '' : 'useRecurringAccess')
     ..aOS(8, _omitFieldNames ? '' : 'countryCode')
     ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..aOS(10, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(11, _omitFieldNames ? '' : 'creditTypeOverride')
+    ..aOS(12, _omitFieldNames ? '' : 'creditDescriptionOverride')
+    ..aOS(13, _omitFieldNames ? '' : 'externalReference')
+    ..aOB(14, _omitFieldNames ? '' : 'recurringOnly')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12329,6 +12862,67 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
   $core.bool hasCurrency() => $_has(8);
   @$pb.TagNumber(9)
   void clearCurrency() => $_clearField(9);
+
+  /// payment_method restricts the hosted-checkout page to a single rail.
+  /// Empty = let Flutterwave decide. Known values: "apple_pay", "card",
+  /// "bank_transfer", "ussd", "mobile_money". Persisted on direct_debits
+  /// so admin dashboard can attribute and filter.
+  @$pb.TagNumber(10)
+  $core.String get paymentMethod => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set paymentMethod($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasPaymentMethod() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPaymentMethod() => $_clearField(10);
+
+  /// ===== AutoSave / labeled-credit overrides (service-to-service) =====
+  /// When set, the wallet credit at settlement uses these instead of the
+  /// default Type "deposit" / Description "Deposit from <bank>". The
+  /// description MUST start with "AutoSave" for autosave-originated pulls
+  /// (the on-deposit autosave consumer's recursion guard keys on it).
+  @$pb.TagNumber(11)
+  $core.String get creditTypeOverride => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set creditTypeOverride($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasCreditTypeOverride() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCreditTypeOverride() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get creditDescriptionOverride => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set creditDescriptionOverride($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasCreditDescriptionOverride() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCreditDescriptionOverride() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get externalReference => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set externalReference($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasExternalReference() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearExternalReference() => $_clearField(13);
+
+  /// recurring_only marks a NON-INTERACTIVE caller (autosave scheduled /
+  /// external-inflow pull): no human is present to complete a one-time
+  /// DirectPay authorization. When true AND no debitable mandate exists, the
+  /// deposit MUST fail with needs_mandate instead of silently downgrading to
+  /// interactive DirectPay — which would strand the money and let the caller
+  /// record a phantom "successful" save. Interactive user deposits leave this
+  /// false so they keep the DirectPay fallback.
+  @$pb.TagNumber(14)
+  $core.bool get recurringOnly => $_getBF(13);
+  @$pb.TagNumber(14)
+  set recurringOnly($core.bool value) => $_setBool(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasRecurringOnly() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearRecurringOnly() => $_clearField(14);
 }
 
 class DepositResponse extends $pb.GeneratedMessage {
@@ -13067,6 +13661,465 @@ class DepositsResponse extends $pb.GeneratedMessage {
   $core.bool hasTotal() => $_has(4);
   @$pb.TagNumber(5)
   void clearTotal() => $_clearField(5);
+}
+
+/// Admin paginated listing of all deposits (direct_debits rows). Filters are
+/// AND-combined; an empty string means "no filter for that field".
+class AdminListDepositsRequest extends $pb.GeneratedMessage {
+  factory AdminListDepositsRequest({
+    $core.String? status,
+    $core.String? paymentMethod,
+    $core.String? currency,
+    $core.String? provider,
+    $core.String? countryCode,
+    $core.int? page,
+    $core.int? perPage,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (paymentMethod != null) result.paymentMethod = paymentMethod;
+    if (currency != null) result.currency = currency;
+    if (provider != null) result.provider = provider;
+    if (countryCode != null) result.countryCode = countryCode;
+    if (page != null) result.page = page;
+    if (perPage != null) result.perPage = perPage;
+    return result;
+  }
+
+  AdminListDepositsRequest._();
+
+  factory AdminListDepositsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListDepositsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListDepositsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'provider')
+    ..aOS(5, _omitFieldNames ? '' : 'countryCode')
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListDepositsRequest clone() =>
+      AdminListDepositsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListDepositsRequest copyWith(
+          void Function(AdminListDepositsRequest) updates) =>
+      super.copyWith((message) => updates(message as AdminListDepositsRequest))
+          as AdminListDepositsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListDepositsRequest create() => AdminListDepositsRequest._();
+  @$core.override
+  AdminListDepositsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListDepositsRequest> createRepeated() =>
+      $pb.PbList<AdminListDepositsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListDepositsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListDepositsRequest>(create);
+  static AdminListDepositsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get paymentMethod => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set paymentMethod($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPaymentMethod() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPaymentMethod() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get provider => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set provider($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasProvider() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProvider() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get countryCode => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set countryCode($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCountryCode() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCountryCode() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get page => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set page($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPage() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get perPage => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set perPage($core.int value) => $_setSignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPerPage() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPerPage() => $_clearField(7);
+}
+
+class AdminListDepositsResponse extends $pb.GeneratedMessage {
+  factory AdminListDepositsResponse({
+    $core.Iterable<AdminDepositRow>? deposits,
+    $core.int? total,
+    $core.int? page,
+    $core.int? perPage,
+  }) {
+    final result = create();
+    if (deposits != null) result.deposits.addAll(deposits);
+    if (total != null) result.total = total;
+    if (page != null) result.page = page;
+    if (perPage != null) result.perPage = perPage;
+    return result;
+  }
+
+  AdminListDepositsResponse._();
+
+  factory AdminListDepositsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListDepositsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListDepositsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..pc<AdminDepositRow>(
+        1, _omitFieldNames ? '' : 'deposits', $pb.PbFieldType.PM,
+        subBuilder: AdminDepositRow.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListDepositsResponse clone() =>
+      AdminListDepositsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListDepositsResponse copyWith(
+          void Function(AdminListDepositsResponse) updates) =>
+      super.copyWith((message) => updates(message as AdminListDepositsResponse))
+          as AdminListDepositsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListDepositsResponse create() => AdminListDepositsResponse._();
+  @$core.override
+  AdminListDepositsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListDepositsResponse> createRepeated() =>
+      $pb.PbList<AdminListDepositsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListDepositsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListDepositsResponse>(create);
+  static AdminListDepositsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<AdminDepositRow> get deposits => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get perPage => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set perPage($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPerPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPerPage() => $_clearField(4);
+}
+
+class AdminDepositRow extends $pb.GeneratedMessage {
+  factory AdminDepositRow({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? reference,
+    $core.String? provider,
+    $core.String? paymentMethod,
+    $core.String? status,
+    $fixnum.Int64? amountMinorUnits,
+    $fixnum.Int64? feeMinorUnits,
+    $core.String? currency,
+    $core.String? countryCode,
+    $core.String? destinationAccountId,
+    $core.String? narration,
+    $core.String? paymentUrl,
+    $core.String? providerRef,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (userId != null) result.userId = userId;
+    if (reference != null) result.reference = reference;
+    if (provider != null) result.provider = provider;
+    if (paymentMethod != null) result.paymentMethod = paymentMethod;
+    if (status != null) result.status = status;
+    if (amountMinorUnits != null) result.amountMinorUnits = amountMinorUnits;
+    if (feeMinorUnits != null) result.feeMinorUnits = feeMinorUnits;
+    if (currency != null) result.currency = currency;
+    if (countryCode != null) result.countryCode = countryCode;
+    if (destinationAccountId != null)
+      result.destinationAccountId = destinationAccountId;
+    if (narration != null) result.narration = narration;
+    if (paymentUrl != null) result.paymentUrl = paymentUrl;
+    if (providerRef != null) result.providerRef = providerRef;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (updatedAt != null) result.updatedAt = updatedAt;
+    return result;
+  }
+
+  AdminDepositRow._();
+
+  factory AdminDepositRow.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminDepositRow.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminDepositRow',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'reference')
+    ..aOS(4, _omitFieldNames ? '' : 'provider')
+    ..aOS(5, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(6, _omitFieldNames ? '' : 'status')
+    ..aInt64(7, _omitFieldNames ? '' : 'amountMinorUnits')
+    ..aInt64(8, _omitFieldNames ? '' : 'feeMinorUnits')
+    ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..aOS(10, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(11, _omitFieldNames ? '' : 'destinationAccountId')
+    ..aOS(12, _omitFieldNames ? '' : 'narration')
+    ..aOS(13, _omitFieldNames ? '' : 'paymentUrl')
+    ..aOS(14, _omitFieldNames ? '' : 'providerRef')
+    ..aOS(15, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(16, _omitFieldNames ? '' : 'updatedAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminDepositRow clone() => AdminDepositRow()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminDepositRow copyWith(void Function(AdminDepositRow) updates) =>
+      super.copyWith((message) => updates(message as AdminDepositRow))
+          as AdminDepositRow;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminDepositRow create() => AdminDepositRow._();
+  @$core.override
+  AdminDepositRow createEmptyInstance() => create();
+  static $pb.PbList<AdminDepositRow> createRepeated() =>
+      $pb.PbList<AdminDepositRow>();
+  @$core.pragma('dart2js:noInline')
+  static AdminDepositRow getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminDepositRow>(create);
+  static AdminDepositRow? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reference => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reference($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasReference() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReference() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get provider => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set provider($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasProvider() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProvider() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get paymentMethod => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set paymentMethod($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasPaymentMethod() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPaymentMethod() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get status => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set status($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearStatus() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get amountMinorUnits => $_getI64(6);
+  @$pb.TagNumber(7)
+  set amountMinorUnits($fixnum.Int64 value) => $_setInt64(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasAmountMinorUnits() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAmountMinorUnits() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get feeMinorUnits => $_getI64(7);
+  @$pb.TagNumber(8)
+  set feeMinorUnits($fixnum.Int64 value) => $_setInt64(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasFeeMinorUnits() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFeeMinorUnits() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get currency => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set currency($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasCurrency() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCurrency() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get countryCode => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set countryCode($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasCountryCode() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCountryCode() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get destinationAccountId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set destinationAccountId($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasDestinationAccountId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDestinationAccountId() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get narration => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set narration($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasNarration() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNarration() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get paymentUrl => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set paymentUrl($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasPaymentUrl() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearPaymentUrl() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get providerRef => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set providerRef($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasProviderRef() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearProviderRef() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get createdAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set createdAt($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasCreatedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearCreatedAt() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get updatedAt => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set updatedAt($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasUpdatedAt() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearUpdatedAt() => $_clearField(16);
 }
 
 /// Cancel Deposit
@@ -14807,6 +15860,7 @@ class ResolveAccountNameResponse extends $pb.GeneratedMessage {
     $core.String? accountName,
     $core.String? bankCode,
     $core.String? bankName,
+    $core.String? provider,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -14816,6 +15870,7 @@ class ResolveAccountNameResponse extends $pb.GeneratedMessage {
     if (accountName != null) result.accountName = accountName;
     if (bankCode != null) result.bankCode = bankCode;
     if (bankName != null) result.bankName = bankName;
+    if (provider != null) result.provider = provider;
     return result;
   }
 
@@ -14839,6 +15894,7 @@ class ResolveAccountNameResponse extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'accountName')
     ..aOS(6, _omitFieldNames ? '' : 'bankCode')
     ..aOS(7, _omitFieldNames ? '' : 'bankName')
+    ..aOS(8, _omitFieldNames ? '' : 'provider')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14927,6 +15983,18 @@ class ResolveAccountNameResponse extends $pb.GeneratedMessage {
   $core.bool hasBankName() => $_has(6);
   @$pb.TagNumber(7)
   void clearBankName() => $_clearField(7);
+
+  /// provider is the verification provider that resolved this account
+  /// (mono | flutterwave | paystack), selected from the admin-tunable
+  /// `account_verify_provider` system setting. Observability only.
+  @$pb.TagNumber(8)
+  $core.String get provider => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set provider($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasProvider() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearProvider() => $_clearField(8);
 }
 
 /// Create Mandate Request
@@ -15324,6 +16392,8 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     $core.bool? canDebit,
     $core.bool? isExpired,
     $fixnum.Int64? remainingLimit,
+    $core.bool? switchProcessing,
+    $core.String? pendingMethod,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -15353,6 +16423,8 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     if (canDebit != null) result.canDebit = canDebit;
     if (isExpired != null) result.isExpired = isExpired;
     if (remainingLimit != null) result.remainingLimit = remainingLimit;
+    if (switchProcessing != null) result.switchProcessing = switchProcessing;
+    if (pendingMethod != null) result.pendingMethod = pendingMethod;
     return result;
   }
 
@@ -15403,6 +16475,8 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     ..aOB(25, _omitFieldNames ? '' : 'canDebit')
     ..aOB(26, _omitFieldNames ? '' : 'isExpired')
     ..aInt64(27, _omitFieldNames ? '' : 'remainingLimit')
+    ..aOB(28, _omitFieldNames ? '' : 'switchProcessing')
+    ..aOS(29, _omitFieldNames ? '' : 'pendingMethod')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -15689,6 +16763,25 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
   $core.bool hasRemainingLimit() => $_has(26);
   @$pb.TagNumber(27)
   void clearRemainingLimit() => $_clearField(27);
+
+  /// Deposit-method switch (Direct Debit <-> one-time DirectPay) tracking
+  @$pb.TagNumber(28)
+  $core.bool get switchProcessing => $_getBF(27);
+  @$pb.TagNumber(28)
+  set switchProcessing($core.bool value) => $_setBool(27, value);
+  @$pb.TagNumber(28)
+  $core.bool hasSwitchProcessing() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearSwitchProcessing() => $_clearField(28);
+
+  @$pb.TagNumber(29)
+  $core.String get pendingMethod => $_getSZ(28);
+  @$pb.TagNumber(29)
+  set pendingMethod($core.String value) => $_setString(28, value);
+  @$pb.TagNumber(29)
+  $core.bool hasPendingMethod() => $_has(28);
+  @$pb.TagNumber(29)
+  void clearPendingMethod() => $_clearField(29);
 }
 
 /// Get Mandate Request

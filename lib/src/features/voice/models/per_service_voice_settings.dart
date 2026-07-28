@@ -167,7 +167,7 @@ String labelForChatService(String serviceName) {
     case 'lifestyle':
       return 'Lifestyle';
     case 'sprayme':
-      return 'SprayMe';
+      return 'Lazerspray';
     case 'accounts':
       return 'Accounts & cards';
     case 'onboarding':

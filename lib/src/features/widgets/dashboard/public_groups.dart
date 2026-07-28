@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_state.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/public_group_detail_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PublicGroups extends StatefulWidget {
@@ -16,6 +17,11 @@ class PublicGroups extends StatefulWidget {
 
 class _PublicGroupsState extends State<PublicGroups> {
   final Set<String> _joiningGroupIds = {};
+
+  // Retain the last loaded list so the section doesn't collapse to an
+  // empty gap while a transient "Joining…" load is in flight (the cubit
+  // is shared, so an inline join briefly emits GroupAccountLoading).
+  PublicGroupsLoaded? _lastLoaded;
 
   @override
   void initState() {
@@ -37,6 +43,10 @@ class _PublicGroupsState extends State<PublicGroups> {
             colorText: Colors.white,
             duration: const Duration(seconds: 2),
           );
+          // Refresh so the freshly-joined group flips from "Join" to
+          // "Joined" (membership is recomputed from the user's groups,
+          // which joinPublicGroupById has already refreshed).
+          context.read<GroupAccountCubit>().loadPublicGroups();
         } else if (state is GroupAccountError &&
             _joiningGroupIds.isNotEmpty) {
           setState(() => _joiningGroupIds.clear());
@@ -52,26 +62,32 @@ class _PublicGroupsState extends State<PublicGroups> {
       },
       child: BlocBuilder<GroupAccountCubit, GroupAccountState>(
         builder: (context, state) {
-          if (state is GroupAccountLoading && _joiningGroupIds.isEmpty) {
-            return _buildShimmer();
-          }
           if (state is PublicGroupsLoaded) {
-            final groups = state.groups;
-            if (groups.isEmpty) {
+            _lastLoaded = state;
+          }
+
+          final loaded = state is PublicGroupsLoaded ? state : _lastLoaded;
+
+          if (loaded != null) {
+            if (loaded.groups.isEmpty) {
               return const SizedBox.shrink();
             }
             return Column(
               children: [
-                if (state.isStale)
+                if (loaded.isStale)
                   const LinearProgressIndicator(
                     minHeight: 2,
                     valueColor:
                         AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                     backgroundColor: Color(0xFF1F1F1F),
                   ),
-                _buildContent(groups),
+                _buildContent(loaded),
               ],
             );
+          }
+
+          if (state is GroupAccountLoading && _joiningGroupIds.isEmpty) {
+            return _buildShimmer();
           }
           return const SizedBox.shrink();
         },
@@ -86,7 +102,7 @@ class _PublicGroupsState extends State<PublicGroups> {
         _buildHeader(),
         SizedBox(height: 12.h),
         SizedBox(
-          height: 140.h,
+          height: 158.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
@@ -103,7 +119,7 @@ class _PublicGroupsState extends State<PublicGroups> {
     return Padding(
       padding: EdgeInsets.only(right: 12.w),
       child: Container(
-        width: 200.w,
+        width: 220.w,
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
@@ -112,15 +128,28 @@ class _PublicGroupsState extends State<PublicGroups> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 120.w,
-              height: 14.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Container(
+                  width: 100.w,
+                  height: 14.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 12.h),
             Container(
               width: 160.w,
               height: 10.h,
@@ -131,11 +160,11 @@ class _PublicGroupsState extends State<PublicGroups> {
             ),
             const Spacer(),
             Container(
-              width: 80.w,
-              height: 10.h,
+              width: double.infinity,
+              height: 30.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(4.r),
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
           ],
@@ -159,7 +188,7 @@ class _PublicGroupsState extends State<PublicGroups> {
             ),
           ),
           GestureDetector(
-            onTap: () => Get.toNamed(AppRoutes.groupAccount),
+            onTap: () => Get.toNamed(AppRoutes.publicGroups),
             child: Text(
               'View All',
               style: TextStyle(
@@ -174,23 +203,25 @@ class _PublicGroupsState extends State<PublicGroups> {
     );
   }
 
-  Widget _buildContent(List<GroupAccount> groups) {
+  Widget _buildContent(PublicGroupsLoaded loaded) {
+    final groups = loaded.groups;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(),
         SizedBox(height: 12.h),
         SizedBox(
-          height: 140.h,
+          height: 158.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             itemCount: groups.length,
             itemBuilder: (context, index) {
+              final group = groups[index];
               return Padding(
                 padding: EdgeInsets.only(right: 12.w),
-                child: _buildGroupCard(groups[index]),
+                child: _buildGroupCard(group, loaded.isMemberOf(group.id)),
               );
             },
           ),
@@ -199,14 +230,23 @@ class _PublicGroupsState extends State<PublicGroups> {
     );
   }
 
-  Widget _buildGroupCard(GroupAccount group) {
+  /// Tap destination differs by membership: members go straight to the
+  /// full group workspace; non-members get the public preview sheet
+  /// (stats + join CTA) — the member-only details screen isn't the right
+  /// surface for someone who hasn't joined.
+  void _openGroup(GroupAccount group, bool isMember) {
+    if (isMember) {
+      Get.toNamed(AppRoutes.groupDetails, arguments: group.id);
+    } else {
+      PublicGroupDetailBottomSheet.show(context, group.id);
+    }
+  }
+
+  Widget _buildGroupCard(GroupAccount group, bool isMember) {
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        AppRoutes.groupDetails,
-        arguments: group.id,
-      ),
+      onTap: () => _openGroup(group, isMember),
       child: Container(
-        width: 200.w,
+        width: 220.w,
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
@@ -214,50 +254,94 @@ class _PublicGroupsState extends State<PublicGroups> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              group.name,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            // Avatar + name
+            Row(
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF3B82F6),
+                        const Color(0xFF3B82F6).withValues(alpha: 0.7),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Center(
+                    child: Text(
+                      group.name.isNotEmpty
+                          ? group.name[0].toUpperCase()
+                          : 'G',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    group.name,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 10.h),
+            // Description
             Text(
               group.description,
               style: TextStyle(
                 fontSize: 12.sp,
                 color: const Color(0xFF9CA3AF),
+                height: 1.3,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             const Spacer(),
+            // Footer: member count + CTA
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.people_outline,
-                      size: 14.sp,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '${group.memberCount} members',
-                      style: TextStyle(
-                        fontSize: 11.sp,
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 14.sp,
                         color: const Color(0xFF9CA3AF),
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 4.w),
+                      Flexible(
+                        child: Text(
+                          '${group.memberCount} '
+                          '${group.memberCount == 1 ? 'member' : 'members'}',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: const Color(0xFF9CA3AF),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                _buildJoinButton(group),
+                SizedBox(width: 8.w),
+                _buildCta(group, isMember),
               ],
             ),
           ],
@@ -266,9 +350,40 @@ class _PublicGroupsState extends State<PublicGroups> {
     );
   }
 
-  Widget _buildJoinButton(GroupAccount group) {
-    final isJoining = _joiningGroupIds.contains(group.id);
+  /// Members see a non-actionable "Joined" chip; non-members see the
+  /// interactive "Join" button. We never render a Join CTA for a group
+  /// the user already belongs to.
+  Widget _buildCta(GroupAccount group, bool isMember) {
+    if (isMember) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle,
+              size: 13.sp,
+              color: const Color(0xFF10B981),
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              'Joined',
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF10B981),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
+    final isJoining = _joiningGroupIds.contains(group.id);
     return GestureDetector(
       onTap: isJoining
           ? null
@@ -279,13 +394,10 @@ class _PublicGroupsState extends State<PublicGroups> {
                   .joinPublicGroupById(group.id);
             },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
         decoration: BoxDecoration(
+          color: const Color(0xFF3B82F6),
           borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-            color: const Color(0xFF3B82F6),
-            width: 1.5,
-          ),
         ),
         child: isJoining
             ? LazerVaultLoader(size: 14)
@@ -294,7 +406,7 @@ class _PublicGroupsState extends State<PublicGroups> {
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF3B82F6),
+                  color: Colors.white,
                 ),
               ),
       ),

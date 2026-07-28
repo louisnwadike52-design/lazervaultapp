@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
+import 'package:lazervault/src/features/profile/presentation/view/change_phone_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class EditProfileDialog extends StatefulWidget {
@@ -53,15 +56,98 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
           ? null
           : rawUsername.replaceAll(RegExp(r'^@'), '');
 
+      // Phone is intentionally NOT sent here — changing it must go through the
+      // verify-number flow (the backend rejects silent phone edits, enforcing
+      // OTP verification + uniqueness). Only name + username update inline.
       context.read<ProfileCubit>().updateUserProfile(
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
             username: cleanUsername,
-            phoneNumber: _phoneController.text.trim().isEmpty
-                ? null
-                : _phoneController.text.trim(),
           );
     }
+  }
+
+  Widget _buildPhoneRow() {
+    final phone = widget.user.phoneNumber ?? '';
+    final verified = widget.user.verified; // phone-verified
+    final hasPhone = phone.isNotEmpty;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.phone_outlined, color: Color(0xFF6B7280)),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  hasPhone ? phone : 'No phone number',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  hasPhone
+                      ? (verified ? 'Verified' : 'Not verified')
+                      : 'Add and verify a number',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    color: hasPhone && verified
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Capture the cubit before popping — context is invalidated once
+              // the dialog closes.
+              final profileCubit = context.read<ProfileCubit>();
+              Navigator.of(context).pop();
+              if (hasPhone && !verified) {
+                // Verify the EXISTING number (OTP to the current phone). Coming
+                // from a logged-in profile surface, so fromSettings=true: no
+                // "skip → passcode" onboarding hop; back cancels, success pops
+                // back here.
+                Get.toNamed(AppRoutes.phoneVerification, arguments: {
+                  'phoneNumber': phone,
+                  'isRequired': false,
+                  'fromSettings': true,
+                });
+              } else {
+                // Change to a BRAND-NEW number: OTP to the new number, uniqueness
+                // + verification enforced server-side (never changed silently).
+                final result = await Get.to(() => const ChangePhoneScreen());
+                // On a confirmed change, re-fetch the profile so the new number
+                // shows immediately (no app restart).
+                if (result is String && result.isNotEmpty) {
+                  profileCubit.getUserProfile();
+                }
+              }
+            },
+            child: Text(
+              hasPhone && !verified ? 'Verify' : 'Change',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF4E03D0),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -191,7 +277,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   autocorrect: false,
                   enableSuggestions: false,
                   decoration: InputDecoration(
-                    labelText: 'Username / LazerTag',
+                    labelText: 'Username / Lazertag',
                     hintText: 'Optional - Used for receiving money',
                     helperText: 'Letters, numbers, and underscores only',
                     counterText: '',
@@ -224,26 +310,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
                 SizedBox(height: 16.h),
 
-                // Phone Number Field
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    hintText: 'Phone Number (Optional)',
-                    prefixIcon: const Icon(Icons.phone_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
-                    ),
-                  ),
-                ),
+                // Phone Number — read-only here. Changing a phone number must
+                // go through OTP verification + a uniqueness check, so it's not
+                // editable inline; tapping routes to the verify-phone flow.
+                _buildPhoneRow(),
 
                 SizedBox(height: 24.h),
 

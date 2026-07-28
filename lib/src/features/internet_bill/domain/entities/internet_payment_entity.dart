@@ -33,7 +33,14 @@ class InternetPaymentEntity extends Equatable {
 
   bool get isCompleted => status == 'completed';
   bool get isFailed => status == 'failed';
-  bool get isPending => status == 'pending';
+  // Async backend returns 'processing' for an in-flight (webhook-pending)
+  // payment — fold it into "pending" so the receipt renders the pending state
+  // (and reconciles) instead of the red "Payment Failed" fall-through.
+  bool get isPending =>
+      status == 'pending' ||
+      status == 'processing' ||
+      status == 'awaiting_webhook';
+  bool get isProcessing => status == 'processing';
 
   @override
   List<Object?> get props => [id, userId, accountId, billType, providerId, reference, amount, status, customerNumber, metadata, createdAt, newBalance, renewalDate];

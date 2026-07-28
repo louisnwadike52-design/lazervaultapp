@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/screen.dart';
@@ -12,6 +15,7 @@ import 'package:lazervault/src/features/voice/managers/voice_activation_manager.
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -20,6 +24,12 @@ import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle
 import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/core/services/app_update_service.dart';
+import 'package:lazervault/core/services/app_patch_service.dart';
+import 'package:lazervault/src/features/app_update/cubit/app_update_cubit.dart';
+import 'package:lazervault/src/features/app_update/widgets/update_banner.dart';
+import 'package:lazervault/src/features/app_update/widgets/update_modal.dart';
+import 'package:lazervault/src/features/app_update/widgets/forced_update_screen.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -40,8 +50,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController nameController = TextEditingController();
+
+  /// Drives the in-app update surface (banner / one-time modal / forced gate).
+  /// The check is local + non-blocking (cached config + PackageInfo).
+  late final AppUpdateCubit _updateCubit = serviceLocator<AppUpdateCubit>();
   Screen activeScreen = const Screen(name: ScreenName.dashboard);
   late TabController _tabController;
   int _currentIndex = 0;
@@ -72,6 +86,51 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Open the dashboard on a specific bottom-nav tab when navigated with an
+  /// `initialTab` argument (e.g. the LazerBeam receipt returns to the Beam tab,
+  /// index 3). Reuses the same `Get.arguments`-map convention as
+  /// `openVoiceSheet`. No animation — this runs on the first frame.
+  void _applyInitialTab() {
+    final args = Get.arguments;
+    if (args is! Map) return;
+    final raw = args['initialTab'];
+    if (raw is! int || raw < 0 || raw >= DashboardScreen.tabItems.length) return;
+    if (raw == _currentIndex) return;
+    setState(() {
+      _currentIndex = raw;
+      activeScreen = Screen(name: DashboardScreen.tabItems[raw].name);
+    });
+    _activeTab.value = raw;
+    _tabController.index = raw;
+  }
+
+  static const MethodChannel _settingsChannel =
+      MethodChannel('com.lazervault.app/settings');
+
+  /// Back handling for the dashboard (the authenticated home / root route).
+  /// It must NEVER finish the task → cold relaunch → passcode/login gate (which
+  /// the user perceives as "Back logged me out"). Precedence:
+  ///   1. Not on the first tab → Back returns to the dashboard tab.
+  ///   2. On the root tab → send the app to the BACKGROUND (Android), keeping
+  ///      the live session so re-opening (within the inactivity window) resumes
+  ///      straight onto the dashboard. iOS has no OS Back button, so this is a
+  ///      no-op there. The Scaffold drawer, being deeper in the tree, still
+  ///      closes itself on Back before this handler runs.
+  Future<void> _handleDashboardBack(bool didPop) async {
+    if (didPop) return;
+    if (_currentIndex != 0) {
+      _handleOnTabChange(0);
+      return;
+    }
+    if (Platform.isAndroid) {
+      try {
+        await _settingsChannel.invokeMethod('moveTaskToBack');
+      } catch (_) {
+        // Best-effort — never crash the app shell on a Back press.
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -80,10 +139,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     _tabController.addListener(_onTabChanged);
 
     // Panic Balance trigger: a phone shake toggles the decoy (the other trigger
-    // is a long-press on the balance). toggle() no-ops until the user has set it
-    // up, so a stray shake never surprises anyone.
+    // is a long-press on the balance). Gated on the user's shake-trigger switch;
+    // toggle() also no-ops until the feature is set up, so a stray shake never
+    // surprises anyone.
     _shakeDetector = ShakeDetector.autoStart(
-      onPhoneShake: (_) => serviceLocator<PanicBalanceService>().toggle(),
+      onPhoneShake: (_) {
+        final panic = serviceLocator<PanicBalanceService>();
+        if (panic.shakeTriggerEnabled) panic.toggle();
+      },
     );
 
     // Best-effort: sync the Panic Balance config from the server (so AI-set
@@ -97,10 +160,51 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
     panic.syncFromServer();
 
+    WidgetsBinding.instance.addObserver(this);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _applyInitialTab();
+      // If a P2P push was tapped while signed out (cold start), the dashboard
+      // is the first authenticated screen — open the stashed conversation now
+      // (pushed on top, so Back returns here).
+      PendingChatNavigation.instance.consumeAndNavigate();
       _checkAndShowVoiceSetup();
       _checkAutoOpenVoiceSheet();
+      // Background app-update check (store version). Never blocks launch.
+      _updateCubit.checkNow();
+      // Shorebird OTA: if a Dart-only patch was downloaded in the background,
+      // gently nudge a restart to apply it. No-op on non-Shorebird builds.
+      _maybeNudgePatchRestart();
     });
+  }
+
+  /// Show a non-blocking snackbar when a downloaded Shorebird patch is staged
+  /// for the next restart. Best-effort; silent when nothing is pending.
+  Future<void> _maybeNudgePatchRestart() async {
+    final ready =
+        await serviceLocator<AppPatchService>().isPatchReadyForRestart();
+    if (!ready || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Color(0xFF1F1F1F),
+        duration: Duration(seconds: 6),
+        content: Text(
+          'Update ready — fully close and reopen the app to apply it.',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Re-check on resume so an admin bump (or crossing the min-build line while
+    // backgrounded) surfaces without requiring a cold start.
+    if (state == AppLifecycleState.resumed) {
+      _updateCubit.checkNow();
+    }
   }
 
   ShakeDetector? _shakeDetector;
@@ -238,27 +342,83 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _updateCubit.close();
     _shakeDetector?.stopListening();
     _activeTab.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
+  /// Open the platform store for an update.
+  Future<void> _openUpdateStore(AppUpdateInfo info) =>
+      _updateCubit.service.openStore(info);
+
+  /// Show the one-time optional modal for [info] if it hasn't been shown for
+  /// this latest build yet, then mark it seen.
+  Future<void> _maybeShowUpdateModal(AppUpdateInfo info) async {
+    final should =
+        await _updateCubit.service.shouldShowOptionalModal(info.latestBuild);
+    if (!should || !mounted) return;
+    await _updateCubit.service.markOptionalModalSeen(info.latestBuild);
+    if (!mounted) return;
+    await showUpdateModal(
+      context,
+      info: info,
+      onUpdate: () => _openUpdateStore(info),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      initialIndex: _currentIndex,
-      length: DashboardScreen.tabItems.length,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        drawer: ThemedDrawer(),
-        onDrawerChanged: (isOpened) {
-          setState(() {
-            isDrawerOpen = isOpened;
-          });
+    return PopScope(
+      // Back on the dashboard must not exit → cold relaunch → login gate.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _handleDashboardBack(didPop),
+      child: BlocProvider<AppUpdateCubit>.value(
+      value: _updateCubit,
+      child: BlocConsumer<AppUpdateCubit, AppUpdateState>(
+        // Show the one-time optional modal whenever an optional update surfaces;
+        // shouldShowOptionalModal() de-dupes so it only appears once per build.
+        listenWhen: (prev, curr) => curr is AppUpdateOptional,
+        listener: (context, state) {
+          if (state is AppUpdateOptional) {
+            _maybeShowUpdateModal(state.info);
+          }
         },
-        bottomNavigationBar: _buildAdaptiveBottomNav(),
-        body: Stack(
+        builder: (context, updateState) {
+          // Below the minimum supported build → block the whole app with a
+          // non-dismissible gate (replaces the dashboard entirely).
+          if (updateState is AppUpdateForced) {
+            return ForcedUpdateScreen(
+              info: updateState.info,
+              onUpdate: () => _openUpdateStore(updateState.info),
+            );
+          }
+          final Widget? updateBanner = updateState is AppUpdateOptional
+              ? UpdateBanner(
+                  info: updateState.info,
+                  onUpdate: () => _openUpdateStore(updateState.info),
+                  onDismiss: _updateCubit.dismissOptional,
+                )
+              : null;
+          return DefaultTabController(
+            initialIndex: _currentIndex,
+            length: DashboardScreen.tabItems.length,
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              drawer: ThemedDrawer(),
+              onDrawerChanged: (isOpened) {
+                setState(() {
+                  isDrawerOpen = isOpened;
+                });
+              },
+              bottomNavigationBar: _buildAdaptiveBottomNav(),
+              body: Column(
+                children: [
+                  if (updateBanner != null) updateBanner,
+                  Expanded(
+                    child: Stack(
           children: [
             TabBarView(
                         physics: const NeverScrollableScrollPhysics(),
@@ -299,8 +459,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
           ],
-        ),
-        extendBody: _currentIndex >= 2,
+                    ),
+                  ),
+                ],
+              ),
+              extendBody: _currentIndex >= 2,
+            ),
+          );
+        },
+      ),
       ),
     );
   }

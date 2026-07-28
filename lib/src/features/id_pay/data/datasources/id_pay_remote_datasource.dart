@@ -1,7 +1,6 @@
 import '../../../../generated/id_pay.pbgrpc.dart' as pb;
 import '../../../../core/network/grpc_client.dart';
 import '../../domain/entities/id_pay_entity.dart';
-import '../../domain/entities/id_pay_organization_entity.dart';
 import '../models/id_pay_model.dart';
 import '../models/id_pay_organization_model.dart';
 import '../models/id_pay_transaction_model.dart';

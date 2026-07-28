@@ -394,6 +394,8 @@ message ListPaySlipsRequest {
   string pay_run_id = 1;
   int32 page = 2;
   int32 limit = 3;
+  // When set, list this employee's pay slips across ALL pay runs (pay history).
+  string employee_id = 4;
 }
 
 message ListPaySlipsResponse {

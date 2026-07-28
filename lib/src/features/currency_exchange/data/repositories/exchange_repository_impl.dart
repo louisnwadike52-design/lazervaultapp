@@ -318,6 +318,36 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, ExchangeLimits>> getExchangeLimits({
+    required String currency,
+  }) async {
+    try {
+      final request = GetExchangeLimitsRequest()..currency = currency;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _exchangeClient.getExchangeLimits(
+        request,
+        options: callOptions,
+      );
+      return Right(ExchangeLimits(
+        kycTier: response.kycTier,
+        dailyLimit: response.dailyLimit,
+        dailyUsed: response.dailyUsed,
+        dailyRemaining: response.dailyRemaining,
+        currency: response.currency,
+        minPerTransaction: response.minPerTransaction,
+        maxPerTransaction: response.maxPerTransaction,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to get exchange limits'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
   // Helper methods
   CurrencyTransaction _mapTransactionFromProto(ExchangeTransaction protoTransaction) {
     final totalCost = protoTransaction.amountFrom + protoTransaction.fees;
@@ -330,6 +360,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       toAmount: protoTransaction.amountTo,
       exchangeRate: protoTransaction.exchangeRate,
       fees: protoTransaction.fees,
+      providerFee: protoTransaction.providerFee,
+      serviceFee: protoTransaction.serviceFee,
       totalCost: totalCost,
       recipient: _mapRecipientFromProto(protoTransaction.receiverDetails),
       status: _mapTransactionStatus(protoTransaction.status),
@@ -368,6 +400,11 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       accountNumber: protoRecipient.accountNumber,
       bankName: protoRecipient.bankName,
       swiftCode: protoRecipient.swiftBicCode,
+      // Carry routing number + address from history so "Repeat Exchange"
+      // pre-fills the full recipient form (routing was previously dropped here,
+      // so a repeated international transfer lost the routing number).
+      routingNumber: protoRecipient.routingNumber,
+      address: protoRecipient.address,
       countryCode: protoRecipient.country,
       currency: '',
       createdAt: DateTime.now(),

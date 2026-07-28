@@ -23,6 +23,10 @@ class AccountDetailsEntity extends Equatable {
   final bool enableOnlinePayments;
   final bool enableATMWithdrawals;
   final bool enableInternationalPayments;
+  /// Account-level control: whether this wallet may originate an
+  /// international / send-abroad (exchange) transfer. Persisted + enforced
+  /// server-side (accounts-service + exchange-service). Defaults true.
+  final bool allowInternationalTransfers;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -48,6 +52,7 @@ class AccountDetailsEntity extends Equatable {
     required this.enableOnlinePayments,
     required this.enableATMWithdrawals,
     required this.enableInternationalPayments,
+    this.allowInternationalTransfers = true,
     this.createdAt,
     this.updatedAt,
   });
@@ -126,6 +131,7 @@ class AccountDetailsEntity extends Equatable {
         enableOnlinePayments,
         enableATMWithdrawals,
         enableInternationalPayments,
+        allowInternationalTransfers,
         createdAt,
         updatedAt,
       ];
@@ -153,6 +159,7 @@ class AccountDetailsEntity extends Equatable {
     bool? enableOnlinePayments,
     bool? enableATMWithdrawals,
     bool? enableInternationalPayments,
+    bool? allowInternationalTransfers,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -178,6 +185,7 @@ class AccountDetailsEntity extends Equatable {
       enableOnlinePayments: enableOnlinePayments ?? this.enableOnlinePayments,
       enableATMWithdrawals: enableATMWithdrawals ?? this.enableATMWithdrawals,
       enableInternationalPayments: enableInternationalPayments ?? this.enableInternationalPayments,
+      allowInternationalTransfers: allowInternationalTransfers ?? this.allowInternationalTransfers,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

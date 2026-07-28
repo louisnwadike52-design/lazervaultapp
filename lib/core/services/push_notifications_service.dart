@@ -9,10 +9,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/app_check_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
 import 'package:lazervault/firebase_options.dart';
 import 'package:uuid/uuid.dart';
 
@@ -81,6 +84,10 @@ class PushNotificationsService {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
+    // Activate App Check (App Attest / Play Integrity) immediately after Firebase
+    // init, before any token is requested. Non-fatal if it fails.
+    await AppCheckService.instance.activate();
+
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     await _requestPermission();
@@ -147,8 +154,31 @@ class PushNotificationsService {
   void _onForegroundMessage(RemoteMessage message) {
     final notification = message.notification;
     if (notification == null) return;
+    // A push arriving while the app is open means a new unread notification —
+    // re-read the authoritative count so the dashboard bell badge updates live.
+    // Runs on both platforms (before the iOS early-return below). refresh()
+    // mirrors the server's unread_count, which already excludes p2p.message.
+    if (serviceLocator.isRegistered<NotificationBadgeCubit>()) {
+      serviceLocator<NotificationBadgeCubit>().refresh();
+    }
+    // DOUBLE-NOTIFICATION FIX: on iOS we call
+    // setForegroundNotificationPresentationOptions(alert:true), so iOS ALREADY
+    // presents the banner for a foreground push — showing a local one here too
+    // stacks a duplicate (the "notification came in twice" report). Android does
+    // NOT auto-present foreground pushes, so the app must show it there.
+    if (Platform.isIOS) return;
+    // Use the server's STABLE notification id as the local-notification id so a
+    // re-delivered push (FCM retry, or the same push arriving via two tokens on
+    // one device) COLLAPSES onto the same banner instead of stacking a duplicate.
+    // Falls back to a content hash when the id is absent.
+    final serverId = message.data['notification_id']?.toString() ?? '';
+    final localId = serverId.isNotEmpty
+        ? (serverId.hashCode & 0x7fffffff)
+        : Object.hash(notification.title, notification.body,
+                message.data['type'], message.data['reference'])
+            .toUnsigned(31);
     _local.show(
-      notification.hashCode,
+      localId,
       notification.title,
       notification.body,
       NotificationDetails(

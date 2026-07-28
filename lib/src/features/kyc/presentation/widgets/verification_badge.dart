@@ -262,7 +262,7 @@ class TierProgressIndicator extends StatelessWidget {
             context,
             title: 'Tier 2',
             subtitle: 'Verified',
-            description: 'Send up to ₦500,000/day',
+            description: 'Send up to ₦200,000/day',
             icon: Icons.verified_user,
             isActive: currentTier.index >= KYCTier.tier2.index,
             isCompleted: currentTier.index > KYCTier.tier2.index,

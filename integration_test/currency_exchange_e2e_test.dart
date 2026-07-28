@@ -32,12 +32,12 @@
 // Prerequisites (all managed by ./start_all_local_no_docker.sh):
 //   - auth-service (50051), accounts-service (50052)
 //   - exchange-service (50081), financial-gateway (8016 HTTP / 50071 gRPC)
-//   - core-gateway (50070), webhook-gateway (8090) + ngrok tunnel
+//   - core-gateway (50070), webhook-gateway (8090) + Cloudflare tunnel
 //   - admin-gateway (8096) — optional; only used for one read assertion
 //
 // Flutterwave: requires FLWSECK_TEST- sandbox key in
-// microservices/exchange-service/exchange-microservice/.env. The ngrok URL
-// must also be registered as the webhook in the FW sandbox dashboard
+// microservices/exchange-service/exchange-microservice/.env. The Cloudflare
+// tunnel URL must also be registered as the webhook in the FW sandbox dashboard
 // (Settings → Webhooks → URL + Secret hash = FLUTTERWAVE_WEBHOOK_SECRET);
 // without this, international transfers stick on `awaiting_webhook`.
 //
@@ -105,7 +105,7 @@ const String grpcHost =
     String.fromEnvironment('TEST_BACKEND_HOST', defaultValue: 'localhost');
 const int coreGatewayPort = 50070;
 // Exchange HTTP endpoints are served by financial-gateway HTTP per
-// CLAUDE.md routing table. Overridable via --dart-define for environments
+// the platform conventions routing table. Overridable via --dart-define for environments
 // where the exchange proxy lives on a different gateway port (transfer-
 // gateway:8084 proxies the same routes as a fallback in some setups).
 const int exchangeGatewayHttp = int.fromEnvironment(

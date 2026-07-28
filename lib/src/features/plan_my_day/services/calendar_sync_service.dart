@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 /// Service for syncing with external calendars (Google, Outlook, etc.)
 /// Uses the lifestyle-gateway `/api/v1/planning/calendar/*` routes (Plan My Day
@@ -11,6 +12,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 class CalendarSyncService {
   final String _baseUrl;
   final AccountManager _accountManager;
+  final LocaleManager _localeManager;
   final GrpcCallOptionsHelper _callOptionsHelper;
   final FlutterSecureStorage _storage;
 
@@ -29,18 +31,25 @@ class CalendarSyncService {
   CalendarSyncService({
     String? baseUrl,
     required AccountManager accountManager,
+    required LocaleManager localeManager,
     required GrpcCallOptionsHelper callOptionsHelper,
     FlutterSecureStorage? storage,
   })  : _baseUrl = _normalizeBase(baseUrl ?? endpointRegistry.httpPlanning),
         _accountManager = accountManager,
+        _localeManager = localeManager,
         _callOptionsHelper = callOptionsHelper,
         _storage = storage ?? const FlutterSecureStorage();
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: _accessTokenKey);
+    // Synced calendar events land in the active region so they show alongside the
+    // rest of that region's Plan My Day board (X-Locale / X-Account-Id scoping).
+    final accountId = _accountManager.activeAccountId;
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'X-Locale': _localeManager.currentLocale,
+      if (accountId != null && accountId.isNotEmpty) 'X-Account-Id': accountId,
       if (token != null) 'Authorization': 'Bearer $token',
     };
   }

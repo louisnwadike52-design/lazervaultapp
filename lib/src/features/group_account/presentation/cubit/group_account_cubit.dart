@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
@@ -1776,18 +1777,20 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       );
 
   /// Share report to Telegram
-  Future<void> shareReportToTelegram(
-          GroupAccountReport report, String? groupUrl) =>
+  Future<void> shareReportToTelegram(GroupAccountReport report, String? groupUrl,
+          {Rect? sharePositionOrigin}) =>
       _runReportShare(
-        () => reportService!.shareToTelegram(report, groupUrl: groupUrl),
+        () => reportService!.shareToTelegram(report,
+            groupUrl: groupUrl, sharePositionOrigin: sharePositionOrigin),
         'Shared to Telegram',
       );
 
   /// Share report to Facebook
-  Future<void> shareReportToFacebook(
-          GroupAccountReport report, String? groupUrl) =>
+  Future<void> shareReportToFacebook(GroupAccountReport report, String? groupUrl,
+          {Rect? sharePositionOrigin}) =>
       _runReportShare(
-        () => reportService!.shareToFacebook(report, groupUrl: groupUrl),
+        () => reportService!.shareToFacebook(report,
+            groupUrl: groupUrl, sharePositionOrigin: sharePositionOrigin),
         'Shared to Facebook',
       );
 
@@ -1800,10 +1803,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       );
 
   /// General share using system share sheet
-  Future<void> shareReportGeneral(
-          GroupAccountReport report, String? groupUrl) =>
+  Future<void> shareReportGeneral(GroupAccountReport report, String? groupUrl,
+          {Rect? sharePositionOrigin}) =>
       _runReportShare(
-        () => reportService!.shareGeneral(report, groupUrl: groupUrl),
+        () => reportService!.shareGeneral(report,
+            groupUrl: groupUrl, sharePositionOrigin: sharePositionOrigin),
         'Report shared',
       );
 
@@ -1812,6 +1816,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     GroupAccountReport report, {
     String? groupUrl,
     String? groupName,
+    Rect? sharePositionOrigin,
   }) async {
     if (isClosed) return;
     if (reportService == null) {
@@ -1825,6 +1830,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         report,
         groupUrl: groupUrl,
         groupName: groupName,
+        sharePositionOrigin: sharePositionOrigin,
       );
       if (isClosed) return;
       // The native share sheet has closed — either the user shared,
@@ -1859,6 +1865,31 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   // SWR cache for public groups
   List<GroupAccount>? _cachedPublicGroups;
 
+  /// Derive the set of group IDs (from a public-groups page) the current
+  /// user is already a member of, so the discovery/list surfaces can hide
+  /// the "Join" CTA.
+  ///
+  /// Source of truth is the server-provided `GroupAccount.isMember` flag
+  /// (populated by the `ListPublicGroups` endpoint). As a zero-cost
+  /// belt-and-suspenders for the backend-rollout window (new app build
+  /// hitting an older server that doesn't yet set the flag), we also
+  /// union in any matches against the user's OWN groups when those are
+  /// already cached — no extra network I/O.
+  Set<String> _deriveMemberGroupIds(List<GroupAccount> groups) {
+    final ids = <String>{};
+    for (final g in groups) {
+      if (g.isMember) ids.add(g.id);
+    }
+    final cached = _cachedGroups;
+    if (cached != null && cached.isNotEmpty) {
+      final cachedIds = cached.map((g) => g.id).toSet();
+      for (final g in groups) {
+        if (cachedIds.contains(g.id)) ids.add(g.id);
+      }
+    }
+    return ids;
+  }
+
   /// Load public groups for discovery/browse (with SWR caching)
   Future<void> loadPublicGroups({
     String? sortBy,
@@ -1879,6 +1910,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         groups: _cachedPublicGroups!,
         totalCount: _cachedPublicGroups!.length,
         isStale: true,
+        memberGroupIds: _deriveMemberGroupIds(_cachedPublicGroups!),
       ));
     } else {
       emit(const GroupAccountLoading(message: 'Loading public groups...'));
@@ -1896,7 +1928,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isFreshLoad) {
         _cachedPublicGroups = groups;
       }
-      emit(PublicGroupsLoaded(groups: groups, totalCount: groups.length, isStale: false));
+      emit(PublicGroupsLoaded(
+        groups: groups,
+        totalCount: groups.length,
+        isStale: false,
+        memberGroupIds: _deriveMemberGroupIds(groups),
+      ));
     } catch (e) {
       if (isClosed) return;
       // On error with cached data, keep showing cached

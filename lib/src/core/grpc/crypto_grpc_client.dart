@@ -116,18 +116,24 @@ class CryptoGrpcClient {
   }
 
   /// Get Quidax-supported assets (tradeable coins enriched with CoinGecko data)
+  ///
+  /// Requires JWT auth: the investment-gateway does NOT list
+  /// GetSupportedAssets in its `isPublicEndpoint()` allowlist, so an
+  /// unauthenticated call returns `Unauthenticated`. Attach the bearer
+  /// token like every other authed method in this client.
   Future<GetSupportedAssetsResponse> getSupportedAssets({
     int page = 1,
     int perPage = 50,
     String vsCurrency = 'usd',
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetSupportedAssetsRequest()
         ..vsCurrency = vsCurrency
         ..page = page
         ..perPage = perPage;
 
-      final response = await _client.getSupportedAssets(request);
+      final response = await _client.getSupportedAssets(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -213,6 +219,8 @@ class CryptoGrpcClient {
     String transactionNote = '',
     String narration = '',
     String transactionPin = '',
+    String recipientUserId = '', // user-to-user send (internal by default)
+    String recipientUsername = '',
   }) async {
     final options = await _callOptionsHelper.withAuth();
     final request = WithdrawRequest()
@@ -226,8 +234,25 @@ class CryptoGrpcClient {
       ..transactionNote = transactionNote
       ..narration = narration
       ..clientIntentId = clientIntentId
-      ..transactionPin = transactionPin;
+      ..transactionPin = transactionPin
+      ..recipientUserId = recipientUserId
+      ..recipientUsername = recipientUsername;
     return await _client.withdraw(request, options: options);
+  }
+
+  /// Advanced user-to-user on-network send: resolves (provisioning if needed)
+  /// the recipient's deposit address for the network the sender is sending on.
+  Future<ResolveRecipientWalletResponse> resolveRecipientWallet({
+    required String recipientUserId,
+    required String currency,
+    required String network,
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = ResolveRecipientWalletRequest()
+      ..recipientUserId = recipientUserId
+      ..currency = currency
+      ..network = network;
+    return await _client.resolveRecipientWallet(request, options: options);
   }
 
   Future<GetCryptoWithdrawalStatusResponse> getCryptoWithdrawalStatus(String transactionId) async {
@@ -262,6 +287,27 @@ class CryptoGrpcClient {
     final options = await _callOptionsHelper.withAuth();
     final request = GetSupportedAssetNetworksRequest()..currency = currency;
     return await _client.getSupportedAssetNetworks(request, options: options);
+  }
+
+  /// Whether the user may create a wallet / trade / withdraw crypto, gated on
+  /// their KYC tier vs the admin-tunable minimum. The app uses this to show a
+  /// "verify to trade" banner + gate the buy/sell/swap/send entries up front.
+  Future<GetCryptoEligibilityResponse> getCryptoEligibility() async {
+    final options = await _callOptionsHelper.withAuth();
+    return await _client.getCryptoEligibility(
+      GetCryptoEligibilityRequest(),
+      options: options,
+    );
+  }
+
+  /// Cheap DB-only per-asset network state: whether the user holds the asset,
+  /// the active network, and every enabled network with a `provisioned` flag.
+  /// Backs the network badges (accordion, wallet sheet, detail, sell) and the
+  /// network pickers on buy/sell/send/swap. Safe to lazy-call per asset.
+  Future<GetAssetNetworkStatusResponse> getAssetNetworkStatus({required String currency}) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetAssetNetworkStatusRequest()..currency = currency;
+    return await _client.getAssetNetworkStatus(request, options: options);
   }
 
   /// Idempotently provisions a deposit address. Quidax generates async — the
@@ -598,12 +644,15 @@ class CryptoGrpcClient {
     String vsCurrency = 'ngn',
     int days = 1,
   }) async {
+    // GetOHLCV is public at the gateway, but attaching auth is harmless and
+    // keeps every Pro-Exchange market-data call uniform.
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetOHLCVRequest()
         ..cryptoId = cryptoId
         ..vsCurrency = vsCurrency
         ..days = days;
-      return await _client.getOHLCV(request);
+      return await _client.getOHLCV(request, options: options);
     } catch (e) {
       rethrow;
     }
@@ -613,19 +662,23 @@ class CryptoGrpcClient {
   // ORDER BOOK & TRADES
   // ============================================================
 
+  /// Order book — requires JWT auth (not in the gateway public allowlist).
   Future<GetOrderBookResponse> getOrderBook(String market) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetOrderBookRequest()..market = market;
-      return await _client.getOrderBook(request);
+      return await _client.getOrderBook(request, options: options);
     } catch (e) {
       rethrow;
     }
   }
 
+  /// Recent trades — requires JWT auth (not in the gateway public allowlist).
   Future<GetRecentTradesResponse> getRecentTrades(String market) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetRecentTradesRequest()..market = market;
-      return await _client.getRecentTrades(request);
+      return await _client.getRecentTrades(request, options: options);
     } catch (e) {
       rethrow;
     }
@@ -635,9 +688,12 @@ class CryptoGrpcClient {
   // FEAR & GREED INDEX
   // ============================================================
 
+  /// Fear & Greed index — requires JWT auth (not in the gateway public
+  /// allowlist), so an unauthenticated call returns `Unauthenticated`.
   Future<GetFearGreedIndexResponse> getFearGreedIndex() async {
+    final options = await _callOptionsHelper.withAuth();
     try {
-      return await _client.getFearGreedIndex(GetFearGreedIndexRequest());
+      return await _client.getFearGreedIndex(GetFearGreedIndexRequest(), options: options);
     } catch (e) {
       rethrow;
     }
@@ -686,6 +742,61 @@ class CryptoGrpcClient {
     }
   }
 
+  // ============================================================
+  // Auto-orders (price-triggered trades)
+  // ============================================================
+
+  Future<CreateAutoOrderResponse> createAutoOrder({
+    required String accountId,
+    required String side, // "buy" | "sell"
+    required String cryptoId,
+    required String fiatCurrency,
+    required String triggerDirection, // "above" | "below"
+    required double targetPrice,
+    required int amountMinor,
+    required String transactionPin,
+    String idempotencyKey = '',
+    int expiresInSeconds = 0,
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = CreateAutoOrderRequest()
+        ..accountId = accountId
+        ..side = side
+        ..cryptoId = cryptoId
+        ..fiatCurrency = fiatCurrency
+        ..triggerDirection = triggerDirection
+        ..targetPrice = targetPrice
+        ..amountMinor = Int64(amountMinor)
+        ..transactionPin = transactionPin
+        ..idempotencyKey = idempotencyKey
+        ..expiresInSeconds = Int64(expiresInSeconds);
+      return await _client.createAutoOrder(request, options: options);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<ListAutoOrdersResponse> listAutoOrders({String status = ''}) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = ListAutoOrdersRequest()..status = status;
+      return await _client.listAutoOrders(request, options: options);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<CancelAutoOrderResponse> cancelAutoOrder(String orderId) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = CancelAutoOrderRequest()..orderId = orderId;
+      return await _client.cancelAutoOrder(request, options: options);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Fetch published Learn & Earn lessons. Backed by the
   /// crypto_learn_lessons table (migration 031). Public read — no auth
   /// required, but we still attach standard call options so the gateway
@@ -695,24 +806,6 @@ class CryptoGrpcClient {
     try {
       final request = GetLearnLessonsRequest()..category = category;
       return await _client.getLearnLessons(request, options: options);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Toggle favorite - adds or removes a crypto from user's default favorites watchlist
-  ///
-  /// [cryptoId] - Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
-  /// Returns `isFavorite` = true if added to favorites, false if removed
-  Future<ToggleFavoriteResponse> toggleFavorite({
-    required String cryptoId,
-  }) async {
-    final options = await _callOptionsHelper.withAuth();
-    try {
-      final request = ToggleFavoriteRequest()
-        ..cryptoId = cryptoId;
-      final response = await _client.toggleFavorite(request, options: options);
-      return response;
     } catch (e) {
       rethrow;
     }

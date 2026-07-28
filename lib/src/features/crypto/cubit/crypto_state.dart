@@ -3,7 +3,7 @@ import '../data/models/crypto_wallet_model.dart';
 import '../domain/entities/crypto_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/entities/price_point.dart';
-import '../../../generated/crypto.pb.dart' show PriceAlert;
+import '../../../generated/crypto.pb.dart' show PriceAlert, AutoOrder;
 
 abstract class CryptoState extends Equatable {
   const CryptoState();
@@ -29,9 +29,28 @@ class CryptosLoaded extends CryptoState {
   // proxy; landing page renders a 3-row preview, full management lives
   // on PriceAlertsScreen.
   final List<PriceAlert> priceAlerts;
+  // Auto-orders (price-triggered trades). Wired via gateway proxy; the
+  // AutoOrdersScreen manages them, the landing page shows a small entry.
+  final List<AutoOrder> autoOrders;
   final GlobalMarketData? globalMarketData;
   final String? searchQuery;
   final bool isSearching;
+
+  // Per-section lazy-load flags. Phase A emits the tradable asset list
+  // immediately with these true; each Phase-B fetch flips its flag false when
+  // it lands, so the section shows its own spinner without blocking the list.
+  final bool portfolioLoading; // holdings + fiat total
+  final bool statsLoading; // global market data / statistics
+  final bool watchlistLoading;
+  final bool transactionsLoading;
+  final bool priceAlertsLoading;
+  final bool autoOrdersLoading;
+  // Top movers is derived from the loaded assets, but we defer its render so
+  // the critical landing content paints first (shimmer until then).
+  final bool topMoversLoading;
+  // Transaction pagination (View All screen: load-more on scroll).
+  final bool transactionsHasMore;
+  final bool transactionsLoadingMore;
 
   const CryptosLoaded({
     required this.cryptos,
@@ -43,9 +62,19 @@ class CryptosLoaded extends CryptoState {
     this.transactions = const [],
     this.wallets = const [],
     this.priceAlerts = const [],
+    this.autoOrders = const [],
     this.globalMarketData,
     this.searchQuery,
     this.isSearching = false,
+    this.portfolioLoading = false,
+    this.statsLoading = false,
+    this.watchlistLoading = false,
+    this.transactionsLoading = false,
+    this.priceAlertsLoading = false,
+    this.autoOrdersLoading = false,
+    this.topMoversLoading = false,
+    this.transactionsHasMore = true,
+    this.transactionsLoadingMore = false,
   });
 
   @override
@@ -59,9 +88,19 @@ class CryptosLoaded extends CryptoState {
         transactions,
         wallets,
         priceAlerts,
+        autoOrders,
         globalMarketData,
         searchQuery,
         isSearching,
+        portfolioLoading,
+        statsLoading,
+        watchlistLoading,
+        transactionsLoading,
+        priceAlertsLoading,
+        autoOrdersLoading,
+        topMoversLoading,
+        transactionsHasMore,
+        transactionsLoadingMore,
       ];
 
   /// [clearSearchQuery] - set to true to explicitly clear the search query to null.
@@ -76,10 +115,20 @@ class CryptosLoaded extends CryptoState {
     List<CryptoTransaction>? transactions,
     List<CryptoWalletModel>? wallets,
     List<PriceAlert>? priceAlerts,
+    List<AutoOrder>? autoOrders,
     GlobalMarketData? globalMarketData,
     String? searchQuery,
     bool clearSearchQuery = false,
     bool? isSearching,
+    bool? portfolioLoading,
+    bool? statsLoading,
+    bool? watchlistLoading,
+    bool? transactionsLoading,
+    bool? priceAlertsLoading,
+    bool? autoOrdersLoading,
+    bool? topMoversLoading,
+    bool? transactionsHasMore,
+    bool? transactionsLoadingMore,
   }) {
     return CryptosLoaded(
       cryptos: cryptos ?? this.cryptos,
@@ -91,9 +140,20 @@ class CryptosLoaded extends CryptoState {
       transactions: transactions ?? this.transactions,
       wallets: wallets ?? this.wallets,
       priceAlerts: priceAlerts ?? this.priceAlerts,
+      autoOrders: autoOrders ?? this.autoOrders,
       globalMarketData: globalMarketData ?? this.globalMarketData,
       searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
       isSearching: isSearching ?? this.isSearching,
+      portfolioLoading: portfolioLoading ?? this.portfolioLoading,
+      statsLoading: statsLoading ?? this.statsLoading,
+      watchlistLoading: watchlistLoading ?? this.watchlistLoading,
+      transactionsLoading: transactionsLoading ?? this.transactionsLoading,
+      priceAlertsLoading: priceAlertsLoading ?? this.priceAlertsLoading,
+      autoOrdersLoading: autoOrdersLoading ?? this.autoOrdersLoading,
+      topMoversLoading: topMoversLoading ?? this.topMoversLoading,
+      transactionsHasMore: transactionsHasMore ?? this.transactionsHasMore,
+      transactionsLoadingMore:
+          transactionsLoadingMore ?? this.transactionsLoadingMore,
     );
   }
 }

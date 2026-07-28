@@ -6,12 +6,10 @@ import 'package:get_it/get_it.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/education_history_entity.dart';
-import '../../domain/entities/education_provider_entity.dart';
 import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_cubit.dart';
+import '../widgets/education_quick_buy.dart';
 import '../cubit/education_history_cubit.dart';
-import '../cubit/education_state.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Education PINs landing. Mirrors the internet / water landing pattern:
 /// quick-actions row (Saved Candidates, Reminders, History) → hero
@@ -50,21 +48,6 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     super.dispose();
   }
 
-  void _handleRebuyPurchase(
-      Map<String, dynamic> rebuyPurchase, List<EducationProviderEntity> providers) {
-    final serviceId = rebuyPurchase['serviceId'] as String?;
-    if (serviceId == null || serviceId.isEmpty) return;
-    final matchingProvider = providers.firstWhere(
-      (p) => p.serviceId == serviceId,
-      orElse: () => providers.first,
-    );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.toNamed(AppRoutes.educationPurchase, arguments: {
-        'provider': matchingProvider,
-        'rebuyPurchase': rebuyPurchase,
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,96 +82,37 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
         // landing page hosts the single chat/mic entry point now.
       ),
       body: SafeArea(
-        child: BlocBuilder<EducationCubit, EducationState>(
-          builder: (context, state) {
-            // Defensive read: `Get.arguments` and the nested `rebuyPurchase`
-            // payload may be anything (or missing). Earlier the second cast
-            // crashed when callers passed an `EducationHistoryEntity`
-            // directly — coerce only when the shape matches.
-            final args = Get.arguments;
-            final argsMap =
-                args is Map<String, dynamic> ? args : const <String, dynamic>{};
-            final rebuyArg = argsMap['rebuyPurchase'];
-            final rebuyPurchase =
-                rebuyArg is Map<String, dynamic> ? rebuyArg : null;
-
-            if (state is EducationProvidersLoaded && rebuyPurchase != null) {
-              _handleRebuyPurchase(rebuyPurchase, state.providers);
-              return const Center(
-                child: LazerVaultLoader.small(),
-              );
-            }
-
-            if (state is EducationLoading) {
-              return const Center(
-                child: LazerVaultLoader.small(),
-              );
-            }
-
-            if (state is EducationError) {
-              return _buildErrorState(state.message);
-            }
-
-            if (state is EducationProvidersLoaded) {
-              if (state.providers.isEmpty) {
-                return _buildEmptyState();
-              }
-              return _buildContent(state.providers);
-            }
-
-            return const SizedBox.shrink();
-          },
-        ),
+        child: RefreshIndicator(
+            color: _primary,
+            backgroundColor: const Color(0xFF1F1F1F),
+            onRefresh: () async {
+              await context.read<EducationCubit>().getProviders();
+              await _historyCubit.loadHistory(refresh: true);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Streamlined single-page purchase (see EducationQuickBuy).
+                  _buildQuickActions(),
+                  SizedBox(height: 20.h),
+                  _buildHeroCard(),
+                  SizedBox(height: 24.h),
+                  const EducationQuickBuy(),
+                  SizedBox(height: 24.h),
+                  _buildRecentPurchases(),
+                  SizedBox(height: 20.h),
+                ],
+              ),
+            ),
+          ),
       ),
     ),
     );
   }
 
-  Widget _buildContent(List<EducationProviderEntity> providers) {
-    return RefreshIndicator(
-      color: _primary,
-      backgroundColor: const Color(0xFF1F1F1F),
-      onRefresh: () async {
-        await context.read<EducationCubit>().getProviders();
-        await _historyCubit.loadHistory(refresh: true);
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Quick actions (matches internet / water pattern)
-            _buildQuickActions(),
-            SizedBox(height: 20.h),
-
-            // Hero card
-            _buildHeroCard(),
-            SizedBox(height: 24.h),
-
-            Text(
-              'Select Provider',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 16.h),
-
-            ...providers.map((provider) => _buildProviderCard(provider)),
-
-            SizedBox(height: 24.h),
-
-            // Recent purchases strip
-            _buildRecentPurchases(),
-
-            SizedBox(height: 20.h),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildQuickActions() {
     return Row(
@@ -306,91 +230,6 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     );
   }
 
-  Widget _buildProviderCard(EducationProviderEntity provider) {
-    return GestureDetector(
-      onTap: () {
-        Get.toNamed(AppRoutes.educationPurchase, arguments: {
-          'provider': provider,
-        });
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                color: _getProviderColor(provider.name).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Center(child: _getProviderIcon(provider.name)),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    provider.name,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    provider.description,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '\u20A6${_formatAmount(provider.amount)}',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: _primary,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'per PIN',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(width: 8.w),
-            Icon(
-              Icons.chevron_right,
-              color: const Color(0xFF9CA3AF),
-              size: 20.sp,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildRecentPurchases() {
     return BlocBuilder<EducationHistoryCubit, EducationHistoryState>(
@@ -468,139 +307,8 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     );
   }
 
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline,
-                size: 64.sp, color: const Color(0xFFEF4444)),
-            SizedBox(height: 16.h),
-            Text(
-              'Failed to load providers',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF9CA3AF),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => context.read<EducationCubit>().getProviders(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r)),
-                elevation: 0,
-              ),
-              child: Text(
-                'Retry',
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.school_outlined,
-                size: 64.sp, color: const Color(0xFF9CA3AF)),
-            SizedBox(height: 16.h),
-            Text(
-              'No Education PIN Providers Available',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Check back later for available providers',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF9CA3AF),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => context.read<EducationCubit>().getProviders(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                padding:
-                    EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r)),
-                elevation: 0,
-              ),
-              child: Text(
-                'Retry',
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Color _getProviderColor(String name) {
-    final n = name.toLowerCase();
-    if (n.contains('waec')) return const Color(0xFF10B981);
-    if (n.contains('jamb')) return _primary;
-    return const Color(0xFFFB923C);
-  }
 
-  Widget _getProviderIcon(String name) {
-    final n = name.toLowerCase();
-    if (n.contains('waec')) {
-      return Icon(Icons.assignment, color: const Color(0xFF10B981), size: 28.sp);
-    } else if (n.contains('jamb')) {
-      return Icon(Icons.menu_book, color: _primary, size: 28.sp);
-    }
-    return Icon(Icons.school, color: const Color(0xFFFB923C), size: 28.sp);
-  }
 
-  String _formatAmount(double amount) {
-    if (amount >= 1000) {
-      final intAmount = amount.toInt();
-      final result = StringBuffer();
-      final str = intAmount.toString();
-      for (var i = 0; i < str.length; i++) {
-        if (i > 0 && (str.length - i) % 3 == 0) result.write(',');
-        result.write(str[i]);
-      }
-      return result.toString();
-    }
-    return amount.toStringAsFixed(0);
-  }
 }

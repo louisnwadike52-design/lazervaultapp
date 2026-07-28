@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -254,9 +255,17 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
           if (!mounted) return;
           if (state is SplitBillSharePaid) {
             setState(() => _isProcessing = false);
+            final payerUserId =
+                context.read<AuthenticationCubit>().userId ?? '';
             Get.offAllNamed(
               AppRoutes.splitBillReceipt,
               arguments: {
+                // Authoritative source: the refreshed bill + this payer's id.
+                // The receipt reads real paidAt / reference / status / amount
+                // from the participant record; the scalars below are a legacy
+                // fallback only.
+                'bill': state.updatedBill,
+                'payerUserId': payerUserId,
                 'transactionReference': state.transactionReference,
                 'amount': amount,
                 'currency': currency,
@@ -271,7 +280,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
             setState(() => _isProcessing = false);
             Get.snackbar(
               'Payment Failed',
-              state.message,
+              _friendlyPaymentError(state.message),
               backgroundColor: const Color(0xFFEF4444),
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
@@ -347,9 +356,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     final displayBalance = _accountBalance;
     final displayCurrency = _accountDisplayCurrency;
 
-    return GestureDetector(
-      onTap: _openAccountSwitcher,
-      child: Container(
+    return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -419,15 +426,15 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
                   ),
                 const SizedBox(width: 8),
                 const Icon(
-                  Icons.swap_horiz,
-                  color: Color(0xFF4834D4),
-                  size: 20,
+                  Icons.lock_outline,
+                  color: Color(0xFF6B7280),
+                  size: 16,
                 ),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
-              'Tap to change account',
+              'Your active account is used for this payment',
               style: TextStyle(
                 color: Color(0xFF6B7280),
                 fontSize: 11,
@@ -454,7 +461,7 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Insufficient balance. You need ${_currencySymbol(currency)}${(amount - (_accountBalance ?? 0)).toStringAsFixed(2)} more. Tap to switch account.',
+                        'Insufficient balance. You need ${_currencySymbol(currency)}${(amount - (_accountBalance ?? 0)).toStringAsFixed(2)} more in your active account.',
                         style: const TextStyle(
                           color: Color(0xFFEF4444),
                           fontSize: 12,
@@ -468,104 +475,30 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
             ],
           ],
         ),
-      ),
     );
   }
 
-  /// Opens a dark-theme wallet picker sourced from [AccountCardsSummaryCubit]
-  /// (the same accounts list the dashboard uses). Selecting an account writes
-  /// it into [AccountManager] (active account id + details) so the displayed
-  /// balance and the insufficient-funds check refresh, and so the submit path
-  /// (which reads `_accountManager.activeAccountId`) picks it up unchanged.
-  void _openAccountSwitcher() {
-    final accountState = context.read<AccountCardsSummaryCubit>().state;
-    if (accountState is! AccountCardsSummaryLoaded ||
-        accountState.accountSummaries.isEmpty) {
-      // Trigger a load and let the user retry once accounts arrive.
-      final userId = context.read<AuthenticationCubit>().userId ?? '';
-      if (userId.isNotEmpty) {
-        context
-            .read<AccountCardsSummaryCubit>()
-            .fetchAccountSummaries(userId: userId);
-      }
-      Get.snackbar(
-        'Loading Accounts',
-        'Fetching your accounts, please try again in a moment',
-        backgroundColor: const Color(0xFF1F1F1F),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
+  /// Turns a raw payment error (rpc/status noise) into a clear, user-friendly
+  /// message. Special-cases the common split-bill payment failures; everything
+  /// else falls back to the shared sanitiser (never leaks status codes).
+  String _friendlyPaymentError(String raw) {
+    final low = raw.toLowerCase();
+    if (low.contains('same account')) {
+      return "You can't pay this bill into your own account — you don't need to "
+          "pay your own share of a bill you're collecting.";
     }
-
-    final accounts = accountState.accountSummaries
-        .where((a) => a.currency.toUpperCase() == currency.toUpperCase())
-        .toList();
-    final selectable = accounts.isNotEmpty
-        ? accounts
-        : accountState.accountSummaries; // fallback: show all
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(sheetContext).size.height * 0.6,
-          ),
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4B5563),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Select Account',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: selectable.map((account) {
-                    final isSelected =
-                        _accountManager.activeAccountId == account.id;
-                    final hasEnough = account.availableBalance >= amount;
-                    return _buildAccountOption(
-                      account: account,
-                      isSelected: isSelected,
-                      insufficientFunds: !hasEnough,
-                      onTap: () {
-                        _selectAccount(account);
-                        Navigator.pop(sheetContext);
-                      },
-                    );
-                  }).toList(),
-                ),
-              ),
-              SizedBox(height: MediaQuery.of(sheetContext).padding.bottom + 16),
-            ],
-          ),
-        );
-      },
-    );
+    if (low.contains('insufficient') || low.contains('not enough')) {
+      return 'Insufficient balance in your active account for this payment.';
+    }
+    if (low.contains('frozen') ||
+        low.contains('suspended') ||
+        low.contains('closed')) {
+      return 'Your account is not active for payments right now. Contact support.';
+    }
+    if (low.contains('already') && low.contains('paid')) {
+      return 'This share has already been paid.';
+    }
+    return sanitizeUserFacingError(raw);
   }
 
   String _accountLabel(bool hasAccount) {
@@ -575,86 +508,6 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
       return '${summary.accountType} •••• ${summary.accountNumberLast4}';
     }
     return _accountManager.getAccountDisplayText();
-  }
-
-  void _selectAccount(AccountSummaryEntity account) {
-    // Mirror the dashboard switcher: persist into the cubit + AccountManager so
-    // every reader (including the submit path) sees the new active account.
-    context.read<AccountCardsSummaryCubit>().setActiveAccount(account.id);
-    setState(() {});
-  }
-
-  Widget _buildAccountOption({
-    required AccountSummaryEntity account,
-    required bool isSelected,
-    required bool insufficientFunds,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF4834D4) : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4834D4).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.account_balance_wallet,
-                color: Color(0xFF4834D4),
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    account.accountType,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${_currencySymbol(account.currency)}${account.availableBalance.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      color: insufficientFunds
-                          ? const Color(0xFFEF4444)
-                          : const Color(0xFF9CA3AF),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF4834D4),
-                size: 24,
-              ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildDetailRow(String label, String value) {

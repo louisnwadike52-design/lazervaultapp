@@ -38,6 +38,11 @@ class UserModel extends User {
     super.currentSignupStep,
     super.hasPasscode = false,
     super.hasTransactionPin = false,
+    super.hasPassword = false,
+    super.preferredLoginMethod,
+    super.twoFactorEnabled = false,
+    super.twoFactorMethod,
+    super.dateOfBirth,
   });
 
   static final UserModel empty =
@@ -78,6 +83,8 @@ class UserModel extends User {
       currency: protoUser.hasCurrency() && protoUser.currency.isNotEmpty ? protoUser.currency : null,
       country: protoUser.hasCountry() && protoUser.country.isNotEmpty ? protoUser.country : null,
       profilePicture: protoUser.hasProfilePicture() && protoUser.profilePicture.isNotEmpty ? protoUser.profilePicture : null,
+      // NB: common_pb.User has no date_of_birth field — DOB is carried by the
+      // auth proto (see fromAuthProto), which is what the profile/GetMe path uses.
     );
   }
 
@@ -93,6 +100,9 @@ class UserModel extends User {
       roles: user.roles.isNotEmpty ? List<String>.from(user.roles) : null,
       verified: user.phoneVerified,
       isEmailVerified: user.emailVerified,
+      twoFactorEnabled: user.twoFactorEnabled,
+      twoFactorMethod:
+          user.twoFactorMethod.isNotEmpty ? user.twoFactorMethod : null,
       profilePicture:
           user.profilePicture.isEmpty ? null : user.profilePicture,
       createdAt: DateTime.tryParse(user.createdAt) ?? DateTime.now(),
@@ -102,6 +112,11 @@ class UserModel extends User {
       currentSignupStep: user.currentSignupStep.isNotEmpty
           ? user.currentSignupStep
           : null,
+      hasPassword: user.hasPassword,
+      preferredLoginMethod: user.preferredLoginMethod.isNotEmpty
+          ? user.preferredLoginMethod
+          : null,
+      dateOfBirth: user.dateOfBirth.isNotEmpty ? user.dateOfBirth : null,
     );
   }
 
@@ -134,6 +149,9 @@ class UserModel extends User {
       currentSignupStep: currentSignupStep,
       hasPasscode: hasPasscode,
       hasTransactionPin: hasTransactionPin,
+      hasPassword: hasPassword,
+      preferredLoginMethod: preferredLoginMethod,
+      dateOfBirth: dateOfBirth,
     );
   }
 
@@ -161,6 +179,11 @@ class UserModel extends User {
     String? currentSignupStep,
     bool? hasPasscode,
     bool? hasTransactionPin,
+    bool? hasPassword,
+    String? preferredLoginMethod,
+    bool? twoFactorEnabled,
+    String? twoFactorMethod,
+    String? dateOfBirth,
   }) {
     return UserModel(
         id: id ?? this.id,
@@ -184,7 +207,12 @@ class UserModel extends User {
         signupStatus: signupStatus ?? this.signupStatus,
         currentSignupStep: currentSignupStep ?? this.currentSignupStep,
         hasPasscode: hasPasscode ?? this.hasPasscode,
-        hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin);
+        hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin,
+        hasPassword: hasPassword ?? this.hasPassword,
+        preferredLoginMethod: preferredLoginMethod ?? this.preferredLoginMethod,
+        twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
+        twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
+        dateOfBirth: dateOfBirth ?? this.dateOfBirth);
   }
 
   UserModel.fromMap(DataMap map)
@@ -206,7 +234,10 @@ class UserModel extends User {
           signupStatus: map['signupStatus'] as String?,
           currentSignupStep: map['currentSignupStep'] as String?,
           hasPasscode: map['hasPasscode'] as bool? ?? false,
-          hasTransactionPin: map['hasTransactionPin'] as bool? ?? false);
+          hasTransactionPin: map['hasTransactionPin'] as bool? ?? false,
+          hasPassword: map['hasPassword'] as bool? ?? false,
+          preferredLoginMethod: map['preferredLoginMethod'] as String?,
+          dateOfBirth: map['dateOfBirth'] as String?);
 
   DataMap toMap() => {
         "id": id,
@@ -225,6 +256,9 @@ class UserModel extends User {
         "currentSignupStep": currentSignupStep,
         "hasPasscode": hasPasscode,
         "hasTransactionPin": hasTransactionPin,
+        "hasPassword": hasPassword,
+        "preferredLoginMethod": preferredLoginMethod,
+        "dateOfBirth": dateOfBirth,
       };
 
   String toJson() => jsonEncode(toMap());

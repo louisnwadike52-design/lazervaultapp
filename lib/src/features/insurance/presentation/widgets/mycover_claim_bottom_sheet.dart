@@ -26,7 +26,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 /// scaffolding. Both flows are identical at the runtime level — a
 /// MyCover-hosted form opened in-app — only the user-facing labels
 /// differ.
-enum MyCoverHostedFlowKind { claim, renew }
+enum MyCoverHostedFlowKind { claim, renew, buy, manage }
 
 class MyCoverClaimBottomSheet extends StatefulWidget {
   const MyCoverClaimBottomSheet({
@@ -110,6 +110,41 @@ class MyCoverClaimBottomSheet extends StatefulWidget {
     );
   }
 
+  /// Convenience for the hosted BUY flow — opens the universal MyCover link
+  /// so the user can purchase a new policy. Used when the admin enables the
+  /// `insurance_hosted_entrypoints_enabled` toggle.
+  static Future<void> showBuy(
+    BuildContext context, {
+    required Future<String?> Function() urlResolver,
+    String policyLabel = 'Buy Insurance',
+    String? providerName,
+  }) {
+    return show(
+      context,
+      urlResolver: urlResolver,
+      policyLabel: policyLabel,
+      providerName: providerName,
+      kind: MyCoverHostedFlowKind.buy,
+    );
+  }
+
+  /// Convenience for the hosted MANAGE-PLAN flow — opens the universal
+  /// MyCover link so the user can manage their existing policies.
+  static Future<void> showManage(
+    BuildContext context, {
+    required Future<String?> Function() urlResolver,
+    String policyLabel = 'Manage Your Plans',
+    String? providerName,
+  }) {
+    return show(
+      context,
+      urlResolver: urlResolver,
+      policyLabel: policyLabel,
+      providerName: providerName,
+      kind: MyCoverHostedFlowKind.manage,
+    );
+  }
+
   @override
   State<MyCoverClaimBottomSheet> createState() => _MyCoverClaimBottomSheetState();
 }
@@ -122,17 +157,63 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
   String? _errorMessage;
 
   bool get _isRenewal => widget.kind == MyCoverHostedFlowKind.renew;
-  String get _flowNoun => _isRenewal ? 'renewal' : 'claim';
-  String get _headerTitle => _isRenewal ? 'Renew Your Policy' : 'File a Claim';
-  String get _errorTitle =>
-      _isRenewal ? "Couldn't open the renewal page" : "Couldn't open the claim page";
-  String get _footerText => _isRenewal
-      ? 'Renewals are processed by the insurance provider. Once you '
-          'submit, your policy will reflect the new term and a receipt is sent to your email.'
-      : 'Claims are reviewed by the insurance provider. Once you '
-          'submit, your claim appears in My Claims with live status updates.';
-  IconData get _headerIcon =>
-      _isRenewal ? Icons.autorenew_rounded : Icons.assignment_outlined;
+  String get _flowNoun {
+    switch (widget.kind) {
+      case MyCoverHostedFlowKind.renew:
+        return 'renewal';
+      case MyCoverHostedFlowKind.buy:
+        return 'purchase';
+      case MyCoverHostedFlowKind.manage:
+        return 'plan';
+      case MyCoverHostedFlowKind.claim:
+        return 'claim';
+    }
+  }
+
+  String get _headerTitle {
+    switch (widget.kind) {
+      case MyCoverHostedFlowKind.renew:
+        return 'Renew Your Policy';
+      case MyCoverHostedFlowKind.buy:
+        return 'Buy Insurance';
+      case MyCoverHostedFlowKind.manage:
+        return 'Manage Your Plans';
+      case MyCoverHostedFlowKind.claim:
+        return 'File a Claim';
+    }
+  }
+
+  String get _errorTitle => "Couldn't open the $_flowNoun page";
+
+  String get _footerText {
+    switch (widget.kind) {
+      case MyCoverHostedFlowKind.renew:
+        return 'Renewals are processed by the insurance provider. Once you '
+            'submit, your policy will reflect the new term and a receipt is sent to your email.';
+      case MyCoverHostedFlowKind.buy:
+        return 'Your new policy is processed by the insurance provider. Once '
+            'payment completes it appears here in your policies — automatically.';
+      case MyCoverHostedFlowKind.manage:
+        return 'Manage your existing policies with the insurance provider. Any '
+            'changes sync back to your policies here automatically.';
+      case MyCoverHostedFlowKind.claim:
+        return 'Claims are reviewed by the insurance provider. Once you '
+            'submit, your claim appears in My Claims with live status updates.';
+    }
+  }
+
+  IconData get _headerIcon {
+    switch (widget.kind) {
+      case MyCoverHostedFlowKind.renew:
+        return Icons.autorenew_rounded;
+      case MyCoverHostedFlowKind.buy:
+        return Icons.add_shopping_cart_rounded;
+      case MyCoverHostedFlowKind.manage:
+        return Icons.tune_rounded;
+      case MyCoverHostedFlowKind.claim:
+        return Icons.assignment_outlined;
+    }
+  }
 
   @override
   void initState() {

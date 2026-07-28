@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_actions_sheet.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/education_history_entity.dart';
+import '../../domain/entities/education_provider_entity.dart';
 import '../cubit/education_history_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -121,13 +122,29 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
   }
 
   void _rebuyPurchase(EducationHistoryEntity purchase) {
-    // Map shape (NOT the entity) — `education_home_screen` casts to
-    // `Map<String, dynamic>?` and crashes if it gets the entity.
+    // Route straight into the purchase screen (same pattern as
+    // `education_saved_candidates_screen._startRepeatPurchase`) with a
+    // synthetic provider built from the purchase record — the purchase
+    // screen requires a non-null `provider` argument or it pops itself
+    // immediately, so routing to `educationHome` (which never reads
+    // `Get.arguments`) silently dropped this rebuy on the floor.
+    final provider = EducationProviderEntity(
+      id: purchase.providerId,
+      name: purchase.providerName,
+      serviceId: purchase.serviceId,
+      variationCode: purchase.variationCode,
+      logoUrl: '',
+      isActive: true,
+      amount: purchase.quantity > 0
+          ? purchase.amount / purchase.quantity
+          : purchase.amount,
+      description: purchase.providerName,
+    );
     Get.toNamed(
-      AppRoutes.educationHome,
+      AppRoutes.educationPurchase,
       arguments: <String, dynamic>{
+        'provider': provider,
         'rebuyPurchase': <String, dynamic>{
-          'serviceId': purchase.serviceId,
           'phone': purchase.phoneNumber,
           'billersCode': purchase.billersCode,
           'quantity': purchase.quantity,

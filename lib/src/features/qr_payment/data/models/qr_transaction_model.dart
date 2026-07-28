@@ -35,7 +35,7 @@ class QRTransactionModel extends QRTransactionEntity {
       description: proto.description,
       referenceNumber: proto.referenceNumber,
       status: _statusFromProto(proto.status),
-      createdAt: proto.createdAt.toDateTime(),
+      createdAt: proto.createdAt.toDateTime().toLocal(),
     );
   }
 

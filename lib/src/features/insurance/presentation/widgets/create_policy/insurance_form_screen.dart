@@ -71,19 +71,39 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     if (name.contains('vehicle_model') || name == 'model') {
       return InsuranceUtilityIds.vehicleModels;
     }
+    // town/lga = the selected state's LGAs — MyCover's state utility doubles as
+    // an LGA lookup (?query=<state> → LGAs), so point these at the states util.
+    if (name == 'town' || name == 'lga' || name.contains('local_government')) {
+      return InsuranceUtilityIds.nigerianStates;
+    }
     return null;
   }
 
   /// Gets the dependent query value for a field (e.g., vehicle_model
-  /// depends on vehicle_make). Prefers backend's `dependsOn`; falls
-  /// back to legacy hardcoded mapping for older schemas.
+  /// depends on vehicle_make).
+  ///
+  /// MyCover's car-models utility (86db5030) MUST be scoped by the make:
+  /// `?query=Acura` returns that make's models, while NO query returns `[]`.
+  /// So a missing/empty query = an empty model dropdown. We prefer the
+  /// backend's declared `dependsOn`, but ONLY when it resolves to a real
+  /// value — otherwise we fall back to the make heuristic. This covers three
+  /// real cases: (a) the schema sent no `dependsOn`, (b) `dependsOn` names a
+  /// field key that isn't populated (e.g. it says `vehicle_make` but the make
+  /// field's value landed under `make`), and (c) legacy schemas.
   String? _getDependentQuery(InsuranceProductFormField field, Map<String, String> formData) {
     if (field.dependsOn.isNotEmpty) {
-      return formData[field.dependsOn];
+      final v = formData[field.dependsOn];
+      if (v != null && v.trim().isNotEmpty) return v;
     }
     final name = field.name.toLowerCase();
     if (name.contains('vehicle_model') || name == 'model') {
-      return formData['vehicle_make'] ?? formData['make'];
+      final make = formData['vehicle_make'] ?? formData['make'];
+      if (make != null && make.trim().isNotEmpty) return make;
+    }
+    // town/lga are scoped by the chosen state (state util ?query=<state> → LGAs).
+    if (name == 'town' || name == 'lga' || name.contains('local_government')) {
+      final state = formData['state'];
+      if (state != null && state.trim().isNotEmpty) return state;
     }
     return null;
   }
@@ -155,6 +175,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     // ≥ departure_date). Refreshed on every rebuild so validators
     // always read the latest values.
     _lastFormData = formData;
+    _lastProduct = product;
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
@@ -502,11 +523,64 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   /// for cross-field validation (e.g. arrival_date ≥ departure_date)
   /// without changing every per-widget call signature.
   Map<String, String> _lastFormData = const {};
+  InsuranceProduct? _lastProduct;
+
+  /// MyCover per-product money minimums that AREN'T in the discovered schema
+  /// (so we enforce them client-side). Returns the minimum in naira for the
+  /// given field, or null when there's no known minimum.
+  int? _minValueForField(InsuranceProductFormField field) {
+    final name = field.name.toLowerCase();
+    final cat = _lastProduct?.category;
+    // Gadget/device: the device `value` must be at least ₦100,000
+    // (MyCover: "/value must be >= 100000").
+    if (name == 'value' && cat == InsuranceProductCategory.gadget) {
+      return 100000;
+    }
+    return null;
+  }
+
+  /// MyCover per-field minimum text lengths that AREN'T in the discovered
+  /// schema. Returns the minimum character count, or null when none applies.
+  int? _minLengthForField(InsuranceProductFormField field) {
+    switch (field.name.toLowerCase()) {
+      // "/serial_number must NOT have fewer than 10 characters".
+      case 'serial_number':
+        return 10;
+      default:
+        return null;
+    }
+  }
+
+  static String _thousands(int n) {
+    final s = n.toString();
+    final b = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+      b.write(s[i]);
+    }
+    return b.toString();
+  }
 
   String? _validateField(InsuranceProductFormField field, String value) {
     if (value.isEmpty) return null;
     final name = field.name.toLowerCase();
     final type = field.type.toLowerCase();
+    // Money-field minimum (e.g. gadget device value ≥ ₦100,000). Runs for
+    // monetary/number fields so the error shows inline as the user types.
+    if (type == 'monetary' || type == 'number') {
+      final min = _minValueForField(field);
+      if (min != null) {
+        final n = num.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), ''));
+        if (n != null && n < min) {
+          return 'Must be at least ₦${_thousands(min)}';
+        }
+      }
+    }
+    // Text-field minimum length (e.g. serial_number ≥ 10 chars).
+    final minLen = _minLengthForField(field);
+    if (minLen != null && value.trim().length < minLen) {
+      return 'Must be at least $minLen characters';
+    }
     if (type == 'email' && !_emailRegex.hasMatch(value.trim())) {
       return 'Please enter a valid email address';
     }
@@ -1849,7 +1923,6 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       });
     }
 
-    final options = items?.map((i) => i.value).toList() ?? field.options;
     final labels = items != null ? {for (var i in items) i.value: i.label} : <String, String>{};
 
     return Padding(
@@ -1867,51 +1940,46 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
             borderRadius: BorderRadius.circular(10.r),
             border: Border.all(color: error != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D)),
           ),
-          child: isLoading
-            ? Padding(
-                padding: EdgeInsets.symmetric(vertical: 14.h),
-                child: Row(children: [
-                  LazerVaultLoader.tiny(),
-                  SizedBox(width: 10.w),
-                  Text('Loading options...', style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
-                ]),
-              )
-            : loadError != null
-              ? GestureDetector(
-                  onTap: () {
-                    setState(() => _auxiliaryError[cacheKey] = null);
-                    _loadAuxiliaryData(cacheKey, utilityId, _getDependentQuery(field, formData));
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    child: Row(children: [
-                      Icon(Icons.refresh, color: const Color(0xFFEF4444), size: 18.sp),
-                      SizedBox(width: 10.w),
-                      Expanded(child: Text(loadError, style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444)))),
-                    ]),
-                  ),
-                )
-              : options.length > 20
-                ? _buildSearchableSelectTrigger(
-                    cubit: cubit,
-                    field: field,
-                    value: value,
-                    options: options,
-                    labels: labels,
-                  )
-                : DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: value.isNotEmpty && options.contains(value) ? value : null,
-                    hint: Text('Select ${field.label.toLowerCase()}',
-                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.5))),
-                    isExpanded: true,
-                    dropdownColor: const Color(0xFF1F1F1F),
-                    style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
-                    icon: Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
-                    items: options.map((o) => DropdownMenuItem(value: o, child: Text(labels[o] ?? o))).toList(),
-                    onChanged: (v) { if (v != null) cubit.updateFormField(field.name, v); },
+          // Always a tap-target: opens the options bottom-sheet IMMEDIATELY,
+          // which shows its own loading → items → empty/error states. This
+          // replaces the old inline dropdown that, when the utility returned no
+          // items (e.g. a make with no models), opened an empty menu that closed
+          // instantly — leaving the user with no idea anything happened. A
+          // background pre-load still fills [labels] so the trigger can show the
+          // selected option's label; [isLoading] shows a subtle inline spinner.
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showAuxiliaryOptionsSheet(
+              cubit: cubit,
+              field: field,
+              cacheKey: cacheKey,
+              utilityId: utilityId,
+              query: _getDependentQuery(field, formData),
+              currentValue: value,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              child: Row(children: [
+                Expanded(
+                  child: Text(
+                    value.isNotEmpty ? (labels[value] ?? value) : 'Select ${field.label.toLowerCase()}',
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      color: value.isNotEmpty
+                          ? Colors.white
+                          : const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                    ),
                   ),
                 ),
+                if (isLoading) ...[
+                  LazerVaultLoader.tiny(),
+                  SizedBox(width: 8.w),
+                ],
+                Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
+              ]),
+            ),
+          ),
         ),
         if (error != null)
           Padding(padding: EdgeInsets.only(top: 6.h, left: 14.w),
@@ -1920,69 +1988,171 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
-  /// Tap-target shown in place of the inline dropdown when an auxiliary
-  /// select has > 20 options (countries, banks, vehicle makes). Opens a
-  /// searchable bottom sheet so the user doesn't have to scroll a
-  /// 200-row dropdown to find their destination country.
-  Widget _buildSearchableSelectTrigger({
+  /// Options bottom-sheet for a utility-backed select that OPENS IMMEDIATELY and
+  /// carries its own state: a loading spinner while the utility list is fetched,
+  /// the searchable list once loaded, a clear "no options" state when the
+  /// utility returns nothing (e.g. a vehicle make with no models), and an
+  /// error+retry state on failure. Previously these fields used an inline
+  /// dropdown that gave zero feedback on tap when empty/loading.
+  void _showAuxiliaryOptionsSheet({
     required CreatePolicyCubit cubit,
     required InsuranceProductFormField field,
-    required String value,
-    required List<String> options,
-    required Map<String, String> labels,
-  }) {
-    final selectedLabel = value.isNotEmpty ? (labels[value] ?? value) : '';
-    return GestureDetector(
-      onTap: () => _showSearchableOptionsSheet(
-        title: field.label,
-        options: options,
-        labels: labels,
-        currentValue: value,
-        onPick: (picked) => cubit.updateFormField(field.name, picked),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 14.h),
-        child: Row(children: [
-          Expanded(child: Text(
-            selectedLabel.isNotEmpty ? selectedLabel : 'Select ${field.label.toLowerCase()}',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: selectedLabel.isNotEmpty ? Colors.white : const Color(0xFF9CA3AF).withValues(alpha: 0.5),
-            ),
-          )),
-          Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
-        ]),
-      ),
-    );
-  }
-
-  /// Generic searchable bottom-sheet picker. Mirrors the country-code
-  /// sheet in policy_holder_info_screen.dart but operates on a flat
-  /// list of values + a value→label map (so we can display friendly
-  /// names while sending the canonical value back to the form).
-  void _showSearchableOptionsSheet({
-    required String title,
-    required List<String> options,
-    required Map<String, String> labels,
+    required String cacheKey,
+    required String utilityId,
+    required String? query,
     required String currentValue,
-    required void Function(String) onPick,
   }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) {
-        String query = '';
+        // Sheet-local state (mutated by the fetch closure; setSheetState repaints).
+        List<AuxiliaryItem>? items = _auxiliaryCache[cacheKey];
+        bool loading = false;
+        String? error;
+        String search = '';
+        bool started = false;
+
         return StatefulBuilder(builder: (ctx, setSheetState) {
-          final filtered = query.isEmpty
-              ? options
-              : options.where((o) {
-                  final label = (labels[o] ?? o).toLowerCase();
-                  final q = query.toLowerCase();
-                  return label.contains(q) || o.toLowerCase().contains(q);
+          Future<void> runFetch() async {
+            setSheetState(() {
+              loading = true;
+              error = null;
+            });
+            try {
+              final repo = GetIt.I<InsuranceRepository>();
+              final fetched = await repo.getInsuranceAuxiliaryData(
+                utilityId: utilityId,
+                query: query,
+              );
+              // Seed the parent cache so the field trigger can show the label
+              // and a re-open is instant.
+              if (mounted) {
+                setState(() {
+                  _auxiliaryCache[cacheKey] = fetched;
+                  _auxiliaryLoading[cacheKey] = false;
+                  _auxiliaryError[cacheKey] = null;
+                });
+              }
+              if (sheetCtx.mounted) {
+                setSheetState(() {
+                  items = fetched;
+                  loading = false;
+                });
+              }
+            } catch (_) {
+              if (sheetCtx.mounted) {
+                setSheetState(() {
+                  loading = false;
+                  error = 'Could not load options. Tap retry.';
+                });
+              }
+            }
+          }
+
+          // Kick the fetch once when we open without cached items.
+          if (!started && items == null && !loading && error == null) {
+            started = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) => runFetch());
+          }
+
+          final all = items ?? const <AuxiliaryItem>[];
+          final filtered = search.isEmpty
+              ? all
+              : all.where((i) {
+                  final q = search.toLowerCase();
+                  return i.label.toLowerCase().contains(q) || i.value.toLowerCase().contains(q);
                 }).toList();
+
+          Widget body;
+          if (loading) {
+            body = Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(height: 40.h),
+                LazerVaultLoader.tiny(),
+                SizedBox(height: 14.h),
+                Text('Loading ${field.label.toLowerCase()}…',
+                    style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+              ]),
+            );
+          } else if (error != null) {
+            body = Center(
+              child: GestureDetector(
+                onTap: runFetch,
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  SizedBox(height: 40.h),
+                  Icon(Icons.refresh, color: const Color(0xFFEF4444), size: 26.sp),
+                  SizedBox(height: 12.h),
+                  Text(error!, textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFFEF4444))),
+                ]),
+              ),
+            );
+          } else if (all.isEmpty) {
+            body = Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(height: 40.h),
+                Icon(Icons.inbox_outlined, color: const Color(0xFF6B7280), size: 28.sp),
+                SizedBox(height: 12.h),
+                Text('No options available',
+                    style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                SizedBox(height: 6.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 32.w),
+                  child: Text(
+                    query != null && query.isNotEmpty
+                        ? 'None found for the selected option. Try a different choice above.'
+                        : 'Nothing to choose from here yet.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(fontSize: 12.5.sp, color: const Color(0xFF9CA3AF), height: 1.4),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                GestureDetector(
+                  onTap: runFetch,
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.refresh, color: const Color(0xFF6366F1), size: 16.sp),
+                    SizedBox(width: 6.w),
+                    Text('Retry', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                  ]),
+                ),
+              ]),
+            );
+          } else {
+            body = ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              itemCount: filtered.length,
+              itemBuilder: (_, i) {
+                final opt = filtered[i];
+                final isSelected = opt.value == currentValue;
+                return GestureDetector(
+                  onTap: () {
+                    cubit.updateFormField(field.name, opt.value);
+                    Navigator.pop(sheetCtx);
+                  },
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 8.h),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: isSelected ? Border.all(color: const Color(0xFF3B82F6), width: 1.5) : null,
+                    ),
+                    child: Row(children: [
+                      Expanded(child: Text(opt.label,
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
+                      if (isSelected) Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp),
+                    ]),
+                  ),
+                );
+              },
+            );
+          }
+
           return DraggableScrollableSheet(
             initialChildSize: 0.7, maxChildSize: 0.9, minChildSize: 0.4,
+            expand: false,
             builder: (_, scrollCtl) => Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
@@ -1992,74 +2162,37 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
                 Container(
                   margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
                   width: 40.w, height: 4.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
+                  decoration: BoxDecoration(color: const Color(0xFF2D2D2D), borderRadius: BorderRadius.circular(2.r)),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text('Select $title',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                    Text('Select ${field.label}',
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
                     GestureDetector(
                       onTap: () => Navigator.pop(sheetCtx),
                       child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
                     ),
                   ]),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                  child: TextField(
-                    autofocus: true,
-                    onChanged: (v) => setSheetState(() => query = v),
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-                    decoration: InputDecoration(
-                      hintText: 'Search...',
-                      hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                      prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
-                      filled: true, fillColor: const Color(0xFF0A0A0A),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                // Search only once there are enough items to warrant it.
+                if (!loading && error == null && all.length > 8)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                    child: TextField(
+                      onChanged: (v) => setSheetState(() => search = v),
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                      decoration: InputDecoration(
+                        hintText: 'Search...',
+                        hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                        prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                        filled: true, fillColor: const Color(0xFF0A0A0A),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                      ),
                     ),
                   ),
-                ),
-                Expanded(child: ListView.builder(
-                  controller: scrollCtl,
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  itemCount: filtered.length,
-                  itemBuilder: (_, i) {
-                    final opt = filtered[i];
-                    final isSelected = opt == currentValue;
-                    return GestureDetector(
-                      onTap: () {
-                        onPick(opt);
-                        Navigator.pop(sheetCtx);
-                      },
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 8.h),
-                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                            ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
-                            : const Color(0xFF0A0A0A),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: isSelected
-                            ? Border.all(color: const Color(0xFF3B82F6), width: 1.5)
-                            : null,
-                        ),
-                        child: Row(children: [
-                          Expanded(child: Text(
-                            labels[opt] ?? opt,
-                            style: GoogleFonts.inter(
-                              color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
-                          if (isSelected) Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp),
-                        ]),
-                      ),
-                    );
-                  },
-                )),
+                Expanded(child: PrimaryScrollController(controller: scrollCtl, child: body)),
               ]),
             ),
           );

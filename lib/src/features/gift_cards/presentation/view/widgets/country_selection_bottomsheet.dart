@@ -130,7 +130,10 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
     final filtered = _filteredCountries;
     final hasDynamic = widget.dynamicCountries.isNotEmpty;
 
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
@@ -258,6 +261,8 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
                     ),
                   )
                 : ListView.builder(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
@@ -274,7 +279,7 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
           SizedBox(height: 24.h),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildCountryTile({

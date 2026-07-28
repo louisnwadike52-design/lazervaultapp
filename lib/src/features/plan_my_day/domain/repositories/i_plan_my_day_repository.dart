@@ -61,6 +61,10 @@ abstract class IPlanMyDayRepository {
     String? status,
     List<String>? categoryIds,
     String? estimatedDuration,
+    String? contactId,
+    // When true, explicitly clear the due date (send due_date:"") instead of
+    // leaving it unchanged — dueDate:null alone means "not provided".
+    bool clearDueDate,
   });
   Future<void> deleteTask(String id);
   Future<Task> completeTask(String id);

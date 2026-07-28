@@ -15,6 +15,7 @@ import '../cubit/group_account_state.dart';
 import '../../../tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import '../../../tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 /// Normalize a deadline date to 23:59:59.999 in the user's local
 /// timezone. The date picker returns midnight (start-of-day), which
@@ -3116,6 +3117,15 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
     });
   }
 
+  /// Opens the shared unified search (saved contacts incl. alias → global)
+  /// and selects the picked user (the existing Add flow then confirms).
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Add member');
+    if (result == null || !mounted) return;
+    _selectUser(result.toUserSearchResultEntity());
+  }
+
   Future<void> _addMember() async {
     if (_selectedUser == null) return;
 
@@ -3347,9 +3357,11 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         SizedBox(height: 8.h),
         TextField(
           controller: _searchController,
+          readOnly: true,
+          onTap: _openUnifiedSearch,
           style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
           decoration: InputDecoration(
-            hintText: 'Enter name or @username',
+            hintText: 'Search people to add',
             hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[500]),
             filled: true,
             fillColor: const Color(0xFF0A0A0A),

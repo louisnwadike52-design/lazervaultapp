@@ -6,7 +6,24 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/employee_entity.dart';
+import 'package:intl_phone_field/phone_number.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/utils/form_validators.dart';
+import 'package:lazervault/core/widgets/app_phone_field.dart';
+import 'package:lazervault/core/widgets/bank_picker_sheet.dart';
+import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+
+/// A single step in the add-employee wizard. The set of steps is dynamic —
+/// an internal (Lazervault) employee skips the bank step entirely.
+class _WizardStep {
+  final String label;
+  final Widget Function() builder;
+  const _WizardStep(this.label, this.builder);
+}
 
 class AddEmployeeScreen extends StatefulWidget {
   const AddEmployeeScreen({super.key});
@@ -19,18 +36,26 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final _formKey = GlobalKey<FormState>();
   int _currentStep = 0;
 
-  // Step 1: Personal Info
+  // Step 0: Payout destination — null until the operator chooses.
+  String? _payoutType; // 'internal' | 'external'
+  UnifiedSearchResult? _selectedUser; // internal payout target
+
+  // Step: Personal Info
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _ninController = TextEditingController();
+  // Phone is captured via AppPhoneField (country picker + leading-zero tolerant).
+  PhoneNumber? _phone;
 
-  // Step 2: Bank Details
+  // Step: Bank Details (external only)
   final _bankAccountController = TextEditingController();
-  final _bankCodeController = TextEditingController();
-  final _bankNameController = TextEditingController();
+  String _bankCode = '';
+  String _bankName = '';
+  String _bankAccountName = ''; // resolved beneficiary name (name enquiry)
+  bool _verifying = false;
+  String _verifyError = '';
 
-  // Step 3: Employment
+  // Step: Employment
   EmploymentType _employmentType = EmploymentType.fullTime;
   final _payRateController = TextEditingController();
   PayFrequency _payFrequency = PayFrequency.monthly;
@@ -42,19 +67,59 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _ninController.dispose();
     _bankAccountController.dispose();
-    _bankCodeController.dispose();
-    _bankNameController.dispose();
     _payRateController.dispose();
     _departmentController.dispose();
     _jobTitleController.dispose();
     super.dispose();
   }
 
+  // ---------------------------------------------------------------------------
+  // Dynamic step set
+  // ---------------------------------------------------------------------------
+
+  List<_WizardStep> get _steps {
+    final steps = <_WizardStep>[
+      _WizardStep('Payout', _buildPayoutStep),
+      _WizardStep('Personal', _buildPersonalInfoStep),
+    ];
+    // A bank destination is only relevant when paying someone who is NOT a
+    // Lazervault user. Internal employees are credited straight to their wallet.
+    if (_payoutType == 'external') {
+      steps.add(_WizardStep('Bank', _buildBankDetailsStep));
+    }
+    steps.add(_WizardStep('Employment', _buildEmploymentStep));
+    return steps;
+  }
+
+  bool get _isLastStep => _currentStep >= _steps.length - 1;
+
   void _nextStep() {
-    if (_currentStep < 2) {
+    final label = _steps[_currentStep].label;
+
+    // Payout step gates on a chosen type (+ a picked user for internal).
+    if (label == 'Payout') {
+      if (_payoutType == null) {
+        _toast('Choose how this employee is paid', isError: true);
+        return;
+      }
+      if (_payoutType == 'internal' && _selectedUser == null) {
+        _toast('Select the Lazervault user to pay', isError: true);
+        return;
+      }
+    }
+
+    // Bank step gates on a verified account (resolved beneficiary name).
+    if (label == 'Bank' && _bankAccountName.trim().isEmpty) {
+      _toast('Verify the bank account before continuing', isError: true);
+      return;
+    }
+
+    // Validate the CURRENT step's mounted form fields (email/phone/pay rate…).
+    if (!(_formKey.currentState?.validate() ?? true)) return;
+
+    if (!_isLastStep) {
       setState(() => _currentStep++);
     } else {
       _submitForm();
@@ -70,20 +135,25 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   }
 
   void _submitForm() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? true)) return;
 
     final payRateNaira =
         double.tryParse(_payRateController.text.replaceAll(',', '')) ?? 0.0;
     final payRateKobo = (payRateNaira * 100).toInt();
 
+    final isInternal = _payoutType == 'internal';
+
     context.read<PayrollCubit>().addEmployee(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          phone: _phoneController.text.trim(),
+          phone: AppPhoneField.complete(_phone),
           nin: _ninController.text.trim(),
-          bankAccountNumber: _bankAccountController.text.trim(),
-          bankCode: _bankCodeController.text.trim(),
-          bankName: _bankNameController.text.trim(),
+          bankAccountNumber: isInternal ? '' : _bankAccountController.text.trim(),
+          bankCode: isInternal ? '' : _bankCode,
+          bankName: isInternal ? '' : _bankName,
+          bankAccountName: isInternal ? '' : _bankAccountName,
+          payoutType: _payoutType ?? 'external',
+          userId: isInternal ? _selectedUser?.userId : null,
           employmentType: _employmentType,
           payRate: payRateKobo,
           payFrequency: _payFrequency,
@@ -95,32 +165,34 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         );
   }
 
+  void _toast(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor:
+            isError ? InvoiceThemeColors.errorRed : InvoiceThemeColors.successGreen,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PayrollCubit, PayrollState>(
       listener: (context, state) {
         if (state is EmployeeAdded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFF10B981),
-            ),
-          );
-          Navigator.of(context).pop();
+          _toast(state.message);
+          // Return the created employee so a caller (e.g. the pay-run "Add
+          // employee" sheet) can auto-select it. Plain callers ignore the value.
+          Navigator.of(context).pop(state.employee);
         } else if (state is PayrollError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFFEF4444),
-            ),
-          );
+          _toast(state.message, isError: true);
         }
       },
       builder: (context, state) {
         final isLoading = state is PayrollLoading;
 
         return Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
+          backgroundColor: InvoiceThemeColors.primaryBackground,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -150,7 +222,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                         horizontal: 20.w,
                         vertical: 16.h,
                       ),
-                      child: _buildCurrentStep(),
+                      child: _steps[_currentStep].builder(),
                     ),
                   ),
                 ),
@@ -164,11 +236,11 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   }
 
   Widget _buildStepIndicator() {
-    const labels = ['Personal', 'Bank', 'Employment'];
+    final steps = _steps;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Row(
-        children: List.generate(3, (index) {
+        children: List.generate(steps.length, (index) {
           final isActive = index <= _currentStep;
           final isCurrent = index == _currentStep;
           return Expanded(
@@ -181,8 +253,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                         child: Container(
                           height: 2.h,
                           color: isActive
-                              ? const Color(0xFF3B82F6)
-                              : const Color(0xFF2D2D2D),
+                              ? InvoiceThemeColors.primaryPurple
+                              : InvoiceThemeColors.borderColor,
                         ),
                       ),
                     Container(
@@ -190,8 +262,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                       height: 28.w,
                       decoration: BoxDecoration(
                         color: isActive
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFF2D2D2D),
+                            ? InvoiceThemeColors.primaryPurple
+                            : InvoiceThemeColors.borderColor,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -200,31 +272,31 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                           style: GoogleFonts.inter(
                             color: isActive
                                 ? Colors.white
-                                : const Color(0xFF6B7280),
+                                : InvoiceThemeColors.textGray500,
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                    if (index < 2)
+                    if (index < steps.length - 1)
                       Expanded(
                         child: Container(
                           height: 2.h,
                           color: index < _currentStep
-                              ? const Color(0xFF3B82F6)
-                              : const Color(0xFF2D2D2D),
+                              ? InvoiceThemeColors.primaryPurple
+                              : InvoiceThemeColors.borderColor,
                         ),
                       ),
                   ],
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  labels[index],
+                  steps[index].label,
                   style: GoogleFonts.inter(
                     color: isCurrent
-                        ? const Color(0xFF3B82F6)
-                        : const Color(0xFF6B7280),
+                        ? InvoiceThemeColors.primaryPurpleLight
+                        : InvoiceThemeColors.textGray500,
                     fontSize: 11.sp,
                     fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -237,28 +309,253 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     );
   }
 
-  Widget _buildCurrentStep() {
-    switch (_currentStep) {
-      case 0:
-        return _buildPersonalInfoStep();
-      case 1:
-        return _buildBankDetailsStep();
-      case 2:
-        return _buildEmploymentStep();
-      default:
-        return const SizedBox.shrink();
+  // ---------------------------------------------------------------------------
+  // Step: Payout destination
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPayoutStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('How is this employee paid?'),
+        SizedBox(height: 8.h),
+        Text(
+          'Pay a Lazervault user straight to their wallet, or an external person to their bank account.',
+          style: GoogleFonts.inter(
+            color: InvoiceThemeColors.textGray400,
+            fontSize: 13.sp,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        _buildPayoutOption(
+          type: 'internal',
+          icon: Icons.account_balance_wallet_outlined,
+          title: 'A Lazervault user',
+          subtitle: 'Credit their Lazervault wallet instantly',
+        ),
+        SizedBox(height: 12.h),
+        _buildPayoutOption(
+          type: 'external',
+          icon: Icons.account_balance_outlined,
+          title: 'External bank account',
+          subtitle: 'Send to any Nigerian bank account',
+        ),
+        if (_payoutType == 'internal') ...[
+          SizedBox(height: 20.h),
+          _buildSelectedUserCard(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPayoutOption({
+    required String type,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    final isSelected = _payoutType == type;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _payoutType = type;
+          if (type == 'external') {
+            // Leaving internal mode clears the linked user.
+            _selectedUser = null;
+          }
+        });
+        if (type == 'internal') {
+          _pickLazervaultUser();
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15)
+              : InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: isSelected
+                ? InvoiceThemeColors.primaryPurpleLight
+                : InvoiceThemeColors.borderColor,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(icon,
+                  color: InvoiceThemeColors.primaryPurpleLight, size: 22.sp),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textGray400,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected
+                  ? InvoiceThemeColors.primaryPurpleLight
+                  : InvoiceThemeColors.textGray500,
+              size: 22.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedUserCard() {
+    if (_selectedUser == null) {
+      return GestureDetector(
+        onTap: _pickLazervaultUser,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          decoration: BoxDecoration(
+            color: InvoiceThemeColors.secondaryBackground,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: InvoiceThemeColors.borderColor),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.person_search_outlined,
+                  color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
+              SizedBox(width: 12.w),
+              Text(
+                'Select a Lazervault user',
+                style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.primaryPurpleLight,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
+    final u = _selectedUser!;
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+            color: InvoiceThemeColors.successGreen.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle,
+              color: InvoiceThemeColors.successGreen, size: 22.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  u.displayName.isNotEmpty ? u.displayName : u.name,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (u.username.isNotEmpty || u.phoneNumber.isNotEmpty) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    u.username.isNotEmpty ? '@${u.username}' : u.phoneNumber,
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textGray400,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: _pickLazervaultUser,
+            child: Text(
+              'Change',
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.primaryPurpleLight,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickLazervaultUser() async {
+    final result = await UnifiedUserSearchSheet.show(
+      context,
+      title: 'Select employee',
+      subtitle: 'Search any Lazervault user to pay',
+    );
+    if (result == null) return;
+    // Only real platform users can be credited internally.
+    if (!result.isLazervault || result.userId.isEmpty) {
+      _toast('That contact is not a Lazervault user', isError: true);
+      return;
+    }
+    setState(() {
+      _selectedUser = result;
+      // Prefill the personal fields from the picked user.
+      _nameController.text = result.name.isNotEmpty ? result.name : result.displayName;
+      if (result.email.isNotEmpty) _emailController.text = result.email;
+    });
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1: Personal Info
+  // Step: Personal Info
   // ---------------------------------------------------------------------------
 
   Widget _buildPersonalInfoStep() {
+    final isInternal = _payoutType == 'internal';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Personal Information'),
+        if (isInternal) ...[
+          SizedBox(height: 8.h),
+          Text(
+            'Prefilled from the selected Lazervault user — edit if needed.',
+            style: GoogleFonts.inter(
+              color: InvoiceThemeColors.textGray400,
+              fontSize: 12.sp,
+            ),
+          ),
+        ],
         SizedBox(height: 16.h),
         _buildTextField(
           controller: _nameController,
@@ -275,21 +572,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           hint: 'e.g. adebayo@company.com',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'Email is required';
-            if (!v.contains('@')) return 'Enter a valid email';
-            return null;
-          },
+          validator: (v) => FormValidators.email(v, required: true),
         ),
         SizedBox(height: 14.h),
-        _buildTextField(
-          controller: _phoneController,
+        AppPhoneField(
           label: 'Phone Number',
-          hint: 'e.g. 08012345678',
-          icon: Icons.phone_outlined,
-          keyboardType: TextInputType.phone,
-          validator: (v) =>
-              v == null || v.trim().isEmpty ? 'Phone number is required' : null,
+          isRequired: true,
+          onChanged: (p) => _phone = p,
         ),
         SizedBox(height: 14.h),
         _buildTextField(
@@ -304,59 +593,197 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Step 2: Bank Details
+  // Step: Bank Details (external only) — bank picker + name enquiry
   // ---------------------------------------------------------------------------
 
   Widget _buildBankDetailsStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Bank Details'),
-        SizedBox(height: 8.h),
-        Text(
-          'Employee bank details for salary disbursement',
-          style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
-            fontSize: 13.sp,
+    return BlocListener<AccountVerificationCubit, AccountVerificationState>(
+      listener: (context, state) {
+        if (state is AccountVerificationLoading) {
+          setState(() {
+            _verifying = true;
+            _verifyError = '';
+            _bankAccountName = '';
+          });
+        } else if (state is AccountVerificationSuccess) {
+          setState(() {
+            _verifying = false;
+            _bankAccountName = state.accountName;
+            _verifyError = '';
+          });
+        } else if (state is AccountVerificationFailure) {
+          setState(() {
+            _verifying = false;
+            _bankAccountName = '';
+            _verifyError = state.userMessage;
+          });
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Bank Details'),
+          SizedBox(height: 8.h),
+          Text(
+            'Where this employee is paid. We verify the account name before you can continue.',
+            style: GoogleFonts.inter(
+              color: InvoiceThemeColors.textGray400,
+              fontSize: 13.sp,
+            ),
           ),
-        ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _bankNameController,
-          label: 'Bank Name',
-          hint: 'e.g. First Bank',
-          icon: Icons.account_balance_outlined,
-        ),
-        SizedBox(height: 14.h),
-        _buildTextField(
-          controller: _bankAccountController,
-          label: 'Account Number',
-          hint: 'e.g. 0123456789',
-          icon: Icons.numbers,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ],
-        ),
-        SizedBox(height: 14.h),
-        _buildTextField(
-          controller: _bankCodeController,
-          label: 'Bank Code',
-          hint: 'e.g. 011',
-          icon: Icons.code,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(6),
-          ],
-        ),
-      ],
+          SizedBox(height: 16.h),
+          // Bank picker
+          Text(
+            'Bank',
+            style: GoogleFonts.inter(
+              color: InvoiceThemeColors.textGray400,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          GestureDetector(
+            onTap: _pickBank,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.secondaryBackground,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: InvoiceThemeColors.borderColor),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.account_balance_outlined,
+                      color: InvoiceThemeColors.textGray400, size: 20.sp),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      _bankName.isNotEmpty ? _bankName : 'Select bank',
+                      style: GoogleFonts.inter(
+                        color: _bankName.isNotEmpty
+                            ? Colors.white
+                            : InvoiceThemeColors.textGray500,
+                        fontSize: 15.sp,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.keyboard_arrow_down,
+                      color: InvoiceThemeColors.textGray400, size: 20.sp),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          _buildTextField(
+            controller: _bankAccountController,
+            label: 'Account Number',
+            hint: 'e.g. 0123456789',
+            icon: Icons.numbers,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            onChanged: (_) => _maybeVerify(),
+          ),
+          SizedBox(height: 12.h),
+          _buildVerificationStatus(),
+        ],
+      ),
     );
   }
 
+  Widget _buildVerificationStatus() {
+    if (_verifying) {
+      return Row(
+        children: [
+          LazerVaultLoader(size: 18),
+          SizedBox(width: 10.w),
+          Text(
+            'Verifying account…',
+            style: GoogleFonts.inter(
+              color: InvoiceThemeColors.textGray400,
+              fontSize: 13.sp,
+            ),
+          ),
+        ],
+      );
+    }
+    if (_bankAccountName.isNotEmpty) {
+      return Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+              color: InvoiceThemeColors.successGreen.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.verified_outlined,
+                color: InvoiceThemeColors.successGreen, size: 20.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                _bankAccountName,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_verifyError.isNotEmpty) {
+      return Text(
+        _verifyError,
+        style: GoogleFonts.inter(
+          color: InvoiceThemeColors.errorRed,
+          fontSize: 13.sp,
+        ),
+      );
+    }
+    return Text(
+      'Pick a bank and enter a 10-digit account number to verify.',
+      style: GoogleFonts.inter(
+        color: InvoiceThemeColors.textGray500,
+        fontSize: 12.sp,
+      ),
+    );
+  }
+
+  Future<void> _pickBank() async {
+    final bank = await BankPickerSheet.show(
+      context,
+      country: 'NG',
+      selectedBankCode: _bankCode.isNotEmpty ? _bankCode : null,
+    );
+    if (bank == null) return;
+    setState(() {
+      _bankName = bank['name'] ?? '';
+      _bankCode = bank['code'] ?? '';
+      _bankAccountName = '';
+      _verifyError = '';
+    });
+    _maybeVerify();
+  }
+
+  /// Trigger name enquiry once we have a bank + a full 10-digit account number.
+  void _maybeVerify() {
+    final acct = _bankAccountController.text.trim();
+    if (_bankCode.isEmpty || acct.length != 10) return;
+    context.read<AccountVerificationCubit>().verifyAccount(
+          bankCode: _bankCode,
+          accountNumber: acct,
+          bankName: _bankName,
+        );
+  }
+
   // ---------------------------------------------------------------------------
-  // Step 3: Employment
+  // Step: Employment
   // ---------------------------------------------------------------------------
 
   Widget _buildEmploymentStep() {
@@ -370,7 +797,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         Text(
           'Employment Type',
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -399,13 +826,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   padding: EdgeInsets.symmetric(vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
-                        : const Color(0xFF1F1F1F),
+                        ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                        : InvoiceThemeColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
-                          : const Color(0xFF2D2D2D),
+                          ? InvoiceThemeColors.primaryPurpleLight
+                          : InvoiceThemeColors.borderColor,
                     ),
                   ),
                   child: Center(
@@ -413,8 +840,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                       label,
                       style: GoogleFonts.inter(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFF9CA3AF),
+                            ? InvoiceThemeColors.primaryPurpleLight
+                            : InvoiceThemeColors.textGray400,
                         fontSize: 13.sp,
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -451,7 +878,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         Text(
           'Pay Frequency',
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -480,13 +907,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   padding: EdgeInsets.symmetric(vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
-                        : const Color(0xFF1F1F1F),
+                        ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                        : InvoiceThemeColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
-                          : const Color(0xFF2D2D2D),
+                          ? InvoiceThemeColors.primaryPurpleLight
+                          : InvoiceThemeColors.borderColor,
                     ),
                   ),
                   child: Center(
@@ -494,8 +921,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                       label,
                       style: GoogleFonts.inter(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFF9CA3AF),
+                            ? InvoiceThemeColors.primaryPurpleLight
+                            : InvoiceThemeColors.textGray400,
                         fontSize: 13.sp,
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -528,7 +955,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         Text(
           'Start Date',
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -539,15 +966,15 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              color: InvoiceThemeColors.secondaryBackground,
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
+              border: Border.all(color: InvoiceThemeColors.borderColor),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.calendar_today_outlined,
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   size: 18.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -558,7 +985,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   style: GoogleFonts.inter(
                     color: _startDate != null
                         ? Colors.white
-                        : const Color(0xFF6B7280),
+                        : InvoiceThemeColors.textGray500,
                     fontSize: 15.sp,
                   ),
                 ),
@@ -580,8 +1007,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF3B82F6),
-              surface: Color(0xFF1F1F1F),
+              primary: InvoiceThemeColors.primaryPurple,
+              surface: InvoiceThemeColors.secondaryBackground,
             ),
           ),
           child: child!,
@@ -616,6 +1043,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     TextInputType keyboardType = TextInputType.text,
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -623,7 +1051,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -634,6 +1062,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           validator: validator,
+          onChanged: onChanged,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 15.sp,
@@ -641,19 +1071,19 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              color: const Color(0xFF6B7280),
+              color: InvoiceThemeColors.textGray500,
               fontSize: 15.sp,
             ),
-            prefixIcon: Icon(icon, color: const Color(0xFF9CA3AF), size: 20.sp),
+            prefixIcon: Icon(icon, color: InvoiceThemeColors.textGray400, size: 20.sp),
             filled: true,
-            fillColor: const Color(0xFF1F1F1F),
+            fillColor: InvoiceThemeColors.secondaryBackground,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide.none,
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+              borderSide: const BorderSide(color: InvoiceThemeColors.errorRed),
             ),
             contentPadding:
                 EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -667,9 +1097,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: const BoxDecoration(
-        color: Color(0xFF0A0A0A),
+        color: InvoiceThemeColors.primaryBackground,
         border: Border(
-          top: BorderSide(color: Color(0xFF2D2D2D)),
+          top: BorderSide(color: InvoiceThemeColors.borderColor),
         ),
       ),
       child: SizedBox(
@@ -678,9 +1108,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         child: ElevatedButton(
           onPressed: isLoading ? null : _nextStep,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: InvoiceThemeColors.primaryPurple,
             disabledBackgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),
             ),
@@ -689,7 +1119,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           child: isLoading
               ? LazerVaultLoader(size: 22)
               : Text(
-                  _currentStep < 2 ? 'Continue' : 'Add Employee',
+                  _isLastStep ? 'Add Employee' : 'Continue',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16.sp,

@@ -37,7 +37,7 @@ class AccountPreviewCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF6366F1),
+            Color(0xFF4E03D0),
             Color(0xFF4F46E5),
           ],
         ),

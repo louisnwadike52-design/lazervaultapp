@@ -120,6 +120,11 @@ class BanksData {
   static String displayName(String? bankName, String? code) {
     final name = (bankName ?? '').trim();
     final c = (code ?? '').trim();
+    // Canonicalise the internal brand: older records/sentinels store the bank
+    // as "LazerVault" (PascalCase). The user-facing brand is "Lazervault" — fix
+    // the casing here so every receipt/history row shows it correctly, while
+    // the raw sentinel value keeps driving internal/external routing untouched.
+    if (name.toLowerCase() == 'lazervault') return 'Lazervault';
     final looksLikeCode = name.isEmpty || RegExp(r'^\d{2,8}$').hasMatch(name);
     if (!looksLikeCode) return name;
     final lookup = c.isNotEmpty ? c : name;

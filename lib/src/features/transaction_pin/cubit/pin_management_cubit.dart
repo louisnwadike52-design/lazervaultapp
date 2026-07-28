@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 // States
@@ -79,11 +82,28 @@ class PinManagementCubit extends Cubit<PinManagementState> {
 
   PinManagementCubit(this._pinService) : super(PinManagementInitial());
 
+  /// Converts any raw error (gRPC transport noise, "expected 200, got 502",
+  /// status codes) into a clean, user-facing message. Never leak status codes.
+  String _friendly(Object? e) {
+    if (e is TimeoutException) {
+      return 'The request timed out. Check your connection and try again.';
+    }
+    return sanitizeUserFacingError(e.toString());
+  }
+
+  /// Bound for every reset-flow RPC. Without a deadline a stalled call would
+  /// leave the screen on [PinManagementLoading] forever — and because the reset
+  /// screen blocks back-navigation while loading (PopScope), that would trap the
+  /// user with no way out. On timeout the catch emits [PinManagementError],
+  /// which clears the loading state and re-enables back.
+  static const Duration _rpcTimeout = Duration(seconds: 20);
+
   Future<void> initialize() async {
     emit(PinManagementLoading());
     try {
-      final hasPin = await _pinService.checkUserHasPin();
-      final channels = await _pinService.getPinOTPChannels();
+      final hasPin = await _pinService.checkUserHasPin().timeout(_rpcTimeout);
+      final channels =
+          await _pinService.getPinOTPChannels().timeout(_rpcTimeout);
       String recommended = '';
       for (final ch in channels) {
         if (ch.isVerified && ch.isAvailable) {
@@ -97,7 +117,7 @@ class PinManagementCubit extends Cubit<PinManagementState> {
         recommendedChannel: recommended,
       ));
     } catch (e) {
-      emit(PinManagementError(message: e.toString()));
+      emit(PinManagementError(message: _friendly(e)));
     }
   }
 
@@ -107,10 +127,12 @@ class PinManagementCubit extends Cubit<PinManagementState> {
   }) async {
     emit(PinManagementLoading());
     try {
-      final result = await _pinService.initiatePinOTP(
-        operationType: operationType,
-        channel: channel,
-      );
+      final result = await _pinService
+          .initiatePinOTP(
+            operationType: operationType,
+            channel: channel,
+          )
+          .timeout(_rpcTimeout);
       if (result.success) {
         emit(PinManagementOTPSent(
           channel: result.channel,
@@ -120,10 +142,10 @@ class PinManagementCubit extends Cubit<PinManagementState> {
           operationType: operationType,
         ));
       } else {
-        emit(PinManagementError(message: result.message));
+        emit(PinManagementError(message: _friendly(result.message)));
       }
     } catch (e) {
-      emit(PinManagementError(message: e.toString()));
+      emit(PinManagementError(message: _friendly(e)));
     }
   }
 
@@ -136,13 +158,15 @@ class PinManagementCubit extends Cubit<PinManagementState> {
   }) async {
     emit(PinManagementLoading());
     try {
-      final result = await _pinService.verifyPinOTP(
-        otpCode: otpCode,
-        operationType: operationType,
-        currentPin: currentPin,
-        newPin: newPin,
-        confirmNewPin: confirmNewPin,
-      );
+      final result = await _pinService
+          .verifyPinOTP(
+            otpCode: otpCode,
+            operationType: operationType,
+            currentPin: currentPin,
+            newPin: newPin,
+            confirmNewPin: confirmNewPin,
+          )
+          .timeout(_rpcTimeout);
       if (result.success) {
         emit(PinManagementSuccess(
           message: result.message,
@@ -150,12 +174,12 @@ class PinManagementCubit extends Cubit<PinManagementState> {
         ));
       } else {
         emit(PinManagementError(
-          message: result.message,
+          message: _friendly(result.message),
           remainingAttempts: result.remainingAttempts,
         ));
       }
     } catch (e) {
-      emit(PinManagementError(message: e.toString()));
+      emit(PinManagementError(message: _friendly(e)));
     }
   }
 
@@ -166,11 +190,13 @@ class PinManagementCubit extends Cubit<PinManagementState> {
   }) async {
     emit(PinManagementLoading());
     try {
-      final result = await _pinService.completeForgotPin(
-        otpCode: otpCode,
-        newPin: newPin,
-        confirmNewPin: confirmNewPin,
-      );
+      final result = await _pinService
+          .completeForgotPin(
+            otpCode: otpCode,
+            newPin: newPin,
+            confirmNewPin: confirmNewPin,
+          )
+          .timeout(_rpcTimeout);
       if (result.success) {
         emit(PinManagementSuccess(
           message: result.message,
@@ -178,12 +204,12 @@ class PinManagementCubit extends Cubit<PinManagementState> {
         ));
       } else {
         emit(PinManagementError(
-          message: result.message,
+          message: _friendly(result.message),
           remainingAttempts: result.remainingAttempts,
         ));
       }
     } catch (e) {
-      emit(PinManagementError(message: e.toString()));
+      emit(PinManagementError(message: _friendly(e)));
     }
   }
 }

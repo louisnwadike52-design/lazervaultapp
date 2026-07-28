@@ -415,7 +415,7 @@ Future<String?> _uploadStorageProbe(String userId) async {
     if (putResp.statusCode != 204 && putResp.statusCode != 200) return null;
 
     final getResp = await http.get(Uri.parse(publicURL));
-    // Length check intentionally relaxed: when ngrok-free shows the
+    // Length check intentionally relaxed: if a tunnel/proxy returns an
     // interstitial-warning HTML for the first request from a given
     // client IP, body bytes won't match the 67-byte PNG even though
     // the upload itself succeeded. The PUT 200 above is the
@@ -1067,7 +1067,7 @@ void main() {
       // Upload a single probe image to storage-service for all
       // products in this loop. MyCover's downstream insurer will
       // fetch this URL when underwriting (so it must be reachable
-      // from outside our localhost — that's what the ngrok-style
+      // from outside our localhost — that's what the tunnelled
       // STORAGE_BASE_URL is for in dev). Re-use one URL across
       // products to keep the test cheap.
       String? sharedImageURL;
@@ -1304,8 +1304,8 @@ void main() {
 
         // Image url shared across products in this category.
         // For exhaustive tests we ALWAYS use a publicly-reachable
-        // placeholder URL. The storage-service tunneled via ngrok-free
-        // shows MyCover an interstitial warning page on first request
+        // placeholder URL. A tunnelled storage-service may show MyCover
+        // an interstitial warning page on first request
         // from a new IP, so MyCover's "URL validation failed: fetch
         // failed" reliably trips on the first product. Production
         // doesn't have this problem — STORAGE_SERVICE_URL points at
@@ -1462,7 +1462,7 @@ void main() {
             continue;
           }
           // Always run _fillImageFields. Even when the per-category
-          // probe upload failed (ngrok interstitial, transient
+          // probe upload failed (tunnel interstitial, transient
           // network), the function ALSO swaps the
           // __pending_upload__ placeholder inside array fields
           // (item_details / items), and the backend's

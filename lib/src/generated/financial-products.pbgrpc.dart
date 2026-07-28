@@ -1,3194 +1,3444 @@
-///
-//  Generated code. Do not modify.
-//  source: financial-products.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from financial-products.proto.
+
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:async' as $async;
-
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'financial-products.pb.dart' as $19;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'financial-products.pb.dart' as $0;
+
 export 'financial-products.pb.dart';
 
+/// Financial Products Service - Group accounts, insurance, and crowdfunding
+@$pb.GrpcServiceName('financialproducts.FinancialProductsService')
 class FinancialProductsServiceClient extends $grpc.Client {
-  static final _$createGroupAccount = $grpc.ClientMethod<
-          $19.CreateGroupAccountRequest, $19.CreateGroupAccountResponse>(
-      '/financialproducts.FinancialProductsService/CreateGroupAccount',
-      ($19.CreateGroupAccountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CreateGroupAccountResponse.fromBuffer(value));
-  static final _$getGroupAccounts = $grpc.ClientMethod<
-          $19.GetGroupAccountsRequest, $19.GetGroupAccountsResponse>(
-      '/financialproducts.FinancialProductsService/GetGroupAccounts',
-      ($19.GetGroupAccountsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetGroupAccountsResponse.fromBuffer(value));
-  static final _$getGroupAccount = $grpc.ClientMethod<
-          $19.GetGroupAccountRequest, $19.GetGroupAccountResponse>(
-      '/financialproducts.FinancialProductsService/GetGroupAccount',
-      ($19.GetGroupAccountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetGroupAccountResponse.fromBuffer(value));
-  static final _$addGroupMember =
-      $grpc.ClientMethod<$19.AddGroupMemberRequest, $19.AddGroupMemberResponse>(
-          '/financialproducts.FinancialProductsService/AddGroupMember',
-          ($19.AddGroupMemberRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $19.AddGroupMemberResponse.fromBuffer(value));
-  static final _$removeGroupMember = $grpc.ClientMethod<
-          $19.RemoveGroupMemberRequest, $19.RemoveGroupMemberResponse>(
-      '/financialproducts.FinancialProductsService/RemoveGroupMember',
-      ($19.RemoveGroupMemberRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.RemoveGroupMemberResponse.fromBuffer(value));
-  static final _$contributeToGroup = $grpc.ClientMethod<
-          $19.ContributeToGroupRequest, $19.ContributeToGroupResponse>(
-      '/financialproducts.FinancialProductsService/ContributeToGroup',
-      ($19.ContributeToGroupRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ContributeToGroupResponse.fromBuffer(value));
-  static final _$withdrawFromGroup = $grpc.ClientMethod<
-          $19.WithdrawFromGroupRequest, $19.WithdrawFromGroupResponse>(
-      '/financialproducts.FinancialProductsService/WithdrawFromGroup',
-      ($19.WithdrawFromGroupRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.WithdrawFromGroupResponse.fromBuffer(value));
-  static final _$closeGroupAccount = $grpc.ClientMethod<
-          $19.CloseGroupAccountRequest, $19.CloseGroupAccountResponse>(
-      '/financialproducts.FinancialProductsService/CloseGroupAccount',
-      ($19.CloseGroupAccountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CloseGroupAccountResponse.fromBuffer(value));
-  static final _$buyInsurance =
-      $grpc.ClientMethod<$19.BuyInsuranceRequest, $19.BuyInsuranceResponse>(
-          '/financialproducts.FinancialProductsService/BuyInsurance',
-          ($19.BuyInsuranceRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $19.BuyInsuranceResponse.fromBuffer(value));
-  static final _$getInsurancePolicies = $grpc.ClientMethod<
-          $19.GetInsurancePoliciesRequest, $19.GetInsurancePoliciesResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePolicies',
-      ($19.GetInsurancePoliciesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePoliciesResponse.fromBuffer(value));
-  static final _$getInsurancePolicy = $grpc.ClientMethod<
-          $19.GetInsurancePolicyRequest, $19.GetInsurancePolicyResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePolicy',
-      ($19.GetInsurancePolicyRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePolicyResponse.fromBuffer(value));
-  static final _$makeInsuranceClaim = $grpc.ClientMethod<
-          $19.MakeInsuranceClaimRequest, $19.MakeInsuranceClaimResponse>(
-      '/financialproducts.FinancialProductsService/MakeInsuranceClaim',
-      ($19.MakeInsuranceClaimRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.MakeInsuranceClaimResponse.fromBuffer(value));
-  static final _$cancelInsurance = $grpc.ClientMethod<
-          $19.CancelInsuranceRequest, $19.CancelInsuranceResponse>(
-      '/financialproducts.FinancialProductsService/CancelInsurance',
-      ($19.CancelInsuranceRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CancelInsuranceResponse.fromBuffer(value));
-  static final _$getInsurancePlans = $grpc.ClientMethod<
-          $19.GetInsurancePlansRequest, $19.GetInsurancePlansResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePlans',
-      ($19.GetInsurancePlansRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePlansResponse.fromBuffer(value));
-  static final _$getInsuranceMarketplaceProducts = $grpc.ClientMethod<
-          $19.GetInsuranceMarketplaceProductsRequest,
-          $19.GetInsuranceMarketplaceProductsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceMarketplaceProducts',
-      ($19.GetInsuranceMarketplaceProductsRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceMarketplaceProductsResponse.fromBuffer(value));
-  static final _$getInsuranceMarketplaceCategories = $grpc.ClientMethod<
-          $19.GetInsuranceMarketplaceCategoriesRequest,
-          $19.GetInsuranceMarketplaceCategoriesResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceMarketplaceCategories',
-      ($19.GetInsuranceMarketplaceCategoriesRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceMarketplaceCategoriesResponse.fromBuffer(value));
-  static final _$getInsuranceQuote = $grpc.ClientMethod<
-          $19.GetInsuranceQuoteRequest, $19.GetInsuranceQuoteResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceQuote',
-      ($19.GetInsuranceQuoteRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceQuoteResponse.fromBuffer(value));
-  static final _$purchaseMarketplaceInsurance = $grpc.ClientMethod<
-          $19.PurchaseMarketplaceInsuranceRequest,
-          $19.PurchaseMarketplaceInsuranceResponse>(
-      '/financialproducts.FinancialProductsService/PurchaseMarketplaceInsurance',
-      ($19.PurchaseMarketplaceInsuranceRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.PurchaseMarketplaceInsuranceResponse.fromBuffer(value));
-  static final _$getInsurancePurchaseStatus = $grpc.ClientMethod<
-          $19.GetInsurancePurchaseStatusRequest,
-          $19.GetInsurancePurchaseStatusResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePurchaseStatus',
-      ($19.GetInsurancePurchaseStatusRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePurchaseStatusResponse.fromBuffer(value));
-  static final _$uploadInsuranceDocument = $grpc.ClientMethod<
-          $19.UploadInsuranceDocumentRequest,
-          $19.UploadInsuranceDocumentResponse>(
-      '/financialproducts.FinancialProductsService/UploadInsuranceDocument',
-      ($19.UploadInsuranceDocumentRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UploadInsuranceDocumentResponse.fromBuffer(value));
-  static final _$getInsuranceDocumentUploadURL = $grpc.ClientMethod<
-          $19.GetInsuranceDocumentUploadURLRequest,
-          $19.GetInsuranceDocumentUploadURLResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceDocumentUploadURL',
-      ($19.GetInsuranceDocumentUploadURLRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceDocumentUploadURLResponse.fromBuffer(value));
-  static final _$getInsuranceAuxiliaryData = $grpc.ClientMethod<
-          $19.GetInsuranceAuxiliaryDataRequest,
-          $19.GetInsuranceAuxiliaryDataResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceAuxiliaryData',
-      ($19.GetInsuranceAuxiliaryDataRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceAuxiliaryDataResponse.fromBuffer(value));
-  static final _$getInsurancePayments = $grpc.ClientMethod<
-          $19.GetInsurancePaymentsRequest, $19.GetInsurancePaymentsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePayments',
-      ($19.GetInsurancePaymentsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePaymentsResponse.fromBuffer(value));
-  static final _$getUserInsurancePayments = $grpc.ClientMethod<
-          $19.GetUserInsurancePaymentsRequest,
-          $19.GetUserInsurancePaymentsResponse>(
-      '/financialproducts.FinancialProductsService/GetUserInsurancePayments',
-      ($19.GetUserInsurancePaymentsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetUserInsurancePaymentsResponse.fromBuffer(value));
-  static final _$createInsurancePayment = $grpc.ClientMethod<
-          $19.CreateInsurancePaymentRequest,
-          $19.CreateInsurancePaymentResponse>(
-      '/financialproducts.FinancialProductsService/CreateInsurancePayment',
-      ($19.CreateInsurancePaymentRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CreateInsurancePaymentResponse.fromBuffer(value));
-  static final _$processInsurancePayment = $grpc.ClientMethod<
-          $19.ProcessInsurancePaymentRequest,
-          $19.ProcessInsurancePaymentResponse>(
-      '/financialproducts.FinancialProductsService/ProcessInsurancePayment',
-      ($19.ProcessInsurancePaymentRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ProcessInsurancePaymentResponse.fromBuffer(value));
-  static final _$getInsurancePaymentById = $grpc.ClientMethod<
-          $19.GetInsurancePaymentByIdRequest,
-          $19.GetInsurancePaymentByIdResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePaymentById',
-      ($19.GetInsurancePaymentByIdRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePaymentByIdResponse.fromBuffer(value));
-  static final _$getOverdueInsurancePayments = $grpc.ClientMethod<
-          $19.GetOverdueInsurancePaymentsRequest,
-          $19.GetOverdueInsurancePaymentsResponse>(
-      '/financialproducts.FinancialProductsService/GetOverdueInsurancePayments',
-      ($19.GetOverdueInsurancePaymentsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetOverdueInsurancePaymentsResponse.fromBuffer(value));
-  static final _$getInsuranceClaims = $grpc.ClientMethod<
-          $19.GetInsuranceClaimsRequest, $19.GetInsuranceClaimsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceClaims',
-      ($19.GetInsuranceClaimsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceClaimsResponse.fromBuffer(value));
-  static final _$getUserInsuranceClaims = $grpc.ClientMethod<
-          $19.GetUserInsuranceClaimsRequest,
-          $19.GetUserInsuranceClaimsResponse>(
-      '/financialproducts.FinancialProductsService/GetUserInsuranceClaims',
-      ($19.GetUserInsuranceClaimsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetUserInsuranceClaimsResponse.fromBuffer(value));
-  static final _$updateInsuranceClaim = $grpc.ClientMethod<
-          $19.UpdateInsuranceClaimRequest, $19.UpdateInsuranceClaimResponse>(
-      '/financialproducts.FinancialProductsService/UpdateInsuranceClaim',
-      ($19.UpdateInsuranceClaimRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateInsuranceClaimResponse.fromBuffer(value));
-  static final _$getInsuranceClaimById = $grpc.ClientMethod<
-          $19.GetInsuranceClaimByIdRequest, $19.GetInsuranceClaimByIdResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceClaimById',
-      ($19.GetInsuranceClaimByIdRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceClaimByIdResponse.fromBuffer(value));
-  static final _$updateInsurancePolicy = $grpc.ClientMethod<
-          $19.UpdateInsurancePolicyRequest, $19.UpdateInsurancePolicyResponse>(
-      '/financialproducts.FinancialProductsService/UpdateInsurancePolicy',
-      ($19.UpdateInsurancePolicyRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateInsurancePolicyResponse.fromBuffer(value));
-  static final _$generateInsuranceReceipt = $grpc.ClientMethod<
-          $19.GenerateInsuranceReceiptRequest,
-          $19.GenerateInsuranceReceiptResponse>(
-      '/financialproducts.FinancialProductsService/GenerateInsuranceReceipt',
-      ($19.GenerateInsuranceReceiptRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GenerateInsuranceReceiptResponse.fromBuffer(value));
-  static final _$getUserInsuranceReceipts = $grpc.ClientMethod<
-          $19.GetUserInsuranceReceiptsRequest,
-          $19.GetUserInsuranceReceiptsResponse>(
-      '/financialproducts.FinancialProductsService/GetUserInsuranceReceipts',
-      ($19.GetUserInsuranceReceiptsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetUserInsuranceReceiptsResponse.fromBuffer(value));
-  static final _$getInsuranceStatistics = $grpc.ClientMethod<
-          $19.GetInsuranceStatisticsRequest,
-          $19.GetInsuranceStatisticsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceStatistics',
-      ($19.GetInsuranceStatisticsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceStatisticsResponse.fromBuffer(value));
-  static final _$getInsurancePaymentStatistics = $grpc.ClientMethod<
-          $19.GetInsurancePaymentStatisticsRequest,
-          $19.GetInsurancePaymentStatisticsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePaymentStatistics',
-      ($19.GetInsurancePaymentStatisticsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePaymentStatisticsResponse.fromBuffer(value));
-  static final _$getMyCoverCustomers = $grpc.ClientMethod<
-          $19.GetMyCoverCustomersRequest, $19.GetMyCoverCustomersResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverCustomers',
-      ($19.GetMyCoverCustomersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverCustomersResponse.fromBuffer(value));
-  static final _$getMyCoverCustomerById = $grpc.ClientMethod<
-          $19.GetMyCoverCustomerByIdRequest,
-          $19.GetMyCoverCustomerByIdResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverCustomerById',
-      ($19.GetMyCoverCustomerByIdRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverCustomerByIdResponse.fromBuffer(value));
-  static final _$getMyCoverCustomerPolicies = $grpc.ClientMethod<
-          $19.GetMyCoverCustomerPoliciesRequest,
-          $19.GetMyCoverCustomerPoliciesResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverCustomerPolicies',
-      ($19.GetMyCoverCustomerPoliciesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverCustomerPoliciesResponse.fromBuffer(value));
-  static final _$getMyCoverCustomerPurchases = $grpc.ClientMethod<
-          $19.GetMyCoverCustomerPurchasesRequest,
-          $19.GetMyCoverCustomerPurchasesResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverCustomerPurchases',
-      ($19.GetMyCoverCustomerPurchasesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverCustomerPurchasesResponse.fromBuffer(value));
-  static final _$getMyCoverPurchases = $grpc.ClientMethod<
-          $19.GetMyCoverPurchasesRequest, $19.GetMyCoverPurchasesResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverPurchases',
-      ($19.GetMyCoverPurchasesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverPurchasesResponse.fromBuffer(value));
-  static final _$getMyCoverPurchaseById = $grpc.ClientMethod<
-          $19.GetMyCoverPurchaseByIdRequest,
-          $19.GetMyCoverPurchaseByIdResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverPurchaseById',
-      ($19.GetMyCoverPurchaseByIdRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverPurchaseByIdResponse.fromBuffer(value));
-  static final _$getMyCoverClaims = $grpc.ClientMethod<
-          $19.GetMyCoverClaimsRequest, $19.GetMyCoverClaimsResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverClaims',
-      ($19.GetMyCoverClaimsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverClaimsResponse.fromBuffer(value));
-  static final _$getMyCoverClaimById = $grpc.ClientMethod<
-          $19.GetMyCoverClaimByIdRequest, $19.GetMyCoverClaimByIdResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverClaimById',
-      ($19.GetMyCoverClaimByIdRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverClaimByIdResponse.fromBuffer(value));
-  static final _$fileCreditLifeClaim = $grpc.ClientMethod<
-          $19.FileCreditLifeClaimRequest, $19.FileCreditLifeClaimResponse>(
-      '/financialproducts.FinancialProductsService/FileCreditLifeClaim',
-      ($19.FileCreditLifeClaimRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.FileCreditLifeClaimResponse.fromBuffer(value));
-  static final _$getInsuranceStates = $grpc.ClientMethod<
-          $19.GetInsuranceStatesRequest, $19.GetInsuranceStatesResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceStates',
-      ($19.GetInsuranceStatesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceStatesResponse.fromBuffer(value));
-  static final _$getInsuranceVehicleMakes = $grpc.ClientMethod<
-          $19.GetInsuranceVehicleMakesRequest,
-          $19.GetInsuranceVehicleMakesResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceVehicleMakes',
-      ($19.GetInsuranceVehicleMakesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceVehicleMakesResponse.fromBuffer(value));
-  static final _$getMyCoverNotificationPreferences = $grpc.ClientMethod<
-          $19.GetMyCoverNotificationPreferencesRequest,
-          $19.GetMyCoverNotificationPreferencesResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverNotificationPreferences',
-      ($19.GetMyCoverNotificationPreferencesRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverNotificationPreferencesResponse.fromBuffer(value));
-  static final _$updateMyCoverNotificationPreferences = $grpc.ClientMethod<
-          $19.UpdateMyCoverNotificationPreferencesRequest,
-          $19.UpdateMyCoverNotificationPreferencesResponse>(
-      '/financialproducts.FinancialProductsService/UpdateMyCoverNotificationPreferences',
-      ($19.UpdateMyCoverNotificationPreferencesRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateMyCoverNotificationPreferencesResponse.fromBuffer(value));
-  static final _$getMyCoverWalletBalance = $grpc.ClientMethod<
-          $19.GetMyCoverWalletBalanceRequest,
-          $19.GetMyCoverWalletBalanceResponse>(
-      '/financialproducts.FinancialProductsService/GetMyCoverWalletBalance',
-      ($19.GetMyCoverWalletBalanceRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetMyCoverWalletBalanceResponse.fromBuffer(value));
-  static final _$requestInsuranceRefund = $grpc.ClientMethod<
-          $19.RequestInsuranceRefundRequest,
-          $19.RequestInsuranceRefundResponse>(
-      '/financialproducts.FinancialProductsService/RequestInsuranceRefund',
-      ($19.RequestInsuranceRefundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.RequestInsuranceRefundResponse.fromBuffer(value));
-  static final _$getInsuranceRefundStatus = $grpc.ClientMethod<
-          $19.GetInsuranceRefundStatusRequest,
-          $19.GetInsuranceRefundStatusResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceRefundStatus',
-      ($19.GetInsuranceRefundStatusRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceRefundStatusResponse.fromBuffer(value));
-  static final _$getInsuranceReconciliationOverview = $grpc.ClientMethod<
-          $19.GetInsuranceReconciliationOverviewRequest,
-          $19.GetInsuranceReconciliationOverviewResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceReconciliationOverview',
-      ($19.GetInsuranceReconciliationOverviewRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceReconciliationOverviewResponse.fromBuffer(value));
-  static final _$getOrphanedInsuranceTransactions = $grpc.ClientMethod<
-          $19.GetOrphanedInsuranceTransactionsRequest,
-          $19.GetOrphanedInsuranceTransactionsResponse>(
-      '/financialproducts.FinancialProductsService/GetOrphanedInsuranceTransactions',
-      ($19.GetOrphanedInsuranceTransactionsRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetOrphanedInsuranceTransactionsResponse.fromBuffer(value));
-  static final _$manualReconcilePurchase = $grpc.ClientMethod<
-          $19.ManualReconcilePurchaseRequest,
-          $19.ManualReconcilePurchaseResponse>(
-      '/financialproducts.FinancialProductsService/ManualReconcilePurchase',
-      ($19.ManualReconcilePurchaseRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ManualReconcilePurchaseResponse.fromBuffer(value));
-  static final _$adminTriggerRefund = $grpc.ClientMethod<
-          $19.AdminTriggerRefundRequest, $19.AdminTriggerRefundResponse>(
-      '/financialproducts.FinancialProductsService/AdminTriggerRefund',
-      ($19.AdminTriggerRefundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.AdminTriggerRefundResponse.fromBuffer(value));
-  static final _$getInsuranceWebhookEvents = $grpc.ClientMethod<
-          $19.GetInsuranceWebhookEventsRequest,
-          $19.GetInsuranceWebhookEventsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsuranceWebhookEvents',
-      ($19.GetInsuranceWebhookEventsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsuranceWebhookEventsResponse.fromBuffer(value));
-  static final _$retryFailedWebhookEvent = $grpc.ClientMethod<
-          $19.RetryFailedWebhookEventRequest,
-          $19.RetryFailedWebhookEventResponse>(
-      '/financialproducts.FinancialProductsService/RetryFailedWebhookEvent',
-      ($19.RetryFailedWebhookEventRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.RetryFailedWebhookEventResponse.fromBuffer(value));
-  static final _$getFailedInsuranceTransactions = $grpc.ClientMethod<
-          $19.GetFailedInsuranceTransactionsRequest,
-          $19.GetFailedInsuranceTransactionsResponse>(
-      '/financialproducts.FinancialProductsService/GetFailedInsuranceTransactions',
-      ($19.GetFailedInsuranceTransactionsRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetFailedInsuranceTransactionsResponse.fromBuffer(value));
-  static final _$updateProductMargin = $grpc.ClientMethod<
-          $19.UpdateProductMarginRequest, $19.UpdateProductMarginResponse>(
-      '/financialproducts.FinancialProductsService/UpdateProductMargin',
-      ($19.UpdateProductMarginRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateProductMarginResponse.fromBuffer(value));
-  static final _$getInsurancePlatformWallets = $grpc.ClientMethod<
-          $19.GetInsurancePlatformWalletsRequest,
-          $19.GetInsurancePlatformWalletsResponse>(
-      '/financialproducts.FinancialProductsService/GetInsurancePlatformWallets',
-      ($19.GetInsurancePlatformWalletsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetInsurancePlatformWalletsResponse.fromBuffer(value));
-  static final _$createCrowdfund = $grpc.ClientMethod<
-          $19.CreateCrowdfundRequest, $19.CreateCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/CreateCrowdfund',
-      ($19.CreateCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CreateCrowdfundResponse.fromBuffer(value));
-  static final _$getCrowdfunds =
-      $grpc.ClientMethod<$19.GetCrowdfundsRequest, $19.GetCrowdfundsResponse>(
-          '/financialproducts.FinancialProductsService/GetCrowdfunds',
-          ($19.GetCrowdfundsRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $19.GetCrowdfundsResponse.fromBuffer(value));
-  static final _$getCrowdfund =
-      $grpc.ClientMethod<$19.GetCrowdfundRequest, $19.GetCrowdfundResponse>(
-          '/financialproducts.FinancialProductsService/GetCrowdfund',
-          ($19.GetCrowdfundRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $19.GetCrowdfundResponse.fromBuffer(value));
-  static final _$contributeToCrowdfund = $grpc.ClientMethod<
-          $19.ContributeToCrowdfundRequest, $19.ContributeToCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/ContributeToCrowdfund',
-      ($19.ContributeToCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ContributeToCrowdfundResponse.fromBuffer(value));
-  static final _$withdrawFromCrowdfund = $grpc.ClientMethod<
-          $19.WithdrawFromCrowdfundRequest, $19.WithdrawFromCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/WithdrawFromCrowdfund',
-      ($19.WithdrawFromCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.WithdrawFromCrowdfundResponse.fromBuffer(value));
-  static final _$getCrowdfundWithdrawalFeeQuote = $grpc.ClientMethod<
-          $19.GetCrowdfundWithdrawalFeeQuoteRequest,
-          $19.GetCrowdfundWithdrawalFeeQuoteResponse>(
-      '/financialproducts.FinancialProductsService/GetCrowdfundWithdrawalFeeQuote',
-      ($19.GetCrowdfundWithdrawalFeeQuoteRequest value) =>
-          value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetCrowdfundWithdrawalFeeQuoteResponse.fromBuffer(value));
-  static final _$listCrowdfundCustomCategories = $grpc.ClientMethod<
-          $19.ListCrowdfundCustomCategoriesRequest,
-          $19.ListCrowdfundCustomCategoriesResponse>(
-      '/financialproducts.FinancialProductsService/ListCrowdfundCustomCategories',
-      ($19.ListCrowdfundCustomCategoriesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ListCrowdfundCustomCategoriesResponse.fromBuffer(value));
-  static final _$addCrowdfundCustomCategory = $grpc.ClientMethod<
-          $19.AddCrowdfundCustomCategoryRequest,
-          $19.AddCrowdfundCustomCategoryResponse>(
-      '/financialproducts.FinancialProductsService/AddCrowdfundCustomCategory',
-      ($19.AddCrowdfundCustomCategoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.AddCrowdfundCustomCategoryResponse.fromBuffer(value));
-  static final _$deleteCrowdfundCustomCategory = $grpc.ClientMethod<
-          $19.DeleteCrowdfundCustomCategoryRequest,
-          $19.DeleteCrowdfundCustomCategoryResponse>(
-      '/financialproducts.FinancialProductsService/DeleteCrowdfundCustomCategory',
-      ($19.DeleteCrowdfundCustomCategoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.DeleteCrowdfundCustomCategoryResponse.fromBuffer(value));
-  static final _$listCrowdfundWithdrawals = $grpc.ClientMethod<
-          $19.ListCrowdfundWithdrawalsRequest,
-          $19.ListCrowdfundWithdrawalsResponse>(
-      '/financialproducts.FinancialProductsService/ListCrowdfundWithdrawals',
-      ($19.ListCrowdfundWithdrawalsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ListCrowdfundWithdrawalsResponse.fromBuffer(value));
-  static final _$closeCrowdfund =
-      $grpc.ClientMethod<$19.CloseCrowdfundRequest, $19.CloseCrowdfundResponse>(
-          '/financialproducts.FinancialProductsService/CloseCrowdfund',
-          ($19.CloseCrowdfundRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $19.CloseCrowdfundResponse.fromBuffer(value));
-  static final _$cancelCrowdfund = $grpc.ClientMethod<
-          $19.CancelCrowdfundRequest, $19.CancelCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/CancelCrowdfund',
-      ($19.CancelCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CancelCrowdfundResponse.fromBuffer(value));
-  static final _$forceCompleteCrowdfund = $grpc.ClientMethod<
-          $19.ForceCompleteCrowdfundRequest,
-          $19.ForceCompleteCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/ForceCompleteCrowdfund',
-      ($19.ForceCompleteCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ForceCompleteCrowdfundResponse.fromBuffer(value));
-  static final _$listCrowdfundRefunds = $grpc.ClientMethod<
-          $19.ListCrowdfundRefundsRequest, $19.ListCrowdfundRefundsResponse>(
-      '/financialproducts.FinancialProductsService/ListCrowdfundRefunds',
-      ($19.ListCrowdfundRefundsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ListCrowdfundRefundsResponse.fromBuffer(value));
-  static final _$retryCrowdfundRefund = $grpc.ClientMethod<
-          $19.RetryCrowdfundRefundRequest, $19.RetryCrowdfundRefundResponse>(
-      '/financialproducts.FinancialProductsService/RetryCrowdfundRefund',
-      ($19.RetryCrowdfundRefundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.RetryCrowdfundRefundResponse.fromBuffer(value));
-  static final _$getCrowdfundStatistics = $grpc.ClientMethod<
-          $19.GetCrowdfundStatisticsRequest,
-          $19.GetCrowdfundStatisticsResponse>(
-      '/financialproducts.FinancialProductsService/GetCrowdfundStatistics',
-      ($19.GetCrowdfundStatisticsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetCrowdfundStatisticsResponse.fromBuffer(value));
-  static final _$searchCrowdfunds = $grpc.ClientMethod<
-          $19.SearchCrowdfundsRequest, $19.SearchCrowdfundsResponse>(
-      '/financialproducts.FinancialProductsService/SearchCrowdfunds',
-      ($19.SearchCrowdfundsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.SearchCrowdfundsResponse.fromBuffer(value));
-  static final _$updateCrowdfund = $grpc.ClientMethod<
-          $19.UpdateCrowdfundRequest, $19.UpdateCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/UpdateCrowdfund',
-      ($19.UpdateCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateCrowdfundResponse.fromBuffer(value));
-  static final _$deleteCrowdfund = $grpc.ClientMethod<
-          $19.DeleteCrowdfundRequest, $19.DeleteCrowdfundResponse>(
-      '/financialproducts.FinancialProductsService/DeleteCrowdfund',
-      ($19.DeleteCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.DeleteCrowdfundResponse.fromBuffer(value));
-  static final _$getCrowdfundDonations = $grpc.ClientMethod<
-          $19.GetCrowdfundDonationsRequest, $19.GetCrowdfundDonationsResponse>(
-      '/financialproducts.FinancialProductsService/GetCrowdfundDonations',
-      ($19.GetCrowdfundDonationsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetCrowdfundDonationsResponse.fromBuffer(value));
-  static final _$getUserDonations = $grpc.ClientMethod<
-          $19.GetUserDonationsRequest, $19.GetUserDonationsResponse>(
-      '/financialproducts.FinancialProductsService/GetUserDonations',
-      ($19.GetUserDonationsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetUserDonationsResponse.fromBuffer(value));
-  static final _$generateDonationReceipt = $grpc.ClientMethod<
-          $19.GenerateDonationReceiptRequest,
-          $19.GenerateDonationReceiptResponse>(
-      '/financialproducts.FinancialProductsService/GenerateDonationReceipt',
-      ($19.GenerateDonationReceiptRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GenerateDonationReceiptResponse.fromBuffer(value));
-  static final _$getUserCrowdfundReceipts = $grpc.ClientMethod<
-          $19.GetUserCrowdfundReceiptsRequest,
-          $19.GetUserCrowdfundReceiptsResponse>(
-      '/financialproducts.FinancialProductsService/GetUserCrowdfundReceipts',
-      ($19.GetUserCrowdfundReceiptsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetUserCrowdfundReceiptsResponse.fromBuffer(value));
-  static final _$connectNotificationChannel = $grpc.ClientMethod<
-          $19.ConnectNotificationChannelRequest,
-          $19.ConnectNotificationChannelResponse>(
-      '/financialproducts.FinancialProductsService/ConnectNotificationChannel',
-      ($19.ConnectNotificationChannelRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ConnectNotificationChannelResponse.fromBuffer(value));
-  static final _$disconnectNotificationChannel = $grpc.ClientMethod<
-          $19.DisconnectNotificationChannelRequest,
-          $19.DisconnectNotificationChannelResponse>(
-      '/financialproducts.FinancialProductsService/DisconnectNotificationChannel',
-      ($19.DisconnectNotificationChannelRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.DisconnectNotificationChannelResponse.fromBuffer(value));
-  static final _$getNotificationChannels = $grpc.ClientMethod<
-          $19.GetNotificationChannelsRequest,
-          $19.GetNotificationChannelsResponse>(
-      '/financialproducts.FinancialProductsService/GetNotificationChannels',
-      ($19.GetNotificationChannelsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetNotificationChannelsResponse.fromBuffer(value));
-  static final _$updateNotificationChannel = $grpc.ClientMethod<
-          $19.UpdateNotificationChannelRequest,
-          $19.UpdateNotificationChannelResponse>(
-      '/financialproducts.FinancialProductsService/UpdateNotificationChannel',
-      ($19.UpdateNotificationChannelRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateNotificationChannelResponse.fromBuffer(value));
-  static final _$testNotificationChannel = $grpc.ClientMethod<
-          $19.TestNotificationChannelRequest,
-          $19.TestNotificationChannelResponse>(
-      '/financialproducts.FinancialProductsService/TestNotificationChannel',
-      ($19.TestNotificationChannelRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.TestNotificationChannelResponse.fromBuffer(value));
-  static final _$getTelegramBotInfo = $grpc.ClientMethod<
-          $19.GetTelegramBotInfoRequest, $19.GetTelegramBotInfoResponse>(
-      '/financialproducts.FinancialProductsService/GetTelegramBotInfo',
-      ($19.GetTelegramBotInfoRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetTelegramBotInfoResponse.fromBuffer(value));
-  static final _$verifyTelegramChannel = $grpc.ClientMethod<
-          $19.VerifyTelegramChannelRequest, $19.VerifyTelegramChannelResponse>(
-      '/financialproducts.FinancialProductsService/VerifyTelegramChannel',
-      ($19.VerifyTelegramChannelRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.VerifyTelegramChannelResponse.fromBuffer(value));
-  static final _$getNotificationHistory = $grpc.ClientMethod<
-          $19.GetNotificationHistoryRequest,
-          $19.GetNotificationHistoryResponse>(
-      '/financialproducts.FinancialProductsService/GetNotificationHistory',
-      ($19.GetNotificationHistoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetNotificationHistoryResponse.fromBuffer(value));
-  static final _$getCrowdfundLeaderboard = $grpc.ClientMethod<
-          $19.GetCrowdfundLeaderboardRequest,
-          $19.GetCrowdfundLeaderboardResponse>(
-      '/financialproducts.FinancialProductsService/GetCrowdfundLeaderboard',
-      ($19.GetCrowdfundLeaderboardRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetCrowdfundLeaderboardResponse.fromBuffer(value));
-  static final _$createAutoSaveRule = $grpc.ClientMethod<
-          $19.CreateAutoSaveRuleRequest2, $19.CreateAutoSaveRuleResponse2>(
-      '/financialproducts.FinancialProductsService/CreateAutoSaveRule',
-      ($19.CreateAutoSaveRuleRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.CreateAutoSaveRuleResponse2.fromBuffer(value));
-  static final _$getAutoSaveRules = $grpc.ClientMethod<
-          $19.GetAutoSaveRulesRequest2, $19.GetAutoSaveRulesResponse2>(
-      '/financialproducts.FinancialProductsService/GetAutoSaveRules',
-      ($19.GetAutoSaveRulesRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetAutoSaveRulesResponse2.fromBuffer(value));
-  static final _$updateAutoSaveRule = $grpc.ClientMethod<
-          $19.UpdateAutoSaveRuleRequest2, $19.UpdateAutoSaveRuleResponse2>(
-      '/financialproducts.FinancialProductsService/UpdateAutoSaveRule',
-      ($19.UpdateAutoSaveRuleRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.UpdateAutoSaveRuleResponse2.fromBuffer(value));
-  static final _$toggleAutoSaveRule = $grpc.ClientMethod<
-          $19.ToggleAutoSaveRuleRequest2, $19.ToggleAutoSaveRuleResponse2>(
-      '/financialproducts.FinancialProductsService/ToggleAutoSaveRule',
-      ($19.ToggleAutoSaveRuleRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.ToggleAutoSaveRuleResponse2.fromBuffer(value));
-  static final _$deleteAutoSaveRule = $grpc.ClientMethod<
-          $19.DeleteAutoSaveRuleRequest2, $19.DeleteAutoSaveRuleResponse2>(
-      '/financialproducts.FinancialProductsService/DeleteAutoSaveRule',
-      ($19.DeleteAutoSaveRuleRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.DeleteAutoSaveRuleResponse2.fromBuffer(value));
-  static final _$getAutoSaveTransactions = $grpc.ClientMethod<
-          $19.GetAutoSaveTransactionsRequest2,
-          $19.GetAutoSaveTransactionsResponse2>(
-      '/financialproducts.FinancialProductsService/GetAutoSaveTransactions',
-      ($19.GetAutoSaveTransactionsRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetAutoSaveTransactionsResponse2.fromBuffer(value));
-  static final _$getAutoSaveStatistics = $grpc.ClientMethod<
-          $19.GetAutoSaveStatisticsRequest2,
-          $19.GetAutoSaveStatisticsResponse2>(
-      '/financialproducts.FinancialProductsService/GetAutoSaveStatistics',
-      ($19.GetAutoSaveStatisticsRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.GetAutoSaveStatisticsResponse2.fromBuffer(value));
-  static final _$triggerAutoSave = $grpc.ClientMethod<
-          $19.TriggerAutoSaveRequest2, $19.TriggerAutoSaveResponse2>(
-      '/financialproducts.FinancialProductsService/TriggerAutoSave',
-      ($19.TriggerAutoSaveRequest2 value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $19.TriggerAutoSaveResponse2.fromBuffer(value));
+  /// The hostname for this service.
+  static const $core.String defaultHost = '';
 
-  FinancialProductsServiceClient($grpc.ClientChannel channel,
-      {$grpc.CallOptions? options,
-      $core.Iterable<$grpc.ClientInterceptor>? interceptors})
-      : super(channel, options: options, interceptors: interceptors);
+  /// OAuth scopes needed for the client.
+  static const $core.List<$core.String> oauthScopes = [
+    '',
+  ];
 
-  $grpc.ResponseFuture<$19.CreateGroupAccountResponse> createGroupAccount(
-      $19.CreateGroupAccountRequest request,
-      {$grpc.CallOptions? options}) {
+  FinancialProductsServiceClient(super.channel,
+      {super.options, super.interceptors});
+
+  /// Create group savings account (groupAccount from AppServiceName)
+  $grpc.ResponseFuture<$0.CreateGroupAccountResponse> createGroupAccount(
+    $0.CreateGroupAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$createGroupAccount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetGroupAccountsResponse> getGroupAccounts(
-      $19.GetGroupAccountsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get group accounts
+  $grpc.ResponseFuture<$0.GetGroupAccountsResponse> getGroupAccounts(
+    $0.GetGroupAccountsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getGroupAccounts, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetGroupAccountResponse> getGroupAccount(
-      $19.GetGroupAccountRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get specific group account
+  $grpc.ResponseFuture<$0.GetGroupAccountResponse> getGroupAccount(
+    $0.GetGroupAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getGroupAccount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.AddGroupMemberResponse> addGroupMember(
-      $19.AddGroupMemberRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Add member to group
+  $grpc.ResponseFuture<$0.AddGroupMemberResponse> addGroupMember(
+    $0.AddGroupMemberRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$addGroupMember, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.RemoveGroupMemberResponse> removeGroupMember(
-      $19.RemoveGroupMemberRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Remove member from group
+  $grpc.ResponseFuture<$0.RemoveGroupMemberResponse> removeGroupMember(
+    $0.RemoveGroupMemberRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$removeGroupMember, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.ContributeToGroupResponse> contributeToGroup(
-      $19.ContributeToGroupRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Contribute to group account
+  $grpc.ResponseFuture<$0.ContributeToGroupResponse> contributeToGroup(
+    $0.ContributeToGroupRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$contributeToGroup, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.WithdrawFromGroupResponse> withdrawFromGroup(
-      $19.WithdrawFromGroupRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Withdraw from group account
+  $grpc.ResponseFuture<$0.WithdrawFromGroupResponse> withdrawFromGroup(
+    $0.WithdrawFromGroupRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$withdrawFromGroup, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.CloseGroupAccountResponse> closeGroupAccount(
-      $19.CloseGroupAccountRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Close group account
+  $grpc.ResponseFuture<$0.CloseGroupAccountResponse> closeGroupAccount(
+    $0.CloseGroupAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$closeGroupAccount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.BuyInsuranceResponse> buyInsurance(
-      $19.BuyInsuranceRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Buy insurance policy (insurance from AppServiceName)
+  $grpc.ResponseFuture<$0.BuyInsuranceResponse> buyInsurance(
+    $0.BuyInsuranceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$buyInsurance, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePoliciesResponse> getInsurancePolicies(
-      $19.GetInsurancePoliciesRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get insurance policies
+  $grpc.ResponseFuture<$0.GetInsurancePoliciesResponse> getInsurancePolicies(
+    $0.GetInsurancePoliciesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePolicies, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePolicyResponse> getInsurancePolicy(
-      $19.GetInsurancePolicyRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get specific insurance policy
+  $grpc.ResponseFuture<$0.GetInsurancePolicyResponse> getInsurancePolicy(
+    $0.GetInsurancePolicyRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePolicy, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.MakeInsuranceClaimResponse> makeInsuranceClaim(
-      $19.MakeInsuranceClaimRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Make insurance claim
+  $grpc.ResponseFuture<$0.MakeInsuranceClaimResponse> makeInsuranceClaim(
+    $0.MakeInsuranceClaimRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$makeInsuranceClaim, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.CancelInsuranceResponse> cancelInsurance(
-      $19.CancelInsuranceRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Cancel insurance policy
+  $grpc.ResponseFuture<$0.CancelInsuranceResponse> cancelInsurance(
+    $0.CancelInsuranceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$cancelInsurance, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePlansResponse> getInsurancePlans(
-      $19.GetInsurancePlansRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get available insurance plans
+  $grpc.ResponseFuture<$0.GetInsurancePlansResponse> getInsurancePlans(
+    $0.GetInsurancePlansRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePlans, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceMarketplaceProductsResponse>
+  /// Get insurance products from MyCover.ai
+  $grpc.ResponseFuture<$0.GetInsuranceMarketplaceProductsResponse>
       getInsuranceMarketplaceProducts(
-          $19.GetInsuranceMarketplaceProductsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetInsuranceMarketplaceProductsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceMarketplaceProducts, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceMarketplaceCategoriesResponse>
+  /// Get insurance categories
+  $grpc.ResponseFuture<$0.GetInsuranceMarketplaceCategoriesResponse>
       getInsuranceMarketplaceCategories(
-          $19.GetInsuranceMarketplaceCategoriesRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetInsuranceMarketplaceCategoriesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceMarketplaceCategories, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceQuoteResponse> getInsuranceQuote(
-      $19.GetInsuranceQuoteRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get insurance quote
+  $grpc.ResponseFuture<$0.GetInsuranceQuoteResponse> getInsuranceQuote(
+    $0.GetInsuranceQuoteRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceQuote, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.PurchaseMarketplaceInsuranceResponse>
+  /// Purchase insurance via MyCover.ai
+  $grpc.ResponseFuture<$0.PurchaseMarketplaceInsuranceResponse>
       purchaseMarketplaceInsurance(
-          $19.PurchaseMarketplaceInsuranceRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.PurchaseMarketplaceInsuranceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$purchaseMarketplaceInsurance, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePurchaseStatusResponse>
-      getInsurancePurchaseStatus($19.GetInsurancePurchaseStatusRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get insurance purchase status
+  $grpc.ResponseFuture<$0.GetInsurancePurchaseStatusResponse>
+      getInsurancePurchaseStatus(
+    $0.GetInsurancePurchaseStatusRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePurchaseStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.UploadInsuranceDocumentResponse>
-      uploadInsuranceDocument($19.UploadInsuranceDocumentRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Upload file for insurance documents (ID, proof of purchase, claim evidence)
+  $grpc.ResponseFuture<$0.UploadInsuranceDocumentResponse>
+      uploadInsuranceDocument(
+    $0.UploadInsuranceDocumentRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$uploadInsuranceDocument, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceDocumentUploadURLResponse>
+  /// Pre-construct a deterministic public URL for an insurance document
+  /// BEFORE the bytes are uploaded. See backend proto for details — the
+  /// Flutter cubit calls this on file stage and stamps public_url into
+  /// form_data immediately.
+  $grpc.ResponseFuture<$0.GetInsuranceDocumentUploadURLResponse>
       getInsuranceDocumentUploadURL(
-          $19.GetInsuranceDocumentUploadURLRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetInsuranceDocumentUploadURLRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceDocumentUploadURL, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceAuxiliaryDataResponse>
-      getInsuranceAuxiliaryData($19.GetInsuranceAuxiliaryDataRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get auxiliary data (states, vehicle makes, vehicle models, genders, etc.)
+  $grpc.ResponseFuture<$0.GetInsuranceAuxiliaryDataResponse>
+      getInsuranceAuxiliaryData(
+    $0.GetInsuranceAuxiliaryDataRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceAuxiliaryData, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePaymentsResponse> getInsurancePayments(
-      $19.GetInsurancePaymentsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get payments for a specific policy
+  $grpc.ResponseFuture<$0.GetInsurancePaymentsResponse> getInsurancePayments(
+    $0.GetInsurancePaymentsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePayments, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetUserInsurancePaymentsResponse>
-      getUserInsurancePayments($19.GetUserInsurancePaymentsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get all user insurance payments
+  $grpc.ResponseFuture<$0.GetUserInsurancePaymentsResponse>
+      getUserInsurancePayments(
+    $0.GetUserInsurancePaymentsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getUserInsurancePayments, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.CreateInsurancePaymentResponse>
-      createInsurancePayment($19.CreateInsurancePaymentRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Create insurance payment record
+  $grpc.ResponseFuture<$0.CreateInsurancePaymentResponse>
+      createInsurancePayment(
+    $0.CreateInsurancePaymentRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$createInsurancePayment, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.ProcessInsurancePaymentResponse>
-      processInsurancePayment($19.ProcessInsurancePaymentRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Process a pending insurance payment
+  $grpc.ResponseFuture<$0.ProcessInsurancePaymentResponse>
+      processInsurancePayment(
+    $0.ProcessInsurancePaymentRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$processInsurancePayment, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePaymentByIdResponse>
-      getInsurancePaymentById($19.GetInsurancePaymentByIdRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get a specific payment by ID
+  $grpc.ResponseFuture<$0.GetInsurancePaymentByIdResponse>
+      getInsurancePaymentById(
+    $0.GetInsurancePaymentByIdRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePaymentById, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetOverdueInsurancePaymentsResponse>
+  /// Get overdue insurance payments
+  $grpc.ResponseFuture<$0.GetOverdueInsurancePaymentsResponse>
       getOverdueInsurancePayments(
-          $19.GetOverdueInsurancePaymentsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetOverdueInsurancePaymentsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getOverdueInsurancePayments, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceClaimsResponse> getInsuranceClaims(
-      $19.GetInsuranceClaimsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get claims for a specific policy
+  $grpc.ResponseFuture<$0.GetInsuranceClaimsResponse> getInsuranceClaims(
+    $0.GetInsuranceClaimsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceClaims, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetUserInsuranceClaimsResponse>
-      getUserInsuranceClaims($19.GetUserInsuranceClaimsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get all user insurance claims
+  $grpc.ResponseFuture<$0.GetUserInsuranceClaimsResponse>
+      getUserInsuranceClaims(
+    $0.GetUserInsuranceClaimsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getUserInsuranceClaims, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateInsuranceClaimResponse> updateInsuranceClaim(
-      $19.UpdateInsuranceClaimRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Update an insurance claim
+  $grpc.ResponseFuture<$0.UpdateInsuranceClaimResponse> updateInsuranceClaim(
+    $0.UpdateInsuranceClaimRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateInsuranceClaim, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceClaimByIdResponse> getInsuranceClaimById(
-      $19.GetInsuranceClaimByIdRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get a specific claim by ID
+  $grpc.ResponseFuture<$0.GetInsuranceClaimByIdResponse> getInsuranceClaimById(
+    $0.GetInsuranceClaimByIdRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceClaimById, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateInsurancePolicyResponse> updateInsurancePolicy(
-      $19.UpdateInsurancePolicyRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Update insurance policy details
+  $grpc.ResponseFuture<$0.UpdateInsurancePolicyResponse> updateInsurancePolicy(
+    $0.UpdateInsurancePolicyRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateInsurancePolicy, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GenerateInsuranceReceiptResponse>
-      generateInsuranceReceipt($19.GenerateInsuranceReceiptRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Generate payment receipt
+  $grpc.ResponseFuture<$0.GenerateInsuranceReceiptResponse>
+      generateInsuranceReceipt(
+    $0.GenerateInsuranceReceiptRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$generateInsuranceReceipt, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetUserInsuranceReceiptsResponse>
-      getUserInsuranceReceipts($19.GetUserInsuranceReceiptsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get user insurance receipts
+  $grpc.ResponseFuture<$0.GetUserInsuranceReceiptsResponse>
+      getUserInsuranceReceipts(
+    $0.GetUserInsuranceReceiptsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getUserInsuranceReceipts, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceStatisticsResponse>
-      getInsuranceStatistics($19.GetInsuranceStatisticsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get insurance statistics
+  $grpc.ResponseFuture<$0.GetInsuranceStatisticsResponse>
+      getInsuranceStatistics(
+    $0.GetInsuranceStatisticsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceStatistics, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePaymentStatisticsResponse>
+  /// Get insurance payment statistics
+  $grpc.ResponseFuture<$0.GetInsurancePaymentStatisticsResponse>
       getInsurancePaymentStatistics(
-          $19.GetInsurancePaymentStatisticsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetInsurancePaymentStatisticsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePaymentStatistics, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverCustomersResponse> getMyCoverCustomers(
-      $19.GetMyCoverCustomersRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get MyCover customers
+  $grpc.ResponseFuture<$0.GetMyCoverCustomersResponse> getMyCoverCustomers(
+    $0.GetMyCoverCustomersRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverCustomers, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverCustomerByIdResponse>
-      getMyCoverCustomerById($19.GetMyCoverCustomerByIdRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get specific MyCover customer
+  $grpc.ResponseFuture<$0.GetMyCoverCustomerByIdResponse>
+      getMyCoverCustomerById(
+    $0.GetMyCoverCustomerByIdRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverCustomerById, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverCustomerPoliciesResponse>
-      getMyCoverCustomerPolicies($19.GetMyCoverCustomerPoliciesRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get policies for a specific customer
+  $grpc.ResponseFuture<$0.GetMyCoverCustomerPoliciesResponse>
+      getMyCoverCustomerPolicies(
+    $0.GetMyCoverCustomerPoliciesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverCustomerPolicies, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverCustomerPurchasesResponse>
+  /// Get purchases for a specific customer
+  $grpc.ResponseFuture<$0.GetMyCoverCustomerPurchasesResponse>
       getMyCoverCustomerPurchases(
-          $19.GetMyCoverCustomerPurchasesRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetMyCoverCustomerPurchasesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverCustomerPurchases, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverPurchasesResponse> getMyCoverPurchases(
-      $19.GetMyCoverPurchasesRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get all MyCover purchases
+  $grpc.ResponseFuture<$0.GetMyCoverPurchasesResponse> getMyCoverPurchases(
+    $0.GetMyCoverPurchasesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverPurchases, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverPurchaseByIdResponse>
-      getMyCoverPurchaseById($19.GetMyCoverPurchaseByIdRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get specific MyCover purchase by ID
+  $grpc.ResponseFuture<$0.GetMyCoverPurchaseByIdResponse>
+      getMyCoverPurchaseById(
+    $0.GetMyCoverPurchaseByIdRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverPurchaseById, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverClaimsResponse> getMyCoverClaims(
-      $19.GetMyCoverClaimsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get MyCover provider claims (from MyCover API, not local DB)
+  $grpc.ResponseFuture<$0.GetMyCoverClaimsResponse> getMyCoverClaims(
+    $0.GetMyCoverClaimsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverClaims, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverClaimByIdResponse> getMyCoverClaimById(
-      $19.GetMyCoverClaimByIdRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get specific MyCover provider claim by ID
+  $grpc.ResponseFuture<$0.GetMyCoverClaimByIdResponse> getMyCoverClaimById(
+    $0.GetMyCoverClaimByIdRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverClaimById, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.FileCreditLifeClaimResponse> fileCreditLifeClaim(
-      $19.FileCreditLifeClaimRequest request,
-      {$grpc.CallOptions? options}) {
+  /// File a credit-life claim
+  $grpc.ResponseFuture<$0.FileCreditLifeClaimResponse> fileCreditLifeClaim(
+    $0.FileCreditLifeClaimRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$fileCreditLifeClaim, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceStatesResponse> getInsuranceStates(
-      $19.GetInsuranceStatesRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get Nigerian states (auxiliary)
+  $grpc.ResponseFuture<$0.GetInsuranceStatesResponse> getInsuranceStates(
+    $0.GetInsuranceStatesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceStates, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceVehicleMakesResponse>
-      getInsuranceVehicleMakes($19.GetInsuranceVehicleMakesRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get vehicle makes (auxiliary)
+  $grpc.ResponseFuture<$0.GetInsuranceVehicleMakesResponse>
+      getInsuranceVehicleMakes(
+    $0.GetInsuranceVehicleMakesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceVehicleMakes, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverNotificationPreferencesResponse>
+  /// Get notification preferences
+  $grpc.ResponseFuture<$0.GetMyCoverNotificationPreferencesResponse>
       getMyCoverNotificationPreferences(
-          $19.GetMyCoverNotificationPreferencesRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetMyCoverNotificationPreferencesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverNotificationPreferences, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateMyCoverNotificationPreferencesResponse>
+  /// Update notification preferences
+  $grpc.ResponseFuture<$0.UpdateMyCoverNotificationPreferencesResponse>
       updateMyCoverNotificationPreferences(
-          $19.UpdateMyCoverNotificationPreferencesRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.UpdateMyCoverNotificationPreferencesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateMyCoverNotificationPreferences, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetMyCoverWalletBalanceResponse>
-      getMyCoverWalletBalance($19.GetMyCoverWalletBalanceRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get MyCover wallet balance
+  $grpc.ResponseFuture<$0.GetMyCoverWalletBalanceResponse>
+      getMyCoverWalletBalance(
+    $0.GetMyCoverWalletBalanceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getMyCoverWalletBalance, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.RequestInsuranceRefundResponse>
-      requestInsuranceRefund($19.RequestInsuranceRefundRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Request insurance refund for a cancelled policy
+  $grpc.ResponseFuture<$0.RequestInsuranceRefundResponse>
+      requestInsuranceRefund(
+    $0.RequestInsuranceRefundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$requestInsuranceRefund, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceRefundStatusResponse>
-      getInsuranceRefundStatus($19.GetInsuranceRefundStatusRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get insurance refund status
+  $grpc.ResponseFuture<$0.GetInsuranceRefundStatusResponse>
+      getInsuranceRefundStatus(
+    $0.GetInsuranceRefundStatusRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceRefundStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceReconciliationOverviewResponse>
+  $grpc.ResponseFuture<$0.GetInsuranceReconciliationOverviewResponse>
       getInsuranceReconciliationOverview(
-          $19.GetInsuranceReconciliationOverviewRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetInsuranceReconciliationOverviewRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceReconciliationOverview, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetOrphanedInsuranceTransactionsResponse>
+  $grpc.ResponseFuture<$0.GetOrphanedInsuranceTransactionsResponse>
       getOrphanedInsuranceTransactions(
-          $19.GetOrphanedInsuranceTransactionsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetOrphanedInsuranceTransactionsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getOrphanedInsuranceTransactions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.ManualReconcilePurchaseResponse>
-      manualReconcilePurchase($19.ManualReconcilePurchaseRequest request,
-          {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.ManualReconcilePurchaseResponse>
+      manualReconcilePurchase(
+    $0.ManualReconcilePurchaseRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$manualReconcilePurchase, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.AdminTriggerRefundResponse> adminTriggerRefund(
-      $19.AdminTriggerRefundRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.AdminTriggerRefundResponse> adminTriggerRefund(
+    $0.AdminTriggerRefundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$adminTriggerRefund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsuranceWebhookEventsResponse>
-      getInsuranceWebhookEvents($19.GetInsuranceWebhookEventsRequest request,
-          {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetInsuranceWebhookEventsResponse>
+      getInsuranceWebhookEvents(
+    $0.GetInsuranceWebhookEventsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsuranceWebhookEvents, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.RetryFailedWebhookEventResponse>
-      retryFailedWebhookEvent($19.RetryFailedWebhookEventRequest request,
-          {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.RetryFailedWebhookEventResponse>
+      retryFailedWebhookEvent(
+    $0.RetryFailedWebhookEventRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$retryFailedWebhookEvent, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetFailedInsuranceTransactionsResponse>
+  $grpc.ResponseFuture<$0.GetFailedInsuranceTransactionsResponse>
       getFailedInsuranceTransactions(
-          $19.GetFailedInsuranceTransactionsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetFailedInsuranceTransactionsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getFailedInsuranceTransactions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateProductMarginResponse> updateProductMargin(
-      $19.UpdateProductMarginRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.UpdateProductMarginResponse> updateProductMargin(
+    $0.UpdateProductMarginRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateProductMargin, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetInsurancePlatformWalletsResponse>
+  $grpc.ResponseFuture<$0.GetInsurancePlatformWalletsResponse>
       getInsurancePlatformWallets(
-          $19.GetInsurancePlatformWalletsRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetInsurancePlatformWalletsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getInsurancePlatformWallets, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.CreateCrowdfundResponse> createCrowdfund(
-      $19.CreateCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Create crowdfund campaign (crowdfund from AppServiceName)
+  $grpc.ResponseFuture<$0.CreateCrowdfundResponse> createCrowdfund(
+    $0.CreateCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$createCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetCrowdfundsResponse> getCrowdfunds(
-      $19.GetCrowdfundsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get crowdfund campaigns
+  $grpc.ResponseFuture<$0.GetCrowdfundsResponse> getCrowdfunds(
+    $0.GetCrowdfundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getCrowdfunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetCrowdfundResponse> getCrowdfund(
-      $19.GetCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get specific crowdfund campaign
+  $grpc.ResponseFuture<$0.GetCrowdfundResponse> getCrowdfund(
+    $0.GetCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.ContributeToCrowdfundResponse> contributeToCrowdfund(
-      $19.ContributeToCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Contribute to crowdfund
+  $grpc.ResponseFuture<$0.ContributeToCrowdfundResponse> contributeToCrowdfund(
+    $0.ContributeToCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$contributeToCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
-      $19.WithdrawFromCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Withdraw from crowdfund (creator only)
+  $grpc.ResponseFuture<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
+    $0.WithdrawFromCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$withdrawFromCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetCrowdfundWithdrawalFeeQuoteResponse>
+  /// Quote the platform fee + net amount for a hypothetical withdrawal
+  /// without touching balances. The Flutter sheet calls this on every
+  /// amount change so the user sees the breakdown before confirming
+  /// their PIN. Uses the same precedence rule as the actual withdrawal:
+  /// flat fee overrides margin when both are configured, otherwise the
+  /// single configured value applies.
+  $grpc.ResponseFuture<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
       getCrowdfundWithdrawalFeeQuote(
-          $19.GetCrowdfundWithdrawalFeeQuoteRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.GetCrowdfundWithdrawalFeeQuoteRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getCrowdfundWithdrawalFeeQuote, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.ListCrowdfundCustomCategoriesResponse>
+  /// User-scoped custom categories. The seven built-in categories
+  /// (Medical, Education, ...) live in the Flutter client; this RPC
+  /// only persists what the user has added themselves so a refreshed
+  /// wizard rehydrates the same chip list.
+  $grpc.ResponseFuture<$0.ListCrowdfundCustomCategoriesResponse>
       listCrowdfundCustomCategories(
-          $19.ListCrowdfundCustomCategoriesRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.ListCrowdfundCustomCategoriesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$listCrowdfundCustomCategories, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.AddCrowdfundCustomCategoryResponse>
-      addCrowdfundCustomCategory($19.AddCrowdfundCustomCategoryRequest request,
-          {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.AddCrowdfundCustomCategoryResponse>
+      addCrowdfundCustomCategory(
+    $0.AddCrowdfundCustomCategoryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$addCrowdfundCustomCategory, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.DeleteCrowdfundCustomCategoryResponse>
+  $grpc.ResponseFuture<$0.DeleteCrowdfundCustomCategoryResponse>
       deleteCrowdfundCustomCategory(
-          $19.DeleteCrowdfundCustomCategoryRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.DeleteCrowdfundCustomCategoryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$deleteCrowdfundCustomCategory, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.ListCrowdfundWithdrawalsResponse>
-      listCrowdfundWithdrawals($19.ListCrowdfundWithdrawalsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// List crowdfund withdrawals (audit trail). Caller filters by
+  /// crowdfund_id (campaign-scoped history), user_id (per-creator), or
+  /// neither (admin global view). Authorization is enforced by the
+  /// handler — non-admins only see rows where user_id == self.
+  $grpc.ResponseFuture<$0.ListCrowdfundWithdrawalsResponse>
+      listCrowdfundWithdrawals(
+    $0.ListCrowdfundWithdrawalsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$listCrowdfundWithdrawals, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.CloseCrowdfundResponse> closeCrowdfund(
-      $19.CloseCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Close crowdfund campaign (legacy; flips status without refunds).
+  /// Use CancelCrowdfund for the user-facing flow.
+  $grpc.ResponseFuture<$0.CloseCrowdfundResponse> closeCrowdfund(
+    $0.CloseCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$closeCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.CancelCrowdfundResponse> cancelCrowdfund(
-      $19.CancelCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Cancel campaign and queue auto-refunds for every outstanding
+  /// contribution. Synchronous DB transition (status='cancelling')
+  /// plus async worker that drains the refund queue and advances
+  /// status to 'cancelled' once all refunds settle.
+  $grpc.ResponseFuture<$0.CancelCrowdfundResponse> cancelCrowdfund(
+    $0.CancelCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$cancelCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.ForceCompleteCrowdfundResponse>
-      forceCompleteCrowdfund($19.ForceCompleteCrowdfundRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Admin force-complete: flip status to 'completed' without
+  /// refunds. Used for stuck campaigns where the contributors got
+  /// the outcome they pledged for (e.g. campaign delivered but
+  /// never hit numerical target).
+  $grpc.ResponseFuture<$0.ForceCompleteCrowdfundResponse>
+      forceCompleteCrowdfund(
+    $0.ForceCompleteCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$forceCompleteCrowdfund, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.ListCrowdfundRefundsResponse> listCrowdfundRefunds(
-      $19.ListCrowdfundRefundsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// List per-campaign refund audit rows. Admin sees all rows for
+  /// a campaign; non-admins see only refunds where they are the
+  /// contributor.
+  $grpc.ResponseFuture<$0.ListCrowdfundRefundsResponse> listCrowdfundRefunds(
+    $0.ListCrowdfundRefundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$listCrowdfundRefunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.RetryCrowdfundRefundResponse> retryCrowdfundRefund(
-      $19.RetryCrowdfundRefundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Operator escape hatch: flip a 'failed' refund row back to
+  /// 'pending' so the worker re-picks it. Used after fixing the
+  /// underlying account_unavailable / network error.
+  $grpc.ResponseFuture<$0.RetryCrowdfundRefundResponse> retryCrowdfundRefund(
+    $0.RetryCrowdfundRefundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$retryCrowdfundRefund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetCrowdfundStatisticsResponse>
-      getCrowdfundStatistics($19.GetCrowdfundStatisticsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get crowdfund statistics with enhanced analytics
+  $grpc.ResponseFuture<$0.GetCrowdfundStatisticsResponse>
+      getCrowdfundStatistics(
+    $0.GetCrowdfundStatisticsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getCrowdfundStatistics, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.SearchCrowdfundsResponse> searchCrowdfunds(
-      $19.SearchCrowdfundsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Search crowdfunds by query (title, creator username, or crowdfund code)
+  $grpc.ResponseFuture<$0.SearchCrowdfundsResponse> searchCrowdfunds(
+    $0.SearchCrowdfundsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$searchCrowdfunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateCrowdfundResponse> updateCrowdfund(
-      $19.UpdateCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Update crowdfund campaign (creator only)
+  $grpc.ResponseFuture<$0.UpdateCrowdfundResponse> updateCrowdfund(
+    $0.UpdateCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.DeleteCrowdfundResponse> deleteCrowdfund(
-      $19.DeleteCrowdfundRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Delete crowdfund campaign (creator only, must have no contributions)
+  $grpc.ResponseFuture<$0.DeleteCrowdfundResponse> deleteCrowdfund(
+    $0.DeleteCrowdfundRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$deleteCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetCrowdfundDonationsResponse> getCrowdfundDonations(
-      $19.GetCrowdfundDonationsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get donations for a specific crowdfund
+  $grpc.ResponseFuture<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations(
+    $0.GetCrowdfundDonationsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getCrowdfundDonations, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetUserDonationsResponse> getUserDonations(
-      $19.GetUserDonationsRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get all donations made by current user
+  $grpc.ResponseFuture<$0.GetUserDonationsResponse> getUserDonations(
+    $0.GetUserDonationsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getUserDonations, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GenerateDonationReceiptResponse>
-      generateDonationReceipt($19.GenerateDonationReceiptRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Generate donation receipt
+  $grpc.ResponseFuture<$0.GenerateDonationReceiptResponse>
+      generateDonationReceipt(
+    $0.GenerateDonationReceiptRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$generateDonationReceipt, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetUserCrowdfundReceiptsResponse>
-      getUserCrowdfundReceipts($19.GetUserCrowdfundReceiptsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get all crowdfund receipts for current user
+  $grpc.ResponseFuture<$0.GetUserCrowdfundReceiptsResponse>
+      getUserCrowdfundReceipts(
+    $0.GetUserCrowdfundReceiptsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getUserCrowdfundReceipts, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.ConnectNotificationChannelResponse>
-      connectNotificationChannel($19.ConnectNotificationChannelRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Connect a notification channel (Telegram, Discord, WhatsApp Business)
+  $grpc.ResponseFuture<$0.ConnectNotificationChannelResponse>
+      connectNotificationChannel(
+    $0.ConnectNotificationChannelRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$connectNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.DisconnectNotificationChannelResponse>
+  /// Disconnect a notification channel
+  $grpc.ResponseFuture<$0.DisconnectNotificationChannelResponse>
       disconnectNotificationChannel(
-          $19.DisconnectNotificationChannelRequest request,
-          {$grpc.CallOptions? options}) {
+    $0.DisconnectNotificationChannelRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$disconnectNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetNotificationChannelsResponse>
-      getNotificationChannels($19.GetNotificationChannelsRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get all notification channels for a crowdfund
+  $grpc.ResponseFuture<$0.GetNotificationChannelsResponse>
+      getNotificationChannels(
+    $0.GetNotificationChannelsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getNotificationChannels, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateNotificationChannelResponse>
-      updateNotificationChannel($19.UpdateNotificationChannelRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Update notification channel settings
+  $grpc.ResponseFuture<$0.UpdateNotificationChannelResponse>
+      updateNotificationChannel(
+    $0.UpdateNotificationChannelRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.TestNotificationChannelResponse>
-      testNotificationChannel($19.TestNotificationChannelRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Test notification channel (send test message)
+  $grpc.ResponseFuture<$0.TestNotificationChannelResponse>
+      testNotificationChannel(
+    $0.TestNotificationChannelRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$testNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetTelegramBotInfoResponse> getTelegramBotInfo(
-      $19.GetTelegramBotInfoRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Get Telegram bot info for linking
+  $grpc.ResponseFuture<$0.GetTelegramBotInfoResponse> getTelegramBotInfo(
+    $0.GetTelegramBotInfoRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getTelegramBotInfo, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.VerifyTelegramChannelResponse> verifyTelegramChannel(
-      $19.VerifyTelegramChannelRequest request,
-      {$grpc.CallOptions? options}) {
+  /// Verify Telegram channel connection
+  $grpc.ResponseFuture<$0.VerifyTelegramChannelResponse> verifyTelegramChannel(
+    $0.VerifyTelegramChannelRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$verifyTelegramChannel, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetNotificationHistoryResponse>
-      getNotificationHistory($19.GetNotificationHistoryRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get notification delivery history
+  $grpc.ResponseFuture<$0.GetNotificationHistoryResponse>
+      getNotificationHistory(
+    $0.GetNotificationHistoryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getNotificationHistory, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetCrowdfundLeaderboardResponse>
-      getCrowdfundLeaderboard($19.GetCrowdfundLeaderboardRequest request,
-          {$grpc.CallOptions? options}) {
+  /// Get crowdfund leaderboard (public, no auth required)
+  $grpc.ResponseFuture<$0.GetCrowdfundLeaderboardResponse>
+      getCrowdfundLeaderboard(
+    $0.GetCrowdfundLeaderboardRequest request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getCrowdfundLeaderboard, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.CreateAutoSaveRuleResponse2> createAutoSaveRule(
-      $19.CreateAutoSaveRuleRequest2 request,
-      {$grpc.CallOptions? options}) {
+  /// Create auto-save rule
+  $grpc.ResponseFuture<$0.CreateAutoSaveRuleResponse2> createAutoSaveRule(
+    $0.CreateAutoSaveRuleRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$createAutoSaveRule, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetAutoSaveRulesResponse2> getAutoSaveRules(
-      $19.GetAutoSaveRulesRequest2 request,
-      {$grpc.CallOptions? options}) {
+  /// Get auto-save rules
+  $grpc.ResponseFuture<$0.GetAutoSaveRulesResponse2> getAutoSaveRules(
+    $0.GetAutoSaveRulesRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getAutoSaveRules, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.UpdateAutoSaveRuleResponse2> updateAutoSaveRule(
-      $19.UpdateAutoSaveRuleRequest2 request,
-      {$grpc.CallOptions? options}) {
+  /// Update auto-save rule
+  $grpc.ResponseFuture<$0.UpdateAutoSaveRuleResponse2> updateAutoSaveRule(
+    $0.UpdateAutoSaveRuleRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$updateAutoSaveRule, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule(
-      $19.ToggleAutoSaveRuleRequest2 request,
-      {$grpc.CallOptions? options}) {
+  /// Toggle auto-save rule (pause/resume)
+  $grpc.ResponseFuture<$0.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule(
+    $0.ToggleAutoSaveRuleRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$toggleAutoSaveRule, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule(
-      $19.DeleteAutoSaveRuleRequest2 request,
-      {$grpc.CallOptions? options}) {
+  /// Delete auto-save rule
+  $grpc.ResponseFuture<$0.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule(
+    $0.DeleteAutoSaveRuleRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$deleteAutoSaveRule, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetAutoSaveTransactionsResponse2>
-      getAutoSaveTransactions($19.GetAutoSaveTransactionsRequest2 request,
-          {$grpc.CallOptions? options}) {
+  /// Get auto-save transactions
+  $grpc.ResponseFuture<$0.GetAutoSaveTransactionsResponse2>
+      getAutoSaveTransactions(
+    $0.GetAutoSaveTransactionsRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getAutoSaveTransactions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$19.GetAutoSaveStatisticsResponse2>
-      getAutoSaveStatistics($19.GetAutoSaveStatisticsRequest2 request,
-          {$grpc.CallOptions? options}) {
+  /// Get auto-save statistics
+  $grpc.ResponseFuture<$0.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics(
+    $0.GetAutoSaveStatisticsRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$getAutoSaveStatistics, request, options: options);
   }
 
-  $grpc.ResponseFuture<$19.TriggerAutoSaveResponse2> triggerAutoSave(
-      $19.TriggerAutoSaveRequest2 request,
-      {$grpc.CallOptions? options}) {
+  /// Manually trigger auto-save
+  $grpc.ResponseFuture<$0.TriggerAutoSaveResponse2> triggerAutoSave(
+    $0.TriggerAutoSaveRequest2 request, {
+    $grpc.CallOptions? options,
+  }) {
     return $createUnaryCall(_$triggerAutoSave, request, options: options);
   }
+
+  // method descriptors
+
+  static final _$createGroupAccount = $grpc.ClientMethod<
+          $0.CreateGroupAccountRequest, $0.CreateGroupAccountResponse>(
+      '/financialproducts.FinancialProductsService/CreateGroupAccount',
+      ($0.CreateGroupAccountRequest value) => value.writeToBuffer(),
+      $0.CreateGroupAccountResponse.fromBuffer);
+  static final _$getGroupAccounts = $grpc.ClientMethod<
+          $0.GetGroupAccountsRequest, $0.GetGroupAccountsResponse>(
+      '/financialproducts.FinancialProductsService/GetGroupAccounts',
+      ($0.GetGroupAccountsRequest value) => value.writeToBuffer(),
+      $0.GetGroupAccountsResponse.fromBuffer);
+  static final _$getGroupAccount =
+      $grpc.ClientMethod<$0.GetGroupAccountRequest, $0.GetGroupAccountResponse>(
+          '/financialproducts.FinancialProductsService/GetGroupAccount',
+          ($0.GetGroupAccountRequest value) => value.writeToBuffer(),
+          $0.GetGroupAccountResponse.fromBuffer);
+  static final _$addGroupMember =
+      $grpc.ClientMethod<$0.AddGroupMemberRequest, $0.AddGroupMemberResponse>(
+          '/financialproducts.FinancialProductsService/AddGroupMember',
+          ($0.AddGroupMemberRequest value) => value.writeToBuffer(),
+          $0.AddGroupMemberResponse.fromBuffer);
+  static final _$removeGroupMember = $grpc.ClientMethod<
+          $0.RemoveGroupMemberRequest, $0.RemoveGroupMemberResponse>(
+      '/financialproducts.FinancialProductsService/RemoveGroupMember',
+      ($0.RemoveGroupMemberRequest value) => value.writeToBuffer(),
+      $0.RemoveGroupMemberResponse.fromBuffer);
+  static final _$contributeToGroup = $grpc.ClientMethod<
+          $0.ContributeToGroupRequest, $0.ContributeToGroupResponse>(
+      '/financialproducts.FinancialProductsService/ContributeToGroup',
+      ($0.ContributeToGroupRequest value) => value.writeToBuffer(),
+      $0.ContributeToGroupResponse.fromBuffer);
+  static final _$withdrawFromGroup = $grpc.ClientMethod<
+          $0.WithdrawFromGroupRequest, $0.WithdrawFromGroupResponse>(
+      '/financialproducts.FinancialProductsService/WithdrawFromGroup',
+      ($0.WithdrawFromGroupRequest value) => value.writeToBuffer(),
+      $0.WithdrawFromGroupResponse.fromBuffer);
+  static final _$closeGroupAccount = $grpc.ClientMethod<
+          $0.CloseGroupAccountRequest, $0.CloseGroupAccountResponse>(
+      '/financialproducts.FinancialProductsService/CloseGroupAccount',
+      ($0.CloseGroupAccountRequest value) => value.writeToBuffer(),
+      $0.CloseGroupAccountResponse.fromBuffer);
+  static final _$buyInsurance =
+      $grpc.ClientMethod<$0.BuyInsuranceRequest, $0.BuyInsuranceResponse>(
+          '/financialproducts.FinancialProductsService/BuyInsurance',
+          ($0.BuyInsuranceRequest value) => value.writeToBuffer(),
+          $0.BuyInsuranceResponse.fromBuffer);
+  static final _$getInsurancePolicies = $grpc.ClientMethod<
+          $0.GetInsurancePoliciesRequest, $0.GetInsurancePoliciesResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePolicies',
+      ($0.GetInsurancePoliciesRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePoliciesResponse.fromBuffer);
+  static final _$getInsurancePolicy = $grpc.ClientMethod<
+          $0.GetInsurancePolicyRequest, $0.GetInsurancePolicyResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePolicy',
+      ($0.GetInsurancePolicyRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePolicyResponse.fromBuffer);
+  static final _$makeInsuranceClaim = $grpc.ClientMethod<
+          $0.MakeInsuranceClaimRequest, $0.MakeInsuranceClaimResponse>(
+      '/financialproducts.FinancialProductsService/MakeInsuranceClaim',
+      ($0.MakeInsuranceClaimRequest value) => value.writeToBuffer(),
+      $0.MakeInsuranceClaimResponse.fromBuffer);
+  static final _$cancelInsurance =
+      $grpc.ClientMethod<$0.CancelInsuranceRequest, $0.CancelInsuranceResponse>(
+          '/financialproducts.FinancialProductsService/CancelInsurance',
+          ($0.CancelInsuranceRequest value) => value.writeToBuffer(),
+          $0.CancelInsuranceResponse.fromBuffer);
+  static final _$getInsurancePlans = $grpc.ClientMethod<
+          $0.GetInsurancePlansRequest, $0.GetInsurancePlansResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePlans',
+      ($0.GetInsurancePlansRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePlansResponse.fromBuffer);
+  static final _$getInsuranceMarketplaceProducts = $grpc.ClientMethod<
+          $0.GetInsuranceMarketplaceProductsRequest,
+          $0.GetInsuranceMarketplaceProductsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceMarketplaceProducts',
+      ($0.GetInsuranceMarketplaceProductsRequest value) =>
+          value.writeToBuffer(),
+      $0.GetInsuranceMarketplaceProductsResponse.fromBuffer);
+  static final _$getInsuranceMarketplaceCategories = $grpc.ClientMethod<
+          $0.GetInsuranceMarketplaceCategoriesRequest,
+          $0.GetInsuranceMarketplaceCategoriesResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceMarketplaceCategories',
+      ($0.GetInsuranceMarketplaceCategoriesRequest value) =>
+          value.writeToBuffer(),
+      $0.GetInsuranceMarketplaceCategoriesResponse.fromBuffer);
+  static final _$getInsuranceQuote = $grpc.ClientMethod<
+          $0.GetInsuranceQuoteRequest, $0.GetInsuranceQuoteResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceQuote',
+      ($0.GetInsuranceQuoteRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceQuoteResponse.fromBuffer);
+  static final _$purchaseMarketplaceInsurance = $grpc.ClientMethod<
+          $0.PurchaseMarketplaceInsuranceRequest,
+          $0.PurchaseMarketplaceInsuranceResponse>(
+      '/financialproducts.FinancialProductsService/PurchaseMarketplaceInsurance',
+      ($0.PurchaseMarketplaceInsuranceRequest value) => value.writeToBuffer(),
+      $0.PurchaseMarketplaceInsuranceResponse.fromBuffer);
+  static final _$getInsurancePurchaseStatus = $grpc.ClientMethod<
+          $0.GetInsurancePurchaseStatusRequest,
+          $0.GetInsurancePurchaseStatusResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePurchaseStatus',
+      ($0.GetInsurancePurchaseStatusRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePurchaseStatusResponse.fromBuffer);
+  static final _$uploadInsuranceDocument = $grpc.ClientMethod<
+          $0.UploadInsuranceDocumentRequest,
+          $0.UploadInsuranceDocumentResponse>(
+      '/financialproducts.FinancialProductsService/UploadInsuranceDocument',
+      ($0.UploadInsuranceDocumentRequest value) => value.writeToBuffer(),
+      $0.UploadInsuranceDocumentResponse.fromBuffer);
+  static final _$getInsuranceDocumentUploadURL = $grpc.ClientMethod<
+          $0.GetInsuranceDocumentUploadURLRequest,
+          $0.GetInsuranceDocumentUploadURLResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceDocumentUploadURL',
+      ($0.GetInsuranceDocumentUploadURLRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceDocumentUploadURLResponse.fromBuffer);
+  static final _$getInsuranceAuxiliaryData = $grpc.ClientMethod<
+          $0.GetInsuranceAuxiliaryDataRequest,
+          $0.GetInsuranceAuxiliaryDataResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceAuxiliaryData',
+      ($0.GetInsuranceAuxiliaryDataRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceAuxiliaryDataResponse.fromBuffer);
+  static final _$getInsurancePayments = $grpc.ClientMethod<
+          $0.GetInsurancePaymentsRequest, $0.GetInsurancePaymentsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePayments',
+      ($0.GetInsurancePaymentsRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePaymentsResponse.fromBuffer);
+  static final _$getUserInsurancePayments = $grpc.ClientMethod<
+          $0.GetUserInsurancePaymentsRequest,
+          $0.GetUserInsurancePaymentsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserInsurancePayments',
+      ($0.GetUserInsurancePaymentsRequest value) => value.writeToBuffer(),
+      $0.GetUserInsurancePaymentsResponse.fromBuffer);
+  static final _$createInsurancePayment = $grpc.ClientMethod<
+          $0.CreateInsurancePaymentRequest, $0.CreateInsurancePaymentResponse>(
+      '/financialproducts.FinancialProductsService/CreateInsurancePayment',
+      ($0.CreateInsurancePaymentRequest value) => value.writeToBuffer(),
+      $0.CreateInsurancePaymentResponse.fromBuffer);
+  static final _$processInsurancePayment = $grpc.ClientMethod<
+          $0.ProcessInsurancePaymentRequest,
+          $0.ProcessInsurancePaymentResponse>(
+      '/financialproducts.FinancialProductsService/ProcessInsurancePayment',
+      ($0.ProcessInsurancePaymentRequest value) => value.writeToBuffer(),
+      $0.ProcessInsurancePaymentResponse.fromBuffer);
+  static final _$getInsurancePaymentById = $grpc.ClientMethod<
+          $0.GetInsurancePaymentByIdRequest,
+          $0.GetInsurancePaymentByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePaymentById',
+      ($0.GetInsurancePaymentByIdRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePaymentByIdResponse.fromBuffer);
+  static final _$getOverdueInsurancePayments = $grpc.ClientMethod<
+          $0.GetOverdueInsurancePaymentsRequest,
+          $0.GetOverdueInsurancePaymentsResponse>(
+      '/financialproducts.FinancialProductsService/GetOverdueInsurancePayments',
+      ($0.GetOverdueInsurancePaymentsRequest value) => value.writeToBuffer(),
+      $0.GetOverdueInsurancePaymentsResponse.fromBuffer);
+  static final _$getInsuranceClaims = $grpc.ClientMethod<
+          $0.GetInsuranceClaimsRequest, $0.GetInsuranceClaimsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceClaims',
+      ($0.GetInsuranceClaimsRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceClaimsResponse.fromBuffer);
+  static final _$getUserInsuranceClaims = $grpc.ClientMethod<
+          $0.GetUserInsuranceClaimsRequest, $0.GetUserInsuranceClaimsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserInsuranceClaims',
+      ($0.GetUserInsuranceClaimsRequest value) => value.writeToBuffer(),
+      $0.GetUserInsuranceClaimsResponse.fromBuffer);
+  static final _$updateInsuranceClaim = $grpc.ClientMethod<
+          $0.UpdateInsuranceClaimRequest, $0.UpdateInsuranceClaimResponse>(
+      '/financialproducts.FinancialProductsService/UpdateInsuranceClaim',
+      ($0.UpdateInsuranceClaimRequest value) => value.writeToBuffer(),
+      $0.UpdateInsuranceClaimResponse.fromBuffer);
+  static final _$getInsuranceClaimById = $grpc.ClientMethod<
+          $0.GetInsuranceClaimByIdRequest, $0.GetInsuranceClaimByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceClaimById',
+      ($0.GetInsuranceClaimByIdRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceClaimByIdResponse.fromBuffer);
+  static final _$updateInsurancePolicy = $grpc.ClientMethod<
+          $0.UpdateInsurancePolicyRequest, $0.UpdateInsurancePolicyResponse>(
+      '/financialproducts.FinancialProductsService/UpdateInsurancePolicy',
+      ($0.UpdateInsurancePolicyRequest value) => value.writeToBuffer(),
+      $0.UpdateInsurancePolicyResponse.fromBuffer);
+  static final _$generateInsuranceReceipt = $grpc.ClientMethod<
+          $0.GenerateInsuranceReceiptRequest,
+          $0.GenerateInsuranceReceiptResponse>(
+      '/financialproducts.FinancialProductsService/GenerateInsuranceReceipt',
+      ($0.GenerateInsuranceReceiptRequest value) => value.writeToBuffer(),
+      $0.GenerateInsuranceReceiptResponse.fromBuffer);
+  static final _$getUserInsuranceReceipts = $grpc.ClientMethod<
+          $0.GetUserInsuranceReceiptsRequest,
+          $0.GetUserInsuranceReceiptsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserInsuranceReceipts',
+      ($0.GetUserInsuranceReceiptsRequest value) => value.writeToBuffer(),
+      $0.GetUserInsuranceReceiptsResponse.fromBuffer);
+  static final _$getInsuranceStatistics = $grpc.ClientMethod<
+          $0.GetInsuranceStatisticsRequest, $0.GetInsuranceStatisticsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceStatistics',
+      ($0.GetInsuranceStatisticsRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceStatisticsResponse.fromBuffer);
+  static final _$getInsurancePaymentStatistics = $grpc.ClientMethod<
+          $0.GetInsurancePaymentStatisticsRequest,
+          $0.GetInsurancePaymentStatisticsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePaymentStatistics',
+      ($0.GetInsurancePaymentStatisticsRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePaymentStatisticsResponse.fromBuffer);
+  static final _$getMyCoverCustomers = $grpc.ClientMethod<
+          $0.GetMyCoverCustomersRequest, $0.GetMyCoverCustomersResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverCustomers',
+      ($0.GetMyCoverCustomersRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverCustomersResponse.fromBuffer);
+  static final _$getMyCoverCustomerById = $grpc.ClientMethod<
+          $0.GetMyCoverCustomerByIdRequest, $0.GetMyCoverCustomerByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverCustomerById',
+      ($0.GetMyCoverCustomerByIdRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverCustomerByIdResponse.fromBuffer);
+  static final _$getMyCoverCustomerPolicies = $grpc.ClientMethod<
+          $0.GetMyCoverCustomerPoliciesRequest,
+          $0.GetMyCoverCustomerPoliciesResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverCustomerPolicies',
+      ($0.GetMyCoverCustomerPoliciesRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverCustomerPoliciesResponse.fromBuffer);
+  static final _$getMyCoverCustomerPurchases = $grpc.ClientMethod<
+          $0.GetMyCoverCustomerPurchasesRequest,
+          $0.GetMyCoverCustomerPurchasesResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverCustomerPurchases',
+      ($0.GetMyCoverCustomerPurchasesRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverCustomerPurchasesResponse.fromBuffer);
+  static final _$getMyCoverPurchases = $grpc.ClientMethod<
+          $0.GetMyCoverPurchasesRequest, $0.GetMyCoverPurchasesResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverPurchases',
+      ($0.GetMyCoverPurchasesRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverPurchasesResponse.fromBuffer);
+  static final _$getMyCoverPurchaseById = $grpc.ClientMethod<
+          $0.GetMyCoverPurchaseByIdRequest, $0.GetMyCoverPurchaseByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverPurchaseById',
+      ($0.GetMyCoverPurchaseByIdRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverPurchaseByIdResponse.fromBuffer);
+  static final _$getMyCoverClaims = $grpc.ClientMethod<
+          $0.GetMyCoverClaimsRequest, $0.GetMyCoverClaimsResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverClaims',
+      ($0.GetMyCoverClaimsRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverClaimsResponse.fromBuffer);
+  static final _$getMyCoverClaimById = $grpc.ClientMethod<
+          $0.GetMyCoverClaimByIdRequest, $0.GetMyCoverClaimByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverClaimById',
+      ($0.GetMyCoverClaimByIdRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverClaimByIdResponse.fromBuffer);
+  static final _$fileCreditLifeClaim = $grpc.ClientMethod<
+          $0.FileCreditLifeClaimRequest, $0.FileCreditLifeClaimResponse>(
+      '/financialproducts.FinancialProductsService/FileCreditLifeClaim',
+      ($0.FileCreditLifeClaimRequest value) => value.writeToBuffer(),
+      $0.FileCreditLifeClaimResponse.fromBuffer);
+  static final _$getInsuranceStates = $grpc.ClientMethod<
+          $0.GetInsuranceStatesRequest, $0.GetInsuranceStatesResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceStates',
+      ($0.GetInsuranceStatesRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceStatesResponse.fromBuffer);
+  static final _$getInsuranceVehicleMakes = $grpc.ClientMethod<
+          $0.GetInsuranceVehicleMakesRequest,
+          $0.GetInsuranceVehicleMakesResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceVehicleMakes',
+      ($0.GetInsuranceVehicleMakesRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceVehicleMakesResponse.fromBuffer);
+  static final _$getMyCoverNotificationPreferences = $grpc.ClientMethod<
+          $0.GetMyCoverNotificationPreferencesRequest,
+          $0.GetMyCoverNotificationPreferencesResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverNotificationPreferences',
+      ($0.GetMyCoverNotificationPreferencesRequest value) =>
+          value.writeToBuffer(),
+      $0.GetMyCoverNotificationPreferencesResponse.fromBuffer);
+  static final _$updateMyCoverNotificationPreferences = $grpc.ClientMethod<
+          $0.UpdateMyCoverNotificationPreferencesRequest,
+          $0.UpdateMyCoverNotificationPreferencesResponse>(
+      '/financialproducts.FinancialProductsService/UpdateMyCoverNotificationPreferences',
+      ($0.UpdateMyCoverNotificationPreferencesRequest value) =>
+          value.writeToBuffer(),
+      $0.UpdateMyCoverNotificationPreferencesResponse.fromBuffer);
+  static final _$getMyCoverWalletBalance = $grpc.ClientMethod<
+          $0.GetMyCoverWalletBalanceRequest,
+          $0.GetMyCoverWalletBalanceResponse>(
+      '/financialproducts.FinancialProductsService/GetMyCoverWalletBalance',
+      ($0.GetMyCoverWalletBalanceRequest value) => value.writeToBuffer(),
+      $0.GetMyCoverWalletBalanceResponse.fromBuffer);
+  static final _$requestInsuranceRefund = $grpc.ClientMethod<
+          $0.RequestInsuranceRefundRequest, $0.RequestInsuranceRefundResponse>(
+      '/financialproducts.FinancialProductsService/RequestInsuranceRefund',
+      ($0.RequestInsuranceRefundRequest value) => value.writeToBuffer(),
+      $0.RequestInsuranceRefundResponse.fromBuffer);
+  static final _$getInsuranceRefundStatus = $grpc.ClientMethod<
+          $0.GetInsuranceRefundStatusRequest,
+          $0.GetInsuranceRefundStatusResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceRefundStatus',
+      ($0.GetInsuranceRefundStatusRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceRefundStatusResponse.fromBuffer);
+  static final _$getInsuranceReconciliationOverview = $grpc.ClientMethod<
+          $0.GetInsuranceReconciliationOverviewRequest,
+          $0.GetInsuranceReconciliationOverviewResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceReconciliationOverview',
+      ($0.GetInsuranceReconciliationOverviewRequest value) =>
+          value.writeToBuffer(),
+      $0.GetInsuranceReconciliationOverviewResponse.fromBuffer);
+  static final _$getOrphanedInsuranceTransactions = $grpc.ClientMethod<
+          $0.GetOrphanedInsuranceTransactionsRequest,
+          $0.GetOrphanedInsuranceTransactionsResponse>(
+      '/financialproducts.FinancialProductsService/GetOrphanedInsuranceTransactions',
+      ($0.GetOrphanedInsuranceTransactionsRequest value) =>
+          value.writeToBuffer(),
+      $0.GetOrphanedInsuranceTransactionsResponse.fromBuffer);
+  static final _$manualReconcilePurchase = $grpc.ClientMethod<
+          $0.ManualReconcilePurchaseRequest,
+          $0.ManualReconcilePurchaseResponse>(
+      '/financialproducts.FinancialProductsService/ManualReconcilePurchase',
+      ($0.ManualReconcilePurchaseRequest value) => value.writeToBuffer(),
+      $0.ManualReconcilePurchaseResponse.fromBuffer);
+  static final _$adminTriggerRefund = $grpc.ClientMethod<
+          $0.AdminTriggerRefundRequest, $0.AdminTriggerRefundResponse>(
+      '/financialproducts.FinancialProductsService/AdminTriggerRefund',
+      ($0.AdminTriggerRefundRequest value) => value.writeToBuffer(),
+      $0.AdminTriggerRefundResponse.fromBuffer);
+  static final _$getInsuranceWebhookEvents = $grpc.ClientMethod<
+          $0.GetInsuranceWebhookEventsRequest,
+          $0.GetInsuranceWebhookEventsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceWebhookEvents',
+      ($0.GetInsuranceWebhookEventsRequest value) => value.writeToBuffer(),
+      $0.GetInsuranceWebhookEventsResponse.fromBuffer);
+  static final _$retryFailedWebhookEvent = $grpc.ClientMethod<
+          $0.RetryFailedWebhookEventRequest,
+          $0.RetryFailedWebhookEventResponse>(
+      '/financialproducts.FinancialProductsService/RetryFailedWebhookEvent',
+      ($0.RetryFailedWebhookEventRequest value) => value.writeToBuffer(),
+      $0.RetryFailedWebhookEventResponse.fromBuffer);
+  static final _$getFailedInsuranceTransactions = $grpc.ClientMethod<
+          $0.GetFailedInsuranceTransactionsRequest,
+          $0.GetFailedInsuranceTransactionsResponse>(
+      '/financialproducts.FinancialProductsService/GetFailedInsuranceTransactions',
+      ($0.GetFailedInsuranceTransactionsRequest value) => value.writeToBuffer(),
+      $0.GetFailedInsuranceTransactionsResponse.fromBuffer);
+  static final _$updateProductMargin = $grpc.ClientMethod<
+          $0.UpdateProductMarginRequest, $0.UpdateProductMarginResponse>(
+      '/financialproducts.FinancialProductsService/UpdateProductMargin',
+      ($0.UpdateProductMarginRequest value) => value.writeToBuffer(),
+      $0.UpdateProductMarginResponse.fromBuffer);
+  static final _$getInsurancePlatformWallets = $grpc.ClientMethod<
+          $0.GetInsurancePlatformWalletsRequest,
+          $0.GetInsurancePlatformWalletsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePlatformWallets',
+      ($0.GetInsurancePlatformWalletsRequest value) => value.writeToBuffer(),
+      $0.GetInsurancePlatformWalletsResponse.fromBuffer);
+  static final _$createCrowdfund =
+      $grpc.ClientMethod<$0.CreateCrowdfundRequest, $0.CreateCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/CreateCrowdfund',
+          ($0.CreateCrowdfundRequest value) => value.writeToBuffer(),
+          $0.CreateCrowdfundResponse.fromBuffer);
+  static final _$getCrowdfunds =
+      $grpc.ClientMethod<$0.GetCrowdfundsRequest, $0.GetCrowdfundsResponse>(
+          '/financialproducts.FinancialProductsService/GetCrowdfunds',
+          ($0.GetCrowdfundsRequest value) => value.writeToBuffer(),
+          $0.GetCrowdfundsResponse.fromBuffer);
+  static final _$getCrowdfund =
+      $grpc.ClientMethod<$0.GetCrowdfundRequest, $0.GetCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/GetCrowdfund',
+          ($0.GetCrowdfundRequest value) => value.writeToBuffer(),
+          $0.GetCrowdfundResponse.fromBuffer);
+  static final _$contributeToCrowdfund = $grpc.ClientMethod<
+          $0.ContributeToCrowdfundRequest, $0.ContributeToCrowdfundResponse>(
+      '/financialproducts.FinancialProductsService/ContributeToCrowdfund',
+      ($0.ContributeToCrowdfundRequest value) => value.writeToBuffer(),
+      $0.ContributeToCrowdfundResponse.fromBuffer);
+  static final _$withdrawFromCrowdfund = $grpc.ClientMethod<
+          $0.WithdrawFromCrowdfundRequest, $0.WithdrawFromCrowdfundResponse>(
+      '/financialproducts.FinancialProductsService/WithdrawFromCrowdfund',
+      ($0.WithdrawFromCrowdfundRequest value) => value.writeToBuffer(),
+      $0.WithdrawFromCrowdfundResponse.fromBuffer);
+  static final _$getCrowdfundWithdrawalFeeQuote = $grpc.ClientMethod<
+          $0.GetCrowdfundWithdrawalFeeQuoteRequest,
+          $0.GetCrowdfundWithdrawalFeeQuoteResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundWithdrawalFeeQuote',
+      ($0.GetCrowdfundWithdrawalFeeQuoteRequest value) => value.writeToBuffer(),
+      $0.GetCrowdfundWithdrawalFeeQuoteResponse.fromBuffer);
+  static final _$listCrowdfundCustomCategories = $grpc.ClientMethod<
+          $0.ListCrowdfundCustomCategoriesRequest,
+          $0.ListCrowdfundCustomCategoriesResponse>(
+      '/financialproducts.FinancialProductsService/ListCrowdfundCustomCategories',
+      ($0.ListCrowdfundCustomCategoriesRequest value) => value.writeToBuffer(),
+      $0.ListCrowdfundCustomCategoriesResponse.fromBuffer);
+  static final _$addCrowdfundCustomCategory = $grpc.ClientMethod<
+          $0.AddCrowdfundCustomCategoryRequest,
+          $0.AddCrowdfundCustomCategoryResponse>(
+      '/financialproducts.FinancialProductsService/AddCrowdfundCustomCategory',
+      ($0.AddCrowdfundCustomCategoryRequest value) => value.writeToBuffer(),
+      $0.AddCrowdfundCustomCategoryResponse.fromBuffer);
+  static final _$deleteCrowdfundCustomCategory = $grpc.ClientMethod<
+          $0.DeleteCrowdfundCustomCategoryRequest,
+          $0.DeleteCrowdfundCustomCategoryResponse>(
+      '/financialproducts.FinancialProductsService/DeleteCrowdfundCustomCategory',
+      ($0.DeleteCrowdfundCustomCategoryRequest value) => value.writeToBuffer(),
+      $0.DeleteCrowdfundCustomCategoryResponse.fromBuffer);
+  static final _$listCrowdfundWithdrawals = $grpc.ClientMethod<
+          $0.ListCrowdfundWithdrawalsRequest,
+          $0.ListCrowdfundWithdrawalsResponse>(
+      '/financialproducts.FinancialProductsService/ListCrowdfundWithdrawals',
+      ($0.ListCrowdfundWithdrawalsRequest value) => value.writeToBuffer(),
+      $0.ListCrowdfundWithdrawalsResponse.fromBuffer);
+  static final _$closeCrowdfund =
+      $grpc.ClientMethod<$0.CloseCrowdfundRequest, $0.CloseCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/CloseCrowdfund',
+          ($0.CloseCrowdfundRequest value) => value.writeToBuffer(),
+          $0.CloseCrowdfundResponse.fromBuffer);
+  static final _$cancelCrowdfund =
+      $grpc.ClientMethod<$0.CancelCrowdfundRequest, $0.CancelCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/CancelCrowdfund',
+          ($0.CancelCrowdfundRequest value) => value.writeToBuffer(),
+          $0.CancelCrowdfundResponse.fromBuffer);
+  static final _$forceCompleteCrowdfund = $grpc.ClientMethod<
+          $0.ForceCompleteCrowdfundRequest, $0.ForceCompleteCrowdfundResponse>(
+      '/financialproducts.FinancialProductsService/ForceCompleteCrowdfund',
+      ($0.ForceCompleteCrowdfundRequest value) => value.writeToBuffer(),
+      $0.ForceCompleteCrowdfundResponse.fromBuffer);
+  static final _$listCrowdfundRefunds = $grpc.ClientMethod<
+          $0.ListCrowdfundRefundsRequest, $0.ListCrowdfundRefundsResponse>(
+      '/financialproducts.FinancialProductsService/ListCrowdfundRefunds',
+      ($0.ListCrowdfundRefundsRequest value) => value.writeToBuffer(),
+      $0.ListCrowdfundRefundsResponse.fromBuffer);
+  static final _$retryCrowdfundRefund = $grpc.ClientMethod<
+          $0.RetryCrowdfundRefundRequest, $0.RetryCrowdfundRefundResponse>(
+      '/financialproducts.FinancialProductsService/RetryCrowdfundRefund',
+      ($0.RetryCrowdfundRefundRequest value) => value.writeToBuffer(),
+      $0.RetryCrowdfundRefundResponse.fromBuffer);
+  static final _$getCrowdfundStatistics = $grpc.ClientMethod<
+          $0.GetCrowdfundStatisticsRequest, $0.GetCrowdfundStatisticsResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundStatistics',
+      ($0.GetCrowdfundStatisticsRequest value) => value.writeToBuffer(),
+      $0.GetCrowdfundStatisticsResponse.fromBuffer);
+  static final _$searchCrowdfunds = $grpc.ClientMethod<
+          $0.SearchCrowdfundsRequest, $0.SearchCrowdfundsResponse>(
+      '/financialproducts.FinancialProductsService/SearchCrowdfunds',
+      ($0.SearchCrowdfundsRequest value) => value.writeToBuffer(),
+      $0.SearchCrowdfundsResponse.fromBuffer);
+  static final _$updateCrowdfund =
+      $grpc.ClientMethod<$0.UpdateCrowdfundRequest, $0.UpdateCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/UpdateCrowdfund',
+          ($0.UpdateCrowdfundRequest value) => value.writeToBuffer(),
+          $0.UpdateCrowdfundResponse.fromBuffer);
+  static final _$deleteCrowdfund =
+      $grpc.ClientMethod<$0.DeleteCrowdfundRequest, $0.DeleteCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/DeleteCrowdfund',
+          ($0.DeleteCrowdfundRequest value) => value.writeToBuffer(),
+          $0.DeleteCrowdfundResponse.fromBuffer);
+  static final _$getCrowdfundDonations = $grpc.ClientMethod<
+          $0.GetCrowdfundDonationsRequest, $0.GetCrowdfundDonationsResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundDonations',
+      ($0.GetCrowdfundDonationsRequest value) => value.writeToBuffer(),
+      $0.GetCrowdfundDonationsResponse.fromBuffer);
+  static final _$getUserDonations = $grpc.ClientMethod<
+          $0.GetUserDonationsRequest, $0.GetUserDonationsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserDonations',
+      ($0.GetUserDonationsRequest value) => value.writeToBuffer(),
+      $0.GetUserDonationsResponse.fromBuffer);
+  static final _$generateDonationReceipt = $grpc.ClientMethod<
+          $0.GenerateDonationReceiptRequest,
+          $0.GenerateDonationReceiptResponse>(
+      '/financialproducts.FinancialProductsService/GenerateDonationReceipt',
+      ($0.GenerateDonationReceiptRequest value) => value.writeToBuffer(),
+      $0.GenerateDonationReceiptResponse.fromBuffer);
+  static final _$getUserCrowdfundReceipts = $grpc.ClientMethod<
+          $0.GetUserCrowdfundReceiptsRequest,
+          $0.GetUserCrowdfundReceiptsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserCrowdfundReceipts',
+      ($0.GetUserCrowdfundReceiptsRequest value) => value.writeToBuffer(),
+      $0.GetUserCrowdfundReceiptsResponse.fromBuffer);
+  static final _$connectNotificationChannel = $grpc.ClientMethod<
+          $0.ConnectNotificationChannelRequest,
+          $0.ConnectNotificationChannelResponse>(
+      '/financialproducts.FinancialProductsService/ConnectNotificationChannel',
+      ($0.ConnectNotificationChannelRequest value) => value.writeToBuffer(),
+      $0.ConnectNotificationChannelResponse.fromBuffer);
+  static final _$disconnectNotificationChannel = $grpc.ClientMethod<
+          $0.DisconnectNotificationChannelRequest,
+          $0.DisconnectNotificationChannelResponse>(
+      '/financialproducts.FinancialProductsService/DisconnectNotificationChannel',
+      ($0.DisconnectNotificationChannelRequest value) => value.writeToBuffer(),
+      $0.DisconnectNotificationChannelResponse.fromBuffer);
+  static final _$getNotificationChannels = $grpc.ClientMethod<
+          $0.GetNotificationChannelsRequest,
+          $0.GetNotificationChannelsResponse>(
+      '/financialproducts.FinancialProductsService/GetNotificationChannels',
+      ($0.GetNotificationChannelsRequest value) => value.writeToBuffer(),
+      $0.GetNotificationChannelsResponse.fromBuffer);
+  static final _$updateNotificationChannel = $grpc.ClientMethod<
+          $0.UpdateNotificationChannelRequest,
+          $0.UpdateNotificationChannelResponse>(
+      '/financialproducts.FinancialProductsService/UpdateNotificationChannel',
+      ($0.UpdateNotificationChannelRequest value) => value.writeToBuffer(),
+      $0.UpdateNotificationChannelResponse.fromBuffer);
+  static final _$testNotificationChannel = $grpc.ClientMethod<
+          $0.TestNotificationChannelRequest,
+          $0.TestNotificationChannelResponse>(
+      '/financialproducts.FinancialProductsService/TestNotificationChannel',
+      ($0.TestNotificationChannelRequest value) => value.writeToBuffer(),
+      $0.TestNotificationChannelResponse.fromBuffer);
+  static final _$getTelegramBotInfo = $grpc.ClientMethod<
+          $0.GetTelegramBotInfoRequest, $0.GetTelegramBotInfoResponse>(
+      '/financialproducts.FinancialProductsService/GetTelegramBotInfo',
+      ($0.GetTelegramBotInfoRequest value) => value.writeToBuffer(),
+      $0.GetTelegramBotInfoResponse.fromBuffer);
+  static final _$verifyTelegramChannel = $grpc.ClientMethod<
+          $0.VerifyTelegramChannelRequest, $0.VerifyTelegramChannelResponse>(
+      '/financialproducts.FinancialProductsService/VerifyTelegramChannel',
+      ($0.VerifyTelegramChannelRequest value) => value.writeToBuffer(),
+      $0.VerifyTelegramChannelResponse.fromBuffer);
+  static final _$getNotificationHistory = $grpc.ClientMethod<
+          $0.GetNotificationHistoryRequest, $0.GetNotificationHistoryResponse>(
+      '/financialproducts.FinancialProductsService/GetNotificationHistory',
+      ($0.GetNotificationHistoryRequest value) => value.writeToBuffer(),
+      $0.GetNotificationHistoryResponse.fromBuffer);
+  static final _$getCrowdfundLeaderboard = $grpc.ClientMethod<
+          $0.GetCrowdfundLeaderboardRequest,
+          $0.GetCrowdfundLeaderboardResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundLeaderboard',
+      ($0.GetCrowdfundLeaderboardRequest value) => value.writeToBuffer(),
+      $0.GetCrowdfundLeaderboardResponse.fromBuffer);
+  static final _$createAutoSaveRule = $grpc.ClientMethod<
+          $0.CreateAutoSaveRuleRequest2, $0.CreateAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/CreateAutoSaveRule',
+      ($0.CreateAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      $0.CreateAutoSaveRuleResponse2.fromBuffer);
+  static final _$getAutoSaveRules = $grpc.ClientMethod<
+          $0.GetAutoSaveRulesRequest2, $0.GetAutoSaveRulesResponse2>(
+      '/financialproducts.FinancialProductsService/GetAutoSaveRules',
+      ($0.GetAutoSaveRulesRequest2 value) => value.writeToBuffer(),
+      $0.GetAutoSaveRulesResponse2.fromBuffer);
+  static final _$updateAutoSaveRule = $grpc.ClientMethod<
+          $0.UpdateAutoSaveRuleRequest2, $0.UpdateAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/UpdateAutoSaveRule',
+      ($0.UpdateAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      $0.UpdateAutoSaveRuleResponse2.fromBuffer);
+  static final _$toggleAutoSaveRule = $grpc.ClientMethod<
+          $0.ToggleAutoSaveRuleRequest2, $0.ToggleAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/ToggleAutoSaveRule',
+      ($0.ToggleAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      $0.ToggleAutoSaveRuleResponse2.fromBuffer);
+  static final _$deleteAutoSaveRule = $grpc.ClientMethod<
+          $0.DeleteAutoSaveRuleRequest2, $0.DeleteAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/DeleteAutoSaveRule',
+      ($0.DeleteAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      $0.DeleteAutoSaveRuleResponse2.fromBuffer);
+  static final _$getAutoSaveTransactions = $grpc.ClientMethod<
+          $0.GetAutoSaveTransactionsRequest2,
+          $0.GetAutoSaveTransactionsResponse2>(
+      '/financialproducts.FinancialProductsService/GetAutoSaveTransactions',
+      ($0.GetAutoSaveTransactionsRequest2 value) => value.writeToBuffer(),
+      $0.GetAutoSaveTransactionsResponse2.fromBuffer);
+  static final _$getAutoSaveStatistics = $grpc.ClientMethod<
+          $0.GetAutoSaveStatisticsRequest2, $0.GetAutoSaveStatisticsResponse2>(
+      '/financialproducts.FinancialProductsService/GetAutoSaveStatistics',
+      ($0.GetAutoSaveStatisticsRequest2 value) => value.writeToBuffer(),
+      $0.GetAutoSaveStatisticsResponse2.fromBuffer);
+  static final _$triggerAutoSave = $grpc.ClientMethod<
+          $0.TriggerAutoSaveRequest2, $0.TriggerAutoSaveResponse2>(
+      '/financialproducts.FinancialProductsService/TriggerAutoSave',
+      ($0.TriggerAutoSaveRequest2 value) => value.writeToBuffer(),
+      $0.TriggerAutoSaveResponse2.fromBuffer);
 }
 
+@$pb.GrpcServiceName('financialproducts.FinancialProductsService')
 abstract class FinancialProductsServiceBase extends $grpc.Service {
   $core.String get $name => 'financialproducts.FinancialProductsService';
 
   FinancialProductsServiceBase() {
-    $addMethod($grpc.ServiceMethod<$19.CreateGroupAccountRequest,
-            $19.CreateGroupAccountResponse>(
+    $addMethod($grpc.ServiceMethod<$0.CreateGroupAccountRequest,
+            $0.CreateGroupAccountResponse>(
         'CreateGroupAccount',
         createGroupAccount_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CreateGroupAccountRequest.fromBuffer(value),
-        ($19.CreateGroupAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetGroupAccountsRequest,
-            $19.GetGroupAccountsResponse>(
+            $0.CreateGroupAccountRequest.fromBuffer(value),
+        ($0.CreateGroupAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetGroupAccountsRequest,
+            $0.GetGroupAccountsResponse>(
         'GetGroupAccounts',
         getGroupAccounts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetGroupAccountsRequest.fromBuffer(value),
-        ($19.GetGroupAccountsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetGroupAccountRequest,
-            $19.GetGroupAccountResponse>(
+            $0.GetGroupAccountsRequest.fromBuffer(value),
+        ($0.GetGroupAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetGroupAccountRequest,
+            $0.GetGroupAccountResponse>(
         'GetGroupAccount',
         getGroupAccount_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetGroupAccountRequest.fromBuffer(value),
-        ($19.GetGroupAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.AddGroupMemberRequest,
-            $19.AddGroupMemberResponse>(
+            $0.GetGroupAccountRequest.fromBuffer(value),
+        ($0.GetGroupAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AddGroupMemberRequest,
+            $0.AddGroupMemberResponse>(
         'AddGroupMember',
         addGroupMember_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.AddGroupMemberRequest.fromBuffer(value),
-        ($19.AddGroupMemberResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.RemoveGroupMemberRequest,
-            $19.RemoveGroupMemberResponse>(
+            $0.AddGroupMemberRequest.fromBuffer(value),
+        ($0.AddGroupMemberResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RemoveGroupMemberRequest,
+            $0.RemoveGroupMemberResponse>(
         'RemoveGroupMember',
         removeGroupMember_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.RemoveGroupMemberRequest.fromBuffer(value),
-        ($19.RemoveGroupMemberResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ContributeToGroupRequest,
-            $19.ContributeToGroupResponse>(
+            $0.RemoveGroupMemberRequest.fromBuffer(value),
+        ($0.RemoveGroupMemberResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ContributeToGroupRequest,
+            $0.ContributeToGroupResponse>(
         'ContributeToGroup',
         contributeToGroup_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ContributeToGroupRequest.fromBuffer(value),
-        ($19.ContributeToGroupResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.WithdrawFromGroupRequest,
-            $19.WithdrawFromGroupResponse>(
+            $0.ContributeToGroupRequest.fromBuffer(value),
+        ($0.ContributeToGroupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawFromGroupRequest,
+            $0.WithdrawFromGroupResponse>(
         'WithdrawFromGroup',
         withdrawFromGroup_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.WithdrawFromGroupRequest.fromBuffer(value),
-        ($19.WithdrawFromGroupResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CloseGroupAccountRequest,
-            $19.CloseGroupAccountResponse>(
+            $0.WithdrawFromGroupRequest.fromBuffer(value),
+        ($0.WithdrawFromGroupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CloseGroupAccountRequest,
+            $0.CloseGroupAccountResponse>(
         'CloseGroupAccount',
         closeGroupAccount_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CloseGroupAccountRequest.fromBuffer(value),
-        ($19.CloseGroupAccountResponse value) => value.writeToBuffer()));
+            $0.CloseGroupAccountRequest.fromBuffer(value),
+        ($0.CloseGroupAccountResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$19.BuyInsuranceRequest, $19.BuyInsuranceResponse>(
+        $grpc.ServiceMethod<$0.BuyInsuranceRequest, $0.BuyInsuranceResponse>(
             'BuyInsurance',
             buyInsurance_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $19.BuyInsuranceRequest.fromBuffer(value),
-            ($19.BuyInsuranceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePoliciesRequest,
-            $19.GetInsurancePoliciesResponse>(
+                $0.BuyInsuranceRequest.fromBuffer(value),
+            ($0.BuyInsuranceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePoliciesRequest,
+            $0.GetInsurancePoliciesResponse>(
         'GetInsurancePolicies',
         getInsurancePolicies_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePoliciesRequest.fromBuffer(value),
-        ($19.GetInsurancePoliciesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePolicyRequest,
-            $19.GetInsurancePolicyResponse>(
+            $0.GetInsurancePoliciesRequest.fromBuffer(value),
+        ($0.GetInsurancePoliciesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePolicyRequest,
+            $0.GetInsurancePolicyResponse>(
         'GetInsurancePolicy',
         getInsurancePolicy_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePolicyRequest.fromBuffer(value),
-        ($19.GetInsurancePolicyResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.MakeInsuranceClaimRequest,
-            $19.MakeInsuranceClaimResponse>(
+            $0.GetInsurancePolicyRequest.fromBuffer(value),
+        ($0.GetInsurancePolicyResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.MakeInsuranceClaimRequest,
+            $0.MakeInsuranceClaimResponse>(
         'MakeInsuranceClaim',
         makeInsuranceClaim_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.MakeInsuranceClaimRequest.fromBuffer(value),
-        ($19.MakeInsuranceClaimResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CancelInsuranceRequest,
-            $19.CancelInsuranceResponse>(
+            $0.MakeInsuranceClaimRequest.fromBuffer(value),
+        ($0.MakeInsuranceClaimResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelInsuranceRequest,
+            $0.CancelInsuranceResponse>(
         'CancelInsurance',
         cancelInsurance_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CancelInsuranceRequest.fromBuffer(value),
-        ($19.CancelInsuranceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePlansRequest,
-            $19.GetInsurancePlansResponse>(
+            $0.CancelInsuranceRequest.fromBuffer(value),
+        ($0.CancelInsuranceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePlansRequest,
+            $0.GetInsurancePlansResponse>(
         'GetInsurancePlans',
         getInsurancePlans_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePlansRequest.fromBuffer(value),
-        ($19.GetInsurancePlansResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceMarketplaceProductsRequest,
-            $19.GetInsuranceMarketplaceProductsResponse>(
+            $0.GetInsurancePlansRequest.fromBuffer(value),
+        ($0.GetInsurancePlansResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceMarketplaceProductsRequest,
+            $0.GetInsuranceMarketplaceProductsResponse>(
         'GetInsuranceMarketplaceProducts',
         getInsuranceMarketplaceProducts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceMarketplaceProductsRequest.fromBuffer(value),
-        ($19.GetInsuranceMarketplaceProductsResponse value) =>
+            $0.GetInsuranceMarketplaceProductsRequest.fromBuffer(value),
+        ($0.GetInsuranceMarketplaceProductsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceMarketplaceCategoriesRequest,
-            $19.GetInsuranceMarketplaceCategoriesResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceMarketplaceCategoriesRequest,
+            $0.GetInsuranceMarketplaceCategoriesResponse>(
         'GetInsuranceMarketplaceCategories',
         getInsuranceMarketplaceCategories_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceMarketplaceCategoriesRequest.fromBuffer(value),
-        ($19.GetInsuranceMarketplaceCategoriesResponse value) =>
+            $0.GetInsuranceMarketplaceCategoriesRequest.fromBuffer(value),
+        ($0.GetInsuranceMarketplaceCategoriesResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceQuoteRequest,
-            $19.GetInsuranceQuoteResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceQuoteRequest,
+            $0.GetInsuranceQuoteResponse>(
         'GetInsuranceQuote',
         getInsuranceQuote_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceQuoteRequest.fromBuffer(value),
-        ($19.GetInsuranceQuoteResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.PurchaseMarketplaceInsuranceRequest,
-            $19.PurchaseMarketplaceInsuranceResponse>(
+            $0.GetInsuranceQuoteRequest.fromBuffer(value),
+        ($0.GetInsuranceQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PurchaseMarketplaceInsuranceRequest,
+            $0.PurchaseMarketplaceInsuranceResponse>(
         'PurchaseMarketplaceInsurance',
         purchaseMarketplaceInsurance_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.PurchaseMarketplaceInsuranceRequest.fromBuffer(value),
-        ($19.PurchaseMarketplaceInsuranceResponse value) =>
+            $0.PurchaseMarketplaceInsuranceRequest.fromBuffer(value),
+        ($0.PurchaseMarketplaceInsuranceResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePurchaseStatusRequest,
-            $19.GetInsurancePurchaseStatusResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePurchaseStatusRequest,
+            $0.GetInsurancePurchaseStatusResponse>(
         'GetInsurancePurchaseStatus',
         getInsurancePurchaseStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePurchaseStatusRequest.fromBuffer(value),
-        ($19.GetInsurancePurchaseStatusResponse value) =>
+            $0.GetInsurancePurchaseStatusRequest.fromBuffer(value),
+        ($0.GetInsurancePurchaseStatusResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UploadInsuranceDocumentRequest,
-            $19.UploadInsuranceDocumentResponse>(
+    $addMethod($grpc.ServiceMethod<$0.UploadInsuranceDocumentRequest,
+            $0.UploadInsuranceDocumentResponse>(
         'UploadInsuranceDocument',
         uploadInsuranceDocument_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UploadInsuranceDocumentRequest.fromBuffer(value),
-        ($19.UploadInsuranceDocumentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceDocumentUploadURLRequest,
-            $19.GetInsuranceDocumentUploadURLResponse>(
+            $0.UploadInsuranceDocumentRequest.fromBuffer(value),
+        ($0.UploadInsuranceDocumentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceDocumentUploadURLRequest,
+            $0.GetInsuranceDocumentUploadURLResponse>(
         'GetInsuranceDocumentUploadURL',
         getInsuranceDocumentUploadURL_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceDocumentUploadURLRequest.fromBuffer(value),
-        ($19.GetInsuranceDocumentUploadURLResponse value) =>
+            $0.GetInsuranceDocumentUploadURLRequest.fromBuffer(value),
+        ($0.GetInsuranceDocumentUploadURLResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceAuxiliaryDataRequest,
-            $19.GetInsuranceAuxiliaryDataResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceAuxiliaryDataRequest,
+            $0.GetInsuranceAuxiliaryDataResponse>(
         'GetInsuranceAuxiliaryData',
         getInsuranceAuxiliaryData_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceAuxiliaryDataRequest.fromBuffer(value),
-        ($19.GetInsuranceAuxiliaryDataResponse value) =>
-            value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePaymentsRequest,
-            $19.GetInsurancePaymentsResponse>(
+            $0.GetInsuranceAuxiliaryDataRequest.fromBuffer(value),
+        ($0.GetInsuranceAuxiliaryDataResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePaymentsRequest,
+            $0.GetInsurancePaymentsResponse>(
         'GetInsurancePayments',
         getInsurancePayments_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePaymentsRequest.fromBuffer(value),
-        ($19.GetInsurancePaymentsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetUserInsurancePaymentsRequest,
-            $19.GetUserInsurancePaymentsResponse>(
+            $0.GetInsurancePaymentsRequest.fromBuffer(value),
+        ($0.GetInsurancePaymentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserInsurancePaymentsRequest,
+            $0.GetUserInsurancePaymentsResponse>(
         'GetUserInsurancePayments',
         getUserInsurancePayments_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetUserInsurancePaymentsRequest.fromBuffer(value),
-        ($19.GetUserInsurancePaymentsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CreateInsurancePaymentRequest,
-            $19.CreateInsurancePaymentResponse>(
+            $0.GetUserInsurancePaymentsRequest.fromBuffer(value),
+        ($0.GetUserInsurancePaymentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateInsurancePaymentRequest,
+            $0.CreateInsurancePaymentResponse>(
         'CreateInsurancePayment',
         createInsurancePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CreateInsurancePaymentRequest.fromBuffer(value),
-        ($19.CreateInsurancePaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ProcessInsurancePaymentRequest,
-            $19.ProcessInsurancePaymentResponse>(
+            $0.CreateInsurancePaymentRequest.fromBuffer(value),
+        ($0.CreateInsurancePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ProcessInsurancePaymentRequest,
+            $0.ProcessInsurancePaymentResponse>(
         'ProcessInsurancePayment',
         processInsurancePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ProcessInsurancePaymentRequest.fromBuffer(value),
-        ($19.ProcessInsurancePaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePaymentByIdRequest,
-            $19.GetInsurancePaymentByIdResponse>(
+            $0.ProcessInsurancePaymentRequest.fromBuffer(value),
+        ($0.ProcessInsurancePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePaymentByIdRequest,
+            $0.GetInsurancePaymentByIdResponse>(
         'GetInsurancePaymentById',
         getInsurancePaymentById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePaymentByIdRequest.fromBuffer(value),
-        ($19.GetInsurancePaymentByIdResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetOverdueInsurancePaymentsRequest,
-            $19.GetOverdueInsurancePaymentsResponse>(
+            $0.GetInsurancePaymentByIdRequest.fromBuffer(value),
+        ($0.GetInsurancePaymentByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetOverdueInsurancePaymentsRequest,
+            $0.GetOverdueInsurancePaymentsResponse>(
         'GetOverdueInsurancePayments',
         getOverdueInsurancePayments_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetOverdueInsurancePaymentsRequest.fromBuffer(value),
-        ($19.GetOverdueInsurancePaymentsResponse value) =>
+            $0.GetOverdueInsurancePaymentsRequest.fromBuffer(value),
+        ($0.GetOverdueInsurancePaymentsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceClaimsRequest,
-            $19.GetInsuranceClaimsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceClaimsRequest,
+            $0.GetInsuranceClaimsResponse>(
         'GetInsuranceClaims',
         getInsuranceClaims_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceClaimsRequest.fromBuffer(value),
-        ($19.GetInsuranceClaimsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetUserInsuranceClaimsRequest,
-            $19.GetUserInsuranceClaimsResponse>(
+            $0.GetInsuranceClaimsRequest.fromBuffer(value),
+        ($0.GetInsuranceClaimsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserInsuranceClaimsRequest,
+            $0.GetUserInsuranceClaimsResponse>(
         'GetUserInsuranceClaims',
         getUserInsuranceClaims_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetUserInsuranceClaimsRequest.fromBuffer(value),
-        ($19.GetUserInsuranceClaimsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UpdateInsuranceClaimRequest,
-            $19.UpdateInsuranceClaimResponse>(
+            $0.GetUserInsuranceClaimsRequest.fromBuffer(value),
+        ($0.GetUserInsuranceClaimsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateInsuranceClaimRequest,
+            $0.UpdateInsuranceClaimResponse>(
         'UpdateInsuranceClaim',
         updateInsuranceClaim_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateInsuranceClaimRequest.fromBuffer(value),
-        ($19.UpdateInsuranceClaimResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceClaimByIdRequest,
-            $19.GetInsuranceClaimByIdResponse>(
+            $0.UpdateInsuranceClaimRequest.fromBuffer(value),
+        ($0.UpdateInsuranceClaimResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceClaimByIdRequest,
+            $0.GetInsuranceClaimByIdResponse>(
         'GetInsuranceClaimById',
         getInsuranceClaimById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceClaimByIdRequest.fromBuffer(value),
-        ($19.GetInsuranceClaimByIdResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UpdateInsurancePolicyRequest,
-            $19.UpdateInsurancePolicyResponse>(
+            $0.GetInsuranceClaimByIdRequest.fromBuffer(value),
+        ($0.GetInsuranceClaimByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateInsurancePolicyRequest,
+            $0.UpdateInsurancePolicyResponse>(
         'UpdateInsurancePolicy',
         updateInsurancePolicy_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateInsurancePolicyRequest.fromBuffer(value),
-        ($19.UpdateInsurancePolicyResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GenerateInsuranceReceiptRequest,
-            $19.GenerateInsuranceReceiptResponse>(
+            $0.UpdateInsurancePolicyRequest.fromBuffer(value),
+        ($0.UpdateInsurancePolicyResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateInsuranceReceiptRequest,
+            $0.GenerateInsuranceReceiptResponse>(
         'GenerateInsuranceReceipt',
         generateInsuranceReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GenerateInsuranceReceiptRequest.fromBuffer(value),
-        ($19.GenerateInsuranceReceiptResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetUserInsuranceReceiptsRequest,
-            $19.GetUserInsuranceReceiptsResponse>(
+            $0.GenerateInsuranceReceiptRequest.fromBuffer(value),
+        ($0.GenerateInsuranceReceiptResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserInsuranceReceiptsRequest,
+            $0.GetUserInsuranceReceiptsResponse>(
         'GetUserInsuranceReceipts',
         getUserInsuranceReceipts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetUserInsuranceReceiptsRequest.fromBuffer(value),
-        ($19.GetUserInsuranceReceiptsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceStatisticsRequest,
-            $19.GetInsuranceStatisticsResponse>(
+            $0.GetUserInsuranceReceiptsRequest.fromBuffer(value),
+        ($0.GetUserInsuranceReceiptsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceStatisticsRequest,
+            $0.GetInsuranceStatisticsResponse>(
         'GetInsuranceStatistics',
         getInsuranceStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceStatisticsRequest.fromBuffer(value),
-        ($19.GetInsuranceStatisticsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePaymentStatisticsRequest,
-            $19.GetInsurancePaymentStatisticsResponse>(
+            $0.GetInsuranceStatisticsRequest.fromBuffer(value),
+        ($0.GetInsuranceStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePaymentStatisticsRequest,
+            $0.GetInsurancePaymentStatisticsResponse>(
         'GetInsurancePaymentStatistics',
         getInsurancePaymentStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePaymentStatisticsRequest.fromBuffer(value),
-        ($19.GetInsurancePaymentStatisticsResponse value) =>
+            $0.GetInsurancePaymentStatisticsRequest.fromBuffer(value),
+        ($0.GetInsurancePaymentStatisticsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverCustomersRequest,
-            $19.GetMyCoverCustomersResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverCustomersRequest,
+            $0.GetMyCoverCustomersResponse>(
         'GetMyCoverCustomers',
         getMyCoverCustomers_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverCustomersRequest.fromBuffer(value),
-        ($19.GetMyCoverCustomersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverCustomerByIdRequest,
-            $19.GetMyCoverCustomerByIdResponse>(
+            $0.GetMyCoverCustomersRequest.fromBuffer(value),
+        ($0.GetMyCoverCustomersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverCustomerByIdRequest,
+            $0.GetMyCoverCustomerByIdResponse>(
         'GetMyCoverCustomerById',
         getMyCoverCustomerById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverCustomerByIdRequest.fromBuffer(value),
-        ($19.GetMyCoverCustomerByIdResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverCustomerPoliciesRequest,
-            $19.GetMyCoverCustomerPoliciesResponse>(
+            $0.GetMyCoverCustomerByIdRequest.fromBuffer(value),
+        ($0.GetMyCoverCustomerByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverCustomerPoliciesRequest,
+            $0.GetMyCoverCustomerPoliciesResponse>(
         'GetMyCoverCustomerPolicies',
         getMyCoverCustomerPolicies_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverCustomerPoliciesRequest.fromBuffer(value),
-        ($19.GetMyCoverCustomerPoliciesResponse value) =>
+            $0.GetMyCoverCustomerPoliciesRequest.fromBuffer(value),
+        ($0.GetMyCoverCustomerPoliciesResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverCustomerPurchasesRequest,
-            $19.GetMyCoverCustomerPurchasesResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverCustomerPurchasesRequest,
+            $0.GetMyCoverCustomerPurchasesResponse>(
         'GetMyCoverCustomerPurchases',
         getMyCoverCustomerPurchases_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverCustomerPurchasesRequest.fromBuffer(value),
-        ($19.GetMyCoverCustomerPurchasesResponse value) =>
+            $0.GetMyCoverCustomerPurchasesRequest.fromBuffer(value),
+        ($0.GetMyCoverCustomerPurchasesResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverPurchasesRequest,
-            $19.GetMyCoverPurchasesResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverPurchasesRequest,
+            $0.GetMyCoverPurchasesResponse>(
         'GetMyCoverPurchases',
         getMyCoverPurchases_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverPurchasesRequest.fromBuffer(value),
-        ($19.GetMyCoverPurchasesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverPurchaseByIdRequest,
-            $19.GetMyCoverPurchaseByIdResponse>(
+            $0.GetMyCoverPurchasesRequest.fromBuffer(value),
+        ($0.GetMyCoverPurchasesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverPurchaseByIdRequest,
+            $0.GetMyCoverPurchaseByIdResponse>(
         'GetMyCoverPurchaseById',
         getMyCoverPurchaseById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverPurchaseByIdRequest.fromBuffer(value),
-        ($19.GetMyCoverPurchaseByIdResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverClaimsRequest,
-            $19.GetMyCoverClaimsResponse>(
+            $0.GetMyCoverPurchaseByIdRequest.fromBuffer(value),
+        ($0.GetMyCoverPurchaseByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverClaimsRequest,
+            $0.GetMyCoverClaimsResponse>(
         'GetMyCoverClaims',
         getMyCoverClaims_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverClaimsRequest.fromBuffer(value),
-        ($19.GetMyCoverClaimsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverClaimByIdRequest,
-            $19.GetMyCoverClaimByIdResponse>(
+            $0.GetMyCoverClaimsRequest.fromBuffer(value),
+        ($0.GetMyCoverClaimsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverClaimByIdRequest,
+            $0.GetMyCoverClaimByIdResponse>(
         'GetMyCoverClaimById',
         getMyCoverClaimById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverClaimByIdRequest.fromBuffer(value),
-        ($19.GetMyCoverClaimByIdResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.FileCreditLifeClaimRequest,
-            $19.FileCreditLifeClaimResponse>(
+            $0.GetMyCoverClaimByIdRequest.fromBuffer(value),
+        ($0.GetMyCoverClaimByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.FileCreditLifeClaimRequest,
+            $0.FileCreditLifeClaimResponse>(
         'FileCreditLifeClaim',
         fileCreditLifeClaim_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.FileCreditLifeClaimRequest.fromBuffer(value),
-        ($19.FileCreditLifeClaimResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceStatesRequest,
-            $19.GetInsuranceStatesResponse>(
+            $0.FileCreditLifeClaimRequest.fromBuffer(value),
+        ($0.FileCreditLifeClaimResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceStatesRequest,
+            $0.GetInsuranceStatesResponse>(
         'GetInsuranceStates',
         getInsuranceStates_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceStatesRequest.fromBuffer(value),
-        ($19.GetInsuranceStatesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceVehicleMakesRequest,
-            $19.GetInsuranceVehicleMakesResponse>(
+            $0.GetInsuranceStatesRequest.fromBuffer(value),
+        ($0.GetInsuranceStatesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceVehicleMakesRequest,
+            $0.GetInsuranceVehicleMakesResponse>(
         'GetInsuranceVehicleMakes',
         getInsuranceVehicleMakes_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceVehicleMakesRequest.fromBuffer(value),
-        ($19.GetInsuranceVehicleMakesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverNotificationPreferencesRequest,
-            $19.GetMyCoverNotificationPreferencesResponse>(
+            $0.GetInsuranceVehicleMakesRequest.fromBuffer(value),
+        ($0.GetInsuranceVehicleMakesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverNotificationPreferencesRequest,
+            $0.GetMyCoverNotificationPreferencesResponse>(
         'GetMyCoverNotificationPreferences',
         getMyCoverNotificationPreferences_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverNotificationPreferencesRequest.fromBuffer(value),
-        ($19.GetMyCoverNotificationPreferencesResponse value) =>
+            $0.GetMyCoverNotificationPreferencesRequest.fromBuffer(value),
+        ($0.GetMyCoverNotificationPreferencesResponse value) =>
             value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<
-            $19.UpdateMyCoverNotificationPreferencesRequest,
-            $19.UpdateMyCoverNotificationPreferencesResponse>(
+            $0.UpdateMyCoverNotificationPreferencesRequest,
+            $0.UpdateMyCoverNotificationPreferencesResponse>(
         'UpdateMyCoverNotificationPreferences',
         updateMyCoverNotificationPreferences_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateMyCoverNotificationPreferencesRequest.fromBuffer(value),
-        ($19.UpdateMyCoverNotificationPreferencesResponse value) =>
+            $0.UpdateMyCoverNotificationPreferencesRequest.fromBuffer(value),
+        ($0.UpdateMyCoverNotificationPreferencesResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetMyCoverWalletBalanceRequest,
-            $19.GetMyCoverWalletBalanceResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetMyCoverWalletBalanceRequest,
+            $0.GetMyCoverWalletBalanceResponse>(
         'GetMyCoverWalletBalance',
         getMyCoverWalletBalance_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetMyCoverWalletBalanceRequest.fromBuffer(value),
-        ($19.GetMyCoverWalletBalanceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.RequestInsuranceRefundRequest,
-            $19.RequestInsuranceRefundResponse>(
+            $0.GetMyCoverWalletBalanceRequest.fromBuffer(value),
+        ($0.GetMyCoverWalletBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RequestInsuranceRefundRequest,
+            $0.RequestInsuranceRefundResponse>(
         'RequestInsuranceRefund',
         requestInsuranceRefund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.RequestInsuranceRefundRequest.fromBuffer(value),
-        ($19.RequestInsuranceRefundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceRefundStatusRequest,
-            $19.GetInsuranceRefundStatusResponse>(
+            $0.RequestInsuranceRefundRequest.fromBuffer(value),
+        ($0.RequestInsuranceRefundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceRefundStatusRequest,
+            $0.GetInsuranceRefundStatusResponse>(
         'GetInsuranceRefundStatus',
         getInsuranceRefundStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceRefundStatusRequest.fromBuffer(value),
-        ($19.GetInsuranceRefundStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<
-            $19.GetInsuranceReconciliationOverviewRequest,
-            $19.GetInsuranceReconciliationOverviewResponse>(
+            $0.GetInsuranceRefundStatusRequest.fromBuffer(value),
+        ($0.GetInsuranceRefundStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceReconciliationOverviewRequest,
+            $0.GetInsuranceReconciliationOverviewResponse>(
         'GetInsuranceReconciliationOverview',
         getInsuranceReconciliationOverview_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceReconciliationOverviewRequest.fromBuffer(value),
-        ($19.GetInsuranceReconciliationOverviewResponse value) =>
+            $0.GetInsuranceReconciliationOverviewRequest.fromBuffer(value),
+        ($0.GetInsuranceReconciliationOverviewResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetOrphanedInsuranceTransactionsRequest,
-            $19.GetOrphanedInsuranceTransactionsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetOrphanedInsuranceTransactionsRequest,
+            $0.GetOrphanedInsuranceTransactionsResponse>(
         'GetOrphanedInsuranceTransactions',
         getOrphanedInsuranceTransactions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetOrphanedInsuranceTransactionsRequest.fromBuffer(value),
-        ($19.GetOrphanedInsuranceTransactionsResponse value) =>
+            $0.GetOrphanedInsuranceTransactionsRequest.fromBuffer(value),
+        ($0.GetOrphanedInsuranceTransactionsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ManualReconcilePurchaseRequest,
-            $19.ManualReconcilePurchaseResponse>(
+    $addMethod($grpc.ServiceMethod<$0.ManualReconcilePurchaseRequest,
+            $0.ManualReconcilePurchaseResponse>(
         'ManualReconcilePurchase',
         manualReconcilePurchase_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ManualReconcilePurchaseRequest.fromBuffer(value),
-        ($19.ManualReconcilePurchaseResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.AdminTriggerRefundRequest,
-            $19.AdminTriggerRefundResponse>(
+            $0.ManualReconcilePurchaseRequest.fromBuffer(value),
+        ($0.ManualReconcilePurchaseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminTriggerRefundRequest,
+            $0.AdminTriggerRefundResponse>(
         'AdminTriggerRefund',
         adminTriggerRefund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.AdminTriggerRefundRequest.fromBuffer(value),
-        ($19.AdminTriggerRefundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsuranceWebhookEventsRequest,
-            $19.GetInsuranceWebhookEventsResponse>(
+            $0.AdminTriggerRefundRequest.fromBuffer(value),
+        ($0.AdminTriggerRefundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceWebhookEventsRequest,
+            $0.GetInsuranceWebhookEventsResponse>(
         'GetInsuranceWebhookEvents',
         getInsuranceWebhookEvents_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsuranceWebhookEventsRequest.fromBuffer(value),
-        ($19.GetInsuranceWebhookEventsResponse value) =>
-            value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.RetryFailedWebhookEventRequest,
-            $19.RetryFailedWebhookEventResponse>(
+            $0.GetInsuranceWebhookEventsRequest.fromBuffer(value),
+        ($0.GetInsuranceWebhookEventsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RetryFailedWebhookEventRequest,
+            $0.RetryFailedWebhookEventResponse>(
         'RetryFailedWebhookEvent',
         retryFailedWebhookEvent_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.RetryFailedWebhookEventRequest.fromBuffer(value),
-        ($19.RetryFailedWebhookEventResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetFailedInsuranceTransactionsRequest,
-            $19.GetFailedInsuranceTransactionsResponse>(
+            $0.RetryFailedWebhookEventRequest.fromBuffer(value),
+        ($0.RetryFailedWebhookEventResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetFailedInsuranceTransactionsRequest,
+            $0.GetFailedInsuranceTransactionsResponse>(
         'GetFailedInsuranceTransactions',
         getFailedInsuranceTransactions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetFailedInsuranceTransactionsRequest.fromBuffer(value),
-        ($19.GetFailedInsuranceTransactionsResponse value) =>
+            $0.GetFailedInsuranceTransactionsRequest.fromBuffer(value),
+        ($0.GetFailedInsuranceTransactionsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UpdateProductMarginRequest,
-            $19.UpdateProductMarginResponse>(
+    $addMethod($grpc.ServiceMethod<$0.UpdateProductMarginRequest,
+            $0.UpdateProductMarginResponse>(
         'UpdateProductMargin',
         updateProductMargin_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateProductMarginRequest.fromBuffer(value),
-        ($19.UpdateProductMarginResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetInsurancePlatformWalletsRequest,
-            $19.GetInsurancePlatformWalletsResponse>(
+            $0.UpdateProductMarginRequest.fromBuffer(value),
+        ($0.UpdateProductMarginResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePlatformWalletsRequest,
+            $0.GetInsurancePlatformWalletsResponse>(
         'GetInsurancePlatformWallets',
         getInsurancePlatformWallets_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetInsurancePlatformWalletsRequest.fromBuffer(value),
-        ($19.GetInsurancePlatformWalletsResponse value) =>
+            $0.GetInsurancePlatformWalletsRequest.fromBuffer(value),
+        ($0.GetInsurancePlatformWalletsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CreateCrowdfundRequest,
-            $19.CreateCrowdfundResponse>(
+    $addMethod($grpc.ServiceMethod<$0.CreateCrowdfundRequest,
+            $0.CreateCrowdfundResponse>(
         'CreateCrowdfund',
         createCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CreateCrowdfundRequest.fromBuffer(value),
-        ($19.CreateCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetCrowdfundsRequest,
-            $19.GetCrowdfundsResponse>(
-        'GetCrowdfunds',
-        getCrowdfunds_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $19.GetCrowdfundsRequest.fromBuffer(value),
-        ($19.GetCrowdfundsResponse value) => value.writeToBuffer()));
+            $0.CreateCrowdfundRequest.fromBuffer(value),
+        ($0.CreateCrowdfundResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$19.GetCrowdfundRequest, $19.GetCrowdfundResponse>(
+        $grpc.ServiceMethod<$0.GetCrowdfundsRequest, $0.GetCrowdfundsResponse>(
+            'GetCrowdfunds',
+            getCrowdfunds_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetCrowdfundsRequest.fromBuffer(value),
+            ($0.GetCrowdfundsResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetCrowdfundRequest, $0.GetCrowdfundResponse>(
             'GetCrowdfund',
             getCrowdfund_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $19.GetCrowdfundRequest.fromBuffer(value),
-            ($19.GetCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ContributeToCrowdfundRequest,
-            $19.ContributeToCrowdfundResponse>(
+                $0.GetCrowdfundRequest.fromBuffer(value),
+            ($0.GetCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ContributeToCrowdfundRequest,
+            $0.ContributeToCrowdfundResponse>(
         'ContributeToCrowdfund',
         contributeToCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ContributeToCrowdfundRequest.fromBuffer(value),
-        ($19.ContributeToCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.WithdrawFromCrowdfundRequest,
-            $19.WithdrawFromCrowdfundResponse>(
+            $0.ContributeToCrowdfundRequest.fromBuffer(value),
+        ($0.ContributeToCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawFromCrowdfundRequest,
+            $0.WithdrawFromCrowdfundResponse>(
         'WithdrawFromCrowdfund',
         withdrawFromCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.WithdrawFromCrowdfundRequest.fromBuffer(value),
-        ($19.WithdrawFromCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetCrowdfundWithdrawalFeeQuoteRequest,
-            $19.GetCrowdfundWithdrawalFeeQuoteResponse>(
+            $0.WithdrawFromCrowdfundRequest.fromBuffer(value),
+        ($0.WithdrawFromCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundWithdrawalFeeQuoteRequest,
+            $0.GetCrowdfundWithdrawalFeeQuoteResponse>(
         'GetCrowdfundWithdrawalFeeQuote',
         getCrowdfundWithdrawalFeeQuote_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetCrowdfundWithdrawalFeeQuoteRequest.fromBuffer(value),
-        ($19.GetCrowdfundWithdrawalFeeQuoteResponse value) =>
+            $0.GetCrowdfundWithdrawalFeeQuoteRequest.fromBuffer(value),
+        ($0.GetCrowdfundWithdrawalFeeQuoteResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ListCrowdfundCustomCategoriesRequest,
-            $19.ListCrowdfundCustomCategoriesResponse>(
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundCustomCategoriesRequest,
+            $0.ListCrowdfundCustomCategoriesResponse>(
         'ListCrowdfundCustomCategories',
         listCrowdfundCustomCategories_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ListCrowdfundCustomCategoriesRequest.fromBuffer(value),
-        ($19.ListCrowdfundCustomCategoriesResponse value) =>
+            $0.ListCrowdfundCustomCategoriesRequest.fromBuffer(value),
+        ($0.ListCrowdfundCustomCategoriesResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.AddCrowdfundCustomCategoryRequest,
-            $19.AddCrowdfundCustomCategoryResponse>(
+    $addMethod($grpc.ServiceMethod<$0.AddCrowdfundCustomCategoryRequest,
+            $0.AddCrowdfundCustomCategoryResponse>(
         'AddCrowdfundCustomCategory',
         addCrowdfundCustomCategory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.AddCrowdfundCustomCategoryRequest.fromBuffer(value),
-        ($19.AddCrowdfundCustomCategoryResponse value) =>
+            $0.AddCrowdfundCustomCategoryRequest.fromBuffer(value),
+        ($0.AddCrowdfundCustomCategoryResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.DeleteCrowdfundCustomCategoryRequest,
-            $19.DeleteCrowdfundCustomCategoryResponse>(
+    $addMethod($grpc.ServiceMethod<$0.DeleteCrowdfundCustomCategoryRequest,
+            $0.DeleteCrowdfundCustomCategoryResponse>(
         'DeleteCrowdfundCustomCategory',
         deleteCrowdfundCustomCategory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.DeleteCrowdfundCustomCategoryRequest.fromBuffer(value),
-        ($19.DeleteCrowdfundCustomCategoryResponse value) =>
+            $0.DeleteCrowdfundCustomCategoryRequest.fromBuffer(value),
+        ($0.DeleteCrowdfundCustomCategoryResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ListCrowdfundWithdrawalsRequest,
-            $19.ListCrowdfundWithdrawalsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundWithdrawalsRequest,
+            $0.ListCrowdfundWithdrawalsResponse>(
         'ListCrowdfundWithdrawals',
         listCrowdfundWithdrawals_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ListCrowdfundWithdrawalsRequest.fromBuffer(value),
-        ($19.ListCrowdfundWithdrawalsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CloseCrowdfundRequest,
-            $19.CloseCrowdfundResponse>(
+            $0.ListCrowdfundWithdrawalsRequest.fromBuffer(value),
+        ($0.ListCrowdfundWithdrawalsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CloseCrowdfundRequest,
+            $0.CloseCrowdfundResponse>(
         'CloseCrowdfund',
         closeCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CloseCrowdfundRequest.fromBuffer(value),
-        ($19.CloseCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CancelCrowdfundRequest,
-            $19.CancelCrowdfundResponse>(
+            $0.CloseCrowdfundRequest.fromBuffer(value),
+        ($0.CloseCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelCrowdfundRequest,
+            $0.CancelCrowdfundResponse>(
         'CancelCrowdfund',
         cancelCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CancelCrowdfundRequest.fromBuffer(value),
-        ($19.CancelCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ForceCompleteCrowdfundRequest,
-            $19.ForceCompleteCrowdfundResponse>(
+            $0.CancelCrowdfundRequest.fromBuffer(value),
+        ($0.CancelCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ForceCompleteCrowdfundRequest,
+            $0.ForceCompleteCrowdfundResponse>(
         'ForceCompleteCrowdfund',
         forceCompleteCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ForceCompleteCrowdfundRequest.fromBuffer(value),
-        ($19.ForceCompleteCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ListCrowdfundRefundsRequest,
-            $19.ListCrowdfundRefundsResponse>(
+            $0.ForceCompleteCrowdfundRequest.fromBuffer(value),
+        ($0.ForceCompleteCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundRefundsRequest,
+            $0.ListCrowdfundRefundsResponse>(
         'ListCrowdfundRefunds',
         listCrowdfundRefunds_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ListCrowdfundRefundsRequest.fromBuffer(value),
-        ($19.ListCrowdfundRefundsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.RetryCrowdfundRefundRequest,
-            $19.RetryCrowdfundRefundResponse>(
+            $0.ListCrowdfundRefundsRequest.fromBuffer(value),
+        ($0.ListCrowdfundRefundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RetryCrowdfundRefundRequest,
+            $0.RetryCrowdfundRefundResponse>(
         'RetryCrowdfundRefund',
         retryCrowdfundRefund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.RetryCrowdfundRefundRequest.fromBuffer(value),
-        ($19.RetryCrowdfundRefundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetCrowdfundStatisticsRequest,
-            $19.GetCrowdfundStatisticsResponse>(
+            $0.RetryCrowdfundRefundRequest.fromBuffer(value),
+        ($0.RetryCrowdfundRefundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundStatisticsRequest,
+            $0.GetCrowdfundStatisticsResponse>(
         'GetCrowdfundStatistics',
         getCrowdfundStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetCrowdfundStatisticsRequest.fromBuffer(value),
-        ($19.GetCrowdfundStatisticsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.SearchCrowdfundsRequest,
-            $19.SearchCrowdfundsResponse>(
+            $0.GetCrowdfundStatisticsRequest.fromBuffer(value),
+        ($0.GetCrowdfundStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SearchCrowdfundsRequest,
+            $0.SearchCrowdfundsResponse>(
         'SearchCrowdfunds',
         searchCrowdfunds_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.SearchCrowdfundsRequest.fromBuffer(value),
-        ($19.SearchCrowdfundsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UpdateCrowdfundRequest,
-            $19.UpdateCrowdfundResponse>(
+            $0.SearchCrowdfundsRequest.fromBuffer(value),
+        ($0.SearchCrowdfundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateCrowdfundRequest,
+            $0.UpdateCrowdfundResponse>(
         'UpdateCrowdfund',
         updateCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateCrowdfundRequest.fromBuffer(value),
-        ($19.UpdateCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.DeleteCrowdfundRequest,
-            $19.DeleteCrowdfundResponse>(
+            $0.UpdateCrowdfundRequest.fromBuffer(value),
+        ($0.UpdateCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteCrowdfundRequest,
+            $0.DeleteCrowdfundResponse>(
         'DeleteCrowdfund',
         deleteCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.DeleteCrowdfundRequest.fromBuffer(value),
-        ($19.DeleteCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetCrowdfundDonationsRequest,
-            $19.GetCrowdfundDonationsResponse>(
+            $0.DeleteCrowdfundRequest.fromBuffer(value),
+        ($0.DeleteCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundDonationsRequest,
+            $0.GetCrowdfundDonationsResponse>(
         'GetCrowdfundDonations',
         getCrowdfundDonations_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetCrowdfundDonationsRequest.fromBuffer(value),
-        ($19.GetCrowdfundDonationsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetUserDonationsRequest,
-            $19.GetUserDonationsResponse>(
+            $0.GetCrowdfundDonationsRequest.fromBuffer(value),
+        ($0.GetCrowdfundDonationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserDonationsRequest,
+            $0.GetUserDonationsResponse>(
         'GetUserDonations',
         getUserDonations_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetUserDonationsRequest.fromBuffer(value),
-        ($19.GetUserDonationsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GenerateDonationReceiptRequest,
-            $19.GenerateDonationReceiptResponse>(
+            $0.GetUserDonationsRequest.fromBuffer(value),
+        ($0.GetUserDonationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateDonationReceiptRequest,
+            $0.GenerateDonationReceiptResponse>(
         'GenerateDonationReceipt',
         generateDonationReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GenerateDonationReceiptRequest.fromBuffer(value),
-        ($19.GenerateDonationReceiptResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetUserCrowdfundReceiptsRequest,
-            $19.GetUserCrowdfundReceiptsResponse>(
+            $0.GenerateDonationReceiptRequest.fromBuffer(value),
+        ($0.GenerateDonationReceiptResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserCrowdfundReceiptsRequest,
+            $0.GetUserCrowdfundReceiptsResponse>(
         'GetUserCrowdfundReceipts',
         getUserCrowdfundReceipts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetUserCrowdfundReceiptsRequest.fromBuffer(value),
-        ($19.GetUserCrowdfundReceiptsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ConnectNotificationChannelRequest,
-            $19.ConnectNotificationChannelResponse>(
+            $0.GetUserCrowdfundReceiptsRequest.fromBuffer(value),
+        ($0.GetUserCrowdfundReceiptsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ConnectNotificationChannelRequest,
+            $0.ConnectNotificationChannelResponse>(
         'ConnectNotificationChannel',
         connectNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ConnectNotificationChannelRequest.fromBuffer(value),
-        ($19.ConnectNotificationChannelResponse value) =>
+            $0.ConnectNotificationChannelRequest.fromBuffer(value),
+        ($0.ConnectNotificationChannelResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.DisconnectNotificationChannelRequest,
-            $19.DisconnectNotificationChannelResponse>(
+    $addMethod($grpc.ServiceMethod<$0.DisconnectNotificationChannelRequest,
+            $0.DisconnectNotificationChannelResponse>(
         'DisconnectNotificationChannel',
         disconnectNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.DisconnectNotificationChannelRequest.fromBuffer(value),
-        ($19.DisconnectNotificationChannelResponse value) =>
+            $0.DisconnectNotificationChannelRequest.fromBuffer(value),
+        ($0.DisconnectNotificationChannelResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetNotificationChannelsRequest,
-            $19.GetNotificationChannelsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetNotificationChannelsRequest,
+            $0.GetNotificationChannelsResponse>(
         'GetNotificationChannels',
         getNotificationChannels_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetNotificationChannelsRequest.fromBuffer(value),
-        ($19.GetNotificationChannelsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UpdateNotificationChannelRequest,
-            $19.UpdateNotificationChannelResponse>(
+            $0.GetNotificationChannelsRequest.fromBuffer(value),
+        ($0.GetNotificationChannelsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateNotificationChannelRequest,
+            $0.UpdateNotificationChannelResponse>(
         'UpdateNotificationChannel',
         updateNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateNotificationChannelRequest.fromBuffer(value),
-        ($19.UpdateNotificationChannelResponse value) =>
-            value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.TestNotificationChannelRequest,
-            $19.TestNotificationChannelResponse>(
+            $0.UpdateNotificationChannelRequest.fromBuffer(value),
+        ($0.UpdateNotificationChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TestNotificationChannelRequest,
+            $0.TestNotificationChannelResponse>(
         'TestNotificationChannel',
         testNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.TestNotificationChannelRequest.fromBuffer(value),
-        ($19.TestNotificationChannelResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetTelegramBotInfoRequest,
-            $19.GetTelegramBotInfoResponse>(
+            $0.TestNotificationChannelRequest.fromBuffer(value),
+        ($0.TestNotificationChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTelegramBotInfoRequest,
+            $0.GetTelegramBotInfoResponse>(
         'GetTelegramBotInfo',
         getTelegramBotInfo_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetTelegramBotInfoRequest.fromBuffer(value),
-        ($19.GetTelegramBotInfoResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.VerifyTelegramChannelRequest,
-            $19.VerifyTelegramChannelResponse>(
+            $0.GetTelegramBotInfoRequest.fromBuffer(value),
+        ($0.GetTelegramBotInfoResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyTelegramChannelRequest,
+            $0.VerifyTelegramChannelResponse>(
         'VerifyTelegramChannel',
         verifyTelegramChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.VerifyTelegramChannelRequest.fromBuffer(value),
-        ($19.VerifyTelegramChannelResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetNotificationHistoryRequest,
-            $19.GetNotificationHistoryResponse>(
+            $0.VerifyTelegramChannelRequest.fromBuffer(value),
+        ($0.VerifyTelegramChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetNotificationHistoryRequest,
+            $0.GetNotificationHistoryResponse>(
         'GetNotificationHistory',
         getNotificationHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetNotificationHistoryRequest.fromBuffer(value),
-        ($19.GetNotificationHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetCrowdfundLeaderboardRequest,
-            $19.GetCrowdfundLeaderboardResponse>(
+            $0.GetNotificationHistoryRequest.fromBuffer(value),
+        ($0.GetNotificationHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundLeaderboardRequest,
+            $0.GetCrowdfundLeaderboardResponse>(
         'GetCrowdfundLeaderboard',
         getCrowdfundLeaderboard_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetCrowdfundLeaderboardRequest.fromBuffer(value),
-        ($19.GetCrowdfundLeaderboardResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.CreateAutoSaveRuleRequest2,
-            $19.CreateAutoSaveRuleResponse2>(
+            $0.GetCrowdfundLeaderboardRequest.fromBuffer(value),
+        ($0.GetCrowdfundLeaderboardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateAutoSaveRuleRequest2,
+            $0.CreateAutoSaveRuleResponse2>(
         'CreateAutoSaveRule',
         createAutoSaveRule_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.CreateAutoSaveRuleRequest2.fromBuffer(value),
-        ($19.CreateAutoSaveRuleResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetAutoSaveRulesRequest2,
-            $19.GetAutoSaveRulesResponse2>(
+            $0.CreateAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.CreateAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveRulesRequest2,
+            $0.GetAutoSaveRulesResponse2>(
         'GetAutoSaveRules',
         getAutoSaveRules_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetAutoSaveRulesRequest2.fromBuffer(value),
-        ($19.GetAutoSaveRulesResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.UpdateAutoSaveRuleRequest2,
-            $19.UpdateAutoSaveRuleResponse2>(
+            $0.GetAutoSaveRulesRequest2.fromBuffer(value),
+        ($0.GetAutoSaveRulesResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateAutoSaveRuleRequest2,
+            $0.UpdateAutoSaveRuleResponse2>(
         'UpdateAutoSaveRule',
         updateAutoSaveRule_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.UpdateAutoSaveRuleRequest2.fromBuffer(value),
-        ($19.UpdateAutoSaveRuleResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.ToggleAutoSaveRuleRequest2,
-            $19.ToggleAutoSaveRuleResponse2>(
+            $0.UpdateAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.UpdateAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ToggleAutoSaveRuleRequest2,
+            $0.ToggleAutoSaveRuleResponse2>(
         'ToggleAutoSaveRule',
         toggleAutoSaveRule_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.ToggleAutoSaveRuleRequest2.fromBuffer(value),
-        ($19.ToggleAutoSaveRuleResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.DeleteAutoSaveRuleRequest2,
-            $19.DeleteAutoSaveRuleResponse2>(
+            $0.ToggleAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.ToggleAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteAutoSaveRuleRequest2,
+            $0.DeleteAutoSaveRuleResponse2>(
         'DeleteAutoSaveRule',
         deleteAutoSaveRule_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.DeleteAutoSaveRuleRequest2.fromBuffer(value),
-        ($19.DeleteAutoSaveRuleResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetAutoSaveTransactionsRequest2,
-            $19.GetAutoSaveTransactionsResponse2>(
+            $0.DeleteAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.DeleteAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveTransactionsRequest2,
+            $0.GetAutoSaveTransactionsResponse2>(
         'GetAutoSaveTransactions',
         getAutoSaveTransactions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetAutoSaveTransactionsRequest2.fromBuffer(value),
-        ($19.GetAutoSaveTransactionsResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.GetAutoSaveStatisticsRequest2,
-            $19.GetAutoSaveStatisticsResponse2>(
+            $0.GetAutoSaveTransactionsRequest2.fromBuffer(value),
+        ($0.GetAutoSaveTransactionsResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveStatisticsRequest2,
+            $0.GetAutoSaveStatisticsResponse2>(
         'GetAutoSaveStatistics',
         getAutoSaveStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GetAutoSaveStatisticsRequest2.fromBuffer(value),
-        ($19.GetAutoSaveStatisticsResponse2 value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$19.TriggerAutoSaveRequest2,
-            $19.TriggerAutoSaveResponse2>(
+            $0.GetAutoSaveStatisticsRequest2.fromBuffer(value),
+        ($0.GetAutoSaveStatisticsResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TriggerAutoSaveRequest2,
+            $0.TriggerAutoSaveResponse2>(
         'TriggerAutoSave',
         triggerAutoSave_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.TriggerAutoSaveRequest2.fromBuffer(value),
-        ($19.TriggerAutoSaveResponse2 value) => value.writeToBuffer()));
+            $0.TriggerAutoSaveRequest2.fromBuffer(value),
+        ($0.TriggerAutoSaveResponse2 value) => value.writeToBuffer()));
   }
 
-  $async.Future<$19.CreateGroupAccountResponse> createGroupAccount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CreateGroupAccountRequest> request) async {
-    return createGroupAccount(call, await request);
+  $async.Future<$0.CreateGroupAccountResponse> createGroupAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateGroupAccountRequest> $request) async {
+    return createGroupAccount($call, await $request);
   }
 
-  $async.Future<$19.GetGroupAccountsResponse> getGroupAccounts_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetGroupAccountsRequest> request) async {
-    return getGroupAccounts(call, await request);
+  $async.Future<$0.CreateGroupAccountResponse> createGroupAccount(
+      $grpc.ServiceCall call, $0.CreateGroupAccountRequest request);
+
+  $async.Future<$0.GetGroupAccountsResponse> getGroupAccounts_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetGroupAccountsRequest> $request) async {
+    return getGroupAccounts($call, await $request);
   }
 
-  $async.Future<$19.GetGroupAccountResponse> getGroupAccount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetGroupAccountRequest> request) async {
-    return getGroupAccount(call, await request);
+  $async.Future<$0.GetGroupAccountsResponse> getGroupAccounts(
+      $grpc.ServiceCall call, $0.GetGroupAccountsRequest request);
+
+  $async.Future<$0.GetGroupAccountResponse> getGroupAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetGroupAccountRequest> $request) async {
+    return getGroupAccount($call, await $request);
   }
 
-  $async.Future<$19.AddGroupMemberResponse> addGroupMember_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.AddGroupMemberRequest> request) async {
-    return addGroupMember(call, await request);
+  $async.Future<$0.GetGroupAccountResponse> getGroupAccount(
+      $grpc.ServiceCall call, $0.GetGroupAccountRequest request);
+
+  $async.Future<$0.AddGroupMemberResponse> addGroupMember_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AddGroupMemberRequest> $request) async {
+    return addGroupMember($call, await $request);
   }
 
-  $async.Future<$19.RemoveGroupMemberResponse> removeGroupMember_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.RemoveGroupMemberRequest> request) async {
-    return removeGroupMember(call, await request);
+  $async.Future<$0.AddGroupMemberResponse> addGroupMember(
+      $grpc.ServiceCall call, $0.AddGroupMemberRequest request);
+
+  $async.Future<$0.RemoveGroupMemberResponse> removeGroupMember_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RemoveGroupMemberRequest> $request) async {
+    return removeGroupMember($call, await $request);
   }
 
-  $async.Future<$19.ContributeToGroupResponse> contributeToGroup_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.ContributeToGroupRequest> request) async {
-    return contributeToGroup(call, await request);
+  $async.Future<$0.RemoveGroupMemberResponse> removeGroupMember(
+      $grpc.ServiceCall call, $0.RemoveGroupMemberRequest request);
+
+  $async.Future<$0.ContributeToGroupResponse> contributeToGroup_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ContributeToGroupRequest> $request) async {
+    return contributeToGroup($call, await $request);
   }
 
-  $async.Future<$19.WithdrawFromGroupResponse> withdrawFromGroup_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.WithdrawFromGroupRequest> request) async {
-    return withdrawFromGroup(call, await request);
+  $async.Future<$0.ContributeToGroupResponse> contributeToGroup(
+      $grpc.ServiceCall call, $0.ContributeToGroupRequest request);
+
+  $async.Future<$0.WithdrawFromGroupResponse> withdrawFromGroup_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.WithdrawFromGroupRequest> $request) async {
+    return withdrawFromGroup($call, await $request);
   }
 
-  $async.Future<$19.CloseGroupAccountResponse> closeGroupAccount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CloseGroupAccountRequest> request) async {
-    return closeGroupAccount(call, await request);
+  $async.Future<$0.WithdrawFromGroupResponse> withdrawFromGroup(
+      $grpc.ServiceCall call, $0.WithdrawFromGroupRequest request);
+
+  $async.Future<$0.CloseGroupAccountResponse> closeGroupAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CloseGroupAccountRequest> $request) async {
+    return closeGroupAccount($call, await $request);
   }
 
-  $async.Future<$19.BuyInsuranceResponse> buyInsurance_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.BuyInsuranceRequest> request) async {
-    return buyInsurance(call, await request);
+  $async.Future<$0.CloseGroupAccountResponse> closeGroupAccount(
+      $grpc.ServiceCall call, $0.CloseGroupAccountRequest request);
+
+  $async.Future<$0.BuyInsuranceResponse> buyInsurance_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.BuyInsuranceRequest> $request) async {
+    return buyInsurance($call, await $request);
   }
 
-  $async.Future<$19.GetInsurancePoliciesResponse> getInsurancePolicies_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsurancePoliciesRequest> request) async {
-    return getInsurancePolicies(call, await request);
+  $async.Future<$0.BuyInsuranceResponse> buyInsurance(
+      $grpc.ServiceCall call, $0.BuyInsuranceRequest request);
+
+  $async.Future<$0.GetInsurancePoliciesResponse> getInsurancePolicies_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsurancePoliciesRequest> $request) async {
+    return getInsurancePolicies($call, await $request);
   }
 
-  $async.Future<$19.GetInsurancePolicyResponse> getInsurancePolicy_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsurancePolicyRequest> request) async {
-    return getInsurancePolicy(call, await request);
+  $async.Future<$0.GetInsurancePoliciesResponse> getInsurancePolicies(
+      $grpc.ServiceCall call, $0.GetInsurancePoliciesRequest request);
+
+  $async.Future<$0.GetInsurancePolicyResponse> getInsurancePolicy_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsurancePolicyRequest> $request) async {
+    return getInsurancePolicy($call, await $request);
   }
 
-  $async.Future<$19.MakeInsuranceClaimResponse> makeInsuranceClaim_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.MakeInsuranceClaimRequest> request) async {
-    return makeInsuranceClaim(call, await request);
+  $async.Future<$0.GetInsurancePolicyResponse> getInsurancePolicy(
+      $grpc.ServiceCall call, $0.GetInsurancePolicyRequest request);
+
+  $async.Future<$0.MakeInsuranceClaimResponse> makeInsuranceClaim_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.MakeInsuranceClaimRequest> $request) async {
+    return makeInsuranceClaim($call, await $request);
   }
 
-  $async.Future<$19.CancelInsuranceResponse> cancelInsurance_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CancelInsuranceRequest> request) async {
-    return cancelInsurance(call, await request);
+  $async.Future<$0.MakeInsuranceClaimResponse> makeInsuranceClaim(
+      $grpc.ServiceCall call, $0.MakeInsuranceClaimRequest request);
+
+  $async.Future<$0.CancelInsuranceResponse> cancelInsurance_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CancelInsuranceRequest> $request) async {
+    return cancelInsurance($call, await $request);
   }
 
-  $async.Future<$19.GetInsurancePlansResponse> getInsurancePlans_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsurancePlansRequest> request) async {
-    return getInsurancePlans(call, await request);
+  $async.Future<$0.CancelInsuranceResponse> cancelInsurance(
+      $grpc.ServiceCall call, $0.CancelInsuranceRequest request);
+
+  $async.Future<$0.GetInsurancePlansResponse> getInsurancePlans_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsurancePlansRequest> $request) async {
+    return getInsurancePlans($call, await $request);
   }
 
-  $async.Future<$19.GetInsuranceMarketplaceProductsResponse>
+  $async.Future<$0.GetInsurancePlansResponse> getInsurancePlans(
+      $grpc.ServiceCall call, $0.GetInsurancePlansRequest request);
+
+  $async.Future<$0.GetInsuranceMarketplaceProductsResponse>
       getInsuranceMarketplaceProducts_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceMarketplaceProductsRequest>
-              request) async {
-    return getInsuranceMarketplaceProducts(call, await request);
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceMarketplaceProductsRequest>
+              $request) async {
+    return getInsuranceMarketplaceProducts($call, await $request);
   }
 
-  $async.Future<$19.GetInsuranceMarketplaceCategoriesResponse>
-      getInsuranceMarketplaceCategories_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceMarketplaceCategoriesRequest>
-              request) async {
-    return getInsuranceMarketplaceCategories(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceQuoteResponse> getInsuranceQuote_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsuranceQuoteRequest> request) async {
-    return getInsuranceQuote(call, await request);
-  }
-
-  $async.Future<$19.PurchaseMarketplaceInsuranceResponse>
-      purchaseMarketplaceInsurance_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.PurchaseMarketplaceInsuranceRequest>
-              request) async {
-    return purchaseMarketplaceInsurance(call, await request);
-  }
-
-  $async.Future<$19.GetInsurancePurchaseStatusResponse>
-      getInsurancePurchaseStatus_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsurancePurchaseStatusRequest> request) async {
-    return getInsurancePurchaseStatus(call, await request);
-  }
-
-  $async.Future<$19.UploadInsuranceDocumentResponse>
-      uploadInsuranceDocument_Pre($grpc.ServiceCall call,
-          $async.Future<$19.UploadInsuranceDocumentRequest> request) async {
-    return uploadInsuranceDocument(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceDocumentUploadURLResponse>
-      getInsuranceDocumentUploadURL_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceDocumentUploadURLRequest>
-              request) async {
-    return getInsuranceDocumentUploadURL(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceAuxiliaryDataResponse>
-      getInsuranceAuxiliaryData_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceAuxiliaryDataRequest> request) async {
-    return getInsuranceAuxiliaryData(call, await request);
-  }
-
-  $async.Future<$19.GetInsurancePaymentsResponse> getInsurancePayments_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsurancePaymentsRequest> request) async {
-    return getInsurancePayments(call, await request);
-  }
-
-  $async.Future<$19.GetUserInsurancePaymentsResponse>
-      getUserInsurancePayments_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetUserInsurancePaymentsRequest> request) async {
-    return getUserInsurancePayments(call, await request);
-  }
-
-  $async.Future<$19.CreateInsurancePaymentResponse> createInsurancePayment_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CreateInsurancePaymentRequest> request) async {
-    return createInsurancePayment(call, await request);
-  }
-
-  $async.Future<$19.ProcessInsurancePaymentResponse>
-      processInsurancePayment_Pre($grpc.ServiceCall call,
-          $async.Future<$19.ProcessInsurancePaymentRequest> request) async {
-    return processInsurancePayment(call, await request);
-  }
-
-  $async.Future<$19.GetInsurancePaymentByIdResponse>
-      getInsurancePaymentById_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsurancePaymentByIdRequest> request) async {
-    return getInsurancePaymentById(call, await request);
-  }
-
-  $async.Future<$19.GetOverdueInsurancePaymentsResponse>
-      getOverdueInsurancePayments_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetOverdueInsurancePaymentsRequest> request) async {
-    return getOverdueInsurancePayments(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceClaimsResponse> getInsuranceClaims_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsuranceClaimsRequest> request) async {
-    return getInsuranceClaims(call, await request);
-  }
-
-  $async.Future<$19.GetUserInsuranceClaimsResponse> getUserInsuranceClaims_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetUserInsuranceClaimsRequest> request) async {
-    return getUserInsuranceClaims(call, await request);
-  }
-
-  $async.Future<$19.UpdateInsuranceClaimResponse> updateInsuranceClaim_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.UpdateInsuranceClaimRequest> request) async {
-    return updateInsuranceClaim(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceClaimByIdResponse> getInsuranceClaimById_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsuranceClaimByIdRequest> request) async {
-    return getInsuranceClaimById(call, await request);
-  }
-
-  $async.Future<$19.UpdateInsurancePolicyResponse> updateInsurancePolicy_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.UpdateInsurancePolicyRequest> request) async {
-    return updateInsurancePolicy(call, await request);
-  }
-
-  $async.Future<$19.GenerateInsuranceReceiptResponse>
-      generateInsuranceReceipt_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GenerateInsuranceReceiptRequest> request) async {
-    return generateInsuranceReceipt(call, await request);
-  }
-
-  $async.Future<$19.GetUserInsuranceReceiptsResponse>
-      getUserInsuranceReceipts_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetUserInsuranceReceiptsRequest> request) async {
-    return getUserInsuranceReceipts(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceStatisticsResponse> getInsuranceStatistics_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsuranceStatisticsRequest> request) async {
-    return getInsuranceStatistics(call, await request);
-  }
-
-  $async.Future<$19.GetInsurancePaymentStatisticsResponse>
-      getInsurancePaymentStatistics_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetInsurancePaymentStatisticsRequest>
-              request) async {
-    return getInsurancePaymentStatistics(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverCustomersResponse> getMyCoverCustomers_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetMyCoverCustomersRequest> request) async {
-    return getMyCoverCustomers(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverCustomerByIdResponse> getMyCoverCustomerById_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetMyCoverCustomerByIdRequest> request) async {
-    return getMyCoverCustomerById(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverCustomerPoliciesResponse>
-      getMyCoverCustomerPolicies_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetMyCoverCustomerPoliciesRequest> request) async {
-    return getMyCoverCustomerPolicies(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverCustomerPurchasesResponse>
-      getMyCoverCustomerPurchases_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetMyCoverCustomerPurchasesRequest> request) async {
-    return getMyCoverCustomerPurchases(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverPurchasesResponse> getMyCoverPurchases_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetMyCoverPurchasesRequest> request) async {
-    return getMyCoverPurchases(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverPurchaseByIdResponse> getMyCoverPurchaseById_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetMyCoverPurchaseByIdRequest> request) async {
-    return getMyCoverPurchaseById(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverClaimsResponse> getMyCoverClaims_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetMyCoverClaimsRequest> request) async {
-    return getMyCoverClaims(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverClaimByIdResponse> getMyCoverClaimById_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetMyCoverClaimByIdRequest> request) async {
-    return getMyCoverClaimById(call, await request);
-  }
-
-  $async.Future<$19.FileCreditLifeClaimResponse> fileCreditLifeClaim_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.FileCreditLifeClaimRequest> request) async {
-    return fileCreditLifeClaim(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceStatesResponse> getInsuranceStates_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetInsuranceStatesRequest> request) async {
-    return getInsuranceStates(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceVehicleMakesResponse>
-      getInsuranceVehicleMakes_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceVehicleMakesRequest> request) async {
-    return getInsuranceVehicleMakes(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverNotificationPreferencesResponse>
-      getMyCoverNotificationPreferences_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetMyCoverNotificationPreferencesRequest>
-              request) async {
-    return getMyCoverNotificationPreferences(call, await request);
-  }
-
-  $async.Future<$19.UpdateMyCoverNotificationPreferencesResponse>
-      updateMyCoverNotificationPreferences_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.UpdateMyCoverNotificationPreferencesRequest>
-              request) async {
-    return updateMyCoverNotificationPreferences(call, await request);
-  }
-
-  $async.Future<$19.GetMyCoverWalletBalanceResponse>
-      getMyCoverWalletBalance_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetMyCoverWalletBalanceRequest> request) async {
-    return getMyCoverWalletBalance(call, await request);
-  }
-
-  $async.Future<$19.RequestInsuranceRefundResponse> requestInsuranceRefund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.RequestInsuranceRefundRequest> request) async {
-    return requestInsuranceRefund(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceRefundStatusResponse>
-      getInsuranceRefundStatus_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceRefundStatusRequest> request) async {
-    return getInsuranceRefundStatus(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceReconciliationOverviewResponse>
-      getInsuranceReconciliationOverview_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceReconciliationOverviewRequest>
-              request) async {
-    return getInsuranceReconciliationOverview(call, await request);
-  }
-
-  $async.Future<$19.GetOrphanedInsuranceTransactionsResponse>
-      getOrphanedInsuranceTransactions_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetOrphanedInsuranceTransactionsRequest>
-              request) async {
-    return getOrphanedInsuranceTransactions(call, await request);
-  }
-
-  $async.Future<$19.ManualReconcilePurchaseResponse>
-      manualReconcilePurchase_Pre($grpc.ServiceCall call,
-          $async.Future<$19.ManualReconcilePurchaseRequest> request) async {
-    return manualReconcilePurchase(call, await request);
-  }
-
-  $async.Future<$19.AdminTriggerRefundResponse> adminTriggerRefund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.AdminTriggerRefundRequest> request) async {
-    return adminTriggerRefund(call, await request);
-  }
-
-  $async.Future<$19.GetInsuranceWebhookEventsResponse>
-      getInsuranceWebhookEvents_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsuranceWebhookEventsRequest> request) async {
-    return getInsuranceWebhookEvents(call, await request);
-  }
-
-  $async.Future<$19.RetryFailedWebhookEventResponse>
-      retryFailedWebhookEvent_Pre($grpc.ServiceCall call,
-          $async.Future<$19.RetryFailedWebhookEventRequest> request) async {
-    return retryFailedWebhookEvent(call, await request);
-  }
-
-  $async.Future<$19.GetFailedInsuranceTransactionsResponse>
-      getFailedInsuranceTransactions_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetFailedInsuranceTransactionsRequest>
-              request) async {
-    return getFailedInsuranceTransactions(call, await request);
-  }
-
-  $async.Future<$19.UpdateProductMarginResponse> updateProductMargin_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.UpdateProductMarginRequest> request) async {
-    return updateProductMargin(call, await request);
-  }
-
-  $async.Future<$19.GetInsurancePlatformWalletsResponse>
-      getInsurancePlatformWallets_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetInsurancePlatformWalletsRequest> request) async {
-    return getInsurancePlatformWallets(call, await request);
-  }
-
-  $async.Future<$19.CreateCrowdfundResponse> createCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CreateCrowdfundRequest> request) async {
-    return createCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.GetCrowdfundsResponse> getCrowdfunds_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetCrowdfundsRequest> request) async {
-    return getCrowdfunds(call, await request);
-  }
-
-  $async.Future<$19.GetCrowdfundResponse> getCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetCrowdfundRequest> request) async {
-    return getCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.ContributeToCrowdfundResponse> contributeToCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.ContributeToCrowdfundRequest> request) async {
-    return contributeToCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.WithdrawFromCrowdfundRequest> request) async {
-    return withdrawFromCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.GetCrowdfundWithdrawalFeeQuoteResponse>
-      getCrowdfundWithdrawalFeeQuote_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.GetCrowdfundWithdrawalFeeQuoteRequest>
-              request) async {
-    return getCrowdfundWithdrawalFeeQuote(call, await request);
-  }
-
-  $async.Future<$19.ListCrowdfundCustomCategoriesResponse>
-      listCrowdfundCustomCategories_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.ListCrowdfundCustomCategoriesRequest>
-              request) async {
-    return listCrowdfundCustomCategories(call, await request);
-  }
-
-  $async.Future<$19.AddCrowdfundCustomCategoryResponse>
-      addCrowdfundCustomCategory_Pre($grpc.ServiceCall call,
-          $async.Future<$19.AddCrowdfundCustomCategoryRequest> request) async {
-    return addCrowdfundCustomCategory(call, await request);
-  }
-
-  $async.Future<$19.DeleteCrowdfundCustomCategoryResponse>
-      deleteCrowdfundCustomCategory_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.DeleteCrowdfundCustomCategoryRequest>
-              request) async {
-    return deleteCrowdfundCustomCategory(call, await request);
-  }
-
-  $async.Future<$19.ListCrowdfundWithdrawalsResponse>
-      listCrowdfundWithdrawals_Pre($grpc.ServiceCall call,
-          $async.Future<$19.ListCrowdfundWithdrawalsRequest> request) async {
-    return listCrowdfundWithdrawals(call, await request);
-  }
-
-  $async.Future<$19.CloseCrowdfundResponse> closeCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CloseCrowdfundRequest> request) async {
-    return closeCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.CancelCrowdfundResponse> cancelCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CancelCrowdfundRequest> request) async {
-    return cancelCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.ForceCompleteCrowdfundResponse> forceCompleteCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.ForceCompleteCrowdfundRequest> request) async {
-    return forceCompleteCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.ListCrowdfundRefundsResponse> listCrowdfundRefunds_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.ListCrowdfundRefundsRequest> request) async {
-    return listCrowdfundRefunds(call, await request);
-  }
-
-  $async.Future<$19.RetryCrowdfundRefundResponse> retryCrowdfundRefund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.RetryCrowdfundRefundRequest> request) async {
-    return retryCrowdfundRefund(call, await request);
-  }
-
-  $async.Future<$19.GetCrowdfundStatisticsResponse> getCrowdfundStatistics_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetCrowdfundStatisticsRequest> request) async {
-    return getCrowdfundStatistics(call, await request);
-  }
-
-  $async.Future<$19.SearchCrowdfundsResponse> searchCrowdfunds_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.SearchCrowdfundsRequest> request) async {
-    return searchCrowdfunds(call, await request);
-  }
-
-  $async.Future<$19.UpdateCrowdfundResponse> updateCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.UpdateCrowdfundRequest> request) async {
-    return updateCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.DeleteCrowdfundResponse> deleteCrowdfund_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.DeleteCrowdfundRequest> request) async {
-    return deleteCrowdfund(call, await request);
-  }
-
-  $async.Future<$19.GetCrowdfundDonationsResponse> getCrowdfundDonations_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetCrowdfundDonationsRequest> request) async {
-    return getCrowdfundDonations(call, await request);
-  }
-
-  $async.Future<$19.GetUserDonationsResponse> getUserDonations_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetUserDonationsRequest> request) async {
-    return getUserDonations(call, await request);
-  }
-
-  $async.Future<$19.GenerateDonationReceiptResponse>
-      generateDonationReceipt_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GenerateDonationReceiptRequest> request) async {
-    return generateDonationReceipt(call, await request);
-  }
-
-  $async.Future<$19.GetUserCrowdfundReceiptsResponse>
-      getUserCrowdfundReceipts_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetUserCrowdfundReceiptsRequest> request) async {
-    return getUserCrowdfundReceipts(call, await request);
-  }
-
-  $async.Future<$19.ConnectNotificationChannelResponse>
-      connectNotificationChannel_Pre($grpc.ServiceCall call,
-          $async.Future<$19.ConnectNotificationChannelRequest> request) async {
-    return connectNotificationChannel(call, await request);
-  }
-
-  $async.Future<$19.DisconnectNotificationChannelResponse>
-      disconnectNotificationChannel_Pre(
-          $grpc.ServiceCall call,
-          $async.Future<$19.DisconnectNotificationChannelRequest>
-              request) async {
-    return disconnectNotificationChannel(call, await request);
-  }
-
-  $async.Future<$19.GetNotificationChannelsResponse>
-      getNotificationChannels_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetNotificationChannelsRequest> request) async {
-    return getNotificationChannels(call, await request);
-  }
-
-  $async.Future<$19.UpdateNotificationChannelResponse>
-      updateNotificationChannel_Pre($grpc.ServiceCall call,
-          $async.Future<$19.UpdateNotificationChannelRequest> request) async {
-    return updateNotificationChannel(call, await request);
-  }
-
-  $async.Future<$19.TestNotificationChannelResponse>
-      testNotificationChannel_Pre($grpc.ServiceCall call,
-          $async.Future<$19.TestNotificationChannelRequest> request) async {
-    return testNotificationChannel(call, await request);
-  }
-
-  $async.Future<$19.GetTelegramBotInfoResponse> getTelegramBotInfo_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetTelegramBotInfoRequest> request) async {
-    return getTelegramBotInfo(call, await request);
-  }
-
-  $async.Future<$19.VerifyTelegramChannelResponse> verifyTelegramChannel_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.VerifyTelegramChannelRequest> request) async {
-    return verifyTelegramChannel(call, await request);
-  }
-
-  $async.Future<$19.GetNotificationHistoryResponse> getNotificationHistory_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetNotificationHistoryRequest> request) async {
-    return getNotificationHistory(call, await request);
-  }
-
-  $async.Future<$19.GetCrowdfundLeaderboardResponse>
-      getCrowdfundLeaderboard_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetCrowdfundLeaderboardRequest> request) async {
-    return getCrowdfundLeaderboard(call, await request);
-  }
-
-  $async.Future<$19.CreateAutoSaveRuleResponse2> createAutoSaveRule_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.CreateAutoSaveRuleRequest2> request) async {
-    return createAutoSaveRule(call, await request);
-  }
-
-  $async.Future<$19.GetAutoSaveRulesResponse2> getAutoSaveRules_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetAutoSaveRulesRequest2> request) async {
-    return getAutoSaveRules(call, await request);
-  }
-
-  $async.Future<$19.UpdateAutoSaveRuleResponse2> updateAutoSaveRule_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.UpdateAutoSaveRuleRequest2> request) async {
-    return updateAutoSaveRule(call, await request);
-  }
-
-  $async.Future<$19.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.ToggleAutoSaveRuleRequest2> request) async {
-    return toggleAutoSaveRule(call, await request);
-  }
-
-  $async.Future<$19.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.DeleteAutoSaveRuleRequest2> request) async {
-    return deleteAutoSaveRule(call, await request);
-  }
-
-  $async.Future<$19.GetAutoSaveTransactionsResponse2>
-      getAutoSaveTransactions_Pre($grpc.ServiceCall call,
-          $async.Future<$19.GetAutoSaveTransactionsRequest2> request) async {
-    return getAutoSaveTransactions(call, await request);
-  }
-
-  $async.Future<$19.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.GetAutoSaveStatisticsRequest2> request) async {
-    return getAutoSaveStatistics(call, await request);
-  }
-
-  $async.Future<$19.TriggerAutoSaveResponse2> triggerAutoSave_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$19.TriggerAutoSaveRequest2> request) async {
-    return triggerAutoSave(call, await request);
-  }
-
-  $async.Future<$19.CreateGroupAccountResponse> createGroupAccount(
-      $grpc.ServiceCall call, $19.CreateGroupAccountRequest request);
-  $async.Future<$19.GetGroupAccountsResponse> getGroupAccounts(
-      $grpc.ServiceCall call, $19.GetGroupAccountsRequest request);
-  $async.Future<$19.GetGroupAccountResponse> getGroupAccount(
-      $grpc.ServiceCall call, $19.GetGroupAccountRequest request);
-  $async.Future<$19.AddGroupMemberResponse> addGroupMember(
-      $grpc.ServiceCall call, $19.AddGroupMemberRequest request);
-  $async.Future<$19.RemoveGroupMemberResponse> removeGroupMember(
-      $grpc.ServiceCall call, $19.RemoveGroupMemberRequest request);
-  $async.Future<$19.ContributeToGroupResponse> contributeToGroup(
-      $grpc.ServiceCall call, $19.ContributeToGroupRequest request);
-  $async.Future<$19.WithdrawFromGroupResponse> withdrawFromGroup(
-      $grpc.ServiceCall call, $19.WithdrawFromGroupRequest request);
-  $async.Future<$19.CloseGroupAccountResponse> closeGroupAccount(
-      $grpc.ServiceCall call, $19.CloseGroupAccountRequest request);
-  $async.Future<$19.BuyInsuranceResponse> buyInsurance(
-      $grpc.ServiceCall call, $19.BuyInsuranceRequest request);
-  $async.Future<$19.GetInsurancePoliciesResponse> getInsurancePolicies(
-      $grpc.ServiceCall call, $19.GetInsurancePoliciesRequest request);
-  $async.Future<$19.GetInsurancePolicyResponse> getInsurancePolicy(
-      $grpc.ServiceCall call, $19.GetInsurancePolicyRequest request);
-  $async.Future<$19.MakeInsuranceClaimResponse> makeInsuranceClaim(
-      $grpc.ServiceCall call, $19.MakeInsuranceClaimRequest request);
-  $async.Future<$19.CancelInsuranceResponse> cancelInsurance(
-      $grpc.ServiceCall call, $19.CancelInsuranceRequest request);
-  $async.Future<$19.GetInsurancePlansResponse> getInsurancePlans(
-      $grpc.ServiceCall call, $19.GetInsurancePlansRequest request);
-  $async.Future<$19.GetInsuranceMarketplaceProductsResponse>
+  $async.Future<$0.GetInsuranceMarketplaceProductsResponse>
       getInsuranceMarketplaceProducts($grpc.ServiceCall call,
-          $19.GetInsuranceMarketplaceProductsRequest request);
-  $async.Future<$19.GetInsuranceMarketplaceCategoriesResponse>
+          $0.GetInsuranceMarketplaceProductsRequest request);
+
+  $async.Future<$0.GetInsuranceMarketplaceCategoriesResponse>
+      getInsuranceMarketplaceCategories_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceMarketplaceCategoriesRequest>
+              $request) async {
+    return getInsuranceMarketplaceCategories($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceMarketplaceCategoriesResponse>
       getInsuranceMarketplaceCategories($grpc.ServiceCall call,
-          $19.GetInsuranceMarketplaceCategoriesRequest request);
-  $async.Future<$19.GetInsuranceQuoteResponse> getInsuranceQuote(
-      $grpc.ServiceCall call, $19.GetInsuranceQuoteRequest request);
-  $async.Future<$19.PurchaseMarketplaceInsuranceResponse>
+          $0.GetInsuranceMarketplaceCategoriesRequest request);
+
+  $async.Future<$0.GetInsuranceQuoteResponse> getInsuranceQuote_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsuranceQuoteRequest> $request) async {
+    return getInsuranceQuote($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceQuoteResponse> getInsuranceQuote(
+      $grpc.ServiceCall call, $0.GetInsuranceQuoteRequest request);
+
+  $async.Future<$0.PurchaseMarketplaceInsuranceResponse>
+      purchaseMarketplaceInsurance_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.PurchaseMarketplaceInsuranceRequest>
+              $request) async {
+    return purchaseMarketplaceInsurance($call, await $request);
+  }
+
+  $async.Future<$0.PurchaseMarketplaceInsuranceResponse>
       purchaseMarketplaceInsurance($grpc.ServiceCall call,
-          $19.PurchaseMarketplaceInsuranceRequest request);
-  $async.Future<$19.GetInsurancePurchaseStatusResponse>
-      getInsurancePurchaseStatus($grpc.ServiceCall call,
-          $19.GetInsurancePurchaseStatusRequest request);
-  $async.Future<$19.UploadInsuranceDocumentResponse> uploadInsuranceDocument(
-      $grpc.ServiceCall call, $19.UploadInsuranceDocumentRequest request);
-  $async.Future<$19.GetInsuranceDocumentUploadURLResponse>
+          $0.PurchaseMarketplaceInsuranceRequest request);
+
+  $async.Future<$0.GetInsurancePurchaseStatusResponse>
+      getInsurancePurchaseStatus_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetInsurancePurchaseStatusRequest> $request) async {
+    return getInsurancePurchaseStatus($call, await $request);
+  }
+
+  $async.Future<$0.GetInsurancePurchaseStatusResponse>
+      getInsurancePurchaseStatus(
+          $grpc.ServiceCall call, $0.GetInsurancePurchaseStatusRequest request);
+
+  $async.Future<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UploadInsuranceDocumentRequest> $request) async {
+    return uploadInsuranceDocument($call, await $request);
+  }
+
+  $async.Future<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument(
+      $grpc.ServiceCall call, $0.UploadInsuranceDocumentRequest request);
+
+  $async.Future<$0.GetInsuranceDocumentUploadURLResponse>
+      getInsuranceDocumentUploadURL_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceDocumentUploadURLRequest>
+              $request) async {
+    return getInsuranceDocumentUploadURL($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceDocumentUploadURLResponse>
       getInsuranceDocumentUploadURL($grpc.ServiceCall call,
-          $19.GetInsuranceDocumentUploadURLRequest request);
-  $async.Future<$19.GetInsuranceAuxiliaryDataResponse>
-      getInsuranceAuxiliaryData(
-          $grpc.ServiceCall call, $19.GetInsuranceAuxiliaryDataRequest request);
-  $async.Future<$19.GetInsurancePaymentsResponse> getInsurancePayments(
-      $grpc.ServiceCall call, $19.GetInsurancePaymentsRequest request);
-  $async.Future<$19.GetUserInsurancePaymentsResponse> getUserInsurancePayments(
-      $grpc.ServiceCall call, $19.GetUserInsurancePaymentsRequest request);
-  $async.Future<$19.CreateInsurancePaymentResponse> createInsurancePayment(
-      $grpc.ServiceCall call, $19.CreateInsurancePaymentRequest request);
-  $async.Future<$19.ProcessInsurancePaymentResponse> processInsurancePayment(
-      $grpc.ServiceCall call, $19.ProcessInsurancePaymentRequest request);
-  $async.Future<$19.GetInsurancePaymentByIdResponse> getInsurancePaymentById(
-      $grpc.ServiceCall call, $19.GetInsurancePaymentByIdRequest request);
-  $async.Future<$19.GetOverdueInsurancePaymentsResponse>
+          $0.GetInsuranceDocumentUploadURLRequest request);
+
+  $async.Future<$0.GetInsuranceAuxiliaryDataResponse>
+      getInsuranceAuxiliaryData_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceAuxiliaryDataRequest> $request) async {
+    return getInsuranceAuxiliaryData($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData(
+      $grpc.ServiceCall call, $0.GetInsuranceAuxiliaryDataRequest request);
+
+  $async.Future<$0.GetInsurancePaymentsResponse> getInsurancePayments_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsurancePaymentsRequest> $request) async {
+    return getInsurancePayments($call, await $request);
+  }
+
+  $async.Future<$0.GetInsurancePaymentsResponse> getInsurancePayments(
+      $grpc.ServiceCall call, $0.GetInsurancePaymentsRequest request);
+
+  $async.Future<$0.GetUserInsurancePaymentsResponse>
+      getUserInsurancePayments_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetUserInsurancePaymentsRequest> $request) async {
+    return getUserInsurancePayments($call, await $request);
+  }
+
+  $async.Future<$0.GetUserInsurancePaymentsResponse> getUserInsurancePayments(
+      $grpc.ServiceCall call, $0.GetUserInsurancePaymentsRequest request);
+
+  $async.Future<$0.CreateInsurancePaymentResponse> createInsurancePayment_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateInsurancePaymentRequest> $request) async {
+    return createInsurancePayment($call, await $request);
+  }
+
+  $async.Future<$0.CreateInsurancePaymentResponse> createInsurancePayment(
+      $grpc.ServiceCall call, $0.CreateInsurancePaymentRequest request);
+
+  $async.Future<$0.ProcessInsurancePaymentResponse> processInsurancePayment_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ProcessInsurancePaymentRequest> $request) async {
+    return processInsurancePayment($call, await $request);
+  }
+
+  $async.Future<$0.ProcessInsurancePaymentResponse> processInsurancePayment(
+      $grpc.ServiceCall call, $0.ProcessInsurancePaymentRequest request);
+
+  $async.Future<$0.GetInsurancePaymentByIdResponse> getInsurancePaymentById_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsurancePaymentByIdRequest> $request) async {
+    return getInsurancePaymentById($call, await $request);
+  }
+
+  $async.Future<$0.GetInsurancePaymentByIdResponse> getInsurancePaymentById(
+      $grpc.ServiceCall call, $0.GetInsurancePaymentByIdRequest request);
+
+  $async.Future<$0.GetOverdueInsurancePaymentsResponse>
+      getOverdueInsurancePayments_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetOverdueInsurancePaymentsRequest> $request) async {
+    return getOverdueInsurancePayments($call, await $request);
+  }
+
+  $async.Future<$0.GetOverdueInsurancePaymentsResponse>
       getOverdueInsurancePayments($grpc.ServiceCall call,
-          $19.GetOverdueInsurancePaymentsRequest request);
-  $async.Future<$19.GetInsuranceClaimsResponse> getInsuranceClaims(
-      $grpc.ServiceCall call, $19.GetInsuranceClaimsRequest request);
-  $async.Future<$19.GetUserInsuranceClaimsResponse> getUserInsuranceClaims(
-      $grpc.ServiceCall call, $19.GetUserInsuranceClaimsRequest request);
-  $async.Future<$19.UpdateInsuranceClaimResponse> updateInsuranceClaim(
-      $grpc.ServiceCall call, $19.UpdateInsuranceClaimRequest request);
-  $async.Future<$19.GetInsuranceClaimByIdResponse> getInsuranceClaimById(
-      $grpc.ServiceCall call, $19.GetInsuranceClaimByIdRequest request);
-  $async.Future<$19.UpdateInsurancePolicyResponse> updateInsurancePolicy(
-      $grpc.ServiceCall call, $19.UpdateInsurancePolicyRequest request);
-  $async.Future<$19.GenerateInsuranceReceiptResponse> generateInsuranceReceipt(
-      $grpc.ServiceCall call, $19.GenerateInsuranceReceiptRequest request);
-  $async.Future<$19.GetUserInsuranceReceiptsResponse> getUserInsuranceReceipts(
-      $grpc.ServiceCall call, $19.GetUserInsuranceReceiptsRequest request);
-  $async.Future<$19.GetInsuranceStatisticsResponse> getInsuranceStatistics(
-      $grpc.ServiceCall call, $19.GetInsuranceStatisticsRequest request);
-  $async.Future<$19.GetInsurancePaymentStatisticsResponse>
+          $0.GetOverdueInsurancePaymentsRequest request);
+
+  $async.Future<$0.GetInsuranceClaimsResponse> getInsuranceClaims_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsuranceClaimsRequest> $request) async {
+    return getInsuranceClaims($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceClaimsResponse> getInsuranceClaims(
+      $grpc.ServiceCall call, $0.GetInsuranceClaimsRequest request);
+
+  $async.Future<$0.GetUserInsuranceClaimsResponse> getUserInsuranceClaims_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetUserInsuranceClaimsRequest> $request) async {
+    return getUserInsuranceClaims($call, await $request);
+  }
+
+  $async.Future<$0.GetUserInsuranceClaimsResponse> getUserInsuranceClaims(
+      $grpc.ServiceCall call, $0.GetUserInsuranceClaimsRequest request);
+
+  $async.Future<$0.UpdateInsuranceClaimResponse> updateInsuranceClaim_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateInsuranceClaimRequest> $request) async {
+    return updateInsuranceClaim($call, await $request);
+  }
+
+  $async.Future<$0.UpdateInsuranceClaimResponse> updateInsuranceClaim(
+      $grpc.ServiceCall call, $0.UpdateInsuranceClaimRequest request);
+
+  $async.Future<$0.GetInsuranceClaimByIdResponse> getInsuranceClaimById_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsuranceClaimByIdRequest> $request) async {
+    return getInsuranceClaimById($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceClaimByIdResponse> getInsuranceClaimById(
+      $grpc.ServiceCall call, $0.GetInsuranceClaimByIdRequest request);
+
+  $async.Future<$0.UpdateInsurancePolicyResponse> updateInsurancePolicy_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateInsurancePolicyRequest> $request) async {
+    return updateInsurancePolicy($call, await $request);
+  }
+
+  $async.Future<$0.UpdateInsurancePolicyResponse> updateInsurancePolicy(
+      $grpc.ServiceCall call, $0.UpdateInsurancePolicyRequest request);
+
+  $async.Future<$0.GenerateInsuranceReceiptResponse>
+      generateInsuranceReceipt_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GenerateInsuranceReceiptRequest> $request) async {
+    return generateInsuranceReceipt($call, await $request);
+  }
+
+  $async.Future<$0.GenerateInsuranceReceiptResponse> generateInsuranceReceipt(
+      $grpc.ServiceCall call, $0.GenerateInsuranceReceiptRequest request);
+
+  $async.Future<$0.GetUserInsuranceReceiptsResponse>
+      getUserInsuranceReceipts_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetUserInsuranceReceiptsRequest> $request) async {
+    return getUserInsuranceReceipts($call, await $request);
+  }
+
+  $async.Future<$0.GetUserInsuranceReceiptsResponse> getUserInsuranceReceipts(
+      $grpc.ServiceCall call, $0.GetUserInsuranceReceiptsRequest request);
+
+  $async.Future<$0.GetInsuranceStatisticsResponse> getInsuranceStatistics_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsuranceStatisticsRequest> $request) async {
+    return getInsuranceStatistics($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceStatisticsResponse> getInsuranceStatistics(
+      $grpc.ServiceCall call, $0.GetInsuranceStatisticsRequest request);
+
+  $async.Future<$0.GetInsurancePaymentStatisticsResponse>
+      getInsurancePaymentStatistics_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetInsurancePaymentStatisticsRequest>
+              $request) async {
+    return getInsurancePaymentStatistics($call, await $request);
+  }
+
+  $async.Future<$0.GetInsurancePaymentStatisticsResponse>
       getInsurancePaymentStatistics($grpc.ServiceCall call,
-          $19.GetInsurancePaymentStatisticsRequest request);
-  $async.Future<$19.GetMyCoverCustomersResponse> getMyCoverCustomers(
-      $grpc.ServiceCall call, $19.GetMyCoverCustomersRequest request);
-  $async.Future<$19.GetMyCoverCustomerByIdResponse> getMyCoverCustomerById(
-      $grpc.ServiceCall call, $19.GetMyCoverCustomerByIdRequest request);
-  $async.Future<$19.GetMyCoverCustomerPoliciesResponse>
-      getMyCoverCustomerPolicies($grpc.ServiceCall call,
-          $19.GetMyCoverCustomerPoliciesRequest request);
-  $async.Future<$19.GetMyCoverCustomerPurchasesResponse>
+          $0.GetInsurancePaymentStatisticsRequest request);
+
+  $async.Future<$0.GetMyCoverCustomersResponse> getMyCoverCustomers_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverCustomersRequest> $request) async {
+    return getMyCoverCustomers($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverCustomersResponse> getMyCoverCustomers(
+      $grpc.ServiceCall call, $0.GetMyCoverCustomersRequest request);
+
+  $async.Future<$0.GetMyCoverCustomerByIdResponse> getMyCoverCustomerById_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverCustomerByIdRequest> $request) async {
+    return getMyCoverCustomerById($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverCustomerByIdResponse> getMyCoverCustomerById(
+      $grpc.ServiceCall call, $0.GetMyCoverCustomerByIdRequest request);
+
+  $async.Future<$0.GetMyCoverCustomerPoliciesResponse>
+      getMyCoverCustomerPolicies_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetMyCoverCustomerPoliciesRequest> $request) async {
+    return getMyCoverCustomerPolicies($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverCustomerPoliciesResponse>
+      getMyCoverCustomerPolicies(
+          $grpc.ServiceCall call, $0.GetMyCoverCustomerPoliciesRequest request);
+
+  $async.Future<$0.GetMyCoverCustomerPurchasesResponse>
+      getMyCoverCustomerPurchases_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetMyCoverCustomerPurchasesRequest> $request) async {
+    return getMyCoverCustomerPurchases($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverCustomerPurchasesResponse>
       getMyCoverCustomerPurchases($grpc.ServiceCall call,
-          $19.GetMyCoverCustomerPurchasesRequest request);
-  $async.Future<$19.GetMyCoverPurchasesResponse> getMyCoverPurchases(
-      $grpc.ServiceCall call, $19.GetMyCoverPurchasesRequest request);
-  $async.Future<$19.GetMyCoverPurchaseByIdResponse> getMyCoverPurchaseById(
-      $grpc.ServiceCall call, $19.GetMyCoverPurchaseByIdRequest request);
-  $async.Future<$19.GetMyCoverClaimsResponse> getMyCoverClaims(
-      $grpc.ServiceCall call, $19.GetMyCoverClaimsRequest request);
-  $async.Future<$19.GetMyCoverClaimByIdResponse> getMyCoverClaimById(
-      $grpc.ServiceCall call, $19.GetMyCoverClaimByIdRequest request);
-  $async.Future<$19.FileCreditLifeClaimResponse> fileCreditLifeClaim(
-      $grpc.ServiceCall call, $19.FileCreditLifeClaimRequest request);
-  $async.Future<$19.GetInsuranceStatesResponse> getInsuranceStates(
-      $grpc.ServiceCall call, $19.GetInsuranceStatesRequest request);
-  $async.Future<$19.GetInsuranceVehicleMakesResponse> getInsuranceVehicleMakes(
-      $grpc.ServiceCall call, $19.GetInsuranceVehicleMakesRequest request);
-  $async.Future<$19.GetMyCoverNotificationPreferencesResponse>
+          $0.GetMyCoverCustomerPurchasesRequest request);
+
+  $async.Future<$0.GetMyCoverPurchasesResponse> getMyCoverPurchases_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverPurchasesRequest> $request) async {
+    return getMyCoverPurchases($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverPurchasesResponse> getMyCoverPurchases(
+      $grpc.ServiceCall call, $0.GetMyCoverPurchasesRequest request);
+
+  $async.Future<$0.GetMyCoverPurchaseByIdResponse> getMyCoverPurchaseById_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverPurchaseByIdRequest> $request) async {
+    return getMyCoverPurchaseById($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverPurchaseByIdResponse> getMyCoverPurchaseById(
+      $grpc.ServiceCall call, $0.GetMyCoverPurchaseByIdRequest request);
+
+  $async.Future<$0.GetMyCoverClaimsResponse> getMyCoverClaims_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverClaimsRequest> $request) async {
+    return getMyCoverClaims($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverClaimsResponse> getMyCoverClaims(
+      $grpc.ServiceCall call, $0.GetMyCoverClaimsRequest request);
+
+  $async.Future<$0.GetMyCoverClaimByIdResponse> getMyCoverClaimById_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverClaimByIdRequest> $request) async {
+    return getMyCoverClaimById($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverClaimByIdResponse> getMyCoverClaimById(
+      $grpc.ServiceCall call, $0.GetMyCoverClaimByIdRequest request);
+
+  $async.Future<$0.FileCreditLifeClaimResponse> fileCreditLifeClaim_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.FileCreditLifeClaimRequest> $request) async {
+    return fileCreditLifeClaim($call, await $request);
+  }
+
+  $async.Future<$0.FileCreditLifeClaimResponse> fileCreditLifeClaim(
+      $grpc.ServiceCall call, $0.FileCreditLifeClaimRequest request);
+
+  $async.Future<$0.GetInsuranceStatesResponse> getInsuranceStates_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetInsuranceStatesRequest> $request) async {
+    return getInsuranceStates($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceStatesResponse> getInsuranceStates(
+      $grpc.ServiceCall call, $0.GetInsuranceStatesRequest request);
+
+  $async.Future<$0.GetInsuranceVehicleMakesResponse>
+      getInsuranceVehicleMakes_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceVehicleMakesRequest> $request) async {
+    return getInsuranceVehicleMakes($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceVehicleMakesResponse> getInsuranceVehicleMakes(
+      $grpc.ServiceCall call, $0.GetInsuranceVehicleMakesRequest request);
+
+  $async.Future<$0.GetMyCoverNotificationPreferencesResponse>
+      getMyCoverNotificationPreferences_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetMyCoverNotificationPreferencesRequest>
+              $request) async {
+    return getMyCoverNotificationPreferences($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverNotificationPreferencesResponse>
       getMyCoverNotificationPreferences($grpc.ServiceCall call,
-          $19.GetMyCoverNotificationPreferencesRequest request);
-  $async.Future<$19.UpdateMyCoverNotificationPreferencesResponse>
+          $0.GetMyCoverNotificationPreferencesRequest request);
+
+  $async.Future<$0.UpdateMyCoverNotificationPreferencesResponse>
+      updateMyCoverNotificationPreferences_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.UpdateMyCoverNotificationPreferencesRequest>
+              $request) async {
+    return updateMyCoverNotificationPreferences($call, await $request);
+  }
+
+  $async.Future<$0.UpdateMyCoverNotificationPreferencesResponse>
       updateMyCoverNotificationPreferences($grpc.ServiceCall call,
-          $19.UpdateMyCoverNotificationPreferencesRequest request);
-  $async.Future<$19.GetMyCoverWalletBalanceResponse> getMyCoverWalletBalance(
-      $grpc.ServiceCall call, $19.GetMyCoverWalletBalanceRequest request);
-  $async.Future<$19.RequestInsuranceRefundResponse> requestInsuranceRefund(
-      $grpc.ServiceCall call, $19.RequestInsuranceRefundRequest request);
-  $async.Future<$19.GetInsuranceRefundStatusResponse> getInsuranceRefundStatus(
-      $grpc.ServiceCall call, $19.GetInsuranceRefundStatusRequest request);
-  $async.Future<$19.GetInsuranceReconciliationOverviewResponse>
+          $0.UpdateMyCoverNotificationPreferencesRequest request);
+
+  $async.Future<$0.GetMyCoverWalletBalanceResponse> getMyCoverWalletBalance_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyCoverWalletBalanceRequest> $request) async {
+    return getMyCoverWalletBalance($call, await $request);
+  }
+
+  $async.Future<$0.GetMyCoverWalletBalanceResponse> getMyCoverWalletBalance(
+      $grpc.ServiceCall call, $0.GetMyCoverWalletBalanceRequest request);
+
+  $async.Future<$0.RequestInsuranceRefundResponse> requestInsuranceRefund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RequestInsuranceRefundRequest> $request) async {
+    return requestInsuranceRefund($call, await $request);
+  }
+
+  $async.Future<$0.RequestInsuranceRefundResponse> requestInsuranceRefund(
+      $grpc.ServiceCall call, $0.RequestInsuranceRefundRequest request);
+
+  $async.Future<$0.GetInsuranceRefundStatusResponse>
+      getInsuranceRefundStatus_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceRefundStatusRequest> $request) async {
+    return getInsuranceRefundStatus($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceRefundStatusResponse> getInsuranceRefundStatus(
+      $grpc.ServiceCall call, $0.GetInsuranceRefundStatusRequest request);
+
+  $async.Future<$0.GetInsuranceReconciliationOverviewResponse>
+      getInsuranceReconciliationOverview_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceReconciliationOverviewRequest>
+              $request) async {
+    return getInsuranceReconciliationOverview($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceReconciliationOverviewResponse>
       getInsuranceReconciliationOverview($grpc.ServiceCall call,
-          $19.GetInsuranceReconciliationOverviewRequest request);
-  $async.Future<$19.GetOrphanedInsuranceTransactionsResponse>
+          $0.GetInsuranceReconciliationOverviewRequest request);
+
+  $async.Future<$0.GetOrphanedInsuranceTransactionsResponse>
+      getOrphanedInsuranceTransactions_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetOrphanedInsuranceTransactionsRequest>
+              $request) async {
+    return getOrphanedInsuranceTransactions($call, await $request);
+  }
+
+  $async.Future<$0.GetOrphanedInsuranceTransactionsResponse>
       getOrphanedInsuranceTransactions($grpc.ServiceCall call,
-          $19.GetOrphanedInsuranceTransactionsRequest request);
-  $async.Future<$19.ManualReconcilePurchaseResponse> manualReconcilePurchase(
-      $grpc.ServiceCall call, $19.ManualReconcilePurchaseRequest request);
-  $async.Future<$19.AdminTriggerRefundResponse> adminTriggerRefund(
-      $grpc.ServiceCall call, $19.AdminTriggerRefundRequest request);
-  $async.Future<$19.GetInsuranceWebhookEventsResponse>
-      getInsuranceWebhookEvents(
-          $grpc.ServiceCall call, $19.GetInsuranceWebhookEventsRequest request);
-  $async.Future<$19.RetryFailedWebhookEventResponse> retryFailedWebhookEvent(
-      $grpc.ServiceCall call, $19.RetryFailedWebhookEventRequest request);
-  $async.Future<$19.GetFailedInsuranceTransactionsResponse>
+          $0.GetOrphanedInsuranceTransactionsRequest request);
+
+  $async.Future<$0.ManualReconcilePurchaseResponse> manualReconcilePurchase_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ManualReconcilePurchaseRequest> $request) async {
+    return manualReconcilePurchase($call, await $request);
+  }
+
+  $async.Future<$0.ManualReconcilePurchaseResponse> manualReconcilePurchase(
+      $grpc.ServiceCall call, $0.ManualReconcilePurchaseRequest request);
+
+  $async.Future<$0.AdminTriggerRefundResponse> adminTriggerRefund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminTriggerRefundRequest> $request) async {
+    return adminTriggerRefund($call, await $request);
+  }
+
+  $async.Future<$0.AdminTriggerRefundResponse> adminTriggerRefund(
+      $grpc.ServiceCall call, $0.AdminTriggerRefundRequest request);
+
+  $async.Future<$0.GetInsuranceWebhookEventsResponse>
+      getInsuranceWebhookEvents_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetInsuranceWebhookEventsRequest> $request) async {
+    return getInsuranceWebhookEvents($call, await $request);
+  }
+
+  $async.Future<$0.GetInsuranceWebhookEventsResponse> getInsuranceWebhookEvents(
+      $grpc.ServiceCall call, $0.GetInsuranceWebhookEventsRequest request);
+
+  $async.Future<$0.RetryFailedWebhookEventResponse> retryFailedWebhookEvent_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RetryFailedWebhookEventRequest> $request) async {
+    return retryFailedWebhookEvent($call, await $request);
+  }
+
+  $async.Future<$0.RetryFailedWebhookEventResponse> retryFailedWebhookEvent(
+      $grpc.ServiceCall call, $0.RetryFailedWebhookEventRequest request);
+
+  $async.Future<$0.GetFailedInsuranceTransactionsResponse>
+      getFailedInsuranceTransactions_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetFailedInsuranceTransactionsRequest>
+              $request) async {
+    return getFailedInsuranceTransactions($call, await $request);
+  }
+
+  $async.Future<$0.GetFailedInsuranceTransactionsResponse>
       getFailedInsuranceTransactions($grpc.ServiceCall call,
-          $19.GetFailedInsuranceTransactionsRequest request);
-  $async.Future<$19.UpdateProductMarginResponse> updateProductMargin(
-      $grpc.ServiceCall call, $19.UpdateProductMarginRequest request);
-  $async.Future<$19.GetInsurancePlatformWalletsResponse>
+          $0.GetFailedInsuranceTransactionsRequest request);
+
+  $async.Future<$0.UpdateProductMarginResponse> updateProductMargin_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateProductMarginRequest> $request) async {
+    return updateProductMargin($call, await $request);
+  }
+
+  $async.Future<$0.UpdateProductMarginResponse> updateProductMargin(
+      $grpc.ServiceCall call, $0.UpdateProductMarginRequest request);
+
+  $async.Future<$0.GetInsurancePlatformWalletsResponse>
+      getInsurancePlatformWallets_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetInsurancePlatformWalletsRequest> $request) async {
+    return getInsurancePlatformWallets($call, await $request);
+  }
+
+  $async.Future<$0.GetInsurancePlatformWalletsResponse>
       getInsurancePlatformWallets($grpc.ServiceCall call,
-          $19.GetInsurancePlatformWalletsRequest request);
-  $async.Future<$19.CreateCrowdfundResponse> createCrowdfund(
-      $grpc.ServiceCall call, $19.CreateCrowdfundRequest request);
-  $async.Future<$19.GetCrowdfundsResponse> getCrowdfunds(
-      $grpc.ServiceCall call, $19.GetCrowdfundsRequest request);
-  $async.Future<$19.GetCrowdfundResponse> getCrowdfund(
-      $grpc.ServiceCall call, $19.GetCrowdfundRequest request);
-  $async.Future<$19.ContributeToCrowdfundResponse> contributeToCrowdfund(
-      $grpc.ServiceCall call, $19.ContributeToCrowdfundRequest request);
-  $async.Future<$19.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
-      $grpc.ServiceCall call, $19.WithdrawFromCrowdfundRequest request);
-  $async.Future<$19.GetCrowdfundWithdrawalFeeQuoteResponse>
+          $0.GetInsurancePlatformWalletsRequest request);
+
+  $async.Future<$0.CreateCrowdfundResponse> createCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateCrowdfundRequest> $request) async {
+    return createCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.CreateCrowdfundResponse> createCrowdfund(
+      $grpc.ServiceCall call, $0.CreateCrowdfundRequest request);
+
+  $async.Future<$0.GetCrowdfundsResponse> getCrowdfunds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCrowdfundsRequest> $request) async {
+    return getCrowdfunds($call, await $request);
+  }
+
+  $async.Future<$0.GetCrowdfundsResponse> getCrowdfunds(
+      $grpc.ServiceCall call, $0.GetCrowdfundsRequest request);
+
+  $async.Future<$0.GetCrowdfundResponse> getCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCrowdfundRequest> $request) async {
+    return getCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.GetCrowdfundResponse> getCrowdfund(
+      $grpc.ServiceCall call, $0.GetCrowdfundRequest request);
+
+  $async.Future<$0.ContributeToCrowdfundResponse> contributeToCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ContributeToCrowdfundRequest> $request) async {
+    return contributeToCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.ContributeToCrowdfundResponse> contributeToCrowdfund(
+      $grpc.ServiceCall call, $0.ContributeToCrowdfundRequest request);
+
+  $async.Future<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.WithdrawFromCrowdfundRequest> $request) async {
+    return withdrawFromCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
+      $grpc.ServiceCall call, $0.WithdrawFromCrowdfundRequest request);
+
+  $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
+      getCrowdfundWithdrawalFeeQuote_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteRequest>
+              $request) async {
+    return getCrowdfundWithdrawalFeeQuote($call, await $request);
+  }
+
+  $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
       getCrowdfundWithdrawalFeeQuote($grpc.ServiceCall call,
-          $19.GetCrowdfundWithdrawalFeeQuoteRequest request);
-  $async.Future<$19.ListCrowdfundCustomCategoriesResponse>
+          $0.GetCrowdfundWithdrawalFeeQuoteRequest request);
+
+  $async.Future<$0.ListCrowdfundCustomCategoriesResponse>
+      listCrowdfundCustomCategories_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.ListCrowdfundCustomCategoriesRequest>
+              $request) async {
+    return listCrowdfundCustomCategories($call, await $request);
+  }
+
+  $async.Future<$0.ListCrowdfundCustomCategoriesResponse>
       listCrowdfundCustomCategories($grpc.ServiceCall call,
-          $19.ListCrowdfundCustomCategoriesRequest request);
-  $async.Future<$19.AddCrowdfundCustomCategoryResponse>
-      addCrowdfundCustomCategory($grpc.ServiceCall call,
-          $19.AddCrowdfundCustomCategoryRequest request);
-  $async.Future<$19.DeleteCrowdfundCustomCategoryResponse>
+          $0.ListCrowdfundCustomCategoriesRequest request);
+
+  $async.Future<$0.AddCrowdfundCustomCategoryResponse>
+      addCrowdfundCustomCategory_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.AddCrowdfundCustomCategoryRequest> $request) async {
+    return addCrowdfundCustomCategory($call, await $request);
+  }
+
+  $async.Future<$0.AddCrowdfundCustomCategoryResponse>
+      addCrowdfundCustomCategory(
+          $grpc.ServiceCall call, $0.AddCrowdfundCustomCategoryRequest request);
+
+  $async.Future<$0.DeleteCrowdfundCustomCategoryResponse>
+      deleteCrowdfundCustomCategory_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.DeleteCrowdfundCustomCategoryRequest>
+              $request) async {
+    return deleteCrowdfundCustomCategory($call, await $request);
+  }
+
+  $async.Future<$0.DeleteCrowdfundCustomCategoryResponse>
       deleteCrowdfundCustomCategory($grpc.ServiceCall call,
-          $19.DeleteCrowdfundCustomCategoryRequest request);
-  $async.Future<$19.ListCrowdfundWithdrawalsResponse> listCrowdfundWithdrawals(
-      $grpc.ServiceCall call, $19.ListCrowdfundWithdrawalsRequest request);
-  $async.Future<$19.CloseCrowdfundResponse> closeCrowdfund(
-      $grpc.ServiceCall call, $19.CloseCrowdfundRequest request);
-  $async.Future<$19.CancelCrowdfundResponse> cancelCrowdfund(
-      $grpc.ServiceCall call, $19.CancelCrowdfundRequest request);
-  $async.Future<$19.ForceCompleteCrowdfundResponse> forceCompleteCrowdfund(
-      $grpc.ServiceCall call, $19.ForceCompleteCrowdfundRequest request);
-  $async.Future<$19.ListCrowdfundRefundsResponse> listCrowdfundRefunds(
-      $grpc.ServiceCall call, $19.ListCrowdfundRefundsRequest request);
-  $async.Future<$19.RetryCrowdfundRefundResponse> retryCrowdfundRefund(
-      $grpc.ServiceCall call, $19.RetryCrowdfundRefundRequest request);
-  $async.Future<$19.GetCrowdfundStatisticsResponse> getCrowdfundStatistics(
-      $grpc.ServiceCall call, $19.GetCrowdfundStatisticsRequest request);
-  $async.Future<$19.SearchCrowdfundsResponse> searchCrowdfunds(
-      $grpc.ServiceCall call, $19.SearchCrowdfundsRequest request);
-  $async.Future<$19.UpdateCrowdfundResponse> updateCrowdfund(
-      $grpc.ServiceCall call, $19.UpdateCrowdfundRequest request);
-  $async.Future<$19.DeleteCrowdfundResponse> deleteCrowdfund(
-      $grpc.ServiceCall call, $19.DeleteCrowdfundRequest request);
-  $async.Future<$19.GetCrowdfundDonationsResponse> getCrowdfundDonations(
-      $grpc.ServiceCall call, $19.GetCrowdfundDonationsRequest request);
-  $async.Future<$19.GetUserDonationsResponse> getUserDonations(
-      $grpc.ServiceCall call, $19.GetUserDonationsRequest request);
-  $async.Future<$19.GenerateDonationReceiptResponse> generateDonationReceipt(
-      $grpc.ServiceCall call, $19.GenerateDonationReceiptRequest request);
-  $async.Future<$19.GetUserCrowdfundReceiptsResponse> getUserCrowdfundReceipts(
-      $grpc.ServiceCall call, $19.GetUserCrowdfundReceiptsRequest request);
-  $async.Future<$19.ConnectNotificationChannelResponse>
-      connectNotificationChannel($grpc.ServiceCall call,
-          $19.ConnectNotificationChannelRequest request);
-  $async.Future<$19.DisconnectNotificationChannelResponse>
+          $0.DeleteCrowdfundCustomCategoryRequest request);
+
+  $async.Future<$0.ListCrowdfundWithdrawalsResponse>
+      listCrowdfundWithdrawals_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.ListCrowdfundWithdrawalsRequest> $request) async {
+    return listCrowdfundWithdrawals($call, await $request);
+  }
+
+  $async.Future<$0.ListCrowdfundWithdrawalsResponse> listCrowdfundWithdrawals(
+      $grpc.ServiceCall call, $0.ListCrowdfundWithdrawalsRequest request);
+
+  $async.Future<$0.CloseCrowdfundResponse> closeCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CloseCrowdfundRequest> $request) async {
+    return closeCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.CloseCrowdfundResponse> closeCrowdfund(
+      $grpc.ServiceCall call, $0.CloseCrowdfundRequest request);
+
+  $async.Future<$0.CancelCrowdfundResponse> cancelCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CancelCrowdfundRequest> $request) async {
+    return cancelCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.CancelCrowdfundResponse> cancelCrowdfund(
+      $grpc.ServiceCall call, $0.CancelCrowdfundRequest request);
+
+  $async.Future<$0.ForceCompleteCrowdfundResponse> forceCompleteCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ForceCompleteCrowdfundRequest> $request) async {
+    return forceCompleteCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.ForceCompleteCrowdfundResponse> forceCompleteCrowdfund(
+      $grpc.ServiceCall call, $0.ForceCompleteCrowdfundRequest request);
+
+  $async.Future<$0.ListCrowdfundRefundsResponse> listCrowdfundRefunds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListCrowdfundRefundsRequest> $request) async {
+    return listCrowdfundRefunds($call, await $request);
+  }
+
+  $async.Future<$0.ListCrowdfundRefundsResponse> listCrowdfundRefunds(
+      $grpc.ServiceCall call, $0.ListCrowdfundRefundsRequest request);
+
+  $async.Future<$0.RetryCrowdfundRefundResponse> retryCrowdfundRefund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RetryCrowdfundRefundRequest> $request) async {
+    return retryCrowdfundRefund($call, await $request);
+  }
+
+  $async.Future<$0.RetryCrowdfundRefundResponse> retryCrowdfundRefund(
+      $grpc.ServiceCall call, $0.RetryCrowdfundRefundRequest request);
+
+  $async.Future<$0.GetCrowdfundStatisticsResponse> getCrowdfundStatistics_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCrowdfundStatisticsRequest> $request) async {
+    return getCrowdfundStatistics($call, await $request);
+  }
+
+  $async.Future<$0.GetCrowdfundStatisticsResponse> getCrowdfundStatistics(
+      $grpc.ServiceCall call, $0.GetCrowdfundStatisticsRequest request);
+
+  $async.Future<$0.SearchCrowdfundsResponse> searchCrowdfunds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SearchCrowdfundsRequest> $request) async {
+    return searchCrowdfunds($call, await $request);
+  }
+
+  $async.Future<$0.SearchCrowdfundsResponse> searchCrowdfunds(
+      $grpc.ServiceCall call, $0.SearchCrowdfundsRequest request);
+
+  $async.Future<$0.UpdateCrowdfundResponse> updateCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateCrowdfundRequest> $request) async {
+    return updateCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.UpdateCrowdfundResponse> updateCrowdfund(
+      $grpc.ServiceCall call, $0.UpdateCrowdfundRequest request);
+
+  $async.Future<$0.DeleteCrowdfundResponse> deleteCrowdfund_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DeleteCrowdfundRequest> $request) async {
+    return deleteCrowdfund($call, await $request);
+  }
+
+  $async.Future<$0.DeleteCrowdfundResponse> deleteCrowdfund(
+      $grpc.ServiceCall call, $0.DeleteCrowdfundRequest request);
+
+  $async.Future<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCrowdfundDonationsRequest> $request) async {
+    return getCrowdfundDonations($call, await $request);
+  }
+
+  $async.Future<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations(
+      $grpc.ServiceCall call, $0.GetCrowdfundDonationsRequest request);
+
+  $async.Future<$0.GetUserDonationsResponse> getUserDonations_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetUserDonationsRequest> $request) async {
+    return getUserDonations($call, await $request);
+  }
+
+  $async.Future<$0.GetUserDonationsResponse> getUserDonations(
+      $grpc.ServiceCall call, $0.GetUserDonationsRequest request);
+
+  $async.Future<$0.GenerateDonationReceiptResponse> generateDonationReceipt_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GenerateDonationReceiptRequest> $request) async {
+    return generateDonationReceipt($call, await $request);
+  }
+
+  $async.Future<$0.GenerateDonationReceiptResponse> generateDonationReceipt(
+      $grpc.ServiceCall call, $0.GenerateDonationReceiptRequest request);
+
+  $async.Future<$0.GetUserCrowdfundReceiptsResponse>
+      getUserCrowdfundReceipts_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetUserCrowdfundReceiptsRequest> $request) async {
+    return getUserCrowdfundReceipts($call, await $request);
+  }
+
+  $async.Future<$0.GetUserCrowdfundReceiptsResponse> getUserCrowdfundReceipts(
+      $grpc.ServiceCall call, $0.GetUserCrowdfundReceiptsRequest request);
+
+  $async.Future<$0.ConnectNotificationChannelResponse>
+      connectNotificationChannel_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.ConnectNotificationChannelRequest> $request) async {
+    return connectNotificationChannel($call, await $request);
+  }
+
+  $async.Future<$0.ConnectNotificationChannelResponse>
+      connectNotificationChannel(
+          $grpc.ServiceCall call, $0.ConnectNotificationChannelRequest request);
+
+  $async.Future<$0.DisconnectNotificationChannelResponse>
+      disconnectNotificationChannel_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.DisconnectNotificationChannelRequest>
+              $request) async {
+    return disconnectNotificationChannel($call, await $request);
+  }
+
+  $async.Future<$0.DisconnectNotificationChannelResponse>
       disconnectNotificationChannel($grpc.ServiceCall call,
-          $19.DisconnectNotificationChannelRequest request);
-  $async.Future<$19.GetNotificationChannelsResponse> getNotificationChannels(
-      $grpc.ServiceCall call, $19.GetNotificationChannelsRequest request);
-  $async.Future<$19.UpdateNotificationChannelResponse>
-      updateNotificationChannel(
-          $grpc.ServiceCall call, $19.UpdateNotificationChannelRequest request);
-  $async.Future<$19.TestNotificationChannelResponse> testNotificationChannel(
-      $grpc.ServiceCall call, $19.TestNotificationChannelRequest request);
-  $async.Future<$19.GetTelegramBotInfoResponse> getTelegramBotInfo(
-      $grpc.ServiceCall call, $19.GetTelegramBotInfoRequest request);
-  $async.Future<$19.VerifyTelegramChannelResponse> verifyTelegramChannel(
-      $grpc.ServiceCall call, $19.VerifyTelegramChannelRequest request);
-  $async.Future<$19.GetNotificationHistoryResponse> getNotificationHistory(
-      $grpc.ServiceCall call, $19.GetNotificationHistoryRequest request);
-  $async.Future<$19.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard(
-      $grpc.ServiceCall call, $19.GetCrowdfundLeaderboardRequest request);
-  $async.Future<$19.CreateAutoSaveRuleResponse2> createAutoSaveRule(
-      $grpc.ServiceCall call, $19.CreateAutoSaveRuleRequest2 request);
-  $async.Future<$19.GetAutoSaveRulesResponse2> getAutoSaveRules(
-      $grpc.ServiceCall call, $19.GetAutoSaveRulesRequest2 request);
-  $async.Future<$19.UpdateAutoSaveRuleResponse2> updateAutoSaveRule(
-      $grpc.ServiceCall call, $19.UpdateAutoSaveRuleRequest2 request);
-  $async.Future<$19.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule(
-      $grpc.ServiceCall call, $19.ToggleAutoSaveRuleRequest2 request);
-  $async.Future<$19.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule(
-      $grpc.ServiceCall call, $19.DeleteAutoSaveRuleRequest2 request);
-  $async.Future<$19.GetAutoSaveTransactionsResponse2> getAutoSaveTransactions(
-      $grpc.ServiceCall call, $19.GetAutoSaveTransactionsRequest2 request);
-  $async.Future<$19.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics(
-      $grpc.ServiceCall call, $19.GetAutoSaveStatisticsRequest2 request);
-  $async.Future<$19.TriggerAutoSaveResponse2> triggerAutoSave(
-      $grpc.ServiceCall call, $19.TriggerAutoSaveRequest2 request);
+          $0.DisconnectNotificationChannelRequest request);
+
+  $async.Future<$0.GetNotificationChannelsResponse> getNotificationChannels_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetNotificationChannelsRequest> $request) async {
+    return getNotificationChannels($call, await $request);
+  }
+
+  $async.Future<$0.GetNotificationChannelsResponse> getNotificationChannels(
+      $grpc.ServiceCall call, $0.GetNotificationChannelsRequest request);
+
+  $async.Future<$0.UpdateNotificationChannelResponse>
+      updateNotificationChannel_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.UpdateNotificationChannelRequest> $request) async {
+    return updateNotificationChannel($call, await $request);
+  }
+
+  $async.Future<$0.UpdateNotificationChannelResponse> updateNotificationChannel(
+      $grpc.ServiceCall call, $0.UpdateNotificationChannelRequest request);
+
+  $async.Future<$0.TestNotificationChannelResponse> testNotificationChannel_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.TestNotificationChannelRequest> $request) async {
+    return testNotificationChannel($call, await $request);
+  }
+
+  $async.Future<$0.TestNotificationChannelResponse> testNotificationChannel(
+      $grpc.ServiceCall call, $0.TestNotificationChannelRequest request);
+
+  $async.Future<$0.GetTelegramBotInfoResponse> getTelegramBotInfo_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetTelegramBotInfoRequest> $request) async {
+    return getTelegramBotInfo($call, await $request);
+  }
+
+  $async.Future<$0.GetTelegramBotInfoResponse> getTelegramBotInfo(
+      $grpc.ServiceCall call, $0.GetTelegramBotInfoRequest request);
+
+  $async.Future<$0.VerifyTelegramChannelResponse> verifyTelegramChannel_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.VerifyTelegramChannelRequest> $request) async {
+    return verifyTelegramChannel($call, await $request);
+  }
+
+  $async.Future<$0.VerifyTelegramChannelResponse> verifyTelegramChannel(
+      $grpc.ServiceCall call, $0.VerifyTelegramChannelRequest request);
+
+  $async.Future<$0.GetNotificationHistoryResponse> getNotificationHistory_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetNotificationHistoryRequest> $request) async {
+    return getNotificationHistory($call, await $request);
+  }
+
+  $async.Future<$0.GetNotificationHistoryResponse> getNotificationHistory(
+      $grpc.ServiceCall call, $0.GetNotificationHistoryRequest request);
+
+  $async.Future<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCrowdfundLeaderboardRequest> $request) async {
+    return getCrowdfundLeaderboard($call, await $request);
+  }
+
+  $async.Future<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard(
+      $grpc.ServiceCall call, $0.GetCrowdfundLeaderboardRequest request);
+
+  $async.Future<$0.CreateAutoSaveRuleResponse2> createAutoSaveRule_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateAutoSaveRuleRequest2> $request) async {
+    return createAutoSaveRule($call, await $request);
+  }
+
+  $async.Future<$0.CreateAutoSaveRuleResponse2> createAutoSaveRule(
+      $grpc.ServiceCall call, $0.CreateAutoSaveRuleRequest2 request);
+
+  $async.Future<$0.GetAutoSaveRulesResponse2> getAutoSaveRules_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetAutoSaveRulesRequest2> $request) async {
+    return getAutoSaveRules($call, await $request);
+  }
+
+  $async.Future<$0.GetAutoSaveRulesResponse2> getAutoSaveRules(
+      $grpc.ServiceCall call, $0.GetAutoSaveRulesRequest2 request);
+
+  $async.Future<$0.UpdateAutoSaveRuleResponse2> updateAutoSaveRule_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UpdateAutoSaveRuleRequest2> $request) async {
+    return updateAutoSaveRule($call, await $request);
+  }
+
+  $async.Future<$0.UpdateAutoSaveRuleResponse2> updateAutoSaveRule(
+      $grpc.ServiceCall call, $0.UpdateAutoSaveRuleRequest2 request);
+
+  $async.Future<$0.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ToggleAutoSaveRuleRequest2> $request) async {
+    return toggleAutoSaveRule($call, await $request);
+  }
+
+  $async.Future<$0.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule(
+      $grpc.ServiceCall call, $0.ToggleAutoSaveRuleRequest2 request);
+
+  $async.Future<$0.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DeleteAutoSaveRuleRequest2> $request) async {
+    return deleteAutoSaveRule($call, await $request);
+  }
+
+  $async.Future<$0.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule(
+      $grpc.ServiceCall call, $0.DeleteAutoSaveRuleRequest2 request);
+
+  $async.Future<$0.GetAutoSaveTransactionsResponse2>
+      getAutoSaveTransactions_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetAutoSaveTransactionsRequest2> $request) async {
+    return getAutoSaveTransactions($call, await $request);
+  }
+
+  $async.Future<$0.GetAutoSaveTransactionsResponse2> getAutoSaveTransactions(
+      $grpc.ServiceCall call, $0.GetAutoSaveTransactionsRequest2 request);
+
+  $async.Future<$0.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetAutoSaveStatisticsRequest2> $request) async {
+    return getAutoSaveStatistics($call, await $request);
+  }
+
+  $async.Future<$0.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics(
+      $grpc.ServiceCall call, $0.GetAutoSaveStatisticsRequest2 request);
+
+  $async.Future<$0.TriggerAutoSaveResponse2> triggerAutoSave_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.TriggerAutoSaveRequest2> $request) async {
+    return triggerAutoSave($call, await $request);
+  }
+
+  $async.Future<$0.TriggerAutoSaveResponse2> triggerAutoSave(
+      $grpc.ServiceCall call, $0.TriggerAutoSaveRequest2 request);
 }

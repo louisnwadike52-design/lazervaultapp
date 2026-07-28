@@ -38,15 +38,16 @@ const SplitBillParticipantStatus$json = {
     {'1': 'SPLIT_BILL_PARTICIPANT_STATUS_PENDING', '2': 0},
     {'1': 'SPLIT_BILL_PARTICIPANT_STATUS_PAID', '2': 1},
     {'1': 'SPLIT_BILL_PARTICIPANT_STATUS_DECLINED', '2': 2},
+    {'1': 'SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS', '2': 3},
   ],
 };
 
 /// Descriptor for `SplitBillParticipantStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List splitBillParticipantStatusDescriptor =
-    $convert.base64Decode(
-        'ChpTcGxpdEJpbGxQYXJ0aWNpcGFudFN0YXR1cxIpCiVTUExJVF9CSUxMX1BBUlRJQ0lQQU5UX1'
-        'NUQVRVU19QRU5ESU5HEAASJgoiU1BMSVRfQklMTF9QQVJUSUNJUEFOVF9TVEFUVVNfUEFJRBAB'
-        'EioKJlNQTElUX0JJTExfUEFSVElDSVBBTlRfU1RBVFVTX0RFQ0xJTkVEEAI=');
+final $typed_data.Uint8List splitBillParticipantStatusDescriptor = $convert.base64Decode(
+    'ChpTcGxpdEJpbGxQYXJ0aWNpcGFudFN0YXR1cxIpCiVTUExJVF9CSUxMX1BBUlRJQ0lQQU5UX1'
+    'NUQVRVU19QRU5ESU5HEAASJgoiU1BMSVRfQklMTF9QQVJUSUNJUEFOVF9TVEFUVVNfUEFJRBAB'
+    'EioKJlNQTElUX0JJTExfUEFSVElDSVBBTlRfU1RBVFVTX0RFQ0xJTkVEEAISLQopU1BMSVRfQk'
+    'lMTF9QQVJUSUNJUEFOVF9TVEFUVVNfSU5fUFJPR1JFU1MQAw==');
 
 @$core.Deprecated('Use splitMethodDescriptor instead')
 const SplitMethod$json = {
@@ -142,6 +143,7 @@ const SplitBill$json = {
       '10': 'settlementStatus'
     },
     {'1': 'withdrawal_fee', '3': 22, '4': 1, '5': 1, '10': 'withdrawalFee'},
+    {'1': 'title', '3': 23, '4': 1, '5': 9, '10': 'title'},
   ],
 };
 
@@ -163,7 +165,8 @@ final $typed_data.Uint8List splitBillDescriptor = $convert.base64Decode(
     'Zlcl90eXBlGBIgASgJUgxyZWNlaXZlclR5cGUSIwoNcmVjZWl2ZXJfbmFtZRgTIAEoCVIMcmVj'
     'ZWl2ZXJOYW1lEjYKF3JlY2VpdmVyX2FjY291bnRfbWFza2VkGBQgASgJUhVyZWNlaXZlckFjY2'
     '91bnRNYXNrZWQSKwoRc2V0dGxlbWVudF9zdGF0dXMYFSABKAlSEHNldHRsZW1lbnRTdGF0dXMS'
-    'JQoOd2l0aGRyYXdhbF9mZWUYFiABKAFSDXdpdGhkcmF3YWxGZWU=');
+    'JQoOd2l0aGRyYXdhbF9mZWUYFiABKAFSDXdpdGhkcmF3YWxGZWUSFAoFdGl0bGUYFyABKAlSBX'
+    'RpdGxl');
 
 @$core.Deprecated('Use splitBillParticipantDescriptor instead')
 const SplitBillParticipant$json = {
@@ -221,13 +224,17 @@ const SplitBillParticipantInput$json = {
     {'1': 'username', '3': 1, '4': 1, '5': 9, '10': 'username'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'percentage', '3': 3, '4': 1, '5': 1, '10': 'percentage'},
+    {'1': 'user_id', '3': 4, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'display_name', '3': 5, '4': 1, '5': 9, '10': 'displayName'},
   ],
 };
 
 /// Descriptor for `SplitBillParticipantInput`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List splitBillParticipantInputDescriptor = $convert.base64Decode(
     'ChlTcGxpdEJpbGxQYXJ0aWNpcGFudElucHV0EhoKCHVzZXJuYW1lGAEgASgJUgh1c2VybmFtZR'
-    'IWCgZhbW91bnQYAiABKAFSBmFtb3VudBIeCgpwZXJjZW50YWdlGAMgASgBUgpwZXJjZW50YWdl');
+    'IWCgZhbW91bnQYAiABKAFSBmFtb3VudBIeCgpwZXJjZW50YWdlGAMgASgBUgpwZXJjZW50YWdl'
+    'EhcKB3VzZXJfaWQYBCABKAlSBnVzZXJJZBIhCgxkaXNwbGF5X25hbWUYBSABKAlSC2Rpc3BsYX'
+    'lOYW1l');
 
 @$core.Deprecated('Use receiverInputDescriptor instead')
 const ReceiverInput$json = {
@@ -237,6 +244,8 @@ const ReceiverInput$json = {
     {'1': 'username', '3': 2, '4': 1, '5': 9, '10': 'username'},
     {'1': 'bank_code', '3': 3, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'account_number', '3': 4, '4': 1, '5': 9, '10': 'accountNumber'},
+    {'1': 'user_id', '3': 5, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'display_name', '3': 6, '4': 1, '5': 9, '10': 'displayName'},
   ],
 };
 
@@ -244,7 +253,8 @@ const ReceiverInput$json = {
 final $typed_data.Uint8List receiverInputDescriptor = $convert.base64Decode(
     'Cg1SZWNlaXZlcklucHV0EhIKBHR5cGUYASABKAlSBHR5cGUSGgoIdXNlcm5hbWUYAiABKAlSCH'
     'VzZXJuYW1lEhsKCWJhbmtfY29kZRgDIAEoCVIIYmFua0NvZGUSJQoOYWNjb3VudF9udW1iZXIY'
-    'BCABKAlSDWFjY291bnROdW1iZXI=');
+    'BCABKAlSDWFjY291bnROdW1iZXISFwoHdXNlcl9pZBgFIAEoCVIGdXNlcklkEiEKDGRpc3BsYX'
+    'lfbmFtZRgGIAEoCVILZGlzcGxheU5hbWU=');
 
 @$core.Deprecated('Use splitBillTransactionDescriptor instead')
 const SplitBillTransaction$json = {
@@ -339,6 +349,7 @@ const CreateSplitBillRequest$json = {
       '5': 8,
       '10': 'includeSelfAsCopayer'
     },
+    {'1': 'title', '3': 9, '4': 1, '5': 9, '10': 'title'},
   ],
 };
 
@@ -351,7 +362,7 @@ final $typed_data.Uint8List createSplitBillRequestDescriptor = $convert.base64De
     'cGFydGljaXBhbnRzGAYgAygLMiUuc3BsaXRfYmlsbC5TcGxpdEJpbGxQYXJ0aWNpcGFudElucH'
     'V0UgxwYXJ0aWNpcGFudHMSNQoIcmVjZWl2ZXIYByABKAsyGS5zcGxpdF9iaWxsLlJlY2VpdmVy'
     'SW5wdXRSCHJlY2VpdmVyEjUKF2luY2x1ZGVfc2VsZl9hc19jb3BheWVyGAggASgIUhRpbmNsdW'
-    'RlU2VsZkFzQ29wYXllcg==');
+    'RlU2VsZkFzQ29wYXllchIUCgV0aXRsZRgJIAEoCVIFdGl0bGU=');
 
 @$core.Deprecated('Use createSplitBillResponseDescriptor instead')
 const CreateSplitBillResponse$json = {
@@ -571,6 +582,13 @@ const SendSplitBillReminderRequest$json = {
   '1': 'SendSplitBillReminderRequest',
   '2': [
     {'1': 'split_bill_id', '3': 1, '4': 1, '5': 9, '10': 'splitBillId'},
+    {
+      '1': 'participant_user_ids',
+      '3': 2,
+      '4': 3,
+      '5': 9,
+      '10': 'participantUserIds'
+    },
   ],
 };
 
@@ -578,7 +596,8 @@ const SendSplitBillReminderRequest$json = {
 final $typed_data.Uint8List sendSplitBillReminderRequestDescriptor =
     $convert.base64Decode(
         'ChxTZW5kU3BsaXRCaWxsUmVtaW5kZXJSZXF1ZXN0EiIKDXNwbGl0X2JpbGxfaWQYASABKAlSC3'
-        'NwbGl0QmlsbElk');
+        'NwbGl0QmlsbElkEjAKFHBhcnRpY2lwYW50X3VzZXJfaWRzGAIgAygJUhJwYXJ0aWNpcGFudFVz'
+        'ZXJJZHM=');
 
 @$core.Deprecated('Use sendSplitBillReminderResponseDescriptor instead')
 const SendSplitBillReminderResponse$json = {

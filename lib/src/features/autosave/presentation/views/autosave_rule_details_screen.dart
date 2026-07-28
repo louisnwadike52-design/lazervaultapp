@@ -15,6 +15,12 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cub
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
+import 'package:lazervault/src/features/autosave/presentation/widgets/mandate_health_banner.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -38,11 +44,44 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
   String? _sourceAccountName;
   String? _destinationAccountName;
 
+  bool _invalidArgs = false;
+
   @override
   void initState() {
     super.initState();
-    rule = Get.arguments as AutoSaveRuleEntity;
+    // Guard against a deep-link / blank entry with no (or wrong-typed) args —
+    // the old hard cast crashed the whole screen. Bail to the autosave home.
+    final args = Get.arguments;
+    if (args is! AutoSaveRuleEntity) {
+      _invalidArgs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+      });
+      return;
+    }
+    rule = args;
     _fetchAccountNames();
+    _fetchMandateHealth();
+  }
+
+  /// Whether this rule pulls from a Mono-linked bank via a Direct Debit mandate
+  /// (bank inflow), as opposed to a wallet-sourced rule.
+  bool get _isLinkedBankRule =>
+      (rule.triggerType == TriggerType.externalInflow ||
+          rule.triggerType == TriggerType.scheduledExternal) &&
+      rule.sourceLinkedAccountId.isNotEmpty;
+
+  String get _userId =>
+      context.read<AuthenticationCubit>().userId ?? '';
+
+  /// Load the mandate status for a linked-bank rule so the health banner (and
+  /// the manual-save pre-check) can tell whether the Direct Debit can still
+  /// pull. No-op for wallet-sourced rules.
+  void _fetchMandateHealth() {
+    if (!_isLinkedBankRule) return;
+    final userId = _userId;
+    if (userId.isEmpty) return;
+    serviceLocator<MandateCubit>().fetchUserMandates(userId: userId);
   }
 
   Future<void> _fetchAccountNames() async {
@@ -189,6 +228,23 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
   void _triggerManualSave() async {
     HapticFeedback.mediumImpact();
 
+    // Linked-bank rules pull via a Direct Debit mandate. If it has lapsed there
+    // is nothing to debit — firing the save would just fail on the backend
+    // ("mandate not ready"). Catch it here and open the re-authorization sheet
+    // instead of charging into a doomed save.
+    if (_isLinkedBankRule && !await _ensureMandateReadyForManualSave()) {
+      return;
+    }
+
+    // A manual "save now" needs an explicit Naira amount. A percentage rule
+    // saves a % of an INFLOW; there's no inflow on a manual tap, so the
+    // backend rejects it without a custom amount. A fixed rule has a natural
+    // default (its per-trigger amount) but we still let the user adjust it.
+    // Collect the amount up front so the PIN sheet confirms the real figure
+    // and the trigger never fails with "a custom amount is required".
+    final saveAmount = await _promptManualSaveAmount();
+    if (saveAmount == null || !mounted) return; // cancelled / unmounted
+
     final idPrefix = rule.id.length >= 8 ? rule.id.substring(0, 8) : rule.id;
     final transactionId = 'AUTOSAVE-$idPrefix';
 
@@ -198,10 +254,15 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       context: context,
       transactionId: transactionId,
       transactionType: 'autosave_trigger',
-      amount: rule.amountValue,
+      amount: saveAmount,
       currency: rule.currency,
       title: 'Confirm Manual Save',
-      message: 'Confirm manual auto-save trigger',
+      message: 'Save ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(saveAmount, rule.currency)} now',
+      // The actual save runs AFTER the sheet closes (via the cubit), so don't
+      // let the sheet declare "Transaction Successful!" prematurely — that was
+      // showing success even when the trigger then failed. Verify the PIN,
+      // close, and let the screen surface the real outcome.
+      showProcessingPhase: false,
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -215,6 +276,248 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     context.read<AutoSaveCubit>().triggerSave(
       ruleId: rule.id,
       transactionPinToken: verificationToken!,
+      customAmount: saveAmount,
+    );
+  }
+
+  /// Pre-flight for a manual save on a linked-bank rule: confirm the Direct
+  /// Debit mandate is still debitable. If not, surface a prompt and open the
+  /// re-authorization sheet, then re-check. Returns true only when the save may
+  /// proceed (mandate active); false aborts so the user can re-authorize first.
+  Future<bool> _ensureMandateReadyForManualSave() async {
+    final userId = _userId;
+    final cubit = serviceLocator<MandateCubit>();
+    if (userId.isNotEmpty) {
+      await cubit.fetchUserMandates(userId: userId);
+    }
+    if (!mounted) return false;
+
+    MandateEntity? mandate =
+        cubit.getMandateForAccount(rule.sourceLinkedAccountId);
+    if (mandate != null && mandate.isActive) return true;
+
+    final bank =
+        rule.sourceBankName.isNotEmpty ? rule.sourceBankName : 'your linked bank';
+    final goSetup = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          side: const BorderSide(color: Color(0xFF2D2D2D)),
+        ),
+        title: Text(
+          'Direct Debit not active',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'This save pulls from $bank, but its Direct Debit isn\'t active right '
+          'now. Set it up again to save from this bank.',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 14.sp,
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFB923C),
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Set up Direct Debit',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (goSetup != true || !mounted) return false;
+
+    await showMandateManagementBottomSheet(
+      context: context,
+      linkedAccountId: rule.sourceLinkedAccountId,
+      userId: userId,
+      bankName: bank,
+      accountName: bank,
+      mandate: mandate,
+    );
+    if (userId.isNotEmpty) {
+      await cubit.fetchUserMandates(userId: userId);
+    }
+    if (!mounted) return false;
+    // Only continue the save if the mandate is now actually debitable; NIBSS
+    // activation can lag, so otherwise let the user tap Save again later.
+    mandate = cubit.getMandateForAccount(rule.sourceLinkedAccountId);
+    return mandate != null && mandate.isActive;
+  }
+
+  /// Bottom sheet that collects the Naira amount for a manual "save now".
+  /// Required for percentage rules (no inflow to take a % of); pre-filled with
+  /// the per-trigger amount for fixed rules. Returns the amount in Naira, or
+  /// null if the user dismisses.
+  Future<double?> _promptManualSaveAmount() async {
+    final isPercentage = rule.amountType == AmountType.percentage;
+    final symbol = currency_formatter.CurrencySymbols.getSymbol(rule.currency);
+    final controller = TextEditingController(
+      text: isPercentage ? '' : rule.amountValue.toStringAsFixed(2),
+    );
+
+    return showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        String? errorText;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            void submit() {
+              final parsed = double.tryParse(controller.text.trim());
+              if (parsed == null || parsed <= 0) {
+                setSheetState(() => errorText = 'Enter a valid amount');
+                return;
+              }
+              Navigator.of(ctx).pop(parsed);
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Text(
+                      'How much to save?',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      isPercentage
+                          ? 'This rule saves a percentage of incoming deposits. There\'s no deposit right now, so enter the amount to save manually.'
+                          : 'Confirm or adjust the amount to save into ${rule.name} now.',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 13.sp,
+                        height: 1.4,
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      onSubmitted: (_) => submit(),
+                      decoration: InputDecoration(
+                        prefixText: '$symbol ',
+                        prefixStyle: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        hintText: '0.00',
+                        hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        errorText: errorText,
+                        filled: true,
+                        fillColor: const Color(0xFF0A0A0A),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 16.h,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color.fromARGB(255, 78, 3, 208),
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          'Continue',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -245,6 +548,14 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       ),
       duration: const Duration(seconds: 2),
     ));
+    // Anchor the iOS/iPad share sheet to this screen — SharePlus THROWS on
+    // iPad when a file share has no popover origin (the raw PlatformException
+    // was surfaced verbatim before). Captured BEFORE the async PDF build so we
+    // never touch `context` across the await. Harmless on phones/Android.
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
     try {
       final file = await AutoSavePdfService.generateRuleDetails(
         rule: rule,
@@ -265,12 +576,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           files: [XFile(file.path)],
           subject: 'Auto-Save Rule: ${rule.name}',
           text: 'Auto-save rule report: ${rule.name}',
+          sharePositionOrigin: origin,
         ),
       );
     } catch (e) {
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(
-        content: Text('Could not export PDF: $e'),
+        content: const Text('Could not share the report. Please try again.'),
         backgroundColor: const Color(0xFFEF4444),
       ));
     }
@@ -285,21 +597,6 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       // Refresh data when returning from edit screen
       context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
     });
-  }
-
-  String _getStatusText(AutoSaveStatus status) {
-    switch (status) {
-      case AutoSaveStatus.active:
-        return 'Active';
-      case AutoSaveStatus.paused:
-        return 'Paused';
-      case AutoSaveStatus.completed:
-        return 'Completed';
-      case AutoSaveStatus.cancelled:
-        return 'Cancelled';
-      default:
-        return 'Unknown';
-    }
   }
 
   void _viewTransactions() {
@@ -337,6 +634,29 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
         return rule.sourceBankName.isNotEmpty
             ? 'Bank Inflow from ${rule.sourceBankName}'
             : 'Bank Inflow';
+      case TriggerType.scheduledExternal:
+        final where = rule.sourceBankName.isNotEmpty
+            ? rule.sourceBankName
+            : 'linked bank';
+        final freq = rule.frequency;
+        String freqText;
+        switch (freq) {
+          case ScheduleFrequency.daily:
+            freqText = 'Daily';
+            break;
+          case ScheduleFrequency.weekly:
+            freqText = 'Weekly on ${_getDayName(rule.scheduleDay)}';
+            break;
+          case ScheduleFrequency.biweekly:
+            freqText = 'Bi-Weekly';
+            break;
+          case ScheduleFrequency.monthly:
+            freqText = 'Monthly on day ${rule.scheduleDay ?? "N/A"}';
+            break;
+          default:
+            freqText = 'Scheduled';
+        }
+        return '$freqText standing order from $where at ${rule.scheduleTime ?? "N/A"}';
       default:
         return 'Unknown';
     }
@@ -358,6 +678,14 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
 
   @override
   Widget build(BuildContext context) {
+    // No valid rule (bad/blank args) — render a placeholder while the
+    // post-frame callback in initState routes back home. Never touch `rule`.
+    if (_invalidArgs) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: SizedBox.shrink(),
+      );
+    }
     return BlocListener<AutoSaveCubit, AutoSaveState>(
       listener: (context, state) {
         if (state is AutoSaveRuleToggleSuccess) {
@@ -470,6 +798,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                         SizedBox(height: 20.h),
                         _buildStatusCard(),
                         SizedBox(height: 20.h),
+                        if (_isLinkedBankRule)
+                          MandateHealthBanner(rule: rule, userId: _userId),
                         _buildRuleInfoCard(),
                         SizedBox(height: 20.h),
                         _buildAccountsCard(),

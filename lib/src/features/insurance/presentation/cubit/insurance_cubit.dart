@@ -273,10 +273,20 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         claims: [],
       ));
 
-      // Then load payments and claims in the background (may be unimplemented)
-      final fetched = await _safeCall(() => repository.getInsurancePayments(insurance.id), <InsurancePayment>[]);
+      // Then load payments and claims in the background. These are read-only
+      // history — a failure (provider has no per-policy payment list, an id
+      // mismatch → "invalid policy_id", etc.) must NEVER break the whole detail
+      // screen. Tolerate ANY error: payments falls back to the synthesized
+      // purchase row below; claims falls back to empty.
+      List<InsurancePayment> fetched = const [];
+      try {
+        fetched = await repository.getInsurancePayments(insurance.id);
+      } catch (_) {/* non-fatal — synthesize from the policy below */}
       if (isClosed) return;
-      final claims = await _safeCall(() => repository.getInsuranceClaims(insurance.id), <InsuranceClaim>[]);
+      List<InsuranceClaim> claims = const [];
+      try {
+        claims = await repository.getInsuranceClaims(insurance.id);
+      } catch (_) {/* non-fatal — show empty claims, not an error screen */}
       if (isClosed) return;
 
       // MyCover.ai doesn't expose a per-policy payment list — there's no

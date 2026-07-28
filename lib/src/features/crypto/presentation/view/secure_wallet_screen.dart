@@ -165,7 +165,29 @@ class SecureWalletScreen extends StatelessWidget {
         final sym = CurrencySymbols.currentSymbol;
 
         return GestureDetector(
-          onTap: () => Get.to(() => const CryptoWalletsScreen()),
+          // Opaque so the WHOLE card (including its padding) is a reliable tap
+          // target, not just the painted children.
+          behavior: HitTestBehavior.opaque,
+          // Re-provide the CryptoCubit already in scope (this widget renders
+          // inside BlocBuilder<CryptoCubit>): Get.to pushes a fresh route that
+          // does NOT inherit this BlocProvider tree, so without this the
+          // wallets screen throws "could not find the correct CryptoCubit
+          // provider". Passing the loaded cubit also means the wallets render
+          // immediately with no re-fetch. Matches crypto_wallets_screen.dart:204.
+          onTap: () => Get.to(
+                () => BlocProvider.value(
+                  value: context.read<CryptoCubit>(),
+                  child: const CryptoWalletsScreen(),
+                ),
+                // SecureWalletScreen is itself pushed as
+                // `BlocProvider.value(child: SecureWalletScreen())`
+                // (crypto_screen.dart:1677). GetX derives an anonymous route's
+                // name from the page's runtimeType, so BOTH routes resolve to
+                // `BlocProvider<CryptoCubit>` and the default
+                // preventDuplicates:true silently swallows this navigation.
+                // Disable it so the wallets page actually opens.
+                preventDuplicates: false,
+              ),
           child: Container(
             padding: EdgeInsets.all(18.w),
             decoration: BoxDecoration(

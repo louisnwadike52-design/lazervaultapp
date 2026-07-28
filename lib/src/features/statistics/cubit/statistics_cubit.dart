@@ -7,6 +7,7 @@ import '../../../../core/utils/debouncer.dart';
 import '../../open_banking/data/datasources/open_banking_grpc_datasource.dart';
 import '../data/financial_analytics_repository.dart';
 import 'statistics_state.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// Cubit for the AI budgeting / statistics screen.
 ///
@@ -33,7 +34,9 @@ class StatisticsCubit extends Cubit<StatisticsState> {
 
   String _currentPeriod = 'week';
   StatisticsSource _source = StatisticsSource.both;
-  String? _selectedBankAccountId; // null = ALL linked banks
+  // Selected linked-bank scope. Empty = ALL linked banks; one or more narrows
+  // every external number on the page to that SUBSET of banks (multi-select).
+  List<String> _selectedBankAccountIds = const [];
   String _userId = '';
   bool _isLoading = false;
   bool _syncedThisSession = false;
@@ -47,8 +50,16 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// Currently selected money source (LazerVault / Bank / both).
   StatisticsSource get source => _source;
 
-  /// Selected linked-bank scope (null = all banks).
-  String? get selectedBankAccountId => _selectedBankAccountId;
+  /// Selected linked-bank scope (empty = all banks).
+  List<String> get selectedBankAccountIds => _selectedBankAccountIds;
+
+  /// Back-compat single-bank getter: the one selected bank, or null when the
+  /// scope is "all banks" or a multi-bank subset.
+  String? get selectedBankAccountId =>
+      _selectedBankAccountIds.length == 1 ? _selectedBankAccountIds.first : null;
+
+  /// True when the given linked-account id is part of the active scope.
+  bool isBankSelected(String id) => _selectedBankAccountIds.contains(id);
 
   /// User id used for banking-service calls; set once by the screen.
   // ignore: avoid_setters_without_getters
@@ -60,7 +71,13 @@ class StatisticsCubit extends Cubit<StatisticsState> {
 
   /// Test-only: set bank scope without triggering the debounced reload.
   @visibleForTesting
-  void changeBankForTest(String? id) => _selectedBankAccountId = id;
+  void changeBankForTest(String? id) =>
+      _selectedBankAccountIds = (id == null || id.isEmpty) ? const [] : [id];
+
+  /// Test-only: set a multi-bank scope without triggering the reload.
+  @visibleForTesting
+  void changeBanksForTest(List<String> ids) =>
+      _selectedBankAccountIds = _normalizeBankIds(ids);
 
   @override
   Future<void> close() {
@@ -82,20 +99,34 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   void changeSource(StatisticsSource source) {
     if (_source == source) return;
     _source = source;
-    _selectedBankAccountId = null;
+    _selectedBankAccountIds = const [];
     _switchScope();
   }
 
-  /// Change the external-bank scope: null = ALL linked banks, otherwise the
-  /// one linked-account id. No-op for wallet-only source.
-  void changeBank(String? linkedAccountId) {
-    final normalized =
-        (linkedAccountId == null || linkedAccountId.isEmpty) ? null : linkedAccountId;
-    if (_selectedBankAccountId == normalized) return;
-    _selectedBankAccountId = normalized;
+  /// Dedupe + drop empties so the scope is a clean set of ids.
+  static List<String> _normalizeBankIds(List<String> ids) {
+    final seen = <String>{};
+    final out = <String>[];
+    for (final id in ids) {
+      if (id.isEmpty || !seen.add(id)) continue;
+      out.add(id);
+    }
+    return out;
+  }
+
+  /// Change the external-bank scope to a SET of linked banks: empty = ALL banks,
+  /// otherwise only those banks (multi-select). No-op for wallet-only source.
+  void changeBanks(List<String> linkedAccountIds) {
+    final normalized = _normalizeBankIds(linkedAccountIds);
+    if (setEquals(_selectedBankAccountIds.toSet(), normalized.toSet())) return;
+    _selectedBankAccountIds = normalized;
     if (_source == StatisticsSource.lazervault) return;
     _switchScope();
   }
+
+  /// Back-compat single-bank entry point: null/empty = all banks.
+  void changeBank(String? linkedAccountId) => changeBanks(
+      (linkedAccountId == null || linkedAccountId.isEmpty) ? const [] : [linkedAccountId]);
 
   /// Switch scope (source/bank tab). Flip the content to the shimmer skeleton
   /// IMMEDIATELY and synchronously — a cheap rebuild — so the tab highlights and
@@ -155,7 +186,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     // actually fetched (not whatever _source is by the time we finish), and
     // re-load for the new scope afterwards if it drifted.
     final loadSource = _source;
-    final loadBank = _selectedBankAccountId;
+    final loadBanks = List<String>.from(_selectedBankAccountIds);
     try {
       if (isClosed) return;
       // Non-destructive reload: when we already have loaded data (a source /
@@ -194,12 +225,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
               .syncAllAccountTransactions(userId: _userId, syncType: 'incremental')
               .timeout(const Duration(seconds: 25));
           _syncedThisSession = true;
-          final relevant = loadBank == null
+          final relevant = loadBanks.isEmpty
               ? res.accounts
-              : res.accounts.where((a) => a.accountId == loadBank).toList();
+              : res.accounts.where((a) => loadBanks.contains(a.accountId)).toList();
           if (relevant.isNotEmpty && relevant.every((a) => !a.success)) {
             syncFailedHard = true;
-            syncError = relevant.first.error ?? 'Could not sync bank transactions.';
+            // Never surface the raw banking-service/provider error string.
+            syncError = sanitizeUserFacingError(
+                relevant.first.error ?? 'Could not sync bank transactions.');
           }
         } on TimeoutException {
           syncFailedHard = true;
@@ -246,7 +279,10 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           try {
             final resp = await bankingDataSource!.getExternalBankAnalytics(
               userId: _userId,
-              linkedAccountId: loadBank,
+              // The proto's linked_account_id field carries a comma-separated set
+              // of banks; empty = all linked banks. banking-service parses it into
+              // an IN (...) scope over external_bank_transactions.
+              linkedAccountId: loadBanks.isEmpty ? null : loadBanks.join(','),
               startDate: start,
               endDate: end,
             );
@@ -260,8 +296,9 @@ class StatisticsCubit extends Cubit<StatisticsState> {
                   : ExternalDataStatus.empty;
             } else {
               externalStatus = ExternalDataStatus.unavailable;
+              // Sanitize: never render a raw server/gRPC string to the user.
               externalError = resp.errorMessage.isNotEmpty
-                  ? resp.errorMessage
+                  ? sanitizeUserFacingError(resp.errorMessage)
                   : 'Could not load bank analytics.';
             }
           } catch (e) {
@@ -305,24 +342,24 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         currentPeriod: _currentPeriod,
         includeExternalBanks: includesExternal,
         source: loadSource,
-        selectedBankAccountId: loadBank,
+        selectedBankAccountIds: loadBanks,
         externalStatus: externalStatus,
         externalError: externalError,
       );
       // Only paint it if the user is still on this scope; if they switched
       // mid-load we drop this result and repaint for the new scope below.
-      if (_source == loadSource && _selectedBankAccountId == loadBank) {
+      if (_source == loadSource && _sameBankScope(loadBanks)) {
         emit(loaded);
       }
     } catch (e, stackTrace) {
       if (isClosed) return;
       // Don't surface a stale-scope failure over the current view: if the user
       // already switched away from the scope this load was for, drop it.
-      if (_source != loadSource || _selectedBankAccountId != loadBank) {
+      if (_source != loadSource || !_sameBankScope(loadBanks)) {
         return;
       }
       emit(StatisticsError(
-        message: 'Failed to load statistics: ${e.toString()}',
+        message: friendlyError(e, context: 'load your statistics'),
         stackTrace: stackTrace,
       ));
     } finally {
@@ -330,11 +367,15 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       // A source/bank switch landed while this load was in flight — bring the
       // screen up to the scope the user is actually on now.
       if (!isClosed &&
-          (_source != loadSource || _selectedBankAccountId != loadBank)) {
+          (_source != loadSource || !_sameBankScope(loadBanks))) {
         _switchScope();
       }
     }
   }
+
+  /// Order-independent comparison of the active bank scope against a snapshot.
+  bool _sameBankScope(List<String> snapshot) =>
+      setEquals(_selectedBankAccountIds.toSet(), snapshot.toSet());
 
   // ===== Composition (additive merges — exact for the aggregates shown) =====
 

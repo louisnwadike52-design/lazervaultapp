@@ -1,4 +1,5 @@
 import '../entities/invoice_entity.dart';
+import '../entities/invoice_fee_quote.dart';
 
 abstract class InvoiceRepository {
   // CRUD Operations
@@ -27,6 +28,10 @@ abstract class InvoiceRepository {
   
   // Unlock invoice (pay service fee)
   Future<Invoice> unlockInvoice(String invoiceId, {String? accountId, String? pin, String? verificationToken, String? transactionId, String? idempotencyKey});
+
+  // Invoice service fee quote (admin-configured base fee, FX-converted into the
+  // active account's currency). Display-only; the charge is computed server-side.
+  Future<InvoiceFeeQuote> getServiceFeeQuote({String? accountId});
 
   // Payment tracking
   Future<void> recordPayment(String invoiceId, double amount, PaymentMethod method, String reference);

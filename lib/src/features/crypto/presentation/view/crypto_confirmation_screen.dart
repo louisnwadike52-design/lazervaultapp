@@ -183,6 +183,11 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           transactionPin: verificationToken!,
         );
         break;
+      case CryptoTransactionType.send:
+      case CryptoTransactionType.deposit:
+        // Send/deposit are not executed through this trade-confirmation flow;
+        // they have their own dedicated screens. Guard defensively.
+        break;
     }
 
     _processingController.stop();
@@ -856,6 +861,10 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
         return Colors.red;
       case CryptoTransactionType.swap:
         return const Color.fromARGB(255, 78, 3, 208);
+      case CryptoTransactionType.send:
+        return Colors.orange;
+      case CryptoTransactionType.deposit:
+        return const Color(0xFF3B82F6);
     }
   }
 
@@ -867,6 +876,10 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
         return Icons.remove_circle_outline;
       case CryptoTransactionType.swap:
         return Icons.swap_horiz;
+      case CryptoTransactionType.send:
+        return Icons.arrow_upward;
+      case CryptoTransactionType.deposit:
+        return Icons.arrow_downward;
     }
   }
 
@@ -878,6 +891,10 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
         return 'Sell Crypto';
       case CryptoTransactionType.swap:
         return 'Swap Crypto';
+      case CryptoTransactionType.send:
+        return 'Send Crypto';
+      case CryptoTransactionType.deposit:
+        return 'Deposit Crypto';
     }
   }
 

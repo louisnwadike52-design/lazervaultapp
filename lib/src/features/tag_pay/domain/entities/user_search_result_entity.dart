@@ -14,6 +14,11 @@ class UserSearchResultEntity extends Equatable {
   final bool emailMatchesSearchQuery;
   /// Auth SearchUsers: true when digit-normalized phone equals the query digits.
   final bool phoneMatchesSearchQueryExact;
+  /// The authoritative "this row is a registered Lazervault user" flag
+  /// (backend `is_lazervault_user`). This is the correct signal to gate on —
+  /// NOT [username], which is empty for users matched by name/phone/email or
+  /// for saved internal recipients whose @handle hasn't been enriched yet.
+  final bool isLazervault;
 
   const UserSearchResultEntity({
     required this.userId,
@@ -27,7 +32,13 @@ class UserSearchResultEntity extends Equatable {
     this.primaryAccountId, // Optional primary account ID
     this.emailMatchesSearchQuery = false,
     this.phoneMatchesSearchQueryExact = false,
+    this.isLazervault = false,
   });
+
+  /// True when this result is a real Lazervault user. Uses the backend flag and
+  /// falls back to a non-empty [userId] (every internal user has one; external
+  /// bank recipients and off-platform device contacts do not).
+  bool get isLazervaultUser => isLazervault || userId.trim().isNotEmpty;
 
   String get fullName => '$firstName $lastName';
 
@@ -99,5 +110,6 @@ class UserSearchResultEntity extends Equatable {
         primaryAccountId,
         emailMatchesSearchQuery,
         phoneMatchesSearchQueryExact,
+        isLazervault,
       ];
 }

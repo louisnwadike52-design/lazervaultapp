@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/services/account_manager.dart';
 import '../../../../core/services/injection_container.dart';
 import '../../../../core/services/locale_manager.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../statistics/cubit/statistics_cubit.dart';
 import '../../statistics/cubit/statistics_state.dart';
 import '../../../generated/accounts.pb.dart';
@@ -76,6 +77,19 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           startDate: startDate,
           endDate: endDate,
         );
+  }
+
+  /// Currency symbol for the money shown here. The statistics are already
+  /// scoped to the active account + locale (carried on the gRPC fetch), so the
+  /// symbol must match: prefer the active account's currency, fall back to the
+  /// active locale's currency (never a hardcoded £).
+  String get _currencySymbol {
+    final acctCurrency =
+        serviceLocator<AccountManager>().activeAccountDetails?.currency;
+    if (acctCurrency != null && acctCurrency.trim().isNotEmpty) {
+      return CurrencySymbols.getSymbol(acctCurrency);
+    }
+    return CurrencySymbols.currentSymbol;
   }
 
   void _onPeriodChanged(TimePeriod period) {
@@ -322,7 +336,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  '£${totalSpent.toStringAsFixed(2)}',
+                  '$_currencySymbol${totalSpent.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
@@ -534,7 +548,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
               reservedSize: 46,
               getTitlesWidget: (value, meta) {
                 return Text(
-                  '£${value.toInt()}',
+                  '$_currencySymbol${value.toInt()}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 10.sp,
@@ -644,7 +658,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
               ),
               _buildStatItem(
                 'Average',
-                '£${avgTransaction.toStringAsFixed(2)}',
+                '$_currencySymbol${avgTransaction.toStringAsFixed(2)}',
                 Icons.analytics_outlined,
               ),
             ],
@@ -687,7 +701,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                   ],
                 ),
                 Text(
-                  '£${topCategory.amount.toStringAsFixed(2)}',
+                  '$_currencySymbol${topCategory.amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,

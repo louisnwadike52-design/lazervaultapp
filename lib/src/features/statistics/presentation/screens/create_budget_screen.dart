@@ -11,6 +11,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 /// Create/Edit Budget Screen
 class CreateBudgetScreen extends StatefulWidget {
@@ -199,7 +200,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           Get.snackbar(
             'Success',
             state is BudgetCreated ? state.message : (state as BudgetUpdated).message,
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: InvoiceThemeColors.primaryPurple,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
           );
@@ -329,7 +330,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF10B981)),
+          borderSide: const BorderSide(color: InvoiceThemeColors.primaryPurple),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
@@ -367,7 +368,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF10B981)),
+          borderSide: const BorderSide(color: InvoiceThemeColors.primaryPurple),
         ),
       ),
       validator: (value) {
@@ -509,11 +510,11 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+              ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1)
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
+            color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -534,7 +535,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 ),
                 const Spacer(),
                 if (isSelected)
-                  Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 18.sp),
+                  Icon(Icons.check_circle, color: InvoiceThemeColors.primaryPurple, size: 18.sp),
               ],
             ),
             SizedBox(height: 4.h),
@@ -575,10 +576,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               }
             });
           },
-          selectedColor: const Color(0xFF10B981),
+          selectedColor: InvoiceThemeColors.primaryPurple,
           backgroundColor: const Color(0xFF1F1F1F),
           side: BorderSide(
-            color: isSelected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
+            color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
           ),
         );
       }).toList(),
@@ -693,7 +694,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
             onChanged: (value) {
               setState(() => _enableAlerts = value);
             },
-            activeColor: const Color(0xFF10B981),
+            activeColor: InvoiceThemeColors.primaryPurple,
           ),
           if (_enableAlerts) ...[
             SizedBox(height: 16.h),
@@ -707,7 +708,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               min: 50,
               max: 100,
               divisions: 10,
-              activeColor: const Color(0xFF10B981),
+              activeColor: InvoiceThemeColors.primaryPurple,
               onChanged: (value) {
                 setState(() => _alertThreshold = value);
               },
@@ -728,9 +729,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       child: ElevatedButton(
         onPressed: isLoading ? null : _saveBudget,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: InvoiceThemeColors.primaryPurple,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.5),
+          disabledBackgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),

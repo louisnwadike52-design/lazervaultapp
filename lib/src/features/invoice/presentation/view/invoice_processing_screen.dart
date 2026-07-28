@@ -7,6 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/invoice_entity.dart';
+import '../../domain/entities/invoice_fee_quote.dart';
+import '../../domain/repositories/invoice_repository.dart';
+import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 enum InvoiceProcessingStatus {
@@ -32,8 +35,15 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
   late AnimationController _fadeController;
   final List<Timer> _timers = [];
 
-  String get _currencySymbol {
-    switch (widget.invoice.currency.toUpperCase()) {
+  // Service fee resolved by the backend (admin base fee, FX-converted into the
+  // active account's currency). No hardcoded amount.
+  InvoiceFeeQuote? _feeQuote;
+  double get _feeAmount => _feeQuote?.amount ?? 0.0;
+  String get _feeCurrencySymbol =>
+      _symbolFor(_feeQuote?.currency ?? widget.invoice.currency);
+
+  String _symbolFor(String currency) {
+    switch (currency.toUpperCase()) {
       case 'NGN': return '₦';
       case 'GBP': return '£';
       case 'EUR': return '€';
@@ -89,6 +99,14 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
     super.initState();
     _setupAnimations();
     _startProcessingSimulation();
+    _loadFeeQuote();
+  }
+
+  Future<void> _loadFeeQuote() async {
+    try {
+      final quote = await serviceLocator<InvoiceRepository>().getServiceFeeQuote();
+      if (mounted) setState(() => _feeQuote = quote);
+    } catch (_) {}
   }
 
   void _setupAnimations() {
@@ -348,7 +366,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
           ),
           SizedBox(height: 8.h),
           Text(
-            '${_currencySymbol}99.99',
+            '$_feeCurrencySymbol${_feeAmount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,

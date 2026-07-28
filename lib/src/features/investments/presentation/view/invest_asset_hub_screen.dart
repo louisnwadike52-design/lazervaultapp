@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/investments/presentation/models/invest_asset_hub_config.dart';
@@ -177,10 +178,12 @@ class _InvestAssetHubScreenState extends State<InvestAssetHubScreen> {
               ),
               SizedBox(height: 8.h),
               Expanded(
-                child: IndexedStack(
+                child: ServiceEntranceAnimation(
+                  child: IndexedStack(
                   index: _segmentIndex,
                   alignment: Alignment.topCenter,
                   children: _segments.map(_panelForSegment).toList(),
+                ),
                 ),
               ),
             ],

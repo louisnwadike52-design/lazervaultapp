@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 import 'package:lazervault/src/features/inventory/domain/entities/inventory_item_entity.dart';
+import 'package:lazervault/src/features/inventory/domain/repositories/inventory_repository.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
-import '../cubit/inventory_cubit.dart';
-import '../cubit/inventory_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InventoryListScreen extends StatefulWidget {
@@ -19,10 +19,18 @@ class InventoryListScreen extends StatefulWidget {
   State<InventoryListScreen> createState() => _InventoryListScreenState();
 }
 
-class _InventoryListScreenState extends State<InventoryListScreen> {
+class _InventoryListScreenState extends State<InventoryListScreen>
+    with InfiniteScrollMixin<InventoryListScreen> {
   final _searchController = TextEditingController();
   final _debouncer = Debouncer.search();
+  final _repo = serviceLocator<InventoryRepository>();
   String _selectedCategory = 'All';
+
+  static const _limit = 20;
+
+  List<InventoryItemEntity> _items = [];
+  bool _loading = false;
+  String? _error;
 
   static const _categories = [
     'All',
@@ -35,35 +43,80 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadItems();
+    attachInfiniteScroll();
+    _loadFirst();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _debouncer.dispose();
+    detachInfiniteScroll();
     super.dispose();
   }
 
-  void _loadItems() {
-    context.read<InventoryCubit>().listItems(
+  Future<void> _loadFirst() async {
+    resetPagination();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await _repo.listItems(
+        page: 1,
+        limit: _limit,
+        category: _selectedCategory == 'All' ? null : _selectedCategory,
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+      );
+      if (!mounted) return;
+      setState(() {
+        _items = res.items;
+        _loading = false;
+        hasMore = res.currentPage < res.totalPages;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_error!),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() => runLoadMore(() async {
+        final res = await _repo.listItems(
+          page: page + 1,
+          limit: _limit,
           category: _selectedCategory == 'All' ? null : _selectedCategory,
           search:
               _searchController.text.isEmpty ? null : _searchController.text,
         );
-  }
+        if (!mounted) return;
+        setState(() {
+          _items.addAll(res.items);
+          page += 1;
+          hasMore = res.currentPage < res.totalPages;
+        });
+      });
 
   void _onSearchChanged(String query) {
     setState(() {}); // Update suffixIcon visibility
     _debouncer.run(() {
       if (!mounted) return;
-      _loadItems();
+      _loadFirst();
     });
   }
 
   void _onCategorySelected(String category) {
     setState(() => _selectedCategory = category);
-    _loadItems();
+    _loadFirst();
   }
 
   @override
@@ -118,8 +171,10 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          // Add screen now returns the created item (or true); refresh on any
+          // non-null result.
           final result = await Get.toNamed(AppRoutes.addInventoryItem);
-          if (result == true && mounted) _loadItems();
+          if (result != null && mounted) _loadFirst();
         },
         backgroundColor: const Color(0xFF3B82F6),
         child: const Icon(Icons.add, color: Colors.white),
@@ -158,7 +213,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
                   ),
                   onPressed: () {
                     _searchController.clear();
-                    _loadItems();
+                    _loadFirst();
                   },
                 )
               : null,
@@ -230,46 +285,35 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildBody() {
-    return BlocConsumer<InventoryCubit, InventoryState>(
-      listener: (context, state) {
-        if (state is InventoryError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFFEF4444),
-            ),
-          );
-        }
-      },
-      builder: (context, state) {
-        if (state is InventoryLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
-          );
-        }
+    if (_loading) {
+      return const Center(
+        child: LazerVaultLoader.small(),
+      );
+    }
 
-        if (state is ItemsLoaded) {
-          if (state.items.isEmpty) {
-            return _buildEmptyState();
+    if (_items.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async => _loadFirst(),
+      color: const Color(0xFF3B82F6),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView.builder(
+        controller: scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        itemCount: _items.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _items.length) {
+            return Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const Center(child: LazerVaultLoader.small()),
+            );
           }
-
-          return RefreshIndicator(
-            onRefresh: () async => _loadItems(),
-            color: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              itemCount: state.items.length,
-              itemBuilder: (context, index) =>
-                  _buildInventoryCard(state.items[index]),
-            ),
-          );
-        }
-
-        // Initial or error state - show empty with refresh
-        return _buildEmptyState();
-      },
+          return _buildInventoryCard(_items[index]);
+        },
+      ),
     );
   }
 
@@ -284,7 +328,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           AppRoutes.inventoryItemDetails,
           arguments: item,
         );
-        if (result == true && mounted) _loadItems();
+        if (result == true && mounted) _loadFirst();
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
@@ -406,7 +450,7 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
 
   Widget _buildEmptyState() {
     return RefreshIndicator(
-      onRefresh: () async => _loadItems(),
+      onRefresh: () async => _loadFirst(),
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(

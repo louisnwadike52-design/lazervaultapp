@@ -25,21 +25,23 @@ abstract class ISprayMeRepository {
 
   // Wallet
   Future<SprayWallet> getWallet();
-  Future<SprayWallet> fundWallet({required int amount, required String sourceAccountId, required String pin});
+  Future<SprayWallet> fundWallet({required int amount, required String sourceAccountId, required String verificationToken});
   Future<SprayWallet> buyGiftCredit({
     required List<Map<String, dynamic>> items,
     required String sourceAccountId,
-    required String pin,
+    required String verificationToken,
     required String idempotencyKey,
     String sessionId,
     String currency,
   });
-  Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String pin});
+  Future<SprayWallet> withdrawFromWallet({required int amount, required String destinationAccountId, required String verificationToken});
 
   // Actions
   Future<SprayActionResult> sendGift({required String sessionId, required String giftId, int quantity = 1});
   Future<SprayActionResult> sprayMoney({required String sessionId, required int denomination, required int tapCount});
-  Future<int> sendLike(String sessionId);
+  Future<({int totalLikes, int totalLikeTaps, int liveLikeTaps})> sendLike(
+      String sessionId,
+      {int count});
 
   // Catalog
   Future<List<SprayGift>> getGiftCatalog({String? category});
@@ -58,4 +60,20 @@ abstract class ISprayMeRepository {
   // Comments
   Future<SprayComment> addComment({required String sessionId, required String text});
   Future<List<SprayComment>> getComments(String sessionId, {int page = 1, int pageSize = 50});
+
+  // Live video streaming
+  Future<Map<String, dynamic>> startStream(String sessionId, {bool recordingEnabled = false});
+  Future<SpraySession> stopStream(String sessionId);
+  Future<void> pauseStream(String sessionId);
+  Future<void> resumeStream(String sessionId);
+  Future<Map<String, dynamic>> getStreamToken(String sessionId);
+  Future<void> inviteCoHost(String sessionId, {required String userId, String userName = ''});
+  Future<void> revokeCoHost(String sessionId, {required String userId});
+  // Guest "boxes"
+  Future<void> requestSeat(String sessionId);
+  Future<void> approveSeat(String sessionId, {required String userId, String userName});
+  Future<void> declineSeat(String sessionId, {required String userId});
+  Future<void> leaveSeat(String sessionId);
+  Future<void> removeFromSeat(String sessionId, {required String userId});
+  Future<void> toggleRecording(String sessionId, {required bool enabled});
 }

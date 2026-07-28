@@ -199,9 +199,21 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     // corridor matrix will give us a per-(source,destination) pairs list so
     // we can drop pairs that the backend would 400 (e.g. USD -> KES bridges
     // that aren't live).
-    final filtered = _mode == ExchangeMode.convert
-        ? currencies.where((c) => c.supportsConversion).toList()
-        : currencies.where((c) => c.supportsInternational).toList();
+    // Convert mode: show conversion-capable currencies, PLUS the
+    // international-only ones (e.g. PHP/CAD — Klasha VAs cover only NGN+GHS, so
+    // they can't be held/converted) rendered DISABLED so users see they exist
+    // but can only be sent abroad. Send-abroad mode shows all international ones.
+    final List<SupportedCurrencyInfo> filtered;
+    bool Function(SupportedCurrencyInfo)? disabledFor;
+    if (_mode == ExchangeMode.convert) {
+      filtered = currencies
+          .where((c) => c.supportsConversion || c.supportsInternational)
+          .toList();
+      disabledFor = (c) => !c.supportsConversion;
+    } else {
+      filtered = currencies.where((c) => c.supportsInternational).toList();
+      disabledFor = null;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -214,6 +226,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         currencies: filtered,
         selectedCode: cubit.toCurrency,
         excludeCode: cubit.fromCurrency,
+        disabledFor: disabledFor,
+        disabledHint: 'Send abroad only',
         title: 'Select Destination Currency',
         onSelected: (code) {
           cubit.setCurrencyPair(cubit.fromCurrency, code);
@@ -314,6 +328,25 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         return;
       }
 
+      if (!mounted) return;
+
+      // Daily FX limit pre-flight — warn BEFORE the recipient screen / PIN so
+      // a limit breach doesn't first appear after the user has entered
+      // recipient details and their PIN. Fails open on lookup error.
+      final limitError = await cubit.checkDailyLimit(amount);
+      if (limitError != null) {
+        if (mounted) {
+          Get.snackbar(
+            'Daily limit reached',
+            limitError,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white,
+            duration: const Duration(seconds: 5),
+          );
+        }
+        return;
+      }
       if (!mounted) return;
 
       if (_mode == ExchangeMode.sendAbroad) {
@@ -429,6 +462,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       'ZAR': 'ZA',
       'GHS': 'GH',
       'KES': 'KE',
+      'PHP': 'PH',
+      'CAD': 'CA',
     };
     final countryCode = currencyToCountry[sourceCurrency.toUpperCase()] ?? '';
     final flag = countryCode.isNotEmpty
@@ -456,8 +491,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         'balance': sourceBalance,
         'accountNumber': acctNum.isNotEmpty ? acctNum : maskedNum,
         'accountNumberMasked': maskedNum,
-        'bankName': 'LazerVault',
-        'accountName': 'LazerVault Account',
+        'bankName': 'Lazervault',
+        'accountName': 'Lazervault Account',
         'trend': '+0.0%',
         'isUp': true,
       };
@@ -619,10 +654,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
     // Fire the RPC INSIDE the onPinValidated callback so the PIN
     // bottom sheet stays open in its processing state while we await
-    // the backend. The mixin auto-calls setProcessing() right after
-    // PIN verifies, then pops the sheet (with a brief success flourish)
-    // when the callback returns. Matches the airtime flow exactly.
-    bool routedToProcessingScreen = false;
+    // the backend. The callback is EXHAUSTIVE — every cubit outcome
+    // resolves to a definite next screen or a thrown error, so the sheet
+    // can never close into nothing. `handledNavigation` tells the outer
+    // block the callback already navigated.
+    bool handledNavigation = false;
     final success = await validateTransactionPin(
       context: context,
       transactionId: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
@@ -636,15 +672,16 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         await cubit.convertCurrency(verificationToken: token);
         final state = cubit.state;
         if (state is ExchangeError) {
-          // Bubble up so the mixin shows the failed state in the sheet.
-          throw Exception(state.message);
+          // Classify so the sheet shows a friendly headline+detail rather
+          // than a raw backend log line.
+          final view = classifyExchangeError(state.message);
+          throw Exception('${view.headline} — ${view.detail}');
         }
         if (state is ExchangeProcessing) {
           // Backend returned a processing-state tx (async mode).
           // Pop the PIN sheet ourselves and route to the processing
-          // screen, which subscribes to the WS for the terminal event.
-          // Setting the flag prevents the mixin from also navigating.
-          routedToProcessingScreen = true;
+          // screen, which subscribes to the WS + auto-polls for terminal.
+          handledNavigation = true;
           if (mounted) {
             try {
               Navigator.of(context).pop();
@@ -661,21 +698,33 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               'transactionId': state.transactionId,
             },
           );
+          return;
         }
-        // ExchangeSuccess: return normally — mixin sets success + pops
-        // sheet — outer code navigates to the receipt below.
+        if (state is ExchangeSuccess) {
+          // Terminal RPC response — navigate to the receipt from inside
+          // the callback rather than relying on a fragile post-await read.
+          handledNavigation = true;
+          if (mounted) {
+            try {
+              Navigator.of(context).pop();
+            } catch (_) {}
+          }
+          Get.offNamed(
+            AppRoutes.exchangeReceipt,
+            arguments: state.transaction,
+          );
+          return;
+        }
+        // No definite outcome — never fall through to a fake success.
+        throw Exception(
+          "We couldn't confirm your exchange — check your Transactions "
+          'to see if it went through before retrying.',
+        );
       },
     );
 
-    if (!success || routedToProcessingScreen || !mounted) return;
-
-    final state = cubit.state;
-    if (state is ExchangeSuccess) {
-      Get.offNamed(
-        AppRoutes.exchangeReceipt,
-        arguments: state.transaction,
-      );
-    }
+    // The callback owns navigation; this only guards cancel / failed-PIN.
+    if (!success || handledNavigation || !mounted) return;
   }
 
   @override
@@ -797,7 +846,19 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       child: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
+            // Horizontal swipe anywhere on the form flips between the two
+            // tabs (Convert ↔ Send abroad), mirroring the toggle above.
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity.abs() < 200) return;
+                final next = velocity < 0
+                    ? ExchangeMode.sendAbroad // swipe left → next tab
+                    : ExchangeMode.convert; // swipe right → previous tab
+                if (next != _mode) _onModeChanged(next);
+              },
+              child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -922,6 +983,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                   // Bottom padding for scroll
                   const SizedBox(height: 80),
                 ],
+              ),
               ),
             ),
           ),
@@ -1150,12 +1212,20 @@ class _CurrencyPickerSheet extends StatefulWidget {
   final String title;
   final ValueChanged<String> onSelected;
 
+  /// When non-null, a currency for which this returns true is rendered DISABLED
+  /// (greyed, non-tappable) with [disabledHint] as a sublabel — e.g. PHP/CAD in
+  /// convert mode (international-transfer only).
+  final bool Function(SupportedCurrencyInfo)? disabledFor;
+  final String? disabledHint;
+
   const _CurrencyPickerSheet({
     required this.currencies,
     required this.selectedCode,
     this.excludeCode,
     required this.title,
     required this.onSelected,
+    this.disabledFor,
+    this.disabledHint,
   });
 
   @override
@@ -1247,6 +1317,8 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                   final curr = _filtered[index];
                   final isSelected = curr.code == widget.selectedCode;
                   final isExcluded = curr.code == widget.excludeCode;
+                  final isDisabled = widget.disabledFor?.call(curr) ?? false;
+                  final muted = isExcluded || isDisabled;
                   final countryCode = curr.country.toLowerCase();
                   final flag = countryCode.isNotEmpty
                       ? countryCode
@@ -1257,25 +1329,28 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                       : '';
 
                   return ListTile(
-                    enabled: !isExcluded,
-                    onTap:
-                        isExcluded ? null : () => widget.onSelected(curr.code),
-                    leading: flag.isNotEmpty
-                        ? Text(flag, style: const TextStyle(fontSize: 24))
-                        : const Icon(Icons.currency_exchange,
-                            color: Color(0xFF9CA3AF)),
+                    enabled: !muted,
+                    onTap: muted ? null : () => widget.onSelected(curr.code),
+                    leading: Opacity(
+                      opacity: isDisabled ? 0.45 : 1,
+                      child: flag.isNotEmpty
+                          ? Text(flag, style: const TextStyle(fontSize: 24))
+                          : const Icon(Icons.currency_exchange,
+                              color: Color(0xFF9CA3AF)),
+                    ),
                     title: Text(
                       curr.code,
                       style: TextStyle(
-                        color:
-                            isExcluded ? const Color(0xFF6B7280) : Colors.white,
+                        color: muted ? const Color(0xFF6B7280) : Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     subtitle: Text(
-                      curr.name,
+                      isDisabled && widget.disabledHint != null
+                          ? '${curr.name} · ${widget.disabledHint}'
+                          : curr.name,
                       style: TextStyle(
-                        color: isExcluded
+                        color: muted
                             ? const Color(0xFF4B5563)
                             : const Color(0xFF9CA3AF),
                         fontSize: 12,
@@ -1288,7 +1363,10 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                             ? const Text('Selected',
                                 style: TextStyle(
                                     color: Color(0xFF6B7280), fontSize: 12))
-                            : null,
+                            : isDisabled
+                                ? const Icon(Icons.lock_outline,
+                                    color: Color(0xFF6B7280), size: 16)
+                                : null,
                   );
                 },
               ),

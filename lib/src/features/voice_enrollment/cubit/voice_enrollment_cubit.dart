@@ -36,6 +36,17 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     _loadSavedProgress();
   }
 
+  /// Guard every emit. In-flight async work — a ~60s enrollment network call,
+  /// processing delays, buffered sound-level ticks — can resolve AFTER the
+  /// screen is popped and this cubit is closed. Emitting then throws a
+  /// `StateError` ("emit was called after close"). Silently drop those instead
+  /// of crashing. This single override covers all ~30 emit sites in the flow.
+  @override
+  void emit(VoiceEnrollmentState state) {
+    if (isClosed) return;
+    super.emit(state);
+  }
+
   /// Load saved progress from previous session
   Future<void> _loadSavedProgress() async {
     try {
@@ -575,11 +586,20 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     _recordingTimer?.cancel();
     _recordingTimer = null;
-    _soundLevelSubscription?.cancel();
+    await _soundLevelSubscription?.cancel();
     _soundLevelSubscription = null;
+    // Release the mic if the user leaves mid-recording (hardware back / route
+    // pop). Previously close() left the recorder running → mic held open.
+    // The repository is a shared LazySingleton, so STOP the active recording
+    // but do NOT dispose it (disposing would break the next enrollment).
+    if (_isRecording) {
+      try {
+        await _repository.stopRecording();
+      } catch (_) {/* best-effort — recorder may already be stopping */}
+    }
     _isRecording = false;
     _enrollInFlight = false;
     return super.close();

@@ -157,6 +157,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
         final status = proto.status.isNotEmpty ? proto.status : 'active';
         return AccountSummaryEntity.familyAccount(
           id: proto.id,
+          name: proto.name, // the family account's actual name → card subtitle
           // Prefer the account's real currency from the backend; fall back to
           // the active locale currency (never hardcode USD).
           currency: proto.currency.isNotEmpty ? proto.currency : familyCurrency,

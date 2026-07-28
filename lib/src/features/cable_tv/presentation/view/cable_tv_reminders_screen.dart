@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../../domain/entities/cable_tv_reminder.dart';
 import '../cubit/cable_tv_reminder_cubit.dart';
 import '../cubit/cable_tv_reminder_state.dart';
@@ -20,7 +21,16 @@ class CableTVRemindersScreen extends StatefulWidget {
       _CableTVRemindersScreenState();
 }
 
-class _CableTVRemindersScreenState extends State<CableTVRemindersScreen> {
+class _CableTVRemindersScreenState extends State<CableTVRemindersScreen>
+    with ReminderPauseResumeMixin<CableTVRemindersScreen> {
+  /// Last successfully loaded list — mirrors `DataRemindersScreen`'s
+  /// `_cachedList` pattern. Without this, every mutation (delete / mark
+  /// complete) or a transient `CableTVReminderError` momentarily falls
+  /// through to the builder's default branch and flashes the "No
+  /// Reminders" empty state over a populated list. Only shows the loader
+  /// when nothing has ever loaded (`null`).
+  List<CableTVReminder>? _cachedList;
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +46,9 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen> {
   }
 
   bool _isActive(CableTVReminder r) =>
-      r.status == 'pending' || r.status == 'notified';
+      r.status == 'pending' ||
+      r.status == 'notified' ||
+      r.status == 'paused';
 
   bool _isCompleted(CableTVReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -150,64 +162,62 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen> {
                   }
                 },
                 builder: (context, state) {
-                  if (state is CableTVReminderLoading ||
-                      state is CableTVReminderInitial) {
+                  if (state is CableTVRemindersLoaded) {
+                    _cachedList = state.reminders;
+                  }
+                  final list = _cachedList;
+                  if (list == null) {
                     return const Center(
                       child: LazerVaultLoader.tiny(),
                     );
                   }
-                  if (state is CableTVRemindersLoaded) {
-                    if (state.reminders.isEmpty) return _buildEmpty();
-                    final due = state.reminders.where(_isDue).toList();
-                    final active = state.reminders
-                        .where((r) => _isActive(r) && !_isDue(r))
-                        .toList();
-                    final completed =
-                        state.reminders.where(_isCompleted).toList();
-                    return RefreshIndicator(
-                      color: const Color(0xFF4E03D0),
-                      onRefresh: () async {
-                        await context
-                            .read<CableTVReminderCubit>()
-                            .getReminders(includePast: true);
-                      },
-                      child: ListView(
-                        padding: EdgeInsets.all(20.w),
-                        children: [
-                          if (due.isNotEmpty) ...[
-                            _sectionHeader(
-                                'Due', const Color(0xFFF59E0B)),
-                            SizedBox(height: 12.h),
-                            ...due.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r, isDue: true),
-                                )),
-                            SizedBox(height: 24.h),
-                          ],
-                          if (active.isNotEmpty) ...[
-                            _sectionHeader(
-                                'Upcoming', const Color(0xFF4E03D0)),
-                            SizedBox(height: 12.h),
-                            ...active.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r),
-                                )),
-                          ],
-                          if (completed.isNotEmpty) ...[
-                            if (active.isNotEmpty || due.isNotEmpty)
-                              SizedBox(height: 24.h),
-                            _sectionHeader('Completed', Colors.grey),
-                            SizedBox(height: 12.h),
-                            ...completed.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r),
-                                )),
-                          ],
+                  if (list.isEmpty) return _buildEmpty();
+                  final due = list.where(_isDue).toList();
+                  final active = list
+                      .where((r) => _isActive(r) && !_isDue(r))
+                      .toList();
+                  final completed = list.where(_isCompleted).toList();
+                  return RefreshIndicator(
+                    color: const Color(0xFF4E03D0),
+                    onRefresh: () async {
+                      await context
+                          .read<CableTVReminderCubit>()
+                          .getReminders(includePast: true);
+                    },
+                    child: ListView(
+                      padding: EdgeInsets.all(20.w),
+                      children: [
+                        if (due.isNotEmpty) ...[
+                          _sectionHeader('Due', const Color(0xFFF59E0B)),
+                          SizedBox(height: 12.h),
+                          ...due.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r, isDue: true),
+                              )),
+                          SizedBox(height: 24.h),
                         ],
-                      ),
-                    );
-                  }
-                  return _buildEmpty();
+                        if (active.isNotEmpty) ...[
+                          _sectionHeader(
+                              'Upcoming', const Color(0xFF4E03D0)),
+                          SizedBox(height: 12.h),
+                          ...active.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r),
+                              )),
+                        ],
+                        if (completed.isNotEmpty) ...[
+                          if (active.isNotEmpty || due.isNotEmpty)
+                            SizedBox(height: 24.h),
+                          _sectionHeader('Completed', Colors.grey),
+                          SizedBox(height: 12.h),
+                          ...completed.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r),
+                              )),
+                        ],
+                      ],
+                    ),
+                  );
                 },
               ),
             ),
@@ -333,6 +343,27 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen> {
       onPayNow: isDue && !_isCompleted(r) ? () => _payNow(r) : null,
       onMarkComplete: !_isCompleted(r) ? () => _markComplete(r) : null,
       onEdit: !_isCompleted(r) ? () => _edit(r) : null,
+      onPause: r.status == 'pending'
+          ? () => runReminderStatusChange(
+                billType: 'cable_tv',
+                reminderId: r.id,
+                pause: true,
+                onSuccessReload: () => context
+                    .read<CableTVReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      onResume: r.status == 'paused'
+          ? () => runReminderStatusChange(
+                billType: 'cable_tv',
+                reminderId: r.id,
+                pause: false,
+                onSuccessReload: () => context
+                    .read<CableTVReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      isProcessing: busyReminderId == r.id,
       onDelete: () => _delete(r),
     );
   }

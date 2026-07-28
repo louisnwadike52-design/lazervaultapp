@@ -207,7 +207,7 @@ void main() {
           reason: 'externalError=${all.externalError}');
       expect(gt.externalStatus, ExternalDataStatus.ready);
       expect(zen.externalStatus, ExternalDataStatus.ready);
-      expect(gt.selectedBankAccountId, _gtbankId);
+      expect(gt.selectedBankAccountIds, [_gtbankId]);
 
       // Real activity, not zeros.
       expect(gt.financialAnalytics!.currentPeriod.totalExpenses, greaterThan(0));

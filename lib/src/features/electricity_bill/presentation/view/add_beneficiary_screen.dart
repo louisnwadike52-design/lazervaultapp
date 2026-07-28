@@ -12,6 +12,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
+import '../../utils/meter_validation.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
@@ -467,7 +468,8 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                     ),
                   ],
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(20.w),
+                    padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w,
+                        20.w + MediaQuery.of(context).viewInsets.bottom),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1124,6 +1126,10 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
           child: TextField(
             controller: _meterNumberController,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(kMeterNumberMaxLen),
+            ],
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,

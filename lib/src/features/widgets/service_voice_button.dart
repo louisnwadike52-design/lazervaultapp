@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
-import 'package:lazervault/src/features/voice/guards/voice_setup_guard.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 
@@ -44,6 +46,10 @@ class ServiceVoiceButton extends StatelessWidget {
   /// Button size (defaults to 44.w)
   final double? buttonSize;
 
+  /// Optional scoped context id (e.g. a P2P conversation id) forwarded to the
+  /// voice session so the agent is pinned to that record.
+  final String? conversationId;
+
   const ServiceVoiceButton({
     super.key,
     required this.serviceName,
@@ -52,6 +58,7 @@ class ServiceVoiceButton extends StatelessWidget {
     this.backgroundColor,
     this.iconSize,
     this.buttonSize,
+    this.conversationId,
   });
 
   @override
@@ -115,52 +122,74 @@ class ServiceVoiceButton extends StatelessWidget {
   }
 
   void _showVoiceCommandSheet(BuildContext context) async {
-    // Gate every per-service voice session on the SAME setup guard the
-    // general dashboard mic uses. Mirrors:
-    //   1. logged-in check
-    //   2. biometric-enrollment check (voice-biometrics-service)
-    //   3. high-risk feature → mandatory voice verification before entry
-    //
-    // The guard's dialog handles "not enrolled" → navigate to enrollment
-    // → re-check on return. We only open the command sheet when canAccess
-    // returns true, so dropouts at any step abort cleanly without burning
-    // a half-loaded voice session.
-    final guard = _resolveGuard();
-    final allowed = await guard.canAccessVoiceFeature(context, serviceName);
-    if (!allowed) return;
+    // ONE activation experience platform-wide: this is the exact gate the
+    // general dashboard mic runs (dashboard_header._showVoiceCommandSheetInner)
+    // — availability check → enrollment check → the shared "Voice Activation"
+    // dialog (VoiceActivationManager.activateVoice → enrollment carousel) —
+    // NOT a per-service variant. A user who hasn't activated voice sees the
+    // same prompt here as on the dashboard.
+    if (Get.isBottomSheetOpen ?? false) return;
+
+    final activationManager = VoiceActivationManager();
+
+    final isAvailable = await activationManager.isServiceAvailable();
+    if (!isAvailable) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'The voice assistant is currently turned off. Please use chat instead.',
+            style: GoogleFonts.inter(fontSize: 13),
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
+    final userId = await _resolveUserId(context);
+    if (userId == null || userId.isEmpty) return;
     if (!context.mounted) return;
 
-    // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
-    // enableDrag must be false so the outer Get sheet doesn't fight the
-    // DraggableScrollableSheet's own drag-to-resize gesture.
+    final isEnrolled = await activationManager.isVoiceEnrolled(userId);
+    if (!context.mounted) return;
+
+    if (!isEnrolled) {
+      // The SAME enrollment prompt the dashboard mic shows.
+      final activated = await activationManager.activateVoice(context, userId);
+      if (!activated || !context.mounted) return;
+    }
+
+    // Activation confirmed above, so the sheet skips its own re-check —
+    // identical to how the dashboard opens the general session. Self-sizing
+    // sheet (DraggableScrollableSheet: 90% → full screen); enableDrag false
+    // so the outer Get sheet doesn't fight drag-to-resize.
     Get.bottomSheet(
       VoiceCommandSheet(
         serviceName: serviceName,
+        conversationId: conversationId,
+        skipActivationCheck: true,
       ),
       isScrollControlled: true,
       enableDrag: false,
-      isDismissible: true,
+      isDismissible: false,
       backgroundColor: Colors.transparent,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
     );
   }
 
-  /// Resolve the shared VoiceSetupGuard from GetIt, lazy-constructing it
-  /// the first time. Mirrors how `DashboardScreen` builds the guard
-  /// today (`VoiceSetupManager(voiceManager: VoiceActivationManager())`),
-  /// so this widget keeps working in any host without requiring a
-  /// dedicated DI registration.
-  VoiceSetupGuard _resolveGuard() {
-    if (GetIt.I.isRegistered<VoiceSetupGuard>()) {
-      return GetIt.I<VoiceSetupGuard>();
+  /// The user id, from the app-root AuthenticationCubit when hydrated
+  /// (same source the dashboard mic reads), else the secure-storage copy.
+  Future<String?> _resolveUserId(BuildContext context) async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      return authState.profile.userId;
     }
-    final manager = VoiceActivationManager();
-    final setupMgr = VoiceSetupManager(voiceManager: manager);
-    final guard = VoiceSetupGuard(
-      voiceManager: manager,
-      setupManager: setupMgr,
-    );
-    GetIt.I.registerSingleton<VoiceSetupGuard>(guard);
-    return guard;
+    return serviceLocator<FlutterSecureStorage>().read(key: 'user_id');
   }
 }
 

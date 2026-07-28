@@ -107,6 +107,9 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
   }
 
   Future<void> _verifyOTP() async {
+    // Guard against a double-submit: auto-verify (onCompleted) and a manual
+    // "Verify" tap can race in the window before the button/input disable.
+    if (_isLoading) return;
     if (_pinController.text.length != 6) {
       setState(() {
         _errorMessage = 'Please enter the complete 6-digit code';
@@ -333,6 +336,13 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
           ),
           enabled: !_isLoading && _remainingSeconds > 0,
           autofocus: true,
+          // Validate as soon as the 6th digit lands — the code is verified with
+          // the backend and we only advance to the new-password screen on
+          // success (invalid/expired codes never proceed). The button remains
+          // for manual retry.
+          onCompleted: (_) {
+            if (!_isLoading && _remainingSeconds > 0) _verifyOTP();
+          },
           // SMS autofill handled by platform
         ),
 

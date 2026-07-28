@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:barcode/barcode.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -109,6 +110,13 @@ class TagPayPdfService {
       color: color,
     );
   }
+
+  /// Sanitise a string for the PDF font. The masked-account bullet `•`
+  /// (U+2022) is above Latin-1 and is missing from the built-in Helvetica the
+  /// PDF falls back to when the remote Inter subset can't be fetched — it renders
+  /// as a tofu box (▨). Swap it for the Latin-1 middle dot `·` (U+00B7), which is
+  /// covered by every font path and keeps the "•••• 1234" masked look.
+  static String? _pdfSafe(String? s) => s?.replaceAll('•', '·');
 
   /// Generate a professional invoice PDF for a tag (before payment)
   static Future<File> generateTagInvoice({
@@ -317,7 +325,7 @@ class TagPayPdfService {
               pw.Image(logo, width: 120)
             else
               pw.Text(
-                'LazerVault',
+                'Lazervault',
                 style: _getTextStyle(fontSize: 28, isBold: true)
                     .copyWith(color: PdfColors.blue800),
               ),
@@ -553,7 +561,7 @@ class TagPayPdfService {
             children: [
               _buildDetailRow(
                 'Name',
-                recipientName.isNotEmpty ? recipientName : 'LazerVault User',
+                recipientName.isNotEmpty ? recipientName : 'Lazervault User',
               ),
               if (recipientTag.isNotEmpty)
                 _buildDetailRow('Tag', '@$recipientTag'),
@@ -591,7 +599,7 @@ class TagPayPdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                  '(C) ${DateTime.now().year} Lazervault Technologies Ltd',
                   style: _getTextStyle(fontSize: 9, color: PdfColors.grey600),
                 ),
                 pw.SizedBox(height: 2),
@@ -611,9 +619,9 @@ class TagPayPdfService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            'LazerVault Technologies Ltd is a financial technology company. '
-            'This document is a confirmation of a $transactionType processed through the LazerVault platform. '
-            'For any queries regarding this transaction, please contact support through the LazerVault app.',
+            'Lazervault Technologies Ltd is a financial technology company. '
+            'This document is a confirmation of a $transactionType processed through the Lazervault platform. '
+            'For any queries regarding this transaction, please contact support through the Lazervault app.',
             style: _getTextStyle(fontSize: 8, color: PdfColors.grey600),
             textAlign: pw.TextAlign.justify,
           ),
@@ -698,7 +706,7 @@ class TagPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text: 'TagPay Invoice - $currencySymbol$amount ${isOutgoing ? "to" : "from"} ${recipientName.isNotEmpty ? recipientName : "@$recipientTag"}',
-        subject: 'LazerVault TagPay Invoice',
+        subject: 'Lazervault TagPay Invoice',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -767,7 +775,7 @@ class TagPayPdfService {
         files: [XFile(file.path)],
         text:
             'TagPay Transfer Receipt - $currencySymbol$amount to @${transaction.receiverTagPay}',
-        subject: 'LazerVault TagPay Transfer Confirmation',
+        subject: 'Lazervault TagPay Transfer Confirmation',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -936,7 +944,7 @@ class TagPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text: 'TagPay Receipt - $currencySymbol$amount ${isOutgoing ? "to" : "from"} @$recipientTag',
-        subject: 'LazerVault TagPay Receipt',
+        subject: 'Lazervault TagPay Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -960,13 +968,18 @@ class TagPayPdfService {
     final currencySymbol = _currencySymbolFor(currency);
     final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
 
-    final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
-    final recipientAccount = transferDetails['recipientAccountMasked'] as String?;
-    final recipientBank = transferDetails['recipientBankName'] as String?;
-    final sourceAccountName = transferDetails['sourceAccountName'] as String?;
-    final sourceAccountInfo = transferDetails['sourceAccountInfo'] as String?;
+    final recipientName =
+        _pdfSafe(transferDetails['recipientName'] as String?) ?? 'Recipient';
+    final recipientAccount =
+        _pdfSafe(transferDetails['recipientAccountMasked'] as String?);
+    final recipientBank =
+        _pdfSafe(transferDetails['recipientBankName'] as String?);
+    final sourceAccountName =
+        _pdfSafe(transferDetails['sourceAccountName'] as String?);
+    final sourceAccountInfo =
+        _pdfSafe(transferDetails['sourceAccountInfo'] as String?);
     final reference = transferDetails['reference'] as String? ?? '';
-    final narration = transferDetails['narration'] as String?;
+    final narration = _pdfSafe(transferDetails['narration'] as String?);
     final status = transferDetails['status'] as String? ?? 'completed';
     final transferType = transferDetails['transferType'] as String? ?? 'Fund Transfer';
     final transferId = transferDetails['transferId']?.toString() ??
@@ -1062,6 +1075,29 @@ class TagPayPdfService {
                     child: _buildDetailRow('Bank', recipientBank),
                   ),
                 ),
+
+              // Scannable QR of the transfer reference (same id as the
+              // on-screen receipt) so the PDF carries the barcode too.
+              pw.SizedBox(height: 24),
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.BarcodeWidget(
+                      barcode: Barcode.qrCode(),
+                      data: reference.isNotEmpty ? reference : transferId,
+                      width: 90,
+                      height: 90,
+                      drawText: false,
+                    ),
+                    pw.SizedBox(height: 6),
+                    pw.Text(
+                      reference.isNotEmpty ? reference : transferId,
+                      style:
+                          _getTextStyle(fontSize: 9, color: PdfColors.grey600),
+                    ),
+                  ],
+                ),
+              ),
 
               pw.Spacer(),
               _buildFooter(transactionType: 'fund transfer'),
@@ -1174,8 +1210,8 @@ class TagPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'LazerVault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
-        subject: 'LazerVault Transfer Receipt',
+            'Lazervault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
+        subject: 'Lazervault Transfer Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -1233,8 +1269,8 @@ class TagPayPdfService {
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'LazerVault Transfer Receipt - $currencySymbol$amount to $recipient',
-        subject: 'LazerVault Transfer Receipt',
+        text: 'Lazervault Transfer Receipt - $currencySymbol$amount to $recipient',
+        subject: 'Lazervault Transfer Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {

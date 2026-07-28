@@ -1,13 +1,19 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 /// Financial Goals Screen
 /// Track and manage financial goals like emergency fund, vacation, car purchase, etc.
@@ -18,7 +24,12 @@ class FinancialGoalsScreen extends StatefulWidget {
   State<FinancialGoalsScreen> createState() => _FinancialGoalsScreenState();
 }
 
-class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
+class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   @override
   void initState() {
     super.initState();
@@ -64,7 +75,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
               ),
             );
           }
@@ -88,7 +99,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
                       ? _buildEmptyState()
                       : RefreshIndicator(
                           onRefresh: () => context.read<BudgetCubit>().loadFinancialGoals(),
-                          color: const Color(0xFF10B981),
+                          color: InvoiceThemeColors.primaryPurple,
                           backgroundColor: const Color(0xFF1F1F1F),
                           child: ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
@@ -130,14 +141,14 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
+          colors: [Color(0xFF3A0299), Color(0xFF4E03D0), Color(0xFFA78BFA)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -231,10 +242,10 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
                 width: 80.r,
                 height: 80.r,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.flag, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 40.r),
+                child: Icon(Icons.flag, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5), size: 40.r),
               ),
               SizedBox(height: 16.h),
               Text(
@@ -252,7 +263,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Create Goal'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 ),
@@ -283,7 +294,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
           ElevatedButton(
             onPressed: () => context.read<BudgetCubit>().loadFinancialGoals(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
             ),
             child: const Text('Retry'),
@@ -437,7 +448,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: InvoiceThemeColors.primaryPurple,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -477,7 +488,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
               ),
             ),
             Text(
-              'Contribute to ${goal.name}',
+              'Add money to ${goal.name}',
               style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8.h),
@@ -514,25 +525,102 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
                         backgroundColor: const Color(0xFFEF4444));
                     return;
                   }
-
                   Get.back();
-                  context.read<BudgetCubit>().contributeToGoal(
-                    goalId: goal.id,
-                    amount: amount,
-                  );
+                  _addMoneyToGoal(goal, amount);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 ),
-                child: const Text('Add Contribution', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text('Add money', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
+            if (goal.currentAmount > 0) ...[
+              SizedBox(height: 10.h),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                    if (amount <= 0) {
+                      Get.snackbar('Error', 'Enter the amount to withdraw',
+                          backgroundColor: const Color(0xFFEF4444));
+                      return;
+                    }
+                    Get.back();
+                    context.read<BudgetCubit>().withdrawFromGoal(
+                          goalId: goal.id,
+                          amount: amount,
+                        );
+                  },
+                  child: Text(
+                    'Withdraw to wallet',
+                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  /// Runs the PIN sheet, then debits the wallet into the goal once the token
+  /// validates. The PIN sheet stays open (Verifying → Processing → Success)
+  /// until statistics-service confirms the debit + progress update.
+  Future<void> _addMoneyToGoal(pb.FinancialGoal goal, double amount) async {
+    final accountId = serviceLocator<AccountManager>().activeAccountId;
+    if (accountId == null || accountId.isEmpty) {
+      Get.snackbar('Error', 'Choose an account first',
+          backgroundColor: const Color(0xFFEF4444));
+      return;
+    }
+    final currency = goal.currency.isNotEmpty ? goal.currency : 'NGN';
+    final transactionId =
+        'GOAL-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+
+    await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'goal_contribution',
+      amount: amount,
+      currency: currency,
+      title: 'Add to ${goal.name}',
+      message: 'Adding ${amount.toStringAsFixed(2)} $currency to your goal',
+      onPinValidated: (verificationToken) async {
+        if (!mounted) return;
+        // Await the cubit result inside the PIN sheet so success/failure shows
+        // only after the backend confirms the debit landed.
+        final completer = Completer<void>();
+        late final StreamSubscription<BudgetState> sub;
+        sub = context.read<BudgetCubit>().stream.listen((state) {
+          if (state is BudgetCreated && !completer.isCompleted) {
+            completer.complete();
+            sub.cancel();
+          } else if (state is BudgetError && !completer.isCompleted) {
+            completer.completeError(Exception(state.message));
+            sub.cancel();
+          }
+        });
+
+        context.read<BudgetCubit>().contributeToGoal(
+              goalId: goal.id,
+              amount: amount,
+              pinToken: verificationToken,
+              pinTxnId: transactionId,
+              accountId: accountId,
+            );
+
+        try {
+          await completer.future.timeout(const Duration(seconds: 60));
+        } catch (e) {
+          await sub.cancel();
+          rethrow;
+        }
+      },
     );
   }
 
@@ -576,7 +664,7 @@ class _GoalCard extends StatelessWidget {
     final percentage = goal.percentageComplete.clamp(0, 100);
     final remaining = goal.targetAmount - goal.currentAmount;
 
-    Color goalColor = const Color(0xFF10B981);
+    Color goalColor = InvoiceThemeColors.primaryPurple;
     if (goal.color.isNotEmpty) {
       try {
         goalColor = Color(int.parse(goal.color.replaceFirst('#', '0xFF')));

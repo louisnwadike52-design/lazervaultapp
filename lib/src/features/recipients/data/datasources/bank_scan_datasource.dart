@@ -57,6 +57,7 @@ class BankScanDataSource {
     required String userId,
     String locale = 'en-NG',
     String countryCode = 'NG',
+    bool lean = false,
   }) async {
     await _updateHeaders();
 
@@ -106,7 +107,8 @@ class BankScanDataSource {
 
     try {
       final response = await dio.post(
-        '/scan/bank-details',
+        // Manual "tap to capture" fallback uses the lean per-service route.
+        lean ? '/scan/extract' : '/scan/bank-details',
         data: {
           'image_url': uploadResult.publicUrl,
           'storage_key': uploadResult.storageKey,
@@ -346,6 +348,18 @@ class SmartScanResult {
   final String? phoneNumber;
   final String? phoneCarrier;
 
+  // Email
+  final String? email;
+
+  // Resolved Lazervault user (backend matched the scanned phone/email/username
+  // to an existing user). When [isLazervaultUser] is true the scan is routable
+  // as a FREE internal C2C transfer to [resolvedUserId] / [resolvedAccountId].
+  final bool isLazervaultUser;
+  final String? resolvedUserId;
+  final String? resolvedUsername;
+  final String? resolvedDisplayName;
+  final String? resolvedAccountId;
+
   // Ambiguous
   final List<String> possibleTypes;
   final String? disambiguationHint;
@@ -375,6 +389,12 @@ class SmartScanResult {
     this.displayName,
     this.phoneNumber,
     this.phoneCarrier,
+    this.email,
+    this.isLazervaultUser = false,
+    this.resolvedUserId,
+    this.resolvedUsername,
+    this.resolvedDisplayName,
+    this.resolvedAccountId,
     this.possibleTypes = const [],
     this.disambiguationHint,
     this.amountMinor,
@@ -458,6 +478,12 @@ class SmartScanResult {
       displayName: data['display_name']?.toString(),
       phoneNumber: data['phone_number']?.toString(),
       phoneCarrier: data['phone_carrier']?.toString(),
+      email: data['email']?.toString(),
+      isLazervaultUser: data['is_lazervault_user'] == true,
+      resolvedUserId: data['resolved_user_id']?.toString(),
+      resolvedUsername: data['resolved_username']?.toString(),
+      resolvedDisplayName: data['resolved_display_name']?.toString(),
+      resolvedAccountId: data['resolved_account_id']?.toString(),
       possibleTypes: possibleTypes,
       disambiguationHint: data['disambiguation_hint']?.toString(),
       amountMinor: amountMinor,
@@ -470,11 +496,21 @@ class SmartScanResult {
   /// Whether this result has enough data for the claimed extraction type.
   bool get hasRequiredFields => switch (extractionType) {
         'bank_details' => accountNumber != null && accountNumber!.isNotEmpty,
-        'internal_user' => username != null && username!.isNotEmpty,
+        'internal_user' => (username != null && username!.isNotEmpty) ||
+            (resolvedUserId != null && resolvedUserId!.isNotEmpty),
         'phone_number' => phoneNumber != null && phoneNumber!.isNotEmpty,
+        'email' => (email != null && email!.isNotEmpty) ||
+            (resolvedUserId != null && resolvedUserId!.isNotEmpty),
         'ambiguous' => possibleTypes.isNotEmpty,
         _ => false,
       };
+
+  /// True when the scan resolved to an existing Lazervault user that we can
+  /// send to directly as a free internal transfer.
+  bool get hasResolvedUser =>
+      isLazervaultUser &&
+      resolvedUserId != null &&
+      resolvedUserId!.isNotEmpty;
 }
 
 class BankScanException implements Exception {

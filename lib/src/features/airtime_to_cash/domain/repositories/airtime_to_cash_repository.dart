@@ -122,7 +122,9 @@ abstract class AirtimeToCashRepository {
   });
 
   /// Verify service availability and get provider details.
-  Future<ServiceVerificationResult> verifyService(String network);
+  /// Verify service availability. [provider] optionally forces a specific
+  /// gateway (`vtuafrica` for the transfer-to-number flow); empty = active.
+  Future<ServiceVerificationResult> verifyService(String network, {String provider});
 
   /// Check if provider can accept the conversion amount.
   Future<QuotaCheckResult> checkQuota({

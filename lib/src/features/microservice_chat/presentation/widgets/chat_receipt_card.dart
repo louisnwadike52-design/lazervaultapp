@@ -147,7 +147,7 @@ class TransferReceiptData {
       case 'group_contribution':
         return 'Group Contribution';
       case 'spray_send':
-        return 'SprayMe';
+        return 'Lazerspray';
       case 'wallet_fund':
         return 'Wallet Funding';
       case 'transfer':

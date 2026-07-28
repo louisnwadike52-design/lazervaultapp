@@ -1,18 +1,21 @@
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class Failure {
   final String message;
   final int statusCode;
 
-  const Failure({
-    required this.message,
+  // Sanitize on construction so raw transport/exception text is never stored
+  // and later surfaced via state.message / failure.message.
+  Failure({
+    required String message,
     required this.statusCode,
-  });
+  }) : message = sanitizeUserFacingError(message);
 }
 
 class ServerFailure extends Failure {
   final int? cooldownSeconds;
 
-  const ServerFailure({
+  ServerFailure({
     required super.message,
     required super.statusCode,
     this.cooldownSeconds,
@@ -20,7 +23,7 @@ class ServerFailure extends Failure {
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure({required super.message, required super.statusCode});
+  CacheFailure({required super.message, required super.statusCode});
 }
 
-// You can add more specific Failure types here as needed. 
+// You can add more specific Failure types here as needed.

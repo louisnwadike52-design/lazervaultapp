@@ -1,25 +1,39 @@
-///
-//  Generated code. Do not modify.
-//  source: bulk-sms.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from bulk-sms.proto.
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class CampaignStatus extends $pb.ProtobufEnum {
-  static const CampaignStatus CAMPAIGN_STATUS_UNSPECIFIED = CampaignStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_UNSPECIFIED');
-  static const CampaignStatus CAMPAIGN_STATUS_PENDING = CampaignStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_PENDING');
-  static const CampaignStatus CAMPAIGN_STATUS_SENDING = CampaignStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_SENDING');
-  static const CampaignStatus CAMPAIGN_STATUS_COMPLETED = CampaignStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_COMPLETED');
-  static const CampaignStatus CAMPAIGN_STATUS_FAILED = CampaignStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_FAILED');
-  static const CampaignStatus CAMPAIGN_STATUS_SCHEDULED = CampaignStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_SCHEDULED');
-  static const CampaignStatus CAMPAIGN_STATUS_CANCELLED = CampaignStatus._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_CANCELLED');
-  static const CampaignStatus CAMPAIGN_STATUS_PARTIALLY_COMPLETED = CampaignStatus._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CAMPAIGN_STATUS_PARTIALLY_COMPLETED');
+  static const CampaignStatus CAMPAIGN_STATUS_UNSPECIFIED =
+      CampaignStatus._(0, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_UNSPECIFIED');
+  static const CampaignStatus CAMPAIGN_STATUS_PENDING =
+      CampaignStatus._(1, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_PENDING');
+  static const CampaignStatus CAMPAIGN_STATUS_SENDING =
+      CampaignStatus._(2, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_SENDING');
+  static const CampaignStatus CAMPAIGN_STATUS_COMPLETED =
+      CampaignStatus._(3, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_COMPLETED');
+  static const CampaignStatus CAMPAIGN_STATUS_FAILED =
+      CampaignStatus._(4, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_FAILED');
+  static const CampaignStatus CAMPAIGN_STATUS_SCHEDULED =
+      CampaignStatus._(5, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_SCHEDULED');
+  static const CampaignStatus CAMPAIGN_STATUS_CANCELLED =
+      CampaignStatus._(6, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_CANCELLED');
+  static const CampaignStatus CAMPAIGN_STATUS_PARTIALLY_COMPLETED =
+      CampaignStatus._(
+          7, _omitEnumNames ? '' : 'CAMPAIGN_STATUS_PARTIALLY_COMPLETED');
 
-  static const $core.List<CampaignStatus> values = <CampaignStatus> [
+  static const $core.List<CampaignStatus> values = <CampaignStatus>[
     CAMPAIGN_STATUS_UNSPECIFIED,
     CAMPAIGN_STATUS_PENDING,
     CAMPAIGN_STATUS_SENDING,
@@ -30,23 +44,33 @@ class CampaignStatus extends $pb.ProtobufEnum {
     CAMPAIGN_STATUS_PARTIALLY_COMPLETED,
   ];
 
-  static final $core.Map<$core.int, CampaignStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static CampaignStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<CampaignStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 7);
+  static CampaignStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const CampaignStatus._($core.int v, $core.String n) : super(v, n);
+  const CampaignStatus._(super.value, super.name);
 }
 
 class DeliveryStatus extends $pb.ProtobufEnum {
-  static const DeliveryStatus DELIVERY_STATUS_UNSPECIFIED = DeliveryStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_UNSPECIFIED');
-  static const DeliveryStatus DELIVERY_STATUS_PENDING = DeliveryStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_PENDING');
-  static const DeliveryStatus DELIVERY_STATUS_SENT = DeliveryStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_SENT');
-  static const DeliveryStatus DELIVERY_STATUS_DELIVERED = DeliveryStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_DELIVERED');
-  static const DeliveryStatus DELIVERY_STATUS_FAILED = DeliveryStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_FAILED');
-  static const DeliveryStatus DELIVERY_STATUS_DND_FILTERED = DeliveryStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_DND_FILTERED');
-  static const DeliveryStatus DELIVERY_STATUS_INVALID_NUMBER = DeliveryStatus._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_INVALID_NUMBER');
-  static const DeliveryStatus DELIVERY_STATUS_REJECTED = DeliveryStatus._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DELIVERY_STATUS_REJECTED');
+  static const DeliveryStatus DELIVERY_STATUS_UNSPECIFIED =
+      DeliveryStatus._(0, _omitEnumNames ? '' : 'DELIVERY_STATUS_UNSPECIFIED');
+  static const DeliveryStatus DELIVERY_STATUS_PENDING =
+      DeliveryStatus._(1, _omitEnumNames ? '' : 'DELIVERY_STATUS_PENDING');
+  static const DeliveryStatus DELIVERY_STATUS_SENT =
+      DeliveryStatus._(2, _omitEnumNames ? '' : 'DELIVERY_STATUS_SENT');
+  static const DeliveryStatus DELIVERY_STATUS_DELIVERED =
+      DeliveryStatus._(3, _omitEnumNames ? '' : 'DELIVERY_STATUS_DELIVERED');
+  static const DeliveryStatus DELIVERY_STATUS_FAILED =
+      DeliveryStatus._(4, _omitEnumNames ? '' : 'DELIVERY_STATUS_FAILED');
+  static const DeliveryStatus DELIVERY_STATUS_DND_FILTERED =
+      DeliveryStatus._(5, _omitEnumNames ? '' : 'DELIVERY_STATUS_DND_FILTERED');
+  static const DeliveryStatus DELIVERY_STATUS_INVALID_NUMBER = DeliveryStatus._(
+      6, _omitEnumNames ? '' : 'DELIVERY_STATUS_INVALID_NUMBER');
+  static const DeliveryStatus DELIVERY_STATUS_REJECTED =
+      DeliveryStatus._(7, _omitEnumNames ? '' : 'DELIVERY_STATUS_REJECTED');
 
-  static const $core.List<DeliveryStatus> values = <DeliveryStatus> [
+  static const $core.List<DeliveryStatus> values = <DeliveryStatus>[
     DELIVERY_STATUS_UNSPECIFIED,
     DELIVERY_STATUS_PENDING,
     DELIVERY_STATUS_SENT,
@@ -57,28 +81,38 @@ class DeliveryStatus extends $pb.ProtobufEnum {
     DELIVERY_STATUS_REJECTED,
   ];
 
-  static final $core.Map<$core.int, DeliveryStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static DeliveryStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<DeliveryStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 7);
+  static DeliveryStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const DeliveryStatus._($core.int v, $core.String n) : super(v, n);
+  const DeliveryStatus._(super.value, super.name);
 }
 
 class SenderIdStatus extends $pb.ProtobufEnum {
-  static const SenderIdStatus SENDER_ID_STATUS_UNSPECIFIED = SenderIdStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDER_ID_STATUS_UNSPECIFIED');
-  static const SenderIdStatus SENDER_ID_STATUS_PENDING = SenderIdStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDER_ID_STATUS_PENDING');
-  static const SenderIdStatus SENDER_ID_STATUS_APPROVED = SenderIdStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDER_ID_STATUS_APPROVED');
-  static const SenderIdStatus SENDER_ID_STATUS_REJECTED = SenderIdStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDER_ID_STATUS_REJECTED');
+  static const SenderIdStatus SENDER_ID_STATUS_UNSPECIFIED =
+      SenderIdStatus._(0, _omitEnumNames ? '' : 'SENDER_ID_STATUS_UNSPECIFIED');
+  static const SenderIdStatus SENDER_ID_STATUS_PENDING =
+      SenderIdStatus._(1, _omitEnumNames ? '' : 'SENDER_ID_STATUS_PENDING');
+  static const SenderIdStatus SENDER_ID_STATUS_APPROVED =
+      SenderIdStatus._(2, _omitEnumNames ? '' : 'SENDER_ID_STATUS_APPROVED');
+  static const SenderIdStatus SENDER_ID_STATUS_REJECTED =
+      SenderIdStatus._(3, _omitEnumNames ? '' : 'SENDER_ID_STATUS_REJECTED');
 
-  static const $core.List<SenderIdStatus> values = <SenderIdStatus> [
+  static const $core.List<SenderIdStatus> values = <SenderIdStatus>[
     SENDER_ID_STATUS_UNSPECIFIED,
     SENDER_ID_STATUS_PENDING,
     SENDER_ID_STATUS_APPROVED,
     SENDER_ID_STATUS_REJECTED,
   ];
 
-  static final $core.Map<$core.int, SenderIdStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static SenderIdStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<SenderIdStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static SenderIdStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const SenderIdStatus._($core.int v, $core.String n) : super(v, n);
+  const SenderIdStatus._(super.value, super.name);
 }
 
+const $core.bool _omitEnumNames =
+    $core.bool.fromEnvironment('protobuf.omit_enum_names');

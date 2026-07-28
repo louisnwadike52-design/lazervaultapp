@@ -27,15 +27,30 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class InsuranceTermsBottomSheet extends StatefulWidget {
-  const InsuranceTermsBottomSheet({super.key, required this.urlResolver});
+  const InsuranceTermsBottomSheet({
+    super.key,
+    required this.urlResolver,
+    this.title = 'Terms & Conditions',
+    this.subtitle = 'Please review before continuing',
+    this.icon = Icons.gavel_rounded,
+  });
 
-  /// Async resolver that returns the admin-set terms URL. Return `null`
-  /// to signal "no link configured"; throw to signal a real error.
+  /// Async resolver that returns the URL to render. Return `null` to signal
+  /// "no link configured"; throw to signal a real error.
   final Future<String?> Function() urlResolver;
+
+  /// Header title/subtitle/icon — defaults to Terms & Conditions, but the
+  /// sheet is generic (also used for "Insurance Certificate", etc.).
+  final String title;
+  final String subtitle;
+  final IconData icon;
 
   static Future<void> show(
     BuildContext context, {
     required Future<String?> Function() urlResolver,
+    String title = 'Terms & Conditions',
+    String subtitle = 'Please review before continuing',
+    IconData icon = Icons.gavel_rounded,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -44,7 +59,12 @@ class InsuranceTermsBottomSheet extends StatefulWidget {
       isDismissible: true,
       enableDrag: true,
       barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (_) => InsuranceTermsBottomSheet(urlResolver: urlResolver),
+      builder: (_) => InsuranceTermsBottomSheet(
+        urlResolver: urlResolver,
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+      ),
     );
   }
 
@@ -218,7 +238,7 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
               color: const Color(0xFF6366F1).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(Icons.gavel_rounded,
+            child: Icon(widget.icon,
                 color: const Color(0xFF6366F1), size: 20.sp),
           ),
           SizedBox(width: 12.w),
@@ -227,7 +247,7 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Terms & Conditions',
+                  widget.title,
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
@@ -235,7 +255,7 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
                   ),
                 ),
                 Text(
-                  'Please review before continuing',
+                  widget.subtitle,
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     color: const Color(0xFF9CA3AF),

@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_p
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 
 class AutoSaveDashboardScreen extends StatefulWidget {
   const AutoSaveDashboardScreen({super.key});
@@ -128,7 +129,8 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
             children: [
               _buildHeader(),
               Expanded(
-                child: RefreshIndicator(
+                child: ServiceEntranceAnimation(
+                  child: RefreshIndicator(
                   onRefresh: _loadDashboardData,
                   color: const Color(0xFF4E03D0),
                   backgroundColor: const Color(0xFF1F1F1F),
@@ -146,6 +148,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                       ],
                     ),
                   ),
+                ),
                 ),
               ),
             ],
@@ -686,6 +689,8 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         return const Color(0xFFF59E0B);
       case TriggerType.externalInflow:
         return const Color(0xFFFB923C);
+      case TriggerType.scheduledExternal:
+        return const Color(0xFF14B8A6);
       default:
         return _brand;
     }
@@ -701,6 +706,8 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         return Icons.trending_up_rounded;
       case TriggerType.externalInflow:
         return Icons.account_balance_rounded;
+      case TriggerType.scheduledExternal:
+        return Icons.account_balance_wallet_rounded;
       default:
         return Icons.savings_rounded;
     }

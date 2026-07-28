@@ -3,11 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/payroll_cubit.dart';
-import '../cubit/payroll_state.dart';
 import '../../domain/entities/pay_run_entity.dart';
+import '../../domain/repositories/payroll_repository.dart';
 import 'pay_run_details_screen.dart';
 import 'create_pay_run_screen.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 
 class PayRunListScreen extends StatefulWidget {
   const PayRunListScreen({super.key});
@@ -16,23 +19,75 @@ class PayRunListScreen extends StatefulWidget {
   State<PayRunListScreen> createState() => _PayRunListScreenState();
 }
 
-class _PayRunListScreenState extends State<PayRunListScreen> {
+class _PayRunListScreenState extends State<PayRunListScreen>
+    with InfiniteScrollMixin<PayRunListScreen> {
+  static const int _limit = 20;
+
+  List<PayRunEntity> _items = [];
+  bool _loading = false;
+  String? _error;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PayrollCubit>().listPayRuns();
-    });
+    attachInfiniteScroll();
+    _loadFirst();
   }
 
+  @override
+  void dispose() {
+    detachInfiniteScroll();
+    super.dispose();
+  }
+
+  Future<void> _loadFirst() async {
+    resetPagination();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await serviceLocator<PayrollRepository>().listPayRuns(
+        page: 1,
+        limit: _limit,
+      );
+      if (!mounted) return;
+      setState(() {
+        _items = res.payRuns;
+        _loading = false;
+        hasMore = res.currentPage < res.totalPages;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() => runLoadMore(() async {
+        final res = await serviceLocator<PayrollRepository>().listPayRuns(
+          page: page + 1,
+          limit: _limit,
+        );
+        if (!mounted) return;
+        setState(() {
+          _items.addAll(res.payRuns);
+          page += 1;
+          hasMore = page < res.totalPages;
+        });
+      });
+
   Future<void> _onRefresh() async {
-    context.read<PayrollCubit>().listPayRuns();
+    await _loadFirst();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -61,47 +116,52 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
                   ))
                   .then((_) => _onRefresh());
             },
-            icon: const Icon(Icons.add, color: Color(0xFF3B82F6)),
+            icon: const Icon(Icons.add, color: InvoiceThemeColors.primaryPurple),
           ),
         ],
       ),
       body: SafeArea(
-        child: BlocBuilder<PayrollCubit, PayrollState>(
-          builder: (context, state) {
-            if (state is PayrollLoading) {
+        child: Builder(
+          builder: (context) {
+            if (_loading) {
               return const Center(
                 child: LazerVaultLoader.small(),
               );
             }
 
-            if (state is PayRunsLoaded) {
-              final payRuns = state.payRuns;
-              if (payRuns.isEmpty) {
-                return _buildEmpty();
-              }
-              return RefreshIndicator(
-                onRefresh: _onRefresh,
-                color: const Color(0xFF3B82F6),
-                backgroundColor: const Color(0xFF1F1F1F),
-                child: ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 8.h,
-                  ),
-                  itemCount: payRuns.length,
-                  itemBuilder: (context, index) {
-                    return _buildPayRunCard(payRuns[index]);
-                  },
+            if (_error != null) {
+              return _buildError(_error!);
+            }
+
+            if (_items.isEmpty) {
+              return _buildEmpty();
+            }
+
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: InvoiceThemeColors.primaryPurpleLight,
+              backgroundColor: InvoiceThemeColors.secondaryBackground,
+              child: ListView.builder(
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                  vertical: 8.h,
                 ),
-              );
-            }
-
-            if (state is PayrollError) {
-              return _buildError(state.message);
-            }
-
-            return const SizedBox.shrink();
+                itemCount: _items.length + (isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index >= _items.length) {
+                    return Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: const Center(
+                        child: LazerVaultLoader.small(),
+                      ),
+                    );
+                  }
+                  return _buildPayRunCard(_items[index]);
+                },
+              ),
+            );
           },
         ),
       ),
@@ -124,7 +184,7 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Column(
@@ -147,7 +207,7 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
               ],
             ),
             SizedBox(height: 12.h),
-            Divider(color: const Color(0xFF2D2D2D), height: 1.h),
+            Divider(color: InvoiceThemeColors.borderColor, height: 1.h),
             SizedBox(height: 12.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,14 +229,14 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
                 Text(
                   'Gross: ${payRun.formattedTotalGross}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
+                    color: InvoiceThemeColors.textGray500,
                     fontSize: 12.sp,
                   ),
                 ),
                 Text(
                   'Deductions: ${payRun.formattedTotalDeductions}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
+                    color: InvoiceThemeColors.textGray500,
                     fontSize: 12.sp,
                   ),
                 ),
@@ -191,12 +251,12 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
   Widget _buildStatItem(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF9CA3AF), size: 16.sp),
+        Icon(icon, color: InvoiceThemeColors.textGray400, size: 16.sp),
         SizedBox(width: 6.w),
         Text(
           text,
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -209,25 +269,25 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
     Color badgeColor;
     switch (status) {
       case PayRunStatus.draft:
-        badgeColor = const Color(0xFF9CA3AF);
+        badgeColor = InvoiceThemeColors.textGray400;
         break;
       case PayRunStatus.calculating:
-        badgeColor = const Color(0xFFFB923C);
+        badgeColor = InvoiceThemeColors.warningOrange;
         break;
       case PayRunStatus.ready:
-        badgeColor = const Color(0xFF3B82F6);
+        badgeColor = InvoiceThemeColors.primaryPurpleLight;
         break;
       case PayRunStatus.approved:
-        badgeColor = const Color(0xFFFB923C);
+        badgeColor = InvoiceThemeColors.warningOrange;
         break;
       case PayRunStatus.processing:
-        badgeColor = const Color(0xFFFACC15);
+        badgeColor = InvoiceThemeColors.warningOrange;
         break;
       case PayRunStatus.completed:
-        badgeColor = const Color(0xFF10B981);
+        badgeColor = InvoiceThemeColors.successGreen;
         break;
       case PayRunStatus.failed:
-        badgeColor = const Color(0xFFEF4444);
+        badgeColor = InvoiceThemeColors.errorRed;
         break;
     }
 
@@ -279,13 +339,13 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
                 width: 72.w,
                 height: 72.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
+                  color: InvoiceThemeColors.secondaryBackground,
                   borderRadius: BorderRadius.circular(36.r),
                 ),
                 child: Icon(
                   Icons.receipt_long_outlined,
                   size: 32.sp,
-                  color: const Color(0xFF6B7280),
+                  color: InvoiceThemeColors.textGray500,
                 ),
               ),
               SizedBox(height: 16.h),
@@ -301,7 +361,7 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
               Text(
                 'Create your first pay run to process payroll',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   fontSize: 14.sp,
                 ),
               ),
@@ -317,13 +377,13 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
+          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
             ),
           ),
@@ -331,7 +391,7 @@ class _PayRunListScreenState extends State<PayRunListScreen> {
           ElevatedButton(
             onPressed: _onRefresh,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),

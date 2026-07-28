@@ -10,6 +10,9 @@ import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_state.dart';
 import 'package:lazervault/src/features/ai_chats/domain/entities/ai_chat_message_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 
 /// Chatbot-powered transfer screen
 /// Uses AI chat interface for seamless transfer experience
@@ -25,6 +28,11 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isPinMode = false;
+
+  // One-shot guard so a chat-driven PIN prompt auto-opens its native masked
+  // modal exactly once per transaction (never on rebuild / history replay) —
+  // parity with the general chatbot.
+  final Set<String> _autoOpenedPinPrompts = <String>{};
 
   // --- Bottom Navigation Items ---
   int _currentIndex = 0;
@@ -81,6 +89,30 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
       final accessToken = authState.profile.session.accessToken;
       context.read<AIChatCubit>().loadChatHistory(accessToken: accessToken);
     }
+  }
+
+  /// Auto-open the native masked PIN modal for the newest chat-driven prompt,
+  /// exactly once per transaction_id (parity with the general chatbot). The
+  /// ChatPinPromptCard renders with a stable key; this drives its modal.
+  void _maybeAutoOpenPinPrompt(List<ChatMessageEntity> messages) {
+    ChatMessageEntity? latest;
+    for (var i = messages.length - 1; i >= 0; i--) {
+      final m = messages[i];
+      if (!m.isUser && m.pinPrompt != null) {
+        latest = m;
+        break;
+      }
+    }
+    if (latest == null) return;
+    final txId = latest.pinPrompt!['transaction_id']?.toString() ?? '';
+    if (txId.isEmpty || _autoOpenedPinPrompts.contains(txId)) return;
+    // Mark consumed BEFORE the async open so a same-frame rebuild can't
+    // double-fire; a manual re-tap on the card is unaffected.
+    _autoOpenedPinPrompts.add(txId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ChatPinPromptCard.autoOpenFor(txId);
+    });
   }
 
   void _handleSubmitted(String text) async {
@@ -144,6 +176,12 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                     state is AIChatMessageSuccess ||
                     state is AIChatMessageLoading) {
                   _scrollToBottom(isDelayed: true);
+                }
+
+                // Auto-open the native masked PIN modal once per prompt
+                // (parity with the general chatbot).
+                if (state is AIChatMessageSuccess) {
+                  _maybeAutoOpenPinPrompt(state.messages);
                 }
 
                 // Debug logging
@@ -426,6 +464,11 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
         child: Column(
           crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            // Confirmation summary renders on its own — even when the bot sends
+            // NO accompanying text (previously nested under text.isNotEmpty, so
+            // a text-less confirmation showed nothing).
+            if (!isUser && message.confirmationData != null)
+              _buildConfirmationDetails(message.confirmationData!),
             if (message.text.isNotEmpty)
               Container(
                 padding: EdgeInsets.all(16.w),
@@ -441,8 +484,6 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (message.confirmationData != null)
-                      _buildConfirmationDetails(message.confirmationData!),
                     MarkdownBody(
                       data: isUser ? maskIfPin(message.text) : message.text,
                       selectable: !isUser || !isPinText(message.text),
@@ -461,10 +502,53 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                   ],
                 ),
               ),
+            // Structured, tappable + downloadable receipt — parity with the
+            // general chatbot (replaces the old plain markdown table). Single
+            // (ChatReceiptCardV2) or a list for a batch transfer.
+            if (!isUser && message.receiptData != null)
+              ChatReceiptCard(
+                receipt: TransferReceiptData.fromJson(message.receiptData!),
+              ),
+            if (!isUser && message.receiptCard != null)
+              _buildReceiptCardV2(message.receiptCard),
+            // Inline PIN prompt — opens the native MASKED PIN modal (same secure
+            // entry as the general chatbot); on success the single-use token
+            // round-trips to the agent and the transfer continues in-conversation.
+            if (!isUser && message.pinPrompt != null)
+              ChatPinPromptCard(
+                key: ChatPinPromptCard.keyFor(
+                  message.pinPrompt!['transaction_id']?.toString() ?? '',
+                ),
+                payload: message.pinPrompt!,
+                onPinVerified: (verificationToken) async {
+                  final payload = message.pinPrompt!;
+                  final callbackArgsRaw = payload['callback_args'];
+                  await context.read<AIChatCubit>().submitPinVerification(
+                        verificationToken: verificationToken,
+                        callbackIntent:
+                            payload['callback_intent']?.toString() ?? '',
+                        callbackArgs: callbackArgsRaw is Map
+                            ? Map<String, dynamic>.from(callbackArgsRaw)
+                            : const {},
+                      );
+                },
+              ),
           ],
         ),
       ),
     );
+  }
+
+  /// Render the generic ReceiptCard V2 payload (single dict or list) — mirrors
+  /// the general chatbot so single AND batch receipts render here too.
+  Widget _buildReceiptCardV2(dynamic payload) {
+    if (payload is List) {
+      return ChatReceiptCardV2List(payloads: payload);
+    }
+    if (payload is Map) {
+      return ChatReceiptCardV2(payload: Map<String, dynamic>.from(payload));
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildConfirmationDetails(ConfirmationDataEntity data) {

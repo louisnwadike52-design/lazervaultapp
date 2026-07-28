@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../data/services/crowdfund_report_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/utils/emulator_url.dart';
@@ -1181,6 +1182,9 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
           'Raised: ${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}\n\n'
           'Help me reach my goal!',
       subject: crowdfund.title,
+      // iOS requires a non-zero anchor rect (see CrowdfundReportService).
+      sharePositionOrigin: CrowdfundReportService.resolveShareOrigin(
+          CrowdfundReportService.shareOriginFromContext(context)),
     ));
   }
 
@@ -1288,6 +1292,8 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       ShareParams(
         text: 'Support "${crowdfund.title}" on Lazervault: $url',
         subject: crowdfund.title,
+        sharePositionOrigin: CrowdfundReportService.resolveShareOrigin(
+            CrowdfundReportService.shareOriginFromContext(context)),
       ),
     );
   }

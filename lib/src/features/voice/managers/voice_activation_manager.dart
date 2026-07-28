@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
@@ -30,6 +31,30 @@ class VoiceActivationManager {
     } else {
       _enrollmentCache.remove(userId);
     }
+  }
+
+  /// SINGLE consolidation point for "a voiceprint now exists for this user".
+  /// The server voiceprint (Qdrant) is the source of truth, but the login lock
+  /// screen also keeps a device preference (`voice_login_enabled`) for whether
+  /// to OFFER voice at sign-in. Any enrollment — whether started from Settings
+  /// (login) OR from a voice-agent activation — funnels through here so BOTH
+  /// stay in sync: invalidate the status cache AND enable the login preference.
+  /// Result: enroll once (from either place) → voice works for both auth + agents.
+  static Future<void> markVoiceEnrolled(String userId) async {
+    invalidateEnrollmentCache(userId);
+    try {
+      await GetIt.I<SecureStorageService>().setVoiceLoginEnabled(true);
+    } catch (_) {}
+  }
+
+  /// Counterpart to [markVoiceEnrolled]: the voiceprint was deleted/reset, so
+  /// clear the cache and turn the login preference off (no more stale "enabled"
+  /// that would fail at verify).
+  static Future<void> markVoiceUnenrolled(String userId) async {
+    invalidateEnrollmentCache(userId);
+    try {
+      await GetIt.I<SecureStorageService>().setVoiceLoginEnabled(false);
+    } catch (_) {}
   }
 
   /// Check if the voice biometrics service is available
@@ -212,10 +237,13 @@ class VoiceActivationManager {
             userId: userId,
             onEnrollmentComplete: () {
               enrollmentCompleted = true;
-              // Enrollment status just changed — drop the stale cache so the
-              // next isVoiceEnrolled() reflects it immediately.
-              invalidateEnrollmentCache(userId);
-              Navigator.pop(context);
+              // Enrolled via the voice-agent path → sync BOTH the status cache
+              // and the login preference so voice login also works now.
+              markVoiceEnrolled(userId);
+              // NOTE: do NOT pop here. Every carousel completion path already
+              // pops itself (success X / done-false) or clears the stack
+              // (done-true via offAllNamed). Popping again double-pops and
+              // removes the launcher screen underneath.
               if (onEnrollmentSuccess != null) {
                 onEnrollmentSuccess();
               }
@@ -305,8 +333,8 @@ class VoiceActivationManager {
     } catch (e) {
       // Ignore error, continue to enrollment
     }
-    // Enrollment was just removed — invalidate any cached "enrolled" answer.
-    invalidateEnrollmentCache(userId);
+    // Voiceprint removed — clear cache AND the login preference (kept in sync).
+    await markVoiceUnenrolled(userId);
 
     // Navigate to enrollment screen
     if (context.mounted) {

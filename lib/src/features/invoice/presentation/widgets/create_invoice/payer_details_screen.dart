@@ -712,11 +712,13 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
 
   Widget _buildPhoneField(CreateInvoiceCubit cubit) {
     final country = cubit.invoiceCountry;
-    final maxLen = PhoneValidator.getMaxLength(country);
     final hint = PhoneValidator.getHintText(country);
     final phone = cubit.payerPhone;
-    final error = phone.isNotEmpty && country.isNotEmpty
-        ? PhoneValidator.validate(phone, country)
+    // Optional field, any country: don't enforce a per-country max length.
+    // Only flag an implausibly short entry once something is typed.
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final error = digits.isNotEmpty && digits.length < 4
+        ? 'Enter a valid phone number'
         : null;
 
     return Column(
@@ -735,8 +737,9 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(maxLen),
+            // Allow international numbers: digits, leading +, and spaces.
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
+            LengthLimitingTextInputFormatter(20),
           ],
           onChanged: (value) => cubit.updatePayerPhone(value),
           style: GoogleFonts.inter(

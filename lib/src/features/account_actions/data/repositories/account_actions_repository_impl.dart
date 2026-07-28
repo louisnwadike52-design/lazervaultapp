@@ -155,28 +155,29 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     try {
       final token = accessToken ?? await _secureStorage.getAccessToken();
 
-      // Use updateAccount RPC - security settings proto not yet generated
-      final request = accounts_msg.UpdateAccountRequest(
+      // enable_international_payments is the only card-free control that maps
+      // to a REAL, enforced account setting: the send-abroad / exchange gate
+      // persisted server-side as allow_international_transfers. The remaining
+      // (card-only) flags carry no state and are ignored by the backend.
+      final request = accounts_pb.UpdateSecuritySettingsRequest(
         accountId: accountId,
+        enable3dSecure: enable3DSecure,
+        enableContactless: enableContactless,
+        enableOnlinePayments: enableOnlinePayments,
+        enableAtmWithdrawals: enableATMWithdrawals,
+        enableInternationalPayments: enableInternationalPayments,
       );
 
-      final response = await _accountsClient.updateAccount(
+      final response = await _accountsClient.updateSecuritySettings(
         request,
         options: _getCallOptions(token),
       );
 
-      final account = _mapAccountToEntity(response.account);
-      // Apply security settings optimistically until proto supports them
-      return Right(account.copyWith(
-        enable3DSecure: enable3DSecure,
-        enableContactless: enableContactless,
-        enableOnlinePayments: enableOnlinePayments,
-        enableATMWithdrawals: enableATMWithdrawals,
-        enableInternationalPayments: enableInternationalPayments,
-      ));
+      // Response carries the persisted account (incl. allow_international_transfers).
+      return Right(_mapAccountToEntity(response.account));
     } catch (e) {
       return Left(Failure(
-        message: 'Failed to update security settings: ${e.toString()}',
+        message: 'Failed to update account controls: ${e.toString()}',
         statusCode: 500,
       ));
     }
@@ -231,6 +232,35 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     } catch (e) {
       return Left(Failure(
         message: 'Failed to update spending limits: ${e.toString()}',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SpendingUsageEntity>> getSpendingUsage({
+    required String accountId,
+    String? accessToken,
+  }) async {
+    try {
+      final token = accessToken ?? await _secureStorage.getAccessToken();
+      final response = await _accountsClient.getSpendingUsage(
+        accounts_pb.GetSpendingUsageRequest(accountId: accountId),
+        options: _getCallOptions(token),
+      );
+      return Right(SpendingUsageEntity(
+        currency: response.currency,
+        dailyLimit: response.dailyLimit,
+        monthlyLimit: response.monthlyLimit,
+        singleTransactionLimit: response.singleTransactionLimit,
+        dailySpent: response.dailySpent,
+        monthlySpent: response.monthlySpent,
+        remainingDaily: response.remainingDaily,
+        remainingMonthly: response.remainingMonthly,
+      ));
+    } catch (e) {
+      return Left(Failure(
+        message: 'Failed to fetch spending usage: ${e.toString()}',
         statusCode: 500,
       ));
     }
@@ -442,7 +472,8 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
       enableContactless: false,
       enableOnlinePayments: true,
       enableATMWithdrawals: false,
-      enableInternationalPayments: false,
+      enableInternationalPayments: proto.allowInternationalTransfers,
+      allowInternationalTransfers: proto.allowInternationalTransfers,
       createdAt: proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null,
       updatedAt: proto.updatedAt.isNotEmpty ? DateTime.tryParse(proto.updatedAt) : null,
     );

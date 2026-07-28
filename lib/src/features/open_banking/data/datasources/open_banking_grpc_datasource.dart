@@ -575,16 +575,29 @@ class OpenBankingGrpcDataSource {
   // CREDIT SCORE
   // =====================================================
 
-  /// Get credit score for a user
-  Future<CreditScoreEntity> getCreditScore({required String userId}) async {
+  /// Get credit score for a user. When [linkedAccountId] is set the score is
+  /// computed against THAT bank's real transactions (scoped to the bank the
+  /// user picked on the AI Budgeting page), carried as gRPC metadata so no proto
+  /// change is needed.
+  Future<CreditScoreEntity> getCreditScore({
+    required String userId,
+    String? linkedAccountId,
+  }) async {
     try {
       final request = banking_pb.GetCreditScoreRequest(userId: userId);
       final callOptions = await _callOptionsHelper.withAuth();
+      final extra = <String, String>{};
+      if (linkedAccountId != null && linkedAccountId.isNotEmpty) {
+        extra['x-linked-account-id'] = linkedAccountId;
+      }
 
       final response = await _client.getCreditScore(
         request,
         options: callOptions.mergedWith(
-          CallOptions(timeout: const Duration(seconds: 30)),
+          CallOptions(
+            timeout: const Duration(seconds: 30),
+            metadata: extra,
+          ),
         ),
       );
 
@@ -676,18 +689,28 @@ class OpenBankingGrpcDataSource {
     }
   }
 
-  /// Get multi-source credit scores (LazerVault, External, Combined)
+  /// Get multi-source credit scores (LazerVault, External, Combined). When
+  /// [linkedAccountId] is set the External (and Combined) legs are scoped to
+  /// that bank instead of the user's default account.
   Future<MultiSourceCreditScores> getMultiSourceCreditScores({
     required String userId,
+    String? linkedAccountId,
   }) async {
     try {
       final request = banking_pb.GetMultiSourceCreditScoresRequest(userId: userId);
       final callOptions = await _callOptionsHelper.withAuth();
+      final extra = <String, String>{};
+      if (linkedAccountId != null && linkedAccountId.isNotEmpty) {
+        extra['x-linked-account-id'] = linkedAccountId;
+      }
 
       final response = await _client.getMultiSourceCreditScores(
         request,
         options: callOptions.mergedWith(
-          CallOptions(timeout: const Duration(seconds: 45)),
+          CallOptions(
+            timeout: const Duration(seconds: 45),
+            metadata: extra,
+          ),
         ),
       );
 
@@ -1069,6 +1092,8 @@ class OpenBankingGrpcDataSource {
       cancelledAt: proto.hasCancelledAt() ? proto.cancelledAt.toDateTime() : null,
       reference: proto.reference,
       description: proto.description.isNotEmpty ? proto.description : null,
+      switchProcessing: proto.switchProcessing,
+      pendingMethod: proto.pendingMethod,
     );
   }
 

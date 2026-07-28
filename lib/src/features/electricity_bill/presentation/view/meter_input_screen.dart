@@ -139,7 +139,8 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                   _buildHeader(provider),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.all(20.w),
+                      padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w,
+                          20.w + MediaQuery.of(context).viewInsets.bottom),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

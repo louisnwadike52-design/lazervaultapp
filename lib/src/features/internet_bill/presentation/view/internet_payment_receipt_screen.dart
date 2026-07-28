@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,6 +11,7 @@ import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
+import '../../data/datasources/internet_bill_remote_datasource.dart';
 import '../../domain/entities/internet_package_entity.dart';
 import '../../domain/entities/internet_payment_entity.dart';
 import '../../domain/entities/internet_provider_entity.dart';
@@ -30,10 +33,126 @@ class _InternetPaymentReceiptScreenState
   bool _isSharing = false;
   bool _postPurchaseRan = false;
 
+  /// Latest payment snapshot, refreshed via pull-to-refresh + bounded poll so
+  /// a `processing` payment reconciles (processing → completed/failed) without
+  /// the user having to navigate away. Overrides the initial [Get.arguments]
+  /// payload in the build. Mirrors the cable receipt.
+  InternetPaymentEntity? _latestPayment;
+  bool _isRefreshing = false;
+
+  // Bounded auto-poll while the payment is pending (webhook may land after the
+  // pay response). Mirrors the epin receipt's poll.
+  Timer? _pollTimer;
+  int _pollCount = 0;
+  static const _maxPolls = 15;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _runPostPurchaseActions());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _runPostPurchaseActions();
+      _maybeStartPolling();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  InternetPaymentEntity? _argsPayment() {
+    final args = Get.arguments;
+    if (args is! Map<String, dynamic>) return null;
+    return args['payment'] as InternetPaymentEntity?;
+  }
+
+  void _maybeStartPolling() {
+    if (_pollTimer != null) return;
+    final payment = _latestPayment ?? _argsPayment();
+    if (payment == null || !payment.isPending) return;
+    _pollTimer = Timer.periodic(const Duration(seconds: 4), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      _pollCount++;
+      final current = _latestPayment ?? _argsPayment();
+      if (current == null || !current.isPending || _pollCount >= _maxPolls) {
+        t.cancel();
+        _pollTimer = null;
+        return;
+      }
+      _refreshPayment(current);
+    });
+  }
+
+  /// Re-fetches internet payment history and swaps in the row matching the
+  /// current reference/id. Preserves newBalance/renewalDate from the original
+  /// pay response (the history endpoint doesn't surface them). On a flip out
+  /// of pending, stops the poll and re-runs post-purchase actions if completed.
+  Future<void> _refreshPayment(InternetPaymentEntity current) async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      final remote = GetIt.I<InternetBillRemoteDataSource>();
+      final history = await remote.getPaymentHistory(limit: 50);
+      final match = history.where((p) =>
+          (current.reference.isNotEmpty && p.reference == current.reference) ||
+          (current.id.isNotEmpty && p.id == current.id));
+      if (match.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No newer status yet. Try again in a moment.'),
+            backgroundColor: const Color(0xFFFB923C),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(12.w),
+          ),
+        );
+        return;
+      }
+      final fresh = match.first;
+      if (!mounted) return;
+      final wasPending = current.isPending;
+      final updated = InternetPaymentEntity(
+        id: fresh.id,
+        userId: fresh.userId,
+        accountId: fresh.accountId,
+        billType: fresh.billType,
+        providerId: fresh.providerId,
+        reference: fresh.reference,
+        amount: fresh.amount,
+        status: fresh.status,
+        customerNumber: fresh.customerNumber,
+        metadata: fresh.metadata,
+        createdAt: fresh.createdAt,
+        // Preserve fields not returned by the history endpoint.
+        newBalance: current.newBalance,
+        renewalDate: current.renewalDate,
+      );
+      setState(() => _latestPayment = updated);
+      if (wasPending && !updated.isPending) {
+        _pollTimer?.cancel();
+        _pollTimer = null;
+        // Honour save-beneficiary / rollover toggles skipped while pending.
+        if (updated.isCompleted && !_postPurchaseRan) {
+          _runPostPurchaseActions();
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Refresh failed: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(12.w),
+        ),
+      );
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   /// Save beneficiary + enable rollover if the confirm screen asked for
@@ -50,19 +169,28 @@ class _InternetPaymentReceiptScreenState
   /// over leaving partial data in the DB.
   Future<void> _runPostPurchaseActions() async {
     if (_postPurchaseRan) return;
-    _postPurchaseRan = true;
 
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null) return;
-    final payment = args['payment'] as InternetPaymentEntity?;
+    // Prefer the reconciled snapshot so a payment that flipped
+    // processing → completed via pull-to-refresh / poll still honours the
+    // save-beneficiary / rollover toggles.
+    final payment =
+        _latestPayment ?? (args['payment'] as InternetPaymentEntity?);
     if (payment == null) return;
+    // Don't consume the guard while pending — the poll re-invokes this once
+    // the status flips to completed.
     if (!payment.isCompleted) return;
+    _postPurchaseRan = true;
 
     final provider = args['provider'] as InternetProviderEntity?;
     final package = args['package'] as InternetPackageEntity?;
     final accountNumber = args['accountNumber'] as String?;
     final saveBeneficiary = (args['saveBeneficiary'] as bool?) ?? false;
     final nickname = args['beneficiaryNickname'] as String?;
+    // Already-saved account: the QuickBuy resolved the existing beneficiary, so
+    // reuse its id (skip the duplicate save) and still attach any auto-renew.
+    final existingBeneficiaryId = args['existingBeneficiaryId'] as String?;
     final autoRenewEnabled = (args['autoRenewEnabled'] as bool?) ?? false;
     final pref = args['rolloverPref'] as InternetRolloverPreference?;
 
@@ -73,8 +201,8 @@ class _InternetPaymentReceiptScreenState
     final ds = GetIt.I<InternetBeneficiaryRemoteDataSource>();
 
     // --- Save beneficiary (or reuse existing) ---
-    String? beneficiaryId;
-    if (saveBeneficiary) {
+    String? beneficiaryId = existingBeneficiaryId;
+    if (saveBeneficiary && beneficiaryId == null && accountNumber.isNotEmpty) {
       try {
         final saved = await ds.saveBeneficiary(
           accountNumber: accountNumber,
@@ -241,7 +369,10 @@ class _InternetPaymentReceiptScreenState
   @override
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>;
-    final payment = args['payment'] as InternetPaymentEntity;
+    final argsPayment = args['payment'] as InternetPaymentEntity;
+    // Prefer the refreshed snapshot (pull-to-refresh / poll) so async status
+    // updates are reflected without a full navigation reset.
+    final payment = _latestPayment ?? argsPayment;
 
     return PopScope(
       canPop: false,
@@ -275,7 +406,12 @@ class _InternetPaymentReceiptScreenState
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
+              child: RefreshIndicator(
+                onRefresh: () => _refreshPayment(payment),
+                color: const Color(0xFF4E03D0),
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   children: [
@@ -469,6 +605,7 @@ class _InternetPaymentReceiptScreenState
                     SizedBox(height: 32.h),
                   ],
                 ),
+              ),
               ),
             ),
 

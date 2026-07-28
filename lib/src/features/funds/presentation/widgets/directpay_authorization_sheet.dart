@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 /// Which flow is hosting the Mono webview. Drives the sheet chrome (header copy,
 /// cancel-dialog wording, and whether we render our own close button). The
@@ -34,10 +35,6 @@ extension DirectPayFlowChrome on DirectPayFlow {
         return 'Authorize with your bank';
     }
   }
-
-  /// KYC uses Mono's own close control inside the widget, so we don't render a
-  /// second one in our header. Deposit/mandate keep our close affordance.
-  bool get showCloseButton => this != DirectPayFlow.kyc;
 
   String get cancelTitle =>
       this == DirectPayFlow.kyc ? 'Stop verification?' : 'Cancel Payment?';
@@ -292,12 +289,22 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       )
       ..loadRequest(Uri.parse(widget.paymentUrl));
 
-    // Android: grant camera/microphone to the page (Mono Prove does a live
-    // facial/biometric check) and allow media without a user gesture. Without
-    // this, getUserMedia() throws inside the SPA and the React tree unmounts.
+    // Grant camera/microphone to the page (Mono Prove does a live facial/
+    // biometric check via getUserMedia()). Without a page-level grant the SPA
+    // throws and the React tree unmounts — the liveness step fails. The OS-level
+    // permission is requested separately before this sheet opens; this grants
+    // the WEBVIEW's own permission request, which is required on BOTH platforms.
     final platform = _controller.platform;
     if (platform is AndroidWebViewController) {
       platform.setMediaPlaybackRequiresUserGesture(false);
+      platform.setOnPlatformPermissionRequest((request) {
+        request.grant();
+      });
+    } else if (platform is WebKitWebViewController) {
+      // iOS (WKWebView) denies camera/mic to the page unless we explicitly grant
+      // the permission request — omitting this made the liveness check fail on
+      // iOS even with the OS camera permission granted. (Info.plist already
+      // declares NSCamera/NSMicrophoneUsageDescription.)
       platform.setOnPlatformPermissionRequest((request) {
         request.grant();
       });
@@ -720,21 +727,18 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
           // Title row
           Row(
             children: [
-              // Our close control. Hidden for KYC (Mono renders its own X inside
-              // the widget, so a second one is confusing); a matching spacer
-              // keeps the title centered in that case.
-              if (widget.flow.showCloseButton)
-                IconButton(
-                  onPressed: _handleCancel,
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.grey[600],
-                    size: 24.sp,
-                  ),
-                  tooltip: 'Cancel',
-                )
-              else
-                SizedBox(width: 48.w),
+              // Our own close control, always in the header (above the webview),
+              // so the user can always exit — including mid-liveness, where the
+              // provider's own control is hidden behind the camera view.
+              IconButton(
+                onPressed: _handleCancel,
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.grey[600],
+                  size: 24.sp,
+                ),
+                tooltip: 'Cancel',
+              ),
               Expanded(
                 child: Column(
                   children: [

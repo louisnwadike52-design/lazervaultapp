@@ -19,7 +19,7 @@ service InvoiceService {
     };
   }
 
-  // Get all invoices for a user
+  // Get all invoices for a user (sent invoices)
   rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
     option (google.api.http) = {
       get: "/api/v1/invoices/invoices"
@@ -53,6 +53,14 @@ service InvoiceService {
   rpc SendInvoiceReminder(SendInvoiceReminderRequest) returns (SendInvoiceReminderResponse) {
     option (google.api.http) = {
       post: "/api/v1/invoices/sendinvoicereminder"
+      body: "*"
+    };
+  }
+
+  // Send invoice to email
+  rpc SendInvoiceToEmail(SendInvoiceToEmailRequest) returns (SendInvoiceToEmailResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/sendinvoiceemail"
       body: "*"
     };
   }
@@ -127,11 +135,19 @@ service InvoiceService {
     };
   }
 
-  // Send invoice to email
-  rpc SendInvoiceToEmail(SendInvoiceToEmailRequest) returns (SendInvoiceToEmailResponse) {
+  // Pay invoice service fee upfront (required before creating an invoice)
+  rpc PayInvoiceServiceFee(PayInvoiceServiceFeeRequest) returns (PayInvoiceServiceFeeResponse) {
     option (google.api.http) = {
-      post: "/api/v1/invoices/sendinvoiceemail"
+      post: "/api/v1/invoices/payservicefee"
       body: "*"
+    };
+  }
+
+  // Get the invoice service fee for an account (FX-converted into the account's
+  // currency) for display before payment. Read-only, no PIN.
+  rpc GetInvoiceServiceFee(GetInvoiceServiceFeeRequest) returns (GetInvoiceServiceFeeResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invoices/servicefee"
     };
   }
 }
@@ -168,16 +184,20 @@ message Invoice {
   string recipient_logo_url = 27;       // Cloud storage URL for recipient logo
 
   // Creator/Tagger information (for incoming invoices - who created/tagged you)
-  string creator_first_name = 28;
-  string creator_last_name = 29;
-  string creator_username = 30;
+  string creator_first_name = 28;       // Creator's first name
+  string creator_last_name = 29;        // Creator's last name
+  string creator_username = 30;         // Creator's username
 
-  // Structured party blocks (canonical). sender = the issuer/creator
-  // ("Invoice From"); receiver = the customer who pays ("Bill To").
+  // Structured party blocks (canonical). sender = the issuer/creator ("Invoice
+  // From"); receiver = the customer who pays ("Bill To"). These carry the full
+  // business details collected at creation so the details page reflects exactly
+  // what was entered. The legacy flat fields above stay populated for
+  // back-compat (recipient_* / payer_* / *_logo_url mirror the receiver/sender).
   InvoiceParty sender = 31;
   InvoiceParty receiver = 32;
 
-  // Document type ("invoice" | "request" | "quote") and a distinct title.
+  // Document type ("invoice" | "request" | "quote") and a distinct title, so the
+  // details page reflects exactly what was chosen at creation (not defaults).
   string invoice_type = 33;
   string title = 34;
 }
@@ -235,16 +255,6 @@ message InvoiceStatistics {
   double collection_rate = 11;          // Percentage of paid vs total sent
 }
 
-// Inline pagination info for invoice responses
-message InvoicePaginationInfo {
-  int32 current_page = 1;
-  int32 page_size = 2;
-  int32 total_count = 3;
-  int32 total_pages = 4;
-  bool has_next = 5;
-  bool has_previous = 6;
-}
-
 // ===== CREATE INVOICE =====
 // NOTE: user_id extracted from JWT token, not from request
 message CreateInvoiceRequest {
@@ -264,19 +274,22 @@ message CreateInvoiceRequest {
   string currency = 14;                 // Target currency for the invoice (e.g., NGN, USD, GBP)
   string payer_logo_url = 15;           // Cloud storage URL for payer logo
   string recipient_logo_url = 16;       // Cloud storage URL for recipient logo
-  string service_fee_ref = 17;          // Optional: pre-paid service fee reference
+  string service_fee_ref = 17;          // Optional: reference from pre-paid service fee (if omitted, invoice created as draft)
   // Structured party blocks (canonical). sender = issuer/creator ("Invoice
-  // From"); receiver = customer ("Bill To"). Source of truth when set.
+  // From"); receiver = customer ("Bill To"). When set, these are the source of
+  // truth; the legacy flat fields above are derived from them for back-compat.
   InvoiceParty sender = 18;
   InvoiceParty receiver = 19;
   string invoice_type = 20;             // "invoice" | "request" | "quote"
-  string title = 21;                    // Distinct invoice title
-  // Optional CUSTOM split: per-tagged-user amounts. Unspecified tagged users
-  // split the remaining total equally; omit entirely for a full equal split.
+  string title = 21;                    // Distinct invoice title (separate from description)
+  // Optional CUSTOM split: per-tagged-user amounts. Tagged users without an
+  // entry (or amount 0) split the REMAINING total equally. When omitted entirely
+  // the whole invoice is split equally among tagged_user_ids (default).
   repeated TaggedShare tagged_shares = 22;
 }
 
-// TaggedShare assigns a specific amount of the invoice total to one tagged user.
+// TaggedShare assigns a specific amount of the invoice total to one tagged user
+// (custom/unequal split).
 message TaggedShare {
   string user_id = 1;
   double amount = 2;
@@ -285,6 +298,16 @@ message TaggedShare {
 message CreateInvoiceResponse {
   Invoice invoice = 1;
   string message = 2;
+}
+
+// Pagination metadata
+message PaginationInfo {
+  int32 current_page = 1;
+  int32 page_size = 2;
+  int32 total_count = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
 }
 
 // ===== GET INVOICES =====
@@ -305,7 +328,7 @@ message GetInvoicesResponse {
   int32 total = 2;
   double total_amount_pending = 3;
   double total_amount_paid = 4;
-  InvoicePaginationInfo pagination = 5;
+  PaginationInfo pagination = 5;
 }
 
 // ===== GET INVOICE =====
@@ -359,6 +382,19 @@ message SendInvoiceReminderResponse {
   string message = 2;
 }
 
+// ===== SEND INVOICE TO EMAIL =====
+// NOTE: user_id extracted from JWT token, not from request
+message SendInvoiceToEmailRequest {
+  string invoice_id = 1;
+  string email = 2;                     // Email address to send invoice to
+  string locale = 3;                    // Optional locale for email template (e.g., "en-US")
+}
+
+message SendInvoiceToEmailResponse {
+  bool sent = 1;
+  string message = 2;
+}
+
 // ===== UPDATE INVOICE STATUS =====
 // NOTE: user_id extracted from JWT token, not from request
 message UpdateInvoiceStatusRequest {
@@ -398,7 +434,7 @@ message GetInvoicesTaggedToUserResponse {
   int32 total = 2;
   double total_amount_pending = 3;
   double total_amount_paid = 4;
-  InvoicePaginationInfo pagination = 5;
+  PaginationInfo pagination = 5;
 }
 
 // ===== GET SENT INVOICES =====
@@ -415,7 +451,7 @@ message GetSentInvoicesResponse {
   int32 total = 2;
   double total_amount_pending = 3;
   double total_amount_paid = 4;
-  InvoicePaginationInfo pagination = 5;
+  PaginationInfo pagination = 5;
 }
 
 // ===== UPDATE INVOICE =====
@@ -485,15 +521,32 @@ message UploadInvoiceImageResponse {
   string image_url = 1;
 }
 
-// ===== SEND INVOICE TO EMAIL =====
-// NOTE: user_id extracted from JWT token, not from request
-message SendInvoiceToEmailRequest {
-  string invoice_id = 1;
-  string email = 2;
-  string locale = 3;
+// ===== PAY INVOICE SERVICE FEE =====
+// Pay the service fee upfront before creating an invoice
+message PayInvoiceServiceFeeRequest {
+  string account_id = 1;                // Account to debit service fee from
+  string pin = 2;                       // Security PIN
+  string idempotency_key = 3;           // Idempotency key for deduplication
+  string verification_token = 4;        // PIN verification token
+  string transaction_id = 5;            // Transaction ID from PIN verification
 }
 
-message SendInvoiceToEmailResponse {
-  bool sent = 1;
-  string message = 2;
+message PayInvoiceServiceFeeResponse {
+  string service_fee_ref = 1;           // Reference to pass to CreateInvoice
+  double new_balance = 2;               // New account balance after fee deduction
+  double fee_amount = 3;                // Fee amount charged (in major units)
+  string message = 4;
+}
+
+// ===== GET INVOICE SERVICE FEE (quote) =====
+// Returns the service fee in the account's currency (FX-converted from the
+// admin-configured base fee) for display before payment.
+message GetInvoiceServiceFeeRequest {
+  string account_id = 1;                // Account whose currency the fee is quoted in
+}
+
+message GetInvoiceServiceFeeResponse {
+  double fee_amount = 1;                // Fee in major units of `currency`
+  string currency = 2;                  // Currency the fee is charged in (account currency)
+  bool enabled = 3;                     // False when admin has disabled the fee
 }

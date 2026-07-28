@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../cubit/payroll_cubit.dart';
-import '../cubit/payroll_state.dart';
 import '../../domain/entities/employee_entity.dart';
+import '../../domain/repositories/payroll_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 
 class EmployeeListScreen extends StatefulWidget {
   final String? initialSearch;
@@ -16,9 +17,16 @@ class EmployeeListScreen extends StatefulWidget {
   State<EmployeeListScreen> createState() => _EmployeeListScreenState();
 }
 
-class _EmployeeListScreenState extends State<EmployeeListScreen> {
+class _EmployeeListScreenState extends State<EmployeeListScreen>
+    with InfiniteScrollMixin<EmployeeListScreen> {
+  static const int _limit = 20;
+
   final TextEditingController _searchController = TextEditingController();
   String? _searchQuery;
+
+  List<EmployeeEntity> _items = [];
+  bool _loading = false;
+  String? _error;
 
   @override
   void initState() {
@@ -27,30 +35,72 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       _searchController.text = widget.initialSearch!;
       _searchQuery = widget.initialSearch;
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PayrollCubit>().listEmployees(search: _searchQuery);
-    });
+    attachInfiniteScroll();
+    _loadFirst();
   }
 
   @override
   void dispose() {
+    detachInfiniteScroll();
     _searchController.dispose();
     super.dispose();
   }
 
+  Future<void> _loadFirst() async {
+    resetPagination();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await serviceLocator<PayrollRepository>().listEmployees(
+        page: 1,
+        limit: _limit,
+        search: _searchQuery,
+      );
+      if (!mounted) return;
+      setState(() {
+        _items = res.employees;
+        _loading = false;
+        hasMore = res.currentPage < res.totalPages;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() => runLoadMore(() async {
+        final res = await serviceLocator<PayrollRepository>().listEmployees(
+          page: page + 1,
+          limit: _limit,
+          search: _searchQuery,
+        );
+        if (!mounted) return;
+        setState(() {
+          _items.addAll(res.employees);
+          page += 1;
+          hasMore = page < res.totalPages;
+        });
+      });
+
   void _onSearchChanged(String query) {
     setState(() => _searchQuery = query.isEmpty ? null : query);
-    context.read<PayrollCubit>().listEmployees(search: _searchQuery);
+    _loadFirst();
   }
 
   Future<void> _onRefresh() async {
-    context.read<PayrollCubit>().listEmployees(search: _searchQuery);
+    await _loadFirst();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -74,42 +124,47 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             _buildSearchBar(),
             SizedBox(height: 8.h),
             Expanded(
-              child: BlocBuilder<PayrollCubit, PayrollState>(
-                builder: (context, state) {
-                  if (state is PayrollLoading) {
+              child: Builder(
+                builder: (context) {
+                  if (_loading) {
                     return const Center(
                       child: LazerVaultLoader.small(),
                     );
                   }
 
-                  if (state is EmployeesLoaded) {
-                    final employees = state.employees;
-                    if (employees.isEmpty) {
-                      return _buildEmpty();
-                    }
-                    return RefreshIndicator(
-                      onRefresh: _onRefresh,
-                      color: const Color(0xFF3B82F6),
-                      backgroundColor: const Color(0xFF1F1F1F),
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 4.h,
-                        ),
-                        itemCount: employees.length,
-                        itemBuilder: (context, index) {
-                          return _buildEmployeeItem(employees[index]);
-                        },
+                  if (_error != null) {
+                    return _buildError(_error!);
+                  }
+
+                  if (_items.isEmpty) {
+                    return _buildEmpty();
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    color: InvoiceThemeColors.primaryPurpleLight,
+                    backgroundColor: InvoiceThemeColors.secondaryBackground,
+                    child: ListView.builder(
+                      controller: scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 4.h,
                       ),
-                    );
-                  }
-
-                  if (state is PayrollError) {
-                    return _buildError(state.message);
-                  }
-
-                  return const SizedBox.shrink();
+                      itemCount: _items.length + (isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index >= _items.length) {
+                          return Padding(
+                            padding: EdgeInsets.all(16.w),
+                            child: const Center(
+                              child: LazerVaultLoader.small(),
+                            ),
+                          );
+                        }
+                        return _buildEmployeeItem(_items[index]);
+                      },
+                    ),
+                  );
                 },
               ),
             ),
@@ -132,19 +187,19 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
         decoration: InputDecoration(
           hintText: 'Search employees...',
           hintStyle: GoogleFonts.inter(
-            color: const Color(0xFF6B7280),
+            color: InvoiceThemeColors.textGray500,
             fontSize: 15.sp,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             size: 20.sp,
           ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: Icon(
                     Icons.clear,
-                    color: const Color(0xFF9CA3AF),
+                    color: InvoiceThemeColors.textGray400,
                     size: 18.sp,
                   ),
                   onPressed: () {
@@ -154,7 +209,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                 )
               : null,
           filled: true,
-          fillColor: const Color(0xFF1F1F1F),
+          fillColor: InvoiceThemeColors.secondaryBackground,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
@@ -173,7 +228,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
@@ -181,13 +236,13 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             CircleAvatar(
               radius: 24.r,
               backgroundColor:
-                  const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
               child: Text(
                 employee.fullName.isNotEmpty
                     ? employee.fullName[0].toUpperCase()
                     : '?',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurpleLight,
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -212,7 +267,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                     Text(
                       '${employee.department}${employee.department.isNotEmpty && employee.jobTitle.isNotEmpty ? ' - ' : ''}${employee.jobTitle}',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
+                        color: InvoiceThemeColors.textGray400,
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w400,
                       ),
@@ -225,7 +280,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                       Text(
                         employee.formattedPayRate,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF10B981),
+                          color: InvoiceThemeColors.successGreen,
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -234,13 +289,15 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                       Text(
                         '/ ${employee.payFrequencyDisplay}',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF6B7280),
+                          color: InvoiceThemeColors.textGray500,
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 6.h),
+                  _buildPayoutChip(employee),
                 ],
               ),
             ),
@@ -252,7 +309,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                 Text(
                   employee.employmentTypeDisplay,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
+                    color: InvoiceThemeColors.textGray500,
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -265,17 +322,53 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     );
   }
 
+  Widget _buildPayoutChip(EmployeeEntity employee) {
+    final isInternal = employee.isInternalPayout;
+    final color = isInternal
+        ? InvoiceThemeColors.primaryPurpleLight
+        : InvoiceThemeColors.textGray300;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6.r),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isInternal
+                ? Icons.account_balance_wallet_outlined
+                : Icons.account_balance_outlined,
+            color: color,
+            size: 12.sp,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            employee.payoutDisplay,
+            style: GoogleFonts.inter(
+              color: color,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatusChip(EmployeeEntity employee) {
     Color color;
     switch (employee.status) {
       case EmployeeStatus.active:
-        color = const Color(0xFF10B981);
+        color = InvoiceThemeColors.successGreen;
         break;
       case EmployeeStatus.inactive:
-        color = const Color(0xFFFB923C);
+        color = InvoiceThemeColors.warningOrange;
         break;
       case EmployeeStatus.terminated:
-        color = const Color(0xFFEF4444);
+        color = InvoiceThemeColors.errorRed;
         break;
     }
 
@@ -316,7 +409,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               Icon(
                 Icons.search_off,
                 size: 48.sp,
-                color: const Color(0xFF6B7280),
+                color: InvoiceThemeColors.textGray500,
               ),
               SizedBox(height: 16.h),
               Text(
@@ -333,7 +426,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                     ? 'No employees match your search'
                     : 'Add employees to get started',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   fontSize: 14.sp,
                 ),
               ),
@@ -349,13 +442,13 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
+          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
             ),
           ),
@@ -363,7 +456,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           ElevatedButton(
             onPressed: _onRefresh,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -397,7 +490,7 @@ class _EmployeeDetailsSheet extends StatelessWidget {
     return Container(
       constraints: BoxConstraints(maxHeight: 0.85.sh),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       child: Column(
@@ -409,7 +502,7 @@ class _EmployeeDetailsSheet extends StatelessWidget {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF3D3D3D),
+                color: InvoiceThemeColors.tertiaryBackground,
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -418,13 +511,13 @@ class _EmployeeDetailsSheet extends StatelessWidget {
           CircleAvatar(
             radius: 32.r,
             backgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
             child: Text(
               employee.fullName.isNotEmpty
                   ? employee.fullName[0].toUpperCase()
                   : '?',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurpleLight,
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -443,12 +536,12 @@ class _EmployeeDetailsSheet extends StatelessWidget {
           Text(
             '${employee.department}${employee.department.isNotEmpty && employee.jobTitle.isNotEmpty ? ' - ' : ''}${employee.jobTitle}',
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
             ),
           ),
           SizedBox(height: 20.h),
-          Divider(color: const Color(0xFF2D2D2D), height: 1.h),
+          Divider(color: InvoiceThemeColors.borderColor, height: 1.h),
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20.w),
@@ -462,8 +555,13 @@ class _EmployeeDetailsSheet extends StatelessWidget {
                       'Employment Type', employee.employmentTypeDisplay),
                   _buildDetailRow('Pay Rate', employee.formattedPayRate),
                   _buildDetailRow('Pay Frequency', employee.payFrequencyDisplay),
-                  _buildDetailRow('Bank', employee.bankName),
-                  _buildDetailRow('Account No.', employee.bankAccountNumber),
+                  _buildDetailRow('Payout',
+                      employee.isInternalPayout ? 'Lazervault wallet' : 'Bank transfer'),
+                  if (!employee.isInternalPayout) ...[
+                    _buildDetailRow('Bank', employee.bankName),
+                    _buildDetailRow('Account No.', employee.bankAccountNumber),
+                    _buildDetailRow('Account Name', employee.bankAccountName),
+                  ],
                   if (employee.startDate != null)
                     _buildDetailRow('Start Date', employee.startDate!),
                 ],
@@ -485,7 +583,7 @@ class _EmployeeDetailsSheet extends StatelessWidget {
           Text(
             label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),

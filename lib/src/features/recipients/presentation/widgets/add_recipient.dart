@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,9 +7,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/models/device_contact.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/core/widgets/bank_picker_sheet.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
@@ -24,6 +26,7 @@ import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
+import 'package:lazervault/src/features/recipients/domain/entities/account_suggestion.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/account_confirmation_bottom_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
@@ -37,8 +40,14 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
 
 enum AddRecipientMethod { bankDetails, lazervaultUser, contacts }
+
+/// Brand purple used across the add-recipient surface (matches SelectRecipients).
+const Color _kBrandPurple = Color(0xFF4E03D0);
 
 class AddRecipient extends StatefulWidget {
   /// When true, renders WITHOUT its own Scaffold + purple header so it can be
@@ -46,7 +55,7 @@ class AddRecipient extends StatefulWidget {
   /// SelectRecipients). The parent provides the chrome/theme.
   final bool embedded;
 
-  /// When provided, a chosen recipient (bank / LazerVault user / contact) is
+  /// When provided, a chosen recipient (bank / Lazervault user / contact) is
   /// handed back via this callback INSTEAD of navigating to initiateSendFunds.
   /// The short flow uses this to continue with amount → PIN → receipt on the
   /// same screen. All add UI + confirmation sheets are reused unchanged.
@@ -56,11 +65,18 @@ class AddRecipient extends StatefulWidget {
   /// screen can filter its saved-recipients list to match (Bank vs LazerVault).
   final void Function(AddRecipientMethod method)? onMethodChanged;
 
+  /// When non-null, a scan affordance appears at the RIGHT edge of the
+  /// account-number field; tapping it runs the shared bank-scan → send
+  /// pipeline (live camera → OCR → verify → route). Null ⇒ no scan button, so
+  /// any caller that doesn't wire the pipeline (e.g. batch) is unaffected.
+  final VoidCallback? onScanAccount;
+
   const AddRecipient({
     super.key,
     this.embedded = false,
     this.onRecipientSelected,
     this.onMethodChanged,
+    this.onScanAccount,
   });
 
   @override
@@ -80,14 +96,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   final TextEditingController _accountController = TextEditingController();
   final TextEditingController _sortCodeController = TextEditingController();
   final TextEditingController _bankController = TextEditingController(text: "Select Bank");
-  final TextEditingController _bankSearchController = TextEditingController();
   final bool _isFavorite = false;
-  String _bankSearchQuery = '';
-  // Debounce timer for the bank-picker search field. We coalesce keystrokes
-  // into a single filter pass after the user pauses for ~250ms so we don't
-  // O(n) every list rebuild on every key (typical industry-standard search
-  // pacing — feels instant, avoids needless work on long bank lists).
-  Timer? _bankSearchDebounce;
 
   // Username Form Controller
   final TextEditingController _usernameController = TextEditingController();
@@ -100,10 +109,45 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   bool _isVerifying = false;
   String? _selectedBankCode;
 
-  // Banks list - fetched dynamically from backend with local fallback
-  List<Map<String, String>> _banksList = [];
-  bool _isLoadingBanks = false;
-  String? _banksError;
+  // Account-number-first bank suggestions. As the user types a full 10-digit
+  // account number, the backend runs a NUBAN check-digit pass + provider
+  // name-resolve and returns the matching bank(s) with the holder name already
+  // resolved, so tapping a suggestion prefills the bank and skips re-verifying.
+  List<AccountSuggestion> _bankSuggestions = [];
+  bool _loadingSuggestions = false;
+  Timer? _suggestDebounce;
+
+  // Anchored-popup ("tooltip") plumbing for the bank predictions. The overlay
+  // floats just below the account-number field (autocomplete-style) instead of
+  // pushing the Bank field down, and follows the field on scroll via LayerLink.
+  final LayerLink _accountFieldLink = LayerLink();
+  final OverlayPortalController _suggestOverlay = OverlayPortalController();
+
+  /// Show/hide the suggestion tooltip to match current state: visible only on
+  /// the Bank tab, while resolving or when there are matches, and before a bank
+  /// is verified. Off-tab it actively HIDES (rather than no-oping) so it can
+  /// never linger over — or re-appear stale on return to — another tab.
+  void _syncSuggestOverlay() {
+    final shouldShow = _selectedMethod == AddRecipientMethod.bankDetails &&
+        _verificationResult == null &&
+        (_loadingSuggestions || _bankSuggestions.isNotEmpty);
+    if (shouldShow) {
+      if (!_suggestOverlay.isShowing) _suggestOverlay.show();
+    } else {
+      if (_suggestOverlay.isShowing) _suggestOverlay.hide();
+    }
+  }
+
+  /// Single entry point for switching recipient-method tabs. Re-syncs the
+  /// prediction tooltip on the next frame (after the OverlayPortal for the new
+  /// tab has attached/detached) so it never leaks across tabs.
+  void _selectMethod(AddRecipientMethod method) {
+    if (_selectedMethod == method) return;
+    setState(() => _selectedMethod = method);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncSuggestOverlay();
+    });
+  }
 
   // Current country for bank selection (from locale)
   String _currentCountry = 'NG';
@@ -133,35 +177,21 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     } catch (e) {
       _currentCountry = 'NG'; // Default to Nigeria
     }
-    _loadBanks();
-  }
-
-  void _loadBanks() {
-    // Show the static list immediately for first paint, then refresh from the
-    // dynamic (Flutterwave-backed) source so codes stay valid for transfers.
-    setState(() {
-      _banksList = BanksData.getBanksForCountry(_currentCountry);
-      _isLoadingBanks = false;
-      _banksError = null;
-    });
-
-    serviceLocator<BankRepository>().getBanks(_currentCountry).then((banks) {
-      if (mounted && banks.isNotEmpty) {
-        setState(() => _banksList = banks);
-      }
-    }).catchError((_) {/* keep static fallback */});
+    // Warm the shared bank cache so the BankPickerSheet (used by both the bank
+    // and contact-bank pickers) opens instantly with a fresh, transfer-valid
+    // (Flutterwave-backed) list. The picker itself handles load/empty/error.
+    serviceLocator<BankRepository>().warmUp(_currentCountry);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _onResumeContactPermissionCheck = null;
+    _suggestDebounce?.cancel();
     _nameController.dispose();
     _accountController.dispose();
     _sortCodeController.dispose();
     _bankController.dispose();
-    _bankSearchController.dispose();
-    _bankSearchDebounce?.cancel();
     _usernameController.dispose();
     super.dispose();
   }
@@ -184,6 +214,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
             verificationStatus: verificationState.verificationStatus,
           );
 
+          _syncSuggestOverlay(); // a verified result hides the prediction tooltip
           // Show confirmation bottomsheet
           _showAccountConfirmationBottomSheet(_verificationResult!);
         } else if (verificationState is AccountVerificationFailure) {
@@ -312,7 +343,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                           Expanded(
                             child: _buildMethodCard(
                               method: AddRecipientMethod.bankDetails,
-                              icon: Icons.account_balance_outlined,
+                              icon: Icons.account_balance_rounded,
                               title: 'Bank Details',
                               isSelected: _selectedMethod == AddRecipientMethod.bankDetails,
                             ),
@@ -321,7 +352,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                           Expanded(
                             child: _buildMethodCard(
                               method: AddRecipientMethod.lazervaultUser,
-                              icon: Icons.person_search_outlined,
+                              icon: Icons.person_rounded,
                               title: 'Lazervault user',
                               isSelected: _selectedMethod == AddRecipientMethod.lazervaultUser,
                             ),
@@ -330,7 +361,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                               Expanded(
                             child: _buildMethodCard(
                               method: AddRecipientMethod.contacts,
-                              icon: Icons.contacts_outlined,
+                              icon: Icons.contacts_rounded,
                               title: 'Contacts',
                               isSelected: _selectedMethod == AddRecipientMethod.contacts,
                             ),
@@ -354,7 +385,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                     Expanded(
                       child: SingleChildScrollView(
                         padding: EdgeInsets.all(24.w),
-                        child: _buildSelectedMethodContent(),
+                        child: _swipeableMethodContent(),
                       ),
                     ),
                     
@@ -380,6 +411,42 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     );
   }
 
+  /// Small illustration-style tile (rounded square, theme-tinted) used as the
+  /// leading glyph for the recipient-method tabs AND the bank/account fields,
+  /// giving them the same "quick services" colored-illustration language.
+  ///
+  /// [selected]/[onDark] pick the palette so the tile always contrasts with
+  /// whatever surface it sits on:
+  ///  - light surface, unselected → soft purple tile + purple glyph
+  ///  - light surface, selected   → onDark handles it (white tile + purple glyph)
+  ///  - purple surface (onDark)   → selected: white tile + purple glyph;
+  ///                                unselected: translucent-white tile + white glyph
+  Widget _methodGlyphTile(
+    IconData icon, {
+    required bool selected,
+    bool onDark = false,
+    double size = 34,
+  }) {
+    final Color bg;
+    final Color fg;
+    if (onDark) {
+      bg = selected ? Colors.white : Colors.white.withValues(alpha: 0.18);
+      fg = selected ? _kBrandPurple : Colors.white;
+    } else {
+      bg = selected ? _kBrandPurple : _kBrandPurple.withValues(alpha: 0.10);
+      fg = selected ? Colors.white : _kBrandPurple;
+    }
+    return Container(
+      width: size.w,
+      height: size.w,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Icon(icon, color: fg, size: (size * 0.55).sp),
+    );
+  }
+
   Widget _buildMethodCard({
     required AddRecipientMethod method,
     required IconData icon,
@@ -387,42 +454,38 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     required bool isSelected,
   }) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedMethod = method;
-        });
-      },
+      onTap: () => _selectMethod(method),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
         decoration: BoxDecoration(
-          color: isSelected 
-            ? Colors.white.withValues(alpha: 0.2) 
+          color: isSelected
+            ? Colors.white.withValues(alpha: 0.2)
             : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected 
-              ? Colors.white.withValues(alpha: 0.4) 
+            color: isSelected
+              ? Colors.white.withValues(alpha: 0.4)
               : Colors.white.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        // Icon beside the label (was stacked above) so the cards are shorter.
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
+            _methodGlyphTile(icon, selected: isSelected, onDark: true, size: 28),
+            SizedBox(width: 8.w),
+            Flexible(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -441,6 +504,38 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     }
   }
 
+  /// Methods in on-screen tab order for the current flow — horizontal swipes
+  /// over the form area move between them (matching the chips above it).
+  List<AddRecipientMethod> get _methodSwipeOrder => widget.embedded
+      ? const [
+          AddRecipientMethod.bankDetails,
+          AddRecipientMethod.lazervaultUser,
+        ]
+      : const [
+          AddRecipientMethod.bankDetails,
+          AddRecipientMethod.lazervaultUser,
+          AddRecipientMethod.contacts,
+        ];
+
+  void _handleMethodSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 200) return; // ignore slow/ambiguous drags
+    final order = _methodSwipeOrder;
+    final idx = order.indexOf(_selectedMethod);
+    if (idx < 0) return;
+    final next = velocity < 0 ? idx + 1 : idx - 1; // swipe left → next tab
+    if (next < 0 || next >= order.length) return;
+    _selectMethod(order[next]);
+  }
+
+  /// The selected form, swipeable horizontally between the Bank /
+  /// Lazervault-user (/ Contacts) tabs.
+  Widget _swipeableMethodContent() => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragEnd: _handleMethodSwipe,
+        child: _buildSelectedMethodContent(),
+      );
+
   // ── Embedded (short-flow) rendering ───────────────────────────────────────
   // Reuses the exact forms + action button, just without the Scaffold/purple
   // header, and with a white-surface method selector that matches the
@@ -451,7 +546,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       children: [
         _buildEmbeddedMethodSelector(),
         SizedBox(height: 16.h),
-        _buildSelectedMethodContent(),
+        _swipeableMethodContent(),
         // Only the Bank method needs an explicit "Verify Recipient" button.
         // The LazerVault-user form's search field already opens the find-user
         // sheet on tap, so a separate action button there is redundant.
@@ -469,36 +564,35 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       return Expanded(
         child: GestureDetector(
           onTap: () {
-            setState(() => _selectedMethod = method);
+            _selectMethod(method);
             widget.onMethodChanged?.call(method);
           },
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 6.w),
+            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
             decoration: BoxDecoration(
-              color: selected
-                  ? const Color.fromARGB(255, 78, 3, 208)
-                  : Colors.grey[100],
+              color: selected ? _kBrandPurple : Colors.grey[100],
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: selected
-                    ? const Color.fromARGB(255, 78, 3, 208)
-                    : Colors.grey[200]!,
+                color: selected ? _kBrandPurple : Colors.grey[200]!,
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            // Illustration tile beside the label (was stacked above) so the
+            // tab is a single compact row instead of a tall stack.
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon,
-                    color: selected ? Colors.white : Colors.grey[600],
-                    size: 20.sp),
-                SizedBox(height: 4.h),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: selected ? Colors.white : Colors.grey[700],
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w500,
+                _methodGlyphTile(icon, selected: selected, onDark: selected, size: 30),
+                SizedBox(width: 8.w),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: selected ? Colors.white : Colors.grey[800],
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -508,15 +602,15 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       );
     }
 
-    // Short flow: only Bank or LazerVault user. "Contacts" isn't a top-level
+    // Short flow: only Bank or Lazervault user. "Contacts" isn't a top-level
     // method here — it lives as a "Find from contacts" CTA inside the User form
-    // (contacts are used to locate a LazerVault user).
+    // (contacts are used to locate a Lazervault user).
     return Row(
       children: [
-        chip(AddRecipientMethod.bankDetails, Icons.account_balance_wallet_outlined,
+        chip(AddRecipientMethod.bankDetails, Icons.account_balance_rounded,
             'Bank'),
         SizedBox(width: 8.w),
-        chip(AddRecipientMethod.lazervaultUser, Icons.person_search_outlined,
+        chip(AddRecipientMethod.lazervaultUser, Icons.person_rounded,
             'Lazervault user'),
       ],
     );
@@ -539,18 +633,123 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
           ),
           SizedBox(height: 8.h),
         ],
-        Text(
-          'Enter account number and we\'ll verify the account holder name',
-          style: TextStyle(
-            // A bit more visible than the old grey[600] caption, but not bold.
-            color: Colors.grey[800],
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w400,
+        // Keep the helper on a single line — FittedBox scales it down on narrow
+        // screens instead of wrapping to two lines.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Enter the account number — we\'ll suggest the bank automatically',
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              // A bit more visible than the old grey[600] caption, but not bold.
+              color: Colors.grey[800],
+              fontSize: 12.5.sp,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
         SizedBox(height: 24.h),
 
-        // Bank Selection
+        // Account Number Field FIRST (10 digits for Nigerian accounts). Typing a
+        // full account number drives the bank auto-suggestions below.
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Account Number',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            // Field + scan button sit side-by-side. The scan affordance is now
+            // its OWN button beside the field (not crammed into the field's
+            // suffix), so it reads as a distinct action with breathing room.
+            // IntrinsicHeight + stretch makes the button match the field height
+            // exactly regardless of screen density.
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // The field is the anchor (LayerLink target) for the bank-
+                  // prediction tooltip, which floats just below it via
+                  // OverlayPortal so it never pushes the Bank field down.
+                  Expanded(
+                    child: CompositedTransformTarget(
+                      link: _accountFieldLink,
+                      child: OverlayPortal(
+                        controller: _suggestOverlay,
+                        overlayChildBuilder: _buildSuggestionOverlay,
+                        child: TextField(
+                          controller: _accountController,
+                          keyboardType: TextInputType.number,
+                          maxLength: 10,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            hintText: 'Enter 10-digit account number',
+                            hintStyle: TextStyle(color: Colors.grey[500]),
+                            prefixIcon: Icon(
+                                Icons.account_balance_wallet_rounded,
+                                color: _kBrandPurple),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide(color: Colors.grey[200]!),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide(color: Colors.grey[200]!),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide(
+                                color: Color.fromARGB(255, 78, 3, 208),
+                                width: 2,
+                              ),
+                            ),
+                            counterText: '',
+                            // Only the completion check lives inside the field
+                            // now; the scan action moved to its own button.
+                            suffixIcon: _accountController.text.length == 10
+                                ? Padding(
+                                    padding: EdgeInsets.only(right: 8.w),
+                                    child: Icon(Icons.check_circle,
+                                        color: Colors.green),
+                                  )
+                                : null,
+                            suffixIconConstraints:
+                                BoxConstraints(minWidth: 40.w, minHeight: 40.w),
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          onChanged: _onAccountNumberChanged,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Standalone "Scan Account" button beside the field.
+                  if (widget.onScanAccount != null) ...[
+                    SizedBox(width: 12.w),
+                    _buildScanAccountButton(),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Predictions now render as an anchored tooltip overlay (see
+        // _buildSuggestionOverlay), so nothing occupies layout here — the Bank
+        // field sits directly below with only a small gap.
+        SizedBox(height: 10.h),
+
+        // Bank Selection SECOND — pre-filled by tapping a suggestion, or picked
+        // manually here as the fallback when nothing auto-suggests.
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -590,20 +789,12 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 ),
                 child: Row(
                   children: [
-                    // Bank Logo or Default Icon
+                    // Bank Logo or themed illustration tile (matches the tabs).
                     if (_bankController.text == "Select Bank")
-                      Container(
-                        width: 44.w,
-                        height: 44.h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Icon(
-                          Icons.account_balance,
-                          color: Colors.grey[500],
-                          size: 22.sp,
-                        ),
+                      _methodGlyphTile(
+                        Icons.account_balance_rounded,
+                        selected: false,
+                        size: 40,
                       )
                     else
                       BankLogo(
@@ -666,63 +857,6 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-
-        // Account Number Field (10 digits for Nigerian accounts)
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Account Number',
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            TextField(
-              controller: _accountController,
-              keyboardType: TextInputType.number,
-              maxLength: 10,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[50],
-                hintText: 'Enter 10-digit account number',
-                hintStyle: TextStyle(color: Colors.grey[500]),
-                prefixIcon: Icon(Icons.numbers_outlined, color: Colors.grey[600]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: Colors.grey[200]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: Colors.grey[200]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(
-                    color: Color.fromARGB(255, 78, 3, 208),
-                    width: 2,
-                  ),
-                ),
-                counterText: '',
-                suffixIcon: _accountController.text.length == 10
-                    ? Icon(Icons.check_circle, color: Colors.green)
-                    : null,
-              ),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onChanged: (value) {
-                setState(() {
-                  // Reset verification when account number changes
-                  if (_verificationResult != null) {
-                    _verificationResult = null;
-                  }
-                }); // Refresh for check icon
-              },
             ),
           ],
         ),
@@ -806,12 +940,12 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.search,
-                      color: _selectedUser != null
-                          ? const Color.fromARGB(255, 78, 3, 208)
-                          : Colors.grey[600],
-                      size: 22.sp,
+                    // Themed person illustration tile — mirrors the bank field's
+                    // leading tile so the User and Bank fields look symmetric.
+                    _methodGlyphTile(
+                      Icons.person_rounded,
+                      selected: _selectedUser != null,
+                      size: 40,
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
@@ -839,9 +973,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                             )
                           : Text(
                               'Search by username, phone or email',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.grey[500],
-                                fontSize: 16.sp,
+                                fontSize: 13.sp,
                               ),
                             ),
                     ),
@@ -1027,7 +1163,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       countryCode: countryCode,
       currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: selectedUser.email.isNotEmpty ? selectedUser.email : null,
-      type: 'internal', // Explicitly set type for LazerVault users
+      type: 'internal', // Explicitly set type for Lazervault users
       internalUserId: selectedUser.userId,
     );
 
@@ -1286,7 +1422,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       countryCode: countryCode,
       currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
-      type: 'internal', // Explicitly set type for LazerVault users
+      type: 'internal', // Explicitly set type for Lazervault users
       internalUserId: _selectedUser!.userId,
     );
 
@@ -1950,11 +2086,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     _contactSelectedBankName = null;
     _contactVerificationResult = null;
 
-    // First check if contact is a LazerVault user by phone number
+    // First check if contact is a Lazervault user by phone number
     _checkIfLazerVaultUser(contact);
   }
 
-  /// Check if contact is a LazerVault user via phone number lookup
+  /// Check if contact is a Lazervault user via phone number lookup
   Future<void> _checkIfLazerVaultUser(DeviceContact contact) async {
     // Show loading dialog
     showDialog(
@@ -2005,7 +2141,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         return;
       }
 
-      // Find LazerVault user by phone/email
+      // Find Lazervault user by phone/email
       await contactSyncCubit.findLazerVaultUsers(
         phoneNumbers: phoneNumbers,
         emails: emails,
@@ -2017,23 +2153,24 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       Navigator.pop(context); // Close loading dialog
 
       if (state is ContactSyncUsersFound && state.matchedUsers.isNotEmpty) {
-        // Found a LazerVault user - show confirmation and proceed
+        // Found a Lazervault user - show confirmation and proceed
         final matchedUser = state.matchedUsers.first;
         _showLazerVaultUserFoundDialog(contact, matchedUser);
       } else {
-        // Not a LazerVault user - show bank selection
-        _showContactBankSelectionSheet(contact);
+        // Not a Lazervault user — offer to invite them (referral code + logo)
+        // or fall back to a bank transfer.
+        _showOffPlatformContactOptions(contact);
       }
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context); // Close loading dialog
-      debugPrint('Error checking LazerVault user: $e');
+      debugPrint('Error checking Lazervault user: $e');
       // On error, fallback to bank selection
       _showContactBankSelectionSheet(contact);
     }
   }
 
-  /// Show dialog when contact is found to be a LazerVault user
+  /// Show dialog when contact is found to be a Lazervault user
   void _showLazerVaultUserFoundDialog(DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
     showModalBottomSheet(
       context: context,
@@ -2262,7 +2399,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     );
   }
 
-  /// Proceed to payment with LazerVault user
+  /// Proceed to payment with Lazervault user
   void _proceedWithLazerVaultUser(DeviceContact contact, LazerVaultUserMatchModel matchedUser) {
     final authState = context.read<AuthenticationCubit>().state;
     final profileState = context.read<ProfileCubit>().state;
@@ -2293,333 +2430,199 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       isFavorite: false,
       isSaved: false,
       countryCode: countryCode,
-      type: 'internal', // Explicitly set type for LazerVault users
+      type: 'internal', // Explicitly set type for Lazervault users
       internalUserId: matchedUser.userId,
     );
 
-    // Navigate to initiate send funds with recipient data
-    Get.toNamed(
-      AppRoutes.initiateSendFunds,
-      arguments: {
-        'recipient': recipient,
-        'accessToken': accessToken,
-        'isLazerVaultUser': true,
-        'lazerVaultUserId': matchedUser.userId,
+    // Flow-aware continue: in the embedded (short) flow the parent wired
+    // `onRecipientSelected`, so hand the recipient back and let it run its
+    // inline amount → PIN → receipt sequence. Standalone (long) flow has no
+    // callback and routes to the full initiate-send-funds screen. Previously
+    // this always pushed the long-flow screen, which broke the short flow.
+    if (widget.onRecipientSelected != null) {
+      widget.onRecipientSelected!(recipient);
+    } else {
+      Get.toNamed(
+        AppRoutes.initiateSendFunds,
+        arguments: {
+          'recipient': recipient,
+          'accessToken': accessToken,
+          'isLazerVaultUser': true,
+          'lazerVaultUserId': matchedUser.userId,
+        },
+      );
+    }
+  }
+
+  /// Share a Lazervault invite with an off-platform contact: the signed-in
+  /// user's referral code + our logo, via the system share sheet. Any open
+  /// contact/search sheet is closed by the caller before this runs.
+  Future<void> _inviteContact(DeviceContact contact) async {
+    // Resolve the signed-in user's referral code (best-effort — the invite
+    // still shares without a code if the lookup fails).
+    String? code;
+    try {
+      final result = await serviceLocator<GetMyReferralCodeUseCase>().call();
+      code = result.fold((_) => null, (c) => c.code);
+    } catch (_) {
+      code = null;
+    }
+
+    final firstName =
+        contact.name.trim().isNotEmpty ? contact.name.trim().split(' ').first : 'there';
+    final message = (code != null && code.isNotEmpty)
+        ? 'Hi $firstName, join me on Lazervault! Use my invite code $code when '
+            'you sign up so we both get rewarded. Download: https://lazervault.app'
+        : 'Hi $firstName, join me on Lazervault — the smarter way to send and '
+            'manage money. Download: https://lazervault.app';
+
+    // Attach our logo to the share (copied from the bundled asset to a temp
+    // file, since share_plus shares files by path). Falls back to text-only.
+    final files = <XFile>[];
+    try {
+      final data =
+          await rootBundle.load('assets/images/logos/lazervault-full-logo.png');
+      final dir = await getTemporaryDirectory();
+      final f = File('${dir.path}/lazervault_invite.png');
+      await f.writeAsBytes(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      files.add(XFile(f.path));
+    } catch (_) {
+      // logo optional — share text only
+    }
+
+    await SharePlus.instance.share(
+      ShareParams(
+        text: message,
+        subject: 'Join me on Lazervault',
+        files: files.isEmpty ? null : files,
+      ),
+    );
+  }
+
+  /// Shown when a picked contact is confirmed NOT on Lazervault: invite them
+  /// (share referral code + logo) or continue with a bank transfer.
+  void _showOffPlatformContactOptions(DeviceContact contact) {
+    const brand = Color.fromARGB(255, 78, 3, 208);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            24.w,
+            16.h,
+            24.w,
+            MediaQuery.of(sheetContext).padding.bottom + 20.h,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Text(
+                '${contact.name} isn\'t on Lazervault yet',
+                style: TextStyle(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                'Invite them to join with your code, or send to their bank account instead.',
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+              ),
+              SizedBox(height: 20.h),
+              // Primary: Invite to Lazervault
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _inviteContact(contact);
+                  },
+                  icon: Icon(Icons.person_add_alt_1, size: 18.sp, color: Colors.white),
+                  label: Text(
+                    'Invite to Lazervault',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: brand,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              // Secondary: Send to their bank
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _showContactBankSelectionSheet(contact);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    side: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  child: Text(
+                    'Send to their bank',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
 
   /// Step 1: Show bank selection for contact
-  void _showContactBankSelectionSheet(DeviceContact contact) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (bottomSheetContext) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            final searchController = TextEditingController();
-            String searchQuery = '';
-
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-              ),
-              child: Column(
-                children: [
-                  // Handle Bar
-                  Container(
-                    margin: EdgeInsets.only(top: 12.h),
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-
-                  // Header Section
-                  Container(
-                    padding: EdgeInsets.all(24.w),
-                    child: Row(
-                      children: [
-                        // Contact Avatar
-                        Container(
-                          width: 48.w,
-                          height: 48.h,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color.fromARGB(255, 78, 3, 208),
-                                Color.fromARGB(255, 95, 20, 225),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Center(
-                            child: Text(
-                              contact.name.isNotEmpty
-                                  ? contact.name.substring(0, 1).toUpperCase()
-                                  : '?',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                contact.name,
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              Text(
-                                'Select their bank',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14.sp,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.close,
-                              color: Colors.grey[600],
-                              size: 20.sp,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Search Bar
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 24.w),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: TextField(
-                      controller: searchController,
-                      onChanged: (value) {
-                        setSheetState(() {
-                          searchQuery = value.toLowerCase();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search banks...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 14.sp,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.grey[500],
-                          size: 20.sp,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-                      ),
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // Banks List
-                  Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        if (_isLoadingBanks) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                LazerVaultLoader.small(),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  'Loading banks...',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 16.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (_banksError != null) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.error_outline,
-                                  size: 48.sp,
-                                  color: Colors.red[400],
-                                ),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  'Failed to load banks',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 16.sp,
-                                  ),
-                                ),
-                                SizedBox(height: 8.h),
-                                TextButton(
-                                  onPressed: () {
-                                    _loadBanks();
-                                    setSheetState(() {});
-                                  },
-                                  child: Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        final filteredBanks = searchQuery.isEmpty
-                            ? _banksList
-                            : _banksList
-                                .where((bank) => bank["name"]!
-                                    .toLowerCase()
-                                    .contains(searchQuery))
-                                .toList();
-
-                        if (filteredBanks.isEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 48.sp,
-                                  color: Colors.grey[400],
-                                ),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  'No banks found',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 16.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
-                          padding: EdgeInsets.symmetric(horizontal: 24.w),
-                          itemCount: filteredBanks.length,
-                          itemBuilder: (context, index) {
-                            final bank = filteredBanks[index];
-                            return Container(
-                              margin: EdgeInsets.only(bottom: 8.h),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.pop(bottomSheetContext);
-                                    _contactSelectedBankCode = bank["code"];
-                                    _contactSelectedBankName = bank["name"];
-                                    _showContactAccountNumberSheet(contact);
-                                  },
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  child: Container(
-                                    padding: EdgeInsets.all(16.w),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      border:
-                                          Border.all(color: Colors.grey[200]!),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 40.w,
-                                          height: 40.h,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: _getBankGradientColors(
-                                                  bank["name"]!),
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(10.r),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              _getBankInitials(bank["name"]!),
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14.sp,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(width: 12.w),
-                                        Expanded(
-                                          child: Text(
-                                            bank["name"]!,
-                                            style: TextStyle(
-                                              color: Colors.black87,
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Colors.grey[400],
-                                          size: 16.sp,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+  Future<void> _showContactBankSelectionSheet(DeviceContact contact) async {
+    // Same shared sheet (light). Replaces the old inline picker that created a
+    // TextEditingController inside its builder and never disposed it — the
+    // source of the `dependents.isEmpty` framework assertion.
+    final bank = await BankPickerSheet.show(
+      context,
+      country: _currentCountry,
+      selectedBankCode: _contactSelectedBankCode,
+      theme: BankPickerTheme.light(),
     );
+    if (!mounted || bank == null) return;
+    _contactSelectedBankCode = bank['code'];
+    _contactSelectedBankName = bank['name'];
+    _showContactAccountNumberSheet(contact);
   }
 
   /// Step 2: Show account number entry for contact
@@ -2777,8 +2780,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                           fillColor: Colors.grey[50],
                           hintText: 'Enter 10-digit account number',
                           hintStyle: TextStyle(color: Colors.grey[500]),
-                          prefixIcon: Icon(Icons.numbers_outlined,
-                              color: Colors.grey[600]),
+                          prefixIcon: Icon(Icons.account_balance_wallet_rounded,
+                              color: _kBrandPurple),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
                             borderSide: BorderSide(color: Colors.grey[200]!),
@@ -3222,410 +3225,309 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     );
   }
 
-  void _showBankSelectionBottomSheet() {
-    // Reset the search controller every time the sheet opens so reopening
-    // doesn't surface a stale query the user already cleared.
-    _bankSearchController.clear();
-    _bankSearchQuery = '';
-    _bankSearchDebounce?.cancel();
+  // ===== Account-number-first bank suggestions =====
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        // StatefulBuilder gives the sheet its OWN setState so typing in
-        // the search box rebuilds the bank list IN PLACE — the parent
-        // _AddRecipientState's setState can't reach inside a modal route
-        // (the modal is a separate route, not a child), which is why
-        // search used to only "work" after the sheet was reopened.
-        return StatefulBuilder(
-          builder: (sheetContext, setSheetState) {
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.75,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-              ),
-              child: Column(
-            children: [
-              // Handle Bar
-              Container(
-                margin: EdgeInsets.only(top: 12.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              
-              // Header Section
-              Container(
-                padding: EdgeInsets.all(24.w),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Icon(
-                        Icons.account_balance_outlined,
-                        color: Color.fromARGB(255, 78, 3, 208),
-                        size: 24.sp,
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-                            "Select Bank",
-          style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            "Choose your recipient's bank",
-                            style: TextStyle(
-                              color: Colors.grey[600],
-            fontSize: 14.sp,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.grey[600],
-                          size: 20.sp,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Search Bar
-        Container(
-                margin: EdgeInsets.symmetric(horizontal: 24.w),
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+  /// Account-number field change handler. Clears any prior verification, then
+  /// (once a full 10-digit number is entered) debounces a backend suggestion
+  /// call. Shorter/edited numbers immediately clear suggestions.
+  /// Standalone "Scan Account" button rendered beside the account-number field
+  /// (see the field builder). Brand-tinted so it reads as a tappable action;
+  /// height is matched to the field via the enclosing IntrinsicHeight/stretch.
+  Widget _buildScanAccountButton() {
+    return Material(
+      color: _kBrandPurple.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: widget.onScanAccount,
+        child: Container(
+          width: 62.w,
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: TextField(
-                  controller: _bankSearchController,
-                  // Debounced live filter. Each keystroke restarts a
-                  // 250ms timer; once it fires we re-filter via the
-                  // sheet's own setState so the bank list rebuilds
-                  // immediately under the user's cursor.
-                  onChanged: (value) {
-                    _bankSearchDebounce?.cancel();
-                    _bankSearchDebounce = Timer(
-                      const Duration(milliseconds: 250),
-                      () {
-                        if (!mounted) return;
-                        setSheetState(() {
-                          _bankSearchQuery = value.toLowerCase().trim();
-                        });
-                      },
-                    );
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search banks...',
-                    hintStyle: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 14.sp,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.grey[500],
-                      size: 20.sp,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ),
-              
-              SizedBox(height: 16.h),
-
-              // Popular Banks Section
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Row(
-                  children: [
-                    Text(
-                      "Popular Banks",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: Colors.green[100],
             borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            BanksData.getCountryFlag(_currentCountry),
-                            style: TextStyle(fontSize: 12.sp),
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            _currentCountry,
-                            style: TextStyle(
-                              color: Colors.green[700],
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+            border: Border.all(color: _kBrandPurple.withValues(alpha: 0.25)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.document_scanner_outlined,
+                  color: _kBrandPurple, size: 20.w),
+              SizedBox(height: 2.h),
+              Text(
+                'Scan',
+                style: TextStyle(
+                  color: _kBrandPurple,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              
-              SizedBox(height: 16.h),
-
-              // Banks List
-              Expanded(
-                child: Builder(
-                  builder: (context) {
-                    if (_isLoadingBanks) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            LazerVaultLoader.small(),
-                            SizedBox(height: 16.h),
-                            Text(
-                              'Loading banks...',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    if (_banksError != null) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 48.sp,
-                              color: Colors.red[400],
-                            ),
-                            SizedBox(height: 16.h),
-                            Text(
-                              'Failed to load banks',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16.sp,
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            TextButton(
-                              onPressed: _loadBanks,
-                              child: Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    final filteredBanks = _bankSearchQuery.isEmpty
-                        ? _banksList
-                        : _banksList.where((bank) =>
-                            bank["name"]!.toLowerCase().contains(_bankSearchQuery)
-                          ).toList();
-
-                    if (filteredBanks.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 48.sp,
-                              color: Colors.grey[400],
-                            ),
-                            SizedBox(height: 16.h),
-                            Text(
-                              'No banks found',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'Try a different search term',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      itemCount: filteredBanks.length,
-                      itemBuilder: (context, index) {
-                        final bank = filteredBanks[index];
-                    final isSelected = _bankController.text == bank["name"];
-                    
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 12.h),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _bankController.text = bank["name"]!;
-                              _selectedBankCode = bank["code"]; // Store bank code for verification
-                              // Reset verification when bank changes
-                              _verificationResult = null;
-                            });
-                            Navigator.pop(context);
-                          },
-                          borderRadius: BorderRadius.circular(16.r),
-                          child: Container(
-                            padding: EdgeInsets.all(16.w),
-                            decoration: BoxDecoration(
-                              color: isSelected 
-                                ? Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05)
-                                : Colors.white,
-                              borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-                                color: isSelected 
-                                  ? Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
-                                  : Colors.grey[200]!,
-                                width: isSelected ? 2 : 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                // Bank Logo (with network image fallback to initials)
-                                BankLogo(
-                                  bankName: bank["name"]!,
-                                  bankCode: bank["code"],
-                                  country: _currentCountry,
-                                  size: 48,
-                                  borderRadius: 12,
-                                ),
-                                SizedBox(width: 16.w),
-                                
-                                // Bank Details
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        bank["name"]!,
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                fontSize: 16.sp,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4.h),
-                                      Text(
-                                        _getBankDescription(bank["name"]!),
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12.sp,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                
-                                // Selection Indicator
-                                if (isSelected)
-                                  Container(
-                                    padding: EdgeInsets.all(4.w),
-                                    decoration: BoxDecoration(
-                                      color: Color.fromARGB(255, 78, 3, 208),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 16.sp,
-                                    ),
-                                  )
-                                else
-                                  Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: Colors.grey[400],
-                                    size: 16.sp,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                    );
-                  },
-                ),
-              ),
-
-              // Bottom Safe Area
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
             ],
           ),
-            );
-          },
-        );
-      },
+        ),
+      ),
     );
+  }
+
+  void _onAccountNumberChanged(String value) {
+    _suggestDebounce?.cancel();
+    setState(() {
+      if (_verificationResult != null) _verificationResult = null;
+      if (value.length != 10) {
+        _bankSuggestions = [];
+        _loadingSuggestions = false;
+      }
+    });
+    if (value.length == 10) {
+      setState(() => _loadingSuggestions = true);
+      _suggestDebounce = Timer(
+        const Duration(milliseconds: 400),
+        () => _fetchBankSuggestions(value),
+      );
+    }
+    _syncSuggestOverlay();
+  }
+
+  /// Fetch bank suggestions for a complete account number. Guards against stale
+  /// responses (user kept typing) and never surfaces errors — suggestions are
+  /// purely additive over the manual bank picker.
+  Future<void> _fetchBankSuggestions(String accountNumber) async {
+    if (!mounted) return;
+    try {
+      final suggestions = await context
+          .read<AccountVerificationCubit>()
+          .suggestBanks(accountNumber: accountNumber, country: _currentCountry);
+      // Discard if the account number changed while we were waiting.
+      if (!mounted || _accountController.text != accountNumber) return;
+      setState(() {
+        _bankSuggestions = suggestions;
+        _loadingSuggestions = false;
+      });
+      _syncSuggestOverlay();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingSuggestions = false);
+      _syncSuggestOverlay();
+    }
+  }
+
+  /// User tapped a suggested bank. Prefill the bank + code and reuse the already
+  /// resolved holder name (no second verify round-trip), then open the same
+  /// confirmation sheet the manual verify path uses.
+  void _selectSuggestion(AccountSuggestion s) {
+    setState(() {
+      _bankController.text = s.bankName;
+      _selectedBankCode = s.bankCode;
+      _bankSuggestions = [];
+      _loadingSuggestions = false;
+      _verificationResult = AccountVerificationResult(
+        accountNumber: s.accountNumber,
+        accountName: s.accountName,
+        bankName: s.bankName,
+        bankCode: s.bankCode,
+        verificationStatus: 'verified',
+      );
+    });
+    _syncSuggestOverlay(); // hide the tooltip now that a bank is chosen
+    _showAccountConfirmationBottomSheet(_verificationResult!);
+  }
+
+  /// Anchored bank-prediction tooltip. Floats just below the account-number
+  /// field (via CompositedTransformFollower + LayerLink) so it overlays content
+  /// instead of pushing the Bank field down, and follows the field on scroll.
+  /// A full-screen transparent catcher behind it dismisses on tap-outside.
+  Widget _buildSuggestionOverlay(BuildContext context) {
+    // Nothing to show once a bank is verified, or when idle with no matches.
+    if (_verificationResult != null ||
+        (!_loadingSuggestions && _bankSuggestions.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+    // Match the field's width; fall back to the form width on the first frame
+    // before the leader has reported its size.
+    final double width = _accountFieldLink.leaderSize?.width ??
+        (MediaQuery.of(context).size.width - 48.w);
+    return Stack(
+      children: [
+        // Tap-outside dismiss.
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: _suggestOverlay.hide,
+          ),
+        ),
+        CompositedTransformFollower(
+          link: _accountFieldLink,
+          showWhenUnlinked: false,
+          targetAnchor: Alignment.bottomLeft,
+          followerAnchor: Alignment.topLeft,
+          offset: Offset(0, 6.h),
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: width,
+              child: Material(
+                color: Colors.transparent,
+                child: _buildSuggestionCard(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The tooltip's inner card: a compact loading row while resolving, then a
+  /// slim "Suggested bank(s)" label over the tappable matches (logo + resolved
+  /// holder name + bank name).
+  Widget _buildSuggestionCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: _kBrandPurple.withValues(alpha: 0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: _loadingSuggestions
+          ? Padding(
+              padding: EdgeInsets.all(14.w),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 16.w,
+                    height: 16.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(_kBrandPurple),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'Finding the bank…',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 6.h),
+                  child: Row(
+                    children: [
+                      Icon(Icons.auto_awesome_rounded,
+                          size: 14.sp, color: _kBrandPurple),
+                      SizedBox(width: 6.w),
+                      Text(
+                        _bankSuggestions.length == 1
+                            ? 'Suggested bank'
+                            : 'Suggested banks',
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                for (int i = 0; i < _bankSuggestions.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                        height: 1,
+                        color: Colors.grey[200],
+                        indent: 12.w,
+                        endIndent: 12.w),
+                  _buildSuggestionRow(_bankSuggestions[i]),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSuggestionRow(AccountSuggestion s) {
+    return InkWell(
+      onTap: () => _selectSuggestion(s),
+      borderRadius: BorderRadius.circular(12.r),
+      child: Padding(
+        padding: EdgeInsets.all(12.w),
+        child: Row(
+          children: [
+            BankLogo(
+              bankName: s.bankName,
+              bankCode: s.bankCode,
+              country: _currentCountry,
+              size: 40,
+              borderRadius: 10,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s.accountName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 14.5.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    s.bankName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: _kBrandPurple, size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showBankSelectionBottomSheet() async {
+    // Shared bank-search sheet (BankLogo + initials fallback, owns/disposes its
+    // own controller). Light variant for the send-funds / add-recipient surface.
+    final bank = await BankPickerSheet.show(
+      context,
+      country: _currentCountry,
+      selectedBankCode: _selectedBankCode,
+      theme: BankPickerTheme.light(),
+    );
+    if (!mounted || bank == null) return;
+    setState(() {
+      _bankController.text = bank['name'] ?? '';
+      _selectedBankCode = bank['code']; // stored for verification
+      _verificationResult = null; // a new bank invalidates any prior name check
+      // Manually picking a bank supersedes the prediction tooltip — drop its
+      // (now-irrelevant) matches so it can't re-appear over the chosen bank.
+      _bankSuggestions = [];
+      _loadingSuggestions = false;
+    });
+    _syncSuggestOverlay();
   }
 
   List<Color> _getBankGradientColors(String bankName) {
@@ -3798,6 +3700,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       );
       return;
     }
+
+    // Funnel: the long-flow recipient bank-account verification step.
+    AnalyticsService.instance.trackSendFundsScreen('recipient_verify', 'long');
 
     // Call verification cubit
     await context.read<AccountVerificationCubit>().verifyAccount(
@@ -3988,6 +3893,10 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
 
   /// Show account confirmation bottomsheet after successful verification
   void _showAccountConfirmationBottomSheet(AccountVerificationResult result) {
+    // Any confirmation sheet means a bank is chosen — the prediction tooltip
+    // must not float over/behind it (covers the manual-name fallback path,
+    // which sets _verificationResult without going through _syncSuggestOverlay).
+    if (_suggestOverlay.isShowing) _suggestOverlay.hide();
     final sheetKey = GlobalKey<AccountConfirmationBottomSheetState>();
     showModalBottomSheet(
       context: context,
@@ -4020,6 +3929,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
             setState(() {
               _verificationResult = null;
             });
+            _syncSuggestOverlay();
           },
         );
       },

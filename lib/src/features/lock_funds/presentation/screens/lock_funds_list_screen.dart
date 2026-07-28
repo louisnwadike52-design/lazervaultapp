@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -18,6 +19,7 @@ import '../cubit/lock_funds_state.dart';
 import '../cubit/create_lock_cubit.dart';
 import 'create_lock_carousel.dart';
 import 'lock_fund_details_screen.dart';
+import '../widgets/lock_funds_empty_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -71,8 +73,11 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
 
-    _fadeController.forward();
-    _slideController.forward();
+    // Entrance slide/fade is now owned by the shared, admin-flag-gated
+    // ServiceEntranceAnimation wrapper (see build). Jump these to their end so
+    // this screen's own inline entrance doesn't double-animate on top of it.
+    _fadeController.value = 1.0;
+    _slideController.value = 1.0;
 
     // Surface a toast for every WS lifecycle event matching the
     // current user. The cubit already drives the list reload on
@@ -243,7 +248,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
             children: [
               _buildHeader(),
               Expanded(
-                child: SlideTransition(
+                child: ServiceEntranceAnimation(
+                  child: SlideTransition(
                   position: _slideAnimation,
                   child: FadeTransition(
                     opacity: _fadeAnimation,
@@ -283,6 +289,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     ),
                   ),
                 ),
+                ),
               ),
             ],
           ),
@@ -294,17 +301,17 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Get.offAllNamed(AppRoutes.dashboard),
             child: Container(
-              width: 44.w,
-              height: 44.w,
+              width: 40.w,
+              height: 40.w,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(22.r),
+                borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.15),
@@ -316,29 +323,29 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               child: Icon(
                 Icons.arrow_back_ios_new,
                 color: Colors.white,
-                size: 18.sp,
+                size: 16.sp,
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PiggyVault',
+                  'Piggyvault',
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 24.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   'Grow your savings with locked deposits',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -352,7 +359,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'PiggyVault',
-            sourceContext: 'financial_products',
+            sourceContext: 'lockfunds',
           ),
         ],
       ),
@@ -373,8 +380,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatisticsCards(state.statistics),
-            SizedBox(height: 32.h),
+            _buildStatisticsCards(state.statistics, locks: state.lockFunds),
+            SizedBox(height: 20.h),
             _buildFilterTabs(state.lockFunds),
             SizedBox(height: 16.h),
             _buildSectionHeader('Your Locks', filtered.length),
@@ -466,27 +473,20 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   Widget _buildFilterEmptyState() {
     final label = _filterStatus == null ? 'locks' : '${_filterStatus!.name.toLowerCase()} locks';
     return Container(
-      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(16.r),
       ),
-      child: Column(
-        children: [
-          Icon(Icons.filter_alt_off_outlined,
-              color: const Color(0xFF6B7280), size: 32.sp),
-          SizedBox(height: 8.h),
-          Text('No $label', style: GoogleFonts.inter(
-            color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
-          SizedBox(height: 4.h),
-          Text('Try a different filter.', style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-        ],
+      child: LockFundsEmptyState(
+        compact: true,
+        icon: Icons.filter_alt_off_outlined,
+        title: 'No $label',
+        subtitle: 'Try a different filter.',
       ),
     );
   }
 
-  Widget _buildStatisticsCards(Map<String, dynamic> statistics) {
+  Widget _buildStatisticsCards(Map<String, dynamic> statistics, {List<LockFund>? locks}) {
     return StreamBuilder<String>(
       stream: CurrencySymbols.currencySymbolStream,
       initialData: CurrencySymbols.currentSymbol,
@@ -494,7 +494,13 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
         final currencySymbol = snapshot.data ?? CurrencySymbols.currentSymbol;
         final totalLocked = (statistics['totalLockedAmount'] ?? 0) as double;
         final totalInterest = (statistics['totalAccruedInterest'] ?? 0) as double;
-        final activeLocksCount = statistics['activeLocksCount'] ?? 0;
+        // Prefer the live list: the backend's activeLocksCount counts EVERY
+        // returned lock (incl. just-withdrawn ones), so it stayed "1" after a
+        // withdrawal while Total Locked correctly read ₦0. Count only locks that
+        // still hold funds (non-terminal) so it matches the "Active" filter tab.
+        final activeLocksCount = locks != null
+            ? locks.where((l) => !l.isTerminal).length
+            : (statistics['activeLocksCount'] ?? 0);
 
         return Column(
           children: [
@@ -508,7 +514,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     const Color(0xFF6366F1),
                   ),
                 ),
-                SizedBox(width: 12.w),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: _buildStatCard(
                     'Interest Earned',
@@ -519,7 +525,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             Row(
               children: [
                 Expanded(
@@ -530,7 +536,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     const Color(0xFFF59E0B),
                   ),
                 ),
-                SizedBox(width: 12.w),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: _buildStatCard(
                     'Total Value',
@@ -550,7 +556,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   Widget _buildStatCard(
       String title, String value, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -573,7 +579,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(8.w),
+            padding: EdgeInsets.all(7.w),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
@@ -581,23 +587,27 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
             child: Icon(
               icon,
               color: color,
-              size: 20.sp,
+              size: 17.sp,
             ),
           ),
-          SizedBox(height: 12.h),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+          SizedBox(height: 10.h),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
           ),
-          SizedBox(height: 4.h),
+          SizedBox(height: 3.h),
           Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 12.sp,
+              fontSize: 11.sp,
               color: const Color(0xFF9CA3AF),
               fontWeight: FontWeight.w500,
             ),
@@ -723,11 +733,15 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                       SizedBox(height: 4.h),
                       Row(
                         children: [
-                          Text(
-                            lock.lockType.displayName,
-                            style: GoogleFonts.inter(
-                              fontSize: 13.sp,
-                              color: const Color(0xFF9CA3AF),
+                          Flexible(
+                            child: Text(
+                              lock.lockType.displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                color: const Color(0xFF9CA3AF),
+                              ),
                             ),
                           ),
                           Container(
@@ -741,6 +755,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                           ),
                           Text(
                             '${lock.interestRate.toStringAsFixed(1)}% p.a.',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                               fontSize: 13.sp,
                               color: const Color(0xFF10B981),
@@ -1054,7 +1070,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
             ),
             SizedBox(height: 18.h),
             Text(
-              'No PiggyVault Locks Yet',
+              'No Piggyvault locks yet',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 17.sp,
@@ -1120,7 +1136,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 ),
                 SizedBox(height: 24.h),
                 Text(
-                  'Welcome to PiggyVault',
+                  'Welcome to Piggyvault',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w600,

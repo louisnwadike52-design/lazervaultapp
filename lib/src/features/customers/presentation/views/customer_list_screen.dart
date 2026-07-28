@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 import 'package:lazervault/src/features/customers/domain/entities/customer_entity.dart';
+import 'package:lazervault/src/features/customers/domain/repositories/customer_repository.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
-import '../cubit/customer_cubit.dart';
-import '../cubit/customer_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CustomerListScreen extends StatefulWidget {
@@ -19,10 +19,16 @@ class CustomerListScreen extends StatefulWidget {
   State<CustomerListScreen> createState() => _CustomerListScreenState();
 }
 
-class _CustomerListScreenState extends State<CustomerListScreen> {
+class _CustomerListScreenState extends State<CustomerListScreen>
+    with InfiniteScrollMixin<CustomerListScreen> {
   final _searchController = TextEditingController();
   final _debouncer = Debouncer.search();
   String _selectedSegment = 'All';
+
+  static const int _limit = 20;
+
+  List<CustomerEntity> _customers = [];
+  bool _loading = true;
 
   static const _segments = [
     'All',
@@ -55,35 +61,74 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCustomers();
+    attachInfiniteScroll();
+    _loadFirst();
   }
 
   @override
   void dispose() {
+    detachInfiniteScroll();
     _searchController.dispose();
     _debouncer.dispose();
     super.dispose();
   }
 
-  void _loadCustomers() {
-    context.read<CustomerCubit>().listCustomers(
+  Future<void> _loadFirst() async {
+    resetPagination();
+    setState(() => _loading = true);
+    try {
+      final res = await serviceLocator<CustomerRepository>().listCustomers(
+        page: 1,
+        limit: _limit,
+        segment: _segmentToInt(_selectedSegment),
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+      );
+      if (!mounted) return;
+      setState(() {
+        _customers = res.items;
+        _loading = false;
+        hasMore = res.currentPage < res.totalPages;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() => runLoadMore(() async {
+        final res = await serviceLocator<CustomerRepository>().listCustomers(
+          page: page + 1,
+          limit: _limit,
           segment: _segmentToInt(_selectedSegment),
           search:
               _searchController.text.isEmpty ? null : _searchController.text,
         );
-  }
+        if (!mounted) return;
+        setState(() {
+          _customers.addAll(res.items);
+          page += 1;
+          hasMore = page < res.totalPages;
+        });
+      });
 
   void _onSearchChanged(String query) {
     setState(() {}); // Update suffixIcon visibility
     _debouncer.run(() {
       if (!mounted) return;
-      _loadCustomers();
+      _loadFirst();
     });
   }
 
   void _onSegmentSelected(String segment) {
     setState(() => _selectedSegment = segment);
-    _loadCustomers();
+    _loadFirst();
   }
 
   @override
@@ -114,15 +159,15 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           // autosave, lock-funds, tax.
           ServiceVoiceButton(
             serviceName: 'customers',
-            iconColor: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF3B82F6),
+            iconColor: const Color(0xFFA78BFA),
+            backgroundColor: const Color(0xFFA78BFA),
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Customers',
             sourceContext: 'customers',
             icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF3B82F6),
+            iconColor: const Color(0xFFA78BFA),
           ),
           SizedBox(width: 12.w),
         ],
@@ -138,10 +183,12 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          // Add screen now returns the created customer (or true); refresh on
+          // any non-null result.
           final result = await Get.toNamed(AppRoutes.addCustomer);
-          if (result == true && mounted) _loadCustomers();
+          if (result != null && mounted) _loadFirst();
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -178,7 +225,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                   ),
                   onPressed: () {
                     _searchController.clear();
-                    _loadCustomers();
+                    _loadFirst();
                   },
                 )
               : null,
@@ -217,12 +264,12 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                    ? const Color(0xFFA78BFA).withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF3B82F6)
+                      ? const Color(0xFFA78BFA)
                       : const Color(0xFF2D2D2D),
                 ),
               ),
@@ -231,7 +278,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                   segment,
                   style: GoogleFonts.inter(
                     color: isSelected
-                        ? const Color(0xFF3B82F6)
+                        ? const Color(0xFFA78BFA)
                         : const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -250,46 +297,35 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildBody() {
-    return BlocConsumer<CustomerCubit, CustomerState>(
-      listener: (context, state) {
-        if (state is CustomerError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFFEF4444),
-            ),
-          );
-        }
-      },
-      builder: (context, state) {
-        if (state is CustomerLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
-          );
-        }
+    if (_loading) {
+      return const Center(
+        child: LazerVaultLoader.small(),
+      );
+    }
 
-        if (state is CustomersLoaded) {
-          if (state.customers.isEmpty) {
-            return _buildEmptyState();
+    if (_customers.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async => _loadFirst(),
+      color: const Color(0xFFA78BFA),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView.builder(
+        controller: scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        itemCount: _customers.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _customers.length) {
+            return Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const Center(child: LazerVaultLoader.small()),
+            );
           }
-
-          return RefreshIndicator(
-            onRefresh: () async => _loadCustomers(),
-            color: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              itemCount: state.customers.length,
-              itemBuilder: (context, index) =>
-                  _buildCustomerCard(state.customers[index]),
-            ),
-          );
-        }
-
-        // Initial or error state - show empty with refresh
-        return _buildEmptyState();
-      },
+          return _buildCustomerCard(_customers[index]);
+        },
+      ),
     );
   }
 
@@ -303,7 +339,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       case CustomerSegment.vip:
         return const Color(0xFFFB923C); // gold / orange
       case CustomerSegment.retail:
-        return const Color(0xFF3B82F6); // blue
+        return const Color(0xFFA78BFA); // blue
       case CustomerSegment.wholesale:
         return const Color(0xFF10B981); // green
       case CustomerSegment.government:
@@ -324,7 +360,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           AppRoutes.customerDetails,
           arguments: customer,
         );
-        if (result == true && mounted) _loadCustomers();
+        if (result == true && mounted) _loadFirst();
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
@@ -445,8 +481,8 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
 
   Widget _buildEmptyState() {
     return RefreshIndicator(
-      onRefresh: () async => _loadCustomers(),
-      color: const Color(0xFF3B82F6),
+      onRefresh: () async => _loadFirst(),
+      color: const Color(0xFFA78BFA),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),

@@ -14,6 +14,14 @@ class BusinessAnalyticsLoaded extends BusinessAnalyticsState {
   final String selectedPeriod;
   final bool isStale;
 
+  // Sales-ledger figures for the Revenue tab (from the business overview
+  // aggregator → GetSalesSummary). These are REPORTING figures from the sales
+  // table — NOT the wallet ledger — so recorded sales show up as revenue without
+  // ever crediting the wallet. In MINOR units (kobo). Currency in [salesCurrency].
+  final int salesRevenue;
+  final int salesReceivables;
+  final String salesCurrency;
+
   BusinessAnalyticsLoaded({
     required this.financialAnalytics,
     required this.categoryAnalytics,
@@ -21,6 +29,9 @@ class BusinessAnalyticsLoaded extends BusinessAnalyticsState {
     required this.expenseTimeSeries,
     required this.selectedPeriod,
     this.isStale = false,
+    this.salesRevenue = 0,
+    this.salesReceivables = 0,
+    this.salesCurrency = 'NGN',
   });
 
   BusinessAnalyticsLoaded copyWith({
@@ -30,6 +41,9 @@ class BusinessAnalyticsLoaded extends BusinessAnalyticsState {
     accounts_pb.GetExpenseTimeSeriesResponse? expenseTimeSeries,
     String? selectedPeriod,
     bool? isStale,
+    int? salesRevenue,
+    int? salesReceivables,
+    String? salesCurrency,
   }) {
     return BusinessAnalyticsLoaded(
       financialAnalytics: financialAnalytics ?? this.financialAnalytics,
@@ -38,6 +52,9 @@ class BusinessAnalyticsLoaded extends BusinessAnalyticsState {
       expenseTimeSeries: expenseTimeSeries ?? this.expenseTimeSeries,
       selectedPeriod: selectedPeriod ?? this.selectedPeriod,
       isStale: isStale ?? this.isStale,
+      salesRevenue: salesRevenue ?? this.salesRevenue,
+      salesReceivables: salesReceivables ?? this.salesReceivables,
+      salesCurrency: salesCurrency ?? this.salesCurrency,
     );
   }
 }

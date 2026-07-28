@@ -175,7 +175,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
       amount: _paymentAmount,
       currency: _idPay.currency,
       title: 'Confirm Payment',
-      message: 'Confirm IDPay payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
+      message: 'Confirm PayID payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -225,7 +225,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
             setState(() {
               _isProcessing = false;
             });
-            Get.offAllNamed('/id-pay/receipt', arguments: {
+            Get.offAllNamed(AppRoutes.idPayReceipt, arguments: {
               'transaction': state.transaction,
               'idPay': _idPay,
               'newBalance': state.newBalance,
@@ -314,7 +314,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
               ),
               SizedBox(height: 4.h),
               Text(
-                'Review and confirm your IDPay payment',
+                'Review and confirm your PayID payment',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,

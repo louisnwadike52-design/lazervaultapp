@@ -89,11 +89,13 @@ class PayrollCubit extends Cubit<PayrollState> {
     String jobTitle = '',
     String? startDate,
     String? userId,
+    String payoutType = 'external',
+    String bankAccountName = '',
   }) async {
     try {
       if (isClosed) return;
       emit(PayrollLoading());
-      await _repository.addEmployee(
+      final employee = await _repository.addEmployee(
         fullName: fullName,
         email: email,
         phone: phone,
@@ -108,9 +110,12 @@ class PayrollCubit extends Cubit<PayrollState> {
         jobTitle: jobTitle,
         startDate: startDate,
         userId: userId,
+        payoutType: payoutType,
+        bankAccountName: bankAccountName,
       );
       if (isClosed) return;
-      emit(EmployeeAdded(message: 'Employee added successfully'));
+      emit(EmployeeAdded(
+          message: 'Employee added successfully', employee: employee));
     } on GrpcError catch (e) {
       if (isClosed) return;
       emit(PayrollError(message: _friendlyGrpcError(e)));
@@ -135,6 +140,9 @@ class PayrollCubit extends Cubit<PayrollState> {
     String? department,
     String? jobTitle,
     EmployeeStatus? status,
+    String? userId,
+    String? payoutType,
+    String? bankAccountName,
   }) async {
     try {
       if (isClosed) return;
@@ -154,6 +162,9 @@ class PayrollCubit extends Cubit<PayrollState> {
         department: department,
         jobTitle: jobTitle,
         status: status,
+        userId: userId,
+        payoutType: payoutType,
+        bankAccountName: bankAccountName,
       );
       if (isClosed) return;
       emit(EmployeeUpdated(message: 'Employee updated successfully'));
@@ -210,8 +221,15 @@ class PayrollCubit extends Cubit<PayrollState> {
       if (isClosed) return;
       emit(PayrollLoading());
       final payRun = await _repository.getPayRun(id);
+      // Also load the per-employee pay slip breakdown (empty until the run is
+      // calculated). Best-effort: a slip-fetch failure must not hide the run.
+      List<PaySlipEntity> paySlips = const [];
+      try {
+        final result = await _repository.listPaySlips(payRunId: id, limit: 100);
+        paySlips = result.paySlips;
+      } catch (_) {}
       if (isClosed) return;
-      emit(PayRunLoaded(payRun: payRun));
+      emit(PayRunLoaded(payRun: payRun, paySlips: paySlips));
     } on GrpcError catch (e) {
       if (isClosed) return;
       emit(PayrollError(message: _friendlyGrpcError(e)));

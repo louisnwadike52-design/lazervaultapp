@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
+import '../widgets/lock_funds_empty_state.dart';
 import 'lock_withdrawal_screen.dart';
 import 'lock_fund_topup_screen.dart';
 import 'lock_fund_autosave_screen.dart';
@@ -110,7 +111,11 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                           SizedBox(height: 20.h),
                           _buildActivitySection(),
                           SizedBox(height: 20.h),
-                          if (!widget.lockFund.isTerminal) _buildActionButtons(),
+                          if (!widget.lockFund.isTerminal) ...[
+                            _buildActionButtons(),
+                            SizedBox(height: 12.h),
+                          ],
+                          _buildReceiptButton(),
                           SizedBox(height: 40.h),
                         ],
                       ),
@@ -180,89 +185,44 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ),
           ),
           _buildStatusBadge(widget.lockFund.status),
-          SizedBox(width: 8.w),
-          _buildOverflowMenu(),
         ],
       ),
     );
   }
 
-  /// PopupMenu surfaced in the AppBar with secondary actions:
-  /// share / view receipt / open in admin (deep link) / cancel.
-  /// Cancel is the destructive option, separated visually + tinted
-  /// red so users can't trigger it by mistake. Items hide based on
-  /// lock status (no cancel on terminal locks).
-  Widget _buildOverflowMenu() {
-    final lock = widget.lockFund;
-    return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: Colors.white, size: 22.sp),
-      color: const Color(0xFF1F1F1F),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-      onSelected: (value) {
-        switch (value) {
-          case 'receipt':
-            _openReceipt();
-            break;
-          case 'auto_save':
-            _showAutoSaveScreen();
-            break;
-          case 'top_up':
-            _showTopUpScreen();
-            break;
-          case 'cancel':
-            _showCancelLockDialog();
-            break;
-          case 'renew':
-            _showRenewDialog();
-            break;
-        }
+  /// Always-visible "View receipt" CTA on the page (receipt applies to every
+  /// lock, active or terminal). Styled as a subtle outlined secondary action so
+  /// it reads below the primary withdraw/renew buttons without competing.
+  Widget _buildReceiptButton() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        _openReceipt();
       },
-      itemBuilder: (ctx) => [
-        PopupMenuItem(
-          value: 'receipt',
-          child: Row(children: [
-            Icon(Icons.receipt_long_outlined, color: Colors.white, size: 18.sp),
-            SizedBox(width: 10.w),
-            Text('View receipt', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
-          ]),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 15.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+          borderRadius: BorderRadius.circular(14.r),
         ),
-        if (lock.status == LockStatus.active && lock.lockType.defaultSupportsRenewal)
-          PopupMenuItem(
-            value: 'renew',
-            child: Row(children: [
-              Icon(Icons.refresh_rounded, color: const Color(0xFF6366F1), size: 18.sp),
-              SizedBox(width: 10.w),
-              Text('Renew lock', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
-            ]),
-          ),
-        if (lock.status == LockStatus.active && lock.lockType.defaultSupportsTopUp)
-          PopupMenuItem(
-            value: 'top_up',
-            child: Row(children: [
-              Icon(Icons.add_circle_outline, color: const Color(0xFF6366F1), size: 18.sp),
-              SizedBox(width: 10.w),
-              Text('Top up', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
-            ]),
-          ),
-        if (lock.status == LockStatus.active && lock.lockType.defaultSupportsAutoSave)
-          PopupMenuItem(
-            value: 'auto_save',
-            child: Row(children: [
-              Icon(Icons.autorenew, color: const Color(0xFF3B82F6), size: 18.sp),
-              SizedBox(width: 10.w),
-              Text('Auto-save', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
-            ]),
-          ),
-        if (lock.status == LockStatus.active && lock.earlyUnlockPenaltyPercent > 0)
-          PopupMenuItem(
-            value: 'cancel',
-            child: Row(children: [
-              Icon(Icons.cancel_outlined, color: const Color(0xFFEF4444), size: 18.sp),
-              SizedBox(width: 10.w),
-              Text('Cancel lock', style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontSize: 13.sp)),
-            ]),
-          ),
-      ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_long_outlined, color: const Color(0xFF8B5CF6), size: 18.sp),
+            SizedBox(width: 10.w),
+            Text(
+              'View receipt',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -395,6 +355,16 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
   }
 
+  /// Human maturity label. Flex / no-fixed-term locks have no unlock date
+  /// (the backend stores epoch), so "Jan 01, 1970" must never render — show
+  /// "No fixed date" instead.
+  String _maturesLabel(LockFund lock) {
+    if (lock.lockDurationDays <= 0 || lock.unlockAt.year <= 1971) {
+      return 'No fixed date';
+    }
+    return DateFormat('MMM dd, yyyy').format(lock.unlockAt);
+  }
+
   Widget _buildProgressSection() {
     final lock = widget.lockFund;
     final progressColor = lock.status == LockStatus.active
@@ -494,7 +464,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    DateFormat('MMM dd, yyyy').format(lock.unlockAt),
+                    _maturesLabel(lock),
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       color: Colors.white,
@@ -792,12 +762,11 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   child: const Center(child: LazerVaultLoader.tiny()),
                 ),
               ] else if (txs.isEmpty) ...[
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 18.h),
-                  child: Center(
-                    child: Text('No activity yet', style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-                  ),
+                const LockFundsEmptyState(
+                  compact: true,
+                  title: 'No activity yet',
+                  subtitle:
+                      'Top-ups, interest accruals and unlocks will show up here.',
                 ),
               ] else ...[
                 for (final tx in txs) _buildActivityRow(tx),
@@ -894,108 +863,84 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     }
   }
 
+  /// All lock actions live ON THIS PAGE (there is no overflow menu). Buttons are
+  /// capability-driven off the plan config (supports top-up / auto-save / renewal)
+  /// and lock state, with NO duplication:
+  ///   • Primary: Withdraw (matured / penalty-free) or Break Lock (early, costs a
+  ///     penalty) — full width.
+  ///   • Secondary: Renew / Top Up / Auto-Save, laid out two per row, shown only
+  ///     when the plan supports them. The backend is the authoritative gate; this
+  ///     just avoids rendering buttons the backend would reject.
+  ///   • Cancel: destructive, only for an active penalised lock, at the bottom.
   Widget _buildActionButtons() {
     final lock = widget.lockFund;
+    final matured = lock.isMatured || lock.status == LockStatus.matured;
+    final penaltyFree =
+        matured || lock.lockType == LockType.savings || lock.earlyUnlockPenaltyPercent == 0;
+
+    final primary = _buildActionButton(
+      penaltyFree ? 'Withdraw' : 'Break Lock',
+      penaltyFree ? Icons.account_balance_wallet_outlined : Icons.lock_open_outlined,
+      penaltyFree ? const Color(0xFF10B981) : const Color(0xFFFB923C),
+      () => matured ? _showWithdrawDialog() : _showBreakLockDialog(),
+      fullWidth: true,
+    );
+
+    final secondary = <Widget>[
+      // Renew: at maturity ANY plan can re-lock (canRenew), and mid-term for the
+      // plans that allow early renewal (defaultSupportsRenewal).
+      if (lock.canRenew || lock.lockType.defaultSupportsRenewal)
+        _buildActionButton('Renew Lock', Icons.refresh, const Color(0xFF6366F1),
+            () => _showRenewDialog()),
+      if (lock.lockType.defaultSupportsTopUp)
+        _buildActionButton('Top Up', Icons.add_circle_outline, const Color(0xFF6366F1),
+            () => _showTopUpScreen()),
+      if (lock.lockType.defaultSupportsAutoSave)
+        _buildActionButton('Auto-Save', Icons.autorenew, const Color(0xFF3B82F6),
+            () => _showAutoSaveScreen()),
+    ];
 
     return Column(
       children: [
-        if (lock.isMatured || lock.status == LockStatus.matured) ...[
-          // Matured - show withdraw and renew buttons
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'Withdraw',
-                  Icons.account_balance_wallet_outlined,
-                  const Color(0xFF10B981),
-                  () => _showWithdrawDialog(),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildActionButton(
-                  'Renew Lock',
-                  Icons.refresh,
-                  const Color(0xFF6366F1),
-                  () => _showRenewDialog(),
-                ),
-              ),
-            ],
-          ),
-        ] else if (lock.isActive) ...[
-          // Active — show available follow-up actions. Top-up +
-          // auto-save visibility tracks the admin dashboard's
-          // PiggyVaultConfig (supports_top_up / supports_auto_save)
-          // via LockType.defaultSupportsTopUp / Auto-save. The
-          // backend is the authoritative gate; this UI check just
-          // avoids rendering buttons the backend would reject.
-          if (lock.lockType.defaultSupportsTopUp || lock.lockType.defaultSupportsAutoSave)
-            Row(
-              children: [
-                if (lock.lockType.defaultSupportsTopUp)
-                  Expanded(
-                    child: _buildActionButton(
-                      'Top Up',
-                      Icons.add_circle_outline,
-                      const Color(0xFF6366F1),
-                      () => _showTopUpScreen(),
-                    ),
-                  ),
-                if (lock.lockType.defaultSupportsTopUp && lock.lockType.defaultSupportsAutoSave)
-                  SizedBox(width: 12.w),
-                if (lock.lockType.defaultSupportsAutoSave)
-                  Expanded(
-                    child: _buildActionButton(
-                      'Auto-Save',
-                      Icons.autorenew,
-                      const Color(0xFF3B82F6),
-                      () => _showAutoSaveScreen(),
-                    ),
-                  ),
-              ],
-            ),
+        primary,
+        if (secondary.isNotEmpty) ...[
           SizedBox(height: 12.h),
-          // Withdraw vs Break Lock: drive the label + colour by the
-          // penalty applied at issue time. Zero penalty = penalty-
-          // free withdrawal; non-zero = an early-break that costs
-          // the user.
-          if (lock.lockType == LockType.savings ||
-              lock.earlyUnlockPenaltyPercent == 0)
-            _buildActionButton(
-              'Withdraw',
-              Icons.account_balance_wallet_outlined,
-              const Color(0xFF10B981),
-              () => _showBreakLockDialog(),
-              fullWidth: true,
-            )
-          else
-            _buildActionButton(
-              'Break Lock',
-              Icons.lock_open_outlined,
-              const Color(0xFFFB923C),
-              () => _showBreakLockDialog(),
-              fullWidth: true,
-            ),
-          // Cancel — distinct from "break lock" / early withdraw
-          // semantically: cancel flips status to 'cancelled' and
-          // captures a typed reason, useful for ops audit (lost
-          // interest in plan, changed mind, etc). Money movement
-          // is identical to break-lock (principal minus penalty
-          // returns to source). Hidden for Flex / zero-penalty
-          // plans where "Withdraw" already covers the same intent.
-          if (lock.lockType != LockType.savings && lock.earlyUnlockPenaltyPercent > 0) ...[
-            SizedBox(height: 8.h),
-            _buildActionButton(
-              'Cancel lock',
-              Icons.cancel_outlined,
-              const Color(0xFFEF4444),
-              () => _showCancelLockDialog(),
-              fullWidth: true,
-            ),
-          ],
+          ..._pairRows(secondary),
+        ],
+        if (!matured &&
+            lock.lockType != LockType.savings &&
+            lock.earlyUnlockPenaltyPercent > 0) ...[
+          SizedBox(height: 8.h),
+          _buildActionButton(
+            'Cancel lock',
+            Icons.cancel_outlined,
+            const Color(0xFFEF4444),
+            () => _showCancelLockDialog(),
+            fullWidth: true,
+          ),
         ],
       ],
     );
+  }
+
+  /// Lays a list of equal-width buttons out two per row (last one full width
+  /// when the count is odd), with 12h gaps between rows.
+  List<Widget> _pairRows(List<Widget> items) {
+    final rows = <Widget>[];
+    for (var i = 0; i < items.length; i += 2) {
+      final hasSecond = i + 1 < items.length;
+      rows.add(Row(
+        children: [
+          Expanded(child: items[i]),
+          if (hasSecond) ...[
+            SizedBox(width: 12.w),
+            Expanded(child: items[i + 1]),
+          ],
+        ],
+      ));
+      if (i + 2 < items.length) rows.add(SizedBox(height: 12.h));
+    }
+    return rows;
   }
 
   /// Cancel-lock confirmation modal. Two-step: reason picker

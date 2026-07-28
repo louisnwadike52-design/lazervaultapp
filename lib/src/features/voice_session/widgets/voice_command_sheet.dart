@@ -37,15 +37,23 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_mini_bubble.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_content.dart'
+    show BubbleTailPainter;
 
 class VoiceCommandSheet extends StatefulWidget {
   final String? serviceName;
   final bool skipActivationCheck;
 
+  /// Optional scoped-context id (e.g. a P2P conversation id) forwarded to the
+  /// voice session so the agent stays pinned to that conversation.
+  final String? conversationId;
+
   const VoiceCommandSheet({
     super.key,
     this.serviceName,
     this.skipActivationCheck = false,
+    this.conversationId,
   });
 
   @override
@@ -58,7 +66,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   late AnimationController _waveController;
   late AnimationController _glowController;
   // Avatar speaking/listening pulse — drives the glow ring + gentle scale
-  // around the Nyla customer-rep avatar.
+  // around the Nova customer-rep avatar.
   late AnimationController _avatarController;
   final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
 
@@ -96,18 +104,23 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   bool _isCheckingEnrollment = true;
   bool _isMuted = false;
   bool _isClosing = false;
-  // Sheet height as a fraction of the screen. Opens at 80% (DEFAULT); the user
-  // can DRAG the top handle to resize anywhere between 80% and full screen, and
-  // the drag snaps to the nearer of the two on release. The full-screen toggle
-  // also switches between 80% and full. _isFullScreen mirrors the full state for
-  // the toggle icon; it can only resize, never dismiss the sheet.
-  static const double _kDefaultHeightFactor = 0.9;
-  // Smallest height the sheet can be dragged down to (a true "minimized" peek),
-  // so the user can shrink it — not just toggle between 90% and full.
+  // Set the instant BEFORE we pop the sheet to minimize it into the floating
+  // bubble, so dispose()'s teardown branch does NOT disconnect the app-scoped
+  // cubit / LiveKit room. Minimize keeps the session live; only close/end tear
+  // it down.
+  bool _isMinimizing = false;
+  // Sheet height as a fraction of the screen. Opens FULL SCREEN by default (the
+  // voice call is the focus); the user can DRAG the top handle down, and the
+  // "minimize" control collapses the sheet into a small floating bubble (see
+  // VoiceMiniBubbleController) so they can keep using the app while the session
+  // stays live. _isFullScreen mirrors the full state for the toggle icon.
+  static const double _kDefaultHeightFactor = 1.0;
+  // Smallest height the sheet can be dragged down to before it reads as a request
+  // to minimize into the floating bubble.
   static const double _kMinHeightFactor = 0.5;
   double _sheetHeightFactor = _kDefaultHeightFactor;
   bool _isDraggingSheet = false;
-  bool _isFullScreen = false;
+  bool _isFullScreen = true;
   // Tiny-CTA toggle for the live captions overlay. Captions default ON (the
   // in-progress "speaking…" bubble is the primary realtime feedback). The
   // running transcript history is ALWAYS shown (it accumulates + scrolls); the
@@ -155,6 +168,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       duration: const Duration(milliseconds: 1100),
       vsync: this,
     );
+
+    // Voice-conversation ambiance: the side sound-waves and the ambient glow
+    // animate CONTINUOUSLY the whole time the sheet is open (they are never
+    // stopped by _stopAnimations) so the sheet always feels "live". Amplitude is
+    // modulated by speaking/listening state, but motion never freezes.
+    _waveController.repeat();
+    _glowController.repeat(reverse: true);
 
     // Reset cubit state if it was disconnected (allows reconnection)
     _resetIfNeeded();
@@ -271,6 +291,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     if (_isClosing) return;
     _isClosing = true;
 
+    // Close is a full teardown — remove the floating bubble too (no-op if it
+    // isn't showing) so a live-session bubble can never outlive the call.
+    VoiceMiniBubbleController.instance.hide();
+
     // End the voice session (stops recording, disconnects LiveKit, cleans up)
     final cubit = context.read<VoiceSessionCubit>();
     cubit.disconnectFromLiveKitRoom(fullCleanup: true);
@@ -284,9 +308,33 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     }
   }
 
+  /// Minimize the sheet into a small floating bubble WITHOUT ending the voice
+  /// session. The [VoiceSessionCubit] is app-scoped (provided above
+  /// GetMaterialApp), so popping this modal sheet keeps the LiveKit room + WS
+  /// alive. We set [_isMinimizing] first so dispose() skips its teardown branch,
+  /// show the global bubble on the root overlay (it re-opens this sheet on tap
+  /// and auto-removes itself when the session ends), then pop the sheet so the
+  /// user can navigate the app while still on the call.
+  void _minimizeSheet() {
+    if (_isClosing || _isMinimizing) return;
+    _isMinimizing = true;
+    final cubit = context.read<VoiceSessionCubit>();
+    VoiceMiniBubbleController.instance.show(
+      context,
+      cubit: cubit,
+      serviceName: widget.serviceName,
+      conversationId: widget.conversationId,
+    );
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
   /// End the call and show the rating/thank-you screen.
   void _endCall() {
     if (_isClosing) return;
+    // End is a full teardown — remove the floating bubble too (no-op if hidden).
+    VoiceMiniBubbleController.instance.hide();
     _dismissActiveDialog();
     _resetMuteState();
     // Reset rating state for fresh view
@@ -336,6 +384,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final currentState = cubit.state;
     print('VoiceCommandSheet: Current cubit state: ${currentState.runtimeType}');
 
+    // Re-opening from the minimized floating bubble: a session is already live,
+    // so DON'T start/restart one (startVoiceSession would tear down + rebuild the
+    // LiveKit room, re-greet, and lose conversation continuity). Just re-attach —
+    // the BlocConsumer below renders the ongoing call's live state as-is.
+    if (cubit.hasActiveVoiceSession || cubit.isConnected) {
+      print('VoiceCommandSheet: session already active — re-attaching (no restart)');
+      return;
+    }
+
     // Load language preferences and available languages
     final userCountry = authState.profile.user.country ?? 'NG';
     await cubit.loadLanguagePreferences(userCountry);
@@ -366,11 +423,19 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     try {
       activeCurrency = serviceLocator<LocaleManager>().currentCurrency;
     } catch (_) {/* optional */}
+    // userId for once-per-session on-device voice biometrics (on_device mode).
+    String? userId;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      userId = authState.profile.userId;
+    }
     context.read<VoiceSessionCubit>().startVoiceSession(
       accessToken: token,
       serviceName: widget.serviceName,
+      conversationId: widget.conversationId,
       accountId: activeAccountId,
       currency: activeCurrency,
+      userId: userId,
     );
   }
 
@@ -561,8 +626,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
   void _stopAnimations() {
     _pulseController.stop();
-    _waveController.stop();
-    _glowController.stop();
+    // _waveController + _glowController deliberately keep running (continuous
+    // ambient sound-waves / glow for the voice conversation) — only the
+    // speaking/listening pulse + avatar bounce stop when idle.
     _avatarController.stop();
   }
 
@@ -662,8 +728,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _glowController.dispose();
     _avatarController.dispose();
     _conversationScrollController.dispose();
-    // Only disconnect if not already closing (avoids double disconnect)
-    if (!_isClosing) {
+    // Only disconnect if not already closing AND not minimizing (avoids double
+    // disconnect, and keeps the session live when the sheet is minimized into
+    // the floating bubble).
+    if (!_isClosing && !_isMinimizing) {
       context.read<VoiceSessionCubit>().disconnectFromLiveKitRoom(fullCleanup: true);
     }
     super.dispose();
@@ -815,6 +883,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           // Voice biometrics confirmed the speaker — show a brief success
           // confirmation (auto-dismisses after 3s, OK closes it sooner).
           _showVerificationSuccessDialog(context, state.message);
+        } else if (state is VoiceSessionCloneDegraded) {
+          // Cloned voice dropped to a standard voice mid-call — a brief, non-blocking
+          // notice (mirrors the language-unavailable snackbar). The call continues.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: const Color(0xFFFB923C),
+              duration: const Duration(seconds: 4),
+            ),
+          );
         }
 
         // Keep the inline conversation pinned to the newest message/caption.
@@ -833,7 +911,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             state is VoiceSessionTransactionError ||
             state is VoiceSessionWebSocketFailed ||
             state is VoiceSessionLowConfidenceWarning ||
-            state is VoiceSessionVerificationSuccess) {
+            state is VoiceSessionVerificationSuccess ||
+            state is VoiceSessionCloneDegraded) {
           _startAnimations();
         } else if (state is VoiceSessionEnded ||
             state is VoiceSessionDisconnected) {
@@ -858,7 +937,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
         // Main voice session UI — self-sizing draggable sheet (90% → full
         // screen), mirroring the send-funds chatbot. Clean vertical layout:
-        //   TOP    = compact header (avatar + Nyla + status + controls)
+        //   TOP    = compact header (avatar + Nova + status + controls)
         //   MIDDLE = single scrollable conversation/transcript + live caption
         //   BOTTOM = action bar (mute / end)
         // Sheet height = MediaQuery * _sheetHeightFactor. Opens at 90% and can be
@@ -894,10 +973,50 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
               child: Stack(
                 children: [
+                  // Living ambient aura — a soft purple radial glow up top (behind
+                  // the rep) that gently breathes off the continuous _glowController.
+                  // Gives the sheet a "voice conversation" ambiance without competing
+                  // with the text. IgnorePointer so it never absorbs touches.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedBuilder(
+                        animation: _glowController,
+                        builder: (context, _) {
+                          final t = _glowController.value; // 0..1 (reverses)
+                          return DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(0, -0.55),
+                                radius: 0.95 + 0.12 * t,
+                                colors: [
+                                  const Color(0xFF5B45C9)
+                                      .withValues(alpha: 0.20 + 0.10 * t),
+                                  const Color(0xFF3D2F8B)
+                                      .withValues(alpha: 0.10 + 0.05 * t),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.45, 1.0],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  // Full-bleed watermark BEHIND the content — flowing lavender
+                  // topographic lines. Static (never absorbs touches) so it never
+                  // competes with the conversation.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: CustomPaint(
+                        painter: const _VoiceWatermarkPainter(),
+                      ),
+                    ),
+                  ),
                   SafeArea(
                 // We handle the TOP inset explicitly below — SafeArea's top inset
                 // is unreliable inside a modal bottom sheet (the route can zero
-                // out MediaQuery.padding.top), which left the Nyla header tucked
+                // out MediaQuery.padding.top), which left the Nova header tucked
                 // under the OS status bar in full screen. Keep bottom/side insets.
                 top: false,
                 child: Column(
@@ -963,7 +1082,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       ),
                     ),
 
-                    // Compact header: avatar + Nyla + live status + (fullscreen/close)
+                    // Compact header: avatar + Nova + live status + (fullscreen/close)
                     _buildSessionHeader(state),
 
                     // Always-visible secondary controls (captions, history, settings,
@@ -1012,7 +1131,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Compact session header: Nyla avatar (flashing while speaking) + name +
+  /// Compact session header: Nova avatar (flashing while speaking) + name +
   /// live status (Listening… / Thinking… / Speaking) + control cluster
   /// (settings, language, full-screen, history, close).
   Widget _buildSessionHeader(VoiceSessionState state) {
@@ -1022,8 +1141,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       padding: EdgeInsets.fromLTRB(16.w, 2.h, 12.w, 4.h),
       child: Row(
         children: [
-          // Nyla avatar (small, flashing)
-          _buildNylaAvatar(state, compact: true),
+          // Nova avatar (small, flashing)
+          _buildNovaAvatar(state, compact: true),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -1031,7 +1150,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Nyla',
+                  'Nova',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
@@ -1046,9 +1165,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ],
             ),
           ),
-          // Right cluster: ONLY the two essential controls (full-screen toggle +
-          // close) stay in the header row, so nothing is ever hidden off-screen.
-          // Every other control lives in the always-visible secondary row below.
+          // Right cluster: minimize (collapse to floating bubble), full-screen
+          // toggle, and close. Everything else lives in the always-visible
+          // secondary row below so nothing is ever hidden off-screen.
+          _buildMinimizeButton(),
+          SizedBox(width: 8.w),
           _buildFullScreenButton(),
           SizedBox(width: 8.w),
           GestureDetector(
@@ -1243,6 +1364,27 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
+  /// Minimize button — collapses the sheet into a small floating bubble while
+  /// the voice session stays live (see [_minimizeSheet]).
+  Widget _buildMinimizeButton() {
+    return GestureDetector(
+      onTap: _minimizeSheet,
+      child: Container(
+        width: 34.w,
+        height: 34.w,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.remove_rounded,
+          color: Colors.white.withValues(alpha: 0.55),
+          size: 20.sp,
+        ),
+      ),
+    );
+  }
+
   /// Full-screen toggle button (fullscreen / fullscreen_exit).
   Widget _buildFullScreenButton() {
     return GestureDetector(
@@ -1293,7 +1435,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildNylaAvatar(state, compact: false),
+            _buildNovaAvatar(state, compact: false),
             SizedBox(height: 28.h),
             _buildStatusSection(state),
           ],
@@ -1303,7 +1445,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     // ── ACTIVE TRANSFER LAYOUT ──
     // When a transfer is in flight, the screen has a lot going on: give the
-    // sci-fi HUD the prime central space, the (already-compact) Nyla avatar
+    // sci-fi HUD the prime central space, the (already-compact) Nova avatar
     // lives in the header, and the conversation is condensed below it. This is
     // the SINGLE transfer surface — the old inline progress stepper is gone.
     final transfer = cubit.transferContext;
@@ -1324,7 +1466,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildNylaAvatar(state, compact: false),
+            _buildNovaAvatar(state, compact: false),
             SizedBox(height: 24.h),
             Text(
               'How can I help you?',
@@ -1355,7 +1497,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // fuller standalone history sheet on long-press. The live interim caption
     // is appended as the latest in-progress bubble while the user/agent is
     // mid-utterance, then replaced by its finalized history bubble with no gap.
-    // Avatar is PINNED at the top (a fixed Column section) so Nyla stays
+    // Avatar is PINNED at the top (a fixed Column section) so Nova stays
     // visible while the conversation scrolls beneath her — previously the
     // avatar was the first ListView item and scrolled out of view (#19).
     return Column(
@@ -1363,7 +1505,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       children: [
         Padding(
           padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
-          child: Center(child: _buildNylaAvatar(state, compact: false)),
+          child: Center(child: _buildNovaAvatar(state, compact: false)),
         ),
         Expanded(
           child: ListView(
@@ -1384,7 +1526,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 if (agentCaption != null && agentCaption.isNotEmpty)
                   _buildLiveCaptionBubble(agentCaption, isUser: false),
               ],
-              // "Nyla is typing…" bubble while the AI is thinking and hasn't started
+              // "Nova is typing…" bubble while the AI is thinking and hasn't started
               // its spoken reply yet — a real chat-style typing indicator on the left.
               if (_isAgentThinking(state, agentCaption)) _buildTypingBubble(),
             ],
@@ -1404,7 +1546,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         (agentCaption == null || agentCaption.isEmpty);
   }
 
-  /// Left-aligned "Nyla is typing" bubble with bouncing dots.
+  /// Left-aligned "Nova is typing" bubble with bouncing dots.
   Widget _buildTypingBubble() {
     const accent = Color(0xFF5B45C9);
     return Align(
@@ -1421,7 +1563,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Nyla is typing',
+              'Nova is typing',
               style: GoogleFonts.inter(
                 color: accent,
                 fontSize: 11.sp,
@@ -1438,7 +1580,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   /// Active-transfer layout: HUD takes the prime central space; captions +
-  /// (collapsible) conversation history are condensed below it. The Nyla avatar
+  /// (collapsible) conversation history are condensed below it. The Nova avatar
   /// stays compact in the header (built by [_buildSessionHeader]).
   Widget _buildActiveTransferArea({
     required VoiceSessionState state,
@@ -1518,24 +1660,44 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           left: isUser ? 48.w : 0,
           right: isUser ? 0 : 48.w,
         ),
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(isUser ? 16.r : 4.r),
-            bottomRight: Radius.circular(isUser ? 4.r : 16.r),
-          ),
-          border: Border.all(color: borderColor, width: 1),
-        ),
-        child: Text(
-          text,
-          style: GoogleFonts.inter(
-            color: Colors.white.withValues(alpha: 0.92),
-            fontSize: 14.sp,
-            height: 1.4,
-          ),
+        // Clip.none lets the side-edge tail protrude past the bubble body.
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding:
+                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: bubbleColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16.r),
+                  topRight: Radius.circular(16.r),
+                  bottomLeft: Radius.circular(isUser ? 16.r : 4.r),
+                  bottomRight: Radius.circular(isUser ? 4.r : 16.r),
+                ),
+                border: Border.all(color: borderColor, width: 1),
+              ),
+              child: Text(
+                text,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  fontSize: 14.sp,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            // iMessage-style bottom side-edge tail (matches the central chatbot
+            // / p2p bubbles) so each turn visibly points to its sender.
+            Positioned(
+              bottom: 0,
+              right: isUser ? -5.w : null,
+              left: isUser ? null : -5.w,
+              child: CustomPaint(
+                painter: BubbleTailPainter(color: bubbleColor, isUser: isUser),
+                size: Size(10.w, 13.h),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1573,7 +1735,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  isUser ? 'You' : 'Nyla',
+                  isUser ? 'You' : 'Nova',
                   style: GoogleFonts.inter(
                     color: accent,
                     fontSize: 10.sp,
@@ -2108,13 +2270,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Nyla customer-rep avatar inside a circular frame. While the agent is
+  /// Nova customer-rep avatar inside a circular frame. While the agent is
   /// SPEAKING it pulses a purple glow ring + gentle scale and shows an active
   /// mic indicator (reads as "the rep is talking with their mic on"). While
   /// the user is LISTENING it pulses a softer blue. Idle/thinking = calm.
   ///
   /// [compact] = small header variant; otherwise the large central variant.
-  Widget _buildNylaAvatar(VoiceSessionState state, {required bool compact}) {
+  Widget _buildNovaAvatar(VoiceSessionState state, {required bool compact}) {
     final cubit = context.read<VoiceSessionCubit>();
     final isSpeaking = cubit.isAgentSpeaking;
     final isListening = state is VoiceSessionLocalUserSpeaking;
@@ -2146,7 +2308,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 : const Color(0xFF3D2F8B);
     final bool animate = isSpeaking || isListening;
 
-    return AnimatedBuilder(
+    final Widget avatar = AnimatedBuilder(
       animation: _avatarController,
       builder: (context, child) {
         final t = _avatarController.value; // 0..1 (reverses)
@@ -2249,6 +2411,90 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         );
       },
     );
+
+    // Compact header variant: avatar only (unchanged).
+    if (compact) return avatar;
+
+    // Large central variant: symmetric animated voice-waves flanking the avatar
+    // (left — avatar — right). Bars oscillate off _waveController; amplitude
+    // scales up while speaking/listening, near-flat when idle.
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _buildSideWaves(leftSide: true, color: glowColor, active: animate),
+        SizedBox(width: 10.w),
+        avatar,
+        SizedBox(width: 10.w),
+        _buildSideWaves(leftSide: false, color: glowColor, active: animate),
+      ],
+    );
+  }
+
+  /// Symmetric waveform bars rendered on one side of the central avatar. ~4
+  /// vertical rounded bars whose heights oscillate off [_waveController] with a
+  /// per-bar phase offset (via sin). Amplitude scales up when [active]
+  /// (speaking/listening) and stays near-flat when idle so it never distracts.
+  /// [leftSide] mirrors the phase order so both sides read as a mirrored pair.
+  Widget _buildSideWaves({
+    required bool leftSide,
+    required Color color,
+    required bool active,
+  }) {
+    const int barCount = 5;
+    final double maxH = 42.h;
+    final double minH = 8.h;
+    return AnimatedBuilder(
+      animation: _waveController,
+      builder: (context, _) {
+        final phaseT = _waveController.value; // 0..1, continuous
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: List.generate(barCount, (i) {
+            // idx = distance from the avatar (0 = innermost) on BOTH sides, so the
+            // pattern is a mirrored pair. Subtracting the time phase makes the crest
+            // travel OUTWARD — away from the rep toward the edges — like sound
+            // radiating out to both sides.
+            final idx = leftSide ? (barCount - 1 - i) : i;
+            final phase = idx * (pi / 3);
+            final wave = sin(phaseT * 2 * pi - phase) * 0.5 + 0.5; // 0..1, travels out
+            // Always animating (never flat): a clearly-visible idle baseline that
+            // swells while the rep speaks / the user talks.
+            final amp = active ? 1.0 : 0.55;
+            final h = minH + (maxH - minH) * wave * amp;
+            final op = active ? 0.92 : 0.5;
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 2.2.w),
+              child: Container(
+                width: 4.5.w,
+                height: h,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      color.withValues(alpha: op),
+                      color.withValues(alpha: op * 0.55),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(4.r),
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
   }
 
   Widget _buildVoiceOrb(VoiceSessionState state) {
@@ -2263,7 +2509,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         state is VoiceSessionTransactionError ||
         state is VoiceSessionWebSocketFailed ||
         state is VoiceSessionLowConfidenceWarning ||
-        state is VoiceSessionVerificationSuccess;
+        state is VoiceSessionVerificationSuccess ||
+        state is VoiceSessionCloneDegraded;
 
     final isSpeaking = state is VoiceSessionLocalUserSpeaking;
     final isProcessing = state is VoiceSessionAgentProcessing;
@@ -2574,7 +2821,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         state is VoiceSessionTransactionError ||
         state is VoiceSessionWebSocketFailed ||
         state is VoiceSessionLowConfidenceWarning ||
-        state is VoiceSessionVerificationSuccess;
+        state is VoiceSessionVerificationSuccess ||
+        state is VoiceSessionCloneDegraded;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -3491,7 +3739,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final name = (r['recipientName'] ?? r['recipientUsername'] ?? '').toString();
     // Anchor the transient "Sending to <name>" confirmation ABOVE the bottom
     // action bar rather than at a fixed top offset. The old `top: 64.h` ignored
-    // the status-bar inset, so in full-screen it overlapped the Nyla avatar /
+    // the status-bar inset, so in full-screen it overlapped the Nova avatar /
     // header. Bottom-anchoring clears the header at every sheet height.
     return Positioned(
       bottom: 96.h,
@@ -3764,10 +4012,23 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         },
       );
 
-      // Cancelled / exhausted / locked WITHOUT a validated PIN — tell the
-      // agent to cancel the in-flight voice action cleanly.
+      // Cancelled / exhausted / locked WITHOUT a validated PIN — tell the agent
+      // WHY (from the mixin's lastPinFailureReason) so it speaks the right outcome:
+      // a lockout/exhaustion must NOT be offered a retry the server will reject.
       if (!success && !verified) {
-        await cubit.notifyPinCompleted(false, error: 'pin_entry_cancelled');
+        final reason = lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
+        await cubit.notifyPinCompleted(
+          false,
+          error: reason == 'locked'
+              ? 'account locked'
+              : reason == 'exhausted'
+                  ? 'incorrect pin — no attempts remaining'
+                  : 'pin_entry_cancelled',
+          isLocked: reason == 'locked',
+          remainingAttempts: (reason == 'locked' || reason == 'exhausted')
+              ? 0
+              : lastPinRemainingAttempts,
+        );
       }
     } finally {
       _pinSheetTimeoutTimer?.cancel();
@@ -3945,4 +4206,51 @@ class _YourVoiceInfo {
     this.username,
     this.avatarUrl,
   });
+}
+
+/// Static, full-bleed watermark drawn behind the sheet content: a set of faint
+/// flowing topographic-style curves in near-white at very low opacity
+/// (alpha ~0.03–0.06). Non-animated so it never competes with the live
+/// conversation; the dark gradient scrim in front keeps content readable.
+class _VoiceWatermarkPainter extends CustomPainter {
+  const _VoiceWatermarkPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    const int lineCount = 12;
+    const int segments = 5;
+    for (int i = 0; i < lineCount; i++) {
+      final double progress = i / (lineCount - 1);
+      final double baseY = size.height * (0.06 + progress * 0.9);
+      // Amplitude peaks toward the middle of the sheet for a gentle topographic
+      // bulge, tapering near the top/bottom edges.
+      final double amplitude =
+          size.height * (0.02 + 0.032 * sin(progress * pi));
+      // Clearly visible (was a near-invisible 0.03–0.06 white). Branded lavender
+      // purple, opacity peaks mid-sheet (~0.10–0.20) so the flowing topographic
+      // lines read as an intentional voice-conversation backdrop.
+      final double alpha = 0.10 + 0.10 * sin(progress * pi);
+      paint.color = const Color(0xFF9B87F5).withValues(alpha: alpha);
+
+      final path = Path()..moveTo(-24, baseY);
+      for (int s = 0; s < segments; s++) {
+        final double cx = size.width * ((s + 0.5) / segments);
+        final double cy = baseY + amplitude * (s.isEven ? -1.0 : 1.0);
+        final double ex = size.width * ((s + 1) / segments) + 24;
+        final double ey = baseY + amplitude * (s.isEven ? 1.0 : -1.0) * 0.35;
+        path.quadraticBezierTo(cx, cy, ex, ey);
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _VoiceWatermarkPainter oldDelegate) => false;
 }

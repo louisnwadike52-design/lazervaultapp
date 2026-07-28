@@ -66,42 +66,31 @@ class CurrencyData {
       countryName: 'Kenya',
       exchangeRate: 107.0,
     ),
+    // Klasha corridors (Flutterwave doesn't cover PH/CA). Kept in sync with
+    // FlutterwaveCountryRules + the backend exchange_corridor_support seed
+    // (migration 007, provider='klasha').
     const Currency(
-      code: 'ZAR',
-      name: 'South African Rand',
-      symbol: 'R',
-      flagUrl: '$_flagBaseUrl/za.png',
-      countryCode: 'ZA',
-      countryName: 'South Africa',
-      exchangeRate: 14.8,
+      code: 'PHP',
+      name: 'Philippine Peso',
+      symbol: '₱',
+      flagUrl: '$_flagBaseUrl/ph.png',
+      countryCode: 'PH',
+      countryName: 'Philippines',
+      exchangeRate: 56.0,
     ),
     const Currency(
-      code: 'UGX',
-      name: 'Ugandan Shilling',
-      symbol: 'USh',
-      flagUrl: '$_flagBaseUrl/ug.png',
-      countryCode: 'UG',
-      countryName: 'Uganda',
-      exchangeRate: 3700.0,
+      code: 'CAD',
+      name: 'Canadian Dollar',
+      symbol: 'C\$',
+      flagUrl: '$_flagBaseUrl/ca.png',
+      countryCode: 'CA',
+      countryName: 'Canada',
+      exchangeRate: 1.36,
     ),
-    const Currency(
-      code: 'TZS',
-      name: 'Tanzanian Shilling',
-      symbol: 'TSh',
-      flagUrl: '$_flagBaseUrl/tz.png',
-      countryCode: 'TZ',
-      countryName: 'Tanzania',
-      exchangeRate: 2350.0,
-    ),
-    const Currency(
-      code: 'XOF',
-      name: 'West African CFA Franc',
-      symbol: 'CFA',
-      flagUrl: '$_flagBaseUrl/sn.png',
-      countryCode: 'SN',
-      countryName: 'Senegal',
-      exchangeRate: 555.0,
-    ),
+    // ZAR / UGX / TZS / XOF removed (#131): Flutterwave's FX/Transfers API
+    // doesn't reliably support them, matching FlutterwaveCountryRules and the
+    // backend corridor matrix (explicit supported=false rows). Re-add here +
+    // there together if provider coverage improves.
   ];
 
   static Currency? getCurrencyByCode(String code) {

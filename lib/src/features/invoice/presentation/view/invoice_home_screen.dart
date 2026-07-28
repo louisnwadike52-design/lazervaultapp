@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
+import '../../../../../core/shared_widgets/service_entrance_animation.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
@@ -247,18 +248,27 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
       body: SafeArea(
         child: Column(
           children: [
+            // Header stays static; the content below rises + fades in on load.
             _buildHeader(context),
-            _buildStatsRow(context),
-            SizedBox(height: 16.h),
-            _buildTabBar(),
-            _buildFilterChips(),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildReceivedTab(),
-                  _buildCreatedTab(),
-                ],
+              child: ServiceEntranceAnimation(
+                child: Column(
+                  children: [
+                    _buildStatsRow(context),
+                    SizedBox(height: 16.h),
+                    _buildTabBar(),
+                    _buildFilterChips(),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildReceivedTab(),
+                          _buildCreatedTab(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -1051,7 +1061,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                       SizedBox(height: 4.h),
                       if (isLocked)
                         Text(
-                          'Tap to unlock for ${_currencySymbol}99.99',
+                          'Tap to unlock this invoice',
                           style: GoogleFonts.inter(
                             color: const Color(0xFFFB923C),
                             fontSize: 12.sp,

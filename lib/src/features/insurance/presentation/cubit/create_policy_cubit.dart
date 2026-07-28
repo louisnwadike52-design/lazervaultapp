@@ -15,6 +15,7 @@ import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
 import '../../domain/entities/insurance_document_upload_url.dart';
+import '../../data/array_item_encoder.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../../../authentication/domain/entities/user.dart';
 import '../../../../../core/cache/cache_config.dart';
@@ -906,6 +907,27 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         errors[field.name] = '${field.label} is required';
       } else if (required && isArray && _isEmptyJsonArray(value)) {
         errors[field.name] = 'Add at least one ${field.label.toLowerCase()} entry';
+      } else if (isArray && isInsuredItemsField(field.name) && value.isNotEmpty) {
+        // Per-item content rules MyCover enforces (image, description ≥ 5,
+        // value ≥ ₦50,000). Catch them here so the user fixes the entry in
+        // the form instead of failing the purchase right after PIN entry.
+        final itemErr = validateInsuredItems(itemSchemaFor(field), value);
+        if (itemErr != null) errors[field.name] = itemErr;
+      } else if (value.isNotEmpty &&
+          field.name.toLowerCase() == 'value' &&
+          _selectedProduct?.category == InsuranceProductCategory.gadget) {
+        // Gadget device `value` must be ≥ ₦100,000 (MyCover minimum that isn't
+        // in the discovered schema). Block at the Continue gate so the user
+        // fixes it before PIN/pay instead of failing at MyCover.
+        final n = num.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), ''));
+        if (n == null || n < 100000) {
+          errors[field.name] = 'Must be at least ₦100,000';
+        }
+      } else if (value.isNotEmpty &&
+          field.name.toLowerCase() == 'serial_number' &&
+          value.trim().length < 10) {
+        // MyCover: "/serial_number must NOT have fewer than 10 characters".
+        errors[field.name] = 'Must be at least 10 characters';
       } else if (value.isNotEmpty && field.validationRegex.isNotEmpty) {
         try {
           final regex = RegExp(field.validationRegex);
@@ -1028,6 +1050,116 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     return s.contains('network') || s.contains('connection') || s.contains('socket');
   }
 
+  /// Turns a purchase GrpcError into a clear, actionable message. The
+  /// backend + MyCover surface field-level validation as FailedPrecondition /
+  /// InvalidArgument with messages like "item_details: item 1: description
+  /// must be at least 5 characters" or "invalid vehicle_plate_number". Those
+  /// are exactly what the user needs to see, but `friendlyGrpcError` treats
+  /// their field-key/underscore shape as "technical" and hides them behind a
+  /// generic fallback. Clean the message (drop the leading field-key prefix,
+  /// tidy underscores, capitalise) and surface it directly.
+  String _friendlyPurchaseError(GrpcError e) {
+    if (e.code == StatusCode.failedPrecondition ||
+        e.code == StatusCode.invalidArgument) {
+      var msg = (e.message ?? '').trim();
+      // Strip a leading "Please review: " / "field_name: " prefix.
+      msg = msg.replaceFirst(
+          RegExp(r'^\s*please review:\s*', caseSensitive: false), '');
+
+      // Missing-field errors — surface WHICH field(s) to provide. MyCover
+      // phrases these three ways: AJV "must have required property 'X'"
+      // (often several at once), "X is missing in body", and "X is required".
+      final missing = <String>{};
+      for (final m
+          in RegExp(r"required property '([a-zA-Z0-9_]+)'").allMatches(msg)) {
+        missing.add(m.group(1)!);
+      }
+      if (missing.isEmpty) {
+        final m = RegExp(r'^([a-z0-9_]+)\s+is\s+(?:missing|required)\b',
+                caseSensitive: false)
+            .firstMatch(msg);
+        if (m != null) missing.add(m.group(1)!);
+      }
+      if (missing.isNotEmpty) {
+        final labels = missing.map(_humanizeFieldName).toList();
+        return labels.length == 1
+            ? 'Please provide your ${labels.first} to continue.'
+            : 'Please provide these to continue: ${labels.join(', ')}.';
+      }
+
+      // Numeric-constraint errors, e.g. "/value must be >= 100000" — tell the
+      // user the actual minimum/maximum (MyCover's per-product limits aren't in
+      // our schema, so we can't pre-block them, but we can name them clearly).
+      final numMatch = RegExp(
+              r'/?([a-zA-Z0-9_]+)\s+must\s+be\s+(>=|<=|>|<)\s*([0-9]+)',
+              caseSensitive: false)
+          .firstMatch(msg);
+      if (numMatch != null) {
+        final field = _humanizeFieldName(numMatch.group(1)!).toLowerCase();
+        final op = numMatch.group(2)!;
+        final n = int.tryParse(numMatch.group(3)!) ?? 0;
+        final phrase = op.startsWith('>') ? 'at least' : 'at most';
+        return 'The $field must be $phrase ${_formatNaira(n)}.';
+      }
+
+      // Unreachable document upload, e.g. "URL is not reachable for property
+      // 'certificate_of_origin_url': received status 404".
+      final urlMatch = RegExp(
+              r'''reachable for property\s+["']?([a-zA-Z0-9_]+)''',
+              caseSensitive: false)
+          .firstMatch(msg);
+      if (urlMatch != null) {
+        return 'Please re-attach your ${_humanizeFieldName(urlMatch.group(1)!)} and try again.';
+      }
+
+      // Provider-side lookup failure — the request passed field validation but
+      // the insurer couldn't rate/match it (e.g. "External: There is no row at
+      // position 0."). Usually an unsupported device make/model/type combo.
+      final lower = msg.toLowerCase();
+      if (lower.contains('no row at position') || lower.startsWith('external:')) {
+        return "The insurer couldn't process these details. Please double-check "
+            'your selections (e.g. device make, model and type) and try again.';
+      }
+
+      // Otherwise clean whatever field-level message came back.
+      final firstColon = msg.indexOf(': ');
+      if (firstColon > 0 &&
+          firstColon < 24 &&
+          !msg.substring(0, firstColon).contains(' ')) {
+        msg = msg.substring(firstColon + 2).trim();
+      }
+      msg = msg.replaceAll('_', ' ').trim();
+      if (msg.isNotEmpty) {
+        msg = msg[0].toUpperCase() + msg.substring(1);
+        if (!msg.endsWith('.')) msg = '$msg.';
+        return msg;
+      }
+    }
+    return friendlyGrpcError(e, 'Failed to purchase insurance');
+  }
+
+  /// Formats a plain integer as naira with thousands separators, e.g.
+  /// 100000 → "₦100,000".
+  String _formatNaira(int amount) {
+    final s = amount.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return '₦$buf';
+  }
+
+  /// "bill_of_lading_url" → "Bill of lading". Drops a trailing "_url", turns
+  /// snake_case into words, and sentence-cases the result.
+  String _humanizeFieldName(String name) {
+    var n = name;
+    if (n.endsWith('_url')) n = n.substring(0, n.length - 4);
+    n = n.replaceAll('_', ' ').trim();
+    if (n.isEmpty) return name;
+    return n[0].toUpperCase() + n.substring(1);
+  }
+
   /// Purchase insurance with the current quote
   Future<void> purchaseInsurance({
     required String accountId,
@@ -1147,7 +1279,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         _restoreQuoteState();
       } else {
         emit(CreatePolicyError(
-          message: friendlyGrpcError(e, 'Failed to purchase insurance'),
+          message: _friendlyPurchaseError(e),
           errorCode: e.code.toString(),
         ));
         _restoreQuoteState();

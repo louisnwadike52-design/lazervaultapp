@@ -27,7 +27,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   static const _bg = Color(0xFF0A0A0A);
   static const _card = Color(0xFF1F1F1F);
   static const _border = Color(0xFF2D2D2D);
-  static const _blue = Color(0xFF3B82F6);
+  static const _blue = Color.fromARGB(255, 78, 3, 208);
   static const _label = Color(0xFF9CA3AF);
   static const _hint = Color(0xFF6B7280);
   static const _red = Color(0xFFEF4444);
@@ -211,7 +211,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               backgroundColor: const Color(0xFF10B981),
             ),
           );
-          Get.back(result: true);
+          // Return the created customer so a caller (e.g. the Sell customer
+          // picker's "+ New customer") can auto-select it. Lists check `!= null`.
+          Get.back(result: state.customer);
         } else if (state is CustomerError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

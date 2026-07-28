@@ -16,6 +16,17 @@ class P2PChatLoaded extends P2PChatState {
   final String connectionStatus;
   final String? initiatedBy;
   final bool canSendMessage;
+  // Fraud-detection ⚠️ flag for the current viewer (counterparty of a flagged
+  // sender). Lets the chat page show the banner even when opened directly.
+  final bool safetyWarning;
+  final String? safetyWarningReason;
+  // The message the composer is currently REPLYING to (null = not replying).
+  final P2PMessageEntity? replyingTo;
+  // The message currently being EDITED (null = not editing).
+  final P2PMessageEntity? editingMessage;
+  // Message ids currently flashed by the AI "jump to message" feature (empty =
+  // none). The bubble renders a transient highlight while its id is in here.
+  final Set<String> highlightedMessageIds;
 
   P2PChatLoaded({
     required this.messages,
@@ -26,6 +37,11 @@ class P2PChatLoaded extends P2PChatState {
     this.connectionStatus = 'accepted',
     this.initiatedBy,
     this.canSendMessage = true,
+    this.safetyWarning = false,
+    this.safetyWarningReason,
+    this.replyingTo,
+    this.editingMessage,
+    this.highlightedMessageIds = const {},
   });
 
   P2PChatLoaded copyWith({
@@ -37,6 +53,13 @@ class P2PChatLoaded extends P2PChatState {
     String? connectionStatus,
     String? initiatedBy,
     bool? canSendMessage,
+    bool? safetyWarning,
+    String? safetyWarningReason,
+    P2PMessageEntity? replyingTo,
+    bool clearReplyingTo = false,
+    P2PMessageEntity? editingMessage,
+    bool clearEditingMessage = false,
+    Set<String>? highlightedMessageIds,
   }) {
     return P2PChatLoaded(
       messages: messages ?? this.messages,
@@ -47,6 +70,13 @@ class P2PChatLoaded extends P2PChatState {
       connectionStatus: connectionStatus ?? this.connectionStatus,
       initiatedBy: initiatedBy ?? this.initiatedBy,
       canSendMessage: canSendMessage ?? this.canSendMessage,
+      safetyWarning: safetyWarning ?? this.safetyWarning,
+      safetyWarningReason: safetyWarningReason ?? this.safetyWarningReason,
+      replyingTo: clearReplyingTo ? null : (replyingTo ?? this.replyingTo),
+      editingMessage:
+          clearEditingMessage ? null : (editingMessage ?? this.editingMessage),
+      highlightedMessageIds:
+          highlightedMessageIds ?? this.highlightedMessageIds,
     );
   }
 }

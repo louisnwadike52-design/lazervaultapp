@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/chat_session_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -88,6 +89,23 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
       if (active != null && active.isNotEmpty) return active;
     }
     return _buildLegacySessionId();
+  }
+
+  /// Active dashboard region + virtual account. Data scoping (which region's
+  /// accounts/history/board the request reads and writes) rides these — a DIFFERENT
+  /// axis from the reply [language]. The general path previously sent the *language*
+  /// locale as the region and omitted account/country/currency, so scoping depended
+  /// on header fallback and broke when a non-English language was selected.
+  ({String locale, String accountId, String currency, String country})
+      _regionScope() {
+    final lm = serviceLocator<LocaleManager>();
+    final am = serviceLocator<AccountManager>();
+    return (
+      locale: lm.currentLocale,
+      accountId: am.activeAccountId ?? '',
+      currency: lm.currentCurrency,
+      country: lm.currentCountry,
+    );
   }
 
   /// Persist and apply the user-selected chatbot response language. The next
@@ -229,9 +247,11 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
 
     emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
-    // Locale follows the user-selected chatbot language so the backend
-    // replies in the chosen language regardless of device locale.
-    final locale = ChatLanguagePreference.localeFor(_language);
+    // Reply language and data-scoping region are DISTINCT axes: `language` picks
+    // the response language; `locale` (+ account/country/currency) picks which
+    // region's data the request reads/writes. Region comes from the active
+    // dashboard, NOT the chosen language.
+    final scope = _regionScope();
 
     final result = await sendMessageUseCase(
       message: text,
@@ -240,7 +260,10 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       accessToken: '', // Access token is managed by GrpcCallOptionsHelper
       sourceContext: 'general', // Always 'general' for this screen
       language: _language,
-      locale: locale,
+      locale: scope.locale,
+      accountId: scope.accountId,
+      currency: scope.currency,
+      userCountry: scope.country,
     );
 
     result.fold(
@@ -324,6 +347,11 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             // the prompt server-side but never showed the sheet.
             if (response.pinPrompt != null)
               'pin_prompt': response.pinPrompt,
+            // Surface the ReceiptCard V2 payload (single dict or batch list) so
+            // general_chat_content renders ChatReceiptCardV2 / …List. Without
+            // this the batch flow completed but showed no receipt cards.
+            if (response.receiptCard != null)
+              'receipt_card': response.receiptCard,
             // Surface the classified LLM-provider error code (set by
             // chat-agent-gateway's llm_failover module) so the chat content
             // widget can render the downgrade banner + retry CTA. The
@@ -399,7 +427,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       // to loading + the bot response.
       emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
-      final locale = ChatLanguagePreference.localeFor(_language);
+      final scope = _regionScope();
 
       // The downstream chat-*-service reads pin_verification_token,
       // callback_intent and callback_args from `entities`; the gateway
@@ -416,7 +444,10 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         accessToken: '',
         sourceContext: 'general',
         language: _language,
-        locale: locale,
+        locale: scope.locale,
+        accountId: scope.accountId,
+        currency: scope.currency,
+        userCountry: scope.country,
         metadata: {
           'pin_verification_token': verificationToken,
           'callback_intent': callbackIntent,
@@ -443,6 +474,8 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
               ...responseMeta,
               if (response.receiptData != null)
                 'receipt_data': response.receiptData,
+              if (response.receiptCard != null)
+                'receipt_card': response.receiptCard,
             },
           );
           _currentMessages.add(botMessage);
@@ -531,7 +564,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     _currentMessages.add(userMessage);
     emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
-    final locale = ChatLanguagePreference.localeFor(_language);
+    final scope = _regionScope();
 
     final result = await sendMessageUseCase(
       message: text,
@@ -540,7 +573,10 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       accessToken: '',
       sourceContext: 'general',
       language: _language,
-      locale: locale,
+      locale: scope.locale,
+      accountId: scope.accountId,
+      currency: scope.currency,
+      userCountry: scope.country,
       mediaBase64: base64Data,
       mediaType: mediaType,
       mediaMimeType: mimeType,

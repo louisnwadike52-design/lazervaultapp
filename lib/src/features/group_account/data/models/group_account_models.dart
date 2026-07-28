@@ -65,6 +65,7 @@ class GroupAccountModel extends GroupAccount {
     super.totalRaised,
     super.imageUrl,
     super.contributionCount,
+    super.isMember,
   });
 
   factory GroupAccountModel.fromJson(Map<String, dynamic> json) {
@@ -100,6 +101,7 @@ class GroupAccountModel extends GroupAccount {
           : 0.0,
       imageUrl: json['imageUrl'] as String?,
       contributionCount: json['contributionCount'] as int? ?? 0,
+      isMember: json['isMember'] as bool? ?? false,
     );
   }
 
@@ -120,6 +122,7 @@ class GroupAccountModel extends GroupAccount {
       'totalRaised': totalRaised,
       'imageUrl': imageUrl,
       'contributionCount': contributionCount,
+      'isMember': isMember,
     };
   }
 
@@ -140,6 +143,7 @@ class GroupAccountModel extends GroupAccount {
       totalRaised: entity.totalRaised,
       imageUrl: entity.imageUrl,
       contributionCount: entity.contributionCount,
+      isMember: entity.isMember,
     );
   }
 
@@ -160,6 +164,7 @@ class GroupAccountModel extends GroupAccount {
     double? totalRaised,
     String? imageUrl,
     int? contributionCount,
+    bool? isMember,
   }) {
     return GroupAccountModel(
       id: id ?? this.id,
@@ -177,6 +182,7 @@ class GroupAccountModel extends GroupAccount {
       totalRaised: totalRaised ?? this.totalRaised,
       imageUrl: imageUrl ?? this.imageUrl,
       contributionCount: contributionCount ?? this.contributionCount,
+      isMember: isMember ?? this.isMember,
     );
   }
 }

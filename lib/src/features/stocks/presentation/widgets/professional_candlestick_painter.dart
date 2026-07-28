@@ -72,73 +72,70 @@ class ProfessionalCandlestickPainter extends CustomPainter {
 
     for (int i = 0; i < priceHistory.length; i++) {
       final price = priceHistory[i];
+
+      // Skip any candle with non-finite OHLC — a single NaN in a Rect makes
+      // canvas.drawRect throw during the paint phase (uncaught → blank chart on
+      // release builds). Better to omit one bad bar than kill the whole chart.
+      if (!price.open.isFinite ||
+          !price.high.isFinite ||
+          !price.low.isFinite ||
+          !price.close.isFinite) {
+        continue;
+      }
+
       final x = chartLeft + (i + 0.5) * candleSpacing;
-      
+
       // Calculate Y positions with proper scaling
       final highY = chartTop + chartHeight - ((price.high - chartMinPrice) / chartPriceRange) * chartHeight;
       final lowY = chartTop + chartHeight - ((price.low - chartMinPrice) / chartPriceRange) * chartHeight;
       final openY = chartTop + chartHeight - ((price.open - chartMinPrice) / chartPriceRange) * chartHeight;
       final closeY = chartTop + chartHeight - ((price.close - chartMinPrice) / chartPriceRange) * chartHeight;
-      
+      if (!x.isFinite || !highY.isFinite || !lowY.isFinite || !openY.isFinite || !closeY.isFinite) {
+        continue;
+      }
+
       final isBullish = price.close >= price.open;
       final color = isBullish ? bullishColor : bearishColor;
-      
-      // Draw wick (high-low line) first
-      wickPaint.color = color.withValues(alpha: 0.8);
+
+      // Draw wick (high-low line) first — solid, crisp (TradingView style).
+      wickPaint.color = color;
       canvas.drawLine(
         Offset(x, highY),
         Offset(x, lowY),
         wickPaint,
       );
-      
+
       // Calculate body dimensions
       final bodyTop = isBullish ? closeY : openY;
       final bodyBottom = isBullish ? openY : closeY;
       final bodyHeight = (bodyBottom - bodyTop).abs();
-      
-      // Ensure minimum body height for very small price movements
+
+      // Ensure minimum body height for very small / doji moves.
       final minBodyHeight = 1.5;
       final actualBodyHeight = bodyHeight < minBodyHeight ? minBodyHeight : bodyHeight;
-      
-      // Adjust body position if height was increased
-      final adjustedBodyTop = bodyHeight < minBodyHeight 
+      final adjustedBodyTop = bodyHeight < minBodyHeight
           ? (bodyTop + bodyBottom) / 2 - minBodyHeight / 2
           : bodyTop;
-      
-      // Create body rectangle
+
       final bodyRect = Rect.fromLTWH(
         x - actualCandleWidth / 2,
         adjustedBodyTop,
         actualCandleWidth,
         actualBodyHeight,
       );
-      
-      // Draw candlestick body
-      if (isBullish) {
-        if (!hollow) {
-          // Standard bullish — light fill + border (default behaviour
-          // preserved for the regular Candles chart type).
-          bodyPaint.style = PaintingStyle.fill;
-          bodyPaint.color = color.withValues(alpha: 0.1);
-          canvas.drawRect(bodyRect, bodyPaint);
-        }
-        // Hollow bullish — stroke-only outline, no fill. This is the
-        // canonical "hollow candles" presentation traders expect from
-        // the Hollow chart type.
+
+      if (hollow && isBullish) {
+        // Hollow chart type: up-candles are outline-only (traders read this as
+        // "close above the prior close").
         bodyPaint.style = PaintingStyle.stroke;
+        bodyPaint.strokeWidth = 1.4;
         bodyPaint.color = color;
-        bodyPaint.strokeWidth = 1.5;
         canvas.drawRect(bodyRect, bodyPaint);
       } else {
-        // Bearish candle - filled
+        // Standard candles: SOLID filled body in the up/down colour, like
+        // TradingView — bullish reads as a clear green block, not a faint tint.
         bodyPaint.style = PaintingStyle.fill;
         bodyPaint.color = color;
-        canvas.drawRect(bodyRect, bodyPaint);
-        
-        // Optional subtle border for better definition
-        bodyPaint.style = PaintingStyle.stroke;
-        bodyPaint.strokeWidth = 0.5;
-        bodyPaint.color = color.withValues(alpha: 0.9);
         canvas.drawRect(bodyRect, bodyPaint);
       }
     }

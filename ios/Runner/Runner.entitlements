@@ -7,6 +7,15 @@
 	     wired in the future (also enable Siri on the App ID in Apple Developer). -->
 	<key>aps-environment</key>
 	<string>development</string>
+	<!-- Apple App Attest, used by Firebase App Check for device attestation.
+	     Set to `production`: the only builds that invoke real App Attest are
+	     RELEASE builds (TestFlight/App Store), where AppCheckService uses
+	     AppleProvider.appAttest and Apple requires the production environment.
+	     DEBUG builds use the Firebase App Check DEBUG provider (no real App
+	     Attest call), so this value is irrelevant to them. No Apple Developer
+	     portal toggle is required — verification uses Apple's App Attest root CA. -->
+	<key>com.apple.developer.devicecheck.appattest-environment</key>
+	<string>production</string>
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../../services/group_account_report_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen displaying AI-generated group account report with swipeable cards
@@ -167,24 +168,48 @@ class _GroupAccountReportContentState extends State<_GroupAccountReportContent> 
     // Hand the report to the OS share sheet as a PDF attachment so the
     // user can route it through any installed app. Replaces the legacy
     // platform-specific share buttons (WhatsApp/Facebook/Telegram/X).
+    // iOS requires a non-zero share anchor rect — capture it from the tapped
+    // context, else share_plus throws "sharePositionOrigin must be set".
     context.read<GroupAccountCubit>().shareReportAsFile(
           report,
           groupUrl: widget.groupUrl,
           groupName: widget.group.name,
+          sharePositionOrigin:
+              GroupAccountReportService.shareOriginFromContext(context),
         );
   }
 
-  void _copyToClipboard(BuildContext context, GroupAccountReport report) {
+  Future<void> _copyToClipboard(
+      BuildContext context, GroupAccountReport report) async {
+    final messenger = ScaffoldMessenger.of(context);
     final text = context.read<GroupAccountCubit>().getShareableText(
           report,
           widget.groupUrl,
         );
-    if (text != null) {
-      Clipboard.setData(ClipboardData(text: text));
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (text == null || text.trim().isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Nothing to copy yet'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+    try {
+      // Await so a failure surfaces instead of the old fire-and-forget that
+      // always showed "Copied" even when nothing reached the clipboard.
+      await Clipboard.setData(ClipboardData(text: text));
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Copied to clipboard'),
           backgroundColor: Color(0xFF3B82F6),
+        ),
+      );
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Could not copy. Please try again.'),
+          backgroundColor: Color(0xFFEF4444),
         ),
       );
     }

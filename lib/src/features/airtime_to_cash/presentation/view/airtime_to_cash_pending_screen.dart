@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../domain/entities/airtime_to_cash_conversion.dart';
 
 /// Pending screen for VTU Africa airtime-to-cash conversion.
 /// Shown while waiting for webhook confirmation after airtime transfer.
@@ -20,6 +21,9 @@ class _AirtimeToCashPendingScreenState
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>? ?? {};
     final message = args['message'] as String? ?? 'Processing your conversion...';
+    final conversion = args['conversion'] is AirtimeToCashConversion
+        ? args['conversion'] as AirtimeToCashConversion
+        : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -63,6 +67,10 @@ class _AirtimeToCashPendingScreenState
                           color: const Color(0xFF4E03D0),
                         ),
                       ),
+                      if (conversion != null) ...[
+                        SizedBox(height: 28.h),
+                        _buildSummaryCard(conversion),
+                      ],
                       SizedBox(height: 40.h),
                       // Info card
                       Container(
@@ -171,6 +179,50 @@ class _AirtimeToCashPendingScreenState
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(AirtimeToCashConversion c) {
+    Widget row(String label, String value, {bool highlight = false}) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label,
+                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+              Flexible(
+                child: Text(value,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: highlight ? FontWeight.w700 : FontWeight.w600,
+                      color: highlight ? const Color(0xFF10B981) : Colors.white,
+                    )),
+              ),
+            ],
+          ),
+        );
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (c.cashAmount > 0)
+            row('Cash to receive', '₦${c.cashAmount.toStringAsFixed(2)}', highlight: true),
+          row('Airtime sent', '₦${c.airtimeAmount.toStringAsFixed(2)}'),
+          if (c.network.isNotEmpty) row('Network', c.network),
+          if (c.phoneNumber.isNotEmpty) row('Phone', c.phoneNumber),
+          if (c.reference.isNotEmpty) row('Reference', c.reference),
+          row('Status', 'Processing'),
+        ],
       ),
     );
   }

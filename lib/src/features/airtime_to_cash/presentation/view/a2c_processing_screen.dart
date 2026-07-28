@@ -149,17 +149,13 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
       return;
     }
 
-    if (sessionToken == null || sessionToken.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
-            'isSuccess': false,
-            'errorMessage': 'Session token is missing. Please start over.',
-          });
-        }
-      });
-      return;
-    }
+    // NOTE: sessionToken is intentionally NOT required here. This screen drives
+    // the airtimetocash.com AUTOMATION flow, which uses sessionId + SIM PIN +
+    // verificationToken (validated below) and sends an EMPTY sessionToken — the
+    // backend routes an empty sessionToken to the automation provider (a
+    // non-empty sessionToken routes to VTU.africa's transfer flow). Requiring a
+    // sessionToken here dead-ended every automation conversion with
+    // "Session token is missing".
 
     // Validate Automation API specific requirements
     if (sessionId == null || sessionId.isEmpty) {
@@ -231,7 +227,8 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
           phoneNumber: phoneNumber,
           network: network,
           amount: amount,
-          sessionToken: sessionToken,
+          // Empty for the automation flow → backend routes to airtimetocash.
+          sessionToken: sessionToken ?? '',
           sessionId: sessionId, // Required for Automation API session tracking
           pin: pin, // SIM Transfer PIN required by Automation API
           transactionId: transactionId,
@@ -442,7 +439,7 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () =>
-                    Get.offAllNamed(AppRoutes.airtimeToCashHistory),
+                    Get.offAllNamed(AppRoutes.airtimeHistory),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: Colors.white.withValues(alpha: 0.3),

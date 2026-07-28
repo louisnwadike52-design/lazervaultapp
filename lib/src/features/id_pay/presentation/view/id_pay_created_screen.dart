@@ -22,7 +22,7 @@ class IDPayCreatedScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          'IDPay Created',
+          'PayID Created',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -44,7 +44,7 @@ class IDPayCreatedScreen extends StatelessWidget {
                     _buildSuccessIcon(),
                     SizedBox(height: 24.h),
                     Text(
-                      'Your IDPay is Ready!',
+                      'Your PayID is Ready!',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 24.sp,
@@ -156,8 +156,8 @@ class IDPayCreatedScreen extends StatelessWidget {
                 label: 'Share',
                 onTap: () {
                   Share.share(
-                    'Pay me using IDPay: ${idPay.displayPayId}\n\n${idPay.description.isNotEmpty ? idPay.description : "Send payment via Lazervault"}',
-                    subject: 'IDPay Payment Request',
+                    'Pay me using PayID: ${idPay.displayPayId}\n\n${idPay.description.isNotEmpty ? idPay.description : "Send payment via Lazervault"}',
+                    subject: 'PayID Payment Request',
                   );
                 },
               ),
@@ -301,7 +301,7 @@ class IDPayCreatedScreen extends StatelessWidget {
         width: double.infinity,
         height: 52.h,
         child: ElevatedButton(
-          onPressed: () => Get.offAllNamed('/id-pay'),
+          onPressed: () => Get.offAllNamed(AppRoutes.idPayHome),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3B82F6),
             shape: RoundedRectangleBorder(

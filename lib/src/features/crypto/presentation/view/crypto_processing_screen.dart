@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
@@ -94,6 +97,10 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
         case CryptoTransactionType.swap:
           // Swap not implemented in buy/sell flow
           break;
+        case CryptoTransactionType.send:
+        case CryptoTransactionType.deposit:
+          // Send/deposit have their own flows; not executed here.
+          break;
       }
 
       // Check result
@@ -137,7 +144,22 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
   void _navigateToReceipt() {
     if (_transactionId == null) return;
 
-    final fee = widget.fiatAmount * 0.015;
+    // Lazervault fee honoring the admin config for this op (crypto.fee.{op}.*).
+    // Falls back to 1.5% before config loads; the receipt substitutes the real
+    // server-known fee on completion.
+    final op = switch (widget.transactionType) {
+      CryptoTransactionType.buy => 'buy',
+      CryptoTransactionType.sell => 'sell',
+      _ => 'swap',
+    };
+    double fee;
+    try {
+      fee = GetIt.I<CryptoConfigCubit>()
+          .config
+          .feeForOp(op, widget.fiatAmount, CurrencySymbols.currentCurrency);
+    } catch (_) {
+      fee = widget.fiatAmount * 0.015;
+    }
     final networkFee = fee * 0.3;
     final tradingFee = fee * 0.7;
     final total = widget.fiatAmount + fee;
@@ -396,6 +418,8 @@ class _CryptoProcessingScreenState extends State<CryptoProcessingScreen>
       CryptoTransactionType.buy => 'Purchase',
       CryptoTransactionType.sell => 'Sale',
       CryptoTransactionType.swap => 'Swap',
+      CryptoTransactionType.send => 'Send',
+      CryptoTransactionType.deposit => 'Deposit',
     };
   }
 }

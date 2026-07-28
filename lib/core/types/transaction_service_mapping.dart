@@ -10,6 +10,10 @@ extension TransactionServiceTypeMapping on TransactionServiceType {
     switch (this) {
       case TransactionServiceType.airtime:
         return AppServiceName.airtime;
+      case TransactionServiceType.epin:
+        return AppServiceName.rechargeCard;
+      case TransactionServiceType.betting:
+        return AppServiceName.betting;
       case TransactionServiceType.giftCard:
         return AppServiceName.giftCards;
       case TransactionServiceType.electricity:
@@ -71,6 +75,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.transfer;
       case AppServiceName.tagPay:
         return TransactionServiceType.tagPay;
+      case AppServiceName.escrow:
+        return TransactionServiceType.unknown; // Escrow has its own history surface
       case AppServiceName.invoice:
         return TransactionServiceType.invoice;
       case AppServiceName.payInvoice:
@@ -85,6 +91,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.crypto;
       case AppServiceName.crypto:
         return TransactionServiceType.crypto;
+      case AppServiceName.rmb:
+        return TransactionServiceType.rmb;
       case AppServiceName.giftCards:
         return TransactionServiceType.giftCard;
       case AppServiceName.aiScanToPay:
@@ -101,6 +109,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.autosave;
       case AppServiceName.crowdfund:
         return TransactionServiceType.crowdfund;
+      case AppServiceName.uplift:
+        return TransactionServiceType.unknown; // Not a transaction type
       case AppServiceName.lockFunds:
         return TransactionServiceType.unknown; // Not a transaction type
       case AppServiceName.whatsappIntegration:
@@ -125,6 +135,12 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.unknown; // Business service
       case AppServiceName.tax:
         return TransactionServiceType.unknown; // Business service
+      case AppServiceName.sales:
+        return TransactionServiceType.unknown; // Business service
+      case AppServiceName.rechargeCard:
+        return TransactionServiceType.epin; // Recharge-card (ePIN) printing
+      case AppServiceName.betting:
+        return TransactionServiceType.betting; // Betting wallet funding
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -115,18 +116,28 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         },
         child: Scaffold(
           backgroundColor: kGiftCardBgTop,
-          body: GiftCardBackground(child: SafeArea(
+          // Opaque tap-outside-to-dismiss for the catalog search field (the
+          // global translucent dismiss in main.dart only fires on empty space).
+          body: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: GiftCardBackground(child: SafeArea(
             child: Column(
               children: [
+                // Header stays static; everything below rises + fades in on load.
                 _buildHeader(),
-                SizedBox(height: 12.h),
-                _buildQuickActions(),
-                SizedBox(height: 12.h),
-                _buildBuySellToggle(),
-                SizedBox(height: 8.h),
-                _buildSearchAndFilters(),
                 Expanded(
-                  child: RefreshIndicator(
+                  child: ServiceEntranceAnimation(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 12.h),
+                        _buildQuickActions(),
+                        SizedBox(height: 12.h),
+                        _buildBuySellToggle(),
+                        SizedBox(height: 8.h),
+                        _buildSearchAndFilters(),
+                        Expanded(
+                          child: RefreshIndicator(
                     onRefresh: _onRefresh,
                     color: InvoiceThemeColors.primaryPurple,
                     backgroundColor: const Color(0xFF1F1F1F),
@@ -149,11 +160,15 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                           ? _buildBrandsList(state)
                           : _buildSellableCardsList(state),
                     ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          )),
+          ))),
         ),
       ),
     );
@@ -583,7 +598,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12.w,
         mainAxisSpacing: 12.h,
-        childAspectRatio: 0.85,
+        // Keep in sync with the real brands grid (_buildBrandsGrid) so the
+        // shimmer placeholders match the loaded cards' (shorter) height.
+        childAspectRatio: 1.28,
       ),
       itemCount: 6,
       itemBuilder: (context, index) {
@@ -617,7 +634,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 10.w,
         mainAxisSpacing: 10.h,
-        childAspectRatio: 1.0,
+        // Shorter cards (was 1.0 = square, which wasted vertical space). Keep the
+        // shimmer grid (_buildLoadingGrid) at the same ratio.
+        childAspectRatio: 1.28,
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
@@ -640,18 +659,31 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       key: Key('giftcard_brand_card_${brand.id}'),
       onTap: () => Get.toNamed(AppRoutes.purchaseGiftCard, arguments: brand),
       child: Container(
+        // Swap-style gradient card (mirrors crypto swap screen) for a richer,
+        // more legible surface than the old flat #1F1F1F.
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1F1F1F), Color(0xFF2D2D2D)],
+          ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: const Color(0xFF2D2D2D)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Padding(
-          padding: EdgeInsets.all(10.w),
+          padding: EdgeInsets.all(8.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                height: 36.h,
+                height: 32.h,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -694,7 +726,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   color: const Color(0xFF9CA3AF),
                   fontWeight: FontWeight.w400,
                 ),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
@@ -707,7 +739,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
-                    color: InvoiceThemeColors.primaryPurple,
+                    // Readable green (matches the sell-tile price + discount badge)
+                    // — the old primaryPurple #4E03D0 was near-invisible on the card.
+                    color: const Color(0xFF10B981),
                   ),
                 ),
               ] else if (brand.denominations.isNotEmpty) ...[
@@ -716,7 +750,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
-                    color: InvoiceThemeColors.primaryPurple,
+                    // Readable green (matches the sell-tile price + discount badge)
+                    // — the old primaryPurple #4E03D0 was near-invisible on the card.
+                    color: const Color(0xFF10B981),
                   ),
                 ),
               ],
@@ -984,7 +1020,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12.w,
         mainAxisSpacing: 12.h,
-        childAspectRatio: 0.95,
+        // Shorter tiles for parity with the buy grid (was 0.95 = taller-than-wide).
+        childAspectRatio: 1.2,
       ),
       itemCount: filteredCards.length,
       itemBuilder: (context, index) => _buildSellableCardTile(filteredCards[index]),
@@ -996,18 +1033,30 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       key: Key('sellable_card_tile_${card.cardType}'),
       onTap: () => Get.toNamed(AppRoutes.sellGiftCard, arguments: card),
       child: Container(
+        // Swap-style gradient card, matching the buy grid.
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1F1F1F), Color(0xFF2D2D2D)],
+          ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: const Color(0xFF2D2D2D)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Padding(
-          padding: EdgeInsets.all(14.w),
+          padding: EdgeInsets.all(10.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                height: 48.h,
+                height: 40.h,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.white,

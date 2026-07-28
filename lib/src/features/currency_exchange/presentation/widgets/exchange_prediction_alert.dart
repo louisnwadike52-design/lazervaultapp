@@ -5,7 +5,7 @@ import '../../domain/entities/exchange_prediction_entity.dart';
 import '../cubit/exchange_prediction_cubit.dart';
 import '../cubit/exchange_prediction_state.dart';
 
-// Dark theme palette (per CLAUDE.md).
+// Dark theme palette.
 const Color _cardBackground = Color(0xFF1F1F1F);
 const Color _divider = Color(0xFF2D2D2D);
 const Color _textPrimary = Colors.white;

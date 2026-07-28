@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 import 'package:lazervault/src/features/investments/presentation/widgets/invest_revolut_segment_pills.dart';
@@ -37,6 +38,9 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       isPopular: true,
       riskBadge: 'Medium risk',
       complianceBadge: 'Returns vary',
+      // Hidden from display for now (kept here so the product/route can be
+      // re-enabled by flipping this flag — not removed).
+      hidden: true,
     ),
     InvestmentOption(
       title: 'Treasury ETFs',
@@ -140,7 +144,10 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
-    _animationController.forward();
+    // Entrance animation is now owned by the shared, admin-flag-gated
+    // ServiceEntranceAnimation wrapper (see build). Jump to the end so this
+    // screen's own inline entrance doesn't double-animate on top of it.
+    _animationController.value = 1.0;
     _portfolioCubit = serviceLocator<PortfolioCubit>()..loadSummary();
   }
 
@@ -155,7 +162,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: InvestTradingUi.background,
-      body: AnimatedBuilder(
+      body: ServiceEntranceAnimation(
+        child: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
           return FadeTransition(
@@ -189,6 +197,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             ),
           );
         },
+      ),
       ),
     );
   }
@@ -416,8 +425,15 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     );
   }
 
+  /// Options actually shown in the UI — everything except those flagged
+  /// [InvestmentOption.hidden]. Hidden options stay in [investmentOptions]
+  /// (code/route preserved) but never render.
+  List<InvestmentOption> get _visibleOptions =>
+      investmentOptions.where((option) => !option.hidden).toList();
+
   Widget _buildPopularSection() {
-    final popularOptions = investmentOptions.where((option) => option.isPopular).toList();
+    final popularOptions =
+        _visibleOptions.where((option) => option.isPopular).toList();
 
     if (popularOptions.isEmpty) {
       return const SizedBox.shrink();
@@ -565,11 +581,11 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
-          itemCount: investmentOptions.length,
+          itemCount: _visibleOptions.length,
           itemBuilder: (context, index) {
             return Padding(
               padding: EdgeInsets.only(bottom: 12.h),
-              child: _buildInvestmentCard(investmentOptions[index]),
+              child: _buildInvestmentCard(_visibleOptions[index]),
             );
           },
         ),
@@ -804,6 +820,10 @@ class InvestmentOption {
   final bool isPopular;
   final String riskBadge;
   final String complianceBadge;
+  // When true the option is kept in the list (code/route/config preserved) but
+  // NOT displayed anywhere in the investment account — used to temporarily hide
+  // a product from the UI without deleting it. See _visibleOptions.
+  final bool hidden;
 
   InvestmentOption({
     required this.title,
@@ -816,5 +836,6 @@ class InvestmentOption {
     this.isPopular = false,
     required this.riskBadge,
     required this.complianceBadge,
+    this.hidden = false,
   });
 } 

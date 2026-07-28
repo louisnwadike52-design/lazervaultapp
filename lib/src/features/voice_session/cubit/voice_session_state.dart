@@ -138,7 +138,7 @@ class VoiceSessionAgentProcessing extends VoiceSessionState {
   final Room room;
 
   /// Rebuild nonce — see [VoiceSessionConnected.seq]. Bumped on each streaming
-  /// agent-caption chunk so Nyla's reply grows live ("typing as it speaks")
+  /// agent-caption chunk so Nova's reply grows live ("typing as it speaks")
   /// while the processing state stays the same.
   final int seq;
   const VoiceSessionAgentProcessing(this.room, {this.seq = 0});
@@ -212,6 +212,18 @@ class VoiceSessionVerificationSuccess extends VoiceSessionState {
   final Room room;
   final String message;
   const VoiceSessionVerificationSuccess(this.room, this.message);
+  @override
+  List<Object?> get props => [room, message];
+}
+
+/// The user's custom CLONED voice failed over to a standard voice mid-session
+/// (ElevenLabs drop / stale clone / rate-limit). The audio itself keeps working
+/// seamlessly — this transient notice just tells the user WHY the voice changed.
+/// Auto-dismisses back to [VoiceSessionConnected] after a few seconds.
+class VoiceSessionCloneDegraded extends VoiceSessionState {
+  final Room room;
+  final String message;
+  const VoiceSessionCloneDegraded(this.room, this.message);
   @override
   List<Object?> get props => [room, message];
 }

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
@@ -31,7 +33,15 @@ class ProfileCubit extends Cubit<ProfileState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ProfileError(failure.message)),
+      (failure) {
+        // statusCode is loosely typed across failure classes (int gRPC code /
+        // string / null) — normalize to an int? for the biometric classifier.
+        final dynamic code = failure.statusCode;
+        emit(ProfileError(
+          failure.message,
+          statusCode: code is int ? code : int.tryParse('$code'),
+        ));
+      },
       (data) async {
         final user = data['user'];
         final preferences = data['preferences'];
@@ -209,9 +219,27 @@ class ProfileCubit extends Cubit<ProfileState> {
   /// screen reads on cold start.
   Future<void> _syncAvatarWithAuth(User user) async {
     try {
+      // Capture the PREVIOUS avatar URL before we overwrite the current user —
+      // the storage key is derived from the file name, so re-uploading often
+      // yields the SAME URL. Without busting the image cache, CachedNetworkImage
+      // keeps serving the old bytes and the new picture only appears after a
+      // re-login (fresh process). Evicting both the old and new URLs forces a
+      // re-download so every avatar surface refreshes immediately.
+      String? previousPic;
       if (serviceLocator.isRegistered<AuthenticationCubit>()) {
-        serviceLocator<AuthenticationCubit>().updateCurrentUser(user);
+        final authCubit = serviceLocator<AuthenticationCubit>();
+        previousPic = authCubit.currentProfile?.user.profilePicture;
+        authCubit.updateCurrentUser(user);
       }
+
+      await _evictAvatarCache(previousPic);
+      await _evictAvatarCache(user.profilePicture);
+      // Drop any in-memory decoded copies so on-screen avatars repaint fresh
+      // (a stable URL would otherwise reuse the live image handle).
+      PaintingBinding.instance.imageCache
+        ..clear()
+        ..clearLiveImages();
+
       final storage = serviceLocator.isRegistered<FlutterSecureStorage>()
           ? serviceLocator<FlutterSecureStorage>()
           : const FlutterSecureStorage();
@@ -225,6 +253,16 @@ class ProfileCubit extends Cubit<ProfileState> {
       // Never let a downstream cache update break the success flow.
       print('Failed to sync avatar with AuthenticationCubit: $e');
     }
+  }
+
+  /// Evicts [url] from CachedNetworkImage's disk + memory caches so the next
+  /// render re-downloads it. No-op for null/empty or non-http (base64) values.
+  Future<void> _evictAvatarCache(String? url) async {
+    if (url == null || url.isEmpty) return;
+    if (!(url.startsWith('http://') || url.startsWith('https://'))) return;
+    try {
+      await CachedNetworkImage.evictFromCache(url);
+    } catch (_) {/* best-effort cache bust */}
   }
 
   Future<void> updatePassword({
@@ -255,7 +293,13 @@ class ProfileCubit extends Cubit<ProfileState> {
     List<String>? preferredCountries,
     String? activeCountry,
   }) async {
-    if (state is! ProfileLoaded) return;
+    final loaded = state;
+    if (loaded is! ProfileLoaded) return;
+    // Capture the current user + preferences BEFORE emitting Loading — the
+    // success branch needs the user, and untouched fields must be MERGED (not
+    // reset to defaults) so toggling one channel doesn't clobber the others.
+    final user = loaded.user;
+    final current = loaded.preferences;
 
     if (isClosed) return;
     emit(const ProfileLoading());
@@ -266,28 +310,25 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
 
     final result = await _repository.updatePreferences(
-      pushNotifications: pushNotifications,
-      emailNotifications: emailNotifications,
-      smsNotifications: smsNotifications,
-      darkMode: darkMode,
-      language: language,
-      currency: currency,
-      preferredCountries: preferredCountries,
-      activeCountry: activeCountry,
+      pushNotifications: pushNotifications ?? current.pushNotifications,
+      emailNotifications: emailNotifications ?? current.emailNotifications,
+      smsNotifications: smsNotifications ?? current.smsNotifications,
+      darkMode: darkMode ?? current.darkMode,
+      language: language ?? current.language,
+      currency: currency ?? current.currency,
+      preferredCountries: preferredCountries ?? current.preferredCountries,
+      activeCountry: activeCountry ?? current.activeCountry,
     );
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(ProfileError(failure.message)),
-      (preferences) {
-        final currentState = state;
-        if (currentState is ProfileLoaded) {
-          emit(ProfileLoaded(
-            user: currentState.user,
-            preferences: preferences,
-          ));
-        }
+      (failure) {
+        // Surface the error, then restore the prior loaded state so the toggle
+        // visibly reverts instead of hanging on the loading spinner.
+        emit(ProfileError(failure.message));
+        emit(ProfileLoaded(user: user, preferences: current));
       },
+      (preferences) => emit(ProfileLoaded(user: user, preferences: preferences)),
     );
   }
 

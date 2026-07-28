@@ -5,8 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/pay_slip_entity.dart';
+import '../../domain/repositories/payroll_repository.dart';
 import '../../services/payroll_pdf_service.dart';
+import 'employee_details_screen.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class PaySlipDetailsScreen extends StatefulWidget {
   final String paySlipId;
@@ -29,7 +33,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -92,7 +96,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                 _buildSection(
                   title: 'Earnings',
                   icon: Icons.trending_up,
-                  iconColor: const Color(0xFF10B981),
+                  iconColor: InvoiceThemeColors.successGreen,
                   rows: [
                     _SectionRow('Base / Gross Pay', slip.formattedGross),
                     if (slip.overtimeHours > 0)
@@ -118,7 +122,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                 _buildSection(
                   title: 'Deductions',
                   icon: Icons.trending_down,
-                  iconColor: const Color(0xFFEF4444),
+                  iconColor: InvoiceThemeColors.errorRed,
                   rows: [
                     _SectionRow(
                       'PAYE (Income Tax)',
@@ -155,7 +159,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                 _buildSection(
                   title: 'Employer Contributions',
                   icon: Icons.business,
-                  iconColor: const Color(0xFFFB923C),
+                  iconColor: InvoiceThemeColors.warningOrange,
                   rows: [
                     _SectionRow(
                       'Employer NIC / NSITF',
@@ -194,42 +198,81 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
     );
   }
 
+  /// Open the employee this pay slip belongs to. Fetches the full employee via
+  /// the repository (NOT the screen's cubit — that would clobber the PaySlip
+  /// state the BlocBuilder renders), then pushes their details with a fresh
+  /// PayrollCubit so edit/remove work there.
+  Future<void> _openEmployee(PaySlipEntity slip) async {
+    if (slip.employeeId.isEmpty) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(child: LazerVaultLoader.small()),
+    );
+    try {
+      final employee =
+          await serviceLocator<PayrollRepository>().getEmployee(slip.employeeId);
+      if (!mounted) return;
+      Navigator.of(context).pop(); // dismiss loader
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => serviceLocator<PayrollCubit>(),
+            child: EmployeeDetailsScreen(employee: employee),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // dismiss loader
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open employee: $e'),
+          backgroundColor: InvoiceThemeColors.errorRed,
+        ),
+      );
+    }
+  }
+
   Widget _buildEmployeeHeader(PaySlipEntity slip) {
     Color statusColor;
     String statusLabel;
     switch (slip.paymentStatus) {
       case PaymentStatus.pending:
-        statusColor = const Color(0xFFFB923C);
+        statusColor = InvoiceThemeColors.warningOrange;
         statusLabel = 'Pending';
         break;
       case PaymentStatus.paid:
-        statusColor = const Color(0xFF10B981);
+        statusColor = InvoiceThemeColors.successGreen;
         statusLabel = 'Paid';
         break;
       case PaymentStatus.failed:
-        statusColor = const Color(0xFFEF4444);
+        statusColor = InvoiceThemeColors.errorRed;
         statusLabel = 'Failed';
         break;
     }
 
-    return Container(
+    return GestureDetector(
+      onTap: () => _openEmployee(slip),
+      child: Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: InvoiceThemeColors.borderColor),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 26.r,
             backgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
             child: Text(
               slip.employeeName.isNotEmpty
                   ? slip.employeeName[0].toUpperCase()
                   : '?',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurpleLight,
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -252,7 +295,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                 Text(
                   'Pay Run: ${slip.payRunId.length > 8 ? slip.payRunId.substring(0, 8) : slip.payRunId}...',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
+                    color: InvoiceThemeColors.textGray500,
                     fontSize: 13.sp,
                   ),
                 ),
@@ -274,7 +317,11 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
               ),
             ),
           ),
+          SizedBox(width: 6.w),
+          Icon(Icons.chevron_right_rounded,
+              color: InvoiceThemeColors.textGray500, size: 20.sp),
         ],
+      ),
       ),
     );
   }
@@ -285,7 +332,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF065F46), Color(0xFF10B981)],
+          colors: [InvoiceThemeColors.successGreenDark, InvoiceThemeColors.successGreen],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -324,7 +371,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -360,7 +407,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
           Text(
             row.label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 13.sp,
               fontWeight: row.isBold ? FontWeight.w600 : FontWeight.w400,
             ),
@@ -383,17 +430,17 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF9CA3AF), size: 18.sp),
+          Icon(icon, color: InvoiceThemeColors.textGray400, size: 18.sp),
           SizedBox(width: 10.w),
           Text(
             label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 13.sp,
             ),
           ),
@@ -419,9 +466,9 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: const BoxDecoration(
-        color: Color(0xFF0A0A0A),
+        color: InvoiceThemeColors.primaryBackground,
         border: Border(
-          top: BorderSide(color: Color(0xFF2D2D2D)),
+          top: BorderSide(color: InvoiceThemeColors.borderColor),
         ),
       ),
       child: Row(
@@ -438,7 +485,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Saved to $path'),
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: InvoiceThemeColors.successGreen,
                       ),
                     );
                   } catch (e) {
@@ -446,26 +493,26 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Download failed: $e'),
-                        backgroundColor: const Color(0xFFEF4444),
+                        backgroundColor: InvoiceThemeColors.errorRed,
                       ),
                     );
                   }
                 },
                 icon: Icon(
                   Icons.download_outlined,
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurpleLight,
                   size: 18.sp,
                 ),
                 label: Text(
                   'Download',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -486,7 +533,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Share failed: $e'),
-                        backgroundColor: const Color(0xFFEF4444),
+                        backgroundColor: InvoiceThemeColors.errorRed,
                       ),
                     );
                   }
@@ -505,7 +552,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -524,13 +571,13 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
+          Icon(Icons.error_outline, size: 48.sp, color: InvoiceThemeColors.errorRed),
           SizedBox(height: 16.h),
           Text(
             message,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
             ),
           ),
@@ -539,7 +586,7 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
             onPressed: () =>
                 context.read<PayrollCubit>().getPaySlip(widget.paySlipId),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),

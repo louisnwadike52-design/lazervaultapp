@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -125,7 +126,8 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
           children: [
             _buildHeader(context),
             Expanded(
-              child: RefreshIndicator(
+              child: ServiceEntranceAnimation(
+                child: RefreshIndicator(
                 onRefresh: _refreshAll,
                 color: const Color(0xFF4E03D0),
                 backgroundColor: const Color(0xFF1F1F1F),
@@ -154,6 +156,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                     ],
                   ),
                 ),
+              ),
               ),
             ),
           ],

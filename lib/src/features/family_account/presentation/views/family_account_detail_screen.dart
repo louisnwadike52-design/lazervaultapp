@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
@@ -378,6 +380,405 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ─── Fund flow (top up pool + allocate to multiple members) ────────
+
+  /// Prominent Fund action under the hero. Members can top up the pool;
+  /// admins can additionally allocate to members.
+  Widget _buildFundActions(FamilyAccount account) {
+    if (!account.isActive) return const SizedBox.shrink();
+    if (!account.isCurrentUserMember(_currentUserId)) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+      child: SizedBox(
+        width: double.infinity,
+        height: 48.h,
+        child: ElevatedButton.icon(
+          onPressed: () => _showFundSheet(account),
+          icon: Icon(Icons.savings_outlined, size: 20.sp),
+          label: Text(
+            'Fund',
+            style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _kFamilyPurple,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFundSheet(FamilyAccount account) {
+    final isAdmin = account.isCurrentUserAdmin(_currentUserId);
+    final activeMembers = account.members.where((m) => m.isActive).toList();
+    final symbol = CurrencySymbols.currentSymbol;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text('Fund the account',
+                style: GoogleFonts.inter(
+                    color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+            SizedBox(height: 4.h),
+            Text('Pool balance: $symbol${account.totalPoolBalance.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+            SizedBox(height: 16.h),
+            _fundOptionTile(
+              icon: Icons.volunteer_activism,
+              color: const Color(0xFF10B981),
+              title: 'Top up pool',
+              subtitle: 'Move money from your wallet into the shared pool',
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _showContributeDialog(account);
+              },
+            ),
+            if (isAdmin) ...[
+              SizedBox(height: 12.h),
+              _fundOptionTile(
+                icon: Icons.groups_2_outlined,
+                color: _kFamilyPurple,
+                title: 'Allocate to members',
+                subtitle: activeMembers.isEmpty
+                    ? 'No active members yet'
+                    : 'Split pool funds across ${activeMembers.length} member${activeMembers.length == 1 ? '' : 's'}',
+                onTap: activeMembers.isEmpty
+                    ? null
+                    : () {
+                        Navigator.of(ctx).pop();
+                        _showMultiAllocateSheet(account);
+                      },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _fundOptionTile({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
+    final disabled = onTap == null;
+    return Opacity(
+      opacity: disabled ? 0.5 : 1,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A0A0A),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 22.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: 3.h),
+                    Text(subtitle,
+                        style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
+                  ],
+                ),
+              ),
+              if (!disabled)
+                Icon(Icons.chevron_right, color: Colors.grey[500], size: 22.sp),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Allocate pool funds to several active members in one pass.
+  void _showMultiAllocateSheet(FamilyAccount account) {
+    final symbol = CurrencySymbols.currentSymbol;
+    final activeMembers = account.members.where((m) => m.isActive).toList();
+    final controllers = {
+      for (final m in activeMembers) m.id: TextEditingController(),
+    };
+    bool submitting = false;
+
+    double sumOf() => controllers.values.fold<double>(
+        0, (s, c) => s + (double.tryParse(c.text.trim()) ?? 0));
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final allocated = sumOf();
+          final remaining = account.totalPoolBalance - allocated;
+          final over = remaining < 0;
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              constraints: BoxConstraints(maxHeight: 0.85.sh),
+              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text('Allocate to members',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700)),
+                  SizedBox(height: 4.h),
+                  Text('Pool balance: $symbol${account.totalPoolBalance.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+                  SizedBox(height: 16.h),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: activeMembers.map((m) {
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 10.h),
+                            padding: EdgeInsets.all(12.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0A0A0A),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: const Color(0xFF2D2D2D)),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18.r,
+                                  backgroundColor: _kFamilyPurple.withValues(alpha: 0.2),
+                                  child: Text(
+                                    m.fullName.isNotEmpty
+                                        ? m.fullName[0].toUpperCase()
+                                        : '?',
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                SizedBox(width: 10.w),
+                                Expanded(
+                                  child: Text(
+                                    m.fullName.isNotEmpty
+                                        ? m.fullName
+                                        : (m.username ?? 'Member'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                SizedBox(
+                                  width: 110.w,
+                                  child: TextField(
+                                    controller: controllers[m.id],
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(decimal: true),
+                                    textAlign: TextAlign.right,
+                                    onChanged: (_) => setSheetState(() {}),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 15.sp,
+                                        fontWeight: FontWeight.w700),
+                                    decoration: InputDecoration(
+                                      hintText: '0.00',
+                                      hintStyle:
+                                          TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                                      prefixText: '$symbol ',
+                                      prefixStyle: TextStyle(
+                                          color: Colors.grey[400], fontSize: 14.sp),
+                                      isDense: true,
+                                      filled: true,
+                                      fillColor: const Color(0xFF1F1F1F),
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 10.w, vertical: 10.h),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.r),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Remaining in pool',
+                          style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+                      Text('$symbol${remaining.toStringAsFixed(2)}',
+                          style: GoogleFonts.inter(
+                              color: over ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50.h,
+                    child: ElevatedButton(
+                      onPressed: (submitting || allocated <= 0 || over)
+                          ? null
+                          : () async {
+                              setSheetState(() => submitting = true);
+                              final entries = <MapEntry<String, double>>[];
+                              controllers.forEach((id, c) {
+                                final v = double.tryParse(c.text.trim()) ?? 0;
+                                if (v > 0) entries.add(MapEntry(id, v));
+                              });
+                              Navigator.of(ctx).pop();
+                              await _runMultiAllocate(entries);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _kFamilyPurple,
+                        disabledBackgroundColor: _kFamilyPurple.withValues(alpha: 0.4),
+                        shape:
+                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      child: submitting
+                          ? LazerVaultLoader.small()
+                          : Text('Allocate $symbol${allocated.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ).whenComplete(() {
+      for (final c in controllers.values) {
+        c.dispose();
+      }
+    });
+  }
+
+  /// Runs the per-member allocations sequentially on a dedicated cubit
+  /// instance (FamilyAccountCubit is a factory) so the screen's shared
+  /// listener doesn't fire per allocation. Refreshes once at the end.
+  Future<void> _runMultiAllocate(List<MapEntry<String, double>> entries) async {
+    if (entries.isEmpty) return;
+    final allocCubit = serviceLocator<FamilyAccountCubit>();
+    int ok = 0;
+    final failed = <String>[];
+    for (final e in entries) {
+      final completer = Completer<FamilyAccountState>();
+      late final StreamSubscription<FamilyAccountState> sub;
+      sub = allocCubit.stream
+          .where((s) => s is FundsAllocated || s is FamilyAccountError)
+          .listen((s) {
+        if (!completer.isCompleted) completer.complete(s);
+        sub.cancel();
+      });
+      allocCubit.allocateFundsToMember(
+        familyId: widget.familyId,
+        memberId: e.key,
+        amount: e.value,
+      );
+      final res = await completer.future.timeout(
+        const Duration(seconds: 20),
+        onTimeout: () {
+          sub.cancel();
+          return const FamilyAccountError('timeout');
+        },
+      );
+      if (res is FundsAllocated) {
+        ok++;
+      } else {
+        failed.add(e.key);
+      }
+    }
+
+    if (!mounted) return;
+    _loadFamilyAccount();
+    final symbol = CurrencySymbols.currentSymbol;
+    final total = entries.fold<double>(0, (s, e) => s + e.value);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          failed.isEmpty
+              ? 'Allocated $symbol${total.toStringAsFixed(2)} to $ok member${ok == 1 ? '' : 's'}'
+              : 'Allocated to $ok member${ok == 1 ? '' : 's'}; ${failed.length} failed',
+        ),
+        backgroundColor: failed.isEmpty ? const Color(0xFF10B981) : const Color(0xFFFB923C),
       ),
     );
   }
@@ -1680,6 +2081,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   _buildFamilyHeader(account),
                   // Purple hero with the family balance + key stats
                   _buildFamilyHero(account),
+                  // Prominent Fund action: top up the pool + allocate to members
+                  _buildFundActions(account),
                   SizedBox(height: 4.h),
                   // Purple pill tab bar (matches group details)
                   _buildFamilyTabBar(),
@@ -2580,6 +2983,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     final symbol = CurrencySymbols.currentSymbol;
     final memberName =
         transaction.memberName.isNotEmpty ? transaction.memberName : 'Member';
+    // The family account this transaction belongs to — threaded onto the
+    // receipt so it's clear which family & friends account it came from.
+    final familyName = _loadedAccount?.name.trim() ?? '';
     final reference = transaction.transactionId ??
         (transaction.metadata?['payment_ref']?.toString() ?? '—');
     final d = transaction.createdAt;
@@ -2653,6 +3059,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
             ),
             SizedBox(height: 20.h),
+            if (familyName.isNotEmpty)
+              _buildTxnDetailRow('Account', familyName),
             _buildTxnDetailRow('Type', transaction.type.displayName),
             _buildTxnDetailRow('By', memberName),
             if ((transaction.merchantName?.isNotEmpty ?? false) &&

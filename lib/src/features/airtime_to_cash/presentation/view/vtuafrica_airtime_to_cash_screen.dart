@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../cubit/airtime_to_cash_cubit.dart';
 import '../cubit/airtime_to_cash_state.dart';
+import '../../domain/entities/network_rate.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// VTU Africa airtime-to-cash input screen.
@@ -29,8 +30,15 @@ class _VtuafricaAirtimeToCashScreenState
   String? _detectedNetwork;
   double? _amount;
 
-  // VTU Africa rates (will be updated from backend)
-  static const _networkRates = {
+  // Inline error banner (load/verify failures render here, not as snackbars).
+  String? _errorText;
+
+  // Live rates from the backend (GetAirtimeToCashRates), keyed by network.
+  // Populated on RatesLoaded; the _fallbackRates below are only used until the
+  // real rates arrive so the estimate is never blank on first paint.
+  final Map<String, NetworkRate> _rates = {};
+
+  static const _fallbackRates = {
     'mtn': 0.84,
     'airtel': 0.85,
     'glo': 0.80,
@@ -45,6 +53,34 @@ class _VtuafricaAirtimeToCashScreenState
   void initState() {
     super.initState();
     _phoneController.addListener(_onPhoneChanged);
+    // Pull live conversion rates so the estimate + min/max reflect the backend,
+    // not baked-in constants. Deferred to post-frame so the cubit is available.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<AirtimeToCashCubit>().loadRates();
+    });
+  }
+
+  /// Backend rate for a network, falling back to the static estimate until the
+  /// live rates land.
+  double _rateValue(String network) {
+    final r = _rates[network.toLowerCase()];
+    if (r != null && r.conversionRate > 0) return r.conversionRate;
+    return _fallbackRates[network.toLowerCase()] ?? 0.8;
+  }
+
+  /// Inline amount-range message when the backend advertises min/max for the
+  /// selected network and the entered amount falls outside it.
+  String? get _amountRangeError {
+    if (_amount == null || _selectedNetwork == null) return null;
+    final r = _rates[_selectedNetwork!.toLowerCase()];
+    if (r == null) return null;
+    if (r.minAmount > 0 && _amount! < r.minAmount) {
+      return 'Minimum is ${r.formattedMinAmount} for ${_networkLabel(_selectedNetwork!)}';
+    }
+    if (r.maxAmount > 0 && _amount! > r.maxAmount) {
+      return 'Maximum is ${r.formattedMaxAmount} for ${_networkLabel(_selectedNetwork!)}';
+    }
+    return null;
   }
 
   @override
@@ -98,12 +134,16 @@ class _VtuafricaAirtimeToCashScreenState
   }
 
   bool get _canProceed =>
-      _phoneValid && _amount != null && _selectedNetwork != null;
+      _phoneValid &&
+      _amount != null &&
+      _selectedNetwork != null &&
+      _amountRangeError == null;
 
   double get _estimatedCash {
     if (_amount == null || _selectedNetwork == null) return 0;
-    final rate = _networkRates[_selectedNetwork!] ?? 0.8;
-    return _amount! * rate;
+    final r = _rates[_selectedNetwork!.toLowerCase()];
+    if (r != null && r.conversionRate > 0) return r.estimateCash(_amount!);
+    return _amount! * _rateValue(_selectedNetwork!);
   }
 
   void _verifyService() {
@@ -153,22 +193,41 @@ class _VtuafricaAirtimeToCashScreenState
   Widget build(BuildContext context) {
     return BlocListener<AirtimeToCashCubit, AirtimeToCashState>(
       listener: (context, state) {
-        if (state is AirtimeToCashServiceVerified) {
+        if (state is AirtimeToCashRatesLoaded) {
+          setState(() {
+            _rates
+              ..clear()
+              ..addEntries(
+                state.rates.map((r) => MapEntry(r.network.toLowerCase(), r)),
+              );
+          });
+        } else if (state is AirtimeToCashServiceVerified) {
+          // Guard: without a real destination phone the transfer screen would
+          // show a blank "send airtime to" number, so refuse to proceed. This
+          // happens if the active airtime-to-cash provider isn't the
+          // transfer-to-number one (VTU.africa). Surface it inline, not as a
+          // snackbar (repo rule: on-widget error states for load failures).
+          if (state.destinationPhone.trim().isEmpty) {
+            setState(() {
+              _errorText = state.message.isNotEmpty
+                  ? state.message
+                  : 'The transfer-to-number service is unavailable right now. Please try the SMS OTP method or try again later.';
+            });
+            return;
+          }
+          setState(() => _errorText = null);
           // Service verified - navigate to transfer screen
           Get.toNamed('/airtime-to-cash/vtuafrica/transfer', arguments: {
             'phoneNumber': _phoneController.text.trim(),
             'network': _selectedNetwork,
             'amount': _amount,
             'destinationPhone': state.destinationPhone,
-            'providerRate': _networkRates[_selectedNetwork!] ?? 0.8,
+            'providerRate': _rateValue(_selectedNetwork!),
           });
         } else if (state is AirtimeToCashError) {
-          Get.snackbar(
-            'Service Unavailable',
-            state.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-          );
+          setState(() => _errorText = state.message);
+        } else if (state is AirtimeToCashVerifying) {
+          setState(() => _errorText = null);
         }
       },
       child: Scaffold(
@@ -185,6 +244,10 @@ class _VtuafricaAirtimeToCashScreenState
                     children: [
                       SizedBox(height: 16.h),
                       _buildVtuafricaBanner(),
+                      if (_errorText != null) ...[
+                        SizedBox(height: 16.h),
+                        _buildInlineError(_errorText!),
+                      ],
                       SizedBox(height: 20.h),
                       _buildNetworkSelection(),
                       SizedBox(height: 20.h),
@@ -329,7 +392,10 @@ class _VtuafricaAirtimeToCashScreenState
             final color = _networkColor(network);
             return Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _selectedNetwork = network),
+                onTap: () => setState(() {
+                  _selectedNetwork = network;
+                  _errorText = null;
+                }),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   margin: EdgeInsets.only(right: network != '9mobile' ? 8.w : 0),
@@ -356,7 +422,7 @@ class _VtuafricaAirtimeToCashScreenState
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        '${((_networkRates[network] ?? 0.8) * 100).toStringAsFixed(0)}%',
+                        '${(_rateValue(network) * 100).toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: isSelected
@@ -487,6 +553,7 @@ class _VtuafricaAirtimeToCashScreenState
             onChanged: (v) {
               setState(() {
                 _amount = v.isNotEmpty ? double.tryParse(v) : null;
+                _errorText = null;
               });
             },
             style: TextStyle(
@@ -518,7 +585,60 @@ class _VtuafricaAirtimeToCashScreenState
             ),
           ),
         ),
+        if (_amountRangeError != null) ...[
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(Icons.info_outline,
+                  color: const Color(0xFFFB923C), size: 14.sp),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  _amountRangeError!,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFFFB923C),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildInlineError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: const Color(0xFFEF4444),
+                fontWeight: FontWeight.w500,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -587,7 +707,7 @@ class _VtuafricaAirtimeToCashScreenState
               Text('Rate',
                   style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               Text(
-                '${((_networkRates[_selectedNetwork!] ?? 0.8) * 100).toStringAsFixed(0)}%',
+                '${(_rateValue(_selectedNetwork!) * 100).toStringAsFixed(0)}%',
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w500,

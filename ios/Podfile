@@ -1,9 +1,9 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+# platform :ios, '15.5'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-platform :ios, '13.0'
+platform :ios, '15.5'
 
 
 project 'Runner', {
@@ -79,8 +79,8 @@ post_install do |installer|
       # plugins at iOS 9.0 which Xcode 26 warns against (range starts at 12.0).
       # Bumping to 13.0 (matching Firebase + the rest of our minimum) lets
       # the linker drop a chunk of legacy code paths.
-      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.5
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
       end
     end
   end

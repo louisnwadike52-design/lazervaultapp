@@ -89,6 +89,23 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
     setState(() {});
   }
 
+  /// Enter an already-joined active session's room directly (no join round-trip,
+  /// no code retype). Used by the "Recent Sessions" list.
+  Future<void> _enterRoomDirect(SpraySession session) async {
+    if (_isJoining) return;
+    final token = await serviceLocator<SecureStorageService>().getAccessToken();
+    if (token == null || !mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<SprayRoomCubit>(),
+          child: SprayRoomScreen(sessionId: session.id, accessToken: token),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -409,9 +426,10 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
           );
           return;
         }
-        // Re-join active session
-        setState(() => _isJoining = true);
-        context.read<SprayMeCubit>().joinSession(session.sessionCode);
+        // This list is the user's ALREADY-JOINED sessions, so re-calling
+        // joinSession(code) would 409 ("already joined"). Enter the room
+        // directly by session id instead — initRoom uses getSession (no re-join).
+        _enterRoomDirect(session);
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),

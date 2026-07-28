@@ -16,13 +16,16 @@ import '../../domain/entities/exchange_prediction_entity.dart';
 ///   * Bounded latency: 8s timeout matches the transfer pattern.
 ///   * No exceptions: swallowed and printed. Never throw to the caller.
 ///
-/// Backend RPC status: the `GetExchangeRecipientTrust` RPC is NOT yet exposed
-/// on ExchangeServiceClient (no entry in
-/// `lib/src/generated/exchange.pbgrpc.dart`). This data source is wired so
-/// that the moment the proto is regenerated (after the server-side task
-/// lands), only the `_callRpc()` body needs flipping from the documented
-/// stub to a real `_client.getExchangeRecipientTrust(...)` call — every
-/// other layer (cubit, alert widget, DI, screen wiring) is already in place.
+/// Implementation: the recipient-trust band is computed from the user's OWN
+/// exchange history via the existing `GetRecentExchanges` RPC — no dedicated
+/// backend RPC or proto change required. Prior COMPLETED international
+/// transfers to the same recipient account ⇒ "verified"; none ⇒ "new". The
+/// corridor-availability band needs server-side aggregate success rates that
+/// aren't exposed to the client, so it stays 'unknown' (the widget hides that
+/// row); the fraud blocklist is enforced authoritatively by the backend at
+/// submit time. If richer server-side signals are wanted later, a dedicated
+/// `GetExchangeRecipientTrust` RPC can replace this body without touching the
+/// cubit / widget / DI.
 ///
 /// See also: `domain/entities/exchange_prediction_entity.dart` for the full
 /// proto contract documentation.
@@ -41,10 +44,6 @@ abstract class IExchangePredictionRemoteDataSource {
 
 class ExchangePredictionRemoteDataSourceImpl
     implements IExchangePredictionRemoteDataSource {
-  // Held so the day the proto regenerates we can switch the stub body to a
-  // real `_client.getExchangeRecipientTrust(...)` call without touching the
-  // DI registration or the cubit. See file header.
-  // ignore: unused_field
   final ExchangeServiceClient _client;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
@@ -73,50 +72,54 @@ class ExchangePredictionRemoteDataSourceImpl
     }
 
     try {
-      // Build auth headers exactly the same way the rest of exchange flows do.
-      // We touch this even on the stub path so that the day the proto
-      // regenerates we don't discover a missing auth interceptor.
-      await _callOptionsHelper.withAuth(
+      final callOptions = await _callOptionsHelper.withAuth(
         CallOptions(timeout: const Duration(seconds: 8)),
       );
 
-      // ----------------------------------------------------------------
-      // STUB GUARD — see file header.
+      // Real recipient-trust signal computed from the user's OWN exchange
+      // history (no dedicated backend RPC required, no proto change): count
+      // prior COMPLETED international transfers to this exact recipient
+      // account. A recipient the user has successfully paid before is
+      // "verified"; a first-time recipient is "new". This is the primary,
+      // most actionable signal on the confirmation step.
       //
-      // `ExchangeServiceClient.getExchangeRecipientTrust` does not exist yet
-      // in the generated client. Until the server-side task lands and we
-      // regenerate the proto, calling it would not compile. We mirror the
-      // production "RPC is UNIMPLEMENTED" behaviour by returning null here.
-      //
-      // When the proto is regenerated, replace this block with:
-      //
-      //   final response = await _client.getExchangeRecipientTrust(
-      //     GetExchangeRecipientTrustRequest(
-      //       country: country,
-      //       accountOrIban: accountOrIban,
-      //       currencyPair: currencyPair,
-      //     ),
-      //     options: callOptions.mergedWith(
-      //       CallOptions(timeout: const Duration(seconds: 8)),
-      //     ),
-      //   );
-      //
-      //   final knownSinceUnix = response.recipientKnownSinceUnix.toInt();
-      //   return ExchangePredictionEntity(
-      //     bankAvailabilityPct: response.bankAvailabilityPct,
-      //     bankBand: response.bankBand.isNotEmpty ? response.bankBand : 'unknown',
-      //     bankSampleSize: response.bankSampleSize,
-      //     recipientTrustBand: response.recipientTrustBand.isNotEmpty
-      //         ? response.recipientTrustBand
-      //         : 'unknown',
-      //     priorExchangeCount: response.priorExchangeCount,
-      //     knownSince: knownSinceUnix > 0
-      //         ? DateTime.fromMillisecondsSinceEpoch(knownSinceUnix * 1000)
-      //         : null,
-      //     blocklisted: response.blocklisted,
-      //   );
-      // ----------------------------------------------------------------
-      return null;
+      // The corridor-availability band needs server-side aggregate success
+      // rates we don't expose to the client, so it's left 'unknown' (the
+      // widget hides that row). Blocklist is enforced authoritatively by the
+      // backend at submit time (isDestinationBlocklisted), which returns a
+      // clear error — so we don't pre-flag it here.
+      final resp = await _client.getRecentExchanges(
+        GetRecentExchangesRequest()..pageSize = 100,
+        options: callOptions,
+      );
+
+      final wanted = _normalizeAccount(accountOrIban);
+      int priorCount = 0;
+      DateTime? earliest;
+      for (final tx in resp.transactions) {
+        if (tx.exchangeType != ExchangeType.INTERNATIONAL) continue;
+        if (tx.status != ExchangeStatus.COMPLETED) continue;
+        if (_normalizeAccount(tx.receiverDetails.accountNumber) != wanted) {
+          continue;
+        }
+        priorCount++;
+        if (tx.hasCreatedAt()) {
+          final ts = DateTime.fromMillisecondsSinceEpoch(
+            tx.createdAt.seconds.toInt() * 1000,
+          );
+          if (earliest == null || ts.isBefore(earliest)) earliest = ts;
+        }
+      }
+
+      return ExchangePredictionEntity(
+        bankAvailabilityPct: 0,
+        bankBand: 'unknown', // corridor aggregate not exposed client-side
+        bankSampleSize: 0,
+        recipientTrustBand: priorCount >= 1 ? 'verified' : 'new',
+        priorExchangeCount: priorCount,
+        knownSince: earliest,
+        blocklisted: false, // enforced server-side at submit
+      );
     } on GrpcError catch (e) {
       // UNIMPLEMENTED (12) is the expected state during rollout, but ANY
       // gRPC failure is treated the same way: render nothing, never block.
@@ -129,4 +132,9 @@ class ExchangePredictionRemoteDataSourceImpl
       return null;
     }
   }
+
+  /// Normalize an account/IBAN for equality: strip spaces, uppercase. Lets
+  /// "GB29 NWBK..." match "gb29nwbk..." across entry variants.
+  String _normalizeAccount(String v) =>
+      v.replaceAll(RegExp(r'\s+'), '').toUpperCase();
 }

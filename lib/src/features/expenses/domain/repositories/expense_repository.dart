@@ -28,6 +28,7 @@ abstract class ExpenseRepository {
     ExpensePaymentMethod paymentMethod = ExpensePaymentMethod.cash,
     String? expenseDate, // YYYY-MM-DD; defaults to today on server
     String vendor = '',
+    String supplierId = '',
     String reference = '',
     String receiptUrl = '',
     List<String> tags = const [],
@@ -44,6 +45,7 @@ abstract class ExpenseRepository {
     ExpensePaymentMethod? paymentMethod,
     String? expenseDate,
     String? vendor,
+    String? supplierId,
     String? reference,
     String? receiptUrl,
     List<String>? tags,

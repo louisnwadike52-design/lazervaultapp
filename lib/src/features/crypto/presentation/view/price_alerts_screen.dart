@@ -7,6 +7,8 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
+import '../../domain/entities/crypto_entity.dart';
+import '../widgets/crypto_search_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 const _bg = Color(0xFF0A0A0A);
@@ -24,7 +26,12 @@ String _fmtPrice(double p) =>
     p >= 1 ? p.toStringAsFixed(2) : (p >= 0.01 ? p.toStringAsFixed(4) : p.toStringAsFixed(6));
 
 class PriceAlertsScreen extends StatefulWidget {
-  const PriceAlertsScreen({super.key});
+  /// Quidax-supported assets, passed in from the crypto landing where they're
+  /// already loaded — so the create sheet never has to re-fetch (that fetch was
+  /// the source of the "failed to load assets" bug). Falls back to a fetch only
+  /// if this arrives empty.
+  final List<Crypto> assets;
+  const PriceAlertsScreen({super.key, this.assets = const []});
   @override
   State<PriceAlertsScreen> createState() => _PriceAlertsScreenState();
 }
@@ -34,9 +41,43 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
   List<PriceAlert> _active = [], _triggered = [];
   bool _loading = true;
   String? _error;
+  // Assets to choose from when creating an alert. Preloaded from the landing;
+  // fetched only if that arrives empty.
+  late List<Crypto> _assets = widget.assets;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+    if (_assets.isEmpty) _loadAssetsFallback();
+  }
+
+  Future<void> _loadAssetsFallback() async {
+    try {
+      final res = await _client.getSupportedAssets(perPage: 200, vsCurrency: 'usd');
+      if (!mounted) return;
+      setState(() => _assets = res.assets.map(_cryptoFromMsg).toList());
+    } catch (_) {
+      // Leave empty — the picker shows a clear "no assets" state.
+    }
+  }
+
+  Crypto _cryptoFromMsg(CryptoMessage m) => Crypto(
+        id: m.id,
+        symbol: m.symbol,
+        name: m.name,
+        image: m.image,
+        currentPrice: m.currentPrice,
+        marketCap: m.marketCap.toDouble(),
+        marketCapRank: m.marketCapRank,
+        totalVolume: m.totalVolume.toDouble(),
+        high24h: m.high24h,
+        low24h: m.low24h,
+        priceChange24h: m.priceChange24h,
+        priceChangePercentage24h: m.priceChangePercentage24h,
+        circulatingSupply: m.circulatingSupply,
+        lastUpdated: DateTime.now(),
+      );
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
@@ -67,7 +108,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
 
   void _showCreate() => showModalBottomSheet(
     context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-    builder: (_) => _CreateSheet(client: _client, onCreated: _load),
+    builder: (_) => _CreateSheet(client: _client, assets: _assets, onCreated: _load),
   );
 
   @override
@@ -259,42 +300,43 @@ class _Tile extends StatelessWidget {
 // --- Create alert bottom sheet ---
 class _CreateSheet extends StatefulWidget {
   final CryptoGrpcClient client;
+  final List<Crypto> assets;
   final VoidCallback onCreated;
-  const _CreateSheet({required this.client, required this.onCreated});
+  const _CreateSheet({required this.client, required this.assets, required this.onCreated});
   @override
   State<_CreateSheet> createState() => _CreateSheetState();
 }
 
 class _CreateSheetState extends State<_CreateSheet> {
   final _priceCtrl = TextEditingController();
-  final _searchCtrl = TextEditingController();
-  List<CryptoMessage> _assets = [], _filtered = [];
-  CryptoMessage? _selected;
+  Crypto? _selected;
   String _dir = 'above';
-  bool _loadingAssets = false, _creating = false, _picking = false;
+  bool _creating = false;
 
   @override
-  void initState() { super.initState(); _loadAssets(); }
-  @override
-  void dispose() { _priceCtrl.dispose(); _searchCtrl.dispose(); super.dispose(); }
+  void dispose() { _priceCtrl.dispose(); super.dispose(); }
 
-  Future<void> _loadAssets() async {
-    setState(() => _loadingAssets = true);
-    try {
-      final r = await widget.client.getSupportedAssets(perPage: 100, vsCurrency: 'usd');
-      setState(() { _assets = r.assets.toList(); _filtered = _assets; _loadingAssets = false; });
-    } catch (_) { setState(() => _loadingAssets = false); }
-  }
-
-  void _filter(String q) {
-    final lq = q.toLowerCase();
-    setState(() => _filtered = _assets.where((a) =>
-        a.name.toLowerCase().contains(lq) || a.symbol.toLowerCase().contains(lq)).toList());
+  // Reuse the SAME searchable asset picker the top-bar search uses, over the
+  // preloaded Quidax-supported assets — no per-sheet re-fetch that could fail.
+  Future<void> _pickAsset() async {
+    await showCryptoSearchSheet(
+      context,
+      assets: widget.assets,
+      onSelect: (picked) {
+        if (!mounted) return;
+        setState(() {
+          _selected = picked;
+          if (picked.currentPrice > 0) {
+            _priceCtrl.text = _fmtPrice(picked.currentPrice);
+          }
+        });
+      },
+    );
   }
 
   Future<void> _create() async {
     if (_selected == null) return;
-    final price = double.tryParse(_priceCtrl.text);
+    final price = double.tryParse(_priceCtrl.text.trim());
     if (price == null || price <= 0) {
       Get.snackbar('Invalid', 'Enter a valid target price',
           backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
@@ -306,12 +348,12 @@ class _CreateSheetState extends State<_CreateSheet> {
           cryptoId: _selected!.id, targetPrice: price, direction: _dir, fiatCurrency: 'USD');
       widget.onCreated();
       if (mounted) Navigator.pop(context);
-      Get.snackbar('Alert Created',
+      Get.snackbar('Alert created',
           '${_selected!.symbol.toUpperCase()} ${_dir == 'above' ? 'above' : 'below'} \$${_fmtPrice(price)}',
           backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
     } catch (_) {
-      setState(() => _creating = false);
-      Get.snackbar('Error', 'Could not create alert',
+      if (mounted) setState(() => _creating = false);
+      Get.snackbar('Error', 'Could not create alert. Please try again.',
           backgroundColor: _red.withValues(alpha: 0.9), colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
     }
   }
@@ -319,7 +361,7 @@ class _CreateSheetState extends State<_CreateSheet> {
   InputDecoration _inputDeco({String? hint, String? prefix, Widget? prefixIcon}) => InputDecoration(
     hintText: hint, hintStyle: _inter(14, c: _sub),
     prefixText: prefix, prefixStyle: _inter(16, c: _sub), prefixIcon: prefixIcon,
-    filled: true, fillColor: _bg, contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+    filled: true, fillColor: _bg, contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: _divider)),
     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: _divider)),
     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: _accent)),
@@ -328,6 +370,7 @@ class _CreateSheetState extends State<_CreateSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final canCreate = !_creating && _selected != null;
     return Container(
       padding: EdgeInsets.only(bottom: bottom),
       decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
@@ -335,86 +378,84 @@ class _CreateSheetState extends State<_CreateSheet> {
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Handle
             Center(child: Container(width: 40.w, height: 4.h,
               decoration: BoxDecoration(color: _divider, borderRadius: BorderRadius.circular(2.r)))),
             SizedBox(height: 20.h),
-            Text('Create Price Alert', style: _inter(18, w: FontWeight.bold)),
+            Text('Create price alert', style: _inter(18, w: FontWeight.bold)),
+            SizedBox(height: 6.h),
+            Text('We will notify you the moment the price crosses your target.',
+                style: _inter(13, c: _sub)),
             SizedBox(height: 20.h),
-            // Asset selector
+            // Asset selector — tappable card (opens the picker modal).
             Text('Asset', style: _inter(13, w: FontWeight.w500, c: _sub)),
             SizedBox(height: 8.h),
-            GestureDetector(
-              onTap: () => setState(() => _picking = true),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _divider)),
-                child: Row(children: [
-                  Expanded(child: Text(
-                    _selected != null ? '${_selected!.name} (${_selected!.symbol.toUpperCase()})' : 'Select cryptocurrency',
-                    style: _inter(14, c: _selected != null ? Colors.white : _sub),
-                  )),
-                  Icon(Icons.keyboard_arrow_down, color: _sub, size: 20.sp),
-                ]),
+            Material(
+              color: _bg,
+              borderRadius: BorderRadius.circular(12.r),
+              child: InkWell(
+                onTap: _pickAsset,
+                borderRadius: BorderRadius.circular(12.r),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: _selected != null ? _accent.withValues(alpha: 0.5) : _divider),
+                  ),
+                  child: Row(children: [
+                    if (_selected != null)
+                      _assetAvatar(_selected!, 18)
+                    else
+                      Icon(Icons.search, color: _sub, size: 22.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: _selected != null
+                          ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(_selected!.name, style: _inter(15, w: FontWeight.w600)),
+                              SizedBox(height: 2.h),
+                              Text(_selected!.symbol.toUpperCase(), style: _inter(12, c: _sub)),
+                            ])
+                          : Text('Select cryptocurrency', style: _inter(15, c: _sub)),
+                    ),
+                    Icon(Icons.keyboard_arrow_down_rounded, color: _sub, size: 22.sp),
+                  ]),
+                ),
               ),
             ),
-            if (_picking) ...[
+            if (_selected != null && _selected!.currentPrice > 0) ...[
               SizedBox(height: 8.h),
-              TextField(
-                controller: _searchCtrl, onChanged: _filter,
-                style: _inter(14), decoration: _inputDeco(hint: 'Search assets...', prefixIcon: Icon(Icons.search, color: _sub, size: 20.sp)),
-              ),
-              SizedBox(height: 4.h),
-              Container(
-                height: 180.h,
-                decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _divider)),
-                child: _loadingAssets
-                  ? const Center(child: LazerVaultLoader.small())
-                  : ListView.builder(
-                      padding: EdgeInsets.zero, itemCount: _filtered.length,
-                      itemBuilder: (_, i) {
-                        final a = _filtered[i];
-                        final sel = _selected?.id == a.id;
-                        return ListTile(
-                          dense: true, selected: sel, selectedTileColor: _accent.withValues(alpha: 0.1),
-                          leading: a.image.isNotEmpty
-                            ? CircleAvatar(radius: 14.r, backgroundImage: NetworkImage(a.image), backgroundColor: _divider)
-                            : CircleAvatar(radius: 14.r, backgroundColor: _accent.withValues(alpha: 0.15),
-                                child: Text(a.symbol.toUpperCase().substring(0, 1), style: _inter(12, w: FontWeight.w700, c: _accent))),
-                          title: Text(a.name, style: _inter(13)),
-                          trailing: Text(a.symbol.toUpperCase(), style: _inter(12, c: _sub)),
-                          onTap: () => setState(() { _selected = a; _picking = false; _searchCtrl.clear(); _filtered = _assets; }),
-                        );
-                      }),
-              ),
+              Row(children: [
+                Icon(Icons.info_outline_rounded, color: _sub, size: 14.sp),
+                SizedBox(width: 6.w),
+                Text('Current price \$${_fmtPrice(_selected!.currentPrice)}', style: _inter(12, c: _sub)),
+              ]),
             ],
-            SizedBox(height: 16.h),
+            SizedBox(height: 18.h),
             // Target price
-            Text('Target Price (USD)', style: _inter(13, w: FontWeight.w500, c: _sub)),
+            Text('Target price (USD)', style: _inter(13, w: FontWeight.w500, c: _sub)),
             SizedBox(height: 8.h),
             TextField(
               controller: _priceCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (_) => setState(() {}),
               style: _inter(16), decoration: _inputDeco(hint: '0.00', prefix: '\$ '),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 18.h),
             // Direction
-            Text('Direction', style: _inter(13, w: FontWeight.w500, c: _sub)),
+            Text('Notify me when the price goes', style: _inter(13, w: FontWeight.w500, c: _sub)),
             SizedBox(height: 8.h),
             Row(children: [
               _dirChip('Above', 'above', _green), SizedBox(width: 12.w), _dirChip('Below', 'below', _red),
             ]),
             SizedBox(height: 24.h),
-            // Create button
-            SizedBox(width: double.infinity, height: 50.h, child: ElevatedButton(
-              onPressed: _creating || _selected == null ? null : _create,
+            SizedBox(width: double.infinity, height: 52.h, child: ElevatedButton(
+              onPressed: canCreate ? _create : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accent, disabledBackgroundColor: _accent.withValues(alpha: 0.3),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
               ),
               child: _creating
                 ? LazerVaultLoader(size: 22)
-                : Text('Create Alert', style: _inter(16, w: FontWeight.w600)),
+                : Text(_selected == null ? 'Select an asset' : 'Create alert', style: _inter(16, w: FontWeight.w600)),
             )),
             SizedBox(height: 8.h),
           ]),
@@ -425,20 +466,34 @@ class _CreateSheetState extends State<_CreateSheet> {
 
   Widget _dirChip(String label, String val, Color c) {
     final sel = _dir == val;
-    return Expanded(child: GestureDetector(
-      onTap: () => setState(() => _dir = val),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        decoration: BoxDecoration(
-          color: sel ? c.withValues(alpha: 0.15) : _bg, borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: sel ? c : _divider, width: sel ? 1.5 : 1),
+    return Expanded(child: Material(
+      color: sel ? c.withValues(alpha: 0.15) : _bg,
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        onTap: () => setState(() => _dir = val),
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 14.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: sel ? c : _divider, width: sel ? 1.5 : 1),
+          ),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(val == 'above' ? Icons.arrow_upward : Icons.arrow_downward, color: sel ? c : _sub, size: 16.sp),
+            SizedBox(width: 6.w),
+            Text(label, style: _inter(14, w: FontWeight.w600, c: sel ? c : _sub)),
+          ]),
         ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(val == 'above' ? Icons.arrow_upward : Icons.arrow_downward, color: sel ? c : _sub, size: 16.sp),
-          SizedBox(width: 6.w),
-          Text(label, style: _inter(14, w: FontWeight.w600, c: sel ? c : _sub)),
-        ]),
       ),
     ));
   }
 }
+
+Widget _assetAvatar(Crypto a, double radius) => a.image.isNotEmpty
+    ? CircleAvatar(radius: radius.r, backgroundImage: NetworkImage(a.image), backgroundColor: _divider)
+    : CircleAvatar(
+        radius: radius.r,
+        backgroundColor: _accent.withValues(alpha: 0.15),
+        child: Text(a.symbol.isNotEmpty ? a.symbol.toUpperCase().substring(0, 1) : '?',
+            style: _inter(12, w: FontWeight.w700, c: _accent)),
+      );

@@ -187,10 +187,65 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
       }
     }
 
+    // No saved beneficiary for this meter yet — a brand-new meter bought via
+    // the streamlined QuickBuy never went through a "save beneficiary" step.
+    // Auto-recharge NEEDS a beneficiary to attach to, so silently upsert one
+    // from the data the QuickBuy threaded through (mirrors the cable-TV receipt
+    // hook), instead of aborting. The threaded providerId is the provider DB id
+    // resolved from the loaded provider list, so the save succeeds even when the
+    // payment row carries an empty providerId.
+    if (beneficiaryId == null || beneficiaryId.isEmpty) {
+      final benProviderId = args['beneficiaryProviderId'] as String?;
+      if (benProviderId != null && benProviderId.isNotEmpty) {
+        final benType = (args['beneficiaryMeterType'] as String?) == 'postpaid'
+            ? MeterType.postpaid
+            : MeterType.prepaid;
+        final benCustomer =
+            (args['beneficiaryCustomerName'] as String?) ?? payment.customerName;
+        final benNickname = (args['beneficiaryNickname'] as String?)?.trim();
+        try {
+          final saveRes = await repo.saveBeneficiary(
+            providerId: benProviderId,
+            meterNumber: payment.meterNumber,
+            meterType: benType,
+            customerName: benCustomer,
+            phoneNumber: args['beneficiaryPhone'] as String?,
+            nickname: (benNickname != null && benNickname.isNotEmpty)
+                ? benNickname
+                : payment.meterNumber,
+            providerCode:
+                (args['beneficiaryProviderCode'] as String?) ?? payment.providerCode,
+            providerName: args['beneficiaryProviderName'] as String?,
+          );
+          beneficiaryId = saveRes.fold<String?>((_) => null, (b) => b.id);
+        } catch (_) {
+          beneficiaryId = null;
+        }
+        // A duplicate save (meter is already a beneficiary) fails — re-match the
+        // existing row so the schedule still attaches.
+        if (beneficiaryId == null || beneficiaryId.isEmpty) {
+          try {
+            final bensRes = await repo.getBeneficiaries();
+            beneficiaryId = bensRes.fold<String?>(
+              (_) => null,
+              (list) {
+                for (final b in list) {
+                  if (b.meterNumber == payment.meterNumber) return b.id;
+                }
+                return null;
+              },
+            );
+          } catch (_) {
+            beneficiaryId = null;
+          }
+        }
+      }
+    }
+
     if (beneficiaryId == null || beneficiaryId.isEmpty) {
       _softInfo(
         'Auto-recharge couldn\'t be enabled',
-        'We couldn\'t find a saved beneficiary for this meter. Turn on '
+        'We couldn\'t save a beneficiary for this meter. Turn on '
             '"Save as beneficiary" on your next purchase to enable auto-recharge.',
       );
       return;
@@ -805,7 +860,14 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           ),
           _buildDetailRow('Reference', payment.referenceNumber),
           SizedBox(height: 10.h),
-          _buildDetailRow('Gateway', payment.paymentGateway.toUpperCase()),
+          _buildDetailRow('Gateway', switch (payment.paymentGateway.toLowerCase()) {
+            'vtpass' => 'VTpass',
+            'vtuafrica' => 'VTU Africa',
+            'reloadly' => 'Reloadly',
+            'flutterwave' => 'Flutterwave',
+            'interswitch' => 'Interswitch',
+            _ => payment.paymentGateway.toUpperCase(),
+          }),
           SizedBox(height: 10.h),
           _buildDetailRow('Date', dateFormat.format(displayDate)),
           SizedBox(height: 10.h),
@@ -814,7 +876,13 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           _buildDetailRow(
             'Status',
             payment.status.displayName,
-            valueColor: const Color(0xFF10B981),
+            // Status-aware tint: green completed, orange pending/processing,
+            // red failed — never a blanket green for a failed/pending row.
+            valueColor: payment.isCompleted
+                ? const Color(0xFF10B981)
+                : payment.isFailed
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFFFB923C),
           ),
         ],
       ),

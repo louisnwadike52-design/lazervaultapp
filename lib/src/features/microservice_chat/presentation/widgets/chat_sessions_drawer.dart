@@ -15,7 +15,7 @@ import '../../domain/entities/chat_session_summary.dart';
 class ChatSessionsDrawer extends StatelessWidget {
   const ChatSessionsDrawer({super.key});
 
-  // LazerVault brand palette (mirrors the dark-theme tokens in CLAUDE.md).
+  // LazerVault brand palette (mirrors the dark-theme tokens in the platform conventions).
   static const Color _brandPurple = Color(0xFF7C3AED);
   static const Color _background = Color(0xFF0A0A0A);
   static const Color _card = Color(0xFF1F1F1F);

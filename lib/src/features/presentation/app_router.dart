@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -31,7 +32,7 @@ import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_ent
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/sell_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_sales_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/settlement_history_screen.dart';
+import 'package:lazervault/src/features/presentation/views/onboarding_carousel_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_method_selection_screen.dart';
@@ -65,13 +66,17 @@ import 'package:lazervault/src/features/recipients/presentation/view/select_reci
 import 'package:lazervault/src/features/recipients/presentation/view/qr_scanner_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/my_qr_code_screen.dart';
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/email/presentation/cubit/email_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/email/presentation/screens/email_inbox_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/email/presentation/screens/email_thread_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/email/presentation/screens/email_drafts_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/email/presentation/screens/email_settings_screen.dart';
 import 'package:lazervault/src/features/split_bills/presentation/view/split_bill_home_screen.dart';
 import 'package:lazervault/src/features/split_bills/presentation/view/create_split_bill_screen.dart';
 import 'package:lazervault/src/features/split_bills/presentation/view/split_bill_detail_screen.dart';
 import 'package:lazervault/src/features/split_bills/presentation/view/pay_split_bill_screen.dart';
 import 'package:lazervault/src/features/split_bills/presentation/view/split_bill_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
-import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_processing_screen.dart';
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
@@ -80,10 +85,11 @@ import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubi
 import 'package:lazervault/src/features/authentication/presentation/views/phone_entry_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_otp_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_passcode_create_screen.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/phone_personal_details_screen.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/phone_optional_email_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_passcode_login_screen.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/two_factor_setup_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/forgot_passcode_phone_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/passcode_reset_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_personal_details_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
 import 'package:lazervault/src/features/investments/presentation/view/invest_activity_screen.dart';
@@ -101,13 +107,16 @@ import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_de
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 import '../investments/presentation/view/investments_screen.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
+import 'package:lazervault/src/features/rmb/cubit/rmb_cubit.dart';
+import 'package:lazervault/src/features/rmb/presentation/view/rmb_landing_screen.dart';
+import 'package:lazervault/src/features/rmb/presentation/view/rmb_receipt_screen.dart';
+import 'package:lazervault/src/features/rmb/presentation/view/rmb_history_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
@@ -117,7 +126,6 @@ import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart
 import 'package:lazervault/src/features/cards/presentation/view/card_creation_form_screen.dart';
 import 'package:lazervault/src/features/cards/presentation/view/card_creation_receipt_screen.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
-import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
 import 'package:lazervault/src/features/voice/screens/voice_settings_screen.dart';
 import 'package:lazervault/src/features/voice/screens/voice_cloning_screen.dart';
@@ -196,6 +204,20 @@ import 'package:lazervault/src/features/insurance/presentation/view/purchase_det
 import 'package:lazervault/src/features/insurance/presentation/cubit/my_claims_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/cubit/purchase_history_cubit.dart';
 
+// ePIN (Recharge card printing) imports
+import 'package:lazervault/src/features/epin/presentation/cubit/epin_cubit.dart';
+import 'package:lazervault/src/features/epin/presentation/view/epin_home_screen.dart';
+import 'package:lazervault/src/features/epin/presentation/view/epin_processing_screen.dart';
+import 'package:lazervault/src/features/epin/presentation/view/epin_receipt_screen.dart';
+import 'package:lazervault/src/features/epin/presentation/view/epin_orders_screen.dart';
+// Betting (Fund betting account) imports
+import 'package:lazervault/src/features/betting/presentation/cubit/betting_cubit.dart';
+import 'package:lazervault/src/features/betting/presentation/view/betting_home_screen.dart';
+import 'package:lazervault/src/features/betting/presentation/view/betting_review_screen.dart';
+import 'package:lazervault/src/features/betting/presentation/view/betting_processing_screen.dart';
+import 'package:lazervault/src/features/betting/presentation/view/betting_receipt_screen.dart';
+import 'package:lazervault/src/features/betting/presentation/view/betting_history_screen.dart';
+import 'package:lazervault/src/features/betting/presentation/view/betting_beneficiaries_screen.dart';
 // Airtime imports
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/intl_airtime_cubit.dart';
@@ -216,15 +238,15 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_benefi
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_auto_recharge_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_reminders_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/create_airtime_reminder_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_transfer_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_transfer_review_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_cubit.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airtime_to_cash_cubit.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_provider_select_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/vtuafrica_airtime_to_cash_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/vtuafrica_transfer_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/automation_airtime_to_cash_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_success_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_pending_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_review_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_processing_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_result_screen.dart';
 
@@ -298,6 +320,8 @@ import 'package:lazervault/src/features/escrow/presentation/cubit/escrow_cubit.d
 import 'package:lazervault/src/features/escrow/presentation/view/escrow_home_screen.dart';
 import 'package:lazervault/src/features/escrow/presentation/view/create_escrow_deal_screen.dart';
 import 'package:lazervault/src/features/escrow/presentation/view/escrow_deal_detail_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_receipt_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_invoice_screen.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 
 // QR Pay imports
@@ -476,13 +500,12 @@ import 'package:lazervault/src/features/currency_exchange/presentation/views/exc
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_processing_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_recipient_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_receipt_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_receipt_by_ref_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_detail_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_history_screen.dart';
 
 // Settings imports
 import 'package:lazervault/src/features/settings/presentation/view/privacy_policy_screen.dart';
-import 'package:lazervault/src/features/settings/presentation/view/help_support_screen.dart';
-import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/referral_dashboard_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/all_referrals_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/lazer_points_screen.dart';
@@ -549,10 +572,15 @@ import 'package:lazervault/src/features/tax/presentation/views/tax_obligations_s
 import 'package:lazervault/src/features/tax/presentation/views/tax_documents_screen.dart';
 import 'package:lazervault/src/features/tax/presentation/views/vat_schedule_screen.dart';
 import 'package:lazervault/src/features/tax/presentation/views/record_vat_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/wht_schedule_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/record_wht_screen.dart';
 
 // Business Dashboard
 import 'package:lazervault/src/features/business_analytics/presentation/cubit/business_analytics_cubit.dart';
 import 'package:lazervault/src/features/business_analytics/presentation/views/analytics_screen.dart';
+import 'package:lazervault/src/features/business/presentation/view/business_dashboard_screen.dart';
+import 'package:lazervault/src/features/business/presentation/view/record_sale_screen.dart';
+import 'package:lazervault/src/features/business/presentation/view/sales_list_screen.dart';
 
 import 'package:lazervault/src/features/presentation/views/debug_settings_screen.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -578,7 +606,7 @@ import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_fun
 // Family Account imports
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
-import 'package:lazervault/src/features/family_account/presentation/views/family_setup_flow_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/create_family_account_carousel.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_activation_setup_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_add_member_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_invite_member_flow_screen.dart';
@@ -595,7 +623,6 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AppRouter {
@@ -616,10 +643,22 @@ class AppRouter {
   }
 
   static final routes = [
+    // The intro onboarding carousel was removed; `_determineInitialRoute` never
+    // resolves to '/' anymore. This entry stays only so GetX has a valid default
+    // route — it points at the email sign-in screen and is not reached in normal
+    // navigation (fresh users go straight to phone signup / email sign-in).
     GetPage(
       name: AppRoutes.root,
-      page: () => const ModernOnboardingScreen(),
+      page: () => serviceLocator<EmailSignInScreen>(),
       transition: Transition.fade,
+    ),
+    // First-launch intro carousel (shown once per install by
+    // _determineInitialRoute, before the auth entry). Self-contained: on
+    // finish/skip it sets has_seen_onboarding and routes to phone/email entry.
+    GetPage(
+      name: AppRoutes.onboarding,
+      page: () => const OnboardingCarouselScreen(),
+      transition: Transition.fadeIn,
     ),
     // ── Phone + Passcode auth flow ──────────────────────────────────────
     GetPage(
@@ -656,19 +695,29 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.phoneOptionalEmail,
+      name: AppRoutes.phoneEmailVerification,
       page: () => BlocProvider.value(
         value: _phoneSignup(),
-        child: const PhoneOptionalEmailScreen(),
+        child: const PhoneEmailVerificationScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
+    // "Switch User": phone+passcode login for a different user. Fresh cubit so
+    // the switch is a clean login; on success it updates the stored user cache.
     GetPage(
       name: AppRoutes.phonePasscodeLogin,
-      // Login is self-contained — a fresh instance each time is fine.
       page: () => BlocProvider(
         create: (_) => serviceLocator<PhonePasscodeCubit>(),
         child: const PhonePasscodeLoginScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // "Forgot your passcode?" (phone+passcode): phone-OTP passcode reset.
+    GetPage(
+      name: AppRoutes.forgotPasscodePhone,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PasscodeResetCubit>(),
+        child: const ForgotPasscodePhoneScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -707,6 +756,31 @@ class AppRouter {
         create: (context) => serviceLocator<CryptoCubit>(),
         child: serviceLocator<CryptoScreen>(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    // ── RMB (Chinese Yuan cross-border payout) ──────────────────────────
+    GetPage(
+      name: AppRoutes.rmb,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<RmbCubit>(),
+        child: const RmbLandingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.rmbReceipt,
+      page: () {
+        final args = (Get.arguments as Map?) ?? const {};
+        return RmbReceiptScreen(
+          transferId: args['transferId'] as String? ?? '',
+          fromHistory: args['fromHistory'] as bool? ?? false,
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.rmbHistory,
+      page: () => const RmbHistoryScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -791,7 +865,13 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.myQRCode,
-      page: () => const MyQRCodeScreen(),
+      // Provide a QRPaymentCubit so the screen can subscribe to the realtime
+      // WS overlay and flip to a "Paid" state the moment a payer settles the
+      // amount QR (same cubit + WS used by the generator display screen).
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<QRPaymentCubit>(),
+        child: const MyQRCodeScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -864,6 +944,18 @@ class AppRouter {
           child: CreateInvoiceCarousel(serviceFeeRef: serviceFeeRef),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+    // Chat/voice receipt "View receipt" deeplink (/invoice/details/:invoiceId) —
+    // the invoice details screen reads the id from Get.parameters['invoiceId'].
+    GetPage(
+      name: '${AppRoutes.invoiceDetails}/:invoiceId',
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InvoiceCubit>(),
+        child: InvoiceDetailsScreen(
+          invoiceId: Get.parameters['invoiceId'] ?? '',
+        ),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1155,14 +1247,16 @@ class AppRouter {
         final args = Get.arguments;
         String? email;
         bool codeSent = true;
-        bool isRequired = true;
+        // Default skippability follows the admin toggle; an explicit isRequired
+        // arg (e.g. the phone-flow forced email step) still overrides it.
+        bool isRequired = FeatureFlags.isEmailVerificationRequired;
         String? secondaryPhone;
 
         if (args is Map) {
           final mapArgs = Map<String, dynamic>.from(args);
           email = mapArgs['email']?.toString();
           codeSent = mapArgs['codeSent'] as bool? ?? true;
-          isRequired = mapArgs['isRequired'] as bool? ?? true;
+          isRequired = mapArgs['isRequired'] as bool? ?? isRequired;
           secondaryPhone = mapArgs['secondaryPhone']?.toString();
         } else if (args is String) {
           email = args;
@@ -1318,11 +1412,20 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      // Legacy alias. The old SendFundScreen has been removed; this route now
+      // always enters the real, instrumented send-funds flow at recipient
+      // selection (long flow default; short flow is admin-gated via the
+      // selectRecipient route's arguments). Kept so any lingering
+      // Get.toNamed(AppRoutes.sendFunds) — e.g. the OS quick action — resolves
+      // instead of hitting "route not found".
       name: AppRoutes.sendFunds,
-      page: () {
-        final recipient = Get.arguments as User;
-        return serviceLocator<SendFundScreen>(param1: recipient);
-      },
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<RecipientCubit>()),
+          BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
+        ],
+        child: serviceLocator<SelectRecipientScreen>(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1338,7 +1441,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.transferProof,
       page: () => const TransferReceiptScreen(),
-      transition: Transition.leftToRight,
+      // noTransition (not fadeIn/slide): the receipt is reached via
+      // Get.offAllNamed from the amount/select screen (short flow) or a
+      // processing screen (long flow). Any animated transition (slide OR
+      // cross-fade) keeps the OUTGOING screen visible while the receipt
+      // animates in — a brief "flash" of the previous send/amount screen. The
+      // receipt Scaffold is fully opaque, so an instant swap covers everything
+      // immediately with nothing showing behind.
+      transition: Transition.noTransition,
     ),
     GetPage(
       name: AppRoutes.initiateSendFunds,
@@ -1524,6 +1634,17 @@ class AppRouter {
       page: () => const ExchangeReceiptScreen(),
       transition: Transition.zoom,
     ),
+    // Chat/voice "View receipt" deeplink (/exchange/receipt/:id) — the receipt
+    // card from chat has no CurrencyTransaction to pass, only the id, so this
+    // loader fetches it via GetTransactionStatus then renders the shared
+    // ExchangeReceiptScreen. Mirrors the /invoice/details/:invoiceId pattern.
+    GetPage(
+      name: '${AppRoutes.exchangeReceipt}/:id',
+      page: () => ExchangeReceiptByRefScreen(
+        reference: Get.parameters['id'] ?? '',
+      ),
+      transition: Transition.zoom,
+    ),
     GetPage(
       name: AppRoutes.exchangeDetail,
       // The detail screen is now a receipt-style view with no cubit
@@ -1623,14 +1744,6 @@ class AppRouter {
       page: () => BlocProvider(
         create: (_) => serviceLocator<GiftCardCubit>(),
         child: const MySalesScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.settlementHistory,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<GiftCardCubit>(),
-        child: const SettlementHistoryScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2138,6 +2251,23 @@ GetPage(
       ),
       transition: Transition.rightToLeft,
     ),
+    // P2P airtime transfer (send airtime from your line to another number).
+    GetPage(
+      name: AppRoutes.airtimeTransfer,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeTransferScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeTransferReview,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeTransferReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
     GetPage(
       name: AppRoutes.airtimeHistory,
       page: () => BlocProvider(
@@ -2186,6 +2316,94 @@ GetPage(
           BlocProvider(create: (_) => serviceLocator<AirtimeReminderCubit>()),
         ],
         child: const CreateAirtimeReminderScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ePIN (Recharge card printing) routes
+    GetPage(
+      name: AppRoutes.epinHome,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EPinCubit>(),
+        child: const EPinHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.epinProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EPinCubit>(),
+        child: const EPinProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.epinReceipt,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EPinCubit>(),
+        child: const EPinReceiptScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.epinOrders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EPinCubit>(),
+        child: const EPinOrdersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Betting (Fund betting account) routes
+    GetPage(
+      name: AppRoutes.bettingHome,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BettingCubit>(),
+        child: const BettingHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bettingReview,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<BettingCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
+        child: const BettingReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bettingProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BettingCubit>(),
+        child: const BettingProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bettingReceipt,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BettingCubit>(),
+        child: const BettingReceiptScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bettingHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BettingCubit>(),
+        child: const BettingHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bettingBeneficiaries,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BettingCubit>(),
+        child: const BettingBeneficiariesScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2266,25 +2484,8 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeToCashSuccess,
-      page: () => const AirtimeToCashSuccessScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.airtimeToCashPending,
       page: () => const AirtimeToCashPendingScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    // Legacy routes (for backward compatibility)
-    GetPage(
-      name: AppRoutes.airtimeToCashReview,
-      page: () => MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => serviceLocator<AirtimeToCashCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
-        ],
-        child: const A2CReviewScreen(),
-      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -2597,6 +2798,7 @@ GetPage(
         child: CreditScoreScreen(
           userId: (Get.arguments as Map<String, dynamic>?)?['userId'] as String? ?? '',
           showAllSources: (Get.arguments as Map<String, dynamic>?)?['showAllSources'] as bool? ?? false,
+          linkedAccountId: (Get.arguments as Map<String, dynamic>?)?['linkedAccountId'] as String?,
         ),
       ),
       transition: Transition.rightToLeft,
@@ -2684,6 +2886,26 @@ GetPage(
         create: (context) => serviceLocator<EscrowCubit>(),
         child: const EscrowDealDetailScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    // Chat/voice receipt "View receipt" deeplink (/escrow/detail/:reference) —
+    // the escrow detail screen reads the id from Get.parameters['reference'].
+    GetPage(
+      name: '${AppRoutes.escrowDetail}/:reference',
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const EscrowDealDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.escrowReceipt,
+      page: () => const EscrowReceiptScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.escrowInvoice,
+      page: () => const EscrowInvoiceScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -2921,13 +3143,10 @@ GetPage(
 
     // Contactless Payment routes
     GetPage(
+      // ContactlessPaymentHomeScreen self-provides its own cubit (loads
+      // getMyContactlessPayments), so no BlocProvider wrapper is needed here.
       name: AppRoutes.contactlessPay,
-      page: () => BlocProvider(
-        create: (_) => ContactlessPaymentCubit(
-          repository: serviceLocator<ContactlessPaymentRepository>(),
-        ),
-        child: const ContactlessPaymentHomeScreen(),
-      ),
+      page: () => const ContactlessPaymentHomeScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -3097,16 +3316,6 @@ GetPage(
     GetPage(
       name: '/privacy-policy',
       page: () => const PrivacyPolicyScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: '/help-support',
-      page: () => const HelpSupportScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: '/contact-us',
-      page: () => const ContactUsScreen(),
       transition: Transition.rightToLeft,
     ),
 
@@ -3373,10 +3582,21 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      // New consolidated create + fund + add-members flow.
+      name: AppRoutes.familyCreate,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<FamilyAccountCubit>(),
+        child: const CreateFamilyAccountCarousel(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      // Legacy route kept so existing callers keep working, but it now serves
+      // the new consolidated carousel (the old multi-wizard is retired).
       name: AppRoutes.familySetup,
       page: () => BlocProvider(
         create: (_) => serviceLocator<FamilyAccountCubit>(),
-        child: const FamilySetupFlowScreen(),
+        child: const CreateFamilyAccountCarousel(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3454,11 +3674,8 @@ GetPage(
     ),
 
     // Two-Factor Authentication Routes
-    GetPage(
-      name: AppRoutes.twoFactorSetup,
-      page: () => const TwoFactorSetupScreen(),
-      transition: Transition.rightToLeft,
-    ),
+    // (The standalone TwoFactorSetupScreen was removed — authenticator/SMS/email
+    // 2FA setup now completes via bottom sheets on TwoFactorSettingsScreen.)
     GetPage(
       name: AppRoutes.twoFactorVerification,
       page: () {
@@ -4164,6 +4381,24 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
 
+    // The Lazavote Business hub — shown behind the Business account card.
+    // Self-provides its cubit (see BusinessDashboardScreen.build).
+    GetPage(
+      name: AppRoutes.businessDashboard,
+      page: () => const BusinessDashboardScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.sales,
+      page: () => const SalesListScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.recordSale,
+      page: () => const RecordSaleScreen(),
+      transition: Transition.downToUp,
+    ),
+
     // ================== Payroll Routes (Business) ==================
     GetPage(
       name: AppRoutes.payroll,
@@ -4430,6 +4665,21 @@ GetPage(
       ),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      // WHTScheduleScreen owns its own TaxCubit (see its initState), so it is
+      // NOT wrapped in a BlocProvider here.
+      name: AppRoutes.whtSchedule,
+      page: () => const WHTScheduleScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.recordWht,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const RecordWHTScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
 
     // ================== Move Money Routes ==================
     // Standalone LazerBeam landing page — the same screen the bottom-nav
@@ -4609,6 +4859,49 @@ GetPage(
     GetPage(
       name: AppRoutes.debugSettings,
       page: () => const DebugSettingsScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ── Plan My Day: Gmail / email integration ──────────────────────────
+    // Each page mounts a fresh EmailCubit. Deeper screens (thread/drafts/
+    // settings) are usually pushed with a BlocProvider.value from the inbox so
+    // the cubit is shared; these GetPages are the standalone entry points.
+    GetPage(
+      name: AppRoutes.emailInbox,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EmailCubit>(),
+        child: const EmailInboxScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.emailThread,
+      page: () {
+        final args = Get.arguments;
+        final gmailMessageId = args is Map<String, dynamic>
+            ? (args['gmailMessageId'] ?? '').toString()
+            : (args?.toString() ?? '');
+        return BlocProvider(
+          create: (_) => serviceLocator<EmailCubit>(),
+          child: EmailThreadScreen(gmailMessageId: gmailMessageId),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.emailDrafts,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EmailCubit>(),
+        child: const EmailDraftsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.emailSettings,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EmailCubit>(),
+        child: const EmailSettingsScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
   ];

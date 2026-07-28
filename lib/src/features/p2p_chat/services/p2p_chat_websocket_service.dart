@@ -7,6 +7,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_message_model.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 
 /// Typing event from another user
 class P2PTypingEvent {
@@ -57,6 +58,30 @@ class P2PMessageSentConfirmation {
   });
 }
 
+/// A message's reactions changed (message_id + full reaction list).
+class P2PReactionEvent {
+  final String conversationId;
+  final String messageId;
+  final List<P2PReaction> reactions;
+  const P2PReactionEvent({
+    required this.conversationId,
+    required this.messageId,
+    required this.reactions,
+  });
+}
+
+/// An ephemeral floating-emoji burst from the other party.
+class P2PEmojiStreamEvent {
+  final String conversationId;
+  final String emoji;
+  final String senderId;
+  const P2PEmojiStreamEvent({
+    required this.conversationId,
+    required this.emoji,
+    required this.senderId,
+  });
+}
+
 /// Connection state for P2P chat WebSocket
 enum P2PChatConnectionState { disconnected, connected, reconnecting, error }
 
@@ -75,6 +100,9 @@ class P2PChatWebSocketService {
       StreamController<Map<String, dynamic>>.broadcast();
   final _serverErrorStream =
       StreamController<Map<String, dynamic>>.broadcast();
+  final _editedStream = StreamController<P2PMessageModel>.broadcast();
+  final _reactionStream = StreamController<P2PReactionEvent>.broadcast();
+  final _emojiStreamCtrl = StreamController<P2PEmojiStreamEvent>.broadcast();
 
   Timer? _pingTimer;
   Timer? _reconnectTimer;
@@ -116,6 +144,15 @@ class P2PChatWebSocketService {
   /// Stream of server-side errors (e.g., CONNECTION_PENDING).
   Stream<Map<String, dynamic>> get serverErrorStream =>
       _serverErrorStream.stream;
+
+  /// Stream of edited messages (full updated message).
+  Stream<P2PMessageModel> get editedStream => _editedStream.stream;
+
+  /// Stream of reaction changes.
+  Stream<P2PReactionEvent> get reactionStream => _reactionStream.stream;
+
+  /// Stream of ephemeral floating-emoji bursts from the other party.
+  Stream<P2PEmojiStreamEvent> get emojiStream => _emojiStreamCtrl.stream;
 
   bool get isConnected => _isConnected;
 
@@ -180,6 +217,7 @@ class P2PChatWebSocketService {
     String clientMessageId, {
     String? mediaUrl,
     String? mediaType,
+    String? replyToMessageId,
   }) {
     final payload = <String, dynamic>{
       'conversation_id': conversationId,
@@ -190,9 +228,20 @@ class P2PChatWebSocketService {
       payload['media_url'] = mediaUrl;
       payload['media_type'] = mediaType;
     }
+    if (replyToMessageId != null && replyToMessageId.isNotEmpty) {
+      payload['reply_to_message_id'] = replyToMessageId;
+    }
     _send({
       'type': 'message',
       'payload': payload,
+    });
+  }
+
+  /// Send an ephemeral floating-emoji burst to the other party (not persisted).
+  void sendEmojiStream(String conversationId, String emoji) {
+    _send({
+      'type': 'emoji_stream',
+      'payload': {'conversation_id': conversationId, 'emoji': emoji},
     });
   }
 
@@ -217,6 +266,19 @@ class P2PChatWebSocketService {
       },
     });
   }
+
+  /// Tell the server which conversation this client is CURRENTLY viewing, so a
+  /// live message for it doesn't also fire a redundant push (the recipient is
+  /// looking at it). Pass "" to clear (blur) when leaving the chat.
+  void sendFocus(String conversationId) {
+    _send({
+      'type': 'focus',
+      'payload': {'conversation_id': conversationId},
+    });
+  }
+
+  /// Clear the viewing focus (recipient left the chat → pushes resume).
+  void sendBlur() => sendFocus('');
 
   /// Disconnect from the WebSocket server.
   void disconnect() {
@@ -322,6 +384,45 @@ class P2PChatWebSocketService {
                 ));
           }
           break;
+        case 'message_edited':
+          final payload = data['payload'] as Map<String, dynamic>?;
+          if (payload != null) {
+            _addToStream(_editedStream, P2PMessageModel.fromJson(payload));
+          }
+          break;
+        case 'message_reaction':
+          final payload = data['payload'] as Map<String, dynamic>?;
+          if (payload != null) {
+            final raw = payload['reactions'];
+            final reactions = <P2PReaction>[];
+            if (raw is List) {
+              for (final r in raw) {
+                if (r is Map<String, dynamic>) {
+                  reactions.add(P2PReaction.fromJson(r));
+                }
+              }
+            }
+            _addToStream(
+                _reactionStream,
+                P2PReactionEvent(
+                  conversationId: payload['conversation_id'] as String? ?? '',
+                  messageId: payload['message_id'] as String? ?? '',
+                  reactions: reactions,
+                ));
+          }
+          break;
+        case 'emoji_stream':
+          final payload = data['payload'] as Map<String, dynamic>?;
+          if (payload != null) {
+            _addToStream(
+                _emojiStreamCtrl,
+                P2PEmojiStreamEvent(
+                  conversationId: payload['conversation_id'] as String? ?? '',
+                  emoji: payload['emoji'] as String? ?? '',
+                  senderId: payload['sender_id'] as String? ?? '',
+                ));
+          }
+          break;
         case 'connection_accepted':
           final payload = data['payload'] as Map<String, dynamic>?;
           if (payload != null) {
@@ -409,5 +510,8 @@ class P2PChatWebSocketService {
     _connectionStream.close();
     _connectionAcceptedStream.close();
     _serverErrorStream.close();
+    _editedStream.close();
+    _reactionStream.close();
+    _emojiStreamCtrl.close();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
@@ -38,10 +39,22 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
 
   bool _hasChanges = false;
 
+  bool _invalidArgs = false;
+
   @override
   void initState() {
     super.initState();
-    originalRule = Get.arguments as AutoSaveRuleEntity;
+    // Guard against a deep-link / blank entry with no (or wrong-typed) args —
+    // the old hard cast crashed. Bail to the autosave home.
+    final args = Get.arguments;
+    if (args is! AutoSaveRuleEntity) {
+      _invalidArgs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+      });
+      return;
+    }
+    originalRule = args;
     _populateFields();
   }
 
@@ -556,6 +569,12 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_invalidArgs) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: SizedBox.shrink(),
+      );
+    }
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {

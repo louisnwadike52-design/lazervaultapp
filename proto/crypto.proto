@@ -631,6 +631,42 @@ message DeletePriceAlertResponse {
   bool success = 1;
 }
 
+// ── Auto-orders (price-triggered buy/sell) — user-facing ─────────────────
+message AutoOrder {
+  string id = 1;
+  string side = 2;
+  string crypto_id = 3;
+  string crypto_symbol = 4;
+  string fiat_currency = 5;
+  string trigger_direction = 6;
+  double target_price = 7;
+  int64  amount_minor = 8;
+  string status = 9;
+  string swap_transaction_id = 10;
+  string last_error = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp triggered_at = 13;
+  google.protobuf.Timestamp completed_at = 14;
+  google.protobuf.Timestamp expires_at = 15;
+}
+message CreateAutoOrderRequest {
+  string account_id = 1;
+  string side = 2;
+  string crypto_id = 3;
+  string fiat_currency = 4;
+  string trigger_direction = 5;
+  double target_price = 6;
+  int64  amount_minor = 7;
+  string transaction_pin = 8;
+  string idempotency_key = 9;
+  int64  expires_in_seconds = 10;
+}
+message CreateAutoOrderResponse { AutoOrder order = 1; }
+message ListAutoOrdersRequest { string status = 1; }
+message ListAutoOrdersResponse { repeated AutoOrder orders = 1; }
+message CancelAutoOrderRequest { string order_id = 1; }
+message CancelAutoOrderResponse { bool success = 1; }
+
 // ============================================================================
 // FEE TIERS (admin)
 // ============================================================================
@@ -1593,6 +1629,13 @@ message GetCryptoConfigResponse {
   // Display-only fallback fee shown before the server returns a real quote.
   // Lives here so it can be tuned without an app release.
   int32 fee_display_fallback_bps = 8;
+
+  // Per-operation Lazervault fee for the pre-quote estimate the sheets render.
+  // Key = op ("buy"|"sell"|"swap"|"send"); value = "{mode}|{bps}|{fixed_ngn_minor}"
+  // e.g. "percentage|50|0" or "fixed|0|10000". Percentage → bps of the fiat
+  // value; fixed → flat ₦ (fixed_ngn_minor kobo) for buy/sell. The real charged
+  // fee still comes from the live quote; this only makes the estimate match.
+  map<string, string> op_fee = 9;
 }
 
 // ============================================================================
@@ -1629,6 +1672,9 @@ message WithdrawRequest {
   string client_intent_id      = 10;
   // PIN supplied via the bottom-sheet on Flutter.
   string transaction_pin       = 11;
+  // User-to-user send: recipient's LazerVault user id (from user search).
+  string recipient_user_id     = 12;
+  string recipient_username    = 13;
 }
 
 message WithdrawResponse {
@@ -1703,6 +1749,40 @@ message GetSupportedAssetNetworksResponse {
   repeated QuidaxAssetNetwork networks = 1;
 }
 
+// GetAssetNetworkStatus — cheap DB-only per-asset network state for the UI
+// badges + network pickers. Address/routing state only (one unified balance
+// per currency in Quidax).
+message AssetNetworkStatusEntry {
+  QuidaxAssetNetwork network = 1;
+  bool provisioned           = 2;
+  bool active                = 3;
+}
+
+message GetAssetNetworkStatusRequest {
+  string currency = 1;
+}
+
+message GetAssetNetworkStatusResponse {
+  string currency                          = 1;
+  bool   held                              = 2;
+  string active_network                    = 3;
+  repeated AssetNetworkStatusEntry networks = 4;
+}
+
+// GetCryptoEligibility — whether the user may create a wallet / trade / withdraw
+// crypto, gated on our KYC tier (admin-tunable crypto.min_kyc_tier).
+message GetCryptoEligibilityRequest {}
+message GetCryptoEligibilityResponse {
+  bool   can_use_crypto    = 1;
+  bool   can_create_wallet = 2;
+  bool   can_trade         = 3;
+  bool   can_withdraw      = 4;
+  int32  current_tier      = 5;
+  int32  required_tier     = 6;
+  string kyc_status        = 7;
+  string reason            = 8;
+}
+
 message EnsureWalletAddressRequest {
   string currency = 1;
   string network  = 2; // optional; empty = use the default network
@@ -1715,6 +1795,18 @@ message EnsureWalletAddressResponse {
   string destination_tag = 4;
   bool   ready           = 5; // true once Quidax returned a concrete address
   string creation_status = 6;
+}
+
+message ResolveRecipientWalletRequest {
+  string recipient_user_id = 1;
+  string currency          = 2;
+  string network           = 3;
+}
+message ResolveRecipientWalletResponse {
+  string address         = 1;
+  string destination_tag = 2;
+  bool   ready           = 3;
+  string creation_status = 4;
 }
 
 message GetUserCryptoDepositsRequest {
@@ -2189,7 +2281,10 @@ service CryptoService {
   // Receive (Deposit) flow (PR7). Per-asset network catalogue + on-demand
   // wallet address generation.
   rpc GetSupportedAssetNetworks(GetSupportedAssetNetworksRequest) returns (GetSupportedAssetNetworksResponse);
+  rpc GetAssetNetworkStatus(GetAssetNetworkStatusRequest) returns (GetAssetNetworkStatusResponse);
+  rpc GetCryptoEligibility(GetCryptoEligibilityRequest) returns (GetCryptoEligibilityResponse);
   rpc EnsureWalletAddress(EnsureWalletAddressRequest) returns (EnsureWalletAddressResponse);
+  rpc ResolveRecipientWallet(ResolveRecipientWalletRequest) returns (ResolveRecipientWalletResponse);
   rpc GetUserCryptoDeposits(GetUserCryptoDepositsRequest) returns (GetUserCryptoDepositsResponse);
 
   // Admin: edit quidax_asset_networks rows (PR11 Networks tab).
@@ -2274,4 +2369,9 @@ service CryptoService {
   rpc AdminListLearnLessons(AdminListLearnLessonsRequest)                 returns (AdminListLearnLessonsResponse);
   rpc AdminUpsertLearnLesson(AdminUpsertLearnLessonRequest)               returns (AdminUpsertLearnLessonResponse);
   rpc AdminDeleteLearnLesson(AdminDeleteLearnLessonRequest)               returns (AdminDeleteLearnLessonResponse);
+
+  // Auto-orders (price-triggered trades) — user-facing.
+  rpc CreateAutoOrder(CreateAutoOrderRequest)                             returns (CreateAutoOrderResponse);
+  rpc ListAutoOrders(ListAutoOrdersRequest)                               returns (ListAutoOrdersResponse);
+  rpc CancelAutoOrder(CancelAutoOrderRequest)                             returns (CancelAutoOrderResponse);
 }

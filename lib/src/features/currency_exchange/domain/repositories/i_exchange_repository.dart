@@ -60,6 +60,13 @@ abstract class IExchangeRepository {
 
   /// Get supported currencies for exchange
   Future<Either<Failure, List<SupportedCurrencyInfo>>> getSupportedCurrencies();
+
+  /// Get the current user's daily FX limits for [currency] (the source
+  /// wallet currency). Used to warn BEFORE the PIN so a limit breach doesn't
+  /// first surface at PIN time.
+  Future<Either<Failure, ExchangeLimits>> getExchangeLimits({
+    required String currency,
+  });
 }
 
 class ExchangeRate {

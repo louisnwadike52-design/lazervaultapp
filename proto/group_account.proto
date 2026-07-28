@@ -146,6 +146,12 @@ message GroupAccountMessage {
   // group. Surfaced so list-groups callers (mobile "Goals" stat
   // tile) don't need the heavy `contributions` array preloaded.
   int32 contribution_count = 15;
+  // True when the CALLING user is an active member of this group.
+  // Populated by discovery/list endpoints (e.g. ListPublicGroups) so
+  // clients can render "Joined" vs "Join" without a per-group detail
+  // fetch. Defaults false on endpoints that don't resolve membership
+  // (and for unauthenticated callers).
+  bool is_member = 16;
 }
 
 message GroupMemberMessage {

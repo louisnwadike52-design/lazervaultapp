@@ -32,9 +32,9 @@ class QRPaymentModel extends QRPaymentEntity {
           ? QRPaymentType.static
           : QRPaymentType.dynamic,
       status: _statusFromProto(proto.status),
-      createdAt: proto.createdAt.toDateTime(),
+      createdAt: proto.createdAt.toDateTime().toLocal(),
       expiresAt: proto.expiresAt.toDateTime(),
-      paidAt: proto.hasPaidAt() ? proto.paidAt.toDateTime() : null,
+      paidAt: proto.hasPaidAt() ? proto.paidAt.toDateTime().toLocal() : null,
     );
   }
 

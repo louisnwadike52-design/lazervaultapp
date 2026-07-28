@@ -168,17 +168,37 @@ class _CrowdfundReportContentState extends State<_CrowdfundReportContent> {
     );
   }
 
-  void _copyToClipboard(BuildContext context, CrowdfundReport report) {
+  Future<void> _copyToClipboard(
+      BuildContext context, CrowdfundReport report) async {
+    final messenger = ScaffoldMessenger.of(context);
     final text = context.read<CrowdfundCubit>().getShareableText(
           report,
           widget.campaignUrl,
         );
-    if (text != null) {
-      Clipboard.setData(ClipboardData(text: text));
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (text == null || text.trim().isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Nothing to copy yet'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+    try {
+      // Await so a failure surfaces instead of the old fire-and-forget that
+      // always showed "Copied" even when nothing reached the clipboard.
+      await Clipboard.setData(ClipboardData(text: text));
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Copied to clipboard'),
           backgroundColor: Color(0xFF3B82F6),
+        ),
+      );
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Could not copy. Please try again.'),
+          backgroundColor: Color(0xFFEF4444),
         ),
       );
     }

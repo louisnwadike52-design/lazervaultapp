@@ -10,6 +10,7 @@ abstract class LockFundsRepository {
   /// Create a new lock fund
   Future<LockFund> createLockFund({
     required LockType lockType,
+    required String configId,
     required double amount,
     required String currency,
     required int lockDurationDays,

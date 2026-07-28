@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart'
+    show BalanceUpdateEvent;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -44,6 +46,27 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
   // Removed most state variables - they are now in CardDetailsBottomSheetState
   // Keep _currentIndex if AccountCarousel doesn't manage its own index
   // int _currentIndex = 0; // If needed for indicators outside carousel
+
+  // Dedup guard for the WS money-movement banners. ONE settled deposit/transfer
+  // is legitimately re-broadcast by several banking settlement paths (webhook +
+  // client-poll + reconciler), each arriving as a DISTINCT BalanceUpdateEvent
+  // instance — and listenWhen only compares instances, so without this the user
+  // saw "Funds Received" / "Transfer Completed" 2–4× for a single event.
+  // Keyed by (eventType, reference, status); bounded so it can't grow unbounded.
+  final Set<String> _shownWsSnackbarKeys = <String>{};
+
+  /// True if a banner for this exact WS event was already shown (and records it
+  /// so the next duplicate is suppressed).
+  bool _wsSnackbarAlreadyShown(BalanceUpdateEvent e) {
+    final ref = e.reference ?? e.transactionId ?? e.timestamp.toString();
+    final key = '${e.eventType}:$ref:${e.status}';
+    if (_shownWsSnackbarKeys.contains(key)) return true;
+    _shownWsSnackbarKeys.add(key);
+    if (_shownWsSnackbarKeys.length > 40) {
+      _shownWsSnackbarKeys.remove(_shownWsSnackbarKeys.first);
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -167,6 +190,11 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
           listener: (context, wsState) {
             final event = wsState.lastUpdate!;
             debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
+            // Suppress duplicate banners for the SAME settled event re-broadcast
+            // by multiple banking settlement paths (webhook + poll + reconciler).
+            // Guard only the user-facing banner here; the carousel's count-up
+            // animation is a SEPARATE listener and must still see every event.
+            if (_wsSnackbarAlreadyShown(event)) return;
             // Show snackbar for transfer events when user is on dashboard
             if (event.eventType == 'transfer_out' || event.eventType == 'transfer') {
               if (event.status == 'completed') {

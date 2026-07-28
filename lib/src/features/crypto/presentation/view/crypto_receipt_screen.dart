@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
+import '../../domain/entities/crypto_entity.dart';
 import '../models/crypto_transaction_models.dart';
 
 /// CryptoReceiptScreen renders a crypto buy / sell / swap receipt using the
@@ -122,6 +123,47 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
     );
   }
 
+  /// Resolve the traded asset's real logo URL from the crypto cubit's loaded
+  /// catalogue (supportedAssets ∪ cryptos), matched by backend id first then
+  /// ticker. Returns '' when not resolvable (deep-linked receipt, no cubit) —
+  /// the receipt hero then falls back to the asset's initials chip, never a
+  /// shared Bitcoin logo.
+  String _resolveAssetImage(CryptoTransactionDetails d) {
+    CryptoCubit cubit;
+    try {
+      cubit = context.read<CryptoCubit>();
+    } catch (_) {
+      return '';
+    }
+    final st = cubit.state;
+    if (st is! CryptosLoaded) return '';
+    // For a swap the hero represents the asset the user RECEIVES.
+    final wantId = (d.type == CryptoTransactionType.swap
+            ? d.toCryptoId
+            : d.cryptoId) ??
+        '';
+    final wantSymbol = (d.type == CryptoTransactionType.swap
+            ? (d.toCrypto ?? d.cryptoSymbol)
+            : d.cryptoSymbol)
+        .toUpperCase();
+    final pool = <Crypto>[...st.supportedAssets, ...st.cryptos];
+    for (final c in pool) {
+      if (c.image.isEmpty) continue;
+      if (wantId.isNotEmpty && c.id == wantId) return c.image;
+      if (c.symbol.toUpperCase() == wantSymbol) return c.image;
+    }
+    return '';
+  }
+
+  /// The asset ticker the receipt hero should show (received asset for swaps).
+  String _heroAssetSymbol(CryptoTransactionDetails d) {
+    if (d.type == CryptoTransactionType.swap) {
+      final to = (d.toCrypto ?? '').trim();
+      if (to.isNotEmpty) return to.toUpperCase();
+    }
+    return d.cryptoSymbol.toUpperCase();
+  }
+
   UnifiedTransaction _toUnifiedTransaction(CryptoTransactionReceipt r) {
     final d = r.transactionDetails;
     final fiatCurrency = CurrencySymbols.currentCurrency;
@@ -132,14 +174,19 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       CryptoTransactionType.sell => 'Sell ${d.cryptoSymbol}',
       CryptoTransactionType.swap =>
         'Swap ${d.fromCrypto ?? ''} → ${d.toCrypto ?? d.cryptoSymbol}',
+      CryptoTransactionType.send => 'Send ${d.cryptoSymbol}',
+      CryptoTransactionType.deposit => 'Deposit ${d.cryptoSymbol}',
     };
 
     // Money direction: a buy spends fiat (debit), a sell returns fiat
-    // (credit), a crypto→crypto swap is neither.
+    // (credit), a crypto→crypto swap is neither. A send moves crypto out
+    // (outgoing); a deposit brings crypto in (incoming).
     final flow = switch (d.type) {
       CryptoTransactionType.buy => TransactionFlow.outgoing,
       CryptoTransactionType.sell => TransactionFlow.incoming,
       CryptoTransactionType.swap => TransactionFlow.neutral,
+      CryptoTransactionType.send => TransactionFlow.outgoing,
+      CryptoTransactionType.deposit => TransactionFlow.incoming,
     };
 
     // The hero amount is the fiat total the user paid / received. Fall back
@@ -150,6 +197,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       CryptoTransactionType.buy => 'You receive',
       CryptoTransactionType.sell => 'You sell',
       CryptoTransactionType.swap => 'You receive',
+      CryptoTransactionType.send => 'You send',
+      CryptoTransactionType.deposit => 'You receive',
     };
 
     final metadata = <String, dynamic>{
@@ -185,6 +234,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       flow: flow,
       transactionReference: r.transactionId,
       metadata: metadata,
+      assetSymbol: _heroAssetSymbol(d),
+      assetImageUrl: _resolveAssetImage(d),
     );
   }
 

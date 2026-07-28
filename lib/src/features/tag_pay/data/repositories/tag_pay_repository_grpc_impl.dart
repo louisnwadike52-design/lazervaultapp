@@ -305,7 +305,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       displayName: proto.displayName,
       avatarUrl: proto.avatarUrl.isNotEmpty ? proto.avatarUrl : null,
       isActive: proto.isActive,
-      createdAt: proto.createdAt.toDateTime(),
+      createdAt: proto.createdAt.toDateTime().toLocal(),
       updatedAt: proto.updatedAt.toDateTime(),
     );
   }
@@ -326,8 +326,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       status: _transactionStatusFromProto(proto.status),
       type: _transactionTypeFromProto(proto.type),
       referenceNumber: proto.referenceNumber,
-      createdAt: proto.createdAt.toDateTime(),
-      completedAt: proto.hasCompletedAt() ? proto.completedAt.toDateTime() : null,
+      createdAt: proto.createdAt.toDateTime().toLocal(),
+      completedAt: proto.hasCompletedAt() ? proto.completedAt.toDateTime().toLocal() : null,
     );
   }
 
@@ -344,7 +344,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       currency: proto.currency,
       description: proto.description.isNotEmpty ? proto.description : null,
       status: _moneyRequestStatusFromProto(proto.status),
-      createdAt: proto.createdAt.toDateTime(),
+      createdAt: proto.createdAt.toDateTime().toLocal(),
       respondedAt:
           proto.hasRespondedAt() ? proto.respondedAt.toDateTime() : null,
       expiresAt: proto.expiresAt.toDateTime(),
@@ -678,8 +678,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       currency: tag.currency,
       description: tag.description,
       status: _tagStatusFromProto(tag.status),
-      createdAt: tag.createdAt.toDateTime(),
-      paidAt: tag.hasPaidAt() ? tag.paidAt.toDateTime() : null,
+      createdAt: tag.createdAt.toDateTime().toLocal(),
+      paidAt: tag.hasPaidAt() ? tag.paidAt.toDateTime().toLocal() : null,
     );
   }
 

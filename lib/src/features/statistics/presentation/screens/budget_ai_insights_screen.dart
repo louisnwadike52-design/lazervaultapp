@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as stats_pb;
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 /// Budget AI Insights Screen
 class BudgetAIInsightsScreen extends StatefulWidget {
@@ -20,6 +21,12 @@ class BudgetAIInsightsScreen extends StatefulWidget {
 }
 
 class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
+  // True when there is genuinely nothing to analyse (no wallet/linked-bank
+  // spend, no income, no budgets/goals/bills). We show an explicit empty state
+  // instead of asking the AI to reason over nothing — which returned sparse,
+  // generic text that read as "broken".
+  bool _noData = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +37,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
 
   void _loadInsights() async {
     if (!mounted) return;
+    if (_noData) setState(() => _noData = false); // reset on retry
 
     // Pull real data from StatisticsCubit for income/spending analysis.
     double monthlyIncome = 0;
@@ -204,6 +212,19 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
 
     if (!mounted) return;
 
+    // Nothing meaningful to analyse → show the empty state rather than a
+    // generic AI response built on no data.
+    final hasAnyData = spendingData.isNotEmpty ||
+        monthlyIncome > 0 ||
+        activeBudgets.isNotEmpty ||
+        financialGoals.isNotEmpty ||
+        upcomingBills.isNotEmpty ||
+        failedTransactions.isNotEmpty;
+    if (!hasAnyData) {
+      setState(() => _noData = true);
+      return;
+    }
+
     context.read<BudgetCubit>().loadAIInsights(
       monthlyIncome: monthlyIncome,
       spendingData: spendingData,
@@ -232,7 +253,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(
-          'AI Budget Insights',
+          'AI Analytics Insights',
           style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -249,6 +270,10 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
           }
         },
         builder: (context, state) {
+          if (_noData) {
+            return _NoDataView(onRetry: _loadInsights);
+          }
+
           if (state is BudgetAIInsightsLoading) {
             return const _LoadingView();
           }
@@ -286,14 +311,14 @@ class _InsightsView extends StatelessWidget {
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
+              colors: [Color(0xFF3A0299), Color(0xFF4E03D0), Color(0xFFA78BFA)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -345,7 +370,7 @@ class _InsightsView extends StatelessWidget {
               Text(
                 '${insights.recommendedSavingsRate.toStringAsFixed(0)}%',
                 style: const TextStyle(
-                  color: Color(0xFF10B981),
+                  color: InvoiceThemeColors.primaryPurple,
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                 ),
@@ -359,7 +384,7 @@ class _InsightsView extends StatelessWidget {
         if (insights.riskLevel.isNotEmpty || insights.spendingPatterns.isNotEmpty) ...[
           Row(
             children: [
-              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple, borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 8),
               const Text(
                 'Spending Patterns',
@@ -384,19 +409,19 @@ class _InsightsView extends StatelessWidget {
                 if (insights.riskLevel.isNotEmpty) ...[
                   Row(
                     children: [
-                      const Icon(Icons.shield, color: Color(0xFF10B981), size: 18),
+                      const Icon(Icons.shield, color: InvoiceThemeColors.primaryPurple, size: 18),
                       SizedBox(width: 8.w),
                       const Text('Risk Level', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
                       const Spacer(),
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
                           insights.riskLevel[0].toUpperCase() + insights.riskLevel.substring(1),
-                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.w600),
+                          style: const TextStyle(color: InvoiceThemeColors.primaryPurple, fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -451,7 +476,7 @@ class _InsightsView extends StatelessWidget {
         if (insights.budgetRecommendations.isNotEmpty) ...[
           Row(
             children: [
-              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple, borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 8),
               const Text(
                 'Budget Recommendations',
@@ -468,7 +493,7 @@ class _InsightsView extends StatelessWidget {
         if (insights.savingsOpportunities.isNotEmpty) ...[
           Row(
             children: [
-              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple, borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 8),
               const Text(
                 'Savings Opportunities',
@@ -504,7 +529,7 @@ class _InsightsView extends StatelessWidget {
         ElevatedButton(
           onPressed: () => Get.back(),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: InvoiceThemeColors.primaryPurple,
             foregroundColor: Colors.white,
             minimumSize: Size(double.infinity, 50.h),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -630,7 +655,7 @@ class _CategoryInsightCardState extends State<_CategoryInsightCard> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
                   'Action Items',
-                  style: TextStyle(color: const Color(0xFF10B981), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: InvoiceThemeColors.primaryPurple, fontSize: 13.sp, fontWeight: FontWeight.w600),
                 ),
               ),
               SizedBox(height: 8.h),
@@ -639,7 +664,7 @@ class _CategoryInsightCardState extends State<_CategoryInsightCard> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
+                        Icon(Icons.check_circle, color: InvoiceThemeColors.primaryPurple, size: 16.sp),
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
@@ -751,13 +776,13 @@ class _RecommendationCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: rec.difference <= 0 ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFFEF4444).withValues(alpha: 0.2),
+                  color: rec.difference <= 0 ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2) : const Color(0xFFEF4444).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   rec.difference <= 0 ? 'Within Budget' : 'Over Budget',
                   style: TextStyle(
-                    color: rec.difference <= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                    color: rec.difference <= 0 ? InvoiceThemeColors.primaryPurple : const Color(0xFFEF4444),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -882,7 +907,7 @@ class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixi
                   gradient: RadialGradient(
                     colors: [
                       const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3 + _pulseController.value * 0.2),
-                      const Color(0xFF10B981).withValues(alpha: 0.1 + _pulseController.value * 0.1),
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1 + _pulseController.value * 0.1),
                       Colors.transparent,
                     ],
                   ),
@@ -891,7 +916,7 @@ class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixi
                   Icons.auto_awesome,
                   color: Color.lerp(
                     const Color.fromARGB(255, 78, 3, 208),
-                    const Color(0xFF10B981),
+                    InvoiceThemeColors.primaryPurple,
                     _pulseController.value,
                   ),
                   size: 48.sp,
@@ -1016,6 +1041,69 @@ class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixi
   }
 }
 
+// ── No-data empty state ────────────────────────────────────────────
+// Shown when there's no spending/income/budget data to analyse, so the AI
+// isn't asked to invent insights from nothing.
+class _NoDataView extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _NoDataView({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 88.w,
+              height: 88.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+              ),
+              child: Icon(Icons.insights_outlined,
+                  color: InvoiceThemeColors.primaryPurple, size: 44.sp),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              'No spending data yet',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'AI insights need something to work with. Link a bank account or '
+              'make a few transactions, then check back — the AI will analyse '
+              'your spending, budgets and goals here.',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp, height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 28.h),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Check again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: InvoiceThemeColors.primaryPurple,
+                foregroundColor: Colors.white,
+                minimumSize: Size(180.w, 48.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -1042,7 +1130,7 @@ class _ErrorView extends StatelessWidget {
           ElevatedButton(
             onPressed: onRetry,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
             ),
             child: const Text('Retry'),

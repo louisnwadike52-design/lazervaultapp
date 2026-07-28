@@ -80,6 +80,17 @@ class _CreateWaterAutoRechargeScreenState
       _snack('Enter a valid amount', error: true);
       return;
     }
+    // Same guard rails as the one-off payment flow
+    // (WaterBillCustomerInputScreenNew) — keeps scheduled amounts inside
+    // the range a water-bill payment can actually settle for.
+    if (amount < 1000) {
+      _snack('Minimum amount is ₦1,000', error: true);
+      return;
+    }
+    if (amount > 200000) {
+      _snack('Maximum amount is ₦200,000', error: true);
+      return;
+    }
     setState(() => _saving = true);
     try {
       if (_editId != null) {

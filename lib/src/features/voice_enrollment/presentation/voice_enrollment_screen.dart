@@ -474,7 +474,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
           SizedBox(height: 48.h),
 
           // Loading spinner
-          LazerVaultLoader(size: 80),
+          LazerVaultLoader(size: 64),
 
           SizedBox(height: 32.h),
 
@@ -838,7 +838,12 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               children: [
                 GestureDetector(
                   onTap: () {
+                    // Enrollment already succeeded on the backend — closing via
+                    // the X must still flip the caller's "voice enabled" flag,
+                    // exactly like the Done button. Without this, the user
+                    // enrolls but voice login stays off in Settings.
                     Navigator.of(sheetContext).pop();
+                    widget.onEnrollmentComplete?.call();
                     Navigator.of(context).pop();
                   },
                   child: Container(

@@ -249,7 +249,7 @@ class ContactlessPaymentRepositoryImpl implements ContactlessPaymentRepository {
       status: _paymentSessionStatusFromString(proto.status),
       payerId: proto.payerId.isNotEmpty ? proto.payerId : null,
       payerName: proto.payerName.isNotEmpty ? proto.payerName : null,
-      createdAt: proto.createdAt.toDateTime(),
+      createdAt: proto.createdAt.toDateTime().toLocal(),
       expiresAt: proto.expiresAt.toDateTime(),
       readAt: proto.hasReadAt() ? proto.readAt.toDateTime() : null,
       completedAt:
@@ -276,7 +276,7 @@ class ContactlessPaymentRepositoryImpl implements ContactlessPaymentRepository {
       description: proto.description.isNotEmpty ? proto.description : null,
       referenceNumber: proto.referenceNumber,
       status: _transactionStatusFromString(proto.status),
-      createdAt: proto.createdAt.toDateTime(),
+      createdAt: proto.createdAt.toDateTime().toLocal(),
     );
   }
 

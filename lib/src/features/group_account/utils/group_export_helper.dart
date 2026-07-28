@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -372,12 +373,21 @@ class GroupExportHelper {
     return targetPath;
   }
 
-  /// Share CSV via system share dialog
-  static Future<void> shareCSV(File csvFile, {String? subject}) async {
-    await Share.shareXFiles(
-      [XFile(csvFile.path)],
+  /// Share CSV via system share dialog. [sharePositionOrigin] anchors the iOS
+  /// share popover; a null/zero rect falls back to a valid one so share_plus
+  /// doesn't throw "sharePositionOrigin: argument must be set".
+  static Future<void> shareCSV(File csvFile,
+      {String? subject, Rect? sharePositionOrigin}) async {
+    final origin = (sharePositionOrigin != null &&
+            sharePositionOrigin.width > 0 &&
+            sharePositionOrigin.height > 0)
+        ? sharePositionOrigin
+        : const Rect.fromLTWH(0, 0, 1, 1);
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(csvFile.path)],
       subject: subject ?? 'Group Account Export',
-    );
+      sharePositionOrigin: origin,
+    ));
   }
 
   /// Escape CSV field value

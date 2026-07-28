@@ -41,12 +41,21 @@ class ProfileRepositoryImpl implements IProfileRepository {
   @override
   Future<Either<Failure, Map<String, dynamic>>> getUserProfile() async {
     try {
-      final callOptions = await _callOptionsHelper.withAuth();
+      // Wrap in token rotation so a merely-expired access token is transparently
+      // refreshed + the call retried once (matches budget/recipients/funds/etc.).
+      // This is the session gate for biometric unlock — WITHOUT rotation here a
+      // fingerprint/Face-ID login whose cached access token had expired would
+      // fail at the gate ("Session expired") even though the refresh token is
+      // still valid. `withAuth()` is computed INSIDE the closure so the retry
+      // picks up the rotated access token, not the stale one.
       final request = user_pb.GetUserProfileRequest();
-      final response = await _userServiceClient.getUserProfile(
-        request,
-        options: callOptions,
-      );
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return _userServiceClient.getUserProfile(
+          request,
+          options: callOptions,
+        );
+      });
 
       if (response.success && response.hasUser()) {
         final userModel = UserModel.fromProto(response.user);
@@ -298,7 +307,12 @@ class ProfileRepositoryImpl implements IProfileRepository {
         ..searchType = searchType;
 
       print('[ProfileRepository] searchUsers: query="$query", limit=$limit, offset=$offset, searchType="$searchType"');
-      final options = await _callOptionsHelper.withAuth();
+      // Bound the RPC with a gRPC deadline — withAuth() only sets metadata, no
+      // timeout, so without this a hung search would never return and the
+      // caller's loading spinner would be stuck. DeadlineExceeded is caught
+      // below and surfaces as an empty result (graceful "no matches").
+      final options = (await _callOptionsHelper.withAuth())
+          .mergedWith(CallOptions(timeout: const Duration(seconds: 15)));
       final response = await _authServiceClient.searchUsers(
         request,
         options: options,

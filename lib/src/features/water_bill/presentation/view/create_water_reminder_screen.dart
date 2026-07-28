@@ -6,14 +6,22 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/entities/water_beneficiary.dart';
+import '../../domain/entities/water_reminder.dart';
 import '../cubit/water_beneficiary_cubit.dart';
 import '../cubit/water_beneficiary_state.dart';
 import '../cubit/water_reminder_cubit.dart';
 import '../cubit/water_reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-/// Create a water bill reminder. Title + date/time + optional
+/// Create or edit a water bill reminder. Title + date/time + optional
 /// beneficiary + optional amount + optional recurrence.
+///
+/// Optional pre-fills via `Get.arguments` (mirrors
+/// `CreateDataReminderScreen` / `CreateInternetReminderScreen`):
+///   * `beneficiary` — a [WaterBeneficiary] to link + default the title
+///   * `title` — overrides the auto-generated title
+///   * `amount` — pre-fills the optional amount field
+///   * `reminder` — a [WaterReminder] to edit (enters edit mode)
 class CreateWaterReminderScreen extends StatefulWidget {
   const CreateWaterReminderScreen({super.key});
 
@@ -32,12 +40,43 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
   String _recurrenceType = 'monthly';
   bool _saving = false;
 
+  bool _isEditing = false;
+  String? _reminderId;
+
+  /// Deferred beneficiary-id pre-fill for edit mode — captured in
+  /// initState before the beneficiaries cubit has loaded. Resolved in
+  /// the dropdown's BlocListener once `WaterBeneficiariesLoaded` fires.
+  String? _pendingBeneficiaryId;
+
   @override
   void initState() {
     super.initState();
     context.read<WaterBeneficiaryCubit>().load();
     final args = Get.arguments as Map<String, dynamic>?;
     if (args != null) {
+      final existing = args['reminder'];
+      if (existing is WaterReminder) {
+        _isEditing = true;
+        _reminderId = existing.id;
+        _titleController.text = existing.title;
+        _descriptionController.text = existing.description ?? '';
+        if (existing.amount != null && existing.amount! > 0) {
+          _amountController.text = existing.amount!.toStringAsFixed(0);
+        }
+        _isRecurring = existing.isRecurring;
+        if (existing.recurrenceType != null &&
+            existing.recurrenceType!.isNotEmpty) {
+          _recurrenceType = existing.recurrenceType!;
+        }
+        final dt = existing.reminderDate.isNotEmpty
+            ? DateTime.tryParse(existing.reminderDate)?.toLocal()
+            : null;
+        if (dt != null) _reminderDate = dt;
+        if (existing.beneficiaryId.isNotEmpty) {
+          _pendingBeneficiaryId = existing.beneficiaryId;
+        }
+        return;
+      }
       final b = args['beneficiary'];
       if (b is WaterBeneficiary) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -47,6 +86,13 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
             _titleController.text = 'Pay ${b.providerName} water bill';
           });
         });
+      } else {
+        final title = args['title'] as String?;
+        if (title != null) _titleController.text = title;
+        final amount = args['amount'];
+        if (amount != null) {
+          _amountController.text = (amount as num).toStringAsFixed(0);
+        }
       }
     }
   }
@@ -84,7 +130,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
     });
   }
 
-  Future<void> _submit() async {
+  void _submit() {
     if (_titleController.text.trim().isEmpty) {
       _snack('Enter a title', error: true);
       return;
@@ -92,8 +138,24 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
     final amountText = _amountController.text.trim();
     final amount = amountText.isEmpty ? null : double.tryParse(amountText);
     setState(() => _saving = true);
-    try {
-      await context.read<WaterReminderCubit>().createReminder(
+    // Fire-and-forget: the cubit swallows exceptions into a
+    // `WaterReminderError` state rather than rethrowing, so success/
+    // failure is detected via the BlocListener below (not via await) —
+    // otherwise we'd risk popping the screen with `result: true` even
+    // when the save failed.
+    if (_isEditing && _reminderId != null) {
+      context.read<WaterReminderCubit>().updateReminder(
+            reminderId: _reminderId!,
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            reminderDate: _reminderDate,
+            amount: amount,
+            currency: 'NGN',
+            isRecurring: _isRecurring,
+            recurrenceType: _isRecurring ? _recurrenceType : null,
+          );
+    } else {
+      context.read<WaterReminderCubit>().createReminder(
             title: _titleController.text.trim(),
             description: _descriptionController.text.trim(),
             reminderDate: _reminderDate,
@@ -103,10 +165,6 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
             isRecurring: _isRecurring,
             recurrenceType: _isRecurring ? _recurrenceType : null,
           );
-      if (!mounted) return;
-      Get.back(result: true);
-    } catch (_) {
-      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -127,6 +185,10 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
         if (state is WaterReminderError && _saving) {
           setState(() => _saving = false);
           _snack(state.message, error: true);
+        } else if ((state is WaterReminderCreated ||
+                state is WaterReminderUpdated) &&
+            _saving) {
+          if (mounted) Get.back(result: true);
         }
       },
       child: Scaffold(
@@ -139,7 +201,7 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
                 color: Colors.white, size: 20.sp),
             onPressed: () => Get.back(),
           ),
-          title: Text('New Reminder',
+          title: Text(_isEditing ? 'Edit Reminder' : 'New Reminder',
               style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
@@ -236,7 +298,8 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
                     ),
                     child: _saving
                         ? LazerVaultLoader.small()
-                        : Text('Create Reminder',
+                        : Text(
+                            _isEditing ? 'Update Reminder' : 'Create Reminder',
                             style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600)),
@@ -295,7 +358,27 @@ class _CreateWaterReminderScreenState extends State<CreateWaterReminderScreen> {
   }
 
   Widget _beneficiarySelector() {
-    return BlocBuilder<WaterBeneficiaryCubit, WaterBeneficiaryState>(
+    return BlocConsumer<WaterBeneficiaryCubit, WaterBeneficiaryState>(
+      listenWhen: (_, s) => s is WaterBeneficiariesLoaded,
+      listener: (context, state) {
+        // Resolve the deferred edit-mode pre-fill from initState as soon
+        // as the saved accounts list lands (mirrors CreateDataReminderScreen).
+        if (_pendingBeneficiaryId != null && state is WaterBeneficiariesLoaded) {
+          final id = _pendingBeneficiaryId!;
+          final match = state.beneficiaries
+              .where((b) => b.id == id)
+              .cast<WaterBeneficiary?>()
+              .firstWhere((_) => true, orElse: () => null);
+          if (match != null && mounted) {
+            setState(() {
+              _beneficiary = match;
+              _pendingBeneficiaryId = null;
+            });
+          } else {
+            _pendingBeneficiaryId = null;
+          }
+        }
+      },
       buildWhen: (_, s) => s is WaterBeneficiariesLoaded,
       builder: (context, state) {
         if (state is! WaterBeneficiariesLoaded) {

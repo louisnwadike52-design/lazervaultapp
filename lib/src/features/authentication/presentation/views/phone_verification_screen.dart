@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
+import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_state.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -28,6 +29,10 @@ class PhoneVerificationScreen extends StatelessWidget {
   final int? expiresIn;
   final bool isRequired;
   final String? secondaryEmail;
+  final String? nextRoute;
+  // Launched from Settings: request a fresh code on load, return to Settings on
+  // success, hide Skip.
+  final bool fromSettings;
 
   const PhoneVerificationScreen({
     super.key,
@@ -36,6 +41,8 @@ class PhoneVerificationScreen extends StatelessWidget {
     this.expiresIn,
     this.isRequired = true,
     this.secondaryEmail,
+    this.nextRoute,
+    this.fromSettings = false,
   });
 
   @override
@@ -47,13 +54,22 @@ class PhoneVerificationScreen extends StatelessWidget {
     int? expiry = expiresIn;
     bool required = isRequired;
     String? secondaryEmailArg = secondaryEmail;
+    String? nextRouteArg = nextRoute;
+    // Whether this was launched from a logged-in profile surface (Settings / My
+    // Account). MUST be parseable from route args so callers that push via
+    // Get.toNamed can opt in — otherwise the screen falls into the onboarding
+    // chain and "skip" routes to passcode setup, which is wrong post-login.
+    bool settingsSource = fromSettings;
 
-    if (args is Map<String, dynamic>) {
-      phone = args['phoneNumber'] as String? ?? phone;
-      otpSent = args['codeSent'] as bool? ?? otpSent;
-      expiry = args['expiresIn'] as int? ?? expiry;
-      required = args['isRequired'] as bool? ?? required;
-      secondaryEmailArg = args['secondaryEmail'] as String?;
+    if (args is Map) {
+      final m = Map<String, dynamic>.from(args);
+      phone = m['phoneNumber'] as String? ?? phone;
+      otpSent = m['codeSent'] as bool? ?? otpSent;
+      expiry = m['expiresIn'] as int? ?? expiry;
+      required = m['isRequired'] as bool? ?? required;
+      secondaryEmailArg = m['secondaryEmail'] as String?;
+      nextRouteArg = m['nextRoute']?.toString() ?? nextRouteArg;
+      settingsSource = m['fromSettings'] as bool? ?? settingsSource;
     } else if (args is String) {
       // Simple string argument (phone number only)
       phone = args;
@@ -63,10 +79,12 @@ class PhoneVerificationScreen extends StatelessWidget {
       create: (_) => serviceLocator<PhoneVerificationCubit>(),
       child: _PhoneOtpVerificationView(
         phoneNumber: phone ?? '',
-        codeSent: otpSent,
+        codeSent: settingsSource ? false : otpSent,
         expiresIn: expiry ?? 600, // Default 10 minutes
         isRequired: required,
         secondaryEmail: secondaryEmailArg,
+        nextRoute: nextRouteArg,
+        fromSettings: settingsSource,
       ),
     );
   }
@@ -78,6 +96,8 @@ class _PhoneOtpVerificationView extends StatefulWidget {
   final int expiresIn;
   final bool isRequired;
   final String? secondaryEmail;
+  final String? nextRoute;
+  final bool fromSettings;
 
   const _PhoneOtpVerificationView({
     required this.phoneNumber,
@@ -85,6 +105,8 @@ class _PhoneOtpVerificationView extends StatefulWidget {
     required this.expiresIn,
     required this.isRequired,
     this.secondaryEmail,
+    this.nextRoute,
+    this.fromSettings = false,
   });
 
   @override
@@ -104,9 +126,16 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
 
     // Initialize the cubit with the phone number
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final cubit = context.read<PhoneVerificationCubit>();
       cubit.updatePhoneNumber(widget.phoneNumber);
       cubit.updateVerificationCode('');
+      // No code sent yet (e.g. launched from Settings) — request one now.
+      if (!widget.codeSent && widget.phoneNumber.isNotEmpty) {
+        cubit.requestPhoneVerification(phoneNumber: widget.phoneNumber);
+        _startExpiryCountdown(widget.expiresIn);
+        _startResendCooldown(60);
+      }
     });
 
     // Start expiry countdown if OTP was already sent
@@ -202,6 +231,18 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
   }
 
   void _navigateToNextScreen() {
+    // Launched from Settings: return there (caller refreshes the badge). Never
+    // route into onboarding/passcode setup.
+    if (widget.fromSettings) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    // A caller-supplied nextRoute (re-verification gate / phone-flow chaining)
+    // takes priority over the default onboarding chain.
+    if (widget.nextRoute != null && widget.nextRoute!.isNotEmpty) {
+      Get.offAllNamed(widget.nextRoute!);
+      return;
+    }
     // Check if there's secondary email verification needed
     if (widget.secondaryEmail != null && widget.secondaryEmail!.isNotEmpty) {
       Get.offAllNamed(AppRoutes.emailVerification, arguments: {
@@ -303,33 +344,26 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 60.h),
-
-                      // Phone icon with gradient background
-                      Container(
-                        width: 100.w,
-                        height: 100.h,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF4834D4), Color(0xFF7C3AED)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4834D4).withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                      // From Settings this is a normal sub-screen → real back
+                      // button. Onboarding (no fromSettings) stays forward-only.
+                      if (widget.fromSettings)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 8.h),
+                            child: IconButton(
+                              onPressed: () => Navigator.of(context).maybePop(),
+                              icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+                              tooltip: 'Back',
                             ),
-                          ],
+                          ),
                         ),
-                        child: Icon(
-                          Icons.phone_android_rounded,
-                          size: 48.sp,
-                          color: Colors.white,
-                        ),
-                      ),
+                      SizedBox(height: widget.fromSettings ? 12.h : 60.h),
+
+                      // Shared gradient badge icon (same as the phone_passcode
+                      // OTP screen + email verification).
+                      const VerificationBadgeIcon(
+                          icon: Icons.phone_android_rounded),
                       SizedBox(height: 32.h),
 
                       // Title
@@ -525,12 +559,9 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                         ],
                       ),
 
-                      // Skip CTA — a prominent TEXT action, NOT a bordered button,
-                      // so it's clearly secondary to the primary "Verify" CTA and
-                      // never mistaken for it (still easy to find: accent colour,
-                      // bold, with a forward arrow).
-                      SizedBox(height: 12.h),
-                      Center(
+                      // Skip CTA — onboarding only; hidden when from Settings.
+                      if (!widget.fromSettings) SizedBox(height: 12.h),
+                      if (!widget.fromSettings) Center(
                         child: TextButton(
                           onPressed: _skipVerification,
                           style: TextButton.styleFrom(
@@ -563,59 +594,10 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
 
                       SizedBox(height: 48.h),
 
-                      // Info Card
-                      Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(16.r),
-                          border: Border.all(
-                            color: const Color(0xFFE5E7EB),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF4834D4).withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.security_rounded,
-                                color: const Color(0xFF4834D4),
-                                size: 20.sp,
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Secure Verification',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF1F2937),
-                                    ),
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Text(
-                                    'We sent a 6-digit code via SMS to verify your phone number. Standard message rates may apply.',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12.sp,
-                                      color: const Color(0xFF6B7280),
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      // Shared "Secure Verification" note.
+                      const SecureVerificationNote(
+                        message:
+                            'We sent a 6-digit code via SMS to verify your phone number. Standard message rates may apply.',
                       ),
                       SizedBox(height: 32.h),
                     ],

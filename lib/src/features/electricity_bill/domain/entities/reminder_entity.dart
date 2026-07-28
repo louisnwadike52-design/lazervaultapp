@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 enum ReminderStatus {
   active,
+  paused,
   completed,
   cancelled,
 }
@@ -11,6 +12,8 @@ extension ReminderStatusExtension on ReminderStatus {
     switch (this) {
       case ReminderStatus.active:
         return 'Active';
+      case ReminderStatus.paused:
+        return 'Paused';
       case ReminderStatus.completed:
         return 'Completed';
       case ReminderStatus.cancelled:
@@ -22,6 +25,8 @@ extension ReminderStatusExtension on ReminderStatus {
     switch (status.toLowerCase()) {
       case 'active':
         return ReminderStatus.active;
+      case 'paused':
+        return ReminderStatus.paused;
       case 'completed':
         return ReminderStatus.completed;
       case 'cancelled':
@@ -96,6 +101,7 @@ class PaymentReminderEntity extends Equatable {
   });
 
   bool get isActive => status == ReminderStatus.active;
+  bool get isPaused => status == ReminderStatus.paused;
   bool get isCompleted => status == ReminderStatus.completed;
   bool get isCancelled => status == ReminderStatus.cancelled;
   bool get isDue => DateTime.now().isAfter(reminderDate);

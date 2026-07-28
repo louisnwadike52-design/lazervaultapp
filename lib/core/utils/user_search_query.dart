@@ -1,4 +1,4 @@
-/// Normalizes user input for LazerVault user search (username, email, phone).
+/// Normalizes user input for Lazervault user search (username, email, phone).
 ///
 /// Strips leading `$` (TagPay-style) and leading `@` handles (e.g. `@@user` → `user`).
 /// Does not remove `@` from email local parts (e.g. `name@domain.com` unchanged).

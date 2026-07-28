@@ -11,9 +11,9 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
-import 'package:lazervault/src/features/sprayme/presentation/screens/session_history_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_detail_screen.dart';
-import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
+import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme, CreateSessionScreen;
+import 'package:lazervault/src/features/sprayme/presentation/screens/join_session_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// My Sessions Screen - shows sessions created by user and sessions they joined
@@ -45,11 +45,21 @@ class _MySessionsScreenState extends State<MySessionsScreen>
   bool _isLoadingInitial = true;
   String? _errorMessage;
 
+  // Current user id — used to tell a session I HOST from one I merely joined,
+  // so an own active session offers a "Re-enter" (host) CTA vs "Join".
+  String? _currentUserId;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadCurrentUserId();
     _loadInitialSessions();
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final id = await serviceLocator<SecureStorageService>().getUserId();
+    if (mounted) setState(() => _currentUserId = id);
   }
 
   @override
@@ -165,25 +175,6 @@ class _MySessionsScreenState extends State<MySessionsScreen>
           style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        actions: [
-          // View All History button
-          IconButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SprayMeCubit>(),
-                    child: const SessionHistoryScreen(), // Shows all transactions
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.history, color: Color(0xFF9CA3AF)),
-            tooltip: 'View All History',
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -258,14 +249,17 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                       _buildSessionsList(
                         sessions: _createdSessions,
                         isLoading: _createdLoading,
-                        hasMore: _createdHasMore,
+                        // Gate the load-more sentinel on no-error: otherwise a
+                        // persistent 500 with zero cached rows makes the sentinel
+                        // rebuild → loadMore() → error → rebuild in a tight loop.
+                        hasMore: _createdHasMore && _errorMessage == null,
                         loadMore: _loadMoreCreatedSessions,
                         isEmpty: _createdSessions.isEmpty && _errorMessage == null,
                       ),
                       _buildSessionsList(
                         sessions: _joinedSessions,
                         isLoading: _joinedLoading,
-                        hasMore: _joinedHasMore,
+                        hasMore: _joinedHasMore && _errorMessage == null,
                         loadMore: _loadMoreJoinedSessions,
                         isEmpty: _joinedSessions.isEmpty && _errorMessage == null,
                       ),
@@ -306,8 +300,21 @@ class _MySessionsScreenState extends State<MySessionsScreen>
     required VoidCallback loadMore,
     required bool isEmpty,
   }) {
+    // Empty tabs stay pull-to-refreshable too — wrap in a scrollable so the
+    // RefreshIndicator can trigger.
     if (isEmpty) {
-      return _buildEmptyState();
+      return RefreshIndicator(
+        onRefresh: _refresh,
+        color: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF1F1F1F),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(height: 120.h),
+            _buildEmptyState(),
+          ],
+        ),
+      );
     }
 
     return RefreshIndicator(
@@ -315,6 +322,7 @@ class _MySessionsScreenState extends State<MySessionsScreen>
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         itemCount: sessions.length + (hasMore ? 1 : 0),
         separatorBuilder: (_, __) => SizedBox(height: 10.h),
@@ -341,7 +349,8 @@ class _MySessionsScreenState extends State<MySessionsScreen>
     final statusColor = _statusColor(session.status);
     final occasionIcon = _occasionIcon(session.occasionType);
     final occasionColors = OccasionTheme.getGradient(session.occasionType);
-    final isHost = session.hostUserId == session.hostUserId; // This would need to be compared with current user ID
+    final isHost =
+        _currentUserId != null && session.hostUserId == _currentUserId;
 
     return GestureDetector(
       onTap: () => _navigateToSession(session),
@@ -483,6 +492,25 @@ class _MySessionsScreenState extends State<MySessionsScreen>
               ],
             ),
 
+            // One-tap re-entry for ACTIVE sessions — no code retype. Host sees
+            // "Re-enter" (goes back in as host); a joiner sees "Rejoin".
+            if (session.isActive) ...[
+              SizedBox(height: 12.h),
+              SizedBox(
+                width: double.infinity,
+                child: _buildBottomSheetButton(
+                  icon: isHost
+                      ? Icons.podcasts_rounded
+                      : Icons.play_circle_filled,
+                  label: isHost ? 'Re-enter session' : 'Rejoin session',
+                  gradient: isHost
+                      ? [const Color(0xFF7C3AED), const Color(0xFF4834D4)]
+                      : [const Color(0xFF10B981), const Color(0xFF059669)],
+                  onTap: () => _joinSession(session),
+                ),
+              ),
+            ],
+
             // Host info (for joined sessions)
             if (session.isEnded)
               Padding(
@@ -579,9 +607,15 @@ class _MySessionsScreenState extends State<MySessionsScreen>
           gradient: [const Color(0xFF7C3AED), const Color(0xFF9333EA)],
           onTap: () {
             HapticFeedback.lightImpact();
-            Navigator.pop(context); // Go back to home
-            // Then navigate to create session
-            // The home screen has the create/join actions
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (_) => serviceLocator<SprayMeCubit>(),
+                  child: const CreateSessionScreen(),
+                ),
+              ),
+            ).then((_) => _refresh());
           },
         ),
         SizedBox(width: 16.w),
@@ -591,8 +625,15 @@ class _MySessionsScreenState extends State<MySessionsScreen>
           gradient: [const Color(0xFFD4A017), const Color(0xFFF59E0B)],
           onTap: () {
             HapticFeedback.lightImpact();
-            Navigator.pop(context); // Go back to home
-            // Then navigate to join session
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (_) => serviceLocator<SprayMeCubit>(),
+                  child: const JoinSessionScreen(),
+                ),
+              ),
+            ).then((_) => _refresh());
           },
         ),
       ],
@@ -750,13 +791,19 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (session.isActive) ...[
-                      // View Live Session
+                      // Re-enter (host) or rejoin (viewer) the live session
                       SizedBox(
                         width: double.infinity,
                         child: _buildBottomSheetButton(
-                          icon: Icons.play_circle_filled,
-                          label: 'Join Session',
-                          gradient: [const Color(0xFF10B981), const Color(0xFF059669)],
+                          icon: _isOwn(session)
+                              ? Icons.podcasts_rounded
+                              : Icons.play_circle_filled,
+                          label: _isOwn(session)
+                              ? 'Re-enter session'
+                              : 'Rejoin session',
+                          gradient: _isOwn(session)
+                              ? [const Color(0xFF7C3AED), const Color(0xFF4834D4)]
+                              : [const Color(0xFF10B981), const Color(0xFF059669)],
                           onTap: () async {
                             Navigator.pop(context);
                             await _joinSession(session);
@@ -777,8 +824,8 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => BlocProvider.value(
-                                value: context.read<SprayMeCubit>(),
+                              builder: (_) => BlocProvider(
+                                create: (_) => serviceLocator<SprayMeCubit>(),
                                 child: SessionDetailScreen(
                                   sessionId: session.id,
                                   session: session,
@@ -798,6 +845,10 @@ class _MySessionsScreenState extends State<MySessionsScreen>
       },
     );
   }
+
+  /// True when the signed-in user hosts this session (vs merely joined it).
+  bool _isOwn(SpraySession session) =>
+      _currentUserId != null && session.hostUserId == _currentUserId;
 
   Future<void> _joinSession(SpraySession session) async {
     final storage = serviceLocator<SecureStorageService>();

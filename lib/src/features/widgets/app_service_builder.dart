@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
 
 class AppServiceBuilder extends StatefulWidget {
   const AppServiceBuilder({required this.appService, super.key});
@@ -30,6 +31,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.crypto:
         Get.toNamed(AppRoutes.crypto);
+        break;
+      case AppServiceName.rmb:
+        Get.toNamed(AppRoutes.rmb);
         break;
       case AppServiceName.invest:
         Get.toNamed(AppRoutes.investments);
@@ -65,7 +69,11 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.autoSave);
         break;
       case AppServiceName.batchTransfer:
-        Get.toNamed(AppRoutes.batchTransfer);
+        // Same screen renders short vs long; admin-gated via cached FeatureFlags.
+        Get.toNamed(
+          AppRoutes.batchTransfer,
+          arguments: {'shortFlow': FeatureFlags.batchTransferShortFlow},
+        );
         break;
       case AppServiceName.tagPay:
         Get.toNamed(AppRoutes.tagPay);
@@ -75,6 +83,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.crowdfund:
         Get.toNamed(AppRoutes.crowdfund);
+        break;
+      case AppServiceName.uplift:
+        Get.to(() => const UpliftHomeScreen());
         break;
       case AppServiceName.lockFunds:
         Get.toNamed(AppRoutes.lockFunds);
@@ -91,10 +102,11 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.sendFunds:
         // Both modes use the SAME select-recipients screen; short flow renders
         // the add-recipient inline + runs amount→PIN→receipt on that screen.
-        // Admin-gated via the cached FeatureFlags (read after login).
+        // The user's transfer-style choice (classic/standard) wins over the
+        // admin platform default — see FeatureFlags.useShortSendFlow.
         Get.toNamed(
           AppRoutes.selectRecipient,
-          arguments: {'shortFlow': FeatureFlags.sendFundsShortFlow},
+          arguments: {'shortFlow': FeatureFlags.sendFlowShortForSession},
         );
         break;
       case AppServiceName.payroll:
@@ -117,6 +129,15 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.expenses:
         Get.toNamed(AppRoutes.expenses);
+        break;
+      case AppServiceName.sales:
+        Get.toNamed(AppRoutes.sales);
+        break;
+      case AppServiceName.rechargeCard:
+        Get.toNamed(AppRoutes.epinHome);
+        break;
+      case AppServiceName.betting:
+        Get.toNamed(AppRoutes.bettingHome);
         break;
     }
   }
@@ -235,6 +256,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.crypto:
         iconData = Icons.currency_bitcoin;
         break;
+      case AppServiceName.rmb:
+        iconData = Icons.currency_yuan;
+        break;
       case AppServiceName.giftCards:
         iconData = Icons.card_giftcard;
         break;
@@ -261,6 +285,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.crowdfund:
         iconData = Icons.volunteer_activism;
+        break;
+      case AppServiceName.uplift:
+        iconData = Icons.rocket_launch;
         break;
       case AppServiceName.lockFunds:
         iconData = Icons.lock_clock;
@@ -294,6 +321,15 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.tax:
         iconData = Icons.account_balance_rounded;
+        break;
+      case AppServiceName.sales:
+        iconData = Icons.point_of_sale_rounded;
+        break;
+      case AppServiceName.rechargeCard:
+        iconData = Icons.confirmation_number;
+        break;
+      case AppServiceName.betting:
+        iconData = Icons.sports_soccer;
         break;
     }
 

@@ -342,7 +342,7 @@ class CryptoNews extends Equatable {
   List<Object> get props => [id, title, url, source, sentiment, publishedAt];
 }
 
-enum TransactionType { buy, sell, swap }
+enum TransactionType { buy, sell, swap, send, deposit }
 
 class CryptoTransaction extends Equatable {
   final String id;

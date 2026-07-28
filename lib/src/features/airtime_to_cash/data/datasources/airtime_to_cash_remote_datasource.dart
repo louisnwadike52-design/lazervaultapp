@@ -19,7 +19,7 @@ abstract class AirtimeToCashRemoteDataSource {
     String sessionId,
   );
 
-  Future<ServiceVerificationResult> verifyService(String network);
+  Future<ServiceVerificationResult> verifyService(String network, {String provider});
 
   Future<ProviderInfoResult> getProviderInfo();
 
@@ -277,31 +277,38 @@ class AirtimeToCashRemoteDataSourceImpl
   }
 
   @override
-  Future<ServiceVerificationResult> verifyService(String network) async {
+  Future<ServiceVerificationResult> verifyService(String network, {String provider = ''}) async {
     try {
-      final request = pb.GetAirtimeToCashRatesRequest();
+      // Call the real VerifyAirtimeToCashService RPC — it returns the actual
+      // destination_phone (VTU's pooled number the user must transfer airtime
+      // to) and the provider_name. The old implementation called
+      // GetAirtimeToCashRates and hardcoded destinationPhone:'' / 'VTUAfrica',
+      // which left the transfer screen's "send airtime to" number blank and
+      // made the whole VTU flow unusable.
+      //
+      // `provider` forces a specific gateway (the transfer flow passes
+      // 'vtuafrica' so it always gets VTU's destination phone, independent of
+      // the admin-configured active provider).
+      final request = pb.VerifyAirtimeToCashServiceRequest()..network = network;
+      if (provider.isNotEmpty) request.provider = provider;
 
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient
-          .getAirtimeToCashRates(request, options: options);
-
-      // Check if the specific network is available
-      final networkRate = response.rates.firstWhere(
-        (rate) => rate.network == network,
-        orElse: () => pb.AirtimeToCashNetworkRate()
-          ..network = network
-          ..isAvailable = false,
-      );
+          .verifyAirtimeToCashService(request, options: options);
 
       return ServiceVerificationResult(
-        isAvailable: networkRate.isAvailable,
-        providerName: 'VTUAfrica',
-        destinationPhone: '',
-        message: networkRate.isAvailable
-            ? 'Service available for $network'
-            : 'Service not available for $network',
-        network: network,
-        requiresTransfer: true,
+        isAvailable: response.isAvailable,
+        providerName: response.providerName.isNotEmpty
+            ? response.providerName
+            : 'vtuafrica',
+        destinationPhone: response.destinationPhone,
+        message: response.message.isNotEmpty
+            ? response.message
+            : (response.isAvailable
+                ? 'Service available for $network'
+                : 'Service not available for $network'),
+        network: response.network.isNotEmpty ? response.network : network,
+        requiresTransfer: response.requiresTransfer || response.isAvailable,
       );
     } on GrpcError catch (e) {
       throw Exception('Failed to verify service: ${e.message}');

@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -23,7 +26,13 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// foot. There is no "Done" button — the user goes back via the arrow
 /// (which lands on the exchange landing page, not the dashboard).
 class ExchangeReceiptScreen extends StatefulWidget {
-  const ExchangeReceiptScreen({super.key});
+  /// The transaction to render. In the normal in-app flow this is null and the
+  /// screen reads it from `Get.arguments`. The chat/voice "View receipt"
+  /// deeplink (`/exchange/receipt/:id`) resolves the transaction by id first
+  /// (there is no argument on a deeplink) and passes it in here.
+  final CurrencyTransaction? transaction;
+
+  const ExchangeReceiptScreen({super.key, this.transaction});
 
   @override
   State<ExchangeReceiptScreen> createState() => _ExchangeReceiptScreenState();
@@ -37,11 +46,26 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   final Uuid _uuid = const Uuid();
   String? _qrData;
 
+  /// Sender display name for the From row — from the authenticated profile
+  /// (the exchange always debits the signed-in user's own wallet).
+  String get _senderName {
+    try {
+      final state = context.read<AuthenticationCubit>().state;
+      if (state is AuthenticationSuccess) {
+        final u = state.profile.user;
+        return '${u.firstName} ${u.lastName}'.trim();
+      }
+    } catch (_) {}
+    return '';
+  }
+
   @override
   void initState() {
     super.initState();
+    // Prefer an explicitly-passed transaction (deeplink loader path); fall back
+    // to Get.arguments (normal in-app flow).
     final arg = Get.arguments;
-    _tx = arg is CurrencyTransaction ? arg : null;
+    _tx = widget.transaction ?? (arg is CurrencyTransaction ? arg : null);
     _generateQrData();
   }
 
@@ -92,7 +116,15 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
     if (_isSharing || _tx == null) return;
     setState(() => _isSharing = true);
     try {
-      await ExchangePdfService.shareReceipt(transaction: _tx!);
+      // Anchor the iOS/iPad share sheet to this screen (harmless elsewhere).
+      final box = context.findRenderObject() as RenderBox?;
+      final origin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+      await ExchangePdfService.shareReceipt(
+        transaction: _tx!,
+        sharePositionOrigin: origin,
+      );
     } catch (e) {
       _toast('Could not share receipt. Please try again.', success: false);
     } finally {
@@ -131,21 +163,35 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
           // Spacers distribute the breathing room between the header, the
           // details card and the action row so the receipt feels balanced
           // rather than crammed against the top bar.
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildTopBar(),
-                const Spacer(flex: 1),
-                _buildHeader(tx),
-                const Spacer(flex: 2),
-                _buildDetailsCard(tx),
-                const Spacer(flex: 3),
-                _buildActions(),
-                SizedBox(height: 12.h),
-              ],
-            ),
+          // Scrollable body (Send Funds receipt pattern) — the details card
+          // now carries sender + fee-breakdown rows, so it can outgrow small
+          // screens; the action row stays pinned at the bottom.
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics()),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 8.h),
+                      _buildHeader(tx),
+                      SizedBox(height: 16.h),
+                      _buildDetailsCard(tx),
+                      SizedBox(height: 8.h),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: _buildActions(),
+              ),
+              SizedBox(height: 12.h),
+            ],
           ),
         ),
       ),
@@ -168,15 +214,39 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          Image.asset(
-            'assets/images/logo.png',
-            width: 28.w,
-            height: 28.w,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.shield_outlined,
-              color: const Color(0xFF4E03D0),
-              size: 24.sp,
-            ),
+          // Brand chip + wordmark — same header the Send Funds receipt uses.
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 30.w,
+                height: 30.w,
+                padding: EdgeInsets.all(4.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF2D2D2D)),
+                ),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.shield_outlined,
+                    color: const Color(0xFF4E03D0),
+                    size: 16.sp,
+                  ),
+                ),
+              ),
+              SizedBox(width: 7.w),
+              Text(
+                'Lazervault',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -193,20 +263,50 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
 
     return Column(
       children: [
-        // Status icon: check for success, error for failure, hourglass
-        // while the transfer is in flight. Single source-of-truth for
-        // the header emotion — the detail rows below keep the full
-        // status string.
+        // Layered status badge — soft halo → tinted ring → gradient core
+        // with a drop glow, matching the Send Funds receipt. Single source
+        // of truth for the header emotion; the detail rows below keep the
+        // full status string.
         Container(
-          width: 56.w,
-          height: 56.w,
+          width: 78.w,
+          height: 78.w,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.15),
+            color: accent.withValues(alpha: 0.10),
             shape: BoxShape.circle,
-            border:
-                Border.all(color: accent.withValues(alpha: 0.35), width: 1.4),
           ),
-          child: Icon(_statusIcon(tx), color: accent, size: 28.sp),
+          child: Container(
+            width: 62.w,
+            height: 62.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Container(
+              width: 46.w,
+              height: 46.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.lerp(accent, Colors.white, 0.22) ?? accent,
+                    accent,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: accent.withValues(alpha: 0.40),
+                    blurRadius: 18,
+                    offset: Offset(0, 6.h),
+                  ),
+                ],
+              ),
+              child: Icon(_statusIcon(tx), color: Colors.white, size: 24.sp),
+            ),
+          ),
         ),
         SizedBox(height: 14.h),
         // Single-line pair display keeps the headline amount visually
@@ -315,6 +415,8 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
           ),
           _row('Type',
               isConversion ? 'Conversion' : 'International Transfer'),
+          if (_senderName.isNotEmpty) _row('From', _senderName),
+          _row('From wallet', '${tx.fromCurrency} wallet'),
           _row(
             'You sent',
             '${_code(tx.fromCurrency)}${tx.fromAmount.toStringAsFixed(2)}',
@@ -327,7 +429,15 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
             'Rate',
             '1 ${tx.fromCurrency} = ${tx.exchangeRate.toStringAsFixed(4)} ${tx.toCurrency}',
           ),
-          if (tx.fees > 0)
+          // Fee breakdown: our explicit service fee vs the payout provider's
+          // charge, then the composite when the split isn't available.
+          if (tx.serviceFee > 0)
+            _row('Service fee',
+                '${_code(tx.fromCurrency)}${tx.serviceFee.toStringAsFixed(2)}'),
+          if (tx.providerFee > 0)
+            _row('Provider fee',
+                '${_code(tx.fromCurrency)}${tx.providerFee.toStringAsFixed(2)}'),
+          if (tx.fees > 0 && tx.serviceFee <= 0 && tx.providerFee <= 0)
             _row('Fee',
                 '${_code(tx.fromCurrency)}${tx.fees.toStringAsFixed(2)}'),
           _row('Total debit',

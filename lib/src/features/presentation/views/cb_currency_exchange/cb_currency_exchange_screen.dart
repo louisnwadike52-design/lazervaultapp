@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 
@@ -977,15 +978,23 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header stays static; only the content below rises + fades in.
                 _buildHeader(),
-                _buildStartTransferButton(),
-                SizedBox(height: 32.h),
-                _buildLiveExchangeRates(),
-                SizedBox(height: 32.h),
-                _buildPreviousRecipients(),
-                SizedBox(height: 32.h),
-                _buildRecentTransactions(),
-                SizedBox(height: 24.h),
+                ServiceEntranceAnimation(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStartTransferButton(),
+                      SizedBox(height: 32.h),
+                      _buildLiveExchangeRates(),
+                      SizedBox(height: 32.h),
+                      _buildPreviousRecipients(),
+                      SizedBox(height: 32.h),
+                      _buildRecentTransactions(),
+                      SizedBox(height: 24.h),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

@@ -7,9 +7,13 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
+import '../../services/split_bill_pdf_service.dart';
 import '../widgets/participant_row.dart';
 import '../widgets/split_bill_progress_bar.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
+import 'package:lazervault/core/shared_widgets/app_error_view.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 class SplitBillDetailScreen extends StatelessWidget {
   const SplitBillDetailScreen({super.key});
@@ -79,40 +83,32 @@ class _SplitBillDetailView extends StatelessWidget {
       body: BlocConsumer<SplitBillCubit, SplitBillState>(
         listener: (context, state) {
           if (state is SplitBillCancelled) {
-            Get.snackbar(
+            showAppSnackbar(
               'Cancelled',
               state.message,
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
+              type: AppSnackbarType.success,
             );
             Get.back();
           } else if (state is SplitBillShareDeclined) {
-            Get.snackbar(
+            showAppSnackbar(
               'Declined',
               state.message,
-              backgroundColor: const Color(0xFFFB923C),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
+              type: AppSnackbarType.info,
             );
             Get.back();
           } else if (state is SplitBillReminderSent) {
-            Get.snackbar(
+            showAppSnackbar(
               'Reminder Sent',
               state.message,
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
+              type: AppSnackbarType.success,
             );
             // Reload detail to refresh state
             context.read<SplitBillCubit>().loadBillDetail(splitBillId);
           } else if (state is SplitBillError) {
-            Get.snackbar(
+            showAppSnackbar(
               'Error',
               state.message,
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
+              type: AppSnackbarType.error,
             );
           }
         },
@@ -168,6 +164,12 @@ class _SplitBillDetailView extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildParticipantsList(bill),
                     const SizedBox(height: 24),
+                    // Organizer-only: share/download a full bill summary. Co-payers
+                    // keep their own receipt path (see Pay My Share) untouched.
+                    if (isCreator) ...[
+                      _buildCreatorSummaryActions(context, bill),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 ),
               ),
@@ -192,11 +194,24 @@ class _SplitBillDetailView extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // Title is the headline for the whole bill.
+          Text(
+            bill.displayTitle,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
           Text(
             bill.formattedTotal,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 36,
+              color: Color(0xFF9CA3AF),
+              fontSize: 28,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -209,7 +224,7 @@ class _SplitBillDetailView extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Color(0xFF9CA3AF),
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -219,10 +234,8 @@ class _SplitBillDetailView extends StatelessWidget {
           _buildInfoRow('Created by', bill.creatorName.isNotEmpty
               ? bill.creatorName
               : '@${bill.creatorUsername}'),
-          if (bill.hasReceiver) ...[
-            const SizedBox(height: 10),
-            _buildReceiverRow(bill),
-          ],
+          const SizedBox(height: 10),
+          _buildReceiverRow(bill),
           const SizedBox(height: 10),
           _buildInfoRow('Reference', bill.reference),
           const SizedBox(height: 10),
@@ -263,9 +276,36 @@ class _SplitBillDetailView extends StatelessWidget {
     );
   }
 
-  /// "Paying to" row showing the third-party receiver (restaurant / @user),
-  /// plus a settlement-status chip for external bank receivers.
+  /// "Paying to" row: shows WHO the receiver is with type-appropriate detail —
+  /// the creator (self-collect), an internal Lazervault user, or an external
+  /// bank account — plus a settlement-status chip for external receivers.
   Widget _buildReceiverRow(SplitBillEntity bill) {
+    final IconData icon;
+    final String primary;
+    final String secondary;
+    final String typeLabel;
+
+    if (bill.hasExternalReceiver) {
+      icon = Icons.account_balance_rounded;
+      primary = bill.receiverName.isNotEmpty ? bill.receiverName : 'Bank account';
+      secondary = bill.receiverAccountMasked; // "•••• 1234"
+      typeLabel = 'External bank';
+    } else if (bill.hasInternalReceiver) {
+      icon = Icons.person_rounded;
+      primary = bill.receiverName.isNotEmpty ? bill.receiverName : 'Lazervault user';
+      // Backend masks the internal receiver as the display name; avoid repeating it —
+      // the "Lazervault user" chip below already conveys the type.
+      final masked = bill.receiverAccountMasked;
+      secondary = (masked.isNotEmpty && masked != primary) ? masked : '';
+      typeLabel = 'Lazervault user';
+    } else {
+      // Legacy / self-collect: the creator collects each share directly.
+      icon = Icons.person_rounded;
+      primary = bill.creatorName.isNotEmpty ? bill.creatorName : '@${bill.creatorUsername}';
+      secondary = 'Collects directly';
+      typeLabel = 'Organizer';
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -286,17 +326,11 @@ class _SplitBillDetailView extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    bill.hasExternalReceiver
-                        ? Icons.storefront
-                        : Icons.person,
-                    size: 14,
-                    color: const Color(0xFF4834D4),
-                  ),
+                  Icon(icon, size: 15, color: const Color(0xFF4834D4)),
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      bill.receiverDisplay,
+                      primary,
                       textAlign: TextAlign.right,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -308,6 +342,35 @@ class _SplitBillDetailView extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+              if (secondary.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  secondary,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 4),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  typeLabel,
+                  style: const TextStyle(
+                    color: Color(0xFF8B7FE8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               if (bill.hasExternalReceiver) ...[
                 const SizedBox(height: 6),
@@ -515,6 +578,11 @@ class _SplitBillDetailView extends StatelessWidget {
           const Color(0xFF10B981),
           p.paidAt != null ? 'Paid ${_formatDate(p.paidAt!)}' : 'Paid',
         ),
+      SplitBillParticipantStatus.inProgress => (
+          Icons.sync,
+          const Color(0xFF4834D4),
+          'Payment in progress',
+        ),
       SplitBillParticipantStatus.pending => (
           Icons.schedule,
           const Color(0xFFFB923C),
@@ -532,7 +600,10 @@ class _SplitBillDetailView extends StatelessWidget {
         ? p.displayName
         : '@${p.username}';
 
-    return Padding(
+    // A paid payer's row opens their authoritative, bill-derived receipt.
+    final canViewReceipt = p.isPaid;
+
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
@@ -585,8 +656,35 @@ class _SplitBillDetailView extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (canViewReceipt) ...[
+            const SizedBox(width: 6),
+            const Icon(Icons.receipt_long_outlined,
+                size: 16, color: Color(0xFF6B7280)),
+          ],
         ],
       ),
+    );
+
+    if (!canViewReceipt) return row;
+    return InkWell(
+      onTap: () => _openPayerReceipt(bill, p),
+      borderRadius: BorderRadius.circular(8),
+      child: row,
+    );
+  }
+
+  /// Opens the bill-authoritative receipt for a specific payer, reading their
+  /// real paidAt / reference / status / amount from the participant record.
+  void _openPayerReceipt(SplitBillEntity bill, SplitBillParticipantEntity p) {
+    Get.toNamed(
+      AppRoutes.splitBillReceipt,
+      arguments: {
+        'bill': bill,
+        'payerUserId': p.userId,
+        // Viewing an existing payer's receipt — Done/back should return here,
+        // NOT wipe the nav stack to the bills list (that's the post-payment flow).
+        'viewOnly': true,
+      },
     );
   }
 
@@ -610,6 +708,20 @@ class _SplitBillDetailView extends StatelessWidget {
   }
 
   Widget _buildParticipantsList(SplitBillEntity bill) {
+    // If the creator included themselves as a co-payer, they have a participant
+    // row (isCreator). Use it to show their real SHARE + payment status in the
+    // Organizer row, and exclude it from the list below to avoid a duplicate.
+    SplitBillParticipantEntity? creatorP;
+    for (final p in bill.participants) {
+      if (p.isCreator) {
+        creatorP = p;
+        break;
+      }
+    }
+    final organizerAmount = creatorP != null
+        ? creatorP.formattedAmount(bill.currency)
+        : bill.formattedTotal;
+    final organizerPaid = creatorP?.isPaid ?? false;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -663,18 +775,36 @@ class _SplitBillDetailView extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const Text(
-                        'Organizer',
-                        style: TextStyle(
-                          color: Color(0xFF4834D4),
-                          fontSize: 12,
-                        ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Organizer',
+                            style: TextStyle(
+                              color: Color(0xFF4834D4),
+                              fontSize: 12,
+                            ),
+                          ),
+                          if (creatorP != null) ...[
+                            const Text(' · ',
+                                style: TextStyle(color: Color(0xFF6B7280))),
+                            Text(
+                              organizerPaid ? 'Paid' : 'Pending',
+                              style: TextStyle(
+                                color: organizerPaid
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFFB923C),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  bill.formattedTotal,
+                  organizerAmount,
                   style: const TextStyle(
                     color: Color(0xFF9CA3AF),
                     fontSize: 13,
@@ -684,7 +814,7 @@ class _SplitBillDetailView extends StatelessWidget {
             ),
           ),
           const Divider(color: Color(0xFF2D2D2D), height: 1),
-          ...bill.participants.map(
+          ...bill.participants.where((p) => !p.isCreator).map(
             (p) => Column(
               children: [
                 ParticipantRow(participant: p, currency: bill.currency),
@@ -710,6 +840,119 @@ class _SplitBillDetailView extends StatelessWidget {
     );
   }
 
+  /// Organizer-only "Share summary" surface: generates a shareable PDF overview
+  /// of the whole bill (receiver, total, per-participant breakdown, collection
+  /// progress). Mirrors the co-payer receipt's Share/Download actions, but is a
+  /// summary of the bill rather than a payment receipt.
+  Widget _buildCreatorSummaryActions(BuildContext context, SplitBillEntity bill) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Share summary',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Send everyone an overview of who has paid and what is still owed.',
+            style: TextStyle(
+              color: Color(0xFF9CA3AF),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _shareSummary(context, bill),
+                  icon: const Icon(Icons.share, size: 18),
+                  label: const Text(
+                    'Share',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFF4834D4)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _downloadSummary(bill),
+                  icon: const Icon(Icons.download, size: 18),
+                  label: const Text(
+                    'Download',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFF4834D4)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _shareSummary(BuildContext context, SplitBillEntity bill) async {
+    try {
+      final box = context.findRenderObject() as RenderBox?;
+      final origin =
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+      await SplitBillPdfService.shareSummary(bill, sharePositionOrigin: origin);
+    } catch (e) {
+      showAppSnackbar(
+        'Share Failed',
+        friendlyError(e, context: 'share this summary'),
+        type: AppSnackbarType.error,
+      );
+    }
+  }
+
+  Future<void> _downloadSummary(SplitBillEntity bill) async {
+    try {
+      final path = await SplitBillPdfService.downloadSummary(bill);
+      showAppSnackbar(
+        'Download Complete',
+        'Summary saved to: ${path.split('/').last}',
+        type: AppSnackbarType.success,
+      );
+    } catch (e) {
+      showAppSnackbar(
+        'Download Failed',
+        friendlyError(e, context: 'download this summary'),
+        type: AppSnackbarType.error,
+      );
+    }
+  }
+
   Widget _buildActionBar(
     BuildContext context,
     SplitBillEntity bill,
@@ -731,73 +974,36 @@ class _SplitBillDetailView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isCreator) ...[
+            // Pay My Share — shown whenever the logged-in user is a PENDING
+            // co-payer, INCLUDING when they are also the creator (self-included
+            // as a co-payer). A creator has no "Decline" (they own the bill);
+            // non-creator participants keep Decline + Pay.
+            if (isParticipantPending && myParticipant != null) ...[
               Row(
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        context.read<SplitBillCubit>().sendReminder(splitBillId);
-                      },
-                      icon: const Icon(Icons.notifications_active, size: 18),
-                      label: const Text(
-                        'Send Reminder',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF4834D4),
-                        side: const BorderSide(color: Color(0xFF4834D4)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  if (!isCreator) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _showDeclineConfirmation(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFEF4444),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Decline',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
+                  ],
                   Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showCancelConfirmation(context),
-                      icon: const Icon(Icons.cancel_outlined, size: 18),
-                      label: const Text(
-                        'Cancel',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFEF4444),
-                        side: const BorderSide(color: Color(0xFFEF4444)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ] else if (isParticipantPending && myParticipant != null) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => _showDeclineConfirmation(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFEF4444),
-                        side: const BorderSide(color: Color(0xFFEF4444)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Decline',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
+                    flex: isCreator ? 1 : 2,
                     child: ElevatedButton(
                       onPressed: () {
                         Get.toNamed(
@@ -835,10 +1041,204 @@ class _SplitBillDetailView extends StatelessWidget {
                   ),
                 ],
               ),
+              if (isCreator) const SizedBox(height: 12),
+            ],
+            // Creator management actions (reminder + cancel) — shown for the
+            // creator regardless of whether they're also a co-payer.
+            if (isCreator) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showReminderSheet(context, bill),
+                      icon: const Icon(Icons.notifications_active, size: 18),
+                      label: const Text(
+                        'Send Reminder',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF4834D4),
+                        side: const BorderSide(color: Color(0xFF4834D4)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showCancelConfirmation(context),
+                      icon: const Icon(Icons.cancel_outlined, size: 18),
+                      label: const Text(
+                        'Cancel',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFEF4444),
+                        side: const BorderSide(color: Color(0xFFEF4444)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
       ),
+    );
+  }
+
+  /// Reminder flow: show the unpaid (pending) co-payers, all pre-selected, let the
+  /// creator toggle who to remind, then send reminders only to the chosen subset.
+  void _showReminderSheet(BuildContext context, SplitBillEntity bill) {
+    final cubit = context.read<SplitBillCubit>();
+    // Only strictly-pending co-payers are remindable (in_progress payments are
+    // already on their way; paid/declined don't need a nudge).
+    final remindable = bill.pendingParticipants;
+    if (remindable.isEmpty) {
+      // Distinguish "all done" from "the only unpaid shares are already being paid".
+      final hasInProgress =
+          bill.participants.any((p) => p.isInProgress);
+      showAppSnackbar(
+        hasInProgress ? 'Payments in progress' : 'Everyone is settled',
+        hasInProgress
+            ? 'The remaining shares are already being paid — no reminders needed.'
+            : 'There is no one left to remind on this split bill.',
+        type: AppSnackbarType.info,
+      );
+      return;
+    }
+
+    final selected = <String>{...remindable.map((p) => p.userId)};
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                    MediaQuery.of(sheetContext).padding.bottom +
+                    16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Send reminders',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Choose who to remind. Everyone is selected by default.',
+                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: remindable.map((p) {
+                          final name = p.displayName.isNotEmpty
+                              ? p.displayName
+                              : '@${p.username}';
+                          final checked = selected.contains(p.userId);
+                          return CheckboxListTile(
+                            value: checked,
+                            onChanged: (v) => setSheetState(() {
+                              if (v == true) {
+                                selected.add(p.userId);
+                              } else {
+                                selected.remove(p.userId);
+                              }
+                            }),
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            activeColor: const Color(0xFF4834D4),
+                            checkColor: Colors.white,
+                            title: Text(name,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600)),
+                            subtitle: Text(
+                              p.formattedAmount(bill.currency),
+                              style: const TextStyle(
+                                  color: Color(0xFF9CA3AF), fontSize: 12),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: selected.isEmpty
+                          ? null
+                          : () {
+                              Navigator.pop(sheetContext);
+                              cubit.sendReminder(
+                                splitBillId,
+                                participantUserIds: selected.toList(),
+                              );
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4834D4),
+                        disabledBackgroundColor: const Color(0xFF2D2D2D),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        selected.isEmpty
+                            ? 'Select at least one'
+                            : 'Remind ${selected.length} ${selected.length == 1 ? 'person' : 'people'}',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -978,57 +1378,11 @@ class _SplitBillDetailView extends StatelessWidget {
   }
 
   Widget _buildErrorContent(BuildContext context, String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Color(0xFFEF4444),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Failed to Load',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () =>
-                  context.read<SplitBillCubit>().loadBillDetail(splitBillId),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4834D4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Retry',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AppErrorView(
+      error: message,
+      context: 'load this split bill',
+      onRetry: () =>
+          context.read<SplitBillCubit>().loadBillDetail(splitBillId),
     );
   }
 }

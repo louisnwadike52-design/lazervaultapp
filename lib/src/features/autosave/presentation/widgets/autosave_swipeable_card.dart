@@ -3,8 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 
 class AutoSaveSwipeableCard extends StatelessWidget {
   final AutoSaveRuleEntity rule;
@@ -171,6 +175,7 @@ class AutoSaveSwipeableCard extends StatelessWidget {
                                 Icons.attach_money, rule.amountDescription),
                           ],
                         ),
+                        _buildMandateAlertChip(),
                         if (accountName != null) ...[
                           SizedBox(height: 8.h),
                           Row(
@@ -225,6 +230,75 @@ class AutoSaveSwipeableCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  bool get _isLinkedBankRule =>
+      (rule.triggerType == TriggerType.externalInflow ||
+          rule.triggerType == TriggerType.scheduledExternal) &&
+      rule.sourceLinkedAccountId.isNotEmpty;
+
+  /// Compact amber flag on a linked-bank rule whose Direct Debit mandate is no
+  /// longer debitable — the automatic pull can't run until the user
+  /// re-authorizes (they do that on the details screen this card opens). Reads
+  /// the shared MandateCubit singleton; shows nothing until the mandate status
+  /// is actually known, so it never false-alarms.
+  Widget _buildMandateAlertChip() {
+    if (!_isLinkedBankRule) return const SizedBox.shrink();
+    final cubit = serviceLocator<MandateCubit>();
+    return BlocBuilder<MandateCubit, MandateState>(
+      bloc: cubit,
+      builder: (context, state) {
+        final known = state is UserMandatesLoaded ||
+            state is MandateCreated ||
+            state is MandatePaused ||
+            state is MandateReinstated ||
+            state is MandateCancelled;
+        if (!known) return const SizedBox.shrink();
+        final mandate = cubit.getMandateForAccount(rule.sourceLinkedAccountId);
+        if (mandate != null && mandate.isActive) return const SizedBox.shrink();
+        final activating = mandate != null && mandate.isActivating;
+        final color =
+            activating ? const Color(0xFF3B82F6) : const Color(0xFFFB923C);
+        final label =
+            activating ? 'Direct Debit activating' : 'Re-authorize Direct Debit';
+        return Padding(
+          padding: EdgeInsets.only(top: 8.h),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: color.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  activating
+                      ? Icons.hourglass_top_rounded
+                      : Icons.warning_amber_rounded,
+                  size: 12.sp,
+                  color: color,
+                ),
+                SizedBox(width: 5.w),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      color: color,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

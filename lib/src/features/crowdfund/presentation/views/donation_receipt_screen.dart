@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../data/services/crowdfund_pdf_service.dart';
+import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -123,6 +124,8 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
         widget.receipt!,
         widget.donation,
         widget.crowdfund,
+        sharePositionOrigin:
+            CrowdfundReportService.shareOriginFromContext(context),
       );
     } catch (e) {
       if (!mounted) return;

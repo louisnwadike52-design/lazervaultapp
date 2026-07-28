@@ -1,8 +1,13 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
@@ -27,8 +32,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   String _selectedFilter = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
-  final List<String> _filters = ['All', 'Buy', 'Sell', 'Swap'];
+  bool _isExporting = false;
+
+  final List<String> _filters = ['All', 'Buy', 'Sell', 'Swap', 'Send', 'Deposit'];
 
   /// Transactions loaded from the backend via CryptoCubit state
   List<CryptoTransactionHistory> get _transactions {
@@ -57,6 +65,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         return CryptoTransactionType.sell;
       case entities.TransactionType.swap:
         return CryptoTransactionType.swap;
+      case entities.TransactionType.send:
+        return CryptoTransactionType.send;
+      case entities.TransactionType.deposit:
+        return CryptoTransactionType.deposit;
     }
   }
 
@@ -97,10 +109,26 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _setupAnimations();
+    _scrollController.addListener(_onScroll);
     // Ensure data is loaded
     final cubit = context.read<CryptoCubit>();
     if (cubit.state is! CryptosLoaded) {
       cubit.loadCryptos();
+    }
+  }
+
+  /// Load-more on scroll-to-bottom: when within 400px of the end and there's
+  /// another page, ask the cubit for the next batch (it appends + dedupes).
+  void _onScroll() {
+    if (!mounted || !_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.pixels < pos.maxScrollExtent - 400) return;
+    final cubit = context.read<CryptoCubit>();
+    final s = cubit.state;
+    if (s is CryptosLoaded &&
+        s.transactionsHasMore &&
+        !s.transactionsLoadingMore) {
+      cubit.loadMoreTransactions();
     }
   }
 
@@ -122,6 +150,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     _tabController.dispose();
     _animationController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -138,6 +167,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             return transaction.type == CryptoTransactionType.sell;
           case 'Swap':
             return transaction.type == CryptoTransactionType.swap;
+          case 'Send':
+            return transaction.type == CryptoTransactionType.send;
+          case 'Deposit':
+            return transaction.type == CryptoTransactionType.deposit;
           default:
             return true;
         }
@@ -228,16 +261,28 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
               ),
             ),
           ),
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              Icons.file_download,
-              color: Colors.white,
-              size: 20.sp,
+          GestureDetector(
+            onTap: _isExporting ? null : _downloadStatement,
+            child: Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: _isExporting
+                  ? SizedBox(
+                      width: 20.sp,
+                      height: 20.sp,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      Icons.file_download,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
             ),
           ),
         ],
@@ -276,34 +321,34 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             ),
           ),
           SizedBox(height: 16.h),
-          // Filter tabs
-          Row(
-            children: _filters.map((filter) {
-              final isSelected = _selectedFilter == filter;
-              return Expanded(
-                child: GestureDetector(
+          // Filter tabs — horizontally scrollable so all six (incl. Send,
+          // Deposit) fit comfortably without truncating on narrow screens.
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _filters.map((filter) {
+                final isSelected = _selectedFilter == filter;
+                return GestureDetector(
                   onTap: () => setState(() => _selectedFilter = filter),
                   child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 4.w),
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    margin: EdgeInsets.only(right: 8.w),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: Center(
-                      child: Text(
-                        filter,
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
+                    child: Text(
+                      filter,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
@@ -366,18 +411,55 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
 
   Widget _buildTransactionList() {
     final filteredTxns = _filteredTransactions;
-    
-    if (filteredTxns.isEmpty) {
-      return _buildEmptyState();
-    }
-    
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      itemCount: filteredTxns.length,
-      itemBuilder: (context, index) {
-        final transaction = filteredTxns[index];
-        return _buildTransactionCard(transaction);
-      },
+    return RefreshIndicator(
+      color: const Color.fromARGB(255, 78, 3, 208),
+      backgroundColor: const Color(0xFF1F1F1F),
+      onRefresh: () => context.read<CryptoCubit>().refreshTransactions(),
+      child: filteredTxns.isEmpty
+          // Keep a scrollable so pull-to-refresh works even with no rows.
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [SizedBox(height: 120.h), _buildEmptyState()],
+            )
+          : Builder(builder: (context) {
+              final s = context.read<CryptoCubit>().state;
+              // Only show the load-more footer when the user isn't filtering
+              // client-side (a filter can hide a whole fetched page, so paging
+              // by the raw list is what makes sense there).
+              final noFilter = _selectedFilter == 'All' && _searchQuery.isEmpty;
+              final loadingMore =
+                  s is CryptosLoaded && s.transactionsLoadingMore;
+              final hasMore = s is CryptosLoaded && s.transactionsHasMore;
+              final showFooter = noFilter && (loadingMore || hasMore);
+              return ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                itemCount: filteredTxns.length + (showFooter ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index >= filteredTxns.length) {
+                    // Bottom load-more indicator (or a subtle end hint).
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.h),
+                      child: Center(
+                        child: loadingMore
+                            ? SizedBox(
+                                width: 22.w,
+                                height: 22.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color.fromARGB(255, 78, 3, 208),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    );
+                  }
+                  final transaction = filteredTxns[index];
+                  return _buildTransactionCard(transaction);
+                },
+              );
+            }),
     );
   }
 
@@ -759,7 +841,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       cryptoName: transaction.cryptoName,
       cryptoSymbol: transaction.cryptoSymbol,
       cryptoAmount: transaction.amount,
-      pricePerUnit: transaction.gbpAmount / double.parse(transaction.amount),
+      pricePerUnit: () {
+        final qty = double.tryParse(transaction.amount) ?? 0.0;
+        return qty > 0 ? transaction.gbpAmount / qty : 0.0;
+      }(),
       fiatAmount: transaction.gbpAmount,
       networkFee: transaction.fee * 0.3,
       tradingFee: transaction.fee * 0.7,
@@ -788,6 +873,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         return Colors.red;
       case CryptoTransactionType.swap:
         return const Color.fromARGB(255, 78, 3, 208);
+      case CryptoTransactionType.send:
+        return Colors.orange;
+      case CryptoTransactionType.deposit:
+        return const Color(0xFF3B82F6);
     }
   }
 
@@ -799,6 +888,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         return Icons.remove_circle_outline;
       case CryptoTransactionType.swap:
         return Icons.swap_horiz;
+      case CryptoTransactionType.send:
+        return Icons.arrow_upward;
+      case CryptoTransactionType.deposit:
+        return Icons.arrow_downward;
     }
   }
 
@@ -810,6 +903,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         return 'Sell ${transaction.cryptoSymbol}';
       case CryptoTransactionType.swap:
         return 'Swap ${transaction.fromCrypto} → ${transaction.toCrypto}';
+      case CryptoTransactionType.send:
+        return 'Send ${transaction.cryptoSymbol}';
+      case CryptoTransactionType.deposit:
+        return 'Deposit ${transaction.cryptoSymbol}';
     }
   }
 
@@ -870,6 +967,135 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
+
+  /// Exports the currently-filtered transaction history as a printable PDF and
+  /// opens the system share/print sheet. Standard tabular statement (date,
+  /// type, asset, amount, value, fee, status) — replaces the old fragile PNG
+  /// screenshot which frequently failed on device.
+  Future<void> _downloadStatement() async {
+    final txns = _filteredTransactions;
+    if (txns.isEmpty) {
+      Get.snackbar('Nothing to export', 'There are no transactions to download.',
+          backgroundColor: const Color(0xFF1F1F1F), colorText: Colors.white);
+      return;
+    }
+    setState(() => _isExporting = true);
+    try {
+      final bytes = await _buildStatementPdf(txns);
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename:
+            'Lazervault_Crypto_Statement_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.pdf',
+      );
+    } catch (_) {
+      Get.snackbar('Export failed', 'Could not generate the statement. Please try again.',
+          backgroundColor: const Color(0xFF1F1F1F), colorText: Colors.white);
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<Uint8List> _buildStatementPdf(List<CryptoTransactionHistory> txns) async {
+    final doc = pw.Document();
+    final df = DateFormat('dd MMM yyyy, HH:mm');
+    final now = DateTime.now();
+    final fiatSym = CurrencySymbols.currentSymbol;
+    final fiatCode = CurrencySymbols.currentCurrency.toUpperCase();
+    final totalValue = txns.fold(0.0, (s, t) => s + t.gbpAmount);
+    final totalFees = txns.fold(0.0, (s, t) => s + t.fee);
+    final purple = PdfColor.fromInt(0xFF4E03D0);
+    final grey = PdfColors.grey700;
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(28),
+      build: (ctx) => [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+              pw.Text('Lazervault',
+                  style: pw.TextStyle(
+                      fontSize: 22, fontWeight: pw.FontWeight.bold, color: purple)),
+              pw.SizedBox(height: 2),
+              pw.Text('Crypto Transaction Statement',
+                  style: pw.TextStyle(fontSize: 12, color: grey)),
+            ]),
+            pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
+              pw.Text('Generated', style: pw.TextStyle(fontSize: 9, color: grey)),
+              pw.Text(df.format(now), style: const pw.TextStyle(fontSize: 10)),
+            ]),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Divider(color: PdfColors.grey400),
+        pw.SizedBox(height: 6),
+        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+          pw.Text('${txns.length} transaction(s)',
+              style: pw.TextStyle(fontSize: 10, color: grey)),
+          pw.Text('Amounts in $fiatCode',
+              style: pw.TextStyle(fontSize: 10, color: grey)),
+        ]),
+        pw.SizedBox(height: 12),
+        pw.TableHelper.fromTextArray(
+          headers: ['Date', 'Type', 'Asset', 'Amount', 'Value ($fiatSym)', 'Fee', 'Status'],
+          data: txns
+              .map((t) => [
+                    df.format(t.timestamp),
+                    _pdfLabel(t.type.name),
+                    t.cryptoSymbol.toUpperCase(),
+                    t.amount,
+                    '$fiatSym${t.gbpAmount.toStringAsFixed(2)}',
+                    t.fee > 0 ? '$fiatSym${t.fee.toStringAsFixed(2)}' : '-',
+                    _pdfLabel(t.status.name),
+                  ])
+              .toList(),
+          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+          headerStyle: pw.TextStyle(
+              fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+          headerDecoration: pw.BoxDecoration(color: purple),
+          cellStyle: const pw.TextStyle(fontSize: 9),
+          cellAlignment: pw.Alignment.centerLeft,
+          cellPadding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          columnWidths: {
+            0: const pw.FlexColumnWidth(2.4),
+            1: const pw.FlexColumnWidth(1.2),
+            2: const pw.FlexColumnWidth(1),
+            3: const pw.FlexColumnWidth(1.6),
+            4: const pw.FlexColumnWidth(1.6),
+            5: const pw.FlexColumnWidth(1.2),
+            6: const pw.FlexColumnWidth(1.3),
+          },
+        ),
+        pw.SizedBox(height: 14),
+        pw.Container(
+          alignment: pw.Alignment.centerRight,
+          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
+            pw.Text('Total value: $fiatSym${totalValue.toStringAsFixed(2)}',
+                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 2),
+            pw.Text('Total fees: $fiatSym${totalFees.toStringAsFixed(2)}',
+                style: pw.TextStyle(fontSize: 10, color: grey)),
+          ]),
+        ),
+        pw.SizedBox(height: 16),
+        pw.Text(
+            'This statement was generated by Lazervault for your records. It is not a tax document.',
+            style: pw.TextStyle(fontSize: 8, color: grey)),
+      ],
+      footer: (ctx) => pw.Container(
+        alignment: pw.Alignment.centerRight,
+        margin: const pw.EdgeInsets.only(top: 8),
+        child: pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}',
+            style: pw.TextStyle(fontSize: 8, color: grey)),
+      ),
+    ));
+    return doc.save();
+  }
+
+  String _pdfLabel(String n) =>
+      n.isEmpty ? n : n[0].toUpperCase() + n.substring(1);
 }
 
 // Transaction history model

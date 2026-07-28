@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/customers/domain/entities/customer_finan
 import 'package:lazervault/src/features/customers/domain/entities/customer_note_entity.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
+import 'customer_statement_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class CustomerDetailsScreen extends StatefulWidget {
@@ -148,7 +149,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.r),
-                borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                borderSide: const BorderSide(color: Color(0xFFA78BFA)),
               ),
               contentPadding: EdgeInsets.all(12.w),
             ),
@@ -179,7 +180,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               child: Text(
                 'Add',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFFA78BFA),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -260,6 +261,16 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
           centerTitle: true,
           actions: [
             IconButton(
+              onPressed: () =>
+                  Get.to(() => CustomerStatementScreen(customer: _customer)),
+              icon: Icon(
+                Icons.description_outlined,
+                color: const Color(0xFFA78BFA),
+                size: 22.sp,
+              ),
+              tooltip: 'Statement',
+            ),
+            IconButton(
               onPressed: () async {
                 final result = await Get.toNamed(
                   AppRoutes.editCustomer,
@@ -272,7 +283,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               },
               icon: Icon(
                 Icons.edit_outlined,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFFA78BFA),
                 size: 22.sp,
               ),
               tooltip: 'Edit',
@@ -339,14 +350,14 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             width: 80.w,
             height: 80.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: const Color(0xFFA78BFA).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 _customer.initials,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFFA78BFA),
                   fontSize: 28.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -465,7 +476,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             children: [
               Icon(
                 Icons.label_outlined,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFFA78BFA),
                 size: 18.sp,
               ),
               SizedBox(width: 8.w),
@@ -508,13 +519,13 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                            const Color(0xFFA78BFA).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
                         tag,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFFA78BFA),
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
                         ),
@@ -548,7 +559,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             children: [
               Icon(
                 Icons.account_balance_wallet_outlined,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFFA78BFA),
                 size: 18.sp,
               ),
               SizedBox(width: 8.w),
@@ -620,7 +631,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               children: [
                 Icon(
                   Icons.notes_outlined,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFFA78BFA),
                   size: 18.sp,
                 ),
                 SizedBox(width: 8.w),
@@ -639,7 +650,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFFA78BFA).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
@@ -647,14 +658,14 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   children: [
                     Icon(
                       Icons.add,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFFA78BFA),
                       size: 16.sp,
                     ),
                     SizedBox(width: 4.w),
                     Text(
                       'Add Note',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFFA78BFA),
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -768,7 +779,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF3B82F6), size: 18.sp),
+              Icon(icon, color: const Color(0xFFA78BFA), size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 title,

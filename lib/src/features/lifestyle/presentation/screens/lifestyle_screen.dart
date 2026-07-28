@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/plan_my_day_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_home_screen.dart';
+import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 class NewLifestyleScreen extends StatefulWidget {
@@ -30,19 +33,62 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           children: [
-            // Title
-            Text(
-              'Lifestyle',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              'Celebrate together and stay on top of your day',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            // Title row — support entry pinned to the header's top right.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lifestyle',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Celebrate together and stay on top of your day',
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                      ),
+                    ],
+                  ),
+                ),
+                // P2P messages → financial connections (Get.toNamed pushes it,
+                // so Back returns here to Lifestyle).
+                IconButton(
+                  tooltip: 'Messages',
+                  icon: Icon(
+                    Icons.forum_outlined,
+                    color: const Color(0xFF9CA3AF),
+                    size: 24.sp,
+                  ),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Get.toNamed(AppRoutes.financialConnections);
+                  },
+                ),
+                IconButton(
+                  tooltip: 'Contact support',
+                  icon: Icon(
+                    Icons.support_agent_outlined,
+                    color: const Color(0xFF9CA3AF),
+                    size: 24.sp,
+                  ),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const SupportTicketsScreen()),
+                    );
+                  },
+                ),
+              ],
             ),
             SizedBox(height: 24.h),
 
@@ -106,7 +152,7 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'SprayMe',
+                    'Lazerspray',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 22.sp,

@@ -46,6 +46,10 @@ class _AutomationAirtimeToCashScreenState
   bool _otpSent = false;
   bool _otpVerified = false;
 
+  // Load/verify failures render inline here, not as snackbars
+  // (repo rule: on-widget error states for load failures).
+  String? _errorText;
+
   // Per-network rates + limits are loaded from the backend
   // (GetAirtimeToCashRates → provider GetRates) on screen init and kept
   // in these instance maps. NO values are hardcoded here — if the RPC
@@ -240,12 +244,8 @@ class _AutomationAirtimeToCashScreenState
     // one yet at this point. The only precondition is _otpSent (the user
     // tapped Send OTP and we got a 2000 from /generate/otp).
     if (!_otpSent) {
-      Get.snackbar(
-        'No active OTP',
-        'Please tap "Send OTP" first to receive a verification code.',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
+      setState(() => _errorText =
+          'Please tap "Send OTP" first to receive a verification code.');
       return;
     }
     final phone = _phoneController.text.trim();
@@ -357,6 +357,39 @@ class _AutomationAirtimeToCashScreenState
     }
   }
 
+  Widget _buildInlineError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: const Color(0xFFEF4444),
+                fontWeight: FontWeight.w500,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AirtimeToCashCubit, AirtimeToCashState>(
@@ -367,6 +400,7 @@ class _AutomationAirtimeToCashScreenState
           setState(() {
             _otpSent = true;
             _sessionId = state.sessionId;
+            _errorText = null;
           });
           Get.snackbar(
             'OTP Sent',
@@ -378,6 +412,7 @@ class _AutomationAirtimeToCashScreenState
           setState(() {
             _otpVerified = true;
             _sessionId = state.sessionId;
+            _errorText = null;
           });
           Get.snackbar(
             'Phone Verified',
@@ -392,23 +427,13 @@ class _AutomationAirtimeToCashScreenState
             // transaction PIN bottom sheet. On success, jump straight to the
             // processing screen with the verification token so the backend
             // can validate + execute the automation conversion.
+            setState(() => _errorText = null);
             _openTransactionPinSheet();
           } else {
-            Get.snackbar(
-              'Service Unavailable',
-              state.message,
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              duration: const Duration(seconds: 4),
-            );
+            setState(() => _errorText = state.message);
           }
         } else if (state is AirtimeToCashError) {
-          Get.snackbar(
-            'Error',
-            state.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-          );
+          setState(() => _errorText = state.message);
         }
       },
       child: Scaffold(
@@ -425,6 +450,10 @@ class _AutomationAirtimeToCashScreenState
                     children: [
                       SizedBox(height: 16.h),
                       _buildAutomationBanner(),
+                      if (_errorText != null) ...[
+                        SizedBox(height: 16.h),
+                        _buildInlineError(_errorText!),
+                      ],
                       SizedBox(height: 20.h),
                       _buildNetworkSelection(),
                       if (_isNetworkUnsupportedOnAutomation) ...[

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
 import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 
 
 class DepositCubit extends Cubit<DepositState> {
@@ -30,15 +31,28 @@ class DepositCubit extends Cubit<DepositState> {
     _isProcessing = true;
     emit(DepositLoading());
 
+    // Telemetry: measure initiation latency + record outcome by method.
+    final telemetryStart = DateTime.now();
+    final method = (paymentMethod == null || paymentMethod.isEmpty) ? 'card' : paymentMethod;
+    void recordDeposit(String outcome) {
+      AnalyticsService.instance.trackDepositOutcome(
+        method: method,
+        outcome: outcome,
+        latencyMs: DateTime.now().difference(telemetryStart).inMilliseconds,
+      );
+    }
+
     if (amount <= 0) {
       if (isClosed) return;
       emit(const DepositFailure('Amount must be greater than zero'));
+      recordDeposit('failure');
       return;
     }
 
     if (currency.isEmpty) {
       if (isClosed) return;
       emit(const DepositFailure('Currency must be specified'));
+      recordDeposit('failure');
       return;
     }
 
@@ -61,6 +75,7 @@ class DepositCubit extends Cubit<DepositState> {
             failure.message,
             statusCode: failure.statusCode,
           ));
+          recordDeposit('failure');
         },
         (depositDetails) {
           _isProcessing = false;
@@ -75,9 +90,11 @@ class DepositCubit extends Cubit<DepositState> {
             ));
             // Subscribe to WebSocket for completion callback
             _subscribeToDepositUpdates(depositDetails.depositId);
+            recordDeposit('requires_auth');
           } else {
             emit(DepositSuccess(depositDetails));
             _subscribeToDepositUpdates(depositDetails.depositId);
+            recordDeposit('success');
           }
         },
       );
@@ -85,6 +102,7 @@ class DepositCubit extends Cubit<DepositState> {
       _isProcessing = false;
       if (isClosed) return;
       emit(DepositFailure('An unexpected error occurred: $e'));
+      recordDeposit('failure');
     }
   }
 

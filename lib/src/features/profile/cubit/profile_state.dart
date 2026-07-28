@@ -43,10 +43,17 @@ class ProfileLoaded extends ProfileState {
 class ProfileError extends ProfileState {
   final String message;
 
-  const ProfileError(this.message);
+  /// Underlying failure code (gRPC StatusCode int, or an HTTP-ish code). Lets
+  /// callers distinguish a genuinely revoked session (unauthenticated=16 /
+  /// permissionDenied=7) from a transient network/backend failure — e.g.
+  /// biometric unlock keeps the session on a network blip but clears it on a
+  /// real revocation instead of always saying "Session expired".
+  final int? statusCode;
+
+  const ProfileError(this.message, {this.statusCode});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 class ProfileUpdateSuccess extends ProfileState {

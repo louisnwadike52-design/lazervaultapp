@@ -31,7 +31,7 @@ const _tfDays = {'1H': 1, '4H': 1, '1D': 1, '1W': 7, '1M': 30};
 // _MarketEntry pairs the wire key (e.g. "btcngn") with the human label
 // ("BTC/NGN") and the CoinGecko id ("bitcoin") that getOHLCV expects.
 class _MarketEntry {
-  final String key; // wire key for getOrderBook / getRecentTrades
+  final String key; // wire key for getOrderBook (e.g. "btcngn")
   final String label; // "BTC/NGN"
   final String coingeckoId; // "bitcoin"
   final String symbol; // "btc"
@@ -63,15 +63,24 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
   String _tf = '1D';
   List<OHLCVPoint> _ohlcv = [];
   GetOrderBookResponse? _book;
-  List<TradeEntry> _trades = [];
-  bool _cLoad = true, _bLoad = true, _tLoad = true;
+  bool _cLoad = true, _bLoad = true;
   bool _marketsLoading = true;
-  String? _cErr, _bErr, _tErr;
+  String? _cErr, _bErr;
+  // Set when the market list can't be built (auth/network error or an empty
+  // result). Without this, a failed bootstrap left the tab loaders stuck
+  // `true` forever, so every tab shimmered indefinitely — the "stays on
+  // loading" symptom. Now the body renders a retry instead.
+  String? _marketsErr;
 
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 3, vsync: this);
+    // Two tabs: Chart + Order Book. A "Recent Trades" tab was removed —
+    // Quidax's exchange-open-api exposes /order_book and /k (candles) but has
+    // NO market-trades endpoint (every /markets/<m>/trades path 404s), so the
+    // tab could never load data. Rather than ship a permanently-erroring tab,
+    // we drop it and keep the two surfaces the provider actually serves.
+    _tab = TabController(length: 2, vsync: this);
     _client = serviceLocator<CryptoGrpcClient>();
     _localeManager = serviceLocator<LocaleManager>();
     _bootstrapMarkets();
@@ -80,6 +89,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
   Future<void> _bootstrapMarkets() async {
     setState(() {
       _marketsLoading = true;
+      _marketsErr = null;
     });
     try {
       // Pull a generous page of supported assets in the user's fiat. The
@@ -106,6 +116,12 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
         _markets = markets;
         _market = markets.isNotEmpty ? markets.first.key : '';
         _marketsLoading = false;
+        // Empty result: nothing to load. Stop the tab spinners and show a
+        // retry rather than shimmering forever.
+        _marketsErr = markets.isEmpty ? 'No markets available' : null;
+        if (markets.isEmpty) {
+          _cLoad = _bLoad = false;
+        }
       });
       if (_market.isNotEmpty) {
         _loadAll();
@@ -114,6 +130,10 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
       if (!mounted) return;
       setState(() {
         _marketsLoading = false;
+        _marketsErr = 'Failed to load markets';
+        // Release the tab loaders so the body can render the retry instead of
+        // permanent shimmers.
+        _cLoad = _bLoad = false;
       });
     }
   }
@@ -125,10 +145,14 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
     return _markets.isNotEmpty ? _markets.first : null;
   }
 
+  // Fiat code for price labels — follows the selected market's currency so a
+  // GHS/KES/etc. user sees the right label instead of a hardcoded "NGN".
+  String get _fiatLabel => (_selectedMarket?.fiat ?? 'ngn').toUpperCase();
+
   @override
   void dispose() { _tab.dispose(); super.dispose(); }
 
-  Future<void> _loadAll() => Future.wait([_loadChart(), _loadBook(), _loadTrades()]);
+  Future<void> _loadAll() => Future.wait([_loadChart(), _loadBook()]);
 
   Future<void> _loadChart() async {
     final m = _selectedMarket;
@@ -154,15 +178,6 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
     } catch (_) { if (mounted) setState(() { _bErr = 'Failed to load order book'; _bLoad = false; }); }
   }
 
-  Future<void> _loadTrades() async {
-    setState(() { _tLoad = true; _tErr = null; });
-    try {
-      final r = await _client.getRecentTrades(_market);
-      if (!mounted) return;
-      setState(() { _trades = r.trades.toList(); _tLoad = false; });
-    } catch (_) { if (mounted) setState(() { _tErr = 'Failed to load trades'; _tLoad = false; }); }
-  }
-
   void _setMarket(String? m) { if (m != null && m != _market) { setState(() => _market = m); _loadAll(); } }
   void _setTf(String t) { if (t != _tf) { setState(() => _tf = t); _loadChart(); } }
 
@@ -180,10 +195,14 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
             controller: _tab, indicatorColor: _accent, indicatorWeight: 2,
             labelColor: _txt, unselectedLabelColor: _txt2,
             labelStyle: _inter(14.sp, w: FontWeight.w600), unselectedLabelStyle: _inter(14.sp),
-            tabs: const [Tab(text: 'Chart'), Tab(text: 'Order Book'), Tab(text: 'Trades')],
+            tabs: const [Tab(text: 'Chart'), Tab(text: 'Order Book')],
           ),
         ),
-        Expanded(child: TabBarView(controller: _tab, children: [_chartTab(), _bookTab(), _tradesTab()])),
+        Expanded(
+          child: (!_marketsLoading && _market.isEmpty)
+              ? _Err(_marketsErr ?? 'No markets available', _bootstrapMarkets)
+              : TabBarView(controller: _tab, children: [_chartTab(), _bookTab()]),
+        ),
       ])),
     );
   }
@@ -238,7 +257,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
     final chg = first.open > 0 ? ((last.close - first.open) / first.open) * 100 : 0.0;
     final up = chg >= 0;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('NGN ${NumberFormat('#,##0.00').format(last.close)}', style: _inter(26.sp, w: FontWeight.bold)),
+      Text('$_fiatLabel ${NumberFormat('#,##0.00').format(last.close)}', style: _inter(26.sp, w: FontWeight.bold)),
       SizedBox(height: 4.h),
       Row(children: [
         Icon(up ? Icons.arrow_drop_up : Icons.arrow_drop_down, color: up ? _green : _red, size: 20.sp),
@@ -368,49 +387,11 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
   Widget _bookHeader() => Padding(
     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
     child: Row(children: [
-      Expanded(child: Text('Price (NGN)', style: _inter(11.sp, c: _txt2))),
+      Expanded(child: Text('Price ($_fiatLabel)', style: _inter(11.sp, c: _txt2))),
       Expanded(child: Text('Volume', textAlign: TextAlign.center, style: _inter(11.sp, c: _txt2))),
       Expanded(child: Text('Total', textAlign: TextAlign.right, style: _inter(11.sp, c: _txt2))),
     ]),
   );
-
-  // -- Trades Tab --
-  Widget _tradesTab() {
-    if (_tLoad) return _shimmerList(15);
-    if (_tErr != null) return _Err(_tErr!, _loadTrades);
-    if (_trades.isEmpty) return Center(child: Text('No recent trades', style: _inter(14.sp, c: _txt2)));
-    return Column(children: [
-      Padding(padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h), child: Row(children: [
-        Expanded(flex: 2, child: Text('Time', style: _inter(11.sp, c: _txt2))),
-        Expanded(flex: 3, child: Text('Price (NGN)', textAlign: TextAlign.center, style: _inter(11.sp, c: _txt2))),
-        Expanded(flex: 2, child: Text('Amount', textAlign: TextAlign.right, style: _inter(11.sp, c: _txt2))),
-        Expanded(flex: 1, child: Text('Side', textAlign: TextAlign.right, style: _inter(11.sp, c: _txt2))),
-      ])),
-      const Divider(color: _div, height: 1),
-      Expanded(child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: _trades.length,
-        itemBuilder: (_, i) => _tradeRow(_trades[i]),
-      )),
-    ]);
-  }
-
-  Widget _tradeRow(TradeEntry t) {
-    final buy = t.side.toLowerCase() == 'buy'; final c = buy ? _green : _red;
-    final p = double.tryParse(t.price) ?? 0; final v = double.tryParse(t.volume) ?? 0;
-    String time = '--:--';
-    if (t.hasCreatedAt()) time = DateFormat('HH:mm:ss').format(DateTime.fromMillisecondsSinceEpoch(t.createdAt.seconds.toInt() * 1000));
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: _div, width: 0.5))),
-      child: Row(children: [
-        Expanded(flex: 2, child: Text(time, style: _inter(11.sp, c: _txt2))),
-        Expanded(flex: 3, child: Text(NumberFormat('#,##0.00').format(p), textAlign: TextAlign.center, style: _inter(12.sp, w: FontWeight.w500, c: c))),
-        Expanded(flex: 2, child: Text(v.toStringAsFixed(6), textAlign: TextAlign.right, style: _inter(11.sp))),
-        Expanded(flex: 1, child: Text(buy ? 'BUY' : 'SELL', textAlign: TextAlign.right, style: _inter(10.sp, w: FontWeight.w700, c: c))),
-      ]),
-    );
-  }
 
   Widget _shimmerList(int n) => ListView.builder(
     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h), itemCount: n,

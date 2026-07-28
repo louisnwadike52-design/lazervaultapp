@@ -9,6 +9,8 @@ import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
 
@@ -38,14 +40,67 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   String _accountScopedKey(String userId, String accountId) =>
       '$userId::$accountId';
 
+  final IPaymentsTransferDataSource? _paymentsDataSource;
+
   TransactionHistoryRepositoryGrpc({
     required this.grpcClient,
     required this.accountManager,
     required this.localeManager,
     TransactionHistoryCacheDataSource? cacheDataSource,
     FlutterSecureStorage? storage,
+    IPaymentsTransferDataSource? paymentsDataSource,
   })  : cacheDataSource = cacheDataSource ?? TransactionHistoryCacheDataSource(),
-        storage = storage ?? const FlutterSecureStorage();
+        storage = storage ?? const FlutterSecureStorage(),
+        _paymentsDataSource = paymentsDataSource;
+
+  /// Core-payments data source for merging EXTERNAL transfers (pending/failed
+  /// too). Resolved lazily from the service locator when not injected, so DI
+  /// registrations don't have to change.
+  IPaymentsTransferDataSource? get _payments {
+    if (_paymentsDataSource != null) return _paymentsDataSource;
+    try {
+      return serviceLocator<IPaymentsTransferDataSource>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Merge accounts-service ledger rows with core-payments external transfers,
+  /// deduping by base reference + flow (a COMPLETED external transfer is in
+  /// BOTH sources). Ledger rows win (richer fields); external fills in the
+  /// pending/failed ones the ledger never records. Newest-first.
+  List<UnifiedTransaction> _mergeExternalTransfers(
+      List<UnifiedTransaction> ledger, List<UnifiedTransaction> external) {
+    String keyFor(UnifiedTransaction tx) {
+      // An external-transfer CAPTURE ledger row is named HOLD-CAP-<reserveId>
+      // but carries the real payment reference (TRF-…) in metadata; the payments
+      // source keys the same transfer as TRF-… . So ONLY for capture rows do we
+      // prefer the metadata reference — that makes the two sources collide on
+      // one key and stops a COMPLETED external transfer being listed twice.
+      // Every other ledger row keeps its own reference, so unrelated rows that
+      // happen to share a metadata.reference are never over-collapsed.
+      final selfRef = tx.transactionReference ?? tx.id;
+      final metaRef = (tx.metadata?['reference'] as String?)?.trim();
+      final ref = (selfRef.startsWith('HOLD-CAP') &&
+              metaRef != null &&
+              metaRef.isNotEmpty)
+          ? metaRef
+          : selfRef;
+      final base =
+          ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
+      return '${base}_${tx.flow.name}';
+    }
+
+    final byKey = <String, UnifiedTransaction>{};
+    for (final tx in ledger) {
+      byKey[keyFor(tx)] = tx;
+    }
+    for (final tx in external) {
+      byKey.putIfAbsent(keyFor(tx), () => tx);
+    }
+    return byKey.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
 
   @override
   Future<TransactionListResponse> fetchAllTransactions({
@@ -92,6 +147,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
               currentPage: page,
               totalPages: 1,
               nextCursor: null,
+              // Stale subset (no external-transfer merge, capped hasMore) —
+              // the cubit follows up with a background network refresh.
+              fromCache: true,
             );
           }
         } catch (e) {
@@ -130,6 +188,84 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       // Convert proto transactions to unified transactions
       var transactions = response.transactions.map(_convertFromProto).toList();
+
+      // MERGE core-payments EXTERNAL transfers (pending / processing / failed /
+      // reversed too). A failed or still-pending external transfer never reaches
+      // the accounts-service ledger (only a hold CAPTURE writes a ledger row),
+      // so without this it silently never appears in history. Merge on page 1 of
+      // an UNFILTERED view (the "all recent" list the dashboard + send-funds
+      // history use); dedupe by reference so a COMPLETED external transfer
+      // (present in BOTH sources) isn't double-listed.
+      final statusFilters =
+          filters?.statuses ?? const <UnifiedTransactionStatus>[];
+      final serviceFilters =
+          filters?.serviceTypes ?? const <TransactionServiceType>[];
+      final hasCounterparty = (filters?.counterpartyAccount?.isNotEmpty) ?? false;
+      final unfiltered = statusFilters.isEmpty &&
+          serviceFilters.isEmpty &&
+          !hasCounterparty &&
+          filters?.startDate == null &&
+          filters?.endDate == null;
+
+      // The external supplement matters not only to the unfiltered "all recent"
+      // view but also when the user explicitly filters by a status the ledger
+      // can NEVER hold for an external transfer (pending/processing/failed/
+      // refunded/cancelled/expired — only a CAPTURE writes a ledger row) or by
+      // the Transfers service. Without this, filtering "Failed" drops the exact
+      // failed transfers the user is trying to see. We fetch the whole external
+      // list and post-filter it locally to match the active filters. Skipped
+      // when filtering by a specific counterparty account (the external source
+      // isn't keyed that way).
+      const externalOnlyStatuses = {
+        UnifiedTransactionStatus.pending,
+        UnifiedTransactionStatus.processing,
+        UnifiedTransactionStatus.failed,
+        UnifiedTransactionStatus.refunded, // provider 'reversed' maps here
+        UnifiedTransactionStatus.cancelled,
+        UnifiedTransactionStatus.expired,
+      };
+      final wantsExternalStatus =
+          statusFilters.any(externalOnlyStatuses.contains);
+      final wantsTransferService =
+          serviceFilters.contains(TransactionServiceType.transfer);
+      final mergeRelevant =
+          unfiltered || wantsExternalStatus || wantsTransferService;
+
+      if (page == 1 && mergeRelevant && !hasCounterparty) {
+        try {
+          var external = await _payments?.getExternalTransferHistory(
+                accountId: accountId,
+                limit: 200,
+              ) ??
+              const <UnifiedTransaction>[];
+          // Post-filter the external rows to match the active status/service/
+          // date filters (the backend filter only ran against ledger rows).
+          if (statusFilters.isNotEmpty) {
+            external =
+                external.where((tx) => statusFilters.contains(tx.status)).toList();
+          }
+          if (serviceFilters.isNotEmpty) {
+            external = external
+                .where((tx) => serviceFilters.contains(tx.serviceType))
+                .toList();
+          }
+          if (filters?.startDate != null) {
+            external = external
+                .where((tx) => !tx.createdAt.isBefore(filters!.startDate!))
+                .toList();
+          }
+          if (filters?.endDate != null) {
+            external = external
+                .where((tx) => !tx.createdAt.isAfter(filters!.endDate!))
+                .toList();
+          }
+          if (external.isNotEmpty) {
+            transactions = _mergeExternalTransfers(transactions, external);
+          }
+        } catch (_) {
+          // best-effort — never fail history because of the supplement
+        }
+      }
 
       // Apply local search filter if set
       if (filters?.searchQuery?.isNotEmpty == true) {
@@ -205,6 +341,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
               currentPage: page,
               totalPages: 1,
               nextCursor: null,
+              // Stale subset — cubit follows up with a background refresh.
+              fromCache: true,
             );
           }
         } catch (e) {
@@ -447,7 +585,11 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   /// Convert proto Transaction to UnifiedTransaction
   UnifiedTransaction _convertFromProto(Transaction protoTx) {
     // Parse createdAt from ISO8601 string
-    final createdAt = DateTime.tryParse(protoTx.createdAt) ?? DateTime.now();
+    // Server sends UTC; normalize to LOCAL so history lists, detail, receipts
+    // AND day-grouping (which uses timezone-dependent .day/.month/.year) all
+    // render in the user's timezone and match optimistic DateTime.now() items.
+    final createdAt =
+        DateTime.tryParse(protoTx.createdAt)?.toLocal() ?? DateTime.now();
 
     // Determine transaction flow from type
     final flow = protoTx.type.toLowerCase() == 'credit'
@@ -464,6 +606,17 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Infer service type from category when service_name is missing
       serviceType = _inferServiceTypeFromCategory(
           protoTx.category, protoTx.type, protoTx.description, protoTx.reference);
+    }
+
+    // The utility-payments service serves airtime/data/electricity/water/tv/
+    // internet/education/epin/betting under ONE backend service name, so the
+    // service-name map returns the FIRST match (electricity) for all of them —
+    // which is why ePIN/betting/etc. previously showed as "Electricity".
+    // Disambiguate the specific bill type from the reference prefix / text.
+    if (protoTx.serviceName == 'utility-payments-service' ||
+        _looksLikeUtilityRef(protoTx.reference)) {
+      serviceType = _refineUtilityServiceType(
+          serviceType, protoTx.reference, protoTx.description, protoTx.category);
     }
 
     // Map status
@@ -565,12 +718,27 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     if (counterpartyName != null && counterpartyName.isNotEmpty) {
       final categoryLower = protoTx.category.toLowerCase();
       final typeLower = protoTx.type.toLowerCase();
-      if (categoryLower.contains('transfer')) {
+      final isInternational =
+          protoTx.description.toLowerCase().contains('international') ||
+              (metadata['exchange_type'] as String?) == 'international';
+      if (isInternational) {
+        title = 'International transfer to $counterpartyName';
+      } else if (categoryLower.contains('transfer') ||
+          _domainFromText(protoTx.category, protoTx.description, protoTx.reference) == 'transfer') {
         title = typeLower == 'credit'
             ? 'Transfer from $counterpartyName'
             : 'Transfer to $counterpartyName';
       }
     }
+
+    // Prefer the ORIGINATING reference stashed in metadata (TRF-…, C2C-…,
+    // DEP-…) over the ledger row's internal bookkeeping reference
+    // (HOLD-CAP-{holdID}, IDEM-…) — the internal one means nothing to the
+    // user and doesn't match the receipt/provider trail.
+    final metaReference = metadata['reference'] as String?;
+    final displayReference = (metaReference != null && metaReference.isNotEmpty)
+        ? metaReference
+        : (protoTx.reference.isNotEmpty ? protoTx.reference : null);
 
     return UnifiedTransaction(
       id: protoTx.id,
@@ -582,7 +750,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       createdAt: createdAt,
       status: status,
       flow: flow,
-      transactionReference: protoTx.reference.isNotEmpty ? protoTx.reference : null,
+      transactionReference: displayReference,
       metadata: metadata.isNotEmpty ? metadata : null,
       counterpartyName: counterpartyName,
       counterpartyAccount: counterpartyAccount,
@@ -600,6 +768,12 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     if (s.contains('crypto') || s.contains('crypto-')) return 'crypto';
     if (s.contains('gift') || RegExp(r'\bgc-').hasMatch(s)) return 'giftcard';
     if (s.contains('insurance') || RegExp(r'\bins-').hasMatch(s)) return 'insurance';
+    // External bank transfers capture a hold too (category 'hold_capture',
+    // description "Transfer to {name}", metadata.reference "TRF-…") — without
+    // this rule a completed send-funds transfer read as "Gift Card Purchase".
+    if (s.contains('transfer') || s.contains('trf-') || s.contains('c2c-')) {
+      return 'transfer';
+    }
     return '';
   }
 
@@ -624,9 +798,20 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       return 'Insurance Payment';
     }
 
-    if (categoryLower.contains('airtime')) {
+    if (_looksLikeEPinRef(reference) ||
+        categoryLower.contains('epin') ||
+        _text(description, category).contains('recharge card')) {
+      return typeLower == 'credit'
+          ? 'Recharge Card Refund'
+          : 'Recharge Card Purchase';
+    } else if (_looksLikeBettingRef(reference) ||
+        categoryLower.contains('betting') ||
+        _text(description, category).contains('betting')) {
+      return typeLower == 'credit' ? 'Betting Refund' : 'Betting Wallet Funding';
+    } else if (categoryLower.contains('airtime')) {
       return typeLower == 'credit' ? 'Airtime Top-up' : 'Airtime Purchase';
-    } else if (categoryLower.contains('transfer')) {
+    } else if (categoryLower.contains('transfer') ||
+        _domainFromText(category, description, reference) == 'transfer') {
       return typeLower == 'credit' ? 'Transfer Received' : 'Transfer Sent';
     } else if (categoryLower.contains('gift_card_sell') || categoryLower.contains('sell_payout')) {
       return 'Gift Card Sale';
@@ -691,10 +876,22 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     if (cat.contains('insurance') || domain == 'insurance') {
       return TransactionServiceType.insurance;
     }
+    // Transfers before the generic hold_capture→giftCard fallback — an
+    // external bank transfer's capture row is category 'hold_capture' with
+    // "Transfer to {name}" in the description.
+    if (cat.contains('transfer') || domain == 'transfer') {
+      return TransactionServiceType.transfer;
+    }
     if (cat.contains('gift_card') || cat.contains('hold_capture') || cat.contains('giftcard')) {
       return TransactionServiceType.giftCard;
-    } else if (cat.contains('transfer')) {
-      return TransactionServiceType.transfer;
+    } else if (_looksLikeEPinRef(reference) ||
+        cat.contains('epin') ||
+        _text(description, category).contains('recharge card')) {
+      return TransactionServiceType.epin;
+    } else if (_looksLikeBettingRef(reference) ||
+        cat.contains('betting') ||
+        _text(description, category).contains('betting')) {
+      return TransactionServiceType.betting;
     } else if (cat.contains('airtime')) {
       return TransactionServiceType.airtime;
     } else if (cat.contains('electricity')) {
@@ -713,6 +910,93 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       return TransactionServiceType.insurance;
     }
     return TransactionServiceType.unknown;
+  }
+
+  String _text(String description, String category) =>
+      '${description.toLowerCase()} ${category.toLowerCase()}';
+
+  /// ePIN references are minted as `EPIN-...` (holds as `HOLD-EPIN-...`,
+  /// reversals as `REV-EPIN-...`), so the prefix is authoritative.
+  bool _looksLikeEPinRef(String reference) {
+    final r = reference.toLowerCase();
+    return r.startsWith('epin') ||
+        r.startsWith('hold-epin') ||
+        r.contains('-epin-') ||
+        r.contains('epin');
+  }
+
+  /// Betting-wallet funding references are minted as `BET-...`.
+  bool _looksLikeBettingRef(String reference) {
+    final r = reference.toLowerCase();
+    return r.startsWith('bet-') ||
+        r.startsWith('hold-bet-') ||
+        r.contains('-bet-');
+  }
+
+  /// True when a reference looks like it belongs to any utility-payments bill —
+  /// used to trigger disambiguation even if service_name wasn't stamped.
+  bool _looksLikeUtilityRef(String reference) {
+    return _looksLikeEPinRef(reference) || _looksLikeBettingRef(reference);
+  }
+
+  /// The utility-payments family (airtime/data/electricity/water/tv/internet/
+  /// education/epin/betting) shares ONE backend service name, so mapping by
+  /// service name alone collapses them all onto the first match (electricity).
+  /// Refine to the specific bill type using the reference prefix (authoritative)
+  /// then the description/category text. Only acts on utility/unknown inputs and
+  /// only when it finds a positive signal, so it never mislabels other services.
+  TransactionServiceType _refineUtilityServiceType(
+    TransactionServiceType current,
+    String reference,
+    String description,
+    String category,
+  ) {
+    const utility = {
+      TransactionServiceType.electricity,
+      TransactionServiceType.airtime,
+      TransactionServiceType.data,
+      TransactionServiceType.water,
+      TransactionServiceType.tvSubscription,
+      TransactionServiceType.internet,
+      TransactionServiceType.education,
+      TransactionServiceType.betting,
+      TransactionServiceType.epin,
+      TransactionServiceType.unknown,
+    };
+    if (!utility.contains(current)) return current;
+
+    final text = _text(description, category);
+    bool has(String kw) => text.contains(kw);
+
+    // Reference prefixes are authoritative.
+    if (_looksLikeEPinRef(reference) || has('recharge card') || has('epin')) {
+      return TransactionServiceType.epin;
+    }
+    if (_looksLikeBettingRef(reference) || has('betting')) {
+      return TransactionServiceType.betting;
+    }
+    if (has('airtime')) return TransactionServiceType.airtime;
+    if (has('data bundle') || has('data plan') || has('mobile data')) {
+      return TransactionServiceType.data;
+    }
+    if (has('electricity') || has('meter') || has('prepaid') || has('postpaid')) {
+      return TransactionServiceType.electricity;
+    }
+    if (has('water')) return TransactionServiceType.water;
+    if (has('cable') ||
+        has('dstv') ||
+        has('gotv') ||
+        has('startimes') ||
+        has('tv subscription')) {
+      return TransactionServiceType.tvSubscription;
+    }
+    if (has('internet') || has('broadband')) {
+      return TransactionServiceType.internet;
+    }
+    if (has('education') || has('waec') || has('jamb')) {
+      return TransactionServiceType.education;
+    }
+    return current;
   }
 
   /// Map TransactionServiceType to service name string using centralized mapping
@@ -783,6 +1067,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         return 'refunded';
       case UnifiedTransactionStatus.expired:
         return 'expired';
+      case UnifiedTransactionStatus.scheduled:
+        return 'scheduled';
     }
   }
 
@@ -796,6 +1082,18 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     if (statusLower == 'cancelled') return UnifiedTransactionStatus.cancelled;
     if (statusLower == 'refunded') return UnifiedTransactionStatus.refunded;
     if (statusLower == 'expired') return UnifiedTransactionStatus.expired;
+    // A future-dated transfer not yet fired — keep it distinct so it renders
+    // "Scheduled" instead of collapsing to Pending below.
+    if (statusLower == 'scheduled') return UnifiedTransactionStatus.scheduled;
+    // A provider reversal of a completed transfer stamps 'reversed'; surface it
+    // as Refunded (money-returned) rather than falling through to Pending —
+    // otherwise a reversed transfer reads as still in-flight. Also accept the
+    // provider's success synonyms so a 'success'/'successful' ledger row isn't
+    // mislabelled Pending.
+    if (statusLower == 'reversed') return UnifiedTransactionStatus.refunded;
+    if (statusLower == 'success' || statusLower == 'successful') {
+      return UnifiedTransactionStatus.completed;
+    }
     return UnifiedTransactionStatus.pending;
   }
 }

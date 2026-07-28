@@ -133,11 +133,15 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
     final network = args['network'] as String? ?? '';
     final phoneNumber = args['phoneNumber'] as String? ?? purchase.phoneNumber;
     final saveBeneficiary = args['saveBeneficiary'] as bool? ?? false;
+    final nickname = (args['nickname'] as String?)?.trim();
+    // Already-saved recipient: the QuickBuy resolved the existing beneficiary,
+    // so reuse its id (skip the duplicate save) and still attach auto-renew.
+    final existingBeneficiaryId = args['existingBeneficiaryId'] as String?;
     final autoRenewEnabled = args['autoRenewEnabled'] as bool? ?? false;
     final rolloverPref = args['rolloverPreference'] as RolloverPreference?;
 
-    String? beneficiaryId;
-    if (saveBeneficiary && phoneNumber.isNotEmpty) {
+    String? beneficiaryId = existingBeneficiaryId;
+    if (saveBeneficiary && beneficiaryId == null && phoneNumber.isNotEmpty) {
       try {
         final rawName = args['networkName'] as String? ?? '';
         final networkName = _resolveNetworkName(network, rawName);
@@ -151,6 +155,7 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
             phoneNumber: phoneNumber,
             networkCode: network,
             networkName: networkName,
+            nickname: (nickname?.isNotEmpty ?? false) ? nickname : null,
           );
           beneficiaryId = saved.id;
         }

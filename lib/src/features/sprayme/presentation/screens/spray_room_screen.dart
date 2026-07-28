@@ -5,9 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_state.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_live_cubit.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_live_state.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_live_video_layer.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/floating_emoji_animation.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/gift_banner_overlay.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/gift_entrance_animation.dart';
@@ -20,18 +24,26 @@ import 'package:lazervault/src/features/sprayme/presentation/widgets/gift_shop_s
 import 'package:lazervault/src/features/sprayme/presentation/widgets/money_spray_sheet.dart';
 import 'package:lazervault/src/features/sprayme/presentation/widgets/buy_gift_credit_sheet.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/app_activity_bus.dart';
 import 'package:lazervault/src/features/sprayme/data/gift_catalog_defaults.dart';
 import 'package:lazervault/src/features/sprayme/services/gift_sound_service.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_websocket_service.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_chat_service.dart';
+import 'package:lazervault/src/features/sprayme/services/spray_lazerai_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// The main spray room - TikTok-like full-screen immersive experience.
 /// Shows host avatar/image, real-time spray animations, gift effects,
 /// like counter, comments, and action buttons.
-class SprayRoomScreen extends StatefulWidget {
+///
+/// Thin wrapper that provides [SprayLiveCubit] ABOVE the stateful view, so the
+/// view's State.context can `read` it from anywhere (including modal sheets) —
+/// providing it inside the view's own build() would make State.context an
+/// ancestor of the provider → ProviderNotFound on `context.read`.
+class SprayRoomScreen extends StatelessWidget {
   final String sessionId;
   final String accessToken;
 
@@ -42,10 +54,28 @@ class SprayRoomScreen extends StatefulWidget {
   });
 
   @override
-  State<SprayRoomScreen> createState() => _SprayRoomScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<SprayLiveCubit>(
+      create: (_) => serviceLocator<SprayLiveCubit>(),
+      child: _SprayRoomView(sessionId: sessionId, accessToken: accessToken),
+    );
+  }
 }
 
-class _SprayRoomScreenState extends State<SprayRoomScreen>
+class _SprayRoomView extends StatefulWidget {
+  final String sessionId;
+  final String accessToken;
+
+  const _SprayRoomView({
+    required this.sessionId,
+    required this.accessToken,
+  });
+
+  @override
+  State<_SprayRoomView> createState() => _SprayRoomViewState();
+}
+
+class _SprayRoomViewState extends State<_SprayRoomView>
     with TickerProviderStateMixin {
   // Animation layers
   final List<Widget> _floatingEmojis = [];
@@ -65,9 +95,24 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
   // TikTok-style tap like counter
   final _tapLikeKey = GlobalKey<TapLikeCounterOverlayState>();
 
+  // Live video: guards one-time bind of the SprayLiveCubit to the session.
+  bool _liveBound = false;
+
   // Money spray mode
   bool _isSprayMode = false;
   int _sprayTapCount = 0; // ignore: unused_field — tracked for future spray limit UI
+
+  // Immersive mode: long-press the live to hide all chrome (top bar, rail,
+  // comments, input) for an unobstructed view — TikTok-style. Back stays.
+  bool _immersive = false;
+
+  // Last comment id checked for an @mention of me (so we toast once per tag).
+  String? _lastMentionCommentId;
+
+  // Current user id from auth — the reliable identity for host detection,
+  // live-video bind and seat-target checks. Derived independently of the wallet
+  // (which loads best-effort) so a wallet failure never kills the live plane.
+  String? _authUserId;
 
   // Spray tap debounce — prevent rapid-fire API calls
   DateTime? _lastSprayTapTime;
@@ -78,6 +123,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
 
   // Sound service
   final _soundService = GiftSoundService();
+  final _lazerAi = serviceLocator<SprayLazerAiService>();
 
   // Tap position tracking for tap-origin animations
   Offset? _lastTapPosition;
@@ -88,25 +134,84 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
   // Pending like count for batch API calls (optimistic updates go through immediately)
   int _pendingLikeCount = 0;
 
+  // Captured SprayRoomCubit ref so dispose() can flush pending likes without a
+  // context lookup after the element is deactivated.
+  SprayRoomCubit? _roomCubitRef;
+
   final _random = Random();
 
   @override
   void initState() {
     super.initState();
+    // Being in a live spray room (broadcasting OR watching the stream) is
+    // engagement even with no touches — like a call. Heartbeat the inactivity
+    // watcher so it never auto-logs-out mid-livestream. Stops on dispose (leave
+    // room), after which normal inactivity timing resumes.
+    AppActivityBus.instance.ping();
+    _engagementTimer = Timer.periodic(
+        const Duration(seconds: 15), (_) => AppActivityBus.instance.ping());
+    // Resolve the auth user id up front (independent of the wallet).
+    serviceLocator<SecureStorageService>().getUserId().then((id) {
+      if (mounted && id != null && id.isNotEmpty) {
+        setState(() => _authUserId = id);
+        // If the wallet already loaded (or failed) before the auth id arrived,
+        // this is what finally lets the live plane bind.
+        _maybeBindLive(context.read<SprayRoomCubit>().state);
+      }
+    });
     // Listen to WebSocket events for animations
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cubit = context.read<SprayRoomCubit>();
+      _roomCubitRef = cubit; // captured so dispose can flush pending likes safely
       cubit.initRoom(widget.sessionId, widget.accessToken);
     });
   }
 
+  /// The signed-in user's id — wallet first (authoritative in-session), else the
+  /// auth id, so the live plane binds even when the wallet fails to load.
+  String _resolveMyId(SprayRoomState state) {
+    final w = state.wallet?.userId ?? '';
+    if (w.isNotEmpty) return w;
+    return _authUserId ?? '';
+  }
+
+  /// Bind (or refresh) the live-video cubit once the session + our identity are
+  /// known. Safe to call repeatedly — binds once, then just updates the session.
+  void _maybeBindLive(SprayRoomState state) {
+    final session = state.session;
+    if (session == null) return;
+    if (!_liveBound) {
+      final myId = _resolveMyId(state);
+      if (myId.isEmpty) return; // wait for wallet or auth id
+      _liveBound = true;
+      context.read<SprayLiveCubit>().bind(session, myId);
+    } else {
+      context.read<SprayLiveCubit>().updateSession(session);
+    }
+  }
+
   @override
   void dispose() {
+    // Flush any pending like taps before teardown so a quick tap-then-leave
+    // doesn't silently drop them (best-effort; the cubit self-guards isClosed).
+    if (_pendingLikeCount > 0 && _roomCubitRef != null) {
+      final count = _pendingLikeCount;
+      _pendingLikeCount = 0;
+      try {
+        _roomCubitRef!.sendLike(count: count);
+      } catch (_) {}
+    }
     _isDisposed = true;
+    _engagementTimer?.cancel();
     // Cancel pending like batch timer
     _likeBatchTimer?.cancel();
-    // Stop and release audio to prevent sounds continuing after exit
-    _soundService.setEnabled(false);
+    // Stop the LazerAI wake-word listener
+    _lazerAi.stopWakeWord();
+    // Stop and release THIS room's audio. Do NOT setEnabled(false): GiftSoundService
+    // is a process-wide singleton, so disabling it here silences gift/like/spray
+    // sounds in every future room until app restart. dispose() stops+releases the
+    // player, which is lazily recreated on the next play.
+    _soundService.stopAll();
     _soundService.dispose();
     super.dispose();
   }
@@ -312,8 +417,15 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
     if (state.recentEvents.isEmpty) return;
     final event = state.recentEvents.first;
 
+    // Skip animations for OUR OWN gift/spray echoes — the local send path
+    // already played them instantly. Without this the sender sees every banner /
+    // entrance / spray-note twice (once local, once from the WS echo).
+    final myId = _resolveMyId(state);
+    final isSelfEcho = myId.isNotEmpty && event.senderId == myId;
+
     switch (event.type) {
       case 'gift_sent':
+        if (isSelfEcho) return;
         final giftId = event.data['gift_id'] as String? ?? '';
         final emoji = event.data['gift_emoji'] as String? ?? '';
         final giftName = event.data['gift_name'] as String? ?? 'gift';
@@ -378,6 +490,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         }
 
       case 'money_sprayed':
+        if (isSelfEcho) return;
         final tapCount = (event.data['tap_count'] as num?)?.toInt() ?? 1;
         final denom = (event.data['denomination'] as num?)?.toInt() ?? 20000;
         final totalAmount = (event.data['total_amount'] as num?)?.toInt() ?? 0;
@@ -418,6 +531,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         break;
 
       case 'participant_joined':
+        if (isSelfEcho) return; // don't wave at ourselves on our own join
         _addFloatingEmoji('\u{1F44B}'); // wave emoji
 
       case 'session_ended':
@@ -521,6 +635,8 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
   }
 
   Timer? _likeBatchTimer;
+  // Keeps the inactivity auto-logout at bay while the live room is on screen.
+  Timer? _engagementTimer;
 
   void _scheduleLikeBatch(SprayRoomCubit cubit) {
     // Cancel existing timer to extend the batch window
@@ -540,10 +656,11 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
   void _sendLikeBatch(SprayRoomCubit cubit) {
     if (_pendingLikeCount == 0 || _isDisposed) return;
 
-    // Reset pending count and send a single sync call
-    // Server returns authoritative total — we only need one call to sync
+    // Flush the accumulated taps as ONE call carrying the batch count, so the
+    // server accumulates every tap (TikTok-style) — not just one per sync.
+    final count = _pendingLikeCount;
     _pendingLikeCount = 0;
-    cubit.sendLike();
+    cubit.sendLike(count: count);
   }
 
   // ─── Comments Sheet ───────────────────────────────────────
@@ -574,14 +691,101 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
 
   @override
   Widget build(BuildContext context) {
+    // SprayLiveCubit is provided by the SprayRoomScreen wrapper (above this
+    // State), so context.read<SprayLiveCubit>() works everywhere here.
+    // Run the on-device "lazerai" wake-word only while WE publish audio (the
+    // speaker), so a mention summons the voice agent into the live.
+    //
+    // PopScope intercepts the Android system back (and any pop) so a host who
+    // is live doesn't just walk out leaving the stream up (viewers would sit on
+    // "Waiting for video…" forever). See _handleBackPressed.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPressed();
+      },
+      child: BlocListener<SprayLiveCubit, SprayLiveState>(
+        listenWhen: (p, c) => p.isBroadcaster != c.isBroadcaster,
+        listener: (context, live) {
+          final sid = context.read<SprayRoomCubit>().state.session?.id ?? '';
+          if (sid.isEmpty) return;
+          if (live.isBroadcaster) {
+            _lazerAi.startWakeWord(sid);
+          } else {
+            _lazerAi.stopWakeWord();
+          }
+        },
+        child: _buildRoom(context),
+      ),
+    );
+  }
+
+  /// Unified back/leave handler for the room. A HOST who is currently live is
+  /// asked to confirm — leaving ends the broadcast (StopStream) so viewers
+  /// aren't stranded on a dead stream; the session itself stays open. Everyone
+  /// else just notifies the server they left. Used by the system back
+  /// (PopScope), the top-bar back, and the immersive back.
+  Future<void> _handleBackPressed() async {
+    if (!mounted) return;
+    final roomCubit = context.read<SprayRoomCubit>();
+    final liveCubit = context.read<SprayLiveCubit>();
+    final amHost = _isHost(roomCubit.state);
+    final hostIsLive = amHost && liveCubit.state.isLiveActive;
+
+    if (hostIsLive) {
+      final leave = await showDialog<bool>(
+        context: context,
+        builder: (dctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          title: const Text('Leave live room?',
+              style: TextStyle(color: Colors.white)),
+          content: const Text(
+            'Your broadcast will end and viewers will stop seeing your video. '
+            'The session stays open — you can go live again anytime.',
+            style: TextStyle(color: Color(0xFF9CA3AF)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dctx).pop(false),
+              child: const Text('Stay',
+                  style: TextStyle(color: Color(0xFF9CA3AF))),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dctx).pop(true),
+              child: const Text('End & leave',
+                  style: TextStyle(color: Color(0xFFEF4444))),
+            ),
+          ],
+        ),
+      );
+      if (leave != true || !mounted) return;
+      await liveCubit.stopLive();
+    } else if (!amHost) {
+      // A seated co-host (broadcaster who isn't the host) should step off the
+      // stage so their box frees immediately, rather than waiting on the LiveKit
+      // participant_left webhook. Then mark them offline like any leaver.
+      if (liveCubit.state.isBroadcaster) {
+        await roomCubit.leaveSeat();
+      }
+      roomCubit.leaveSession();
+    }
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Widget _buildRoom(BuildContext context) {
     return BlocConsumer<SprayRoomCubit, SprayRoomState>(
       listenWhen: (prev, curr) =>
           prev.recentEvents != curr.recentEvents ||
           prev.error != curr.error ||
           prev.sessionEnded != curr.sessionEnded ||
           prev.connectionFailed != curr.connectionFailed ||
-          prev.walletLoadFailed != curr.walletLoadFailed,
+          prev.walletLoadFailed != curr.walletLoadFailed ||
+          prev.comments != curr.comments ||
+          prev.session?.id != curr.session?.id,
       listener: (context, state) {
+        // Bind the live-video cubit once the session (and our identity) is known.
+        _maybeBindLive(state);
         // Show error snackbar if error is set
         if (state.error != null && state.error!.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -597,6 +801,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         if ((state.sessionEnded || state.connectionFailed) && _isSprayMode) {
           setState(() => _isSprayMode = false);
         }
+        _maybeNotifyMention(state);
         _handleSprayEvent(state);
       },
       builder: (context, state) {
@@ -645,8 +850,18 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
             isShaking: _isShaking,
             child: Stack(
               children: [
-                // Background - host image or gradient
-                _buildBackground(state),
+                // Background - live video when broadcasting, else host image/gradient.
+                BlocBuilder<SprayLiveCubit, SprayLiveState>(
+                  builder: (context, liveState) {
+                    if (liveState.isLiveActive || liveState.phase == SprayLivePhase.connecting) {
+                      return SprayLiveVideoLayer(
+                        state: liveState,
+                        nameByIdentity: _identityNames(state),
+                      );
+                    }
+                    return _buildBackground(state);
+                  },
+                ),
 
                 // Dark overlay for readability
                 Container(
@@ -665,6 +880,9 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                   ),
                 ),
 
+                // Live-video status: LIVE badge + co-host invite prompt + errors.
+                _buildLiveStatusOverlay(),
+
                 // Rain animations (full screen)
                 ..._rainAnimations,
 
@@ -674,13 +892,22 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                 // Glow animations
                 ..._glowAnimations,
 
-                // Tap-to-like gesture (BEHIND interactive content)
-                // Placed before SafeArea so buttons/input fields take priority
+                // Tap-to-like + long-press-for-immersive gesture (BEHIND
+                // interactive content). Placed before SafeArea so buttons/input
+                // take priority. Long-press toggles immersive mode.
                 if (!_isSprayMode && !state.sessionEnded)
                   Positioned.fill(
                     child: GestureDetector(
                       onTapDown: (details) {
+                        if (_immersive) {
+                          // A tap in immersive just registers a like, not exit —
+                          // exit is long-press (matches TikTok).
+                        }
                         _onTapLike(details.globalPosition);
+                      },
+                      onLongPress: () {
+                        HapticFeedback.mediumImpact();
+                        setState(() => _immersive = !_immersive);
                       },
                       behavior: HitTestBehavior.translucent,
                       child: const SizedBox.expand(),
@@ -691,30 +918,40 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                 SafeArea(
                   child: Column(
                     children: [
-                      // Top bar
-                      _buildTopBar(state),
+                      // Top bar — in immersive mode, only the back button shows.
+                      _immersive ? _buildImmersiveBackBar() : _buildTopBar(state),
 
                       const Spacer(),
 
                       // Bottom section with constrained height for comments
-                      // This ensures comments never go below the input field
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          // Calculate available height: total height - top bar - input bar - padding
-                          final inputBarHeight = 60.h;
-                          final topBarHeight = 60.h;
-                          final availableHeight = constraints.maxHeight - topBarHeight - inputBarHeight - 20.h;
+                      // This ensures comments never go below the input field.
+                      // Hidden in immersive mode.
+                      if (!_immersive)
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Calculate available height: total height - top bar - input bar - padding
+                            final inputBarHeight = 60.h;
+                            final topBarHeight = 60.h;
+                            final availableHeight = constraints.maxHeight - topBarHeight - inputBarHeight - 20.h;
 
-                          return ConstrainedBox(
-                            constraints: BoxConstraints(maxHeight: availableHeight),
-                            child: _buildBottomSection(state),
-                          );
-                        },
-                      ),
+                            return ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: availableHeight),
+                              child: _buildBottomSection(state),
+                            );
+                          },
+                        ),
 
                       // Comment input bar or disconnected/ended indicator
-                      if (!state.sessionEnded && state.isConnected)
+                      if (_immersive)
+                        const SizedBox.shrink()
+                      else if (!state.sessionEnded && state.isConnected)
                         CommentInputBar(
+                          // Tag participants with @ — the picker suggests from
+                          // everyone currently in the live.
+                          mentionCandidates: state.participants
+                              .map((p) => p.userName)
+                              .where((n) => n.trim().isNotEmpty)
+                              .toList(),
                           onSubmit: (text) {
                             context.read<SprayRoomCubit>().sendComment(text);
                           },
@@ -764,12 +1001,14 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                 ..._entranceAnimations,
 
                 // Right side action column (TikTok-style)
-                // Positioned ABOVE spray mode tap area so icons are always tappable
-                Positioned(
-                  right: 12.w,
-                  bottom: 160.h,
-                  child: _buildActionColumn(state),
-                ),
+                // Positioned ABOVE spray mode tap area so icons are always
+                // tappable. Hidden in immersive mode.
+                if (!_immersive)
+                  Positioned(
+                    right: 12.w,
+                    bottom: 160.h,
+                    child: _buildActionColumn(state),
+                  ),
 
                 // Spray mode tap area — covers screen EXCEPT the right action column
                 if (_isSprayMode)
@@ -969,6 +1208,27 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
 
   // ─── Top Bar ────────────────────────────────────────────────
 
+  /// Immersive mode shows ONLY the back button (all other chrome hidden).
+  Widget _buildImmersiveBackBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: GestureDetector(
+          onTap: _handleBackPressed,
+          child: Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.4),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopBar(SprayRoomState state) {
     final currency = state.session?.currency ?? 'NGN';
     return Padding(
@@ -977,13 +1237,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         children: [
           // Back button
           GestureDetector(
-            onTap: () {
-              // Non-host users: notify server they're leaving
-              if (!_isHost(state)) {
-                context.read<SprayRoomCubit>().leaveSession();
-              }
-              Navigator.of(context).pop();
-            },
+            onTap: _handleBackPressed,
             child: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
@@ -1099,17 +1353,22 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
                   ),
                 ),
                 SizedBox(width: 4.w),
-                Icon(Icons.people, color: Colors.white70, size: 14.sp),
+                // Realtime "watching now" (WS-connected) when available, else
+                // the persisted participant count.
+                Icon(Icons.visibility_outlined,
+                    color: Colors.white70, size: 14.sp),
                 SizedBox(width: 2.w),
                 Text(
-                  '${state.participantCount}',
+                  _formatCount(state.viewerCount > 0
+                      ? state.viewerCount
+                      : state.participantCount),
                   style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                 ),
                 SizedBox(width: 6.w),
                 Icon(Icons.favorite, color: const Color(0xFFFF1744), size: 12.sp),
                 SizedBox(width: 2.w),
                 Text(
-                  _formatCount(state.totalLikes),
+                  _formatCount(state.totalLikeTaps),
                   style: TextStyle(color: const Color(0xFFFF1744), fontSize: 12.sp, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -1147,7 +1406,7 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
 
         // Like button with counter
         LikeCounterOverlay(
-          totalLikes: state.totalLikes,
+          totalLikes: state.totalLikeTaps,
           onLikeTap: () {
             _soundService.playLikeSound();
             context.read<SprayRoomCubit>().sendLike();
@@ -1184,42 +1443,748 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         ),
         SizedBox(height: 16.h),
 
-        // Stats button
+        // Share the live (deep link)
         _buildActionButton(
-          icon: Icons.bar_chart,
-          label: 'Stats',
-          color: const Color(0xFF3B82F6),
-          onTap: () => _showStatsSheet(state),
+          icon: Icons.ios_share,
+          label: 'Share',
+          color: Colors.white,
+          onTap: () => _shareLive(state),
         ),
-
         SizedBox(height: 16.h),
 
-        // AI Chat button
-        _buildActionButton(
-          icon: Icons.smart_toy_outlined,
-          label: 'AI',
-          color: const Color(0xFF7C3AED),
-          onTap: () => _showAIChatSheet(state),
-        ),
-
-        // End Session button (host only)
+        // Host: Go live / End live — a primary control, NOT hidden in More.
         if (_isHost(state)) ...[
+          BlocBuilder<SprayLiveCubit, SprayLiveState>(
+            builder: (context, live) {
+              final liveActive = live.isLiveActive;
+              return _buildActionButton(
+                icon: liveActive ? Icons.videocam_off : Icons.videocam,
+                label: liveActive ? 'End live' : 'Go live',
+                color: const Color(0xFFEF4444),
+                onTap: () => liveActive
+                    ? context.read<SprayLiveCubit>().stopLive()
+                    : context.read<SprayLiveCubit>().goLive(),
+                disabled: state.sessionEnded,
+              );
+            },
+          ),
           SizedBox(height: 16.h),
+
+          // Host: End the whole session — also a primary control.
           _buildActionButton(
             icon: Icons.stop_circle_outlined,
             label: 'End',
             color: const Color(0xFFEF4444),
             onTap: () => _showEndSessionConfirmation(),
           ),
+          SizedBox(height: 16.h),
         ],
+
+        // More (3-dots) — secondary items open in an UPWARD sheet (Stats, AI,
+        // Guests/boxes, LazerAI, and broadcaster media toggles). For the host, a
+        // red badge surfaces pending "join the stage" requests so approval is a
+        // couple of taps away (Guests lives inside More).
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _buildActionButton(
+              icon: Icons.more_horiz,
+              label: 'More',
+              color: Colors.white,
+              onTap: () => _showMoreSheet(state),
+            ),
+            if (_isHost(state) && _pendingSeatRequests(state) > 0)
+              Positioned(
+                right: -2.w,
+                top: -2.h,
+                child: Container(
+                  padding: EdgeInsets.all(5.w),
+                  constraints: BoxConstraints(minWidth: 18.w, minHeight: 18.w),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEF4444),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${_pendingSeatRequests(state)}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ],
     );
   }
 
+  int _pendingSeatRequests(SprayRoomState state) =>
+      state.participants.where((p) => p.hasRequestedSeat).length;
+
+  /// LiveKit identity ("user-<userId>") → display name, so guest boxes are
+  /// labelled from the session roster rather than the token's fallback "Guest".
+  Map<String, String> _identityNames(SprayRoomState state) {
+    final map = <String, String>{};
+    final host = state.session;
+    if (host != null && host.hostUserId.isNotEmpty) {
+      map['user-${host.hostUserId}'] = host.hostName;
+    }
+    for (final p in state.participants) {
+      if (p.userId.isNotEmpty && p.userName.isNotEmpty) {
+        map['user-${p.userId}'] = p.userName;
+      }
+    }
+    return map;
+  }
+
+  /// Share a deep link to this live so friends can jump straight in by code.
+  void _shareLive(SprayRoomState state) {
+    final s = state.session;
+    if (s == null) return;
+    final code = s.sessionCode;
+    final link = 'https://lazervault.app/lazerspray/join?code=$code';
+    final title = s.title.isNotEmpty ? s.title : 'my Lazerspray live';
+    Share.share(
+      'Join $title on Lazerspray 🎉\nTap to watch: $link\nOr enter code $code in the app.',
+      subject: 'Join my Lazerspray live',
+    );
+  }
+
+  /// Consolidated overflow sheet (the "3-dots"). Keeps the live screen from
+  /// being bombarded — primary actions stay on the rail; everything else here.
+  void _showMoreSheet(SprayRoomState state) {
+    final host = _isHost(state);
+    // The sheet is built off the root navigator context (outside our
+    // BlocProviders); capture the live cubit here so the host controls (which
+    // read SprayLiveCubit) resolve instead of throwing ProviderNotFound.
+    final liveCubit = context.read<SprayLiveCubit>();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3A3A3A),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text('More',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 12.h),
+              Wrap(
+                spacing: 10.w,
+                runSpacing: 12.h,
+                children: [
+                  _moreTile(Icons.groups_2_outlined, 'Guests', const Color(0xFF10B981),
+                      () {
+                    Navigator.pop(sheetCtx);
+                    _showGuestsSheet(state);
+                  }),
+                  _moreTile(Icons.bar_chart, 'Stats', const Color(0xFF3B82F6), () {
+                    Navigator.pop(sheetCtx);
+                    _showStatsSheet(state);
+                  }),
+                  _moreTile(Icons.smart_toy_outlined, 'AI chat',
+                      const Color(0xFF7C3AED), () {
+                    Navigator.pop(sheetCtx);
+                    _showAIChatSheet(state);
+                  }),
+                  // Summon the LazerAI voice agent into the live. Also triggers
+                  // automatically when a speaker says "lazerai" (wake-word).
+                  _moreTile(Icons.auto_awesome, 'LazerAI',
+                      const Color(0xFF4834D4), () async {
+                    Navigator.pop(sheetCtx);
+                    final err = await _lazerAi.summon(state.session?.id ?? '');
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(err == null
+                          ? 'LazerAI is joining the live…'
+                          : 'Could not summon LazerAI: $err'),
+                      backgroundColor: err == null
+                          ? const Color(0xFF4834D4)
+                          : const Color(0xFFEF4444),
+                    ));
+                  }),
+                ],
+              ),
+              // Broadcaster media toggles — only while actually streaming.
+              // Go live / End live / End session are primary rail buttons now.
+              if (host)
+                BlocProvider<SprayLiveCubit>.value(
+                  value: liveCubit,
+                  child: BlocBuilder<SprayLiveCubit, SprayLiveState>(
+                    builder: (context, live) {
+                      if (live.phase != SprayLivePhase.broadcasting) {
+                        return const SizedBox.shrink();
+                      }
+                      final cubit = context.read<SprayLiveCubit>();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 16.h),
+                          const Divider(color: Color(0xFF2D2D2D)),
+                          SizedBox(height: 8.h),
+                          Text('Broadcast controls',
+                              style: TextStyle(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600)),
+                          SizedBox(height: 12.h),
+                          Wrap(
+                            spacing: 10.w,
+                            runSpacing: 12.h,
+                            children: [
+                              _moreTile(Icons.flip_camera_ios, 'Flip',
+                                  const Color(0xFF60A5FA), () => cubit.flipCamera()),
+                              _moreTile(live.isMicOn ? Icons.mic : Icons.mic_off,
+                                  live.isMicOn ? 'Mute' : 'Unmute',
+                                  const Color(0xFF60A5FA), () => cubit.toggleMic()),
+                              _moreTile(
+                                  live.isCameraOn ? Icons.videocam : Icons.videocam_off,
+                                  live.isCameraOn ? 'Cam off' : 'Cam on',
+                                  const Color(0xFF60A5FA), () => cubit.toggleCamera()),
+                              _moreTile(live.isPaused ? Icons.play_arrow : Icons.pause,
+                                  live.isPaused ? 'Resume' : 'Pause',
+                                  live.isPaused
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFFB923C), () async {
+                                final err = live.isPaused
+                                    ? await cubit.resume()
+                                    : await cubit.pause();
+                                if (err != null && mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text(err),
+                                      backgroundColor: const Color(0xFFEF4444)));
+                                }
+                              }),
+                              _moreTile(
+                                  live.isRecording
+                                      ? Icons.fiber_manual_record
+                                      : Icons.radio_button_unchecked,
+                                  live.isRecording ? 'Recording' : 'Record',
+                                  live.isRecording
+                                      ? const Color(0xFFEF4444)
+                                      : const Color(0xFF9CA3AF), () async {
+                                final err = await cubit.toggleRecording();
+                                if (err != null && mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text(err),
+                                      backgroundColor: const Color(0xFFEF4444)));
+                                }
+                              }),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _moreTile(IconData icon, String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 78.w,
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF242424),
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 24.sp),
+            SizedBox(height: 6.h),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white, fontSize: 11.sp)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Top overlay: a LIVE badge while streaming and a co-host invite prompt for a
+  /// participant the host just invited. Surfaces live errors as a snackbar.
+  Widget _buildLiveStatusOverlay() {
+    return BlocConsumer<SprayLiveCubit, SprayLiveState>(
+      listenWhen: (p, c) => p.error != c.error,
+      listener: (context, live) {
+        if (live.error != null && live.error!.isNotEmpty && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(live.error!), backgroundColor: const Color(0xFFEF4444)),
+          );
+        }
+      },
+      builder: (context, live) {
+        return Positioned(
+          top: 54.h,
+          left: 0,
+          right: 0,
+          child: Column(
+            children: [
+              if (live.isLiveActive)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: live.isPaused ? const Color(0xFFFB923C) : const Color(0xFFEF4444),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(live.isPaused ? Icons.pause : Icons.circle, size: 8.sp, color: Colors.white),
+                      SizedBox(width: 6.w),
+                      Text(
+                        live.isPaused ? 'PAUSED' : 'LIVE',
+                        style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+              if (live.coHostInvitePending) ...[
+                SizedBox(height: 10.h),
+                _buildCoHostInviteBanner(context),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCoHostInviteBanner(BuildContext context) {
+    final cubit = context.read<SprayLiveCubit>();
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFFFD700)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.videocam, color: Color(0xFFFFD700)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'The host invited you to co-host. Go live with your camera?',
+              style: TextStyle(color: Colors.white, fontSize: 12.sp),
+            ),
+          ),
+          TextButton(
+            onPressed: () => cubit.declineCoHostInvite(),
+            child: const Text('Later', style: TextStyle(color: Color(0xFF9CA3AF))),
+          ),
+          TextButton(
+            onPressed: () => cubit.acceptCoHostInvite(),
+            child: const Text('Join', style: TextStyle(color: Color(0xFF3B82F6))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Host + co-host live-video controls. Viewers see nothing here (their live
+  /// experience is passive — the video fills the background automatically).
+
   bool _isHost(SprayRoomState state) {
     final hostId = state.session?.hostUserId ?? '';
-    final walletUserId = state.wallet?.userId ?? '';
-    return hostId.isNotEmpty && walletUserId.isNotEmpty && hostId == walletUserId;
+    final myId = _resolveMyId(state);
+    return hostId.isNotEmpty && myId.isNotEmpty && hostId == myId;
+  }
+
+  /// The signed-in user's display name within this live (host name or their
+  /// participant name) — used to detect @mentions of them.
+  String _myName(SprayRoomState state) {
+    final myId = _resolveMyId(state);
+    if (myId.isEmpty) return '';
+    if (state.session?.hostUserId == myId) return state.session?.hostName ?? '';
+    for (final p in state.participants) {
+      if (p.userId == myId) return p.userName;
+    }
+    return '';
+  }
+
+  /// When a fresh comment @mentions the signed-in user, let them know with a
+  /// toast — so a tagged person always finds out.
+  void _maybeNotifyMention(SprayRoomState state) {
+    if (state.comments.isEmpty) return;
+    final newest = state.comments.first; // newest-first
+    if (newest.id.isEmpty || newest.id == _lastMentionCommentId) return;
+    _lastMentionCommentId = newest.id;
+
+    final myId = _resolveMyId(state);
+    if (newest.userId == myId) return; // my own comment
+    final myName = _myName(state);
+    if (myName.isEmpty || !commentMentions(newest.text, myName)) return;
+    if (!mounted) return;
+
+    HapticFeedback.mediumImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF3B82F6),
+        duration: const Duration(seconds: 3),
+        content: Row(
+          children: [
+            Icon(Icons.alternate_email, color: Colors.white, size: 18.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                '${newest.userName.isNotEmpty ? newest.userName : "Someone"} tagged you',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Guest "boxes" sheet. Host sees pending seat requests (approve/decline) +
+  /// seated guests (remove) + the invite path. A viewer sees "Request to join";
+  /// a seated guest sees "Leave stage".
+  void _showGuestsSheet(SprayRoomState state) {
+    final roomCubit = context.read<SprayRoomCubit>();
+    final host = _isHost(state);
+    final myId = _resolveMyId(state);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => BlocBuilder<SprayRoomCubit, SprayRoomState>(
+        bloc: roomCubit,
+        builder: (context, s) {
+          final hostId = s.session?.hostUserId ?? '';
+          final requests =
+              s.participants.where((p) => p.hasRequestedSeat).toList();
+          final seated = s.participants
+              .where((p) => p.isSeated && p.userId != hostId)
+              .toList()
+            ..sort((a, b) => a.seatIndex.compareTo(b.seatIndex));
+          final me = s.participants.where((p) => p.userId == myId).firstOrNull;
+          final amSeated = me?.isSeated ?? false;
+          final amRequested = me?.hasRequestedSeat ?? false;
+
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A3A3A),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  Row(
+                    children: [
+                      const Icon(Icons.groups_2_outlined,
+                          color: Color(0xFF10B981)),
+                      SizedBox(width: 8.w),
+                      Text('Guests on stage',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                  SizedBox(height: 12.h),
+
+                  // Viewer / guest self-actions
+                  if (!host) ...[
+                    if (amSeated)
+                      _guestPrimaryButton(
+                        label: 'Leave stage',
+                        color: const Color(0xFFEF4444),
+                        icon: Icons.logout,
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          roomCubit.leaveSeat();
+                        },
+                      )
+                    else if (amRequested)
+                      _guestPrimaryButton(
+                        label: 'Request sent — waiting for host',
+                        color: const Color(0xFF6B7280),
+                        icon: Icons.hourglass_top_rounded,
+                        onTap: () {},
+                      )
+                    else
+                      _guestPrimaryButton(
+                        label: 'Request to join',
+                        color: const Color(0xFF10B981),
+                        icon: Icons.pan_tool_alt_outlined,
+                        onTap: () async {
+                          final err = await roomCubit.requestSeat();
+                          if (err != null && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(err),
+                                backgroundColor: const Color(0xFFEF4444)));
+                          }
+                        },
+                      ),
+                    SizedBox(height: 8.h),
+                  ],
+
+                  // Host: pending requests
+                  if (host) ...[
+                    Text('Requests (${requests.length})',
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                    SizedBox(height: 6.h),
+                    if (requests.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        child: Text('No pending requests.',
+                            style: TextStyle(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 13.sp)),
+                      )
+                    else
+                      ...requests.map((p) => _guestRow(
+                            p.userName.isNotEmpty ? p.userName : 'Guest',
+                            p.avatarUrl,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () => roomCubit.approveSeat(
+                                      p.userId,
+                                      userName: p.userName),
+                                  icon: const Icon(Icons.check_circle,
+                                      color: Color(0xFF10B981)),
+                                ),
+                                IconButton(
+                                  onPressed: () =>
+                                      roomCubit.declineSeat(p.userId),
+                                  icon: const Icon(Icons.cancel,
+                                      color: Color(0xFFEF4444)),
+                                ),
+                              ],
+                            ),
+                          )),
+                    SizedBox(height: 14.h),
+                    Text('On stage (${seated.length})',
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                    SizedBox(height: 6.h),
+                    if (seated.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        child: Text('No guests on stage yet.',
+                            style: TextStyle(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 13.sp)),
+                      )
+                    else
+                      ...seated.map((p) => _guestRow(
+                            '${p.userName.isNotEmpty ? p.userName : 'Guest'}  ·  box ${p.seatIndex + 1}',
+                            p.avatarUrl,
+                            trailing: TextButton(
+                              onPressed: () => roomCubit.removeFromSeat(p.userId),
+                              child: const Text('Remove',
+                                  style: TextStyle(color: Color(0xFFEF4444))),
+                            ),
+                          )),
+                    SizedBox(height: 8.h),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _showInviteCoHostSheet();
+                      },
+                      icon: const Icon(Icons.person_add_alt,
+                          color: Color(0xFFFFD700)),
+                      label: Text('Invite someone directly',
+                          style: TextStyle(
+                              color: const Color(0xFFFFD700), fontSize: 13.sp)),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _guestPrimaryButton({
+    required String label,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48.h,
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 18.sp, color: Colors.white),
+        label: Text(label,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          elevation: 0,
+        ),
+      ),
+    );
+  }
+
+  Widget _guestRow(String name, String avatarUrl, {required Widget trailing}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18.r,
+            backgroundColor: const Color(0xFF2D2D2D),
+            backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+            child: avatarUrl.isEmpty
+                ? const Icon(Icons.person, color: Colors.white, size: 18)
+                : null,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+          ),
+          trailing,
+        ],
+      ),
+    );
+  }
+
+  /// Host: pick a joined participant to promote to co-host (co-hosts must already
+  /// be in the room, so we choose from the live participant list).
+  void _showInviteCoHostSheet() {
+    final roomCubit = context.read<SprayRoomCubit>();
+    final liveCubit = context.read<SprayLiveCubit>();
+    final hostId = roomCubit.state.session?.hostUserId ?? '';
+    final candidates = roomCubit.state.participants
+        .where((p) => p.userId != hostId)
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  const Icon(Icons.person_add_alt, color: Color(0xFFFFD700)),
+                  SizedBox(width: 8.w),
+                  Text('Invite a co-host',
+                      style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+            if (candidates.isEmpty)
+              Padding(
+                padding: EdgeInsets.all(24.w),
+                child: const Text('No one has joined yet to invite.',
+                    style: TextStyle(color: Color(0xFF9CA3AF))),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: candidates.length,
+                  itemBuilder: (_, i) {
+                    final p = candidates[i];
+                    final isCoHost = p.role == 'cohost';
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: const Color(0xFF2D2D2D),
+                        backgroundImage: p.avatarUrl.isNotEmpty ? NetworkImage(p.avatarUrl) : null,
+                        child: p.avatarUrl.isEmpty
+                            ? const Icon(Icons.person, color: Colors.white, size: 18)
+                            : null,
+                      ),
+                      title: Text(p.userName.isNotEmpty ? p.userName : 'Guest',
+                          style: const TextStyle(color: Colors.white)),
+                      trailing: TextButton(
+                        onPressed: () async {
+                          Navigator.of(ctx).pop();
+                          String? err;
+                          if (isCoHost) {
+                            await liveCubit.revokeCoHost(p.userId);
+                          } else {
+                            err = await liveCubit.inviteCoHost(userId: p.userId, userName: p.userName);
+                          }
+                          if (err != null && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(err), backgroundColor: const Color(0xFFEF4444)),
+                            );
+                          }
+                        },
+                        child: Text(isCoHost ? 'Remove' : 'Invite',
+                            style: TextStyle(
+                                color: isCoHost ? const Color(0xFFEF4444) : const Color(0xFF3B82F6))),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            SizedBox(height: 12.h),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showEndSessionConfirmation() {
@@ -1300,139 +2265,24 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
   // ─── Bottom Section ─────────────────────────────────────────
 
   Widget _buildBottomSection(SprayRoomState state) {
-    final currency = state.session?.currency ?? 'NGN';
+    // Clean, TikTok-style: ONLY the live comment feed sits bottom-left. The
+    // session worth, viewers and likes already live in the top bar, and the
+    // code is carried by Share — so no duplicate stats/wallet/code chips here.
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 0, 80.w, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Real-time stats row
-          Row(
-            children: [
-              _buildMiniStat(
-                icon: Icons.monetization_on,
-                value: '$currency ${_formatAmount(state.totalSprayedMajor)}',
-                color: const Color(0xFF10B981),
-                label: 'cash',
-              ),
-              SizedBox(width: 8.w),
-              _buildMiniStat(
-                icon: Icons.card_giftcard,
-                value: '$currency ${_formatAmount(state.totalGiftsValueMajor)}',
-                color: const Color(0xFFFFD700),
-                label: 'gifts',
-              ),
-              SizedBox(width: 8.w),
-              _buildMiniStat(
-                icon: Icons.favorite,
-                value: _formatCount(state.totalLikes),
-                color: const Color(0xFFFF1744),
-                label: 'likes',
-              ),
-            ],
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: SizedBox(
+          height: 150.h,
+          child: CommentFeedOverlay(
+            comments: state.comments,
+            maxVisible: 6,
           ),
-          SizedBox(height: 6.h),
-
-          // Wallet balance
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Text(
-              'Wallet: $currency ${state.walletBalanceMajor.toStringAsFixed(0)}',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-          SizedBox(height: 6.h),
-
-          // Session code
-          if (state.session?.sessionCode.isNotEmpty == true)
-            GestureDetector(
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: state.session!.sessionCode));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Code ${state.session!.sessionCode} copied!'),
-                    backgroundColor: const Color(0xFF1F1F1F),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.copy, color: const Color(0xFF3B82F6), size: 14.sp),
-                    SizedBox(width: 4.w),
-                    Text(
-                      'Code: ${state.session!.sessionCode}',
-                      style: TextStyle(
-                        color: const Color(0xFF3B82F6),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          SizedBox(height: 8.h),
-
-          // Always show comment feed (inline TikTok-style) + live events interleaved
-          SizedBox(
-            height: 150.h,
-            child: CommentFeedOverlay(
-              comments: state.comments,
-              maxVisible: 6,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildMiniStat({
-    required IconData icon,
-    required String value,
-    required Color color,
-    required String label,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14.sp),
-          SizedBox(width: 4.w),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 11.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ─── Spray Mode Indicator ───────────────────────────────────
 
@@ -1631,11 +2481,12 @@ class _SprayRoomScreenState extends State<SprayRoomScreen>
         accountDisplay: display,
         accountBalanceMajor: balanceMajor,
         currency: state.session?.currency ?? 'NGN',
-        onBuy: (items, pin) => context.read<SprayRoomCubit>().buyGiftCredit(
-              items: items,
-              sourceAccountId: accountId,
-              pin: pin,
-            ),
+        onBuy: (items, verificationToken) =>
+            context.read<SprayRoomCubit>().buyGiftCredit(
+                  items: items,
+                  sourceAccountId: accountId,
+                  verificationToken: verificationToken,
+                ),
       ),
     );
   }
@@ -2053,7 +2904,7 @@ class _StatsSheet extends StatelessWidget {
               children: [
                 _buildStatCard(
                   icon: Icons.favorite,
-                  value: _formatCount(state.totalLikes),
+                  value: _formatCount(state.totalLikeTaps),
                   label: 'Likes',
                   color: const Color(0xFFFF1744),
                 ),
@@ -2415,7 +3266,7 @@ class _AIChatSheetState extends State<_AIChatSheet> {
     _chatService = serviceLocator<SprayMeChatService>();
     // Welcome message
     _messages.add(_ChatMessage(
-      text: 'Ask me anything about this LazerSpray session! Try:\n'
+      text: 'Ask me anything about this Lazerspray session! Try:\n'
           '\u2022 "Who sprayed the most?"\n'
           '\u2022 "What\'s the total amount sprayed?"\n'
           '\u2022 "Show me gift rankings"\n'
@@ -2478,12 +3329,13 @@ class _AIChatSheetState extends State<_AIChatSheet> {
         }
         return;
       } catch (_) {
-        // Backend failed — fall back to local for this message and future ones
-        _useBackend = false;
+        // Backend failed for THIS message only — fall back locally but keep
+        // trying the real gateway on the next message (a transient error must
+        // not permanently downgrade the whole session to canned responses).
       }
     }
 
-    // Local fallback
+    // Local fallback (last resort)
     final response = _generateLocalResponse(text, widget.state);
     if (mounted) {
       setState(() {
@@ -2563,7 +3415,7 @@ class _AIChatSheetState extends State<_AIChatSheet> {
     }
 
     if (q.contains('wallet') || q.contains('balance') || q.contains('my money')) {
-      return 'Your LazerSpray wallet balance: $currency ${state.walletBalanceMajor.toStringAsFixed(0)}';
+      return 'Your Lazerspray wallet balance: $currency ${state.walletBalanceMajor.toStringAsFixed(0)}';
     }
 
     if (q.contains('session') || q.contains('info') || q.contains('details') || q.contains('about')) {
@@ -2617,7 +3469,7 @@ class _AIChatSheetState extends State<_AIChatSheet> {
               Icon(Icons.smart_toy_outlined, color: const Color(0xFF7C3AED), size: 22.sp),
               SizedBox(width: 8.w),
               Text(
-                'LazerSpray AI',
+                'Lazerspray AI',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18.sp,

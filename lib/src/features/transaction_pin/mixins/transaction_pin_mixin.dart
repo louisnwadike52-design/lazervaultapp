@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -20,6 +22,32 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
 
   /// Expose the pin modal key so callers can drive processing/success phases
   GlobalKey<TransactionPinModalState> get pinModalKey => _pinModalKey;
+
+  /// Close the PIN sheet AND any payment sheets stacked beneath it (amount /
+  /// confirmation / account-verified, etc.), returning the user cleanly to the
+  /// underlying page. Pops every modal popup route (bottom sheets + dialogs)
+  /// but stops at the first full-screen page route, so the page is preserved.
+  ///
+  /// Used on every TERMINAL, NON-SUCCESS PIN outcome (cancel, wrong-PIN
+  /// exhausted, locked, network failure, transfer failure) so a cancelled or
+  /// failed transaction never leaves stranded sheets behind it. The success
+  /// path is left to the caller, which navigates to the receipt via
+  /// Get.offAllNamed (clearing the stack anyway).
+  void _dismissPaymentSheets(BuildContext context) {
+    if (!mounted) return;
+    try {
+      Navigator.of(context).popUntil((route) => route is! PopupRoute);
+    } catch (_) {}
+  }
+
+  /// Voice-flow PIN outcome hints, set on the LAST [validateTransactionPin] FAILURE so
+  /// the voice agent can be told WHY it failed (locked / exhausted / cancelled) instead of
+  /// a generic "cancelled" — which would make it offer a retry the server will reject on a
+  /// locked/exhausted account. Chat callers simply ignore these fields. Reset at the start
+  /// of each [validateTransactionPin] call. `lastPinFailureReason`:
+  /// 'locked' | 'exhausted' | null (user cancelled / closed the sheet).
+  String? lastPinFailureReason;
+  int? lastPinRemainingAttempts;
 
   /// Validate transaction PIN and execute the payment callback.
   ///
@@ -42,8 +70,17 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     double? totalAmount,
     int maxAttempts = 3,
     bool showProcessingPhase = true,
+    // Message shown on the processing sheet's success beat. Flows whose final
+    // outcome is only known LATER (e.g. an external bank transfer that returns
+    // `pending` and resolves on the receipt) should pass a non-committal
+    // message like 'Transfer Initiated' so the sheet never claims success
+    // before it's confirmed.
+    String? successMessage,
     Widget? headerAction,
   }) async {
+    // Reset the voice-flow outcome hints for this attempt.
+    lastPinFailureReason = null;
+    lastPinRemainingAttempts = null;
     try {
       // Check if user has PIN set up
       print('[TransactionPinMixin] Checking if user has PIN...');
@@ -61,7 +98,11 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       if (!hasPin) {
         final shouldCreate = await _showCreatePinPrompt(context);
         if (!shouldCreate) return false;
-        await Get.toNamed(AppRoutes.transactionPinSetup);
+        // returnOnComplete → the setup screen POPS back here (instead of routing
+        // forward to KYC/dashboard) so we can re-check the PIN and resume the
+        // payment. Without this the transaction would be stranded on the stack.
+        await Get.toNamed(AppRoutes.transactionPinSetup,
+            arguments: {'returnOnComplete': true});
         final hasPinNow = await transactionPinService.checkUserHasPin();
         if (!hasPinNow) return false;
       }
@@ -116,7 +157,13 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
         final pin = await completerRef.value.future;
 
         if (pin == null) {
+          // User cancelled (or chose Forgot PIN). The modal self-pops on the
+          // cancel button; also unwind any sheets stacked beneath it so we
+          // return cleanly to the page rather than stranding a confirmation /
+          // amount sheet.
+          _dismissPaymentSheets(context);
           _showCancellationMessage(context);
+          AnalyticsService.instance.trackPinOutcome('cancelled');
           return false;
         }
 
@@ -147,7 +194,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
               if (_pinModalKey.currentState != null) {
                 _pinModalKey.currentState?.setSuccess(
                   message: showProcessingPhase
-                      ? 'Transaction Successful!'
+                      ? (successMessage ?? 'Transaction Successful!')
                       : 'PIN Verified',
                 );
                 // One short animation beat for the success check, then hand
@@ -157,33 +204,74 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
                   try { Navigator.of(context).pop(); } catch (_) {}
                 }
               }
+              AnalyticsService.instance.trackPinOutcome('success');
               return true;
             } catch (e) {
+              // NEVER show raw e.toString() — a GrpcError stringifies to its
+              // status code + cloudflare trailers. friendlyError maps it to a
+              // clean, user-facing line (passing through a clean backend
+              // failed-precondition message when present).
+              final failMsg = friendlyError(e, context: 'complete your transfer');
               if (_pinModalKey.currentState != null) {
-                _pinModalKey.currentState?.setFailed(e.toString().replaceAll('Exception: ', ''));
+                _pinModalKey.currentState?.setFailed(failMsg);
                 await Future.delayed(const Duration(seconds: 2));
-                if (mounted) {
-                  try { Navigator.of(context).pop(); } catch (_) {}
-                }
+                // Transfer failed — close the PIN sheet and everything beneath
+                // it so the user lands back on the page, not a stale sheet.
+                _dismissPaymentSheets(context);
+              } else {
+                // The modal already detached (e.g. the callback navigated or
+                // the sheet rebuilt) so we can't render the failure inline.
+                // NEVER swallow the error — unwind any stranded sheets and
+                // surface it as a SnackBar so the user always sees why the
+                // transfer didn't go through, rather than a silent close.
+                _dismissPaymentSheets(context);
+                _showErrorMessage(context, failMsg);
               }
+              AnalyticsService.instance.trackPinOutcome('failed');
               return false;
             }
-          } else if (result.isLocked) {
-            if (mounted) {
-              try { Navigator.of(context).pop(); } catch (_) {}
+          } else if (result.noPinSet) {
+            // The PIN was cleared server-side (e.g. a super-admin reset it) while
+            // the user was mid-session. This is NOT a wrong-PIN attempt — do not
+            // burn an attempt or claim the PIN is locked. Close the sheet, send the
+            // user to set up a fresh PIN, then ask them to re-confirm the payment.
+            _dismissPaymentSheets(context);
+            AnalyticsService.instance.trackPinOutcome('no_pin_set');
+            if (!mounted) return false;
+            final shouldCreate = await _showCreatePinPrompt(context);
+            if (shouldCreate && mounted) {
+              await Get.toNamed(AppRoutes.transactionPinSetup,
+                  arguments: {'returnOnComplete': true, 'forceSetup': true});
+              // Authoritative re-check (bypass the session cache).
+              final hasPinNow =
+                  await transactionPinService.checkUserHasPin(forceRefresh: true);
+              if (hasPinNow && mounted) {
+                _showErrorMessage(context,
+                    'Your transaction PIN is set. Please confirm your payment again.');
+              }
             }
+            return false;
+          } else if (result.isLocked) {
+            _dismissPaymentSheets(context);
             _showPinLockedMessage(context, result.lockedUntil!);
+            AnalyticsService.instance.trackPinOutcome('locked');
+            // Tell the voice flow this was a LOCKOUT (not a plain cancel) so the agent
+            // doesn't offer a retry the server will reject.
+            lastPinFailureReason = 'locked';
+            lastPinRemainingAttempts = 0;
             return false;
           } else {
             // Wrong PIN — reset to PIN entry inline
             currentAttempt++;
             errorMessage = result.message ?? 'Incorrect PIN';
+            AnalyticsService.instance.trackPinOutcome('wrong_pin');
 
             if (currentAttempt > maxAttempts) {
-              if (mounted) {
-                try { Navigator.of(context).pop(); } catch (_) {}
-              }
+              _dismissPaymentSheets(context);
               _showAttemptsExhaustedMessage(context);
+              AnalyticsService.instance.trackPinOutcome('exhausted');
+              lastPinFailureReason = 'exhausted';
+              lastPinRemainingAttempts = 0;
               return false;
             }
 
@@ -200,9 +288,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           errorMessage = 'Verification failed. Please try again.';
 
           if (currentAttempt > maxAttempts) {
-            if (mounted) {
-              try { Navigator.of(context).pop(); } catch (_) {}
-            }
+            _dismissPaymentSheets(context);
             _showAttemptsExhaustedMessage(context);
             return false;
           }
@@ -219,7 +305,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     } catch (e) {
       print('[TransactionPinMixin] Unexpected error: $e');
       if (mounted) {
-        _showErrorMessage(context, e.toString());
+        _showErrorMessage(context, friendlyError(e));
       }
       return false;
     }

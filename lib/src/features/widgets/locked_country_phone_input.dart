@@ -17,6 +17,10 @@ class LockedCountryPhoneInput extends StatefulWidget {
   final bool isRequired;
   final String? Function(String?)? validator;
   final bool enabled;
+  // When provided, the country code/flag becomes tappable (shows a caret) and
+  // invokes this callback so the caller can present a country picker. When
+  // null the country stays locked (original behaviour, unchanged).
+  final VoidCallback? onCountryTap;
 
   const LockedCountryPhoneInput({
     super.key,
@@ -28,6 +32,7 @@ class LockedCountryPhoneInput extends StatefulWidget {
     this.isRequired = true,
     this.validator,
     this.enabled = true,
+    this.onCountryTap,
   });
 
   @override
@@ -73,39 +78,54 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Country code section (left side - matches BuildFormField leading)
-            Container(
-              height: 48.h,
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0F0F0),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24.r),
-                  bottomLeft: Radius.circular(24.r),
+            // Country code section (left side - matches BuildFormField leading).
+            // Tappable when onCountryTap is supplied (shows a caret).
+            GestureDetector(
+              onTap: widget.enabled ? widget.onCountryTap : null,
+              child: Container(
+                height: 48.h,
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F0F0),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24.r),
+                    bottomLeft: Radius.circular(24.r),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _countryConfig.flag,
+                      style: TextStyle(fontSize: 18.sp),
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      _countryConfig.dialingCode,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    if (widget.onCountryTap != null) ...[
+                      SizedBox(width: 2.w),
+                      Icon(Icons.arrow_drop_down,
+                          size: 18.sp, color: Colors.grey.shade600),
+                    ],
+                  ],
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _countryConfig.flag,
-                    style: TextStyle(fontSize: 18.sp),
-                  ),
-                  SizedBox(width: 6.w),
-                  Text(
-                    _countryConfig.dialingCode,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ],
-              ),
             ),
-            // Phone number input (right side - matches BuildFormField)
+            // Phone number input (right side - matches BuildFormField).
+            // Pin to the SAME fixed height as the country pill so both rounded
+            // halves are always identical height. Without this the right half
+            // sized to the TextField's intrinsic height (font metrics +
+            // text-scale), which differs per device — the cause of the two
+            // halves looking misaligned on some phones but not others.
             Expanded(
               child: Container(
+                height: 48.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF0F0F0),
                   borderRadius: BorderRadius.only(
@@ -120,6 +140,9 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
                         controller: _controller,
                         enabled: widget.enabled,
                         keyboardType: TextInputType.phone,
+                        // Center the text within the fixed-height pill so it
+                        // lines up with the country code half on every device.
+                        textAlignVertical: TextAlignVertical.center,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           // Limit typing to the country's national number length
@@ -136,9 +159,9 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
                             color: Colors.grey.shade600,
                           ),
                           border: InputBorder.none,
+                          isCollapsed: true,
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 12.w,
-                            vertical: 12.h,
                           ),
                         ),
                         style: TextStyle(

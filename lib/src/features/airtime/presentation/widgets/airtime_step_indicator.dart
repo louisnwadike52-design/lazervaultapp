@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AirtimeStepIndicator extends StatelessWidget {
   final int currentStep;
@@ -15,7 +16,7 @@ class AirtimeStepIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
       child: Row(
         children: List.generate(totalSteps * 2 - 1, (index) {
           if (index.isOdd) {
@@ -24,7 +25,7 @@ class AirtimeStepIndicator extends StatelessWidget {
             final isCompleted = stepIndex < currentStep;
             return Expanded(
               child: Container(
-                height: 2,
+                height: 2.h,
                 color: isCompleted
                     ? const Color(0xFF4E03D0)
                     : const Color(0xFF2D2D2D),
@@ -40,8 +41,8 @@ class AirtimeStepIndicator extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 28,
-                height: 28,
+                width: 28.w,
+                height: 28.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isCompleted
@@ -58,27 +59,27 @@ class AirtimeStepIndicator extends StatelessWidget {
                 ),
                 child: Center(
                   child: isCompleted
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      ? Icon(Icons.check, size: 16.sp, color: Colors.white)
                       : Text(
                           '${stepIndex + 1}',
                           style: TextStyle(
                             color: isActive
                                 ? Colors.white
                                 : const Color(0xFF9CA3AF),
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 stepIndex < stepLabels.length ? stepLabels[stepIndex] : '',
                 style: TextStyle(
                   color: isActive || isCompleted
                       ? Colors.white
                       : const Color(0xFF9CA3AF),
-                  fontSize: 10,
+                  fontSize: 10.sp,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),

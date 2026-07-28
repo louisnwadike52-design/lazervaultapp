@@ -18,6 +18,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
+        // White status-bar icons read on the purple top curve (same as login).
         statusBarIconBrightness: Brightness.light,
       ),
     );
@@ -25,12 +26,13 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Themed body: shared purple-curve background image lives behind
-    // everything (incl. transparent AppBar) so the brand purple flows at top
-    // and bottom while the form area stays readable on the dark base.
+    // Light theme matching the login page: the shared purple-curve background
+    // image has a WHITE centre, so a white Scaffold lets the brand purple flow
+    // at the top/bottom while the form area sits on clean white (the dark
+    // AppColors fonts then read correctly — a black base hid them).
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

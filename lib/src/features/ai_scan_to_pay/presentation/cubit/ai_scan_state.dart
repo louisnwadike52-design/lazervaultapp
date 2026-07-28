@@ -50,38 +50,6 @@ class AiScanResumable extends AiScanState {
   List<Object?> get props => [session, bankDetails, availableTypes];
 }
 
-// Scan session active state
-class AiScanSessionActive extends AiScanState {
-  final ScanSession session;
-  final List<AiChatMessage> chatHistory;
-  final bool isProcessing;
-  final Map<String, dynamic>? extractedData;
-
-  const AiScanSessionActive({
-    required this.session,
-    required this.chatHistory,
-    this.isProcessing = false,
-    this.extractedData,
-  });
-
-  @override
-  List<Object?> get props => [session, chatHistory, isProcessing, extractedData];
-
-  AiScanSessionActive copyWith({
-    ScanSession? session,
-    List<AiChatMessage>? chatHistory,
-    bool? isProcessing,
-    Map<String, dynamic>? extractedData,
-  }) {
-    return AiScanSessionActive(
-      session: session ?? this.session,
-      chatHistory: chatHistory ?? this.chatHistory,
-      isProcessing: isProcessing ?? this.isProcessing,
-      extractedData: extractedData ?? this.extractedData,
-    );
-  }
-}
-
 // Camera/scanning state
 class AiScanCamera extends AiScanState {
   final ScanSession session;
@@ -122,38 +90,6 @@ class AiScanProcessing extends AiScanState {
   List<Object?> get props => [session, status, progress];
 }
 
-// Chat state
-class AiScanChatActive extends AiScanState {
-  final ScanSession session;
-  final List<AiChatMessage> messages;
-  final bool isTyping;
-  final Map<String, dynamic>? extractedData;
-
-  const AiScanChatActive({
-    required this.session,
-    required this.messages,
-    this.isTyping = false,
-    this.extractedData,
-  });
-
-  @override
-  List<Object?> get props => [session, messages, isTyping, extractedData];
-
-  AiScanChatActive copyWith({
-    ScanSession? session,
-    List<AiChatMessage>? messages,
-    bool? isTyping,
-    Map<String, dynamic>? extractedData,
-  }) {
-    return AiScanChatActive(
-      session: session ?? this.session,
-      messages: messages ?? this.messages,
-      isTyping: isTyping ?? this.isTyping,
-      extractedData: extractedData ?? this.extractedData,
-    );
-  }
-}
-
 // (AiScanPaymentProcessing / AiScanPaymentSuccess removed — the legacy
 //  generic-chat payment path is gone. The canonical money path emits
 //  the AiScanBankDetails* states defined below.)
@@ -174,6 +110,20 @@ class AiScanIntentResolved extends AiScanState {
   const AiScanIntentResolved(this.intent);
   @override
   List<Object?> get props => [intent];
+}
+
+/// An OCR extraction resolved to a payable target that must be REVIEWED &
+/// VERIFIED before an amount is entered. Carries the raw [ScanAnalysis] so the
+/// UI can render the shared SmartScanResultSheet — the SAME verify sheet the
+/// send-funds "Scan Account" flow uses (bank-details "Verify Account" / NUBAN
+/// name resolution, confirm-recipient for a Lazervault user / phone / email,
+/// or disambiguation for an ambiguous value) — BEFORE the send-funds amount
+/// sheet. QR-decoded targets keep [AiScanIntentResolved] (no OCR name to verify).
+class AiScanOcrResolved extends AiScanState {
+  final ScanAnalysis analysis;
+  const AiScanOcrResolved(this.analysis);
+  @override
+  List<Object?> get props => [analysis];
 }
 
 /// OCR found a 10–11 digit value that could be an account OR a phone number.
@@ -232,16 +182,6 @@ class AiScanPaymentFailedResult extends AiScanState {
   List<Object?> get props => [message, intent, canRetry];
 }
 
-// Scan history state
-class AiScanHistoryLoaded extends AiScanState {
-  final List<ScanSession> sessions;
-
-  const AiScanHistoryLoaded(this.sessions);
-
-  @override
-  List<Object?> get props => [sessions];
-}
-
 /// Local "Previous scans" history (on-device): each entry is a resolved scan,
 /// marked completed (with a receipt) or incomplete.
 class AiScanLocalHistoryLoaded extends AiScanState {
@@ -281,62 +221,3 @@ class AiScanBankDetailsExtracted extends AiScanState {
   List<Object?> get props => [session, bankDetails];
 }
 
-// Bank details awaiting PIN state
-class AiScanBankDetailsAwaitingPIN extends AiScanState {
-  final BankDetails bankDetails;
-  final double amount;
-  final String description;
-  final String transactionId;
-
-  const AiScanBankDetailsAwaitingPIN({
-    required this.bankDetails,
-    required this.amount,
-    required this.description,
-    required this.transactionId,
-  });
-
-  @override
-  List<Object?> get props => [bankDetails, amount, description, transactionId];
-}
-
-// Bank details payment processing state
-class AiScanBankDetailsProcessing extends AiScanState {
-  final String status;
-  final double progress;
-
-  const AiScanBankDetailsProcessing({
-    required this.status,
-    this.progress = 0.0,
-  });
-
-  @override
-  List<Object?> get props => [status, progress];
-}
-
-// Bank details payment success state
-class AiScanBankDetailsPaymentSuccess extends AiScanState {
-  final PaymentReceipt receipt;
-
-  const AiScanBankDetailsPaymentSuccess({
-    required this.receipt,
-  });
-
-  @override
-  List<Object?> get props => [receipt];
-}
-
-// Bank details payment failed state
-class AiScanBankDetailsPaymentFailed extends AiScanState {
-  final String errorMessage;
-  final BankDetails bankDetails;
-  final bool canRetry;
-
-  const AiScanBankDetailsPaymentFailed({
-    required this.errorMessage,
-    required this.bankDetails,
-    this.canRetry = true,
-  });
-
-  @override
-  List<Object?> get props => [errorMessage, bankDetails, canRetry];
-} 

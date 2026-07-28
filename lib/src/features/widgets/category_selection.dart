@@ -47,6 +47,55 @@ class ServiceCategory {
   /// Get icon data for this category
   IconData get iconData => _iconDataFromString(iconName);
 
+  /// The analytics label the accounts-service SQL `subCategoryExpr` expects
+  /// (e.g. "food" → "Food & Drinks"). These MUST match the CASE expressions in
+  /// transaction_repository.go so a transfer's narration prefix is attributed to
+  /// the right spending subcategory. Shared by every send-funds flow so the
+  /// short and long flows tag spend identically.
+  String get analyticsLabel {
+    return switch (subCategoryName.toLowerCase()) {
+      'food' => 'Food & Drinks',
+      'shopping' => 'Shopping',
+      'transport' => 'Transportation',
+      'entertainment' => 'Entertainment',
+      'healthcare' => 'Healthcare',
+      'education' => 'Education',
+      'rent' => 'Rent & Mortgage',
+      'gifts' => 'Gifts & Donations',
+      'travel' => 'Travel',
+      'groceries' => 'Groceries',
+      'insurance' => 'Insurance',
+      'personal_care' => 'Personal Care',
+      'subscriptions' => 'Subscriptions',
+      'bills' || 'utilities' => 'Bills & Utilities',
+      _ => subCategoryName
+          .replaceAll('_', ' ')
+          .split(' ')
+          .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+          .join(' '),
+    };
+  }
+
+  /// Builds the transfer narration shared by BOTH send-funds flows (long and
+  /// short) so category attribution is identical. When [category] is set the
+  /// narration is prefixed with its [analyticsLabel] (e.g. "Food & Drinks: …")
+  /// so accounts-service's SQL subCategoryExpr buckets the spend; the detail is
+  /// the user's [note] when present, else [defaultNarration] (e.g.
+  /// "Transfer from {name}") so the receiver still sees who sent it. With no
+  /// category, the narration is the note (when given) or [defaultNarration].
+  static String buildTransferNarration({
+    ServiceCategory? category,
+    String? note,
+    required String defaultNarration,
+  }) {
+    final trimmedNote = (note ?? '').trim();
+    if (category != null) {
+      final detail = trimmedNote.isNotEmpty ? trimmedNote : 'Transfer';
+      return '${category.analyticsLabel}: $detail';
+    }
+    return trimmedNote.isNotEmpty ? trimmedNote : defaultNarration;
+  }
+
   static String _defaultIconForCategory(String subCategory) {
     final defaults = {
       'food': 'restaurant',

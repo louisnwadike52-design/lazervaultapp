@@ -900,7 +900,16 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
     
     // Clean phone number
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
-    
+
+    // Normalize to the canonical NG local form (0-prefixed) so the prefix map
+    // matches whether the user typed the number with or without the leading
+    // zero (0803… vs 803…). The +234 country code is a separate beside-field
+    // widget, so it never appears in this field's value. Prefixes are stored
+    // 0-prefixed (e.g. "0803").
+    if (cleanNumber.length == 10 && !cleanNumber.startsWith('0')) {
+      cleanNumber = '0$cleanNumber';
+    }
+
     // Get providers for the country
     final providers = await getNetworkProviders(countryCode);
     

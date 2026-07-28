@@ -36,7 +36,10 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
 
   static const int verificationDuration = 4;
   static const int maxRetries = 3;
-  static const double verificationThreshold = 0.85;
+  // Kept in step with the login verify default (VoiceBiometricsService.verifyVoice,
+  // 0.70). ECAPA same-speaker cross-session similarity often sits 0.6–0.85, so
+  // 0.85 rejected legitimate users. One shared value across all verify paths.
+  static const double verificationThreshold = 0.70;
 
   bool _isRecording = false;
   bool _isVerifying = false;

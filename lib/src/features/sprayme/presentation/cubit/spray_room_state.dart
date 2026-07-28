@@ -14,11 +14,14 @@ class SprayRoomState {
   final List<TopSprayer> topSprayers; // session leaderboard
   final List<SprayRoomEvent> recentEvents;
   final List<SprayComment> comments;
-  final int totalLikes;
+  final int totalLikes; // distinct likers
+  final int totalLikeTaps; // lifetime taps, never resets (TikTok-style)
+  final int liveLikeTaps; // current live segment ("at the moment")
   final int totalSprayed;
   final int totalGiftsValue; // total value of gifts in kobo
   final int totalGiftsCount; // number of gifts sent
   final int participantCount;
+  final int viewerCount; // realtime "watching now" (WS-connected clients)
   final bool isConnected;
   final bool isLoading;
   final bool sessionEnded;
@@ -41,10 +44,13 @@ class SprayRoomState {
     this.recentEvents = const [],
     this.comments = const [],
     this.totalLikes = 0,
+    this.totalLikeTaps = 0,
+    this.liveLikeTaps = 0,
     this.totalSprayed = 0,
     this.totalGiftsValue = 0,
     this.totalGiftsCount = 0,
     this.participantCount = 0,
+    this.viewerCount = 0,
     this.isConnected = false,
     this.isLoading = false,
     this.sessionEnded = false,
@@ -66,10 +72,13 @@ class SprayRoomState {
     List<SprayRoomEvent>? recentEvents,
     List<SprayComment>? comments,
     int? totalLikes,
+    int? totalLikeTaps,
+    int? liveLikeTaps,
     int? totalSprayed,
     int? totalGiftsValue,
     int? totalGiftsCount,
     int? participantCount,
+    int? viewerCount,
     bool? isConnected,
     bool? isLoading,
     bool? sessionEnded,
@@ -90,10 +99,13 @@ class SprayRoomState {
       recentEvents: recentEvents ?? this.recentEvents,
       comments: comments ?? this.comments,
       totalLikes: totalLikes ?? this.totalLikes,
+      totalLikeTaps: totalLikeTaps ?? this.totalLikeTaps,
+      liveLikeTaps: liveLikeTaps ?? this.liveLikeTaps,
       totalSprayed: totalSprayed ?? this.totalSprayed,
       totalGiftsValue: totalGiftsValue ?? this.totalGiftsValue,
       totalGiftsCount: totalGiftsCount ?? this.totalGiftsCount,
       participantCount: participantCount ?? this.participantCount,
+      viewerCount: viewerCount ?? this.viewerCount,
       isConnected: isConnected ?? this.isConnected,
       isLoading: isLoading ?? this.isLoading,
       sessionEnded: sessionEnded ?? this.sessionEnded,

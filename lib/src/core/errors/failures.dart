@@ -10,10 +10,16 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 /// failures are collapsed to the single [networkErrorMessage]. The server's own
 /// message is only passed through for business-meaningful codes, and only when
 /// it does not look technical.
-String friendlyGrpcError(GrpcError e, String fallback) {
+String friendlyGrpcError(GrpcError e,
+    [String fallback = 'Something went wrong. Please try again.']) {
   // Connectivity / transport failures (incl. non-200 gateway responses) first.
   if (isNetworkError(e)) {
     return networkErrorMessage;
+  }
+  // Frozen/suspended source account — clean message instead of the raw
+  // "account <uuid> is frozen" the server sends.
+  if (isFrozenAccountError(e)) {
+    return frozenAccountMessage;
   }
   if (e.code == StatusCode.unimplemented ||
       (e.message != null && e.message!.contains('unknown service'))) {
@@ -43,7 +49,11 @@ String friendlyGrpcError(GrpcError e, String fallback) {
 }
 
 abstract class Failure {
-  const Failure({required this.message, required this.statusCode});
+  // Sanitize on construction so raw transport/exception text can never be
+  // stored on `message` and later surfaced via state.message / failure.message.
+  // Business messages pass through unchanged (see sanitizeUserFacingError).
+  Failure({required String message, required this.statusCode})
+      : message = sanitizeUserFacingError(message);
 
   final String message;
   final dynamic statusCode; // Can be String or int
@@ -66,15 +76,15 @@ abstract class Failure {
 
 // Define specific failure types if needed, e.g., ServerFailure, CacheFailure
 class ServerFailure extends Failure {
-  const ServerFailure({required super.message, required super.statusCode});
+  ServerFailure({required super.message, required super.statusCode});
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure({required super.message, required super.statusCode});
+  CacheFailure({required super.message, required super.statusCode});
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({required super.message})
+  NetworkFailure({required super.message})
       : super(statusCode: 'Network Error'); // Example default status code
 
   factory NetworkFailure.fromException(dynamic exception) {

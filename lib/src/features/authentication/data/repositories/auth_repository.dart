@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 // gRPC Imports
 import 'package:grpc/grpc.dart';
 import 'package:dartz/dartz.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/device_service.dart';
 import 'package:lazervault/src/features/authentication/data/models/profile_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/session_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
@@ -30,15 +33,137 @@ class AuthRepositoryImpl implements IAuthRepository {
   final UserServiceClient _userServiceClient;
   final AuthServiceClient _authServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
+  final DeviceService _deviceService;
   // final GoogleSignIn _googleSignIn = GoogleSignIn(); // Uncomment if using Google Sign In
 
   AuthRepositoryImpl({
     required UserServiceClient userServiceClient,
     required AuthServiceClient authServiceClient,
     required GrpcCallOptionsHelper callOptionsHelper,
+    required DeviceService deviceService,
   })  : _userServiceClient = userServiceClient,
         _authServiceClient = authServiceClient,
-        _callOptionsHelper = callOptionsHelper;
+        _callOptionsHelper = callOptionsHelper,
+        _deviceService = deviceService;
+
+  /// Resolve the stable per-install device id + human-readable name used to
+  /// bind logins to a device (backend trusted-device tracking). Replaces the
+  /// old hardcoded 'flutter-app'. Never throws — falls back to a safe default.
+  Future<({String id, String name})> _deviceFields() async {
+    try {
+      final id = await _deviceService.getDeviceId();
+      final name = await _deviceService.getDeviceName();
+      return (id: id, name: name);
+    } catch (_) {
+      return (id: 'flutter-app', name: 'Flutter App');
+    }
+  }
+
+  String get _platform => Platform.isIOS
+      ? 'ios'
+      : Platform.isAndroid
+          ? 'android'
+          : 'other';
+
+  @override
+  Future<Either<Failure, void>> registerDevice() async {
+    try {
+      final dev = await _deviceFields();
+      final request = auth_req_resp.RegisterDeviceRequest(
+        deviceUuid: dev.id,
+        platform: _platform,
+        model: dev.name,
+      );
+      await _authServiceClient.registerDevice(
+        request,
+        options: await _callOptionsHelper.withAuth(),
+      );
+      return const Right(null);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<TrustedDevice>>> listDevices() async {
+    try {
+      final response = await _authServiceClient.listDevices(
+        auth_req_resp.ListDevicesRequest(),
+        options: await _callOptionsHelper.withAuth(),
+      );
+      final localId = await _deviceService.getDeviceId();
+      final devices = response.devices.map((d) {
+        DateTime? toDate(int secs) =>
+            secs > 0 ? DateTime.fromMillisecondsSinceEpoch(secs * 1000) : null;
+        return TrustedDevice(
+          deviceUuid: d.deviceUuid,
+          platform: d.platform,
+          model: d.model,
+          osVersion: d.osVersion,
+          appVersion: d.appVersion,
+          trustStatus: d.trustStatus,
+          lastIp: d.lastIp,
+          lastLocation: d.lastLocation,
+          firstSeenAt: toDate(d.firstSeenAt.toInt()),
+          lastLoginAt: toDate(d.lastLoginAt.toInt()),
+          isCurrent: d.current || d.deviceUuid == localId,
+        );
+      }).toList();
+      return Right(devices);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> revokeDevice({required String deviceUuid}) async {
+    try {
+      await _authServiceClient.revokeDevice(
+        auth_req_resp.RevokeDeviceRequest(deviceUuid: deviceUuid),
+        options: await _callOptionsHelper.withAuth(),
+      );
+      return const Right(null);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<LoginActivity>>> getLoginActivity(
+      {int limit = 50, int offset = 0}) async {
+    try {
+      final response = await _authServiceClient.getLoginHistory(
+        auth_req_resp.GetLoginHistoryRequest(limit: limit, offset: offset),
+        options: await _callOptionsHelper.withAuth(),
+      );
+      final items = response.entries.map((e) {
+        final secs = e.createdAt.toInt();
+        return LoginActivity(
+          success: e.success,
+          ipAddress: e.ipAddress,
+          deviceName: e.deviceName,
+          userAgent: e.userAgent,
+          failReason: e.failReason,
+          at: secs > 0 ? DateTime.fromMillisecondsSinceEpoch(secs * 1000) : null,
+        );
+      }).toList();
+      return Right(items);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Request failed.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
 
   Future<Either<Failure, ProfileEntity>> _processAuthResponse(
       Future<auth_req_resp.LoginResponse> Function() action) async {
@@ -57,6 +182,7 @@ class AuthRepositoryImpl implements IAuthRepository {
             .copyWith(
               hasPasscode: response.data.hasPasscode,
               hasTransactionPin: response.data.hasTransactionPin,
+              hasPassword: response.data.hasPassword,
             )
             .withRolesFromAccessToken(session.accessToken);
 
@@ -75,6 +201,19 @@ class AuthRepositoryImpl implements IAuthRepository {
 
         final profileModel = ProfileModel(user: userModel, session: sessionModel);
         return Right(profileModel); // Explicitly use Right()
+      } else if (response.twoFactorRequired) {
+        // 2FA enabled: no session yet — route to the 2FA verification flow.
+        return Left(TwoFactorRequiredFailure(
+          twoFactorToken: response.twoFactorToken,
+          method: response.twoFactorMethod.isNotEmpty ? response.twoFactorMethod : 'totp',
+        ));
+      } else if (response.stepUpRequired) {
+        // Risk-based step-up: no session yet — route to the OTP flow.
+        return Left(StepUpRequiredFailure(
+          stepUpToken: response.stepUpToken,
+          stepUpMethod: response.stepUpMethod,
+          destination: response.stepUpDestination,
+        ));
       } else {
         return Left(ServerFailure(
             message: response.msg.isNotEmpty
@@ -94,18 +233,119 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<Either<Failure, ProfileEntity>> verifyLoginOtp({
+    required String stepUpToken,
+    required String code,
+  }) async {
+    return _processAuthResponse(() async {
+      final dev = await _deviceFields();
+      return await _authServiceClient.verifyLoginOtp(
+        auth_req_resp.VerifyLoginOtpRequest(
+          stepUpToken: stepUpToken,
+          code: code,
+          deviceId: dev.id,
+          deviceName: dev.name,
+        ),
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, ProfileEntity>> verifyTwoFactor({
+    required String twoFactorToken,
+    required String code,
+  }) async {
+    try {
+      // VerifyTwoFactor is authed; during login there is no stored session, so
+      // the temp 2FA token is the Bearer (it's a valid access-token-shaped JWT).
+      final response = await _authServiceClient.verifyTwoFactor(
+        auth_req_resp.VerifyTwoFactorRequest(
+          twoFactorToken: twoFactorToken,
+          code: code,
+        ),
+        // Bound the RPC — without a deadline a stalled connection would leave the
+        // verification screen's loader spinning forever (the channel keepalive
+        // keeps a live-but-idle socket open). On expiry this surfaces as a
+        // DEADLINE_EXCEEDED GrpcError → friendlyGrpcError below → clean retry.
+        options: CallOptions(
+          metadata: {'authorization': 'Bearer $twoFactorToken'},
+          timeout: const Duration(seconds: 30),
+        ),
+      );
+
+      // Copy passcode / transaction-PIN presence from the response (the User
+      // proto doesn't carry them) — WITHOUT this both default to false and the
+      // post-2FA route resolver wrongly sends the user to passcode setup.
+      final userModel = UserModel.fromAuthProto(response.user)
+          .copyWith(
+            hasPasscode: response.hasPasscode,
+            hasTransactionPin: response.hasTransactionPin,
+          )
+          .withRolesFromAccessToken(response.accessToken);
+      final now = DateTime.now();
+      final expiresAt = response.expiresIn > 0
+          ? now.add(Duration(seconds: response.expiresIn.toInt()))
+          : now.add(const Duration(hours: 1));
+      final sessionModel = SessionModel(
+        id: response.user.id,
+        userId: response.user.id,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        accessTokenExpiresAt: expiresAt,
+        refreshTokenExpiresAt: expiresAt,
+      );
+      return Right(ProfileModel(user: userModel, session: sessionModel));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Invalid verification code.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> sendTwoFactorLoginCode({
+    String? twoFactorToken,
+  }) async {
+    try {
+      // Login flow: authorise with the temp 2FA token as the Bearer.
+      // Setup flow (twoFactorToken == null): the user is already authenticated,
+      // so use the normal access-token metadata via withAuth().
+      final options = twoFactorToken != null
+          ? CallOptions(metadata: {'authorization': 'Bearer $twoFactorToken'})
+          : await _callOptionsHelper.withAuth();
+      await _authServiceClient.sendTwoFactorCode(
+        auth_req_resp.SendTwoFactorCodeRequest(),
+        options: options,
+      );
+      return const Right(null);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Could not send code.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
   Future<Either<Failure, ProfileEntity>> login({
-    required String email,
+    String email = '',
+    String phone = '',
     required String password,
   }) async {
     return _processAuthResponse(() async {
+      final dev = await _deviceFields();
       final request = auth_req_resp.LoginRequest(
         email: email,
+        phone: phone,
         password: password,
-        deviceId: 'flutter-app',
-        deviceName: 'Flutter App',
+        deviceId: dev.id,
+        deviceName: dev.name,
       );
-      return await _authServiceClient.login(request);
+      return await _authServiceClient.login(
+        request,
+        options: await _callOptionsHelper.withAppCheck(),
+      );
     });
   }
 
@@ -119,8 +359,309 @@ class AuthRepositoryImpl implements IAuthRepository {
         email: email,
         passcode: passcode,
       );
-      return await _authServiceClient.loginWithPasscode(request);
+      return await _authServiceClient.loginWithPasscode(
+        request,
+        options: await _callOptionsHelper.withAppCheck(),
+      );
     });
+  }
+
+  // ── Phone + Passcode authentication mode ─────────────────────────────────
+
+  @override
+  Future<Either<Failure, String>> getAuthenticationMode() async {
+    try {
+      final response = await _authServiceClient
+          .getAuthenticationConfig(auth_req_resp.GetAuthenticationConfigRequest());
+      final mode = response.authenticationMode.isNotEmpty
+          ? response.authenticationMode
+          : 'phone_passcode';
+      // Persist the verification-required toggles that ride the same config call,
+      // so FeatureFlags.isEmail/PhoneVerificationRequired are fresh for the
+      // onboarding/login/settings UI.
+      await FeatureFlags.setVerificationRequirements(
+        email: response.emailVerificationRequired,
+        phone: response.phoneVerificationRequired,
+      );
+      return Right(mode);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not load authentication config.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PhoneSignupOtpResult>> requestSignupPhoneOtp({
+    required String phone,
+    required String countryCode,
+  }) async {
+    try {
+      final response = await _authServiceClient.requestSignupPhoneOTP(
+        auth_req_resp.RequestSignupPhoneOTPRequest(
+          phone: phone,
+          countryCode: countryCode,
+        ),
+        options: await _callOptionsHelper.withAppCheck(),
+      );
+      if (!response.success) {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Could not send code.',
+          statusCode: 400,
+        ));
+      }
+      return Right(PhoneSignupOtpResult(
+        expiresInSeconds: response.expiresIn.toInt(),
+        resendAfterSeconds: response.resendAfterSeconds,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not send verification code.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> verifySignupPhoneOtp({
+    required String phone,
+    required String code,
+  }) async {
+    try {
+      final response = await _authServiceClient.verifySignupPhoneOTP(
+        auth_req_resp.VerifySignupPhoneOTPRequest(phone: phone, code: code),
+        options: await _callOptionsHelper.withAppCheck(),
+      );
+      if (!response.success || response.signupToken.isEmpty) {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Invalid verification code.',
+          statusCode: 400,
+        ));
+      }
+      return Right(response.signupToken);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not verify code.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ProfileEntity>> signUpWithPhone({
+    required String phone,
+    required String signupToken,
+    required String passcode,
+    required String firstName,
+    required String lastName,
+    String? email,
+    required String countryCode,
+    String? locale,
+    String? username,
+    String? referralCode,
+    String? dateOfBirth,
+  }) async {
+    return _processAuthResponse(() async {
+      final dev = await _deviceFields();
+      final request = auth_req_resp.SignupWithPhoneRequest(
+        phone: phone,
+        signupToken: signupToken,
+        passcode: passcode,
+        firstName: firstName,
+        lastName: lastName,
+        email: email ?? '',
+        countryCode: countryCode,
+        locale: locale ?? '',
+        username: username ?? '',
+        referralCode: referralCode ?? '',
+        dateOfBirth: dateOfBirth ?? '',
+        deviceId: dev.id,
+        deviceName: dev.name,
+      );
+      return await _authServiceClient.signupWithPhone(
+        request,
+        options: await _callOptionsHelper.withAppCheck(),
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, ProfileEntity>> loginWithPhonePasscode({
+    required String phone,
+    required String passcode,
+  }) async {
+    return _processAuthResponse(() async {
+      final dev = await _deviceFields();
+      final request = auth_req_resp.LoginWithPhonePasscodeRequest(
+        phone: phone,
+        passcode: passcode,
+        deviceId: dev.id,
+        deviceName: dev.name,
+      );
+      return await _authServiceClient.loginWithPhonePasscode(
+        request,
+        options: await _callOptionsHelper.withAppCheck(),
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, PhoneSignupOtpResult>> requestPasscodeReset({
+    required String phone,
+    required String countryCode,
+  }) async {
+    try {
+      final response = await _authServiceClient.requestPasscodeReset(
+        auth_req_resp.RequestPasscodeResetRequest(
+          phone: phone,
+          countryCode: countryCode,
+        ),
+      );
+      if (!response.success) {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Could not send code.',
+          statusCode: 400,
+        ));
+      }
+      return Right(PhoneSignupOtpResult(
+        expiresInSeconds: response.expiresIn.toInt(),
+        resendAfterSeconds: response.resendAfterSeconds,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not send verification code.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> verifyPasscodeReset({
+    required String phone,
+    required String code,
+    required String countryCode,
+  }) async {
+    try {
+      final response = await _authServiceClient.verifyPasscodeResetOTP(
+        auth_req_resp.VerifyPasscodeResetOTPRequest(
+          phone: phone,
+          code: code,
+          countryCode: countryCode,
+        ),
+      );
+      if (!response.success) {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Invalid or expired code.',
+          statusCode: 400,
+        ));
+      }
+      return const Right(null);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not verify code.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPasscodeWithOtp({
+    required String phone,
+    required String code,
+    required String newPasscode,
+  }) async {
+    try {
+      final response = await _authServiceClient.resetPasscodeWithOTP(
+        auth_req_resp.ResetPasscodeWithOTPRequest(
+          phone: phone,
+          code: code,
+          newPasscode: newPasscode,
+        ),
+      );
+      if (!response.success) {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Could not reset passcode.',
+          statusCode: 400,
+        ));
+      }
+      return const Right(null);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not reset passcode.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> setPreferredLoginMethod({
+    required String method,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.setPreferredLoginMethod(
+        auth_req_resp.SetPreferredLoginMethodRequest(method: method),
+        options: callOptions,
+      );
+      if (response.success) {
+        return Right(response.preferredLoginMethod.isNotEmpty
+            ? response.preferredLoginMethod
+            : method);
+      }
+      return Left(ServerFailure(
+        message: response.msg.isNotEmpty
+            ? response.msg
+            : 'Failed to update login method',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to update login method'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setPassword({
+    required String newPassword,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.setPassword(
+        auth_req_resp.SetPasswordRequest(newPassword: newPassword),
+        options: callOptions,
+      );
+      if (response.success) {
+        return const Right(null);
+      }
+      return Left(ServerFailure(
+        message: response.msg.isNotEmpty ? response.msg : 'Failed to set password',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Failed to set password'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
   }
 
   @override
@@ -227,6 +768,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       print('Signup with locale: $locale -> countryCode: $derivedCountryCode, currencyCode: $derivedCurrencyCode');
 
       // Use new AuthService.Signup endpoint that returns tokens directly
+      final dev = await _deviceFields();
       final signupRequest = auth_req_resp.SignupRequest(
         firstName: firstName,
         lastName: lastName,
@@ -234,14 +776,17 @@ class AuthRepositoryImpl implements IAuthRepository {
         password: password,
         phone: phoneNumber ?? '',
         countryCode: derivedCountryCode, // Derived from locale
-        deviceId: 'flutter-app', // TODO: Get actual device ID
-        deviceName: 'Flutter App', // TODO: Get actual device name
+        deviceId: dev.id,
+        deviceName: dev.name,
         primaryContactType: protoPrimaryContact,
         username: username ?? '', // Pass empty string if not provided - backend handles as optional
         referralCode: referralCode ?? '',
       );
       print('Sending gRPC Signup request with countryCode: $derivedCountryCode...');
-      final signupResponse = await _authServiceClient.signup(signupRequest);
+      final signupResponse = await _authServiceClient.signup(
+        signupRequest,
+        options: await _callOptionsHelper.withAppCheck(),
+      );
 
       // Check if signup returned tokens
       if (signupResponse.accessToken.isEmpty || signupResponse.refreshToken.isEmpty) {
@@ -811,34 +1356,172 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   /// Helper method for token rotation - returns tokens as a simple map
   /// This is used by GrpcCallOptionsHelper for automatic token refresh
-  Future<Map<String, String>?> refreshTokensSimple() async {
+  @override
+  @override
+  Future<Either<Failure, DateTime>> requestAccountLock({required int durationSeconds, String? reason}) async {
     try {
-      // Get refresh token from secure storage
-      final storage = _callOptionsHelper.storage;
-      final refreshToken = await storage.read(key: 'refresh_token');
+      final response = await _authServiceClient.requestAccountLock(
+        auth_req_resp.RequestAccountLockRequest(
+          durationSeconds: durationSeconds,
+          reason: reason ?? '',
+        ),
+        options: await _callOptionsHelper.withAuth(),
+      );
+      if (!response.success) {
+        return Left(ServerFailure(
+            message: response.message.isNotEmpty ? response.message : 'Could not lock your account.',
+            statusCode: 400));
+      }
+      final until = DateTime.tryParse(response.lockedUntil);
+      if (until == null) {
+        return Left(ServerFailure(message: 'Invalid lock response.', statusCode: 0));
+      }
+      return Right(until);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Could not lock your account.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
 
-      if (refreshToken == null || refreshToken.isEmpty) {
-        print('No refresh token available for rotation');
+  @override
+  Future<Either<Failure, AccountDeletionOutcome>> requestAccountDeletion({String? reason}) async {
+    try {
+      final response = await _authServiceClient.requestAccountDeletion(
+        auth_req_resp.RequestAccountDeletionRequest(reason: reason ?? ''),
+        options: await _callOptionsHelper.withAuth(),
+      );
+      return Right(AccountDeletionOutcome(
+        success: response.success,
+        status: response.status,
+        scheduledAt: response.scheduledAt,
+        gracePeriodDays: response.gracePeriodDays,
+        message: response.message,
+        errorCode: response.errorCode,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Could not delete your account.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> cancelAccountDeletion() async {
+    try {
+      final response = await _authServiceClient.cancelAccountDeletion(
+        auth_req_resp.CancelAccountDeletionRequest(),
+        options: await _callOptionsHelper.withAuth(),
+      );
+      return Right(response.message);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Could not cancel your deletion.'), statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
+  Future<Map<String, String>?> refreshTokensSimple() async {
+    // Get refresh token from secure storage (the volatile session key).
+    final storage = _callOptionsHelper.storage;
+    final refreshToken = await storage.read(key: 'refresh_token');
+    if (refreshToken == null || refreshToken.isEmpty) {
+      print('No refresh token available for rotation');
+      return null;
+    }
+    return refreshTokensWithToken(refreshToken);
+  }
+
+  @override
+  Future<({Map<String, String>? tokens, bool authExpired})>
+      refreshTokensWithReason() async {
+    final storage = _callOptionsHelper.storage;
+    final rt = await storage.read(key: 'refresh_token');
+    if (rt == null || rt.isEmpty) {
+      // Nothing to rotate — treat as a definitive "need to re-auth".
+      return (tokens: null, authExpired: true);
+    }
+    final result = await refreshToken(refreshToken: rt);
+    return result.fold(
+      (failure) {
+        // Classify: was the refresh token actually REJECTED (definitive), or did
+        // the request just fail to reach a healthy server (transient)? Only the
+        // former means the session is gone. `statusCode` carries the gRPC code
+        // (see refreshToken()) or a 401/500 sentinel.
+        final code = failure.statusCode;
+        final definitive = code == StatusCode.unauthenticated || // 16
+            code == StatusCode.permissionDenied || //               7
+            code == StatusCode.invalidArgument || //                3
+            code == StatusCode.notFound || //                       5
+            code == 401;
+        return (tokens: null, authExpired: definitive);
+      },
+      (profile) async {
+        final at = profile.session.accessToken;
+        final newRt = profile.session.refreshToken;
+        if (at.isNotEmpty && newRt.isNotEmpty) {
+          // Persist the single, rotated refresh token atomically. There is NO
+          // second "durable biometric" copy: the auth-service rotates refresh
+          // tokens one-time-use and revokes the WHOLE family on any replay, so
+          // two copies would inevitably diverge and trip reuse-detection. The
+          // one `refresh_token` here IS the biometric credential.
+          await storage.write(key: 'access_token', value: at);
+          await storage.write(key: 'refresh_token', value: newRt);
+        }
+        return (
+          tokens: {'accessToken': at, 'refreshToken': newRt},
+          authExpired: false,
+        );
+      },
+    );
+  }
+
+  @override
+  Future<Map<String, String>?> refreshTokensWithToken(
+      String refreshToken) async {
+    try {
+      final storage = _callOptionsHelper.storage;
+      if (refreshToken.isEmpty) {
+        print('No refresh token supplied for rotation');
         return null;
       }
 
       final result = await this.refreshToken(refreshToken: refreshToken);
 
-      return result.fold(
-        (failure) {
+      return await result.fold(
+        (failure) async {
           print('Token refresh failed: ${failure.message}');
           return null;
         },
-        (profile) {
+        (profile) async {
           print('Token refresh successful');
+          final at = profile.session.accessToken;
+          final rt = profile.session.refreshToken;
+          // Persist the rotated tokens here so callers that invoke this method
+          // DIRECTLY (biometric / voice login) leave a valid, rotated session in
+          // storage. Without this, refresh-token rotation would burn the stored
+          // refresh token without saving the new one, silently killing the
+          // session on the next access-token expiry. Idempotent when this runs as
+          // the interceptor's onTokenRefreshNeeded callback — the wrapper writes
+          // the same values again. ONE refresh token only: no durable biometric
+          // copy (the backend rotates one-time-use with family-kill-on-replay,
+          // so a second copy would trip reuse-detection and revoke everything).
+          if (at.isNotEmpty && rt.isNotEmpty) {
+            await storage.write(key: 'access_token', value: at);
+            await storage.write(key: 'refresh_token', value: rt);
+          }
           return {
-            'accessToken': profile.session.accessToken,
-            'refreshToken': profile.session.refreshToken,
+            'accessToken': at,
+            'refreshToken': rt,
           };
         },
       );
     } catch (e) {
-      print('Error in refreshTokensSimple: $e');
+      print('Error in refreshTokensWithToken: $e');
       return null;
     }
   }
@@ -949,6 +1632,76 @@ class AuthRepositoryImpl implements IAuthRepository {
       print('Unexpected error during verifyPhoneNumber: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while verifying phone number.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> requestPhoneChange({
+    required String newPhone,
+    String countryCode = '',
+  }) async {
+    try {
+      final request = auth_req_resp.RequestPhoneChangeRequest(
+        newPhone: newPhone,
+        countryCode: countryCode,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _authServiceClient.requestPhoneChange(request, options: callOptions);
+      if (response.success) {
+        return Right(response.msg.isNotEmpty
+            ? response.msg
+            : 'A verification code has been sent to the new number');
+      }
+      return Left(ServerFailure(
+        message: response.msg.isNotEmpty ? response.msg : 'Could not start the phone change.',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not start the phone change.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred while changing your number.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> verifyPhoneChange({
+    required String newPhone,
+    required String code,
+    String countryCode = '',
+  }) async {
+    try {
+      final request = auth_req_resp.VerifyPhoneChangeRequest(
+        newPhone: newPhone,
+        code: code,
+        countryCode: countryCode,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _authServiceClient.verifyPhoneChange(request, options: callOptions);
+      if (response.success) {
+        return Right(response.phone.isNotEmpty ? response.phone : newPhone);
+      }
+      return Left(ServerFailure(
+        message: response.msg.isNotEmpty ? response.msg : 'Could not verify the new number.',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not verify the new number.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred while verifying the new number.',
         statusCode: 500,
       ));
     }

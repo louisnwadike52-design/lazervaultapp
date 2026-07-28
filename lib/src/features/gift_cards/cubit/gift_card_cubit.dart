@@ -8,10 +8,26 @@ import '../../../../core/cache/cache_config.dart';
 import '../../../../core/cache/swr_cache_manager.dart';
 import '../../../../core/offline/mutation_queue.dart';
 import '../../../../core/utils/debouncer.dart';
+import '../../../../core/utils/friendly_error.dart';
 import '../domain/entities/gift_card_entity.dart';
 import '../domain/repositories/i_gift_card_repository.dart';
 import '../domain/validation/gift_card_validation.dart';
 import 'gift_card_state.dart';
+
+/// Turns any thrown error into a user-safe message WITHOUT downgrading the
+/// carefully-worded messages the datasource/backend already produce.
+/// - A [GrpcError] is mapped by status code (and business copy on
+///   invalid-argument/failed-precondition is passed through) via [friendlyError].
+/// - A plain `Exception('...')` (the datasource wraps some errors this way, and
+///   the backend's classifyBuy/SellError copy arrives as the gRPC message) keeps
+///   its human sentence via [sanitizeUserFacingError] after stripping the
+///   `Exception:` prefix; only raw/technical text collapses to a generic line.
+/// A raw gRPC/technical string is therefore never shown to the user.
+String _giftCardFriendlyMessage(Object e) {
+  if (e is GrpcError) return friendlyError(e);
+  final stripped = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+  return sanitizeUserFacingError(stripped);
+}
 
 class GiftCardCubit extends Cubit<GiftCardState> {
   final IGiftCardRepository _repository;
@@ -88,9 +104,21 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       final hasSettledBrandState = state is GiftCardBrandsLoaded ||
           state is GiftCardBrandsEmpty ||
           state is GiftCardBrandsSearched;
+      // A GENUINE filter change (country / category / search) must INVALIDATE the
+      // cached grid and show a loading state. Otherwise the stale-while-revalidate
+      // path below keeps the *previous* filter's cards on screen and only silently
+      // re-emits Loaded when the network lands — which is the "switch All→USA does
+      // nothing until swipe-refresh" bug. Same-filter revalidation still runs
+      // silently (no shimmer flash), because the guard keyed off state-type alone
+      // couldn't tell a filter change apart from a background re-fetch of the same
+      // filter. Compare BEFORE the _last* fields are reassigned just below.
+      final filterChanged = !isLoadMore &&
+          (countryCode != _lastCountryCode ||
+              category != _lastCategory ||
+              searchQuery != _lastSearchQuery);
       if (isLoadMore) {
         emit(GiftCardBrandsLoadingMore(_accumulatedBrands));
-      } else if (!hasSettledBrandState) {
+      } else if (!hasSettledBrandState || filterChanged) {
         _accumulatedBrands = [];
         _currentPage = 0;
         emit(GiftCardBrandsLoading());
@@ -119,7 +147,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
             emit(GiftCardServerUnavailable(operation: 'Loading brands'));
           } else {
             emit(GiftCardNetworkError(
-              message: msg,
+              message: sanitizeUserFacingError(msg),
               canRetry: true,
               operation: 'Loading brands',
             ));
@@ -151,7 +179,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Loading brands',
       ));
@@ -222,7 +250,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       result.fold(
         (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
+          message: sanitizeUserFacingError(failure.message),
           canRetry: true,
           operation: 'Searching brands',
         )),
@@ -243,7 +271,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Searching brands',
       ));
@@ -360,9 +388,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           }
           final msg = failure.message;
           if (msg.contains('Insufficient funds')) {
+            // Don't surface a client-side balance figure — the backend holds
+            // the authoritative balance. available stays null so the UI shows
+            // a generic insufficient-funds message rather than a wrong "0.00".
             emit(GiftCardInsufficientFunds(
               required: amount,
-              available: userBalance,
               brandName: brand.name,
             ));
           } else if (msg.contains('not found')) {
@@ -429,7 +459,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(GiftCardPurchaseError(e.toString()));
+      emit(GiftCardPurchaseError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -470,7 +500,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(GiftCardRedeemError(e.toString()));
+      emit(GiftCardRedeemError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -551,7 +581,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         return;
       }
       emit(GiftCardNetworkError(
-        message: errorMsg,
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Loading your gift cards',
       ));
@@ -642,7 +672,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
             emit(GiftCardNotFound(identifier: giftCardId, type: 'card'));
           } else {
             emit(GiftCardNetworkError(
-              message: failure.message,
+              message: sanitizeUserFacingError(failure.message),
               canRetry: true,
               operation: 'Loading gift card details',
             ));
@@ -653,7 +683,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Loading gift card details',
       ));
@@ -746,7 +776,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           // surface an error when there's nothing to show.
           if (_accumulatedSellableCards.isNotEmpty) return;
           emit(GiftCardNetworkError(
-            message: failure.message,
+            message: sanitizeUserFacingError(failure.message),
             canRetry: true,
             operation: 'Loading sellable cards',
           ));
@@ -764,7 +794,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       if (isClosed) return;
       if (_accumulatedSellableCards.isNotEmpty) return;
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Loading sellable cards',
       ));
@@ -793,7 +823,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(SellError(e.toString()));
+      emit(SellError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -823,7 +853,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(PayoutMethodsError(e.toString()));
+      emit(PayoutMethodsError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -848,6 +878,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     /// MUST be true. The backend rejects with FailedPrecondition
     /// otherwise; the legal/UX safety net for the sell flow.
     bool disclaimerAccepted = false,
+    /// MUST be true. The "Verify balance" step's attestation — the user
+    /// declared the card's available balance and accepted the liability
+    /// terms (no issuer/provider balance-check API exists, so the balance
+    /// is only verified after submission). Backend rejects when false.
+    bool balanceAttested = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -867,6 +902,16 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     if (!disclaimerAccepted) {
       if (isClosed) return;
       emit(const SellDisclaimerNotAccepted());
+      return;
+    }
+    // Balance attestation is the dedicated "Verify balance" step's gate.
+    // The UI disables Continue until it's ticked; this is the defensive
+    // backstop that mirrors the backend's FailedPrecondition rejection.
+    if (!balanceAttested) {
+      if (isClosed) return;
+      emit(const SellError(
+        'Please confirm the card balance on the Verify balance step before selling.',
+      ));
       return;
     }
     try {
@@ -893,6 +938,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         subcategoryId: subcategoryId,
         cardCode: cardCode,
         disclaimerAccepted: disclaimerAccepted,
+        balanceAttested: balanceAttested,
         currency: currency,
         images: images,
         idempotencyKey: effectiveIdempotencyKey,
@@ -1002,11 +1048,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         );
         emit(const SellQueued(message: 'Sell queued. Will submit when back online.'));
       } else {
-        emit(SellError(e.message ?? e.toString()));
+        emit(SellError(_giftCardFriendlyMessage(e)));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(SellError(e.toString()));
+      emit(SellError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -1024,7 +1070,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(SellError(e.toString()));
+      emit(SellError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -1147,7 +1193,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Loading your sales',
       ));
@@ -1170,7 +1216,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       result.fold(
         (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
+          message: sanitizeUserFacingError(failure.message),
           canRetry: true,
           operation: 'Loading transactions',
         )),
@@ -1185,41 +1231,9 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: _giftCardFriendlyMessage(e),
         canRetry: true,
         operation: 'Loading transactions',
-      ));
-    }
-  }
-
-  Future<void> loadSettlementHistory() async {
-    try {
-      if (isClosed) return;
-      emit(GiftCardLoading());
-
-      final result = await _repository.getSettlementHistory();
-      if (isClosed) return;
-
-      result.fold(
-        (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
-          canRetry: true,
-          operation: 'Loading settlement history',
-        )),
-        (settlements) {
-          if (settlements.isEmpty) {
-            emit(const SettlementHistoryLoaded([]));
-          } else {
-            emit(SettlementHistoryLoaded(settlements));
-          }
-        },
-      );
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardNetworkError(
-        message: e.toString(),
-        canRetry: true,
-        operation: 'Loading settlement history',
       ));
     }
   }
@@ -1246,7 +1260,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(SellImageError(e.toString()));
+      emit(SellImageError(_giftCardFriendlyMessage(e)));
     }
   }
 
@@ -1270,24 +1284,37 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      emit(OCRFailed(e.toString()));
+      emit(OCRFailed(_giftCardFriendlyMessage(e)));
     }
   }
 
-  // Get active sell provider (admin only - returns default for now)
+  /// Resolves the server's currently-active sell provider so the sell flow
+  /// shows (and branches on) the provider that will ACTUALLY execute the sale.
+  /// The backend is the source of truth (feature flag / system_settings); a
+  /// hardcoded value here would let the UI claim one provider while the
+  /// backend runs another — a provider-mismatch on the money path.
   Future<void> getSellProvider() async {
-    try {
-      emit(SellProviderLoading());
-      // TODO: Implement actual provider fetching from backend
-      // For now, return a default value
-      emit(const SellProviderLoaded(
-        provider: 'manual',
-        description: 'Manual review mode',
-      ));
-    } catch (e) {
-      if (isClosed) return;
-      emit(SellProviderError(e.toString()));
-    }
+    if (isClosed) return;
+    emit(SellProviderLoading());
+    final result = await _repository.getActiveSellProvider();
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(SellProviderError(failure.message)),
+      (data) {
+        final provider = (data['provider'] as String?)?.trim();
+        final description = (data['description'] as String?)?.trim();
+        if (provider == null || provider.isEmpty) {
+          emit(const SellProviderError('No active sell provider returned'));
+          return;
+        }
+        emit(SellProviderLoaded(
+          provider: provider,
+          description: (description == null || description.isEmpty)
+              ? provider
+              : description,
+        ));
+      },
+    );
   }
 
   @override

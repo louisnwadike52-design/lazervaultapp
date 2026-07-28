@@ -11,6 +11,8 @@ import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/signup_state_service.dart';
 
 class PasscodeSetupScreen extends StatefulWidget {
   const PasscodeSetupScreen({super.key});
@@ -39,6 +41,14 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
         statusBarIconBrightness: Brightness.light,
       ),
     );
+
+    // Persist the onboarding step so a kill/restart resumes here — but ONLY for
+    // the signup onboarding path. Setting a passcode from Settings, the login
+    // flow, or a forgot-passcode reset must NOT flag an incomplete signup (that
+    // would bounce a fully-registered user back into onboarding on next launch).
+    if (!_fromLoginFlow && !_fromForgotPasscode && !_hasTransactionPin) {
+      serviceLocator<SignupStateService>().markPasscodeSetupStep();
+    }
 
     // Initialize passcode setup state
     WidgetsBinding.instance.addPostFrameCallback((_) {

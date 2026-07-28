@@ -902,7 +902,13 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
   Widget _buildStep1ContactDetails() {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      // Add the keyboard inset as bottom padding so any focused field can
+      // always scroll above the soft keyboard (never stuck underneath it).
+      padding: EdgeInsets.only(
+        left: 20.w,
+        right: 20.w,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -918,7 +924,13 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
   Widget _buildStep2PaymentDetails(ElectricityProviderEntity provider) {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      // Keyboard inset as bottom padding so the amount field (and anything
+      // below it) can always scroll clear of the soft keyboard.
+      padding: EdgeInsets.only(
+        left: 20.w,
+        right: 20.w,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

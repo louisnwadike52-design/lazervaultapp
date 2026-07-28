@@ -1,7 +1,9 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
 
 // Sealed states
@@ -33,6 +35,11 @@ class RecipientTransactionHistoryError extends RecipientTransactionHistoryState 
 
 class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistoryState> {
   final TransactionHistoryRepository repository;
+  // Source of truth for EXTERNAL transfers' destination account — used to
+  // supplement the accounts-service ledger, which can't link external transfers
+  // to a recipient (it writes an empty counterparty on the hold-capture row).
+  final IPaymentsTransferDataSource paymentsDataSource;
+  final AccountManager accountManager;
 
   String? _recipientAccountNumber;
   String? _recipientName;
@@ -40,8 +47,11 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
   /// All transactions matching this recipient (before search filtering)
   List<UnifiedTransaction> _allRecipientTransactions = [];
 
-  RecipientTransactionHistoryCubit({required this.repository})
-      : super(const RecipientTransactionHistoryInitial());
+  RecipientTransactionHistoryCubit({
+    required this.repository,
+    required this.paymentsDataSource,
+    required this.accountManager,
+  }) : super(const RecipientTransactionHistoryInitial());
 
   Future<void> loadRecipientTransactions(
     String recipientAccountNumber,
@@ -122,6 +132,30 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
           developer.log('[RecipientTxHistory] Name-search fallback failed: $e');
           // Swallow — primary set still surfaces if it had results.
         }
+      }
+
+      // Supplement with EXTERNAL transfers from core-payments' payment history.
+      // The accounts-service ledger writes an empty counterparty on the
+      // hold-capture row, so external bank payouts never match the two queries
+      // above — this is why a recipient you've clearly paid (externally) showed
+      // an empty history. core-payments links the transfer to its destination
+      // bank account, so we fetch + filter by that here.
+      try {
+        // User-scoped by JWT (no source-account filter), so this runs even when
+        // there's no active account id — external transfers to this recipient
+        // must surface regardless of which account is currently active.
+        final external = await paymentsDataSource.getRecipientExternalPayments(
+          accountId: accountManager.activeAccountId ?? '',
+          recipientAccountNumber: recipientAccountNumber,
+          limit: 200,
+        );
+        developer.log(
+          '[RecipientTxHistory] External (core-payments): ${external.length}',
+        );
+        transactions.addAll(external);
+      } catch (e) {
+        developer.log('[RecipientTxHistory] External-payments supplement failed: $e');
+        // Best-effort — internal results still surface.
       }
 
       // Deduplicate by reference (backend creates duplicate records from

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -80,8 +81,26 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     _startProcessingFromBackend();
   }
 
+  // Guard so the terminal settlement metric is emitted exactly once.
+  bool _settledEmitted = false;
+
   void _initializeData() {
     transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
+
+    // Telemetry: processing-screen view. Flow isn't threaded into the
+    // navigation payload, so fall back to 'unknown' when absent.
+    AnalyticsService.instance.trackSendFundsScreen(
+      'processing',
+      (transferDetails['flow'] as String?) ?? 'unknown',
+    );
+  }
+
+  /// Emit the terminal send-funds settlement metric exactly once.
+  /// [status] ∈ success|failure|cancelled|pending.
+  void _emitSettled(String status) {
+    if (_settledEmitted) return;
+    _settledEmitted = true;
+    AnalyticsService.instance.trackSendFundsSettled(status: status);
   }
 
   void _setupAnimations() {
@@ -239,12 +258,20 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     _processingController.stop();
     _pulseController.stop();
 
+    // Telemetry: terminal success observed here. Mark the payload so the
+    // receipt screen doesn't double-count the same settlement.
+    _emitSettled('success');
+    transferDetails['settledEmitted'] = true;
+
     // Navigate immediately to receipt
     Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
   }
 
   void _handleTransferFailure(String reason) {
     if (!mounted) return;
+
+    // Telemetry: terminal failure observed here (failed/reversed/timeout).
+    _emitSettled('failure');
 
     _processingController.stop();
     _pulseController.stop();

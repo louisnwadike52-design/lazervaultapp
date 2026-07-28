@@ -8,7 +8,10 @@ import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
 import '../widgets/split_bill_card.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../widgets/split_bill_shimmer.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class SplitBillHomeScreen extends StatelessWidget {
   const SplitBillHomeScreen({super.key});
@@ -41,32 +44,22 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
   late TabController _tabController;
   int _currentTab = 0;
 
+  // Locally-cached tab data. Both tabs share ONE SplitBillCubit whose state is a
+  // single stream, so building the tabs directly off a BlocBuilder made every
+  // load — including the reload fired on each swipe — flash the shimmer AND
+  // blank the OTHER tab (whose Loaded state no longer matched the current
+  // state). That is the "refreshes and blinks on every swipe" symptom. We now
+  // cache each tab's list here (populated by the BlocListener), build the tabs
+  // from the cache, and load each tab only once (pull-to-refresh updates it).
+  // A tab keeps showing its cached list across state changes, so it never
+  // blinks; the shimmer appears only on the very first load (cache still null).
+  List<SplitBillEntity>? _incomingBills;
+  List<SplitBillEntity>? _createdBills;
+  String? _incomingError;
+  String? _createdError;
+
   String? get _currentUserId =>
       context.read<AuthenticationCubit>().userId;
-
-  /// Convert raw cubit / gRPC error strings into something a human can read.
-  /// Same shape as `invoice_home_screen._friendlyErrorMessage`.
-  static String _friendlyMessage(String raw) {
-    final lower = raw.toLowerCase();
-    if (lower.contains('unknown service')) {
-      return "Split Bill isn't available right now. Please try again in a moment.";
-    }
-    if (lower.contains('unavailable') || lower.contains('connection')) {
-      return 'Unable to reach the server. Check your connection and retry.';
-    }
-    if (lower.contains('unauthenticated') ||
-        lower.contains('token') ||
-        lower.contains('auth')) {
-      return 'Your session has expired. Please sign in again.';
-    }
-    if (lower.contains('timeout') || lower.contains('deadline')) {
-      return 'The request timed out. Please retry.';
-    }
-    if (lower.contains('permission') || lower.contains('denied')) {
-      return "You don't have permission to view these split bills.";
-    }
-    return 'We hit an issue loading split bills. Please retry.';
-  }
 
   @override
   void initState() {
@@ -85,10 +78,17 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
     setState(() => _currentTab = _tabController.index);
+    // Load a tab's data only the FIRST time it's shown; afterwards it is served
+    // from the local cache (pull-to-refresh refreshes it). This removes the
+    // reload-on-every-swipe that caused the flicker.
     if (_tabController.index == 0) {
-      context.read<SplitBillCubit>().loadIncomingBills();
+      if (_incomingBills == null) {
+        context.read<SplitBillCubit>().loadIncomingBills();
+      }
     } else {
-      context.read<SplitBillCubit>().loadCreatedBills();
+      if (_createdBills == null) {
+        context.read<SplitBillCubit>().loadCreatedBills();
+      }
     }
   }
 
@@ -100,21 +100,33 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     }
   }
 
+  /// Back should ALWAYS land on the Select Recipients screen. Normally there is a
+  /// route to pop to, but a preceding pay flow can reset the stack (the receipt
+  /// does offAllNamed), leaving nothing to pop — which read as "stuck". In that
+  /// case navigate to Select Recipients explicitly instead of dead-ending.
+  void _handleBack() {
+    if (Navigator.of(context).canPop()) {
+      Get.back();
+    } else {
+      Get.offNamed(AppRoutes.selectRecipient);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Layout: curved purple banner (back arrow + title + subtitle) flowing
     // into a dark scaffold body. Mirrors the Select Recipients header
     // structure so the navigation between the two screens feels continuous.
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       extendBodyBehindAppBar: true,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Get.toNamed(AppRoutes.createSplitBill);
-          if (context.mounted) {
-            _refreshData();
-          }
-        },
+        onPressed: _openCreate,
         backgroundColor: _brandPurple,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
@@ -128,14 +140,31 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
       ),
       body: BlocListener<SplitBillCubit, SplitBillState>(
         listener: (context, state) {
-          if (state is SplitBillError) {
-            Get.snackbar(
-              "Couldn't load",
-              _friendlyMessage(state.message),
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-            );
+          // Fold list results into the per-tab caches. The tabs render from
+          // these caches (not the live state), so a load never blanks a tab.
+          if (state is IncomingSplitBillsLoaded) {
+            setState(() {
+              _incomingBills = state.bills;
+              _incomingError = null;
+            });
+          } else if (state is CreatedSplitBillsLoaded) {
+            setState(() {
+              _createdBills = state.bills;
+              _createdError = null;
+            });
+          } else if (state is SplitBillError) {
+            // Surface the failure inline on the affected tab only (the empty
+            // error state renders a user-friendly message + Retry). No snackbar:
+            // it duplicated the in-tab error AND, because GetX's Get.back()
+            // dismisses an open snackbar before popping the route, it made the
+            // back button appear to hang until the toast finished.
+            setState(() {
+              if (_currentTab == 0 && _incomingBills == null) {
+                _incomingError = state.message;
+              } else if (_currentTab == 1 && _createdBills == null) {
+                _createdError = state.message;
+              }
+            });
           }
         },
         child: Column(
@@ -155,6 +184,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -195,7 +225,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
             shape: const CircleBorder(),
             child: InkWell(
               customBorder: const CircleBorder(),
-              onTap: () => Get.back(),
+              onTap: _handleBack,
               child: Container(
                 width: 38,
                 height: 38,
@@ -228,6 +258,22 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
                 ),
               ],
             ),
+          ),
+          const ServiceVoiceButton(
+            serviceName: 'split_bills',
+            iconColor: Colors.white,
+            backgroundColor: Colors.white,
+            buttonSize: 34,
+            iconSize: 17,
+          ),
+          const SizedBox(width: 8),
+          const MicroserviceChatIcon(
+            serviceName: 'Split Bills',
+            sourceContext: 'split_bills',
+            iconColor: Colors.white,
+            chatAccentColor: _brandPurple,
+            size: 34,
+            iconSize: 17,
           ),
         ],
       ),
@@ -283,122 +329,116 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
   }
 
   Widget _buildIncomingTab() {
-    return BlocBuilder<SplitBillCubit, SplitBillState>(
-      builder: (context, state) {
-        if (state is SplitBillLoading || state is SplitBillListLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
-          );
-        }
-
-        if (state is IncomingSplitBillsLoaded) {
-          final bills = state.bills;
-          if (bills.isEmpty) {
-            return _buildEmptyListForRefresh(
-              icon: Icons.call_received_rounded,
-              title: 'No Incoming Split Bills',
-              subtitle: 'Split bills from others will appear here',
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: _refreshData,
-            color: const Color(0xFF4834D4),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              itemCount: bills.length,
-              itemBuilder: (context, index) {
-                final bill = bills[index];
-                return SplitBillCard(
-                  bill: bill,
-                  isIncoming: true,
-                  currentUserId: _currentUserId,
-                  onTap: () => _onBillTapped(bill),
-                );
-              },
-            ),
-          );
-        }
-
-        if (state is SplitBillError) {
-          return _buildErrorState(_friendlyMessage(state.message));
-        }
-
-        // Default / initial state
-        return _buildEmptyListForRefresh(
-          icon: Icons.call_received_rounded,
-          title: 'No Incoming Split Bills',
-          subtitle: 'Split bills from others will appear here',
+    // Rendered from the local cache (see field docs) so the shared cubit's
+    // transient loading state can never blank or blink this tab.
+    if (_incomingBills == null) {
+      if (_incomingError != null) {
+        return _buildErrorState(
+          friendlyError(_incomingError!, context: 'load split bills'),
         );
-      },
+      }
+      // First load only — no cached list yet.
+      return const SplitBillListShimmer();
+    }
+    final bills = _incomingBills!;
+    if (bills.isEmpty) {
+      return _buildEmptyListForRefresh(
+        icon: Icons.call_received_rounded,
+        title: 'No Incoming Split Bills',
+        subtitle: 'Split bills from others will appear here',
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      color: const Color(0xFF4834D4),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        itemCount: bills.length,
+        itemBuilder: (context, index) {
+          final bill = bills[index];
+          return SplitBillCard(
+            bill: bill,
+            isIncoming: true,
+            currentUserId: _currentUserId,
+            onTap: () => _onBillTapped(bill),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildCreatedTab() {
-    return BlocBuilder<SplitBillCubit, SplitBillState>(
-      builder: (context, state) {
-        if (state is SplitBillLoading || state is SplitBillListLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
-          );
-        }
-
-        if (state is CreatedSplitBillsLoaded) {
-          final bills = state.bills;
-          if (bills.isEmpty) {
-            return _buildEmptyListForRefresh(
-              icon: Icons.receipt_long_rounded,
-              title: 'No Created Split Bills',
-              subtitle: 'Split bills you create will appear here',
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: _refreshData,
-            color: const Color(0xFF4834D4),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              itemCount: bills.length,
-              itemBuilder: (context, index) {
-                final bill = bills[index];
-                return SplitBillCard(
-                  bill: bill,
-                  isIncoming: false,
-                  currentUserId: _currentUserId,
-                  onTap: () => _onBillTapped(bill),
-                );
-              },
-            ),
-          );
-        }
-
-        if (state is SplitBillError) {
-          return _buildErrorState(_friendlyMessage(state.message));
-        }
-
-        // Default / initial state
-        return _buildEmptyListForRefresh(
-          icon: Icons.receipt_long_rounded,
-          title: 'No Created Split Bills',
-          subtitle: 'Split bills you create will appear here',
+    // Rendered from the local cache (see field docs) so the shared cubit's
+    // transient loading state can never blank or blink this tab.
+    if (_createdBills == null) {
+      if (_createdError != null) {
+        return _buildErrorState(
+          friendlyError(_createdError!, context: 'load split bills'),
         );
-      },
+      }
+      // First load only — no cached list yet.
+      return const SplitBillListShimmer();
+    }
+    final bills = _createdBills!;
+    if (bills.isEmpty) {
+      return _buildEmptyListForRefresh(
+        icon: Icons.receipt_long_rounded,
+        title: 'No Created Split Bills',
+        subtitle: 'Split a bill and we’ll chase up everyone’s share.',
+        showCreateCta: true,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      color: const Color(0xFF4834D4),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        itemCount: bills.length,
+        itemBuilder: (context, index) {
+          final bill = bills[index];
+          return SplitBillCard(
+            bill: bill,
+            isIncoming: false,
+            currentUserId: _currentUserId,
+            onTap: () => _onBillTapped(bill),
+          );
+        },
+      ),
     );
   }
 
-  void _onBillTapped(SplitBillEntity bill) {
-    Get.toNamed(
+  Future<void> _onBillTapped(SplitBillEntity bill) async {
+    // Await the detail screen so a pay / cancel / decline done there is picked
+    // up on return. We refresh the current tab in place (the cached list stays
+    // visible during the reload, so this doesn't blink) — this replaces the old
+    // reload-on-every-swipe as the way mutations get reflected.
+    await Get.toNamed(
       AppRoutes.splitBillDetail,
       arguments: {'splitBillId': bill.id},
     );
+    if (mounted) {
+      _refreshData();
+    }
+  }
+
+  /// Open the create-split-bill flow, then refresh on return. Shared by the
+  /// FAB and the empty-state CTA so both behave identically.
+  Future<void> _openCreate() async {
+    await Get.toNamed(AppRoutes.createSplitBill);
+    if (mounted) {
+      _refreshData();
+    }
   }
 
   Widget _buildEmptyListForRefresh({
     required IconData icon,
     required String title,
     required String subtitle,
+    bool showCreateCta = false,
   }) {
     return RefreshIndicator(
       onRefresh: _refreshData,
@@ -408,7 +448,12 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           const SizedBox(height: 80),
-          _buildEmptyState(icon: icon, title: title, subtitle: subtitle),
+          _buildEmptyState(
+            icon: icon,
+            title: title,
+            subtitle: subtitle,
+            showCreateCta: showCreateCta,
+          ),
         ],
       ),
     );
@@ -418,6 +463,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     required IconData icon,
     required String title,
     required String subtitle,
+    bool showCreateCta = false,
   }) {
     return Center(
       child: Padding(
@@ -458,6 +504,32 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
                 height: 1.5,
               ),
             ),
+            if (showCreateCta) ...[
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 44,
+                child: ElevatedButton.icon(
+                  onPressed: _openCreate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _brandPurple,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 22),
+                  ),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text(
+                    'New Split Bill',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

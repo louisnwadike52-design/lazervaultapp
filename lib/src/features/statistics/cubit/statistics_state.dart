@@ -79,9 +79,9 @@ class StatisticsLoaded extends StatisticsState {
   final bool includeExternalBanks;
   // Selected money source the content reflects (drives the filter chip + sheet).
   final StatisticsSource source;
-  // When external banks are in scope: null/empty = ALL linked banks
-  // (default), otherwise the one linked-account id the numbers reflect.
-  final String? selectedBankAccountId;
+  // When external banks are in scope: empty = ALL linked banks (default),
+  // otherwise the SUBSET of linked-account ids the numbers reflect (multi-select).
+  final List<String> selectedBankAccountIds;
   // Honesty signal for the external leg (see ExternalDataStatus).
   final ExternalDataStatus externalStatus;
   // Human-readable reason when externalStatus == unavailable.
@@ -103,7 +103,7 @@ class StatisticsLoaded extends StatisticsState {
     this.currentPeriod = 'month',
     this.includeExternalBanks = true,
     this.source = StatisticsSource.both,
-    this.selectedBankAccountId,
+    this.selectedBankAccountIds = const [],
     this.externalStatus = ExternalDataStatus.notApplicable,
     this.externalError,
     this.isRefreshing = false,
@@ -121,7 +121,7 @@ class StatisticsLoaded extends StatisticsState {
         currentPeriod,
         includeExternalBanks,
         source,
-        selectedBankAccountId,
+        selectedBankAccountIds,
         externalStatus,
         externalError,
         isRefreshing,
@@ -139,7 +139,7 @@ class StatisticsLoaded extends StatisticsState {
     String? currentPeriod,
     bool? includeExternalBanks,
     StatisticsSource? source,
-    String? selectedBankAccountId,
+    List<String>? selectedBankAccountIds,
     ExternalDataStatus? externalStatus,
     String? externalError,
     bool? isRefreshing,
@@ -155,7 +155,7 @@ class StatisticsLoaded extends StatisticsState {
       currentPeriod: currentPeriod ?? this.currentPeriod,
       includeExternalBanks: includeExternalBanks ?? this.includeExternalBanks,
       source: source ?? this.source,
-      selectedBankAccountId: selectedBankAccountId ?? this.selectedBankAccountId,
+      selectedBankAccountIds: selectedBankAccountIds ?? this.selectedBankAccountIds,
       externalStatus: externalStatus ?? this.externalStatus,
       externalError: externalError ?? this.externalError,
       isRefreshing: isRefreshing ?? this.isRefreshing,

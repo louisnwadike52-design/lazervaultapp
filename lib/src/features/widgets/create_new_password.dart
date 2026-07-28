@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/auth_status_sheet.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -33,6 +37,9 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
   String _resetToken = '';
   String _deliveryMethod = 'email';
   String? _errorMessage;
+  // Where to land after a successful reset. Defaults to email sign-in; switched
+  // to passcode login when the user's stored preference is phone+passcode.
+  String _postResetRoute = AppRoutes.emailSignIn;
 
   @override
   void initState() {
@@ -52,6 +59,21 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
         });
       }
     });
+    // Resolve the post-reset destination from the stored login preference so a
+    // phone+passcode user lands on the passcode screen, not email sign-in.
+    _resolvePostResetRoute();
+  }
+
+  Future<void> _resolvePostResetRoute() async {
+    try {
+      final pref = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'preferred_login_method');
+      final phoneMode = pref == 'phone_passcode' ||
+          (pref == null && FeatureFlags.isPhonePasscodeMode);
+      if (mounted && phoneMode) {
+        setState(() => _postResetRoute = AppRoutes.passcodeLogin);
+      }
+    } catch (_) {/* keep the email sign-in default */}
   }
 
   @override
@@ -107,20 +129,6 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
     return Colors.green;
   }
 
-  void _showErrorSnackbar(String title, String message) {
-    if (mounted && Get.isSnackbarOpen == false) {
-      Get.snackbar(
-        title,
-        message,
-        backgroundColor: Colors.redAccent.withValues(alpha: 0.8),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: EdgeInsets.all(15.w),
-        borderRadius: 10.r,
-      );
-    }
-  }
-
   Future<void> _submitResetPassword() async {
     // Clear previous error
     setState(() {
@@ -172,17 +180,28 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
       _isLoading = true;
     });
 
+    // The effective reset token: for the SMS flow it arrives via route args
+    // (`_resetToken`, returned by VerifyPasswordResetCode); for the email flow
+    // the user pastes the emailed token (`_tokenController`, captured in
+    // `tokenToUse`). Either way, a non-empty token goes straight to
+    // ResetPassword — the emailed UUID token IS a valid reset token server-side.
+    // Previously the email branch fell through to the legacy no-op
+    // submitResetPassword(), silently ignoring the pasted token.
+    final effectiveToken = tokenToUse.isNotEmpty ? tokenToUse : _resetToken;
+
+    if (effectiveToken.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Reset token is missing. Please restart the reset flow.';
+      });
+      return;
+    }
+
     try {
-      if (_resetToken.isNotEmpty || (!_requireToken && tokenToUse.isNotEmpty)) {
-        // Use new resetPasswordWithToken method
-        await context.read<AuthenticationCubit>().resetPasswordWithToken(
-          resetToken: _resetToken.isNotEmpty ? _resetToken : tokenToUse,
-          newPassword: newPassword,
-        );
-      } else {
-        // Legacy method for backward compatibility
-        await context.read<AuthenticationCubit>().submitResetPassword();
-      }
+      await context.read<AuthenticationCubit>().resetPasswordWithToken(
+        resetToken: effectiveToken,
+        newPassword: newPassword,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -197,19 +216,33 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
     return BlocListener<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is PasswordResetSuccess) {
-          // Success snackbar already shown by cubit
-          Future.delayed(const Duration(seconds: 1), () {
-            if (mounted) {
-              Get.offAllNamed(AppRoutes.emailSignIn);
-            }
-          });
+          // Confirm success with an on-theme bottom sheet, then send the user
+          // to sign in with their new password.
+          showAuthStatusSheet(
+            context,
+            type: AuthStatusType.success,
+            title: 'Password updated',
+            message:
+                'Your password has been reset. Please sign in with your new password.',
+            primaryLabel: 'Sign in',
+            onPrimary: () => Get.offAllNamed(_postResetRoute),
+          );
         } else if (state is AuthenticationError) {
-          // Show error from state
-          _showErrorSnackbar('Error', state.message);
           setState(() {
             _errorMessage = state.message;
             _isLoading = false;
           });
+          // Surface the real failure (invalid/expired token, weak password, …)
+          // in a bottom sheet with a retry affordance.
+          showAuthStatusSheet(
+            context,
+            type: AuthStatusType.error,
+            title: 'Couldn\'t reset password',
+            message: state.message,
+            primaryLabel: 'Try again',
+            secondaryLabel: 'Start over',
+            onSecondary: () => Get.offAllNamed(AppRoutes.passwordRecovery),
+          );
         }
       },
       child: Column(
@@ -310,7 +343,7 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
                 Container(
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
+                    color: const Color(0xFFE5E7EB),
                     borderRadius: BorderRadius.circular(2.r),
                   ),
                   child: FractionallySizedBox(

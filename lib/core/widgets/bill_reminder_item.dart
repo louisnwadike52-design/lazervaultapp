@@ -22,6 +22,9 @@ class BillReminderItem extends StatelessWidget {
     this.onDelete,
     this.onMarkComplete,
     this.onPayNow,
+    this.onPause,
+    this.onResume,
+    this.isProcessing = false,
     this.onTap,
     this.isDue = false,
     this.linkedContactLabel,
@@ -66,6 +69,18 @@ class BillReminderItem extends StatelessWidget {
   /// Called when the user taps "Pay Now" on a due reminder.
   final VoidCallback? onPayNow;
 
+  /// Called when the user taps "Pause" on a pending reminder. Pass null to
+  /// hide the pause action (e.g. for notified/completed/cancelled rows).
+  final VoidCallback? onPause;
+
+  /// Called when the user taps "Resume" on a paused reminder. Pass null to
+  /// hide the resume action.
+  final VoidCallback? onResume;
+
+  /// When true, the pause/resume action for this row shows a spinner and is
+  /// non-tappable while the status change is in flight.
+  final bool isProcessing;
+
   /// Called when the user taps the card body.
   final VoidCallback? onTap;
 
@@ -97,6 +112,8 @@ class BillReminderItem extends StatelessWidget {
       status.toLowerCase() == 'completed' ||
       status.toLowerCase() == 'cancelled';
 
+  bool get _isPaused => status.toLowerCase() == 'paused';
+
   Color get _statusColor {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -105,6 +122,8 @@ class BillReminderItem extends StatelessWidget {
         return const Color(0xFF4E03D0);
       case 'cancelled':
         return const Color(0xFF6B7280);
+      case 'paused':
+        return const Color(0xFF9CA3AF);
       case 'pending':
       default:
         return isDue ? const Color(0xFFF59E0B) : const Color(0xFF4E03D0);
@@ -168,9 +187,11 @@ class BillReminderItem extends StatelessWidget {
                       Icon(
                         _isCompleted
                             ? Icons.check_circle
-                            : isDue
-                                ? Icons.notification_important
-                                : Icons.notifications_active,
+                            : _isPaused
+                                ? Icons.pause_circle_outline
+                                : isDue
+                                    ? Icons.notification_important
+                                    : Icons.notifications_active,
                         color: _statusColor,
                         size: 22.sp,
                       ),
@@ -301,28 +322,59 @@ class BillReminderItem extends StatelessWidget {
 
             // -- Action buttons --
             SizedBox(height: 12.h),
-            Row(
-              children: [
-                if (!_isCompleted && onMarkComplete != null)
-                  Expanded(
-                    child: _actionBtn(
-                      Icons.check,
-                      'Mark Complete',
-                      const Color(0xFF10B981),
-                      onMarkComplete!,
+            if (_isPaused)
+              // Paused rows offer only Resume + Delete — mark-complete/edit
+              // don't apply to a paused schedule.
+              Row(
+                children: [
+                  if (onResume != null)
+                    Expanded(
+                      child: isProcessing
+                          ? _busyActionBtn(const Color(0xFF10B981))
+                          : _actionBtn(
+                              Icons.play_arrow,
+                              'Resume',
+                              const Color(0xFF10B981),
+                              onResume!,
+                            ),
                     ),
-                  ),
-                if (!_isCompleted && onMarkComplete != null && onEdit != null)
-                  SizedBox(width: 8.w),
-                if (!_isCompleted && onEdit != null)
-                  _iconBtn(
-                      Icons.edit, const Color(0xFF4E03D0), onEdit!),
-                if (!_isCompleted && onEdit != null) SizedBox(width: 8.w),
-                if (onDelete != null)
-                  _iconBtn(
-                      Icons.delete, const Color(0xFFEF4444), onDelete!),
-              ],
-            ),
+                  if (onResume != null && onDelete != null)
+                    SizedBox(width: 8.w),
+                  if (onDelete != null)
+                    _iconBtn(Icons.delete, const Color(0xFFEF4444), onDelete!),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  if (!_isCompleted && onMarkComplete != null)
+                    Expanded(
+                      child: _actionBtn(
+                        Icons.check,
+                        'Mark Complete',
+                        const Color(0xFF10B981),
+                        onMarkComplete!,
+                      ),
+                    ),
+                  if (!_isCompleted &&
+                      onMarkComplete != null &&
+                      (onPause != null || onEdit != null))
+                    SizedBox(width: 8.w),
+                  if (!_isCompleted && onPause != null) ...[
+                    isProcessing
+                        ? _busyIconBtn(const Color(0xFFFB923C))
+                        : _iconBtn(
+                            Icons.pause, const Color(0xFFFB923C), onPause!),
+                    SizedBox(width: 8.w),
+                  ],
+                  if (!_isCompleted && onEdit != null) ...[
+                    _iconBtn(Icons.edit, const Color(0xFF4E03D0), onEdit!),
+                    SizedBox(width: 8.w),
+                  ],
+                  if (onDelete != null)
+                    _iconBtn(Icons.delete, const Color(0xFFEF4444), onDelete!),
+                ],
+              ),
           ],
         ),
       ),
@@ -399,6 +451,53 @@ class BillReminderItem extends StatelessWidget {
           border: Border.all(color: color),
         ),
         child: Icon(icon, color: color, size: 20.sp),
+      ),
+    );
+  }
+
+  /// 44x44 spinner shown in place of the pause icon while a status change
+  /// for this row is in flight.
+  Widget _busyIconBtn(Color color) {
+    return Container(
+      width: 44.w,
+      height: 44.w,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 18.w,
+          height: 18.w,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Full-width spinner shown in place of the Resume button while a resume
+  /// call is in flight.
+  Widget _busyActionBtn(Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 18.w,
+          height: 18.w,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
       ),
     );
   }

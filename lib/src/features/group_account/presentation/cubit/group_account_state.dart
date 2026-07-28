@@ -421,14 +421,27 @@ class PublicGroupsLoaded extends GroupAccountState {
   final int totalCount;
   final bool isStale;
 
+  /// IDs of the groups (from this list) the current user is ALREADY a
+  /// member of. Sourced from the server-provided `GroupAccount.isMember`
+  /// flag on the `ListPublicGroups` response (with a zero-cost fallback
+  /// against the user's own cached groups for backend-rollout skew).
+  /// Drives the "Joined" vs "Join" affordance and the tap destination
+  /// (full details vs public preview) so we never show a Join CTA for a
+  /// group the user already belongs to.
+  final Set<String> memberGroupIds;
+
   const PublicGroupsLoaded({
     required this.groups,
     required this.totalCount,
     this.isStale = false,
+    this.memberGroupIds = const <String>{},
   });
 
+  /// True when the caller is already a member of [groupId].
+  bool isMemberOf(String groupId) => memberGroupIds.contains(groupId);
+
   @override
-  List<Object?> get props => [groups, totalCount, isStale];
+  List<Object?> get props => [groups, totalCount, isStale, memberGroupIds];
 }
 
 /// Public group detail loading. Distinct from the global GroupAccountLoading

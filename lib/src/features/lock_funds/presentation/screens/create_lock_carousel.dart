@@ -142,6 +142,12 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     // verify → process → success arc and we don't want a UI rebuild
     // mid-flight to mutate any of these values.
     final lockType = createCubit.lockType!;
+    // Stable plan identity — the backend resolves the plan by this
+    // PiggyVaultConfig UUID, not by lock_type name. Empty only if
+    // the config list hasn't loaded (the wizard blocks submit before
+    // then), in which case the backend falls back to lock_type.
+    final configId =
+        createCubit.selectedConfigId ?? createCubit.getConfigForType(lockType)?.id ?? '';
     final amount = createCubit.amount!;
     final currency = createCubit.currency;
     final lockDurationDays = createCubit.lockDurationDays ?? 0;
@@ -173,7 +179,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
       transactionType: 'lock_fund',
       amount: amount,
       currency: currency,
-      title: 'Confirm PiggyVault',
+      title: 'Confirm Piggyvault',
       message: 'Locking ${amount.toStringAsFixed(2)} $currency',
       onPinValidated: (verificationToken) async {
         if (!mounted) return;
@@ -196,6 +202,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
 
         lockFundsCubit.createLockFund(
           lockType: lockType,
+          configId: configId,
           amount: amount,
           currency: currency,
           lockDurationDays: lockDurationDays,
@@ -315,7 +322,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Create PiggyVault',
+            'Create Piggyvault',
             style: GoogleFonts.inter(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,

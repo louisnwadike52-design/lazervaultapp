@@ -100,7 +100,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final result = await Get.toNamed(AppRoutes.familySetup);
+          final result = await Get.toNamed(AppRoutes.familyCreate);
           if (result == true) _onRefresh();
         },
         backgroundColor: const Color(0xFF3B82F6),

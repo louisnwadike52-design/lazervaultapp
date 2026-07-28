@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -561,8 +562,10 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
           );
         }
 
+        // Compare by canonical ISO code so a provider's full currency name
+        // (e.g. "NIGERIAN NAIRA") matches an account's ISO code ("NGN").
         final currencyMismatch =
-            active.currency.toUpperCase() != currency.toUpperCase();
+            !CurrencyUtils.sameCurrency(active.currency, currency);
 
         if (currencyMismatch) {
           return Container(
@@ -576,8 +579,8 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
               Icon(Icons.warning_amber, color: const Color(0xFFEF4444), size: 18.sp),
               SizedBox(width: 8.w),
               Expanded(child: Text(
-                'Your active account is in ${active.currency.toUpperCase()}, but this premium is in '
-                '${currency.toUpperCase()}. Switch your active account on the dashboard before purchasing.',
+                'Your active account is in ${CurrencyUtils.normalizeCode(active.currency)}, but this premium is in '
+                '${CurrencyUtils.normalizeCode(currency)}. Switch your active account on the dashboard before purchasing.',
                 style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444)),
               )),
             ]),

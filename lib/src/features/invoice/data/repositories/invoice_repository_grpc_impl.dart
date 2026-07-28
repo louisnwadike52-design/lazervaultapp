@@ -2,8 +2,12 @@ import 'dart:typed_data';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../core/network/retry_helper.dart';
 import '../../../../generated/invoice.pb.dart' as pb;
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 import '../../domain/entities/invoice_entity.dart';
+import '../../domain/entities/invoice_fee_quote.dart';
 import '../../domain/repositories/invoice_repository.dart';
 
 /// gRPC-based implementation of InvoiceRepository
@@ -20,10 +24,13 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<List<Invoice>> getAllInvoices() async {
+    if (!serviceLocator<AccountManager>().hasActiveAccount) {
+      throw Exception('Select a business account first');
+    }
     return retryWithBackoff(
       operation: () async {
         final request = pb.GetInvoicesRequest()
-          ..accountId = currentUserId
+          ..accountId = serviceLocator<AccountManager>().activeAccountId ?? ''
           ..limit = 100
           ..offset = 0;
         final options = await grpcClient.callOptions;
@@ -57,8 +64,16 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef}) async {
+    if (!serviceLocator<AccountManager>().hasActiveAccount) {
+      throw Exception('Select a business account first');
+    }
     return retryWithBackoff(
       operation: () async {
+        // Default the invoice currency to the active locale's currency when the
+        // entity didn't carry one, so an invoice always has an explicit currency.
+        final resolvedCurrency = invoice.currency.isNotEmpty
+            ? invoice.currency
+            : serviceLocator<LocaleManager>().currentCurrency;
         // Canonical party blocks. In this entity `recipientDetails` is the
         // creator/issuer ("Invoice From") and `payerDetails` is the customer
         // ("Bill To"); map them to the proto's sender/receiver so the details
@@ -73,7 +88,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
             fallbackEmail: invoice.toEmail);
 
         final request = pb.CreateInvoiceRequest()
-          ..accountId = currentUserId
+          ..accountId = serviceLocator<AccountManager>().activeAccountId ?? ''
           ..recipientEmail = invoice.toEmail ?? invoice.payerDetails?.email ?? ''
           ..recipientName = invoice.toName ?? invoice.payerDetails?.contactName ?? ''
           ..description = invoice.description
@@ -83,7 +98,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ..discount = invoice.discountAmount ?? 0.0
           ..notes = invoice.notes ?? ''
           ..payerEmail = invoice.payerDetails?.email ?? invoice.toEmail ?? ''
-          ..currency = invoice.currency
+          ..currency = resolvedCurrency
           ..payerLogoUrl = invoice.payerLogoUrl ?? ''
           ..recipientLogoUrl = invoice.recipientLogoUrl ?? ''
           // Persist the chosen document type + title so the details page
@@ -182,11 +197,14 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<List<Invoice>> getInvoicesByStatus(InvoiceStatus status) async {
+    if (!serviceLocator<AccountManager>().hasActiveAccount) {
+      throw Exception('Select a business account first');
+    }
     return retryWithBackoff(
       operation: () async {
         // Get invoices and filter by status (using status string field)
         final request = pb.GetInvoicesRequest()
-          ..accountId = currentUserId
+          ..accountId = serviceLocator<AccountManager>().activeAccountId ?? ''
           ..limit = 100
           ..offset = 0;
 
@@ -275,7 +293,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       operation: () async {
         final request = pb.PayInvoiceRequest()
           ..invoiceId = invoiceId
-          ..accountId = currentUserId;
+          ..accountId = serviceLocator<AccountManager>().activeAccountId ?? '';
 
         if (pin != null && pin.isNotEmpty) {
           request.pin = pin;
@@ -304,7 +322,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       operation: () async {
         final request = pb.UnlockInvoiceRequest()
           ..invoiceId = invoiceId
-          ..accountId = accountId ?? currentUserId;
+          ..accountId = accountId ?? serviceLocator<AccountManager>().activeAccountId ?? '';
 
         if (pin != null && pin.isNotEmpty) {
           request.pin = pin;
@@ -326,6 +344,28 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
         );
 
         return _fromProto(response.invoice);
+      },
+    );
+  }
+
+  @override
+  Future<InvoiceFeeQuote> getServiceFeeQuote({String? accountId}) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetInvoiceServiceFeeRequest()
+          ..accountId = accountId ?? serviceLocator<AccountManager>().activeAccountId ?? '';
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.getInvoiceServiceFee(
+          request,
+          options: options,
+        );
+
+        return InvoiceFeeQuote(
+          amount: response.feeAmount,
+          currency: response.currency,
+          enabled: response.enabled,
+        );
       },
     );
   }

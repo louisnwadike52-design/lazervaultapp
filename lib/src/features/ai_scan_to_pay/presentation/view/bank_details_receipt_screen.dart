@@ -59,7 +59,16 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // A completed-payment receipt must never let hardware-back return to the
+    // (now stale) confirm/processing screens underneath — that would re-expose
+    // a Pay button for an already-settled payment. Intercept back and close the
+    // whole scan stack, exactly like the "Done" / app-bar-close buttons do.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleClose(context);
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
@@ -95,6 +104,7 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
             SizedBox(height: 40.h),
           ],
         ),
+      ),
       ),
     );
   }

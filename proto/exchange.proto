@@ -134,6 +134,10 @@ message ExchangeTransaction {
   string provider_reference = 14;
   ExchangeType exchange_type = 15;
   string failure_reason = 16;
+  // Fee breakdown (major units of from_currency). `fees` (8) stays the
+  // composite total for backward compatibility.
+  double provider_fee = 17;   // Flutterwave's fee — a cost, not revenue
+  double service_fee = 18;    // LazerVault's explicit service fee
 }
 
 // Response after initiating a transfer

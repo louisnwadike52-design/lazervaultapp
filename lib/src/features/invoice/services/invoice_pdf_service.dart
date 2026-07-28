@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:ui' show Rect;
+import 'package:http/http.dart' as http;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -43,8 +45,37 @@ class InvoicePdfService {
   }
 
   /// Generate a professional invoice PDF
+  /// Fetch a network image (uploaded invoice logo / sender / receiver image)
+  /// and decode it into a pdf MemoryImage. Returns null on any failure so a
+  /// missing/expired image never breaks PDF generation. Mirrors the working
+  /// network-image-embed pattern used by the bill-payment PDF services.
+  static Future<pw.MemoryImage?> _fetchImage(String? url) async {
+    final u = (url ?? '').trim();
+    if (u.isEmpty || !(u.startsWith('http://') || u.startsWith('https://'))) {
+      return null;
+    }
+    try {
+      final resp = await http
+          .get(Uri.parse(u))
+          .timeout(const Duration(seconds: 8));
+      if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
+        return pw.MemoryImage(resp.bodyBytes);
+      }
+    } catch (_) {
+      // swallow — image is best-effort; the PDF still renders without it
+    }
+    return null;
+  }
+
   static Future<File> generateInvoicePdf(Invoice invoice) async {
     final pdf = pw.Document();
+
+    // Pre-fetch the uploaded sender/receiver images BEFORE building (the pw
+    // build callback is sync so images must be resolved to bytes first).
+    // 'From' (biller) → recipientLogoUrl (fallback the invoice logoUrl);
+    // 'Bill To' (payer/client) → payerLogoUrl.
+    final fromLogo = await _fetchImage(invoice.recipientLogoUrl);
+    final billToLogo = await _fetchImage(invoice.payerLogoUrl);
 
     pdf.addPage(
       pw.MultiPage(
@@ -54,7 +85,7 @@ class InvoicePdfService {
           return [
             _buildHeader(invoice),
             pw.SizedBox(height: 32),
-            _buildParticipantsInfo(invoice),
+            _buildParticipantsInfo(invoice, fromLogo, billToLogo),
             pw.SizedBox(height: 32),
             _buildInvoiceDetails(invoice),
             pw.SizedBox(height: 32),
@@ -84,6 +115,11 @@ class InvoicePdfService {
     final pdf = pw.Document();
     final currency = _currencySymbolFor(invoice.currency);
 
+    // Pre-fetch the uploaded images. On a receipt 'From' is the payer and 'To'
+    // is the biller who was paid.
+    final fromLogo = await _fetchImage(invoice.payerLogoUrl);
+    final toLogo = await _fetchImage(invoice.recipientLogoUrl);
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -110,6 +146,7 @@ class InvoicePdfService {
                       invoice.payerDetails,
                       null,
                       null,
+                      fromLogo,
                     ),
                   ),
                   pw.SizedBox(width: 24),
@@ -119,6 +156,7 @@ class InvoicePdfService {
                       invoice.recipientDetails,
                       invoice.recipientDetails?.contactName,
                       invoice.recipientDetails?.email,
+                      toLogo,
                     ),
                   ),
                 ],
@@ -292,8 +330,9 @@ class InvoicePdfService {
     String title,
     AddressDetails? details,
     String? fallbackName,
-    String? fallbackEmail,
-  ) {
+    String? fallbackEmail, [
+    pw.MemoryImage? logo,
+  ]) {
     final info = <String>[];
 
     if (details != null) {
@@ -342,6 +381,14 @@ class InvoicePdfService {
             ),
           ),
           pw.SizedBox(height: 12),
+          if (logo != null) ...[
+            pw.ClipRRect(
+              horizontalRadius: 6,
+              verticalRadius: 6,
+              child: pw.Image(logo, width: 48, height: 48, fit: pw.BoxFit.cover),
+            ),
+            pw.SizedBox(height: 10),
+          ],
           ...info.map((line) => pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 4),
                 child: pw.Text(
@@ -658,7 +705,11 @@ class InvoicePdfService {
     );
   }
 
-  static pw.Widget _buildParticipantsInfo(Invoice invoice) {
+  static pw.Widget _buildParticipantsInfo(
+    Invoice invoice, [
+    pw.MemoryImage? fromLogo,
+    pw.MemoryImage? billToLogo,
+  ]) {
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -668,6 +719,7 @@ class InvoicePdfService {
             invoice.recipientDetails,
             'Your Business',
             null,
+            fromLogo,
           ),
         ),
         pw.SizedBox(width: 24),
@@ -677,6 +729,7 @@ class InvoicePdfService {
             invoice.payerDetails,
             invoice.toName ?? 'Client',
             invoice.toEmail,
+            billToLogo,
           ),
         ),
       ],
@@ -687,8 +740,9 @@ class InvoicePdfService {
     String title,
     AddressDetails? details,
     String? fallbackName,
-    String? fallbackEmail,
-  ) {
+    String? fallbackEmail, [
+    pw.MemoryImage? logo,
+  ]) {
     final info = <String>[];
 
     if (details != null) {
@@ -725,6 +779,16 @@ class InvoicePdfService {
             ),
           ),
           pw.SizedBox(height: 12),
+          // Uploaded sender/receiver image (best-effort — null when not
+          // provided or unreachable, in which case the card is text-only).
+          if (logo != null) ...[
+            pw.ClipRRect(
+              horizontalRadius: 6,
+              verticalRadius: 6,
+              child: pw.Image(logo, width: 56, height: 56, fit: pw.BoxFit.cover),
+            ),
+            pw.SizedBox(height: 10),
+          ],
           ...info.map((line) => pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 4),
                 child: pw.Text(
@@ -1066,13 +1130,15 @@ class InvoicePdfService {
     }
   }
 
-  static Future<void> shareInvoice(Invoice invoice) async {
+  static Future<void> shareInvoice(Invoice invoice, {Rect? sharePositionOrigin}) async {
     try {
       final file = await generateInvoicePdf(invoice);
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text: 'Invoice ${invoice.title}',
         subject: 'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
+        // Required by iOS/iPadOS to anchor the share sheet popover.
+        sharePositionOrigin: sharePositionOrigin,
       ));
     } catch (e) {
       throw Exception('Failed to share invoice: $e');
@@ -1109,13 +1175,15 @@ class InvoicePdfService {
     }
   }
 
-  static Future<void> shareReceipt(Invoice invoice) async {
+  static Future<void> shareReceipt(Invoice invoice, {Rect? sharePositionOrigin}) async {
     try {
       final file = await generateInvoiceReceipt(invoice);
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text: 'Payment Receipt for ${invoice.title}',
         subject: 'Receipt #${invoice.id.substring(0, 8).toUpperCase()}',
+        // Required by iOS/iPadOS to anchor the share sheet popover.
+        sharePositionOrigin: sharePositionOrigin,
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

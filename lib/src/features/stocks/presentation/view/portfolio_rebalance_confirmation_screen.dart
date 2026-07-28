@@ -106,7 +106,7 @@ Trades Executed:
 ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade.symbol} @ \$${trade.estimatedPrice.toStringAsFixed(2)}').join('\n')}
 ━━━━━━━━━━━━━━━━━━━━━━
 
-💼 LazerVault Portfolio
+💼 Lazervault Portfolio
 🚀 Generated with Claude Code
 ''';
 

@@ -8,18 +8,27 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
+import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_receipt_builder.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/funds/cubit/saved_batches_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/saved_batches_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_form.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -43,12 +52,28 @@ class BatchTransferScreen extends StatefulWidget {
   State<BatchTransferScreen> createState() => _BatchTransferScreenState();
 }
 
-class _BatchTransferScreenState extends State<BatchTransferScreen> {
+class _BatchTransferScreenState extends State<BatchTransferScreen>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   final SavedBatchesCubit _savedBatchesCubit =
       serviceLocator<SavedBatchesCubit>();
   // Shared across the Beneficiaries section + the in-page form so saving a
   // recipient in the form refreshes the beneficiaries list automatically.
   final RecipientCubit _recipientCubit = serviceLocator<RecipientCubit>();
+
+  // ── Short-flow state ──────────────────────────────────────────────────────
+  // Resolved in build() from Get.arguments (explicit) falling back to the
+  // admin-toggled FeatureFlag, so every entry point honours the toggle.
+  bool _shortFlow = false;
+  bool _shortBusy = false;
+  // Compact "send later" schedule (short flow only; the long flow schedules on
+  // its dedicated Review screen).
+  bool _isScheduled = false;
+  DateTime? _scheduledDate;
+  TimeOfDay? _scheduledTime;
 
   @override
   void initState() {
@@ -64,6 +89,12 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
       if (!mounted) return;
       _loadBeneficiaries();
       final arguments = Get.arguments as Map<String, dynamic>?;
+      // Telemetry: batch screen view (flow = short/long, resolved like build()).
+      final isShort = (arguments?['shortFlow'] as bool?) ??
+          (FeatureFlags.batchTransferShortFlow &&
+              (arguments == null || arguments['split_type'] == null));
+      AnalyticsService.instance
+          .trackBatchTransferScreen(isShort ? 'short' : 'long');
       if (arguments != null && arguments['split_type'] != null) {
         _navigateToReviewForSplitBill(arguments);
       }
@@ -138,6 +169,11 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
   @override
   Widget build(BuildContext context) {
     final arguments = Get.arguments as Map<String, dynamic>?;
+    // Short flow when explicitly requested OR when the admin flag is on. Split
+    // bills (split_type) always use the long review flow.
+    _shortFlow = (arguments?['shortFlow'] as bool?) ??
+        (FeatureFlags.batchTransferShortFlow &&
+            (arguments == null || arguments['split_type'] == null));
     return BlocProvider<SavedBatchesCubit>.value(
       value: _savedBatchesCubit,
       child: AnnotatedRegion<SystemUiOverlayStyle>(
@@ -154,42 +190,48 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    color: btBlue,
-                    backgroundColor: btCard,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 6.h),
-                          _buildQuickInfoBar(),
-                          SizedBox(height: 14.h),
-                          _buildSavedBatchesSection(),
-                          SizedBox(height: 14.h),
-                          BlocProvider<RecipientCubit>.value(
-                            value: _recipientCubit,
+                  child: ServiceEntranceAnimation(
+                    child: _shortFlow
+                      ? _buildShortBody(arguments)
+                      : RefreshIndicator(
+                          onRefresh: _onRefresh,
+                          color: btBlue,
+                          backgroundColor: btCard,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildBeneficiariesSection(),
+                                SizedBox(height: 6.h),
+                                _buildQuickInfoBar(),
                                 SizedBox(height: 14.h),
-                                BatchTransferForm(
-                                  preSelectedRecipients:
-                                      arguments?['preSelectedRecipients'],
-                                  isRepeatTransaction:
-                                      arguments?['isRepeatTransaction'] ?? false,
-                                  batchReference: arguments?['batchReference'],
+                                _buildSavedBatchesSection(),
+                                SizedBox(height: 14.h),
+                                BlocProvider<RecipientCubit>.value(
+                                  value: _recipientCubit,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildBeneficiariesSection(),
+                                      SizedBox(height: 14.h),
+                                      BatchTransferForm(
+                                        preSelectedRecipients:
+                                            arguments?['preSelectedRecipients'],
+                                        isRepeatTransaction: arguments?[
+                                                'isRepeatTransaction'] ??
+                                            false,
+                                        batchReference:
+                                            arguments?['batchReference'],
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                                _buildRecentHistory(),
+                                SizedBox(height: 24.h),
                               ],
                             ),
                           ),
-                          _buildRecentHistory(),
-                          SizedBox(height: 24.h),
-                        ],
-                      ),
-                    ),
+                        ),
                   ),
                 ),
               ],
@@ -198,6 +240,302 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
         ),
       ),
     );
+  }
+
+  // ── Short flow: compose → PIN → receipt ───────────────────────────────────
+  // Lean body: just the compact schedule toggle + the recipient form (reused
+  // verbatim, shortFlow:true). No saved-batches / beneficiary carousel /
+  // history. The form's Proceed hands the built payload to [_runShortBatch].
+  Widget _buildShortBody(Map<String, dynamic>? arguments) {
+    return BlocProvider<RecipientCubit>.value(
+      value: _recipientCubit,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 8.h),
+            _buildShortScheduleToggle(),
+            SizedBox(height: 8.h),
+            BatchTransferForm(
+              preSelectedRecipients: arguments?['preSelectedRecipients'],
+              isRepeatTransaction: arguments?['isRepeatTransaction'] ?? false,
+              batchReference: arguments?['batchReference'],
+              shortFlow: true,
+              proceedLabel:
+                  _isScheduled ? 'Schedule Batch' : 'Send to All',
+              onShortSubmit: _runShortBatch,
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  DateTime? get _scheduledDateTime {
+    if (!_isScheduled || _scheduledDate == null) return null;
+    final time = _scheduledTime ?? const TimeOfDay(hour: 9, minute: 0);
+    return DateTime(_scheduledDate!.year, _scheduledDate!.month,
+        _scheduledDate!.day, time.hour, time.minute);
+  }
+
+  Future<void> _selectShortScheduleDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now().add(const Duration(hours: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (date != null && mounted) {
+      setState(() => _scheduledDate = date);
+      final time = await showTimePicker(
+        context: context,
+        initialTime: _scheduledTime ?? const TimeOfDay(hour: 9, minute: 0),
+      );
+      if (time != null && mounted) setState(() => _scheduledTime = time);
+    }
+  }
+
+  Widget _buildShortScheduleToggle() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: btCard,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+              color: _isScheduled ? btOrange.withValues(alpha: 0.4) : btBorder),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.schedule_outlined, color: btOrange, size: 20.sp),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    _isScheduled
+                        ? 'Scheduled — runs at the chosen time'
+                        : 'Send later',
+                    style: GoogleFonts.inter(
+                        color: btTextPrimary,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Switch.adaptive(
+                  value: _isScheduled,
+                  activeThumbColor: btOrange,
+                  onChanged: (v) {
+                    setState(() => _isScheduled = v);
+                    if (v && _scheduledDate == null) _selectShortScheduleDate();
+                  },
+                ),
+              ],
+            ),
+            if (_isScheduled)
+              GestureDetector(
+                onTap: _selectShortScheduleDate,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 10.h),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_outlined,
+                          color: btOrange, size: 16.sp),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          _scheduledDate != null
+                              ? '${DateFormat('EEE, MMM dd, yyyy').format(_scheduledDate!)}${_scheduledTime != null ? ' • ${_scheduledTime!.format(context)}' : ''}'
+                              : 'Tap to pick date & time',
+                          style: GoogleFonts.inter(
+                              color: btTextSecondary, fontSize: 13.sp),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: btTextTertiary, size: 18.sp),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Compute total, validate, run PIN (conditional) + dispatch + receipt inline.
+  Future<void> _runShortBatch(Map<String, dynamic> transferData) async {
+    if (_shortBusy) return;
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    if (recipients.isEmpty) return;
+    final totalAmount = recipients.fold<double>(
+        0.0, (sum, r) => sum + (r.amount.toDouble() / 100));
+    if (totalAmount <= 0) return;
+
+    final currency = transferData['currency'] as String? ?? 'NGN';
+    final currencySymbol = transferData['currencySymbol'] as String? ?? '₦';
+    final selectedAccount =
+        transferData['selectedAccount'] as AccountSummaryEntity?;
+
+    // Client-side balance pre-check.
+    final available = selectedAccount?.availableBalance ??
+        GetIt.I<AccountManager>().activeAccountDetails?.balance ??
+        0.0;
+    if (totalAmount > available) {
+      Get.snackbar('Insufficient balance',
+          'Available: $currencySymbol${available.toStringAsFixed(2)}',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // Validate schedule if set.
+    final scheduledDt = _scheduledDateTime;
+    if (_isScheduled) {
+      if (scheduledDt == null) {
+        Get.snackbar('Pick a time', 'Select a date and time for the schedule.',
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+      if (scheduledDt.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
+        Get.snackbar('Invalid time',
+            'Scheduled time must be at least 5 minutes in the future.',
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+    }
+
+    // Enrich the payload for the receipt (sender info), mirroring the long flow.
+    if (selectedAccount != null) {
+      transferData['senderAccountName'] = selectedAccount.displayName;
+      transferData['senderAccountInfo'] =
+          '•••• ${selectedAccount.accountNumberLast4}';
+    }
+    if (_isScheduled && scheduledDt != null) {
+      transferData['scheduledAt'] = scheduledDt.toUtc().toIso8601String();
+      transferData['isScheduled'] = true;
+    }
+
+    final transactionId = 'batch_transfer_${const Uuid().v4()}';
+    _shortBusy = true;
+    try {
+      if (FeatureFlags.batchTransferPinIsRequired) {
+        final ok = await validateTransactionPin(
+          context: context,
+          transactionId: transactionId,
+          transactionType: 'batch_transfer',
+          amount: totalAmount,
+          currency: currency,
+          title: 'Confirm Batch Transfer',
+          message:
+              'Send to ${recipients.length} recipient${recipients.length == 1 ? '' : 's'} • $currencySymbol${totalAmount.toStringAsFixed(2)}',
+          showProcessingPhase: true,
+          onPinValidated: (token) async {
+            await _dispatchShortBatchAndAwait(
+                transferData, transactionId, token, scheduledDt);
+          },
+        );
+        if (!ok) return;
+        _navShortReceipt();
+      } else {
+        await _dispatchShortBatchAndAwait(
+            transferData, transactionId, '', scheduledDt);
+        if (mounted) _navShortReceipt();
+      }
+    } catch (e) {
+      Get.snackbar('Batch transfer failed',
+          e.toString().replaceAll('Exception:', '').trim(),
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      _shortBusy = false;
+    }
+  }
+
+  Map<String, dynamic>? _shortPendingReceipt;
+
+  Future<void> _dispatchShortBatchAndAwait(
+    Map<String, dynamic> transferData,
+    String transactionId,
+    String verificationToken,
+    DateTime? scheduledDt,
+  ) async {
+    final cubit = context.read<BatchTransferCubit>();
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    final fromAccountId = transferData['fromAccountId'] as String? ?? '';
+
+    cubit.initiateBatchTransfer(
+      fromAccountId: fromAccountId,
+      recipients: recipients,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+      scheduledAt: scheduledDt,
+    );
+
+    // Await a terminal state (mirror the long flow's 90s budget). All
+    // resolved/async lifecycle states route to the receipt; only hard
+    // failure / network error surface as an error.
+    final terminal = await cubit.stream
+        .firstWhere((s) =>
+            s is BatchTransferSuccess ||
+            s is BatchTransferPartialSuccess ||
+            s is BatchTransferPendingAsync ||
+            s is BatchTransferRefundPending ||
+            s is BatchTransferPendingVerification ||
+            s is BatchTransferAutoReleased ||
+            s is BatchTransferManualReview ||
+            s is BatchTransferFailure ||
+            s is BatchTransferNetworkError)
+        .timeout(const Duration(seconds: 90), onTimeout: () => cubit.state);
+
+    final response = _responseOf(terminal);
+    if (response == null) {
+      if (terminal is BatchTransferNetworkError) {
+        AnalyticsService.instance
+            .trackBatchTransferOutcome(outcome: 'network_error', flow: 'short');
+        throw Exception(terminal.message);
+      }
+      AnalyticsService.instance
+          .trackBatchTransferOutcome(outcome: 'failed', flow: 'short');
+      if (terminal is BatchTransferFailure) throw Exception(terminal.message);
+      throw Exception(
+          'Batch transfer is taking longer than expected. Check your history before retrying.');
+    }
+    // Telemetry: client-observed batch outcome (normalize the server status).
+    final st = response.status.toLowerCase();
+    final outcome = st.contains('partial')
+        ? 'partial'
+        : (st == 'completed'
+            ? 'completed'
+            : (st == 'failed' ? 'failed' : 'processing'));
+    AnalyticsService.instance
+        .trackBatchTransferOutcome(outcome: outcome, flow: 'short');
+    AnalyticsService.instance.trackBatchTransferSettled(status: outcome);
+    _shortPendingReceipt = buildBatchReceiptData(
+      response,
+      transferData,
+      isScheduled: _isScheduled,
+      scheduledAt: transferData['scheduledAt'] as String?,
+    );
+  }
+
+  BatchTransferEntity? _responseOf(BatchTransferState s) {
+    if (s is BatchTransferSuccess) return s.response;
+    if (s is BatchTransferPartialSuccess) return s.response;
+    if (s is BatchTransferPendingAsync) return s.response;
+    if (s is BatchTransferRefundPending) return s.response;
+    if (s is BatchTransferPendingVerification) return s.response;
+    if (s is BatchTransferAutoReleased) return s.response;
+    if (s is BatchTransferManualReview) return s.response;
+    return null;
+  }
+
+  void _navShortReceipt() {
+    if (_shortPendingReceipt != null) {
+      Get.offAllNamed(AppRoutes.transferProof, arguments: _shortPendingReceipt);
+    }
   }
 
   // ── Beneficiaries section ────────────────────────────────────────────────
@@ -451,8 +789,9 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
   }
 
   void _repeatToSendFunds(RecipientModel r) {
-    // Pre-load this beneficiary into the single send-funds flow.
-    Get.toNamed(AppRoutes.initiateSendFunds, arguments: r);
+    // Pre-load this beneficiary into the single send-funds flow, honoring the
+    // user's transfer-style choice (classic short vs standard long).
+    SendFundsLauncher.open(recipient: r, autoContinue: true);
   }
 
   void _renameBeneficiary(RecipientModel r) {

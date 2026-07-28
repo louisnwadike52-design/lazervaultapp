@@ -44,7 +44,18 @@ class AppNotification {
 class NotificationsResult {
   final List<AppNotification> notifications;
   final int unreadCount;
-  const NotificationsResult(this.notifications, this.unreadCount);
+
+  /// Total notifications the server has for this user (after its own filtering),
+  /// used to drive "load more" pagination — there are more pages while
+  /// `offset + notifications.length < total`. Falls back to the page length when
+  /// the server omits it (so a single-page result never claims more).
+  final int total;
+
+  const NotificationsResult(
+    this.notifications,
+    this.unreadCount, {
+    int? total,
+  }) : total = total ?? notifications.length;
 }
 
 /// Real notifications data source — replaces the screen's old hardcoded lists.
@@ -132,7 +143,8 @@ class NotificationsRemoteDataSource {
         .toList();
     final unread = (data['unread_count'] as num?)?.toInt() ??
         notifications.where((n) => !n.read).length;
-    return NotificationsResult(notifications, unread);
+    final total = (data['total'] as num?)?.toInt();
+    return NotificationsResult(notifications, unread, total: total);
   }
 
   Future<void> markAsRead(String id) async {

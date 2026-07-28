@@ -243,6 +243,10 @@ Rule: ${rule.name}
         return 'Scheduled';
       case TriggerType.roundUp:
         return 'Round Up';
+      case TriggerType.externalInflow:
+        return 'Bank Inflow';
+      case TriggerType.scheduledExternal:
+        return 'Standing Order';
       default:
         return 'Unknown';
     }

@@ -14,6 +14,10 @@ class P2PConversationModel extends P2PConversationEntity {
     super.otherUserAvatar,
     super.connectionStatus,
     super.initiatedBy,
+    super.safetyWarning,
+    super.safetyWarningLevel,
+    super.safetyWarningReason,
+    super.isArchived,
   });
 
   factory P2PConversationModel.fromJson(Map<String, dynamic> json) {
@@ -23,10 +27,10 @@ class P2PConversationModel extends P2PConversationEntity {
       participant2Id: json['participant2_id'] as String? ?? '',
       lastMessagePreview: json['last_message_preview'] as String?,
       lastMessageAt: json['last_message_at'] != null
-          ? DateTime.parse(json['last_message_at'] as String)
+          ? DateTime.parse(json['last_message_at'] as String).toLocal()
           : null,
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
+          ? DateTime.parse(json['created_at'] as String).toLocal()
           : DateTime.now(),
       unreadCount: json['unread_count'] as int? ?? 0,
       otherUserId: json['other_user_id'] as String? ?? '',
@@ -34,6 +38,10 @@ class P2PConversationModel extends P2PConversationEntity {
       otherUserAvatar: json['other_user_avatar'] as String?,
       connectionStatus: json['connection_status'] as String? ?? 'accepted',
       initiatedBy: json['initiated_by'] as String?,
+      safetyWarning: json['safety_warning'] as bool? ?? false,
+      safetyWarningLevel: json['safety_warning_level'] as String?,
+      safetyWarningReason: json['safety_warning_reason'] as String?,
+      isArchived: json['is_archived'] as bool? ?? false,
     );
   }
 

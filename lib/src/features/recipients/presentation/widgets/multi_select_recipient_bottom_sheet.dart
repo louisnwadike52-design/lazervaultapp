@@ -444,9 +444,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              recipient.accountNumber.length > 4
+              // Internal user recipients have no real account number → show the
+              // bank label instead of masking the user-id UUID.
+              recipient.hasRealAccountNumber
                 ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
-                : recipient.accountNumber,
+                : recipient.displayBankName,
               style: GoogleFonts.inter(
                 color: Colors.grey[400],
                 fontSize: 14.sp,

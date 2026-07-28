@@ -302,21 +302,21 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
-  Future<List<CryptoTransaction>> getTransactions() async {
-    // Fetch real transactions from backend via gRPC
+  Future<List<CryptoTransaction>> getTransactions({int limit = 50, int offset = 0}) async {
+    // Fetch real transactions from backend via gRPC (limit/offset paginated).
     try {
-      final response = await grpcClient.getTransactions(limit: 100);
+      final response = await grpcClient.getTransactions(limit: limit, offset: offset);
       return response.transactions.map((t) => CryptoTransaction(
         id: t.id,
         cryptoId: t.cryptoId,
         cryptoSymbol: t.cryptoSymbol,
         cryptoName: '', // cryptoName not in proto, would need separate fetch
-        type: t.type == 'buy' ? TransactionType.buy : t.type == 'swap' ? TransactionType.swap : TransactionType.sell,
+        type: _mapBackendType(t.type),
         quantity: t.amount, // proto uses 'amount' not 'quantity'
         price: t.fiatValue > 0 && t.amount > 0 ? t.fiatValue / t.amount : 0, // calculate price
         totalAmount: t.fiatValue, // proto uses 'fiatValue' not 'totalAmount'
         fees: t.fee,
-        timestamp: t.timestamp.toDateTime(), // proto uses Timestamp type
+        timestamp: t.timestamp.toDateTime().toLocal(), // proto Timestamp (UTC) → local for display
         status: t.status,
       )).toList();
     } catch (e) {
@@ -325,23 +325,27 @@ class CryptoRepositoryImpl implements CryptoRepository {
     }
   }
 
-  @override
-  Future<void> toggleFavorite(String cryptoId) async {
-    try {
-      final response = await grpcClient.toggleFavorite(cryptoId: cryptoId);
-      // Log the result for debugging
-      developer.log(
-        'toggleFavorite completed: cryptoId=$cryptoId, isFavorite=${response.isFavorite}, message=${response.message}',
-        name: 'toggleFavorite',
-      );
-    } catch (e) {
-      final exception = e is Exception ? e : Exception(e.toString());
-      developer.log(
-        'toggleFavorite failed: cryptoId=$cryptoId, error=$exception',
-        name: 'toggleFavorite',
-        error: exception,
-      );
-      throw Exception(CryptoErrorMessages.translate(exception, operation: 'toggle favorite'));
+  /// Maps the backend transaction `type` string to the domain enum.
+  /// The backend emits: buy | sell | swap (from crypto_swap_transactions),
+  /// deposit (incoming crypto), and withdrawal/send (outgoing crypto). The
+  /// previous inline map collapsed every non-buy/non-swap type into `sell`,
+  /// which hid deposits and sends. Map them explicitly.
+  TransactionType _mapBackendType(String type) {
+    switch (type.toLowerCase()) {
+      case 'buy':
+        return TransactionType.buy;
+      case 'swap':
+        return TransactionType.swap;
+      case 'sell':
+        return TransactionType.sell;
+      case 'send':
+      case 'withdrawal':
+      case 'withdraw':
+        return TransactionType.send;
+      case 'deposit':
+        return TransactionType.deposit;
+      default:
+        return TransactionType.buy;
     }
   }
 

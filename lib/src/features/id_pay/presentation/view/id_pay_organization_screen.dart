@@ -311,7 +311,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40.w),
                 child: Text(
-                  'Create an organization to group and manage your IDPay requests.',
+                  'Create an organization to group and manage your PayID requests.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),

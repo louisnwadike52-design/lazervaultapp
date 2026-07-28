@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 
 /// Revolut-style transaction row — no card borders, clean minimal layout
 class TransactionCard extends StatelessWidget {
@@ -80,13 +81,13 @@ class TransactionCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (transaction.status == UnifiedTransactionStatus.pending) ...[
+                    if (_statusLabel() != null) ...[
                       Text(
-                        'Pending',
+                        _statusLabel()!,
                         style: TextStyle(
                           fontSize: 12.sp,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFFF59E0B),
+                          fontWeight: FontWeight.w500,
+                          color: _statusColor(),
                           fontFamily: 'Inter',
                         ),
                       ),
@@ -111,7 +112,60 @@ class TransactionCard extends StatelessWidget {
     );
   }
 
+  /// Status label shown next to the time for any NON-completed transaction so
+  /// the user always sees what happened — e.g. a failed external transfer that
+  /// reached the provider but was declined. Completed transactions stay clean
+  /// (the amount colour already conveys success).
+  String? _statusLabel() {
+    switch (transaction.status) {
+      case UnifiedTransactionStatus.pending:
+        return 'Pending';
+      case UnifiedTransactionStatus.processing:
+        return 'Processing';
+      case UnifiedTransactionStatus.failed:
+        return 'Failed';
+      case UnifiedTransactionStatus.cancelled:
+        return 'Cancelled';
+      case UnifiedTransactionStatus.refunded:
+        return 'Refunded';
+      case UnifiedTransactionStatus.expired:
+        return 'Expired';
+      case UnifiedTransactionStatus.scheduled:
+        return 'Scheduled';
+      default:
+        return null; // completed — clean, just the time
+    }
+  }
+
+  Color _statusColor() {
+    switch (transaction.status) {
+      case UnifiedTransactionStatus.failed:
+      case UnifiedTransactionStatus.cancelled:
+      case UnifiedTransactionStatus.expired:
+        return const Color(0xFFEF4444); // red
+      case UnifiedTransactionStatus.refunded:
+      case UnifiedTransactionStatus.scheduled:
+        return const Color(0xFF8B5CF6); // purple/violet (refunded, scheduled)
+      default:
+        return const Color(0xFFF59E0B); // amber (pending / processing)
+    }
+  }
+
   Widget _buildIcon() {
+    // External bank transfers show the recipient bank's logo instead of a
+    // generic transfer glyph, so history reads "which bank" at a glance.
+    final md = transaction.metadata;
+    final bankName = md?['bank_name'] as String?;
+    final bankCode =
+        (md?['bank_code'] as String?) ?? (md?['destination_bank_code'] as String?);
+    if (bankName != null && bankName.isNotEmpty) {
+      return BankLogo(
+        bankName: bankName,
+        bankCode: bankCode,
+        size: 40,
+        borderRadius: 20,
+      );
+    }
     return Container(
       width: 40.w,
       height: 40.w,

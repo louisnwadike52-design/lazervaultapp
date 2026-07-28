@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../services/id_pay_pdf_service.dart';
-import 'id_pay_status_badge.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class IDPayDetailsBottomSheet extends StatefulWidget {
@@ -111,7 +111,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
             children: [
               Expanded(
                 child: Text(
-                  'IDPay Details',
+                  'PayID Details',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -314,7 +314,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context);
-                Get.toNamed('/id-pay/details',
+                Get.toNamed(AppRoutes.idPayDetails,
                     arguments: {'idPay': idPay});
               },
               style: ElevatedButton.styleFrom(

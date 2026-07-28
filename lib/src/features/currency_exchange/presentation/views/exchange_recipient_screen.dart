@@ -9,6 +9,8 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../domain/entities/recipient_entity.dart';
+import '../../domain/entities/transaction_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
@@ -90,6 +92,21 @@ class _CurrencyCountryConfig {
           flag: '\u{1F1FF}\u{1F1E6}',
           fieldType: _FieldType.african,
           supportsAutoVerify: true,
+        );
+      case 'PHP':
+        // Klasha corridor — generic bank fields (bank name + account number).
+        return const _CurrencyCountryConfig(
+          countryCode: 'PH',
+          countryName: 'Philippines',
+          flag: '\u{1F1F5}\u{1F1ED}',
+          fieldType: _FieldType.generic,
+        );
+      case 'CAD':
+        return const _CurrencyCountryConfig(
+          countryCode: 'CA',
+          countryName: 'Canada',
+          flag: '\u{1F1E8}\u{1F1E6}',
+          fieldType: _FieldType.generic,
         );
       case 'GBP':
         return const _CurrencyCountryConfig(
@@ -678,12 +695,18 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
 
       // Fire the RPC INSIDE the onPinValidated callback so the PIN
       // bottom sheet stays open in its processing state while we await
-      // Flutterwave. After the bottom sheet closes:
+      // Flutterwave. The callback is EXHAUSTIVE — every possible cubit
+      // outcome resolves to a definite next screen or a thrown error, so
+      // the sheet can never just close into nothing:
       //   * ExchangeSuccess → straight to receipt (RPC returned terminal)
-      //   * ExchangeProcessing → handed off to the processing screen
-      //     which subscribes to the WS for the terminal event. Backed
-      //     by a flag so we don't double-navigate.
-      bool routedToProcessingScreen = false;
+      //   * ExchangeProcessing → processing screen (subscribes to WS +
+      //     auto-polls for the terminal event)
+      //   * ExchangeError → throw a classified message (PIN sheet shows it)
+      //   * anything else → throw a non-silent fallback so we never fall
+      //     through to a fake "Transaction Successful!".
+      // `handledNavigation` tells the outer block the callback already
+      // navigated, so it must not double-navigate.
+      bool handledNavigation = false;
       final success = await validateTransactionPin(
         context: context,
         transactionId:
@@ -727,7 +750,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             throw Exception('${view.headline} — ${view.detail}');
           }
           if (state is ExchangeProcessing) {
-            routedToProcessingScreen = true;
+            handledNavigation = true;
             if (mounted) {
               try {
                 Navigator.of(context).pop();
@@ -745,19 +768,38 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 'recipientName': recipientName,
               },
             );
+            return;
           }
-          // ExchangeSuccess: return normally; outer block navigates.
+          if (state is ExchangeSuccess) {
+            // RPC returned terminal — go straight to the receipt from
+            // INSIDE the callback so we don't depend on a fragile
+            // post-await state re-read (the cubit state can move on).
+            handledNavigation = true;
+            if (mounted) {
+              try {
+                Navigator.of(context).pop();
+              } catch (_) {}
+            }
+            Get.offNamed(
+              AppRoutes.exchangeReceipt,
+              arguments: state.transaction,
+            );
+            return;
+          }
+          // Any other state means initiateTransfer returned without a
+          // definite outcome (e.g. the cubit early-returned). NEVER fall
+          // through to a fake success — throw so the PIN sheet surfaces a
+          // real, actionable error and the user can retry.
+          throw Exception(
+            "We couldn't confirm your transfer — check your Transactions "
+            'to see if it went through before retrying.',
+          );
         },
       );
 
-      if (!success || routedToProcessingScreen || !mounted) return;
-      final state = cubit.state;
-      if (state is ExchangeSuccess) {
-        Get.offNamed(
-          AppRoutes.exchangeReceipt,
-          arguments: state.transaction,
-        );
-      }
+      // The callback owns all navigation now. Nothing to do here on the
+      // happy path; this only guards the cancelled / failed-PIN outcomes.
+      if (!success || handledNavigation || !mounted) return;
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -1272,13 +1314,61 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       _buildUnsupportedCorridorBanner(),
                     ],
                     const SizedBox(height: 20),
-                    switch (_countryConfig.fieldType) {
-                      _FieldType.african => _buildAfricanBankFields(),
-                      _FieldType.uk => _buildUKBankFields(),
-                      _FieldType.us => _buildUSBankFields(),
-                      _FieldType.eu => _buildEUBankFields(),
-                      _FieldType.generic => _buildGenericBankFields(),
-                    },
+                    // Grouped bank-details card — gives the recipient entry
+                    // the same elevated, contained feel as the crypto payment
+                    // card rather than loose fields on the page background.
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161616),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF2D2D2D)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(9),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4E03D0)
+                                      .withValues(alpha: 0.20),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.account_balance,
+                                    color: Color(0xFF4E03D0), size: 18),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Recipient bank in ${_countryConfig.countryName}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildPreviousBeneficiaries(),
+                          switch (_countryConfig.fieldType) {
+                            _FieldType.african => _buildAfricanBankFields(),
+                            _FieldType.uk => _buildUKBankFields(),
+                            _FieldType.us => _buildUSBankFields(),
+                            _FieldType.eu => _buildEUBankFields(),
+                            _FieldType.generic => _buildGenericBankFields(),
+                          },
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -1294,6 +1384,89 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         ],
       ),
     );
+  }
+
+  // ----- Previous beneficiaries (REAL saved-recipient reuse) -----
+  //
+  // Sourced from the user's prior COMPLETED international transfers for the
+  // selected destination currency (ExchangeCubit.recentTransactions — the
+  // same data "Repeat exchange" uses), deduped by account number. Tapping a
+  // chip prefills every per-country field; everything stays editable. This
+  // replaces the old mock-only recipient management screen with live data
+  // and no new backend surface.
+  Widget _buildPreviousBeneficiaries() {
+    final recent = context.watch<ExchangeCubit>().recentTransactionsCache;
+    final seen = <String>{};
+    final priors = recent
+        .where((t) =>
+            !t.type.isConversionLike &&
+            t.toCurrency == _toCurrency &&
+            t.recipient.accountNumber.isNotEmpty &&
+            seen.add(t.recipient.accountNumber))
+        .take(6)
+        .toList();
+    if (priors.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Previous beneficiaries',
+          style: TextStyle(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: priors.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, i) {
+              final r = priors[i].recipient;
+              final last4 = r.accountNumber.length > 4
+                  ? r.accountNumber.substring(r.accountNumber.length - 4)
+                  : r.accountNumber;
+              return ActionChip(
+                backgroundColor: const Color(0xFF1F1F1F),
+                side: const BorderSide(color: Color(0xFF2D2D2D)),
+                avatar: const Icon(Icons.history,
+                    size: 14, color: Color(0xFF9CA3AF)),
+                label: Text(
+                  '${r.name.isNotEmpty ? r.name : r.accountNumber} ••$last4',
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                onPressed: () => _prefillFromPrior(r),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  void _prefillFromPrior(Recipient r) {
+    setState(() {
+      if (r.name.isNotEmpty) _nameController.text = r.name;
+      if (r.accountNumber.isNotEmpty) {
+        _accountController.text = r.accountNumber;
+        _ibanController.text = r.iban ?? r.accountNumber;
+      }
+      if ((r.swiftCode ?? '').isNotEmpty) _swiftController.text = r.swiftCode!;
+      if ((r.routingNumber ?? '').isNotEmpty) {
+        _routingController.text = r.routingNumber!;
+        _sortCodeController.text = r.routingNumber!;
+      }
+      if ((r.address ?? '').isNotEmpty) _addressController.text = r.address!;
+      if (r.bankName.isNotEmpty) {
+        _selectedBankName = r.bankName;
+        _genericBankNameController.text = r.bankName;
+      }
+    });
   }
 
   // ----- African fields -----
@@ -1614,6 +1787,10 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         return 'Enter 13-digit account number';
       case 'ZA':
         return 'Enter 9-11 digit account number';
+      case 'PH':
+        return 'Enter 10-16 digit account number';
+      case 'CA':
+        return 'Enter 7-12 digit account number';
       default:
         return 'Enter account number';
     }
@@ -1896,7 +2073,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                           const SizedBox(width: 8),
                           Expanded(
                             child: const Text(
-                              'Estimated arrival: 1-3 business days',
+                              'Estimated arrival: a few minutes',
                               style: TextStyle(
                                   color: Color(0xFF10B981), fontSize: 13),
                             ),
@@ -2158,15 +2335,77 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   // ===========================================================================
 
   Widget _buildSummaryCard(double convertedAmount) {
+    // Premium gradient summary card — mirrors the crypto/stock confirmation
+    // cards (purple→dark gradient, icon header, dividers, soft shadow) so the
+    // "send abroad" review reads as a first-class money screen.
+    final double totalToPay =
+        _amount + (_rate?.fees ?? 0); // source currency, incl. fee
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x1A4E03D0), // Color(0xFF4E03D0) @ ~10% alpha
+            Color(0xFF1F1F1F),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFF2D2D2D)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.20),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header: icon chip + title + destination subtitle.
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.public,
+                    color: Color(0xFF4E03D0), size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'International transfer',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'To ${_countryConfig.countryName} ${_countryConfig.flag}',
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Divider(color: Colors.white.withValues(alpha: 0.12), height: 1),
+          const SizedBox(height: 20),
+          // You send → they receive.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2185,52 +2424,59 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             ],
           ),
           if (_rate != null) ...[
-            const SizedBox(height: 12),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Exchange rate',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                ),
-                Flexible(
-                  child: Text(
-                    _rate!.formatForDisplay(),
-                    textAlign: TextAlign.end,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 20),
+            Divider(color: Colors.white.withValues(alpha: 0.12), height: 1),
+            const SizedBox(height: 16),
+            _buildSummaryRow('Exchange rate', _rate!.formatForDisplay()),
             if (_rate!.fees > 0) ...[
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Service fee',
-                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                  ),
-                  Text(
-                    '${_rate!.fees.toStringAsFixed(2)} $_fromCurrency',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 10),
+              _buildSummaryRow(
+                'Service fee',
+                '${_rate!.fees.toStringAsFixed(2)} $_fromCurrency',
+              ),
+              const SizedBox(height: 10),
+              Divider(color: Colors.white.withValues(alpha: 0.12), height: 1),
+              const SizedBox(height: 10),
+              _buildSummaryRow(
+                'Total to pay',
+                '${totalToPay.toStringAsFixed(2)} $_fromCurrency',
+                isTotal: true,
               ),
             ],
           ],
         ],
       ),
+    );
+  }
+
+  // A single label / value line for the summary card. `isTotal` gives the
+  // final "total to pay" row extra emphasis, matching the crypto card.
+  Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: isTotal ? Colors.white : const Color(0xFF9CA3AF),
+            fontSize: isTotal ? 14 : 12,
+            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isTotal ? 15 : 12,
+              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

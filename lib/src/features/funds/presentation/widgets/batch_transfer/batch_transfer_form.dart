@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/core/widgets/bank_picker_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -686,7 +687,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                           Row(
                             children: [
                               BankLogo(
-                                bankName: recipient.bankName,
+                                bankName: recipient.displayBankName,
                                 bankCode: recipient.sortCode,
                                 size: 14,
                                 borderRadius: 4,
@@ -694,7 +695,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                               SizedBox(width: 6.w),
                               Flexible(
                                 child: Text(
-                                  '${recipient.bankName} \u2022 ${recipient.accountNumber}',
+                                  '${recipient.displayBankName} \u2022 ${recipient.accountNumber}',
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
                                     color: btTextSecondary,
@@ -960,148 +961,33 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     );
   }
 
-  void _showBankSelectionSheet() {
-    final banks = serviceLocator<BankRepository>().cachedSync('NG');
-    final searchCtrl = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            final query = searchCtrl.text.toLowerCase();
-            final filtered = query.isEmpty
-                ? banks
-                : banks.where((b) =>
-                    (b['name'] ?? '').toLowerCase().contains(query) ||
-                    (b['code'] ?? '').toLowerCase().contains(query)).toList();
-
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.7,
-              decoration: BoxDecoration(
-                color: btCard,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(top: 12.h),
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: btBorderLight,
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
-                    child: Text('Select Bank',
-                        style: GoogleFonts.inter(
-                            color: btTextPrimary, fontSize: 18.sp, fontWeight: FontWeight.w700)),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      decoration: BoxDecoration(
-                        color: btCardElevated,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: TextField(
-                        controller: searchCtrl,
-                        style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
-                        decoration: InputDecoration(
-                          hintText: 'Search banks...',
-                          hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
-                          prefixIcon: Icon(Icons.search, color: btTextTertiary, size: 20.sp),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 14.h),
-                        ),
-                        onChanged: (_) => setSheetState(() {}),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final bank = filtered[index];
-                        final name = bank['name'] ?? '';
-                        final code = bank['code'] ?? '';
-                        final isSelected = code == _selectedBankCode;
-
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedBankCode = code;
-                              _selectedBankName = name;
-                              _isBankSelected = true;
-                              _verifiedBeneficiaryName = null;
-                              _verifiedBankCode = null;
-                              _verifiedBankName = null;
-                            });
-                            // Reset verification
-                            try {
-                              context.read<AccountVerificationCubit>().reset();
-                            } catch (_) {}
-                            Navigator.pop(ctx);
-                            // Auto-verify if account number is already entered
-                            if (_bankAccountController.text.length == 10) {
-                              _verifyBankAccount();
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(10.r),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-                            margin: EdgeInsets.only(bottom: 4.h),
-                            decoration: BoxDecoration(
-                              color: isSelected ? btBlue.withValues(alpha: 0.1) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10.r),
-                              border: isSelected ? Border.all(color: btBlue.withValues(alpha: 0.3)) : null,
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 36.w,
-                                  height: 36.w,
-                                  decoration: BoxDecoration(
-                                    color: btBlue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      name.isNotEmpty ? name[0] : '?',
-                                      style: GoogleFonts.inter(
-                                          color: btBlue, fontSize: 14.sp, fontWeight: FontWeight.w700),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Text(name,
-                                      style: GoogleFonts.inter(
-                                          color: btTextPrimary, fontSize: 14.sp, fontWeight: FontWeight.w500)),
-                                ),
-                                if (isSelected)
-                                  Icon(Icons.check_circle, color: btBlue, size: 20.sp),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+  Future<void> _showBankSelectionSheet() async {
+    // Reuse the shared bank picker (same one send-funds / add-recipient use):
+    // it loads the REAL bank list from the backend (static list first, then
+    // refreshes) and renders each with its BankLogo. Dark theme to match this
+    // dark-surfaced batch sheet.
+    final bank = await BankPickerSheet.show(
+      context,
+      country: 'NG',
+      selectedBankCode: _selectedBankCode,
+      theme: BankPickerTheme.dark(),
     );
+    if (bank == null || !mounted) return;
+    setState(() {
+      _selectedBankCode = bank['code'];
+      _selectedBankName = bank['name'];
+      _isBankSelected = true;
+      _verifiedBeneficiaryName = null;
+      _verifiedBankCode = null;
+      _verifiedBankName = null;
+    });
+    try {
+      context.read<AccountVerificationCubit>().reset();
+    } catch (_) {}
+    // Auto-verify if the account number is already entered.
+    if (_bankAccountController.text.length == 10) {
+      _verifyBankAccount();
+    }
   }
 
   void _verifyBankAccount() {
@@ -1344,7 +1230,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                           SizedBox(width: 6.w),
                           Flexible(
                             child: Text(
-                              '${recipient.bankName} \u2022 ${recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber}',
+                              '${recipient.displayBankName} \u2022 ${recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber}',
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
                                 color: isAlreadyAdded ? btBorder : btTextSecondary,
@@ -2030,7 +1916,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       // For external bank transfers, use CBN/NIBSS-compliant default narration
       final narration = userNarration
           ?? (item.isExternal
-              ? 'LazerVault/$recipientName'
+              ? 'Lazervault/$recipientName'
               : 'Transfer to $recipientName');
       return BatchTransferRecipient(
         toAccountNumber: item.recipient.accountNumber,
@@ -2839,7 +2725,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            '${recipient.bankName} \u2022 ${isLazerTag ? recipient.accountNumber : (recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber)}',
+                            '${recipient.displayBankName} \u2022 ${isLazerTag ? recipient.accountNumber : (recipient.accountNumber.length > 4 ? '\u2022\u2022\u2022 ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}' : recipient.accountNumber)}',
                             style: GoogleFonts.inter(
                               color: btTextSecondary,
                               fontSize: 12.sp,

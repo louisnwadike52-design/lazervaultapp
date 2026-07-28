@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_asset_avatar.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -20,10 +21,26 @@ class UnifiedTransactionReceipt extends StatefulWidget {
   final UnifiedTransaction transaction;
   final bool fromHistory;
 
+  /// When false the "Download" action is hidden (e.g. RMB shows Share + Repeat
+  /// instead). Defaults true so every existing receipt is unchanged.
+  final bool showDownload;
+
+  /// When non-null a "Repeat transaction" action is shown; tapping it invokes
+  /// this callback (used to re-open a send flow prefilled from this receipt).
+  final VoidCallback? onRepeat;
+
+  /// Label + accent colour for the repeat action (defaults suit any service).
+  final String repeatLabel;
+  final Color? repeatColor;
+
   const UnifiedTransactionReceipt({
     super.key,
     required this.transaction,
     this.fromHistory = false,
+    this.showDownload = true,
+    this.onRepeat,
+    this.repeatLabel = 'Repeat transaction',
+    this.repeatColor,
   });
 
   @override
@@ -68,8 +85,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     super.dispose();
   }
 
-  String get _reference =>
-      tx.transactionReference ?? tx.id;
+  String get _reference {
+    // Treat an empty string the same as absent — a proto string field defaults
+    // to '' (not null), so `??` alone would let an empty reference through and
+    // feed empty data to the QR BarcodeWidget.
+    final ref = tx.transactionReference;
+    if (ref != null && ref.isNotEmpty) return ref;
+    return tx.id;
+  }
 
   bool get _isScheduledTransfer {
     final scheduledStr = tx.metadata?['scheduledAt']?.toString();
@@ -81,7 +104,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   DateTime? get _scheduledDate {
     final scheduledStr = tx.metadata?['scheduledAt']?.toString();
     if (scheduledStr != null && scheduledStr.isNotEmpty) {
-      return DateTime.tryParse(scheduledStr);
+      return DateTime.tryParse(scheduledStr)?.toLocal();
     }
     return null;
   }
@@ -237,10 +260,16 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
 
   Widget _buildHeader() {
     final isTransfer = tx.serviceType == TransactionServiceType.transfer;
+    // Crypto receipts carry the traded asset's ticker (+ optional logo URL).
+    // Render the REAL per-asset avatar (logo, or an initials chip) so a USDT
+    // receipt shows the Tether identity — never the generic Bitcoin service
+    // icon shared by every crypto receipt.
+    final assetSymbol = tx.assetSymbol?.trim() ?? '';
 
     return Column(
       children: [
-        // Success icon for transfers, or service icon
+        // Success icon for transfers, per-asset avatar for crypto, or the
+        // generic service icon for everything else.
         if (isTransfer)
           Container(
             width: 48.w,
@@ -254,6 +283,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               color: Colors.white,
               size: 26.sp,
             ),
+          )
+        else if (assetSymbol.isNotEmpty)
+          CryptoAssetAvatar(
+            symbol: assetSymbol,
+            imageUrl: tx.assetImageUrl,
+            size: 48,
           )
         else
           Container(
@@ -420,20 +455,25 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             endIndent: 16.w,
           ),
           SizedBox(height: 14.h),
-          // Barcode
-          Center(
-            child: SizedBox(
-              height: 80.w,
-              width: 80.w,
-              child: BarcodeWidget(
-                barcode: Barcode.qrCode(),
-                data: _reference,
-                drawText: false,
-                color: Colors.white,
-                backgroundColor: Colors.transparent,
+          // Barcode — only when we actually have a reference. An empty `data`
+          // makes BarcodeWidget throw a BarcodeException during paint; the
+          // `errorBuilder` keeps that from ever surfacing (and from spamming
+          // FlutterError during offscreen capture) by rendering a placeholder.
+          if (_reference.isNotEmpty)
+            Center(
+              child: SizedBox(
+                height: 80.w,
+                width: 80.w,
+                child: BarcodeWidget(
+                  barcode: Barcode.qrCode(),
+                  data: _reference,
+                  drawText: false,
+                  color: Colors.white,
+                  backgroundColor: Colors.transparent,
+                  errorBuilder: (context, _) => const SizedBox.shrink(),
+                ),
               ),
             ),
-          ),
           SizedBox(height: 6.h),
           Center(
             child: Text(
@@ -526,37 +566,53 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   bool get _supportsPdfReceipt => tx.serviceType == TransactionServiceType.transfer;
 
   Widget _buildActionButtons() {
+    final buttons = <Widget>[];
+    if (widget.showDownload) {
+      buttons.add(
+        _actionButton(
+          icon: _isDownloading ? null : Icons.download_outlined,
+          label: 'Download',
+          isLoading: _isDownloading,
+          onTap: _isDownloading
+              ? () {}
+              : _supportsPdfReceipt
+                  ? _downloadPdfReceipt
+                  : _downloadReceipt,
+        ),
+      );
+    }
+    buttons.add(
+      _actionButton(
+        icon: _isSharing ? null : Icons.share_outlined,
+        label: 'Share',
+        isLoading: _isSharing,
+        onTap: _isSharing
+            ? () {}
+            : _supportsPdfReceipt
+                ? _sharePdfReceipt
+                : _shareReceipt,
+      ),
+    );
+    if (widget.onRepeat != null) {
+      buttons.add(
+        _actionButton(
+          icon: Icons.refresh_rounded,
+          label: widget.repeatLabel,
+          accentColor: widget.repeatColor,
+          onTap: widget.onRepeat!,
+        ),
+      );
+    }
+
+    // Interleave the buttons with spacers, each expanded to share the row.
+    final children = <Widget>[];
+    for (var i = 0; i < buttons.length; i++) {
+      if (i > 0) children.add(SizedBox(width: 12.w));
+      children.add(Expanded(child: buttons[i]));
+    }
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: _actionButton(
-              icon: _isDownloading ? null : Icons.download_outlined,
-              label: 'Download',
-              isLoading: _isDownloading,
-              onTap: _isDownloading
-                  ? () {}
-                  : _supportsPdfReceipt
-                      ? _downloadPdfReceipt
-                      : _downloadReceipt,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _actionButton(
-              icon: _isSharing ? null : Icons.share_outlined,
-              label: 'Share',
-              isLoading: _isSharing,
-              onTap: _isSharing
-                  ? () {}
-                  : _supportsPdfReceipt
-                      ? _sharePdfReceipt
-                      : _shareReceipt,
-            ),
-          ),
-        ],
-      ),
+      child: Row(children: children),
     );
   }
 
@@ -566,9 +622,10 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     required VoidCallback onTap,
     bool isLoading = false,
     bool isSecondary = false,
+    Color? accentColor,
   }) {
     return Material(
-      color: isSecondary ? _borderColor : _cardColor,
+      color: accentColor ?? (isSecondary ? _borderColor : _cardColor),
       borderRadius: BorderRadius.circular(12.r),
       child: InkWell(
         onTap: onTap,
@@ -624,6 +681,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Future<Uint8List?> _captureScreenshot() async {
+    // Bound the offscreen measurement to the real screen width. Without this the
+    // screenshot package measures with an UNBOUNDED max width, so non-wrapping
+    // Text (e.g. a long failure reason) expands to its full single-line width and
+    // the resulting `toImage` surface can balloon into a native OOM / hard crash.
+    // A bounded width makes the offscreen tree wrap exactly like the on-screen one.
+    final captureWidth = MediaQuery.of(context).size.width;
     try {
       final bytes = await _screenshotController.captureFromLongWidget(
         InheritedTheme.captureAll(
@@ -639,18 +702,28 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             ),
           ),
         ),
-        pixelRatio: 3.0,
+        // 2.0 keeps a receipt crisp while using ~2.25x less surface memory than
+        // 3.0 — extra headroom against the native OOM described above.
+        pixelRatio: 2.0,
+        constraints: BoxConstraints(maxWidth: captureWidth),
         delay: const Duration(milliseconds: 100),
         context: context,
       );
       return bytes;
     } catch (e) {
-      // Fallback to viewport capture if offscreen fails
+      // Fallback to viewport capture if offscreen fails. Guard it in its own
+      // try/finally so a second failure can never leave `_isCapturing` stuck on
+      // (which would wedge the UI) — worst case we return null and the caller
+      // shows a "failed to capture" snackbar.
       _isCapturing.value = true;
-      await Future.delayed(const Duration(milliseconds: 100));
-      final bytes = await _screenshotController.capture(pixelRatio: 3.0);
-      _isCapturing.value = false;
-      return bytes;
+      try {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return await _screenshotController.capture(pixelRatio: 2.0);
+      } catch (_) {
+        return null;
+      } finally {
+        _isCapturing.value = false;
+      }
     }
   }
 
@@ -737,6 +810,9 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         ShareParams(
           files: [XFile(file.path)],
           text: 'LazerVault Receipt - $_reference',
+          // share_plus on iPad REQUIRES a non-zero origin rect or it throws a
+          // native PlatformException; derive it from this widget's render box.
+          sharePositionOrigin: _shareOrigin(),
         ),
       );
     } catch (e) {
@@ -796,6 +872,19 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }
+  }
+
+  /// The rect the iOS/iPad share sheet should anchor to. share_plus throws a
+  /// native PlatformException on iPad when this is zero-sized, so fall back to a
+  /// safe 1x1 rect if the render box isn't available.
+  Rect _shareOrigin() {
+    try {
+      final box = context.findRenderObject() as RenderBox?;
+      if (box != null && box.hasSize) {
+        return box.localToGlobal(Offset.zero) & box.size;
+      }
+    } catch (_) {/* fall through */}
+    return const Rect.fromLTWH(0, 0, 1, 1);
   }
 
   void _showSnackbar(String message, {bool isError = false}) {

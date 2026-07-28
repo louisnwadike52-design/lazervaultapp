@@ -32,6 +32,35 @@ class AuthenticationSuccess extends AuthenticationState {
   List<Object?> get props => [profile];
 }
 
+// Risk-based step-up: login needs an OTP before a session is issued. The login
+// screen navigates to the OTP screen, which calls AuthenticationCubit.verifyLoginOtp.
+class LoginStepUpRequired extends AuthenticationState {
+  final String stepUpToken;
+  final String method;      // "email" | "sms"
+  final String destination; // masked, for display
+
+  const LoginStepUpRequired({
+    required this.stepUpToken,
+    required this.method,
+    required this.destination,
+  });
+
+  @override
+  List<Object?> get props => [stepUpToken, method, destination];
+}
+
+// 2FA required at login: the user has 2FA enabled. The login screen navigates to
+// the TwoFactorVerificationScreen with this temp token + method.
+class LoginTwoFactorRequired extends AuthenticationState {
+  final String twoFactorToken;
+  final String method; // "totp" | "sms" | "email"
+
+  const LoginTwoFactorRequired({required this.twoFactorToken, required this.method});
+
+  @override
+  List<Object?> get props => [twoFactorToken, method];
+}
+
 // State indicating user is authenticated (alias for AuthenticationSuccess)
 class AuthenticationAuthenticated extends AuthenticationState {
   final ProfileEntity profile;

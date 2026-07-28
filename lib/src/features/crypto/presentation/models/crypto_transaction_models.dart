@@ -1,7 +1,11 @@
 /// Models for crypto transaction details shared across screens.
 
 /// Transaction type enum
-enum CryptoTransactionType { buy, sell, swap }
+///
+/// buy/sell/swap come from crypto_swap_transactions; send (crypto withdrawal to
+/// an external/internal address) and deposit (incoming crypto) come from the
+/// crypto_transactions table. All five are surfaced by the unified history RPC.
+enum CryptoTransactionType { buy, sell, swap, send, deposit }
 
 /// Transaction status enum.
 ///

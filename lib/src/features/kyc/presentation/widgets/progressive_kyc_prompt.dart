@@ -426,7 +426,7 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
         SizedBox(height: 12.h),
         _buildBenefitItem(
           Icons.workspace_premium,
-          'Tier 3 — add your second ID (NIN) + a quick liveness check for the highest, unlimited limits',
+          'Tier 3: add your second ID (NIN) plus a quick liveness check for the highest, unlimited limits',
         ),
       ],
     );

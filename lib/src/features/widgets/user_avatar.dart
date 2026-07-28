@@ -204,7 +204,9 @@ class UserAvatar extends StatelessWidget {
       width: size,
       height: size,
       child: Image.asset(
-        'assets/images/logo.png',
+        // Square brand mark (736x736) — balanced in the square avatar box.
+        // The wide logo.png (248x186) read as squashed at small sizes.
+        'assets/images/logos/lazervault-logo-only.png',
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => Icon(
           Icons.account_balance_wallet_rounded,

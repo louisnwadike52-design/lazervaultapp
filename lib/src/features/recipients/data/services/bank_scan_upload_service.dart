@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/utils/image_compressor.dart';
 
 /// Result of a bank-scan upload — the public URL that chat-agent-gateway
 /// will fetch server-side during OCR extraction.
@@ -67,10 +68,16 @@ class BankScanUploadService {
     required String filename,
     required String contentType,
   }) async {
+    final compressed =
+        await ImageCompressor.compressForUpload(bytes, contentType: contentType);
+    bytes = compressed.bytes;
+    contentType = compressed.contentType;
+    filename = ImageCompressor.alignedFilename(filename, contentType);
+
     final accessToken = await _storage.read(key: _accessTokenKey);
     if (accessToken == null || accessToken.isEmpty) {
       throw const BankScanUploadException(
-        'You must be signed in to scan bank details.',
+        'You must be signed in to scan account details.',
       );
     }
 

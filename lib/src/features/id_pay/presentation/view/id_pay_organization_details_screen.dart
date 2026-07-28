@@ -250,7 +250,7 @@ class _IDPayOrganizationDetailsScreenState
                     ),
                     SizedBox(width: 12.w),
                     _buildStat(
-                      'Active IDPays',
+                      'Active PayIDs',
                       '${org.activeIdPayCount}',
                       const Color(0xFF60A5FA),
                     ),
@@ -263,7 +263,7 @@ class _IDPayOrganizationDetailsScreenState
 
           // IDPays list
           Text(
-            'ID Pays (${idPays.length})',
+            'PayIDs (${idPays.length})',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
@@ -282,7 +282,7 @@ class _IDPayOrganizationDetailsScreenState
               ),
               child: Center(
                 child: Text(
-                  'No IDPays in this organization yet.',
+                  'No PayIDs in this organization yet.',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
@@ -394,7 +394,7 @@ class _IDPayOrganizationDetailsScreenState
           ),
         ),
         content: Text(
-          'Are you sure? This cannot be undone. Organizations with active IDPays cannot be deleted.',
+          'Are you sure? This cannot be undone. Organizations with active PayIDs cannot be deleted.',
           style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
         ),
         actions: [

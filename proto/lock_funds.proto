@@ -56,6 +56,10 @@ message LockFund {
   // Account tracking
   string source_account_id = 24;
   string destination_account_id = 25;
+
+  // Stable plan identity (PiggyVaultConfig UUID). lock_type is a
+  // legacy display enum. Empty for legacy rows.
+  string config_id = 26;
 }
 
 // Lock transaction message
@@ -134,6 +138,9 @@ message CreateLockFundRequest {
   // Dedup key for retries; same key returns the existing lock
   // instead of creating a duplicate.
   string idempotency_key = 12;
+  // Stable plan identity (PiggyVaultConfig UUID). When set,
+  // lock_type is ignored and the plan is resolved by this id.
+  string config_id = 13;
 }
 
 message CreateLockFundResponse {
@@ -225,6 +232,9 @@ message CalculateInterestRequest {
   LockType lock_type = 1;
   double amount = 2;
   int32 lock_duration_days = 3;
+  // Stable plan identity; when set, the estimate uses this exact
+  // plan's rates and lock_type is ignored.
+  string config_id = 4;
 }
 
 message CalculateInterestResponse {

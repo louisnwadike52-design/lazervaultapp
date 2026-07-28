@@ -8,6 +8,8 @@ class SessionParticipant {
   final int totalGifts;
   final int totalLikes;
   final DateTime joinedAt;
+  final int seatIndex; // 0-based guest "box" slot; -1 when not seated
+  final String seatState; // "" | "requested" | "seated"
 
   const SessionParticipant({
     required this.userId,
@@ -19,9 +21,13 @@ class SessionParticipant {
     this.totalGifts = 0,
     this.totalLikes = 0,
     required this.joinedAt,
+    this.seatIndex = -1,
+    this.seatState = '',
   });
 
   bool get isHost => role == 'host';
+  bool get isSeated => seatState == 'seated';
+  bool get hasRequestedSeat => seatState == 'requested';
 
   factory SessionParticipant.fromJson(Map<String, dynamic> json) {
     return SessionParticipant(
@@ -36,6 +42,8 @@ class SessionParticipant {
       joinedAt: json['joined_at'] != null
           ? DateTime.tryParse(json['joined_at'] as String) ?? DateTime.now()
           : DateTime.now(),
+      seatIndex: (json['seat_index'] as num?)?.toInt() ?? -1,
+      seatState: json['seat_state'] as String? ?? '',
     );
   }
 }

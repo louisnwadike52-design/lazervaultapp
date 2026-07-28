@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -19,6 +20,7 @@ import 'package:lazervault/src/features/electricity_bill/presentation/cubit/elec
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_cubit.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../utils/meter_validation.dart';
 
 class CreateReminderScreen extends StatefulWidget {
   const CreateReminderScreen({super.key});
@@ -186,7 +188,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           final isLoading = state is ReminderLoading;
 
           return SingleChildScrollView(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w,
+                20.w + MediaQuery.of(context).viewInsets.bottom),
             child: Form(
               key: _formKey,
               child: Column(
@@ -1024,6 +1027,10 @@ class _ReminderAddBeneficiarySheetState extends State<_ReminderAddBeneficiaryShe
               child: TextField(
                 controller: _meterController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(kMeterNumberMaxLen),
+                ],
                 style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
                 decoration: InputDecoration(
                   hintText: 'Enter meter number',

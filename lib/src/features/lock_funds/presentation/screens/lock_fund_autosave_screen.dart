@@ -336,7 +336,7 @@ class _LockFundAutoSaveScreenState extends State<LockFundAutoSaveScreen> {
         backgroundColor: const Color(0xFF1F1F1F),
         title: Text('Stop Auto-Save?', style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
-          'This will permanently stop the auto-save for this PiggyVault.',
+          'This will permanently stop the auto-save for this Piggyvault.',
           style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
         ),
         actions: [

@@ -19,6 +19,7 @@ import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/invoice_shimmer.dart';
+import '../utils/share_origin.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -1976,7 +1977,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       );
 
       // Capture the QR code widget as an image
-      RenderRepaintBoundary boundary = qrKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final qrCtx = qrKey.currentContext;
+      final boundaryObj = qrCtx?.findRenderObject();
+      if (boundaryObj is! RenderRepaintBoundary) {
+        throw Exception('QR code is not ready yet, please try again');
+      }
+      final RenderRepaintBoundary boundary = boundaryObj;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       
@@ -2003,6 +2009,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         files: [XFile(file.path)],
         text: '$title - ${invoice.title}\nAmount: $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
         subject: '$title - ${invoice.title}',
+        // Required by iOS/iPadOS to anchor the share sheet popover.
+        sharePositionOrigin: context.mounted ? shareOriginFromContext(context) : null,
       ));
 
       // Clean up temp file after a delay

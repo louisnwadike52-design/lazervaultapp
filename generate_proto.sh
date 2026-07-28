@@ -103,6 +103,16 @@ if ! protoc --dart_out=grpc:lib/src/generated \
   exit 1
 fi
 
+# Generate escrow.proto from escrow-service (canonical; routed via commerce-gateway)
+echo "Generating Dart code from escrow.proto (escrow-service canonical)..."
+if ! protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/escrow-service/proto \
+  -Iproto \
+  ../microservices/escrow-service/proto/escrow.proto; then
+  echo "ERROR: escrow.proto generation failed."
+  exit 1
+fi
+
 # Generate banking.proto from banking-service
 echo "Generating Dart code from banking.proto..."
 if ! protoc --dart_out=grpc:lib/src/generated \

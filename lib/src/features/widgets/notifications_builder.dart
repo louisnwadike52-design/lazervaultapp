@@ -120,6 +120,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.qr_code_2;
       case AppServiceName.crowdfund:
         return Icons.volunteer_activism;
+      case AppServiceName.uplift:
+        return Icons.rocket_launch;
       case AppServiceName.businessDashboard:
         return Icons.business_rounded;
       case AppServiceName.businessAnalytics:
@@ -128,6 +130,10 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.people_rounded;
       case AppServiceName.expenses:
         return Icons.receipt_long_rounded;
+      case AppServiceName.rechargeCard:
+        return Icons.confirmation_number_rounded;
+      case AppServiceName.betting:
+        return Icons.sports_soccer_rounded;
       default:
         return Icons.help_outline;
     }
@@ -135,6 +141,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
 
   Color _getServiceColor(AppServiceName serviceName) {
     switch (serviceName) {
+      case AppServiceName.escrow:
+        return const Color(0xFF6D28D9);
       case AppServiceName.sendFunds:
         return const Color(0xFF10B981);
       case AppServiceName.batchTransfer:
@@ -153,6 +161,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Colors.teal;
       case AppServiceName.crypto:
         return Colors.amber;
+      case AppServiceName.rmb:
+        return const Color(0xFFE60012);
       case AppServiceName.giftCards:
         return Colors.pink;
       case AppServiceName.aiScanToPay:
@@ -171,6 +181,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.crowdfund:
         return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.uplift:
+        return const Color(0xFF6D5DF6);
       case AppServiceName.lockFunds:
         return const Color(0xFF10B981);
       case AppServiceName.whatsappIntegration:
@@ -195,6 +207,12 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF6366F1);
       case AppServiceName.tax:
         return const Color(0xFFEAB308);
+      case AppServiceName.sales:
+        return const Color(0xFF10B981);
+      case AppServiceName.rechargeCard:
+        return const Color(0xFF3B82F6);
+      case AppServiceName.betting:
+        return const Color(0xFF8B5CF6);
     }
   }
 

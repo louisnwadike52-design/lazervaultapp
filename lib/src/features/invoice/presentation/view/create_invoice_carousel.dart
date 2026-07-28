@@ -340,7 +340,6 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         arguments: {
           'invoice': createdInvoice,
           'isPrePayment': true,
-          'serviceFee': 99.99,
         },
       );
     } catch (e) {

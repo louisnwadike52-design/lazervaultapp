@@ -105,6 +105,66 @@ class ChatVoiceNotePlayer {
     }
   }
 
+  /// Seek [id] to [fraction] (0..1) of its duration and play from there. If the
+  /// note isn't loaded yet, load it first (so a user can drag the waveform of a
+  /// not-yet-played note to jump straight to a position). Mirrors [toggle]'s
+  /// load logic so the two stay consistent.
+  Future<void> seekTo(
+    String id,
+    double fraction, {
+    String? localPath,
+    String? mediaUrl,
+    int? fallbackDurationMs,
+  }) async {
+    _ensureWired();
+    final f = fraction.clamp(0.0, 1.0);
+
+    // Already the active, loaded note — just seek within it.
+    if (currentId.value == id && _loadedId == id) {
+      final dur = (_player.duration != null && _player.duration! > Duration.zero)
+          ? _player.duration!
+          : duration.value;
+      final target = Duration(milliseconds: (dur.inMilliseconds * f).round());
+      try {
+        await _player.seek(target);
+        position.value = target;
+        if (!_player.playing) await _player.play();
+      } catch (_) {}
+      return;
+    }
+
+    // Not loaded — load, seek, then play (same source resolution as toggle).
+    errorId.value = null;
+    currentId.value = id;
+    _loadedId = null;
+    position.value = Duration.zero;
+    duration.value = fallbackDurationMs != null
+        ? Duration(milliseconds: fallbackDurationMs)
+        : Duration.zero;
+    try {
+      final hasLocal = localPath != null && localPath.isNotEmpty;
+      Duration? d;
+      if (hasLocal && File(localPath).existsSync()) {
+        d = await _player.setFilePath(localPath);
+      } else if (mediaUrl != null &&
+          (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'))) {
+        d = await _player.setUrl(mediaUrl);
+      } else {
+        throw 'no playable source';
+      }
+      _loadedId = id;
+      if (d != null && d > Duration.zero) duration.value = d;
+      final dur = (d != null && d > Duration.zero) ? d : duration.value;
+      final target = Duration(milliseconds: (dur.inMilliseconds * f).round());
+      await _player.seek(target);
+      position.value = target;
+      await _player.play();
+    } catch (_) {
+      _loadedId = null;
+      errorId.value = id;
+    }
+  }
+
   /// Stop playback and unbind the current note. Call when leaving the chat
   /// page/tab so audio doesn't keep playing in the background.
   Future<void> stop() async {
@@ -116,5 +176,59 @@ class ChatVoiceNotePlayer {
     playing.value = false;
     position.value = Duration.zero;
     errorId.value = null;
+  }
+}
+
+/// Lazily resolves + caches voice-note durations so a bubble can show the real
+/// length BEFORE the note is ever played.
+///
+/// Why this exists: a received voice note carries no duration in realtime (the
+/// sender's clip length isn't persisted server-side), so an un-played bubble
+/// used to show `00:00` until you played it and re-entered the chat. This probes
+/// the clip's duration with a short-lived [AudioPlayer] (just_audio's
+/// `setUrl`/`setFilePath` return the resolved [Duration] without starting
+/// playback), caches it by note id, and notifies the bubble to repaint. The
+/// probe is idempotent per id and never touches the shared playback player.
+class VoiceNoteDurationCache {
+  VoiceNoteDurationCache._();
+  static final VoiceNoteDurationCache instance = VoiceNoteDurationCache._();
+
+  final Map<String, Duration> _cache = {};
+  final Map<String, ValueNotifier<Duration?>> _notifiers = {};
+  final Set<String> _inflight = {};
+
+  ValueNotifier<Duration?> listenable(String id) =>
+      _notifiers.putIfAbsent(id, () => ValueNotifier<Duration?>(_cache[id]));
+
+  /// Kick off a one-time duration probe for [id]. Safe to call from build —
+  /// it's idempotent (cached / in-flight ids short-circuit) and only mutates
+  /// the notifier asynchronously, never synchronously during the build.
+  void probe(String id, {String? localPath, String? mediaUrl}) {
+    if (_cache.containsKey(id) || _inflight.contains(id)) return;
+    _inflight.add(id);
+    () async {
+      final probe = AudioPlayer();
+      try {
+        Duration? d;
+        final hasLocal = localPath != null && localPath.isNotEmpty;
+        if (hasLocal && File(localPath).existsSync()) {
+          d = await probe.setFilePath(localPath);
+        } else if (mediaUrl != null &&
+            (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'))) {
+          d = await probe.setUrl(mediaUrl);
+        }
+        if (d != null && d > Duration.zero) {
+          _cache[id] = d;
+          listenable(id).value = d;
+        }
+      } catch (_) {
+        // Unplayable source — leave uncached; the bubble keeps its fallback.
+      } finally {
+        try {
+          await probe.dispose();
+        } catch (_) {}
+        _inflight.remove(id);
+      }
+    }();
   }
 }

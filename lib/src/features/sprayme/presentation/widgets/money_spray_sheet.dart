@@ -26,6 +26,7 @@ class MoneySpraySheet extends StatefulWidget {
 class _MoneySpraySheetState extends State<MoneySpraySheet> {
   int? _selectedAmount; // major units
   int? _selectedDenomination; // major units
+  String? _customAmountError; // inline hint when the typed amount exceeds balance
   bool _isCustomAmount = false;
   final _customAmountController = TextEditingController();
 
@@ -82,7 +83,7 @@ class _MoneySpraySheetState extends State<MoneySpraySheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'LazerSpray Money',
+                        'Lazerspray Money',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20.sp,
@@ -149,6 +150,11 @@ class _MoneySpraySheetState extends State<MoneySpraySheet> {
                       HapticFeedback.selectionClick();
                       setState(() {
                         _selectedAmount = isSelected ? null : amount;
+                        // Picking a preset supersedes any custom-amount entry —
+                        // leave custom mode and clear its over-balance hint.
+                        _isCustomAmount = false;
+                        _customAmountError = null;
+                        _customAmountController.clear();
                         // Reset denomination if it exceeds new amount
                         if (_selectedDenomination != null &&
                             _selectedAmount != null &&
@@ -200,6 +206,7 @@ class _MoneySpraySheetState extends State<MoneySpraySheet> {
                       HapticFeedback.selectionClick();
                       setState(() {
                         _isCustomAmount = !_isCustomAmount;
+                        _customAmountError = null;
                         if (!_isCustomAmount) {
                           _customAmountController.clear();
                         } else {
@@ -255,8 +262,17 @@ class _MoneySpraySheetState extends State<MoneySpraySheet> {
                           setState(() {
                             if (amount != null && amount > 0 && amount <= widget.walletBalance) {
                               _selectedAmount = amount;
+                              _customAmountError = null;
                             } else {
                               _selectedAmount = null;
+                              // Explain WHY the button stays disabled instead of
+                              // silently rejecting the typed amount.
+                              if (amount != null && amount > widget.walletBalance) {
+                                _customAmountError =
+                                    'Max ${widget.currency} ${widget.walletBalance.toStringAsFixed(0)} (your spray balance)';
+                              } else {
+                                _customAmountError = null;
+                              }
                             }
                             // Reset denomination if it exceeds new amount
                             if (_selectedDenomination != null &&
@@ -268,6 +284,13 @@ class _MoneySpraySheetState extends State<MoneySpraySheet> {
                         },
                       ),
                     ),
+                    if (_customAmountError != null) ...[
+                      SizedBox(height: 6.h),
+                      Text(
+                        _customAmountError!,
+                        style: TextStyle(color: const Color(0xFFFB923C), fontSize: 11.sp),
+                      ),
+                    ],
                   ],
                 ],
               ),

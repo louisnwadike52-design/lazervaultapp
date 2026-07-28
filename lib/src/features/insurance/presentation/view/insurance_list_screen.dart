@@ -16,6 +16,9 @@ import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
 import '../cubit/create_policy_cubit.dart';
 import 'create_insurance_policy_carousel.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import '../widgets/mycover_claim_bottom_sheet.dart';
+import '../widgets/mycover_hosted_url.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -53,8 +56,16 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
 
-    _fadeController.forward();
-    _slideController.forward();
+    // Admin can disable the quick-service entrance animation platform-wide.
+    // When off, jump both controllers to their end so the content renders in
+    // place (fully faded in, no slide) instead of animating.
+    if (FeatureFlags.serviceEntranceAnimation) {
+      _fadeController.forward();
+      _slideController.forward();
+    } else {
+      _fadeController.value = 1.0;
+      _slideController.value = 1.0;
+    }
 
     // Initialize userId once on mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -333,6 +344,27 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             // were policy cards.
             _buildSimpleSectionHeader('Manage'),
             SizedBox(height: 10.h),
+            // Manage Plan — only when the admin enables hosted entry points.
+            // Opens MyCover's universal hosted webview so the user can manage
+            // their existing policies; changes sync back automatically. When
+            // the toggle is off, the native policy list + detail screens above
+            // are the management surface, so this tile is hidden.
+            if (FeatureFlags.insuranceHostedEntrypoints) ...[
+              _buildShortcutTile(
+                icon: Icons.tune_rounded,
+                label: 'Manage Plan',
+                subtitle: 'Control your insurance policies',
+                color: const Color(0xFF3B82F6),
+                onTap: () {
+                  final insuranceCubit = context.read<InsuranceCubit>();
+                  MyCoverClaimBottomSheet.showManage(
+                    context,
+                    urlResolver: _resolveHostedUrl,
+                  ).then((_) => insuranceCubit.loadInsurances());
+                },
+              ),
+              SizedBox(height: 10.h),
+            ],
             _buildShortcutTile(
               icon: Icons.assignment_outlined,
               label: 'My Claims',
@@ -1068,7 +1100,33 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
     );
   }
 
+  /// Resolves the per-user MyCover hosted URL for Buy/Manage from the
+  /// admin-configured base link + the logged-in user's identity. Returns
+  /// null when the link isn't configured (sheet shows an unavailable state).
+  Future<String?> _resolveHostedUrl() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    final user = authState is AuthenticationSuccess ? authState.profile.user : null;
+    return MyCoverHostedUrl.compose(
+      base: FeatureFlags.insuranceHostedBaseLink,
+      email: user?.email ?? '',
+      userId: user?.id ?? '',
+    );
+  }
+
   void _showCreateInsuranceDialog() {
+    // Admin toggle: when hosted entry points are on, Buy opens MyCover's
+    // universal hosted webview in a themed bottom sheet instead of the
+    // native carousel. Purchases sync back via the webhook + import worker,
+    // so we still refresh the list when the sheet closes.
+    if (FeatureFlags.insuranceHostedEntrypoints) {
+      final insuranceCubit = context.read<InsuranceCubit>();
+      MyCoverClaimBottomSheet.showBuy(
+        context,
+        urlResolver: _resolveHostedUrl,
+      ).then((_) => insuranceCubit.loadInsurances());
+      return;
+    }
+
     // Capture cubits from current context before navigation
     final insuranceCubit = context.read<InsuranceCubit>();
     final authCubit = context.read<AuthenticationCubit>();

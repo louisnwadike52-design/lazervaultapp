@@ -62,11 +62,22 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           protoResponse.entities['_pin_prompt'] = jsonEncode(pinPrompt);
         }
 
+        // Pass receipt_card (single dict OR a list for a batch transfer)
+        // through the same channel so the cubit can surface ChatReceiptCardV2 /
+        // ChatReceiptCardV2List — this is what makes batch receipts render in
+        // the per-service chat.
+        final receiptCard = response['receipt_card'];
+        if (receiptCard != null && (receiptCard is Map || receiptCard is List)) {
+          protoResponse.entities['_receipt_card'] = jsonEncode(receiptCard);
+        }
+
         // Pass through other entities if present
         final entities = response['entities'];
         if (entities != null && entities is Map) {
           for (final entry in entities.entries) {
-            if (entry.key != '_receipt_data' && entry.key != '_pin_prompt') {
+            if (entry.key != '_receipt_data' &&
+                entry.key != '_pin_prompt' &&
+                entry.key != '_receipt_card') {
               protoResponse.entities[entry.key.toString()] = entry.value?.toString() ?? '';
             }
           }
@@ -176,6 +187,22 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 }
               }
 
+              // V2 receipt card(s) — single dict or a list (batch). Rebuilt so
+              // reloaded history renders batch receipts the same as live.
+              dynamic receiptCard;
+              if (role == 'assistant' &&
+                  parsedMetadata != null &&
+                  parsedMetadata.containsKey('receipt_card')) {
+                final rc = parsedMetadata['receipt_card'];
+                if (rc is Map || rc is List) {
+                  receiptCard = rc;
+                } else if (rc is String && rc.isNotEmpty) {
+                  try {
+                    receiptCard = jsonDecode(rc);
+                  } catch (_) {}
+                }
+              }
+
               // Media (image / voice) — re-render reloaded history as an image
               // preview or a playable voice note instead of plain text. The
               // gateway persists this under metadata.media {type,url,transcript}.
@@ -220,6 +247,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 isUser: role == 'user',
                 timestamp: timestamp,
                 receiptData: receiptData,
+                receiptCard: receiptCard,
                 mediaType: mediaType,
                 mediaUrl: mediaUrl,
                 audioDurationMs: mediaDurationMs,

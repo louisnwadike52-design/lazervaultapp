@@ -573,9 +573,9 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
         child: ElevatedButton(
           onPressed: isLoading ? null : _saveChanges,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
             disabledBackgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),
             ),

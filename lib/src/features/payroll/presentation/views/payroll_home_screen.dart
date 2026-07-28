@@ -7,15 +7,19 @@ import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import '../../domain/entities/employee_entity.dart';
 import '../../domain/entities/pay_run_entity.dart';
+import '../../domain/entities/pay_slip_entity.dart';
 import 'employee_list_screen.dart';
 import 'employee_details_screen.dart';
 import 'add_employee_screen.dart';
 import 'create_pay_run_screen.dart';
 import 'pay_run_details_screen.dart';
 import '../../services/payroll_pdf_service.dart';
+import '../../domain/repositories/payroll_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class PayrollHomeScreen extends StatefulWidget {
   const PayrollHomeScreen({super.key});
@@ -29,10 +33,82 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
   late TabController _tabController;
   int _currentTabIndex = 0;
 
+  // Pay Runs status filter (null = All)
+  PayRunStatus? _payRunFilter;
+
   // Report period
   String _reportPeriodStart = '';
   String _reportPeriodEnd = '';
   bool _exportingReport = false;
+
+  // Per-employee payroll report (name + gross/deductions/net for the period).
+  // Loaded via the repo directly (NOT the cubit) so it doesn't collide with the
+  // Reports tab's PayrollSummaryLoaded state or trigger the tax-report sheet.
+  List<Map<String, dynamic>> _employeePayments = const [];
+  bool _loadingEmployeePayments = false;
+
+  /// Loads the per-employee payment rows for the Reports "Employees & payments"
+  /// section. Unlike the aggregate cards (which count only COMPLETED payroll),
+  /// this shows EVERY slip from ALL pay runs whose period falls in the report
+  /// window — paid, pending AND failed — each tagged with its payment status,
+  /// so a failed run (e.g. an employee with no payout destination) is visible
+  /// here instead of silently vanishing while the Pay Runs tab still lists it.
+  Future<void> _loadEmployeePayments() async {
+    if (_reportPeriodStart.isEmpty || _reportPeriodEnd.isEmpty) return;
+    setState(() => _loadingEmployeePayments = true);
+    try {
+      final repo = serviceLocator<PayrollRepository>();
+      // All pay runs (recent-first), then keep those whose pay period is within
+      // the report window ('YYYY-MM-DD' strings compare lexicographically,
+      // matching the backend GetTaxReport `pay_period_start >= ? AND
+      // pay_period_end <= ?`). Limit 250 comfortably covers years of runs at any
+      // cadence for a single window.
+      final runsPage = await repo.listPayRuns(page: 1, limit: 250);
+      final inWindow = runsPage.payRuns
+          .where((r) =>
+              r.payPeriodStart.compareTo(_reportPeriodStart) >= 0 &&
+              r.payPeriodEnd.compareTo(_reportPeriodEnd) <= 0)
+          .toList();
+      final rows = <Map<String, dynamic>>[];
+      for (final run in inWindow) {
+        // Limit 500 covers large teams in a single run. One run's slips failing
+        // to load must NOT zero the whole section — skip it and keep the rest.
+        try {
+          final slipsPage =
+              await repo.listPaySlips(payRunId: run.id, limit: 500);
+          for (final s in slipsPage.paySlips) {
+            rows.add({
+              'employeeName': s.employeeName,
+              'grossPay': s.grossPay,
+              'netPay': s.netPay,
+              'totalDeductions': s.totalDeductions,
+              'paymentStatus': s.paymentStatus,
+            });
+          }
+        } catch (_) {
+          // Skip this run's slips; the section still shows every other run.
+        }
+      }
+      // Failed/pending first so unresolved payments surface at the top.
+      int rank(Map<String, dynamic> m) {
+        switch (m['paymentStatus'] as PaymentStatus) {
+          case PaymentStatus.failed:
+            return 0;
+          case PaymentStatus.pending:
+            return 1;
+          case PaymentStatus.paid:
+            return 2;
+        }
+      }
+
+      rows.sort((a, b) => rank(a).compareTo(rank(b)));
+      if (mounted) setState(() => _employeePayments = rows);
+    } catch (_) {
+      if (mounted) setState(() => _employeePayments = const []);
+    } finally {
+      if (mounted) setState(() => _loadingEmployeePayments = false);
+    }
+  }
 
   /// Export the payroll report as a PDF — download to storage or open the
   /// share sheet. Uses the SAME real summary the Reports tab is showing.
@@ -56,7 +132,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
         Get.snackbar(
           'Report Saved',
           'PDF saved to $path',
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: InvoiceThemeColors.successGreen,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
           margin: EdgeInsets.all(16.w),
@@ -66,7 +142,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       Get.snackbar(
         'Export Failed',
         'Could not export the report. Please try again.',
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: InvoiceThemeColors.errorRed,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
         margin: EdgeInsets.all(16.w),
@@ -122,6 +198,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
           start: _reportPeriodStart,
           end: _reportPeriodEnd,
         );
+        _loadEmployeePayments();
         break;
     }
   }
@@ -156,11 +233,11 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       floatingActionButton: _currentTabIndex < 2
           ? FloatingActionButton.extended(
               onPressed: _onFabPressed,
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               icon: const Icon(Icons.add, color: Colors.white),
               label: Text(
                 _currentTabIndex == 0 ? 'Add Employee' : 'New Pay Run',
@@ -206,7 +283,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
+                color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(22.r),
               ),
               child: Icon(
@@ -233,20 +310,6 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
             serviceName: 'Payroll',
             sourceContext: 'payroll',
           ),
-          SizedBox(width: 8.w),
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(22.r),
-            ),
-            child: Icon(
-              Icons.account_balance_wallet_outlined,
-              color: const Color(0xFF3B82F6),
-              size: 22.sp,
-            ),
-          ),
         ],
       ),
     );
@@ -256,18 +319,18 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF3B82F6),
+          color: InvoiceThemeColors.primaryPurple,
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF9CA3AF),
+        unselectedLabelColor: InvoiceThemeColors.textGray400,
         labelStyle: GoogleFonts.inter(
           fontSize: 13.sp,
           fontWeight: FontWeight.w600,
@@ -317,8 +380,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                         onRefresh: () async {
                           context.read<PayrollCubit>().listEmployees();
                         },
-                        color: const Color(0xFF3B82F6),
-                        backgroundColor: const Color(0xFF1F1F1F),
+                        color: InvoiceThemeColors.primaryPurpleLight,
+                        backgroundColor: InvoiceThemeColors.secondaryBackground,
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.symmetric(
@@ -358,7 +421,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+          colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.primaryPurpleLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -426,20 +489,20 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             CircleAvatar(
               radius: 22.r,
-              backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+              backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
               child: Text(
                 employee.fullName.isNotEmpty
                     ? employee.fullName[0].toUpperCase()
                     : '?',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurpleLight,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -462,7 +525,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                   Text(
                     '${employee.department}${employee.department.isNotEmpty && employee.jobTitle.isNotEmpty ? ' - ' : ''}${employee.jobTitle}',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
+                      color: InvoiceThemeColors.textGray400,
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -487,8 +550,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 _buildStatusBadge(
                   employee.statusDisplay,
                   employee.isActive
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF9CA3AF),
+                      ? InvoiceThemeColors.successGreen
+                      : InvoiceThemeColors.textGray400,
                 ),
               ],
             ),
@@ -511,13 +574,13 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 width: 72.w,
                 height: 72.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
+                  color: InvoiceThemeColors.secondaryBackground,
                   borderRadius: BorderRadius.circular(36.r),
                 ),
                 child: Icon(
                   Icons.people_outline,
                   size: 32.sp,
-                  color: const Color(0xFF6B7280),
+                  color: InvoiceThemeColors.textGray500,
                 ),
               ),
               SizedBox(height: 16.h),
@@ -534,7 +597,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 'Add your first employee to get started\nwith payroll management',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                   height: 1.5,
@@ -558,7 +621,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.successGreen,
             ),
           );
           context.read<PayrollCubit>().listPayRuns();
@@ -573,26 +636,40 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
 
         if (state is PayRunsLoaded) {
           final payRuns = state.payRuns;
-          return payRuns.isEmpty
-              ? _buildEmptyPayRuns()
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<PayrollCubit>().listPayRuns();
-                  },
-                  color: const Color(0xFF3B82F6),
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 4.h,
-                    ),
-                    itemCount: payRuns.length,
-                    itemBuilder: (context, index) {
-                      return _buildPayRunCard(payRuns[index]);
-                    },
-                  ),
-                );
+          if (payRuns.isEmpty) {
+            return _buildEmptyPayRuns();
+          }
+          final filtered = _payRunFilter == null
+              ? payRuns
+              : payRuns.where((p) => p.status == _payRunFilter).toList();
+          return Column(
+            children: [
+              _buildPayRunFilterChips(),
+              SizedBox(height: 8.h),
+              Expanded(
+                child: filtered.isEmpty
+                    ? _buildFilteredEmptyPayRuns()
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<PayrollCubit>().listPayRuns();
+                        },
+                        color: InvoiceThemeColors.primaryPurpleLight,
+                        backgroundColor: InvoiceThemeColors.secondaryBackground,
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 4.h,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            return _buildPayRunCard(filtered[index]);
+                          },
+                        ),
+                      ),
+              ),
+            ],
+          );
         }
 
         if (state is PayrollError) {
@@ -606,23 +683,100 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     );
   }
 
+  String _payRunStatusLabel(PayRunStatus status) {
+    return status.name[0].toUpperCase() + status.name.substring(1);
+  }
+
+  Widget _buildPayRunFilterChips() {
+    // All + one chip per filterable status (calculating is a transient state).
+    const statuses = [
+      PayRunStatus.draft,
+      PayRunStatus.ready,
+      PayRunStatus.approved,
+      PayRunStatus.processing,
+      PayRunStatus.completed,
+      PayRunStatus.failed,
+    ];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        children: [
+          _buildPayRunFilterChip('All', null),
+          ...statuses.map(
+            (s) => Padding(
+              padding: EdgeInsets.only(left: 8.w),
+              child: _buildPayRunFilterChip(_payRunStatusLabel(s), s),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayRunFilterChip(String label, PayRunStatus? status) {
+    final selected = _payRunFilter == status;
+    return GestureDetector(
+      onTap: () => setState(() => _payRunFilter = status),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: selected
+              ? InvoiceThemeColors.primaryPurple
+              : InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: selected
+                ? InvoiceThemeColors.primaryPurple
+                : InvoiceThemeColors.borderColor,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: selected ? Colors.white : InvoiceThemeColors.textGray400,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilteredEmptyPayRuns() {
+    final label =
+        _payRunFilter == null ? '' : '${_payRunStatusLabel(_payRunFilter!)} ';
+    return Center(
+      child: Text(
+        'No ${label}pay runs',
+        style: GoogleFonts.inter(
+          color: InvoiceThemeColors.textGray400,
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPayRunCard(PayRunEntity payRun) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => BlocProvider.value(
-              value: context.read<PayrollCubit>(),
-              child: PayRunDetailsScreen(payRunId: payRun.id),
-            ),
-          ),
-        );
+        Navigator.of(context)
+            .push(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: context.read<PayrollCubit>(),
+                  child: PayRunDetailsScreen(payRunId: payRun.id),
+                ),
+              ),
+            )
+            .then((_) => context.read<PayrollCubit>().listPayRuns());
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Column(
@@ -668,7 +822,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
         Text(
           label,
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 12.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -690,25 +844,25 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     Color badgeColor;
     switch (status) {
       case PayRunStatus.draft:
-        badgeColor = const Color(0xFF9CA3AF);
+        badgeColor = InvoiceThemeColors.textGray400;
         break;
       case PayRunStatus.calculating:
-        badgeColor = const Color(0xFFFB923C);
+        badgeColor = InvoiceThemeColors.warningOrange;
         break;
       case PayRunStatus.ready:
-        badgeColor = const Color(0xFF3B82F6);
+        badgeColor = InvoiceThemeColors.primaryPurpleLight;
         break;
       case PayRunStatus.approved:
-        badgeColor = const Color(0xFFFB923C);
+        badgeColor = InvoiceThemeColors.warningOrange;
         break;
       case PayRunStatus.processing:
-        badgeColor = const Color(0xFFFACC15);
+        badgeColor = InvoiceThemeColors.warningOrange;
         break;
       case PayRunStatus.completed:
-        badgeColor = const Color(0xFF10B981);
+        badgeColor = InvoiceThemeColors.successGreen;
         break;
       case PayRunStatus.failed:
-        badgeColor = const Color(0xFFEF4444);
+        badgeColor = InvoiceThemeColors.errorRed;
         break;
     }
 
@@ -742,13 +896,13 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 width: 72.w,
                 height: 72.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
+                  color: InvoiceThemeColors.secondaryBackground,
                   borderRadius: BorderRadius.circular(36.r),
                 ),
                 child: Icon(
                   Icons.receipt_long_outlined,
                   size: 32.sp,
-                  color: const Color(0xFF6B7280),
+                  color: InvoiceThemeColors.textGray500,
                 ),
               ),
               SizedBox(height: 16.h),
@@ -765,7 +919,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 'Create a pay run to process\npayroll for your employees',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                   height: 1.5,
@@ -824,25 +978,36 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     final employeeCount = summary['employeeCount'] as int? ?? 0;
     final payRunCount = summary['payRunCount'] as int? ?? 0;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Period picker
+    return RefreshIndicator(
+      color: InvoiceThemeColors.primaryPurple,
+      backgroundColor: InvoiceThemeColors.secondaryBackground,
+      onRefresh: () async {
+        context.read<PayrollCubit>().getPayrollSummary(
+              start: _reportPeriodStart,
+              end: _reportPeriodEnd,
+            );
+        _loadEmployeePayments();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Period picker
           GestureDetector(
             onTap: _showPeriodPicker,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
+                color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.calendar_month_outlined,
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     size: 20.sp,
                   ),
                   SizedBox(width: 10.w),
@@ -857,7 +1022,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                   const Spacer(),
                   Icon(
                     Icons.chevron_right,
-                    color: const Color(0xFF9CA3AF),
+                    color: InvoiceThemeColors.textGray400,
                     size: 20.sp,
                   ),
                 ],
@@ -871,28 +1036,28 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
             'Total Gross Pay',
             '\u20A6${totalGross.toStringAsFixed(2)}',
             Icons.trending_up,
-            const Color(0xFF3B82F6),
+            InvoiceThemeColors.primaryPurpleLight,
           ),
           SizedBox(height: 10.h),
           _buildReportSummaryCard(
             'Total Deductions',
             '\u20A6${totalDeductions.toStringAsFixed(2)}',
             Icons.trending_down,
-            const Color(0xFFEF4444),
+            InvoiceThemeColors.errorRed,
           ),
           SizedBox(height: 10.h),
           _buildReportSummaryCard(
             'Total Net Pay',
             '\u20A6${totalNet.toStringAsFixed(2)}',
             Icons.account_balance_wallet,
-            const Color(0xFF10B981),
+            InvoiceThemeColors.successGreen,
           ),
           SizedBox(height: 10.h),
           _buildReportSummaryCard(
             'Employer Contributions',
             '\u20A6${totalEmployerContributions.toStringAsFixed(2)}',
             Icons.business,
-            const Color(0xFFFB923C),
+            InvoiceThemeColors.warningOrange,
           ),
           SizedBox(height: 16.h),
 
@@ -916,6 +1081,11 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               ),
             ],
           ),
+          SizedBox(height: 20.h),
+
+          // Employees & payments — the actual per-employee payroll report for the
+          // period (name + gross / deductions / net), not just the tax totals.
+          _buildEmployeePaymentsSection(),
           SizedBox(height: 16.h),
 
           // Export report (PDF) — Download + Share. Only enabled once a real
@@ -933,17 +1103,17 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                       icon: _exportingReport
                           ? LazerVaultLoader.tiny()
                           : Icon(Icons.download_outlined,
-                              color: const Color(0xFF10B981), size: 20.sp),
+                              color: InvoiceThemeColors.successGreen, size: 20.sp),
                       label: Text(
                         'Download PDF',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF10B981),
+                          color: InvoiceThemeColors.successGreen,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF10B981)),
+                        side: BorderSide(color: InvoiceThemeColors.successGreen),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
@@ -960,17 +1130,17 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                           ? null
                           : () => _exportReport(summary, share: true),
                       icon: Icon(Icons.share_outlined,
-                          color: const Color(0xFF3B82F6), size: 20.sp),
+                          color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
                       label: Text(
                         'Share',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
+                          color: InvoiceThemeColors.primaryPurpleLight,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF3B82F6)),
+                        side: BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
@@ -995,17 +1165,17 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                     );
               },
               icon: Icon(Icons.description_outlined,
-                  color: const Color(0xFF3B82F6), size: 20.sp),
+                  color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
               label: Text(
                 'View Tax Report',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurpleLight,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF3B82F6)),
+                side: BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -1013,6 +1183,144 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
             ),
           ),
           SizedBox(height: 24.h),
+        ],
+        ),
+      ),
+    );
+  }
+
+  /// The per-employee payroll report for the selected period: each employee with
+  /// what they grossed, was deducted, and netted. This is the actual "payroll
+  /// report" (vs the aggregate cards + the separate tax report).
+  Widget _buildEmployeePaymentsSection() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.groups_outlined,
+                  color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
+              SizedBox(width: 8.w),
+              Text('Employees & payments',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700)),
+              const Spacer(),
+              if (_employeePayments.isNotEmpty)
+                Text('${_employeePayments.length}',
+                    style: GoogleFonts.inter(
+                        color: InvoiceThemeColors.textGray400, fontSize: 13.sp)),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          if (_loadingEmployeePayments)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 18.h),
+              child: const Center(child: LazerVaultLoader.small()),
+            )
+          else if (_employeePayments.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              child: Text('No employee payments in this period.',
+                  style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textGray400, fontSize: 13.sp)),
+            )
+          else
+            ..._employeePayments.map(_buildEmployeePaymentRow),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmployeePaymentRow(Map<String, dynamic> e) {
+    final name = (e['employeeName'] as String?)?.trim();
+    final gross = (e['grossPay'] as num?)?.toDouble() ?? 0.0;
+    final net = (e['netPay'] as num?)?.toDouble() ?? 0.0;
+    final deductionsRaw = (e['totalDeductions'] as num?)?.toDouble();
+    final deductions =
+        deductionsRaw ?? (gross - net).clamp(0, double.infinity).toDouble();
+    final status =
+        (e['paymentStatus'] as PaymentStatus?) ?? PaymentStatus.paid;
+    final label = (name == null || name.isEmpty) ? 'Employee' : name;
+
+    final (Color statusColor, String statusLabel) = switch (status) {
+      PaymentStatus.paid => (InvoiceThemeColors.successGreen, 'Paid'),
+      PaymentStatus.pending => (InvoiceThemeColors.warningOrange, 'Pending'),
+      PaymentStatus.failed => (InvoiceThemeColors.errorRed, 'Failed'),
+    };
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 16.r,
+            backgroundColor:
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+            child: Text(
+              label.substring(0, 1).toUpperCase(),
+              style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.primaryPurpleLight,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 7.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(statusLabel,
+                          style: GoogleFonts.inter(
+                              color: statusColor,
+                              fontSize: 10.5.sp,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                    'Gross ${_formatAmount(gross)} · Deductions ${_formatAmount(deductions)}',
+                    style: GoogleFonts.inter(
+                        color: InvoiceThemeColors.textGray400, fontSize: 11.5.sp)),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Text(_formatAmount(net),
+              style: GoogleFonts.inter(
+                  color: status == PaymentStatus.paid
+                      ? InvoiceThemeColors.successGreen
+                      : InvoiceThemeColors.textGray400,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -1027,7 +1335,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -1049,7 +1357,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 Text(
                   label,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
+                    color: InvoiceThemeColors.textGray400,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -1075,12 +1383,12 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFF3B82F6), size: 28.sp),
+          Icon(icon, color: InvoiceThemeColors.primaryPurpleLight, size: 28.sp),
           SizedBox(height: 8.h),
           Text(
             value,
@@ -1094,7 +1402,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
           Text(
             label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -1128,7 +1436,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       builder: (_) => Container(
         constraints: BoxConstraints(maxHeight: 0.85.sh),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         child: Column(
@@ -1140,7 +1448,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3D3D3D),
+                  color: InvoiceThemeColors.tertiaryBackground,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -1151,7 +1459,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               child: Row(
                 children: [
                   Icon(Icons.description_outlined,
-                      color: const Color(0xFF3B82F6), size: 24.sp),
+                      color: InvoiceThemeColors.primaryPurpleLight, size: 24.sp),
                   SizedBox(width: 10.w),
                   Text(
                     'Tax Report',
@@ -1170,13 +1478,13 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               child: Text(
                 '$_reportPeriodStart to $_reportPeriodEnd',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   fontSize: 13.sp,
                 ),
               ),
             ),
             SizedBox(height: 16.h),
-            Divider(color: const Color(0xFF2D2D2D), height: 1.h),
+            Divider(color: InvoiceThemeColors.borderColor, height: 1.h),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(20.w),
@@ -1209,7 +1517,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
                           margin: EdgeInsets.only(bottom: 10.h),
                           padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0A0A0A),
+                            color: InvoiceThemeColors.primaryBackground,
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Column(
@@ -1259,6 +1567,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               start: _reportPeriodStart,
               end: _reportPeriodEnd,
             );
+        _loadEmployeePayments();
       }
     });
   }
@@ -1272,7 +1581,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
           Text(
             label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -1297,7 +1606,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
         Text(
           label,
           style: GoogleFonts.inter(
-            color: const Color(0xFF6B7280),
+            color: InvoiceThemeColors.textGray500,
             fontSize: 11.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -1324,9 +1633,9 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF3B82F6),
-              surface: Color(0xFF1F1F1F),
+            colorScheme: ColorScheme.dark(
+              primary: InvoiceThemeColors.primaryPurple,
+              surface: InvoiceThemeColors.secondaryBackground,
             ),
           ),
           child: child!,
@@ -1343,9 +1652,9 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF3B82F6),
-              surface: Color(0xFF1F1F1F),
+            colorScheme: ColorScheme.dark(
+              primary: InvoiceThemeColors.primaryPurple,
+              surface: InvoiceThemeColors.secondaryBackground,
             ),
           ),
           child: child!,
@@ -1399,7 +1708,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
             Icon(
               Icons.error_outline,
               size: 48.sp,
-              color: const Color(0xFFEF4444),
+              color: InvoiceThemeColors.errorRed,
             ),
             SizedBox(height: 16.h),
             Text(
@@ -1415,7 +1724,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               message,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
+                color: InvoiceThemeColors.textGray400,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -1425,7 +1734,7 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               ElevatedButton(
                 onPressed: onRetry,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),

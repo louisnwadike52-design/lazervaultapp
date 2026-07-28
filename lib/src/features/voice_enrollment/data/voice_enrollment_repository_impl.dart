@@ -1,21 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:grpc/grpc.dart';
-import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
-import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/voice_biometrics_service.dart' as vbs;
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 
-/// Repository for voice enrollment operations using real gRPC backend
+/// Repository for voice enrollment. Enrollment + status + delete all go over
+/// the voice-agent-gateway HTTP path (`/voice/auth/*`) — the same reachable,
+/// Cloudflare-routed transport the login/verify flow uses.
 @injectable
 class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
-  final VoiceBiometricsServiceClient _voiceClient;
-  final GrpcCallOptionsHelper _callOptionsHelper;
   final SecureStorageService _secureStorage;
 
   final AudioRecorder _recorder = AudioRecorder();
@@ -23,11 +23,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   final StreamController<double> _amplitudeController = StreamController<double>.broadcast();
   String? _currentRecordingPath;
 
-  VoiceEnrollmentRepositoryImpl(
-    this._voiceClient,
-    this._callOptionsHelper,
-    this._secureStorage,
-  );
+  VoiceEnrollmentRepositoryImpl(this._secureStorage);
 
   /// Check if microphone permission is granted
   @override
@@ -39,6 +35,12 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   @override
   Future<bool> requestMicrophonePermission() async {
     final status = await Permission.microphone.request();
+    // Once permanently denied, request() is a no-op forever, so the enrollment
+    // screen's "Grant Permission" button would loop with no effect. Route the
+    // user to the app's settings page where they can actually flip it.
+    if (status.isPermanentlyDenied) {
+      await openAppSettings();
+    }
     return status.isGranted;
   }
 
@@ -234,140 +236,94 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
     }
   }
 
-  /// Enroll voice with audio samples via gRPC
+  /// Enroll voice with audio samples via the voice-agent-gateway HTTP path
+  /// (`POST /voice/auth/enroll`) — the SAME transport the login/verify path
+  /// uses. The previous implementation went over native gRPC direct to
+  /// :50060, which a device can't reach and the Cloudflare tunnel doesn't route
+  /// (it only proxies the HTTP `/voice/...` family), so enrollment silently
+  /// failed → no voiceprint stored → login always reported "not enrolled".
   @override
   Future<VoiceEnrollmentResult> enrollVoice({
     required String userId,
     required List<File> audioSamples,
   }) async {
     try {
-      print('🎙️  Starting voice enrollment for user: $userId');
-
-      // Validate inputs
-      if (audioSamples.isEmpty) {
-        throw Exception('No audio samples provided');
-      }
+      print('🎙️  Starting voice enrollment (HTTP) for user: $userId');
 
       if (audioSamples.length < 3) {
         throw Exception('At least 3 audio samples required for enrollment');
       }
 
-      // Verify all files exist and read as bytes
-      final audioBytes = <List<int>>[];
+      // Read the WAV samples as bytes.
+      final samples = <Uint8List>[];
       for (var i = 0; i < audioSamples.length; i++) {
         final file = audioSamples[i];
         if (!await file.exists()) {
           throw Exception('Audio sample $i does not exist: ${file.path}');
         }
-
-        final fileSize = await file.length();
-        if (fileSize == 0) {
+        final bytes = await file.readAsBytes();
+        if (bytes.isEmpty) {
           throw Exception('Audio sample $i is empty: ${file.path}');
         }
-
-        // Read file as bytes
-        final bytes = await file.readAsBytes();
-        audioBytes.add(bytes);
-        print('✅ Loaded sample $i: $fileSize bytes');
+        samples.add(bytes);
+        print('✅ Loaded sample $i: ${bytes.length} bytes');
       }
 
-      // Create enrollment request
-      final request = EnrollVoiceRequest()
-        ..userId = userId
-        ..audioSamples.addAll(audioBytes)
-        ..format = (AudioFormat()
-          ..codec = 'wav'
-          ..sampleRate = 16000
-          ..channels = 1
-          ..bitDepth = 16);
-
-      print('📤 Sending enrollment request to voice-biometrics service...');
-
-      // Get call options with authentication
-      final callOptions = await _callOptionsHelper.withAuth();
-
-      // Call voice biometrics service
-      final response = await _voiceClient.enrollVoice(
-        request,
-        options: callOptions,
+      final result = await serviceLocator<vbs.VoiceBiometricsService>().enrollVoice(
+        userId: userId,
+        audioSamples: samples,
+        sampleRate: 16000,
+        channels: 1,
       );
 
-      print('📥 Enrollment response received');
-      print('   - Success: ${response.success}');
-      print('   - Enrollment ID: ${response.enrollmentId}');
-      print('   - Quality Score: ${response.qualityScore}');
-      print('   - Samples Count: ${response.samplesCount}');
+      print('📥 Enrollment response: success=${result.success} '
+          'quality=${result.qualityScore} id=${result.enrollmentId}');
 
-      if (!response.success) {
-        throw Exception(response.message.isNotEmpty
-          ? response.message
-          : 'Voice enrollment failed');
+      if (!result.success) {
+        throw Exception((result.message?.isNotEmpty ?? false)
+            ? result.message!
+            : 'Voice enrollment failed');
       }
 
       return VoiceEnrollmentResult(
-        enrollmentId: response.enrollmentId,
-        qualityScore: response.qualityScore.toDouble(),
-        samplesCount: response.samplesCount,
-        success: response.success,
-        message: response.message,
+        enrollmentId: result.enrollmentId ?? '',
+        qualityScore: result.qualityScore ?? 0.0,
+        samplesCount: result.samplesCount ?? samples.length,
+        success: result.success,
+        message: result.message ?? '',
       );
-    } on GrpcError catch (e) {
-      print('❌ gRPC Error during enrollment: ${e.code} - ${e.message}');
-      // Include gRPC status code for upstream error classification
-      throw Exception('Voice enrollment failed [code=${e.code}]: ${e.message}');
+    } on vbs.VoiceBiometricsException catch (e) {
+      final msg = e.message;
+      // Normalize "already enrolled" so the cubit's auto-delete-and-retry
+      // (which matches ALREADY_EXISTS / "already has voice") triggers.
+      if (msg.toLowerCase().contains('already')) {
+        throw Exception('ALREADY_EXISTS: $msg');
+      }
+      throw Exception('Voice enrollment failed: $msg');
     } catch (e) {
       print('❌ Error during enrollment: $e');
       throw Exception('Voice enrollment failed: $e');
     }
   }
 
-  /// Check voice enrollment status via gRPC
+  /// Check voice enrollment status via the HTTP gateway path.
   @override
   Future<bool> checkEnrollmentStatus(String userId) async {
     try {
-      print('🔍 Checking enrollment status for user: $userId');
-
-      final request = CheckEnrollmentStatusRequest()
-        ..userId = userId;
-
-      final callOptions = await _callOptionsHelper.withAuth();
-
-      final response = await _voiceClient.checkEnrollmentStatus(
-        request,
-        options: callOptions,
-      );
-
-      print('✅ Enrollment status: ${response.isEnrolled}');
-
-      return response.isEnrolled;
-    } on GrpcError catch (e) {
-      print('❌ gRPC Error checking enrollment: ${e.code} - ${e.message}');
-      // If user not found or service unavailable, return false (not enrolled)
-      return false;
+      final status =
+          await serviceLocator<vbs.VoiceBiometricsService>().checkEnrollmentStatus(userId);
+      return status.isEnrolled;
     } catch (e) {
       print('❌ Error checking enrollment status: $e');
-      return false;
+      return false; // not enrolled / service unavailable
     }
   }
 
-  /// Delete voice enrollment
+  /// Delete voice enrollment via the HTTP gateway path.
   @override
   Future<bool> deleteEnrollment(String userId) async {
     try {
-      final request = DeleteVoiceEnrollmentRequest()
-        ..userId = userId;
-
-      final callOptions = await _callOptionsHelper.withAuth();
-
-      final response = await _voiceClient.deleteVoiceEnrollment(
-        request,
-        options: callOptions,
-      );
-
-      return response.success;
-    } on GrpcError catch (e) {
-      print('❌ gRPC Error deleting enrollment: ${e.code} - ${e.message}');
-      throw Exception('Failed to delete enrollment: ${e.message}');
+      return await serviceLocator<vbs.VoiceBiometricsService>().deleteVoiceEnrollment(userId);
     } catch (e) {
       print('❌ Error deleting enrollment: $e');
       throw Exception('Failed to delete enrollment: $e');

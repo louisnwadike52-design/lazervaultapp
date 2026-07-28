@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 /// Cubit for managing budget state
 ///
@@ -51,7 +52,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         totalSpentAmount: response.totalSpentAmount,
       ));
     } catch (e) {
-      emit(BudgetError(message: 'Failed to load budgets: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'load your budgets')));
     }
   }
 
@@ -70,7 +71,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         overallPercentage: response.overallPercentage,
       ));
     } catch (e) {
-      emit(BudgetError(message: 'Failed to load budget progress: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'load your budget progress')));
     }
   }
 
@@ -148,7 +149,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: 'Failed to create budget: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'create the budget')));
     }
   }
 
@@ -186,7 +187,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: 'Failed to update budget: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'update the budget')));
     }
   }
 
@@ -204,7 +205,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: 'Failed to delete budget: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'delete the budget')));
     }
   }
 
@@ -221,7 +222,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         unreadCount: response.unreadCount.toInt(),
       ));
     } catch (e) {
-      emit(BudgetError(message: 'Failed to load alerts: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'load your alerts')));
     }
   }
 
@@ -233,7 +234,7 @@ class BudgetCubit extends Cubit<BudgetState> {
       // Reload alerts after marking as read
       await loadBudgetAlerts();
     } catch (e) {
-      emit(BudgetError(message: 'Failed to mark alert as read: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'update the alert')));
     }
   }
 
@@ -303,7 +304,7 @@ class BudgetCubit extends Cubit<BudgetState> {
 
       emit(BudgetAIInsightsLoaded(insights: insights));
     } catch (e) {
-      emit(BudgetAIInsightsError(message: 'Failed to load AI insights: ${e.toString()}'));
+      emit(BudgetAIInsightsError(message: friendlyError(e, context: 'load your AI insights')));
     }
   }
 
@@ -320,7 +321,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         totalSaved: goalsList.totalSaved,
       ));
     } catch (e) {
-      emit(BudgetError(message: 'Failed to load goals: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'load your goals')));
     }
   }
 
@@ -357,20 +358,27 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: 'Failed to create goal: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'create the goal')));
     }
   }
 
-  /// Contribute to a financial goal
+  /// Contribute REAL money to a financial goal: debits the wallet after the
+  /// device PIN token ([pinToken] bound to [pinTxnId]) is validated server-side.
   Future<void> contributeToGoal({
     required String goalId,
     required double amount,
+    required String pinToken,
+    required String pinTxnId,
+    String? accountId,
   }) async {
-    emit(const BudgetLoading(message: 'Adding contribution...'));
+    emit(const BudgetLoading(message: 'Adding money...'));
     try {
       final response = await _budgetRepository.updateFinancialGoalProgress(
         goalId: goalId,
         amountToAdd: amount,
+        pinToken: pinToken,
+        pinTxnId: pinTxnId,
+        accountId: accountId,
       );
 
       if (response.success) {
@@ -380,7 +388,33 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: 'Failed to add contribution: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'add money to your goal')));
+    }
+  }
+
+  /// Withdraw money from a financial goal back to the wallet (no PIN — money is
+  /// returning to its owner). [amount] is the positive amount to withdraw.
+  Future<void> withdrawFromGoal({
+    required String goalId,
+    required double amount,
+    String? accountId,
+  }) async {
+    emit(const BudgetLoading(message: 'Withdrawing...'));
+    try {
+      final response = await _budgetRepository.updateFinancialGoalProgress(
+        goalId: goalId,
+        amountToAdd: -amount,
+        accountId: accountId,
+      );
+
+      if (response.success) {
+        emit(BudgetCreated(message: response.message));
+        await loadFinancialGoals();
+      } else {
+        emit(BudgetError(message: response.message));
+      }
+    } catch (e) {
+      emit(BudgetError(message: friendlyError(e, context: 'withdraw from your goal')));
     }
   }
 
@@ -396,7 +430,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         totalUpcoming: billsList.totalUpcoming,
       ));
     } catch (e) {
-      emit(BudgetError(message: 'Failed to load bills: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'load your bills')));
     }
   }
 
@@ -433,7 +467,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: 'Failed to create bill: ${e.toString()}'));
+      emit(BudgetError(message: friendlyError(e, context: 'create the bill')));
     }
   }
 

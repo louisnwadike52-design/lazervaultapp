@@ -15,6 +15,7 @@ class AccountSummaryModel extends AccountSummaryEntity {
     super.bankName, // Bank name for deposits
     super.accountName, // Account holder name for deposits
     super.accountLabel, // Custom display name (e.g., "Kids Allowance")
+    super.status = 'active', // active | frozen | suspended | closed
     // Trend percentage is missing in proto, set default or remove from entity
     super.trendPercentage = 0.0,
   });
@@ -76,6 +77,10 @@ class AccountSummaryModel extends AccountSummaryEntity {
       accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       accountName: proto.accountName.isNotEmpty ? proto.accountName : null,
       accountLabel: proto.accountName.isNotEmpty ? proto.accountName : null,
+      // Account status (active/frozen/suspended/closed) — surfaced so transfer
+      // source pickers can reflect a frozen account and block it before PIN,
+      // mirroring the accounts-service enforcement.
+      status: proto.status.isNotEmpty ? proto.status : 'active',
       // Real balance %-change over the requested window (signed). The card's
       // trend chip themes green/red off `isUp` (derived from this value).
       trendPercentage: proto.trendPercentage,

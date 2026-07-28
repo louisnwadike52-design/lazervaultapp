@@ -96,7 +96,7 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
     final cubit = context.read<CryptoCubit>();
     final wlId = _defaultWatchlistId;
     if (wlId == null) {
-      Get.snackbar('Not ready', 'Watchlist still initialising — try again',
+      Get.snackbar('Not ready', 'Watchlist still initialising, try again',
           backgroundColor: _card, colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;

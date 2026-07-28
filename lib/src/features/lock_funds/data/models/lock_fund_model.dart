@@ -93,9 +93,15 @@ class LockFundModel {
     }
   }
 
-  /// Create CreateLockFundRequest from parameters
+  /// Create CreateLockFundRequest from parameters.
+  ///
+  /// [configId] is the stable plan identity (PiggyVaultConfig UUID)
+  /// and is the primary selector — the backend resolves the plan by
+  /// this id and ignores lock_type. [lockType] is still sent as a
+  /// legacy fallback for backend builds that predate config_id.
   static pb.CreateLockFundRequest toCreateRequest({
     required LockType lockType,
+    required String configId,
     required double amount,
     required String currency,
     required int lockDurationDays,
@@ -110,6 +116,7 @@ class LockFundModel {
   }) {
     return pb.CreateLockFundRequest()
       ..lockType = convertLockTypeToProto(lockType)
+      ..configId = configId
       ..amount = amount
       ..currency = currency
       ..lockDurationDays = lockDurationDays

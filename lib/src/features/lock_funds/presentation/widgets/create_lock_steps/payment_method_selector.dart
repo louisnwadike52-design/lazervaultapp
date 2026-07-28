@@ -764,7 +764,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           ),
           SizedBox(height: 4.h),
           Text(
-            'You need an account to fund a PiggyVault. Create one first.',
+            'You need an account to fund a Piggyvault. Create one first.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),

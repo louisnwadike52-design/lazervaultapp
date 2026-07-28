@@ -3,6 +3,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/core/offline/mutation_queue.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
@@ -64,8 +65,15 @@ class TransferCubit extends Cubit<TransferState> {
         return;
       }
 
-      // Calculate fee locally (matches backend tiered structure)
-      final fee = _calculateTransferFee(amountMinorUnits, currency);
+      // Fee comes from the BACKEND — the exact amount SendFunds will charge
+      // (our admin-configured platform fee + the CBN/Flutterwave provider fee).
+      // No hard-coded client-side values or fallbacks: if the backend can't
+      // quote a fee, surface an error rather than guess.
+      final fee = await paymentsTransferDataSource.getTransferFee(
+        amountMinorUnits: amountMinorUnits,
+        currency: currency,
+        transferType: transferType,
+      );
 
       if (isClosed) return;
       final feeState = TransferFeeLoaded(
@@ -80,29 +88,6 @@ class TransferCubit extends Cubit<TransferState> {
     } catch (e) {
       if (isClosed) return;
       emit(TransferFeeError(message: 'Failed to get transfer fee: $e'));
-    }
-  }
-
-  /// Local fee calculation matching backend tiered structure
-  int _calculateTransferFee(int amountMinorUnits, String currency) {
-    switch (currency.toUpperCase()) {
-      case 'NGN':
-        final amountNaira = amountMinorUnits ~/ 100;
-        if (amountNaira < 5000) return 1000;  // ₦10
-        if (amountNaira < 50000) return 2500; // ₦25
-        return 5000; // ₦50
-      case 'GBP':
-        return 50;   // £0.50
-      case 'USD':
-        return 25;   // $0.25
-      case 'GHS':
-        return 100;  // GHS 1.00
-      case 'KES':
-        return 5000; // KES 50
-      case 'ZAR':
-        return 750;  // ZAR 7.50
-      default:
-        return 0;
     }
   }
 
@@ -127,14 +112,32 @@ class TransferCubit extends Cubit<TransferState> {
     DateTime? scheduledAt,
     double? availableBalance,          // Source account available balance (major units)
     int? expenseCategory,              // Budget category enum value selected by user
+    String? flow,                      // Funnel flow ("long"|"short"); falls back to last screen view
   }) async {
     if (isClosed) return;
+
+    // Resolve the funnel flow once: explicit caller value wins, else the flow of
+    // the last viewed send-funds screen. Used both for the backend x-flow header
+    // and for client outcome attribution so long/short stay consistent.
+    final sendFlow = flow ?? AnalyticsService.instance.currentSendFlow;
+
+    // Telemetry: measure client-observed send latency + record terminal outcome.
+    final telemetryStart = DateTime.now();
+    void recordOutcome(String outcome) {
+      AnalyticsService.instance.trackSendFundsOutcome(
+        type: type,
+        outcome: outcome,
+        flow: sendFlow,
+        latencyMs: DateTime.now().difference(telemetryStart).inMilliseconds,
+      );
+    }
 
     // Pre-flight balance check: reject early if amount exceeds available balance
     if (availableBalance != null && amount > availableBalance) {
       emit(TransferFailure(
         message: 'Insufficient available balance. You have ${availableBalance.toStringAsFixed(2)} available.',
       ));
+      recordOutcome('failure');
       return;
     }
 
@@ -154,6 +157,7 @@ class TransferCubit extends Cubit<TransferState> {
         beneficiaryName: beneficiaryName,
         scheduledAt: scheduledAt,
         expenseCategory: expenseCategory,
+        flow: sendFlow,
       );
 
       if (isClosed) return;
@@ -167,8 +171,10 @@ class TransferCubit extends Cubit<TransferState> {
         final status = result.status?.toLowerCase() ?? '';
         final isInFlight = type == 'external' && (status == 'pending' || status == 'processing');
         emit(TransferSuccess(response: _toEntity(result), isInFlight: isInFlight));
+        recordOutcome('success');
       } else {
         emit(TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
+        recordOutcome('failure');
       }
     } on GrpcError catch (e) {
       if (isClosed) return;
@@ -177,6 +183,7 @@ class TransferCubit extends Cubit<TransferState> {
       final pinFailure = GrpcErrorHandler.extractPinFailure(e);
       if (pinFailure != null) {
         emit(TransferPinFailure(pinInfo: pinFailure));
+        recordOutcome('pin_failure');
         return;
       }
 
@@ -186,6 +193,7 @@ class TransferCubit extends Cubit<TransferState> {
           message: 'Transaction limit reached. Upgrade your account to increase limits.',
           isKYCError: true,
         ));
+        recordOutcome('kyc_error');
         return;
       }
 
@@ -195,6 +203,7 @@ class TransferCubit extends Cubit<TransferState> {
         message: GrpcErrorHandler.userFriendlyMessage(e),
         isRetryable: GrpcErrorHandler.isRetryable(e),
       ));
+      recordOutcome('failure');
     } catch (e) {
       if (isClosed) return;
 
@@ -203,8 +212,10 @@ class TransferCubit extends Cubit<TransferState> {
           message: 'No internet connection. Please check your network and try again.',
           isRetryable: true,
         ));
+        recordOutcome('network_error');
       } else {
         emit(TransferFailure(message: 'Transfer failed. Please try again.'));
+        recordOutcome('failure');
       }
     }
   }

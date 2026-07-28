@@ -17,9 +17,22 @@ class P2PMessageModel extends P2PMessageEntity {
     required super.deliveryStatus,
     super.clientMessageId,
     required super.createdAt,
+    super.replyToMessageId,
+    super.replyToContent,
+    super.replyToSenderId,
+    super.editedAt,
+    super.reactions,
+    super.forwarded,
   });
 
   factory P2PMessageModel.fromJson(Map<String, dynamic> json) {
+    final rawReactions = json['reactions'];
+    final reactions = <P2PReaction>[];
+    if (rawReactions is List) {
+      for (final r in rawReactions) {
+        if (r is Map<String, dynamic>) reactions.add(P2PReaction.fromJson(r));
+      }
+    }
     return P2PMessageModel(
       id: json['id'] as String? ?? '',
       conversationId: json['conversation_id'] as String? ?? '',
@@ -34,9 +47,22 @@ class P2PMessageModel extends P2PMessageEntity {
       transferStatus: json['transfer_status'] as String?,
       deliveryStatus: json['delivery_status'] as String? ?? 'sent',
       clientMessageId: json['client_message_id'] as String?,
+      // Server timestamps are UTC (RFC3339). Normalize to LOCAL at the parse
+      // boundary so every render (HH:mm bubble, date separators, day-grouping)
+      // shows the user's own timezone AND matches the optimistic DateTime.now()
+      // (local) bubble — otherwise a just-sent message shows local time then
+      // "jumps" to UTC after reload. .toLocal() preserves the absolute instant.
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
+          ? DateTime.parse(json['created_at'] as String).toLocal()
           : DateTime.now(),
+      replyToMessageId: json['reply_to_message_id'] as String?,
+      replyToContent: json['reply_to_content'] as String?,
+      replyToSenderId: json['reply_to_sender_id'] as String?,
+      editedAt: json['edited_at'] != null
+          ? DateTime.tryParse(json['edited_at'] as String)?.toLocal()
+          : null,
+      reactions: reactions,
+      forwarded: json['forwarded'] == true,
     );
   }
 
@@ -56,6 +82,11 @@ class P2PMessageModel extends P2PMessageEntity {
       'delivery_status': deliveryStatus,
       'client_message_id': clientMessageId,
       'created_at': createdAt.toIso8601String(),
+      'reply_to_message_id': replyToMessageId,
+      'reply_to_content': replyToContent,
+      'reply_to_sender_id': replyToSenderId,
+      'edited_at': editedAt?.toIso8601String(),
+      'reactions': reactions.map((r) => r.toJson()).toList(),
     };
   }
 }

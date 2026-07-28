@@ -2,6 +2,7 @@ enum AppServiceName {
   sendFunds,
   batchTransfer,
   tagPay,
+  escrow,
   invoice,
   payInvoice,
   payBills,
@@ -9,6 +10,7 @@ enum AppServiceName {
   stocks,
   exchange,
   crypto,
+  rmb,
   giftCards,
   aiScanToPay,
   qrPay,
@@ -18,6 +20,7 @@ enum AppServiceName {
   airtime,
   autoSave,
   crowdfund,
+  uplift,
   lockFunds,
   whatsappIntegration,
   phoneBanking,
@@ -29,6 +32,9 @@ enum AppServiceName {
   expenses,
   inventory,
   tax,
+  sales,
+  rechargeCard,
+  betting,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -40,6 +46,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Batch Transfer';
       case AppServiceName.tagPay:
         return 'Tag Pay';
+      case AppServiceName.escrow:
+        return 'Escrow';
       case AppServiceName.invoice:
         return 'Invoices';
       case AppServiceName.payInvoice:
@@ -54,6 +62,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Exchange';
       case AppServiceName.crypto:
         return 'Crypto';
+      case AppServiceName.rmb:
+        return 'RMB Transfer';
       case AppServiceName.giftCards:
         return 'Gift Cards';
       case AppServiceName.aiScanToPay:
@@ -72,14 +82,16 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Auto-Save';
       case AppServiceName.crowdfund:
         return 'Crowdfund';
+      case AppServiceName.uplift:
+        return 'Lazerfunds';
       case AppServiceName.lockFunds:
-        return 'PiggyVault';
+        return 'Piggyvault';
       case AppServiceName.whatsappIntegration:
         return 'WhatsApp Banking';
       case AppServiceName.phoneBanking:
         return 'Phone Banking';
       case AppServiceName.idPay:
-        return 'IDPay';
+        return 'PayID';
       case AppServiceName.payroll:
         return 'Payroll';
       case AppServiceName.businessDashboard:
@@ -94,6 +106,12 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Inventory';
       case AppServiceName.tax:
         return 'Taxation';
+      case AppServiceName.sales:
+        return 'Sell';
+      case AppServiceName.rechargeCard:
+        return 'Recharge Cards';
+      case AppServiceName.betting:
+        return 'Fund Betting';
     }
   }
 
@@ -107,6 +125,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'core-payments-service';
       case AppServiceName.tagPay:
         return 'tag-pay-service';
+      case AppServiceName.escrow:
+        return 'escrow-service';
       case AppServiceName.invoice:
         return 'invoice-service';
       case AppServiceName.payInvoice:
@@ -121,6 +141,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'investments-service';
       case AppServiceName.crypto:
         return 'crypto-service';
+      case AppServiceName.rmb:
+        return 'rmb-service';
       case AppServiceName.giftCards:
         return 'giftcards-service';
       case AppServiceName.aiScanToPay:
@@ -139,6 +161,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'accounts-service';
       case AppServiceName.crowdfund:
         return 'crowdfund-service';
+      case AppServiceName.uplift:
+        return 'uplift-service';
       case AppServiceName.lockFunds:
         return 'accounts-service';
       case AppServiceName.whatsappIntegration:
@@ -161,6 +185,12 @@ extension AppServiceNameExtension on AppServiceName {
         return 'payroll-service';
       case AppServiceName.tax:
         return 'payroll-service';
+      case AppServiceName.sales:
+        return 'payroll-service';
+      case AppServiceName.rechargeCard:
+        return 'utility-payments-service';
+      case AppServiceName.betting:
+        return 'utility-payments-service';
     }
   }
 }
@@ -176,6 +206,7 @@ enum AppServiceImg {
   sendFunds,
   batchTransfer,
   tagPay,
+  escrow,
   invoice,
   payInvoice,
   payBills,
@@ -183,6 +214,7 @@ enum AppServiceImg {
   stocks,
   exchange,
   crypto,
+  rmb,
   giftCards,
   aiScanToPay,
   qrPay,
@@ -192,6 +224,7 @@ enum AppServiceImg {
   airtime,
   autoSave,
   crowdfund,
+  uplift,
   lockFunds,
   whatsappIntegration,
   phoneBanking,
@@ -203,6 +236,9 @@ enum AppServiceImg {
   expenses,
   inventory,
   tax,
+  sales,
+  rechargeCard,
+  betting,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -214,6 +250,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/batch-transfer.png';
       case AppServiceImg.tagPay:
         return 'assets/images/tag-pay.png';
+      case AppServiceImg.escrow:
+        return 'assets/images/lock.png';
       case AppServiceImg.invoice:
         return 'assets/images/money-receive.png';
       case AppServiceImg.payInvoice:
@@ -228,6 +266,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/exchange.png';
       case AppServiceImg.crypto:
         return 'assets/images/crypto.png';
+      case AppServiceImg.rmb:
+        return 'assets/images/rmb.png';
       case AppServiceImg.giftCards:
         return 'assets/images/gift-cards.png';
       case AppServiceImg.aiScanToPay:
@@ -245,6 +285,8 @@ extension AppServiceImgExtension on AppServiceImg {
       case AppServiceImg.autoSave:
         return 'assets/images/auto-save.png';
       case AppServiceImg.crowdfund:
+        return 'assets/images/volunteer_activism.png';
+      case AppServiceImg.uplift:
         return 'assets/images/volunteer_activism.png';
       case AppServiceImg.lockFunds:
         return 'assets/images/lock.png';
@@ -267,6 +309,12 @@ extension AppServiceImgExtension on AppServiceImg {
       case AppServiceImg.inventory:
         return 'assets/images/payroll.png';
       case AppServiceImg.tax:
+        return 'assets/images/receive-square.png';
+      case AppServiceImg.sales:
+        return 'assets/images/money-receive.png';
+      case AppServiceImg.rechargeCard:
+        return 'assets/images/airtime.png';
+      case AppServiceImg.betting:
         return 'assets/images/receive-square.png';
     }
   }

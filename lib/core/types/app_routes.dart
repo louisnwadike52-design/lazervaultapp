@@ -1,3 +1,5 @@
+import 'package:lazervault/core/config/feature_flags.dart';
+
 abstract class AppRoutes {
   static const String root = '/';
   // No splash/auth-check route — boot destination is resolved in main()
@@ -213,15 +215,44 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
 
   // Phone + Passcode authentication mode (admin-selected via auth_mode).
   // Signup journey: phoneEntry → phoneOtp → phonePasscodeCreate →
-  // phonePersonalDetails → phoneOptionalEmail → (transaction PIN → KYC →
-  // dashboard). phonePasscodeLogin is the default login for PHONE_PASSCODE
-  // accounts.
+  // phonePersonalDetails (name + required email, submits signup) →
+  // (transaction PIN → KYC → dashboard). LOGIN reuses the canonical
+  // passcodeLogin screen (phone accounts have a stored email + passcode).
   static const String phoneEntry = '/auth/phone-entry';
   static const String phoneOtp = '/auth/phone-otp';
   static const String phonePasscodeCreate = '/auth/phone-passcode-create';
   static const String phonePersonalDetails = '/auth/phone-personal-details';
-  static const String phoneOptionalEmail = '/auth/phone-optional-email';
+  // Email + inline verification step (phone_passcode signup, after details).
+  static const String phoneEmailVerification = '/auth/phone-email-verification';
+  // "Switch User" (phone+passcode login for a different user) + phone-OTP
+  // passcode reset ("Forgot your passcode?") for phone+passcode accounts.
   static const String phonePasscodeLogin = '/auth/phone-passcode-login';
+  static const String forgotPasscodePhone = '/auth/forgot-passcode-phone';
+
+  /// Signup entry driven by the SINGLE canonical login flow ([FeatureFlags
+  /// .loginFlow], default phone_passcode): email_password → the email/password
+  /// signUp screen; otherwise → phoneEntry. Reading the same resolved value as
+  /// the login screen keeps the "sign up" button consistent with the flow shown.
+  static String get signupEntry =>
+      FeatureFlags.isEmailPasswordLogin ? signUp : phoneEntry;
+
+  /// Login entry for a RETURNING/logged-out user with a cached identity, driven by
+  /// the canonical [FeatureFlags.loginFlow]. email_password → emailSignIn;
+  /// otherwise the shared passcode LOCK screen (phone AND email-passcode accounts
+  /// use it). NOTE: for a fresh install (no cached user) prefer [freshLoginEntry]
+  /// or `LoginFlowResolver.resolveLoginRoute()` — the passcode lock is a dead-end
+  /// without a cached identity.
+  static String get loginEntry =>
+      FeatureFlags.isEmailPasswordLogin ? emailSignIn : passcodeLogin;
+
+  /// Login entry for a FRESH install / no cached user. email_password → emailSignIn
+  /// (handles fresh + returning); otherwise the full phone+passcode LOGIN screen
+  /// ([phonePasscodeLogin]) so the user can enter phone + passcode — NOT the
+  /// passcode lock. Sync (mode-only); use `LoginFlowResolver.resolveLoginRoute()`
+  /// when you also want to honour a cached returning user.
+  static String get freshLoginEntry =>
+      FeatureFlags.isEmailPasswordLogin ? emailSignIn : phonePasscodeLogin;
+
   static const String passcodeSetup = '/auth/passcode-setup';
   static const String transactionPinSetup = '/auth/transaction-pin-setup';
   static const String pinManagement = '/settings/pin-management';
@@ -264,7 +295,6 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String myGiftCards = '/gift-cards/my-cards';
   static const String sellGiftCard = '/gift-cards/sell';
   static const String mySales = '/gift-cards/my-sales';
-  static const String settlementHistory = '/gift-cards/settlements';
 
   // Stock Exchange Routes
   static const String stockDetails = '/stocks/details';
@@ -282,6 +312,11 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
 
   // Portfolio Routes
   static const String portfolioDetails = '/portfolio/details';
+
+  // RMB (Chinese Yuan cross-border payout) Routes
+  static const String rmb = '/rmb';
+  static const String rmbReceipt = '/rmb/receipt';
+  static const String rmbHistory = '/rmb/history';
 
   // Crypto Routes
   static const String cryptoDetails = '/crypto/details';
@@ -373,6 +408,22 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String airtimeCreateReminder = '/airtime/reminders/create';
   static const String airtimeTransfer = '/airtime/transfer';
   static const String airtimeTransferReview = '/airtime/transfer/review';
+
+  // ePIN (Recharge card printing) Routes
+  static const String epinHome = '/epin';
+  // Review is now a bottom sheet (showEpinReviewSheet), not a pushed route.
+  static const String epinProcessing = '/epin/processing';
+  static const String epinReceipt = '/epin/receipt';
+  static const String epinOrders = '/epin/orders';
+
+  // Betting (Fund betting account) Routes
+  static const String bettingHome = '/betting';
+  static const String bettingReview = '/betting/review';
+  static const String bettingProcessing = '/betting/processing';
+  static const String bettingReceipt = '/betting/receipt';
+  static const String bettingHistory = '/betting/history';
+  static const String bettingBeneficiaries = '/betting/beneficiaries';
+
   // AutoSave Routes
   static const String autoSave = '/auto-save';
   static const String autoSaveDashboard = '/auto-save';
@@ -478,6 +529,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String escrow = '/escrow';
   static const String escrowCreate = '/escrow/create';
   static const String escrowDetail = '/escrow/detail';
+  static const String escrowReceipt = '/escrow/receipt';
+  static const String escrowInvoice = '/escrow/invoice';
 
   // QR Pay Routes
   static const String qrPayHome = '/qr-pay';
@@ -506,7 +559,6 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String contactlessPay = '/contactless-pay';
   static const String contactlessPayCreate = '/contactless-pay/create';
   static const String contactlessPayReader = '/contactless-pay/reader';
-  static const String contactlessPayConfirmation = '/contactless-pay/confirmation';
   static const String contactlessPayHistory = '/contactless-pay/history';
 
   // Card Management Routes
@@ -532,6 +584,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
 
   // Family Account Routes
   static const String familyAccounts = '/family/accounts';
+  static const String familyCreate = '/family/create';
   static const String familySetup = '/family/setup';
   static const String familyAddMember = '/family/add-member';
   static const String familyInviteMemberFlow = '/family/invite-member';
@@ -566,6 +619,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   // Business Dashboard Routes
   static const String businessDashboard = '/business/dashboard';
   static const String businessAnalytics = '/business/analytics';
+  static const String recordSale = '/business/record-sale';
+  static const String sales = '/business/sales';
 
   // Payroll Routes (Business)
   static const String payroll = '/payroll';
@@ -597,6 +652,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String taxDocuments = '/tax/documents';
   static const String vatSchedule = '/tax/vat/schedule';
   static const String recordVat = '/tax/vat/record';
+  static const String whtSchedule = '/tax/wht/schedule';
+  static const String recordWht = '/tax/wht/record';
 
   // Inventory Routes (Business)
   static const String inventory = '/inventory';
@@ -626,27 +683,26 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String channelActivation = '/settings/channels/activate';
   static const String channelPinSetup = '/settings/channels/pin-setup';
 
-  // Airtime-to-Cash Routes (Dual Provider: VTU Africa + Automation)
+  // Airtime-to-Cash Routes (Dual Provider: VTU Africa + Automation).
+  // Two live flows: provider-select → vtuafrica (transfer) or automation
+  // (SMS OTP) → processing/pending → result. (History uses the shared
+  // airtimeHistory route.) Legacy step-by-step screens + their routes were
+  // removed as dead code.
   static const String airtimeToCash = '/airtime-to-cash';
   static const String airtimeToCashProviderSelect = '/airtime-to-cash/select';
   static const String airtimeToCashVtuafrica = '/airtime-to-cash/vtuafrica';
   static const String airtimeToCashVtuafricaTransfer = '/airtime-to-cash/vtuafrica/transfer';
   static const String airtimeToCashAutomation = '/airtime-to-cash/automation';
-  static const String airtimeToCashSuccess = '/airtime-to-cash/success';
   static const String airtimeToCashPending = '/airtime-to-cash/pending';
-  static const String airtimeToCashHistory = '/airtime-to-cash/history';
-
-  // Legacy Routes (for backward compatibility)
-  static const String airtimeToCashReview = '/airtime-to-cash/review';
   static const String airtimeToCashProcessing = '/airtime-to-cash/processing';
   static const String airtimeToCashResult = '/airtime-to-cash/result';
-  static const String airtimeToCashNetworkSelection = '/airtime-to-cash/network-selection';
-  static const String airtimeToCashOTP = '/airtime-to-cash/otp';
-  static const String airtimeToCashPhoneInput = '/airtime-to-cash/phone-input';
-  static const String airtimeToCashPinInput = '/airtime-to-cash/pin-input';
-  static const String airtimeToCashServiceVerification = '/airtime-to-cash/service-verification';
-  static const String airtimeToCashTransferInstructions = '/airtime-to-cash/transfer-instructions';
 
   // Debug Routes (Remove before production)
   static const String debugSettings = '/debug/settings';
+
+  // Plan My Day — Gmail / email integration
+  static const String emailInbox = '/plan-my-day/email';
+  static const String emailThread = '/plan-my-day/email/thread';
+  static const String emailDrafts = '/plan-my-day/email/drafts';
+  static const String emailSettings = '/plan-my-day/email/settings';
 }

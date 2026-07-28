@@ -9,9 +9,10 @@ class LoginUseCase {
   LoginUseCase(this._repository);
 
   Future<Either<Failure, ProfileEntity>> call({
-    required String email,
+    String email = '',
+    String phone = '',
     required String password,
   }) async {
-    return _repository.login(email: email, password: password);
+    return _repository.login(email: email, phone: phone, password: password);
   }
 }

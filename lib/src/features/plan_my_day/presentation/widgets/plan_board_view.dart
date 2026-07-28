@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task_status.dart';
+import 'package:lazervault/src/features/plan_my_day/contacts/domain/entities/contact.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/widgets/task_contact_chip.dart';
 
 /// Plan My Day board — a single, well-aligned vertical list filtered by a
 /// progress-state dropdown at the top (To-do / In progress / Blocked / In review
@@ -24,7 +26,12 @@ class PlanBoardView extends StatefulWidget {
   final void Function(Task task, String status, {int? index}) onMove;
   final void Function(String status, List<String> orderedIds) onReorder;
   final void Function(Task task)? onTapTask;
+  final void Function(Task task)? onOptions;
   final VoidCallback? onAddTask;
+  final Future<void> Function()? onRefresh;
+  final Map<String, Contact> contactsById;
+  final Map<String, List<Task>> subtasksByParent;
+  final void Function(Contact contact)? onOpenContact;
 
   const PlanBoardView({
     super.key,
@@ -32,7 +39,12 @@ class PlanBoardView extends StatefulWidget {
     required this.onMove,
     required this.onReorder,
     this.onTapTask,
+    this.onOptions,
     this.onAddTask,
+    this.onRefresh,
+    this.contactsById = const {},
+    this.subtasksByParent = const {},
+    this.onOpenContact,
   });
 
   @override
@@ -227,8 +239,9 @@ class _PlanBoardViewState extends State<PlanBoardView> {
 
   // ── Task list ───────────────────────────────────────────────────────────
   Widget _list(PlanTaskStatus status, List<Task> items) {
-    return ReorderableListView.builder(
+    final list = ReorderableListView.builder(
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 96.h),
+      physics: const AlwaysScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       itemCount: items.length,
       proxyDecorator: (child, index, animation) => Material(
@@ -246,6 +259,13 @@ class _PlanBoardViewState extends State<PlanBoardView> {
       itemBuilder: (context, i) =>
           _taskTile(items[i], i, key: ValueKey(items[i].id)),
     );
+    if (widget.onRefresh == null) return list;
+    return RefreshIndicator(
+      color: const Color(0xFF4E03D0),
+      backgroundColor: _card,
+      onRefresh: widget.onRefresh!,
+      child: list,
+    );
   }
 
   Widget _taskTile(Task task, int index, {required Key key}) {
@@ -261,6 +281,7 @@ class _PlanBoardViewState extends State<PlanBoardView> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
           onTap: () => widget.onTapTask?.call(task),
+          onLongPress: () => widget.onOptions?.call(task),
           child: Container(
             padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
@@ -374,13 +395,35 @@ class _PlanBoardViewState extends State<PlanBoardView> {
                           ],
                         ],
                       ),
+                      if (_contactFor(task) != null ||
+                          _subtasksFor(task).isNotEmpty) ...[
+                        SizedBox(height: 8.h),
+                        Wrap(
+                          spacing: 6.w,
+                          runSpacing: 4.h,
+                          children: [
+                            if (_subtasksFor(task).isNotEmpty)
+                              _subtaskChip(_subtasksFor(task)),
+                            if (_contactFor(task) != null)
+                              TaskContactChip(
+                                contact: _contactFor(task)!,
+                                onTap: () =>
+                                    widget.onOpenContact?.call(_contactFor(task)!),
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                // Move-to-state menu + reorder handle.
+                // Options (long-press equivalent) + reorder handle.
                 Column(
                   children: [
-                    _moveMenu(task),
+                    GestureDetector(
+                      onTap: () => widget.onOptions?.call(task),
+                      child: Icon(Icons.more_vert_rounded,
+                          color: _muted, size: 20.sp),
+                    ),
                     SizedBox(height: 6.h),
                     ReorderableDragStartListener(
                       index: index,
@@ -394,56 +437,6 @@ class _PlanBoardViewState extends State<PlanBoardView> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _moveMenu(Task task) {
-    final others = PlanTaskStatus.all
-        .where((s) => s.value != task.status)
-        .toList();
-    return PopupMenuButton<PlanTaskStatus>(
-      tooltip: 'Move',
-      color: const Color(0xFF1F1F1F),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        side: const BorderSide(color: _border),
-      ),
-      icon: Icon(Icons.more_horiz_rounded, color: _muted, size: 20.sp),
-      onSelected: (s) {
-        HapticFeedback.selectionClick();
-        widget.onMove(task, s.value);
-      },
-      itemBuilder: (ctx) => [
-        PopupMenuItem<PlanTaskStatus>(
-          enabled: false,
-          height: 30.h,
-          child: Text(
-            'Move to',
-            style: GoogleFonts.inter(
-              color: _muted,
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        for (final s in others)
-          PopupMenuItem<PlanTaskStatus>(
-            value: s,
-            child: Row(
-              children: [
-                _dot(s.color),
-                SizedBox(width: 10.w),
-                Text(
-                  s.label,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
     );
   }
 
@@ -483,6 +476,40 @@ class _PlanBoardViewState extends State<PlanBoardView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Contact + subtask helpers ───────────────────────────────────────────
+  Contact? _contactFor(Task task) =>
+      task.contactId == null ? null : widget.contactsById[task.contactId];
+
+  List<Task> _subtasksFor(Task task) =>
+      widget.subtasksByParent[task.id] ?? const [];
+
+  Widget _subtaskChip(List<Task> subtasks) {
+    final done = subtasks.where((t) => t.isCompleted).length;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: _border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.checklist_rounded, size: 12.sp, color: _muted),
+          SizedBox(width: 4.w),
+          Text(
+            '$done/${subtasks.length}',
+            style: GoogleFonts.inter(
+              color: _muted,
+              fontSize: 10.5.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

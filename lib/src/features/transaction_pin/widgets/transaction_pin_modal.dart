@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// Phases the PIN modal transitions through
 enum PinModalPhase { pinEntry, verifying, processing, success, failed }
@@ -488,7 +490,14 @@ class TransactionPinModalState extends State<TransactionPinModal>
                     ? null
                     : () {
                         Navigator.of(context).pop();
-                        widget.onForgotPin?.call();
+                        // Prefer the caller's handler; otherwise fall back to the
+                        // shared OTP reset flow so "Forgot PIN?" always recovers,
+                        // even for callers that didn't wire onForgotPin.
+                        if (widget.onForgotPin != null) {
+                          widget.onForgotPin!.call();
+                        } else {
+                          Get.toNamed(AppRoutes.forgotPin);
+                        }
                       },
                 child: Text(
                   'Forgot PIN?',

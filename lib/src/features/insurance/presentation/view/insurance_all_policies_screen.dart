@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
@@ -48,6 +50,21 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
       final ctrl = ScrollController();
       ctrl.addListener(() => _onScroll(ctrl));
       return ctrl;
+    });
+
+    // This screen is pushed with its OWN fresh InsuranceCubit (the route
+    // does `create: serviceLocator<InsuranceCubit>()`), so — unlike the
+    // landing list — nothing has set its userId or triggered a fetch. Without
+    // this, the cubit sits in InsuranceInitial and every tab renders the empty
+    // state even when the user has policies. Seed the userId from auth (same
+    // pattern as insurance_list_screen); setUserId() kicks off loadInsurances.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final authState = context.read<AuthenticationCubit>().state;
+      final userId = authState is AuthenticationSuccess
+          ? authState.profile.user.id
+          : 'guest_user';
+      context.read<InsuranceCubit>().setUserId(userId);
     });
   }
 

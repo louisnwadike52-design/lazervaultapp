@@ -11,7 +11,7 @@ class GetSyncedContactsUseCase {
   /// [page] - Page number (0-indexed)
   /// [pageSize] - Number of contacts per page
   /// [searchQuery] - Optional search filter
-  /// [onlyLazervaultUsers] - If true, only returns contacts that are LazerVault users
+  /// [onlyLazervaultUsers] - If true, only returns contacts that are Lazervault users
   Future<SyncedContactsResult> call({
     int page = 0,
     int pageSize = 50,

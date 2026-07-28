@@ -16,6 +16,38 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   bool _configsLoaded = false;
   bool get configsLoaded => _configsLoaded;
 
+  // The stable identity of the plan the user picked — the
+  // PiggyVaultConfig UUID. This is what the backend resolves the
+  // plan by; `_lockType` below is only kept in sync for the legacy
+  // enum-keyed getters and cosmetic icons.
+  String? _selectedConfigId;
+  String? get selectedConfigId => _selectedConfigId;
+
+  /// The plan the user selected, resolved by its id. Null before a
+  /// selection (or if the config list dropped it).
+  PiggyVaultConfig? get selectedConfig {
+    if (_selectedConfigId == null) return null;
+    for (final c in _configs) {
+      if (c.id == _selectedConfigId) return c;
+    }
+    return null;
+  }
+
+  /// The active plans to render on the selection step, one card per
+  /// backend config. Prefers rows for the user's active currency,
+  /// then NGN, then any — so the wizard always shows whatever plans
+  /// ops have published rather than a hardcoded set.
+  List<PiggyVaultConfig> get activePlans {
+    final active = _configs.where((c) => c.isActive).toList();
+    if (active.isEmpty) return const [];
+    final cur = _currency.toUpperCase();
+    final inCur = active.where((c) => c.currency.toUpperCase() == cur).toList();
+    if (inCur.isNotEmpty) return inCur;
+    final ngn = active.where((c) => c.currency.toUpperCase() == 'NGN').toList();
+    if (ngn.isNotEmpty) return ngn;
+    return active;
+  }
+
   // Form data
   LockType? _lockType;
   double? _amount;
@@ -96,6 +128,14 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   ///      mirrored.
   PiggyVaultConfig? getConfigForType(LockType? type) {
     if (type == null || _configs.isEmpty) return null;
+    // Prefer the explicitly-selected config (resolved by id) when it
+    // matches the requested type. This disambiguates the case where
+    // ops publish more than one plan sharing a lock_type slug — the
+    // name-based resolution below would otherwise pick the first.
+    final sel = selectedConfig;
+    if (sel != null && sel.lockType == _lockTypeToConfigString(type)) {
+      return sel;
+    }
     final typeStr = _lockTypeToConfigString(type);
     final upperCurrency = _currency.toUpperCase();
     PiggyVaultConfig? ngnFallback;
@@ -214,8 +254,27 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   // Backend slug — re-exposed via the enum's `backendKey` getter.
   String _lockTypeToConfigString(LockType type) => type.backendKey;
 
+  /// Select a plan by its backend config — the id-first path used by
+  /// the plan selector. Records the config's UUID as the stable
+  /// identity and keeps `_lockType` in sync (derived from the
+  /// config's lock_type slug) for the legacy enum-keyed getters and
+  /// cosmetic icons.
+  void selectConfig(PiggyVaultConfig config) {
+    _selectedConfigId = config.id;
+    _lockType = LockTypeX.fromBackendKey(config.lockType) ?? LockType.savings;
+    if (!config.supportsAutoRenew) {
+      _autoRenew = false;
+    }
+    if (isClosed) return;
+    emit(CreateLockState());
+  }
+
   void updateLockType(LockType type) {
     _lockType = type;
+    // Keep the id-based identity in sync so the create call resolves
+    // the exact plan the user is looking at, even when the enum path
+    // is used (legacy callers / tests).
+    _selectedConfigId = getConfigForType(type)?.id;
     // Drop a stale auto-renew flag when the newly-selected plan doesn't support
     // auto-renewal (e.g. switching to the Year lock). Otherwise a `true` carried
     // over from a previous plan reaches the backend, which rejects with
@@ -397,6 +456,7 @@ class CreateLockCubit extends Cubit<CreateLockState> {
 
   void reset() {
     _lockType = null;
+    _selectedConfigId = null;
     _amount = null;
     _currency = serviceLocator<LocaleManager>().currentCurrency;
     _lockDurationDays = null;

@@ -4,11 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart'
+    show InlineSendHandler;
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
@@ -29,7 +31,12 @@ bool isTransferTransaction(UnifiedTransaction tx) {
 }
 
 class TransferHistoryBottomSheet extends StatefulWidget {
-  const TransferHistoryBottomSheet({super.key});
+  /// Inline-send handler from the host (Select Recipient) so Repeat opens the
+  /// amount sheet OVER the existing screens instead of pushing a fresh (blank)
+  /// send screen. Falls back to [SendFundsLauncher] navigation when null.
+  final InlineSendHandler? onSend;
+
+  const TransferHistoryBottomSheet({super.key, this.onSend});
 
   @override
   State<TransferHistoryBottomSheet> createState() =>
@@ -453,7 +460,7 @@ class _TransferHistoryBottomSheetState
             );
           }
           final tx = filtered[index];
-          return TransferHistoryItem(transaction: tx);
+          return TransferHistoryItem(transaction: tx, onSend: widget.onSend);
         },
       ),
     );
@@ -462,8 +469,13 @@ class _TransferHistoryBottomSheetState
 
 class TransferHistoryItem extends StatelessWidget {
   final UnifiedTransaction transaction;
+  final InlineSendHandler? onSend;
 
-  const TransferHistoryItem({super.key, required this.transaction});
+  const TransferHistoryItem({
+    super.key,
+    required this.transaction,
+    this.onSend,
+  });
 
   /// Build the row's leading avatar from the counterparty's name. Prefers
   /// initials-from-name (1 or 2 letters); falls back to a directional arrow
@@ -547,7 +559,7 @@ class TransferHistoryItem extends StatelessWidget {
         isIncoming ? const Color(0xFF10B981) : Colors.grey[600];
 
     return InkWell(
-      onTap: () => TransactionReceiptRouter.navigateToReceipt(transaction),
+      onTap: () => _showActionSheet(context),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 12.h),
         child: Row(
@@ -632,58 +644,245 @@ class TransferHistoryItem extends StatelessWidget {
               ),
             ),
 
+            // Tap the whole row to open the Repeat / Receipt action sheet
+            // (parity with the saved-recipients transaction history).
             SizedBox(width: 6.w),
+            Icon(Icons.chevron_right, color: Colors.grey[400], size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // Repeat transfer icon
-            if (transaction.flow == TransactionFlow.outgoing &&
-                transaction.counterpartyName != null)
-              GestureDetector(
-                onTap: () {
-                  Get.back(); // close sheet
-                  final amountMinor = (transaction.amount * 100).toInt();
-                  // Build a minimal recipient from the transaction's counterparty info
-                  final recipient = RecipientModel(
-                    id: '',
-                    name: transaction.counterpartyName!,
-                    accountNumber: transaction.counterpartyAccount ?? '',
-                    bankName: 'LazerVault',
-                    isFavorite: false,
-                    sortCode: '',
-                    type: 'internal',
-                  );
-                  Get.toNamed(
-                    AppRoutes.initiateSendFunds,
-                    arguments: <String, dynamic>{
-                      'recipient': recipient,
-                      'prefillAmount': amountMinor,
-                      'prefillCurrency': transaction.currency,
-                      'autoShowConfirm': true,
-                    },
-                  );
-                },
-                child: Padding(
-                  padding: EdgeInsets.all(4.w),
-                  child: Icon(
-                    Icons.replay,
-                    color: const Color(0xFF4E03D0),
-                    size: 20.sp,
-                  ),
-                ),
+  /// Tap a history row → action sheet offering Repeat (outgoing only) and
+  /// Receipt, mirroring the saved-recipients transaction history sheet.
+  void _showActionSheet(BuildContext context) {
+    final isIncoming = transaction.flow == TransactionFlow.incoming;
+    final canRepeat = transaction.flow == TransactionFlow.outgoing &&
+        transaction.counterpartyName != null;
+    final dateStr = DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm')
+        .format(transaction.createdAt);
+    final counterpartyName = transaction.counterpartyName?.trim();
+    final title = (counterpartyName != null && counterpartyName.isNotEmpty)
+        ? counterpartyName
+        : transaction.title;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              margin: EdgeInsets.only(bottom: 16.h),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
               ),
-
-            // Receipt icon
-            GestureDetector(
-              onTap: () =>
-                  TransactionReceiptRouter.navigateToReceipt(transaction),
-              child: Padding(
-                padding: EdgeInsets.all(4.w),
-                child: Icon(
-                  Icons.receipt_outlined,
-                  color: Colors.grey[400],
-                  size: 20.sp,
+            ),
+            Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isIncoming ? Icons.call_received : Icons.call_made,
+                color: const Color(0xFF4E03D0),
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              transaction.formattedAmount,
+              style: TextStyle(
+                fontSize: 22.sp,
+                fontWeight: FontWeight.w700,
+                color: isIncoming ? const Color(0xFF10B981) : Colors.black87,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              dateStr,
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 4.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: transaction.status.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                transaction.status.displayName,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: transaction.status.color,
                 ),
               ),
             ),
+            if (transaction.transactionReference != null) ...[
+              SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Ref: ',
+                    style: TextStyle(fontSize: 11.sp, color: Colors.grey[500]),
+                  ),
+                  Flexible(
+                    child: Text(
+                      transaction.transactionReference!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            SizedBox(height: 20.h),
+            Row(
+              children: [
+                if (canRepeat) ...[
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx); // close action sheet
+                        Get.back(); // close the history sheet
+                        final amountMinor =
+                            (transaction.amount * 100).toInt();
+                        // Carry the payee's Lazervault user id (stamped into
+                        // the transaction metadata by accounts-service) so a
+                        // save dedups by internal_user_id — the stable identity
+                        // — instead of relying on account-number resolution.
+                        final counterpartyUid = (transaction
+                                    .metadata?['counterparty_user_id'] ??
+                                transaction.metadata?['recipient_user_id'])
+                            ?.toString();
+                        final recipient = RecipientModel(
+                          id: '',
+                          name: transaction.counterpartyName!,
+                          accountNumber: transaction.counterpartyAccount ?? '',
+                          bankName: 'LazerVault',
+                          isFavorite: false,
+                          sortCode: '',
+                          type: 'internal',
+                          internalUserId: (counterpartyUid != null &&
+                                  counterpartyUid.isNotEmpty)
+                              ? counterpartyUid
+                              : null,
+                        );
+                        final cb = onSend;
+                        if (cb != null) {
+                          // Host (Select Recipient) owns the send flow → open the
+                          // amount sheet OVER the existing screens instead of
+                          // pushing a fresh (blank) send screen.
+                          cb(recipient,
+                              amountMinor: amountMinor,
+                              currency: transaction.currency);
+                        } else {
+                          // Route via the launcher so Repeat honors the user's
+                          // transfer style (short vs long) instead of always
+                          // opening the long form.
+                          SendFundsLauncher.open(
+                            recipient: recipient,
+                            autoContinue: true,
+                            prefillAmountMinor: amountMinor,
+                            prefillCurrency: transaction.currency,
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4E03D0),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.replay,
+                                color: Colors.white, size: 18.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Repeat',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                ],
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx); // close action sheet
+                      // Leave the history sheet open underneath so the user
+                      // returns to it after viewing the receipt.
+                      TransactionReceiptRouter.navigateToReceipt(transaction);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.receipt_outlined,
+                              color: Colors.black87, size: 18.sp),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'Receipt',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
           ],
         ),
       ),

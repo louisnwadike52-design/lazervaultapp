@@ -9,6 +9,7 @@ import '../../cubit/whatsapp_banking_cubit.dart';
 import '../../cubit/whatsapp_banking_state.dart';
 import '../../domain/entities/security_settings.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 
 class WhatsAppMainScreen extends StatefulWidget {
   const WhatsAppMainScreen({super.key});
@@ -111,7 +112,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
         ),
         centerTitle: true,
       ),
-      body: BlocConsumer<WhatsAppBankingCubit, WhatsAppBankingState>(
+      body: ServiceEntranceAnimation(
+        child: BlocConsumer<WhatsAppBankingCubit, WhatsAppBankingState>(
         listener: (context, state) {
           if (state is WhatsAppBankingUnlinkSuccess) {
             Get.snackbar(
@@ -161,6 +163,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           }
           return _buildUnlinkedView();
         },
+      ),
       ),
     );
   }

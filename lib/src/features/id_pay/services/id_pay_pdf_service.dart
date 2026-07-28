@@ -149,7 +149,7 @@ class IDPayPdfService {
                       createdDate: transactionDate,
                       completedDate: transactionDate,
                       status: transaction.isCompleted ? 'Completed' : transaction.status,
-                      type: 'IDPay Transfer',
+                      type: 'PayID Transfer',
                     ),
                   ),
                 ],
@@ -160,7 +160,7 @@ class IDPayPdfService {
                 amount: amount,
                 reference: idPay.description.isNotEmpty
                     ? idPay.description
-                    : 'IDPay payment',
+                    : 'PayID payment',
                 idPayReference: transaction.reference,
                 transactionId: transaction.id,
                 payId: idPay.displayPayId,
@@ -240,7 +240,7 @@ class IDPayPdfService {
                     child: _buildSummaryTable(
                       createdDate: createdDate,
                       status: idPay.status.displayName,
-                      type: 'IDPay Invoice',
+                      type: 'PayID Invoice',
                     ),
                   ),
                 ],
@@ -251,7 +251,7 @@ class IDPayPdfService {
                 currencySymbol: currencySymbol,
               ),
               pw.Spacer(),
-              _buildFooter(transactionType: 'IDPay payment request'),
+              _buildFooter(transactionType: 'PayID payment request'),
             ],
           );
         },
@@ -289,7 +289,7 @@ class IDPayPdfService {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              isInvoice ? 'IDPay Invoice' : 'Transfer Confirmation',
+              isInvoice ? 'PayID Invoice' : 'Transfer Confirmation',
               style: _getTextStyle(fontSize: 24, isBold: true)
                   .copyWith(color: PdfColors.grey800),
             ),
@@ -479,7 +479,7 @@ class IDPayPdfService {
   }
 
   static pw.Widget _buildFooter(
-      {String transactionType = 'IDPay transfer'}) {
+      {String transactionType = 'PayID transfer'}) {
     return pw.Column(
       children: [
         pw.Divider(color: PdfColors.grey300),
@@ -587,8 +587,8 @@ class IDPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'IDPay Transfer Receipt - $currencySymbol$amount to ${transaction.recipientName}',
-        subject: 'Lazervault IDPay Transfer Confirmation',
+            'PayID Transfer Receipt - $currencySymbol$amount to ${transaction.recipientName}',
+        subject: 'Lazervault PayID Transfer Confirmation',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
@@ -643,8 +643,8 @@ class IDPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'IDPay Invoice - ${idPay.displayPayId} - $amountText from ${idPay.creatorName}',
-        subject: 'Lazervault IDPay Invoice',
+            'PayID Invoice - ${idPay.displayPayId} - $amountText from ${idPay.creatorName}',
+        subject: 'Lazervault PayID Invoice',
       ));
     } catch (e) {
       throw Exception('Failed to share invoice: $e');

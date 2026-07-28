@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 
 import '../../domain/entities/move_fee_calculation.dart';
+import 'beam_style.dart';
 
 /// Displays a detailed fee breakdown for a Move Money transfer.
 ///
@@ -20,27 +22,17 @@ class MoveFeeBreakdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(
-          color: const Color(0xFF2D2D2D),
-        ),
-      ),
+      decoration: BeamStyle.card(radius: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
-          Text(
-            'Fee Breakdown',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
+          // Header — icon chip + title, like the swap "Settings" card.
+          const BeamSectionHeader(
+            icon: Icons.receipt_long_rounded,
+            title: 'Fee Breakdown',
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 14.h),
 
           // Transfer amount row
           _buildRow(
@@ -125,7 +117,7 @@ class MoveFeeBreakdown extends StatelessWidget {
             : const Color(0xFF9CA3AF);
 
     final valueColor = isTotal
-        ? const Color(0xFF3B82F6)
+        ? BeamStyle.purpleLight
         : isAmount
             ? Colors.white
             : const Color(0xFF9CA3AF);
@@ -144,7 +136,7 @@ class MoveFeeBreakdown extends StatelessWidget {
           ),
         ),
         Text(
-          '${feeCalculation.currency} ${_formatAmount(amountNaira)}',
+          '${CurrencyUtils.getSymbol(feeCalculation.currency)}${_formatAmount(amountNaira)}',
           style: GoogleFonts.inter(
             color: valueColor,
             fontSize: isBold || isTotal ? 14.sp : 12.sp,

@@ -25,11 +25,33 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
   late String _selectedCurrency;
   String _searchQuery = '';
 
+  // The registered country resolved to its canonical name. `currentCountry` can
+  // arrive as either a country NAME ("Nigeria") or a country CODE ("NG")
+  // depending on how registration stored it — resolving it here is what makes
+  // the "Registered" badge reliably light up (previously a code-vs-name
+  // mismatch meant it never matched, so no badge showed).
+  late final String _registeredCountryName;
+
   @override
   void initState() {
     super.initState();
-    _selectedCountry = widget.currentCountry;
+    _registeredCountryName = _resolveCountryName(widget.currentCountry);
+    _selectedCountry = _registeredCountryName;
     _selectedCurrency = widget.currentCurrency;
+  }
+
+  /// Resolve a country name-or-code (case-insensitive) to its canonical
+  /// [CountryLocale.countryName]. Falls back to the raw input if unmatched.
+  String _resolveCountryName(String nameOrCode) {
+    final target = nameOrCode.trim().toLowerCase();
+    if (target.isEmpty) return nameOrCode;
+    for (final c in CountryLocales.all) {
+      if (c.countryName.toLowerCase() == target ||
+          c.countryCode.toLowerCase() == target) {
+        return c.countryName;
+      }
+    }
+    return nameOrCode;
   }
 
   List<CountryLocale> get _filteredCountries {
@@ -46,7 +68,7 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
 
   void _handleSave() {
     // No-op if user selected the same country they already had
-    if (_selectedCountry == widget.currentCountry &&
+    if (_selectedCountry == _registeredCountryName &&
         _selectedCurrency == widget.currentCurrency) {
       Navigator.of(context).pop();
       return;
@@ -188,7 +210,7 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                   // Region is fixed to the one chosen at registration: only that
                   // country is enabled/selectable; every other is shown but
                   // disabled (for transparency).
-                  final isSignup = country.countryName == widget.currentCountry;
+                  final isSignup = country.countryName == _registeredCountryName;
                   final enabled = isSignup;
                   final isSelected = _selectedCountry == country.countryName;
 
@@ -250,8 +272,6 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                                       if (isSignup) ...[
                                         SizedBox(width: 6.w),
                                         _tag('Active', const Color(0xFF10B981)),
-                                        SizedBox(width: 4.w),
-                                        _tag('Signup', const Color(0xFF4E03D0)),
                                       ],
                                     ],
                                   ),

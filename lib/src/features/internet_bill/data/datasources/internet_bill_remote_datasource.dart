@@ -22,6 +22,14 @@ abstract class InternetBillRemoteDataSource {
     required String verificationToken,
     required String idempotencyKey,
   });
+
+  /// Recent internet bill payments for the current user — used by the receipt
+  /// screen to reconcile a `processing` payment (webhook may land after the
+  /// pay response) without a receipt-by-id RPC.
+  Future<List<InternetPaymentModel>> getPaymentHistory({
+    int limit = 50,
+    int offset = 0,
+  });
 }
 
 class InternetBillRemoteDataSourceImpl implements InternetBillRemoteDataSource {
@@ -111,5 +119,30 @@ class InternetBillRemoteDataSourceImpl implements InternetBillRemoteDataSource {
       newBalance: response.newBalance,
       renewalDate: response.renewalDate,
     );
+  }
+
+  @override
+  Future<List<InternetPaymentModel>> getPaymentHistory({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final request = pb.GetBillPaymentHistoryRequest()
+      ..billType = 'internet'
+      ..limit = limit
+      ..offset = offset;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.utilityPaymentsClient
+        .getBillPaymentHistory(request, options: options);
+
+    // The history endpoint doesn't surface newBalance / renewalDate — the
+    // receipt preserves those from the original pay response.
+    return response.payments
+        .map((p) => InternetPaymentModel.fromResponse(
+              payment: p,
+              newBalance: 0,
+              renewalDate: '',
+            ))
+        .toList();
   }
 }

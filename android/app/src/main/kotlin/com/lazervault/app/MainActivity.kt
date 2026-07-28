@@ -1,15 +1,22 @@
 package com.lazervault.app
 
 import android.content.Intent
+import android.hardware.biometrics.BiometricManager
+import android.hardware.fingerprint.FingerprintManager
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
+import android.os.Build
 import android.provider.Settings
-import io.flutter.embedding.android.FlutterActivity
+// local_auth (fingerprint / face unlock) REQUIRES the host activity to be a
+// FragmentActivity so it can attach the BiometricPrompt. With plain
+// FlutterActivity, getAvailableBiometrics()/authenticate() fail and every
+// method reports "unavailable". FlutterFragmentActivity is the required base.
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
 
     private val hceChannelName = "com.lazervault.app/hce"
     private val settingsChannelName = "com.lazervault.app/settings"
@@ -68,9 +75,122 @@ class MainActivity : FlutterActivity() {
                             result.error("OPEN_FAILED", e.message, null)
                         }
                     }
+
+                    // Precise biometric readiness so the app can distinguish
+                    // "no fingerprint/face enrolled yet" (→ offer to open OS
+                    // enrollment) from "no sensor at all". local_auth alone
+                    // can't tell these apart (getAvailableBiometrics() is empty
+                    // in both cases).
+                    "biometricStatus" -> result.success(biometricStatus())
+
+                    // Send the app to the background WITHOUT finishing the
+                    // activity, so pressing Back on the dashboard (the root
+                    // route) doesn't tear down the task → cold relaunch → login
+                    // gate (perceived as "back logged me out"). Keeps the live
+                    // session; returning within the inactivity window resumes
+                    // straight onto the dashboard.
+                    "moveTaskToBack" -> {
+                        try {
+                            moveTaskToBack(true)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.error("MOVE_FAILED", e.message, null)
+                        }
+                    }
+
+                    // Deep-link DOWN to the OS screen where the user enrolls a
+                    // fingerprint / face, then returns to enable it in-app.
+                    "openBiometricEnroll" -> {
+                        try {
+                            openBiometricEnroll()
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.error("OPEN_FAILED", e.message, null)
+                        }
+                    }
+
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    /**
+     * Biometric readiness, precise enough to drive the "set it up from our app"
+     * flow. Uses the framework [BiometricManager] (API 29/30+) which reports
+     * NONE_ENROLLED vs NO_HARDWARE; falls back to [FingerprintManager] on older
+     * API levels. Returns one of: "available" | "none_enrolled" | "no_hardware"
+     * | "hw_unavailable" | "unavailable".
+     */
+    private fun biometricStatus(): String {
+        // API 30+: canAuthenticate(authenticators) with strong OR weak.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bm = getSystemService(BiometricManager::class.java)
+                ?: return "unavailable"
+            val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
+            return when (bm.canAuthenticate(authenticators)) {
+                BiometricManager.BIOMETRIC_SUCCESS -> "available"
+                BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> "none_enrolled"
+                BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> "no_hardware"
+                BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> "hw_unavailable"
+                else -> "unavailable"
+            }
+        }
+        // API 29: BiometricManager exists but only the no-arg canAuthenticate().
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            val bm = getSystemService(BiometricManager::class.java)
+                ?: return "unavailable"
+            @Suppress("DEPRECATION")
+            return when (bm.canAuthenticate()) {
+                BiometricManager.BIOMETRIC_SUCCESS -> "available"
+                BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> "none_enrolled"
+                BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> "no_hardware"
+                BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> "hw_unavailable"
+                else -> "unavailable"
+            }
+        }
+        // API 23–28: FingerprintManager (USE_FINGERPRINT permission is declared).
+        @Suppress("DEPRECATION")
+        val fm = try {
+            getSystemService(FingerprintManager::class.java)
+        } catch (e: Exception) {
+            null
+        }
+        if (fm == null) return "no_hardware"
+        return try {
+            @Suppress("DEPRECATION")
+            when {
+                !fm.isHardwareDetected -> "no_hardware"
+                !fm.hasEnrolledFingerprints() -> "none_enrolled"
+                else -> "available"
+            }
+        } catch (e: SecurityException) {
+            "unavailable"
+        }
+    }
+
+    /** Open the OS enrollment screen for fingerprint / face. */
+    private fun openBiometricEnroll() {
+        val intent = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
+                Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
+                    putExtra(
+                        Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
+                        BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                            BiometricManager.Authenticators.BIOMETRIC_WEAK
+                    )
+                }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ->
+                Intent("android.settings.FINGERPRINT_ENROLL")
+            else -> Intent(Settings.ACTION_SECURITY_SETTINGS)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Some OEMs don't handle the specific action — fall back to the
+            // general security settings, which always exists.
+            startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
+        }
     }
 
     /** HCE works only on a device with the HCE feature AND NFC turned on. */

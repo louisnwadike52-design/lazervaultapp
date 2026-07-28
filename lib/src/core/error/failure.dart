@@ -1,7 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 
 abstract class Failure extends Equatable {
-  const Failure({required this.message, required this.statusCode});
+  // Sanitize on construction so raw transport/exception text is never stored.
+  Failure({required String message, required this.statusCode})
+      : message = sanitizeUserFacingError(message);
 
   final String message;
   final dynamic statusCode;
@@ -11,27 +14,27 @@ abstract class Failure extends Equatable {
 }
 
 class APIFailure extends Failure {
-  const APIFailure({
+  APIFailure({
     required super.message,
     required super.statusCode,
   });
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure({
+  ServerFailure({
     required super.message,
     required super.statusCode,
   });
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure({
+  CacheFailure({
     required super.message,
     required super.statusCode,
   });
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({required super.message})
+  NetworkFailure({required super.message})
       : super(statusCode: 'Network Error');
-} 
+}

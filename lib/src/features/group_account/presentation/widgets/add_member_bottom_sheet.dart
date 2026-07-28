@@ -12,6 +12,7 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'contact_picker_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 class AddMemberBottomSheet extends StatefulWidget {
   final GroupAccount group;
@@ -186,6 +187,15 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       _searchResults = [];
       _searchController.clear();
     });
+  }
+
+  /// Opens the shared unified search (saved contacts incl. alias → global),
+  /// then adds the picked user to the selection.
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Add member');
+    if (result == null || !mounted) return;
+    _selectUser(result.toUserSearchResultEntity());
   }
 
   void _removeSelectedMember(int index) {
@@ -558,9 +568,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                 child: TextField(
                   controller: _searchController,
                   focusNode: _focusNode,
+                  readOnly: true,
+                  onTap: _openUnifiedSearch,
                   style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Enter email, @username, or phone',
+                    hintText: 'Search people to add',
                     hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[500]),
                     prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 22.sp),
                     suffixIcon: _searchController.text.isNotEmpty
@@ -640,7 +652,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           spacing: 8.w,
           runSpacing: 8.h,
           children: [
-            // Selected LazerVault users
+            // Selected Lazervault users
             ...List.generate(_selectedMembers.length, (index) {
               final member = _selectedMembers[index];
               return _buildSelectedMemberChip(

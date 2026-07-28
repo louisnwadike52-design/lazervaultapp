@@ -211,6 +211,14 @@ class GroupAccount extends Equatable {
   // contributions array (perf) and would always show 0.
   final int contributionCount;
 
+  // True when the CURRENT user is an active member of this group.
+  // Populated by discovery/list endpoints (e.g. ListPublicGroups) so
+  // the UI can render "Joined" vs "Join" without a per-group detail
+  // fetch. Defaults false on endpoints that don't resolve membership
+  // (the `members` list is not preloaded on list responses, so it
+  // can't be inferred client-side).
+  final bool isMember;
+
   const GroupAccount({
     required this.id,
     required this.name,
@@ -227,6 +235,7 @@ class GroupAccount extends Equatable {
     this.totalRaised = 0,
     this.imageUrl,
     this.contributionCount = 0,
+    this.isMember = false,
   });
 
   @override
@@ -246,6 +255,7 @@ class GroupAccount extends Equatable {
         totalRaised,
         imageUrl,
         contributionCount,
+        isMember,
       ];
 
   GroupAccount copyWith({
@@ -264,6 +274,7 @@ class GroupAccount extends Equatable {
     double? totalRaised,
     String? imageUrl,
     int? contributionCount,
+    bool? isMember,
   }) {
     return GroupAccount(
       id: id ?? this.id,
@@ -281,6 +292,7 @@ class GroupAccount extends Equatable {
       totalRaised: totalRaised ?? this.totalRaised,
       imageUrl: imageUrl ?? this.imageUrl,
       contributionCount: contributionCount ?? this.contributionCount,
+      isMember: isMember ?? this.isMember,
     );
   }
 

@@ -15,6 +15,10 @@ import 'package:lazervault/src/features/funds/data/datasources/payments_transfer
 
 import '../../cubit/wallet_transfer_cubit.dart';
 import '../../cubit/wallet_transfer_state.dart';
+import '../receipts/beam_receipt_payload.dart';
+import '../widgets/beam_style.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
@@ -35,6 +39,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   String? _accountId;
+  AccountSummaryEntity? _primaryAccount;
   // Set when a load fails; drives the inline AppErrorView on first-load
   // failure (vs a transient pagination error which keeps the existing list).
   Object? _loadError;
@@ -69,6 +74,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
         orElse: () => accounts.first,
       );
       _accountId = primary.id;
+      _primaryAccount = primary;
       _loadTransfers(reset: true);
     } else {
       // Accounts not loaded yet — fetch them first
@@ -131,19 +137,31 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
     }).toList();
   }
 
-  String _formatNaira(double amount) {
-    final formatter = NumberFormat('#,##0.00', 'en_NG');
-    return 'NGN ${formatter.format(amount)}';
-  }
-
   String _formatDate(DateTime date) {
     return DateFormat('MMM d, yyyy  HH:mm').format(date.toLocal());
   }
 
+  /// Open the shared Revolut-style receipt for an inter-account transfer, with
+  /// Share (PDF) + Redo. Source name/currency come from the primary account.
+  void _openWalletReceipt(PaymentsTransferResult transfer) {
+    Get.toNamed(
+      AppRoutes.transferProof,
+      arguments: beamReceiptPayloadFromWalletTransfer(
+        transfer,
+        sourceName: _primaryAccount?.accountName ??
+            _primaryAccount?.displayName ??
+            'Your Lazervault wallet',
+        destName: transfer.recipientName ?? 'Lazervault account',
+        currency: _primaryAccount?.currency ?? 'NGN',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -180,6 +198,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                           orElse: () => accounts.first,
                         );
                         _accountId = primary.id;
+                        _primaryAccount = primary;
                         _loadTransfers(reset: true);
                       }
                     }
@@ -287,7 +306,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildFilterChips() {
@@ -342,36 +361,34 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   }
 
   Widget _buildTransferItem(PaymentsTransferResult transfer) {
-    final amountDisplay = transfer.amount != null
-        ? _formatNaira(transfer.amount! / 100)
-        : 'NGN 0.00';
-    final description = transfer.reference ?? transfer.transferId ?? 'Transfer';
+    final ccy = transfer.currency ?? 'NGN';
+    final amountDisplay =
+        '${CurrencyUtils.getSymbol(ccy)}${NumberFormat('#,##0.00', 'en_NG').format((transfer.amount ?? 0) / 100)}';
+    final description = transfer.recipientName ??
+        transfer.description ??
+        transfer.reference ??
+        transfer.transferId ??
+        'Transfer';
     final date = transfer.createdAt ?? DateTime.now();
     final status = (transfer.status ?? 'processing').toLowerCase();
 
     return GestureDetector(
-      onTap: () {
-        // Could navigate to a detail/receipt screen if needed
-      },
+      onTap: () => _openWalletReceipt(transfer),
       child: Container(
         padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
+        decoration: BeamStyle.card(radius: 14),
         child: Row(
           children: [
             Container(
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                color: BeamStyle.purple.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 Icons.account_balance_wallet_outlined,
-                color: const Color(0xFF60A5FA),
+                color: BeamStyle.purpleLight,
                 size: 22.sp,
               ),
             ),

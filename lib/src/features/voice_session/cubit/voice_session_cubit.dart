@@ -1,14 +1,23 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io' show File;
+import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as get_pkg;
 import 'package:http/http.dart' as http;
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'voice_session_state.dart';
+import 'package:lazervault/src/features/voice_session/voice_session_activity.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_transfer_context.dart';
@@ -19,6 +28,8 @@ import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/logger.dart';
 
@@ -42,6 +53,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   static const String _prefKeyLanguage = 'voice_selected_language';
   static const String _prefKeyVoice = 'voice_selected_voice_id';
+  // Remembers whether THIS user was granted African languages by the server's per-email
+  // allowlist (the /voice/languages response includes yo/ig/ha/pcm only for granted
+  // users). Used ONLY to gate the OFFLINE fallback picker so a non-granted user never
+  // sees African chips when the server is unreachable. Refreshed on every online fetch.
+  static const String _prefKeyAfricanPermitted = 'voice_african_permitted_user';
+  bool _africanPermittedCached = false;
 
   Room? _room;
   EventsListener<RoomEvent>? _roomEventsListener;
@@ -142,6 +159,115 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// Whether the local microphone is muted.
   bool _isMuted = false;
+
+  // ── On-device speech capture (admin voice_stt_input_mode = on_device) ──
+  // In on_device mode the app owns the mic: speech_to_text transcribes locally
+  // (instant live captions, best English accuracy, no server round-trip) and the
+  // FINAL text is sent to the agent over the LiveKit data channel. The LiveKit mic
+  // is NOT published in this mode. Resolved per-session from the start response's
+  // `inputMode` field; defaults to on_device. "livekit" restores the legacy
+  // server-STT path (publish mic, server captions) verbatim.
+  bool _onDeviceMode = true;
+
+  /// On-device recognizer (Apple Speech / Android SpeechRecognizer).
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _sttInitialized = false;
+  bool _sttAvailable = false;
+
+  /// True while the local recognizer is actively listening for a turn.
+  bool _isLocalListening = false;
+
+  /// True between sending a final user turn and the agent finishing its reply.
+  /// Normal (non-barge-in) listening is paused while this holds; we re-arm on
+  /// agent_caption_end for natural hands-free turn-taking.
+  bool _awaitingAgentReply = false;
+
+  /// True between agent_caption_start and agent_caption_end — the agent is
+  /// actively producing speech. While true, the recognizer may stay open in a
+  /// BARGE-IN window (echo-filtered) so the user can interrupt and be reasoned on.
+  bool _agentSpeaking = false;
+
+  /// Guards a single barge-in per agent turn (so we interrupt once, not per word).
+  bool _bargedInThisTurn = false;
+
+  /// Master switch for OPEN-MIC acoustic barge-in (interrupt the agent by talking
+  /// over it) in on_device mode.
+  ///
+  /// OFF by default: on a loudspeaker there is NO acoustic echo cancellation on
+  /// the raw `speech_to_text` mic (unlike LiveKit mode, which has hardware AEC), so
+  /// keeping the recognizer open while the agent speaks makes it transcribe the
+  /// agent's OWN TTS and fire a false barge-in that cuts the audio — the user then
+  /// hears nothing. So we PAUSE the recognizer while the agent speaks and re-arm on
+  /// agent_caption_end (clean hands-free turn-taking). Barge-in stays fully working
+  /// in LiveKit mode (native interruption + AEC). Re-enable here only once on-device
+  /// AEC / headset-gating is in place.
+  static const bool _bargeInEnabled = false;
+
+  /// Minimum non-echo words before we treat speech-over-agent as a real
+  /// interruption (avoids cutting the agent off on a stray blip / partial echo).
+  static const int _bargeInMinWords = 2;
+
+  /// HYBRID AEC barge-in (on_device mode): the mic is TIME-SHARED by turn phase to
+  /// avoid dual-capture contention —
+  ///   • USER phase  → speech_to_text owns the mic (LiveKit mic OFF), transcribes;
+  ///   • AGENT phase → speech_to_text is paused anyway, so we publish the mic to
+  ///     LiveKit WITH echo cancellation. The server's adaptive interruption
+  ///     detector then hears clean (AEC'd) audio and stops the agent the moment the
+  ///     user talks over it — true barge-in without the loudspeaker feedback loop.
+  ///   • On interruption the agent ends its turn (agent_caption_end) → we drop the
+  ///     LiveKit mic and re-arm speech_to_text to capture the user's turn.
+  /// Server STT stays gated off (client text drives turns); the published mic only
+  /// feeds the interruption detector during agent speech.
+  static const bool _hybridAecBargeIn = true;
+
+  /// Topic for the on-device user-text data packets the agent listens for.
+  static const String _userTextTopic = 'lv-user-text';
+
+  /// Current user id (for once-per-session on-device voice biometrics).
+  String? _currentUserId;
+
+  // ── Admin biometrics policy (from /voice/session/start response) ──
+  // Mirrors the server-side policy so on_device verification enforces identically.
+  bool _bioEnabled = false;
+  bool _bioEnrollmentRequired = true;
+  String _bioMismatchAction = 'warn'; // 'warn' (continue) | 'exit' (end session)
+  bool _bioFailOpen = false;
+  double _bioThreshold = 0.85;
+
+  /// One-time-per-session biometric verification guard + recorder.
+  final AudioRecorder _bioRecorder = AudioRecorder();
+  bool _bioAttemptedThisSession = false;
+
+  /// True while the biometric recorder owns the mic — listening must not start
+  /// then (only one mic consumer at a time on iOS).
+  bool _bioInProgress = false;
+
+  /// Set when a biometric capture is aborted (teardown/mute), so it bails without
+  /// verifying a stale/partial sample.
+  bool _bioCancelled = false;
+
+  /// True until the one-time-per-session verification capture has been attempted.
+  /// Verification is captured on the FIRST confirmed USER-speech window AFTER the
+  /// greeting (amplitude-gated) — never during the greeting, never on silence.
+  bool _bioPending = false;
+
+  // ── Client-side turn detection (end-of-turn endpointing) ──
+  // speech_to_text exposes `pauseFor`, but platform recognizers (notably Android)
+  // don't always honour it / reliably emit a FINAL result. So we ALSO run our own
+  // silence timer: every partial result resets it; if it elapses with text
+  // pending, we treat the turn as finished even if the OS never fired finalResult.
+  // A dispatch guard dedupes the native-final and silence-timer paths so a turn is
+  // sent exactly once.
+  Timer? _turnSilenceTimer;
+  String _lastPartialText = '';
+  bool _turnDispatched = false;
+  static const Duration _turnSilenceWindow = Duration(milliseconds: 2500);
+
+  /// Whether the general voice agent is running in on-device speech mode.
+  bool get isOnDeviceMode => _onDeviceMode;
+
+  /// Whether the on-device recognizer is currently listening.
+  bool get isLocalListening => _isLocalListening;
 
   // ── Caption state for real-time transcription display ──
 
@@ -263,7 +389,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (_room == null) return _isMuted;
     _isMuted = !_isMuted;
     try {
-      await _room?.localParticipant?.setMicrophoneEnabled(!_isMuted);
+      if (_onDeviceMode) {
+        // On-device mode owns the mic via speech_to_text (the LiveKit mic stays
+        // unpublished). Mute = stop the recognizer (and abort any in-flight
+        // verification capture); unmute = re-arm listening.
+        if (_isMuted) {
+          if (_bioInProgress) await _abortBiometricsCapture();
+          await stopLocalListening();
+        } else if (!_awaitingAgentReply) {
+          await startLocalListening();
+        }
+      } else {
+        await _room?.localParticipant?.setMicrophoneEnabled(!_isMuted);
+      }
     } catch (e) {
       // Room may have disconnected between null check and call
       print('VoiceSessionCubit: Error toggling mute: $e');
@@ -288,6 +426,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final prefs = await SharedPreferences.getInstance();
       _selectedLanguageCode = prefs.getString(_prefKeyLanguage);
       _selectedVoiceId = prefs.getString(_prefKeyVoice);
+      _africanPermittedCached = prefs.getBool(_prefKeyAfricanPermitted) ?? false;
 
       // Fetch available languages from voice gateway API
       _availableLanguages = await _fetchSupportedLanguages(effectiveCountry);
@@ -447,8 +586,22 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Fetch supported languages from voice gateway API with fallback.
   Future<List<VoiceLanguage>> _fetchSupportedLanguages(String countryCode) async {
     try {
+      // Send the bearer so the gateway can read the email claim and return African
+      // languages ONLY when this user is on the admin per-email allowlist — the picker
+      // then never offers a language the session would silently coerce back to English.
+      final headers = <String, String>{};
+      try {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+        }
+      } catch (_) {
+        // No token (picker opened pre-login) — server returns the English-safe set.
+      }
+
       final response = await http.get(
         Uri.parse('$_voiceLanguageApiUrl/api/v1/voice/languages?country=$countryCode'),
+        headers: headers,
       ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
@@ -457,13 +610,56 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             ?.map((l) => VoiceLanguage.fromJson(l as Map<String, dynamic>))
             .toList();
         if (languages != null && languages.isNotEmpty) {
-          return languages;
+          // The server already applied THIS user's per-email African grant. Remember
+          // whether it granted African languages so the offline fallback matches.
+          final hasAfrican = languages.any((l) =>
+              _africanLangCodes.contains(l.code.toLowerCase().split('-').first));
+          await _persistAfricanPermitted(hasAfrican);
+          return _gateAfricanLanguages(languages, serverAuthoritative: true);
         }
       }
     } catch (e) {
       // Fall through to hardcoded defaults
     }
-    return VoiceLanguageDefaults.forCountry(countryCode);
+    return _gateAfricanLanguages(
+      VoiceLanguageDefaults.forCountry(countryCode),
+      serverAuthoritative: false,
+    );
+  }
+
+  Future<void> _persistAfricanPermitted(bool granted) async {
+    _africanPermittedCached = granted;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefKeyAfricanPermitted, granted);
+    } catch (_) {
+      // Non-fatal — the cached field still gates this session.
+    }
+  }
+
+  // Gate for the "display African languages on the app" picker. African options
+  // (yo/ig/ha/pcm) require BOTH the admin master toggle AND this user's per-email grant.
+  static const Set<String> _africanLangCodes = {'yo', 'ig', 'ha', 'pcm'};
+  List<VoiceLanguage> _gateAfricanLanguages(
+    List<VoiceLanguage> langs, {
+    required bool serverAuthoritative,
+  }) {
+    // Master feature off → never show African (defense-in-depth), regardless of source.
+    if (!FeatureFlags.africanVoiceLanguagesEnabled) {
+      final filtered = langs
+          .where((l) => !_africanLangCodes.contains(l.code.toLowerCase().split('-').first))
+          .toList();
+      return filtered.isEmpty ? langs : filtered;
+    }
+    // Online server result already reflects THIS user's per-email grant — trust it.
+    if (serverAuthoritative) return langs;
+    // Offline fallback: only surface African if this user was previously granted them
+    // (so a non-allowlisted user never sees African chips when the server is down).
+    if (_africanPermittedCached) return langs;
+    final filtered = langs
+        .where((l) => !_africanLangCodes.contains(l.code.toLowerCase().split('-').first))
+        .toList();
+    return filtered.isEmpty ? langs : filtered;
   }
 
   // ── Session Start ──
@@ -471,10 +667,14 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Future<void> startVoiceSession({
     required String? accessToken,
     String? serviceName,
+    String? conversationId,
     String? accountId,
     String? currency,
+    String? userId,
   }) async {
     if (isClosed) return;
+    // Remember the user for once-per-session on-device voice biometrics.
+    if (userId != null && userId.isNotEmpty) _currentUserId = userId;
 
     // Re-entrancy guard: a single user action can dispatch startVoiceSession()
     // more than once (sheet-open path + language-selected + enrollment-proceed).
@@ -515,6 +715,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final requestBody = <String, dynamic>{};
       if (serviceName != null && serviceName.isNotEmpty) {
         requestBody['serviceName'] = serviceName;
+      }
+      // Scoped-context id (e.g. a P2P conversation) → carried in the LiveKit
+      // room metadata so the voice worker pins the agent to this conversation.
+      if (conversationId != null && conversationId.isNotEmpty) {
+        requestBody['conversationId'] = conversationId;
       }
       // Per-screen active account pin (e.g. user picked a non-primary
       // source account on select_recipients before opening voice).
@@ -566,6 +771,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           final roomName = data['roomName'] as String;
           final livekitToken = data['livekitToken'] as String;
           _currentSessionId = data['sessionId'] as String? ?? roomName;
+          // Admin speech-capture mode (default on_device). on_device → run the
+          // on-device recognizer + suppress the LiveKit mic; livekit → legacy
+          // server-side STT. Read once per session from the start response.
+          _onDeviceMode = (data['inputMode'] as String?) != 'livekit';
+          print('VoiceSessionCubit: inputMode=${data['inputMode'] ?? 'on_device(default)'} -> onDeviceMode=$_onDeviceMode');
+          // Admin biometrics policy (drives on_device verification + enforcement).
+          final bio = data['biometrics'];
+          if (bio is Map) {
+            _bioEnabled = bio['enabled'] == true;
+            _bioEnrollmentRequired = bio['enrollmentRequired'] != false;
+            _bioMismatchAction = (bio['action'] == 'exit') ? 'exit' : 'warn';
+            _bioFailOpen = bio['failOpen'] == true;
+            final t = bio['threshold'];
+            if (t is num) _bioThreshold = t.toDouble();
+            // Arm a one-time verification capture for the first user-speech window.
+            _bioPending = _bioEnabled;
+            print('VoiceSessionCubit: biometrics policy enabled=$_bioEnabled action=$_bioMismatchAction failOpen=$_bioFailOpen');
+          }
 
           // Start tracking chat history for this session
           if (_currentSessionId != null) {
@@ -696,19 +919,569 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         return;
       }
 
-      await _room!.localParticipant?.setMicrophoneEnabled(true);
+      if (_onDeviceMode) {
+        // On-device mode: the app owns the mic for speech_to_text, so DON'T publish
+        // it to LiveKit (avoids iOS audio-session contention). LiveKit stays
+        // connected for the agent's TTS downlink + the user-text data channel.
+        await _room!.localParticipant?.setMicrophoneEnabled(false);
+      } else {
+        // Legacy server-STT path: publish the mic so the gateway can transcribe.
+        await _room!.localParticipant?.setMicrophoneEnabled(true);
+      }
 
       // Connect to voice WebSocket service for visual feedback events
       _connectWebSocket();
 
       if (isClosed) return;
       emit(VoiceSessionConnected(_room!));
+
+      // Kick off on-device capture: a once-per-session background voice
+      // verification (fail-open) followed by the live listening loop.
+      if (_onDeviceMode && !isClosed) {
+        unawaited(_startOnDeviceCapture());
+      }
     } catch (e) {
       if (isClosed) return;
       print('VoiceSessionCubit: LiveKit connect error: $e');
       emit(VoiceSessionError('Failed to connect to LiveKit room: $e'));
       await _disposeRoomResources();
     }
+  }
+
+  // ── On-device speech capture (on_device mode) ──
+
+  /// Orchestrates on-device capture once connected. The agent greets FIRST, so we
+  /// begin in the "agent's turn" (_awaitingAgentReply) and only start listening on
+  /// greeting-end (agent_caption_end) — or via a fallback if the greeting is
+  /// skipped/silent. This avoids transcribing the agent's own greeting.
+  ///
+  /// Verification is NOT captured here — it would overlap the greeting (the agent's
+  /// own voice). Instead it runs once, in the background, on the first CONFIRMED
+  /// user-speech window after the greeting (see _runVerificationCapture, triggered
+  /// from startLocalListening). Startup is therefore instant and the sample is
+  /// always genuine user audio.
+  Future<void> _startOnDeviceCapture() async {
+    await _initSpeech();
+    if (isClosed || _teardownRequested || !_onDeviceMode) return;
+    // Greeting comes first — listening starts on greeting-end (or the fallback).
+    _awaitingAgentReply = true;
+    _scheduleListenFallback();
+  }
+
+  /// Safety net: if the greeting is skipped (duplicate-greeting guard) or its
+  /// caption markers never arrive, start listening anyway after a bounded wait so
+  /// the user is never stuck unable to talk.
+  void _scheduleListenFallback() {
+    Future.delayed(const Duration(seconds: 8), () {
+      if (_onDeviceMode &&
+          _awaitingAgentReply &&
+          !_bioInProgress &&
+          !_isAgentSpeaking &&
+          !isClosed &&
+          !_teardownRequested) {
+        print('VoiceSessionCubit: greeting-end not observed — starting on-device listening (fallback)');
+        _awaitingAgentReply = false;
+        startLocalListening();
+      }
+    });
+  }
+
+  /// Lazily initialise the on-device recognizer once per cubit.
+  Future<void> _initSpeech() async {
+    if (_sttInitialized) return;
+    try {
+      _sttAvailable = await _speech.initialize(
+        onError: (err) {
+          print('VoiceSessionCubit: speech_to_text error: ${err.errorMsg} (permanent=${err.permanent})');
+          _isLocalListening = false;
+          // Transient errors (error_no_match / error_speech_timeout) just end a
+          // listen window — re-arm whenever listening is currently permitted
+          // (covers both the user's turn and the barge-in window).
+          if (!err.permanent) _reArmListeningSoon();
+        },
+        onStatus: (status) {
+          // 'done'/'notListening' = the recognizer finalised this window. Re-arm
+          // whenever listening is permitted so the conversation flows hands-free
+          // (and the barge-in watch stays open while the agent speaks).
+          if (status == 'done' || status == 'notListening') {
+            _isLocalListening = false;
+            _reArmListeningSoon();
+          }
+        },
+      );
+      _sttInitialized = true;
+      print('VoiceSessionCubit: speech_to_text initialized available=$_sttAvailable');
+    } catch (e) {
+      _sttAvailable = false;
+      _sttInitialized = true;
+      print('VoiceSessionCubit: speech_to_text init failed: $e');
+    }
+  }
+
+  /// Start a listening window. speech_to_text auto-finalises the turn after
+  /// [pauseFor] of trailing silence (automatic end-of-turn detection) and streams
+  /// partial results meanwhile for live captions.
+  /// Whether the recognizer should be open right now.
+  /// - while the agent speaks → only if barge-in is enabled (interrupt window);
+  /// - while waiting for the agent to START replying → no;
+  /// - otherwise (user's turn) → yes.
+  bool _listeningPermitted() {
+    if (!_onDeviceMode || isClosed || _teardownRequested || _isMuted || !_sttAvailable) {
+      return false;
+    }
+    if (_bioInProgress) return false; // verification capture owns the mic
+    if (_agentSpeaking) return _bargeInEnabled;
+    return !_awaitingAgentReply;
+  }
+
+  Future<void> startLocalListening() async {
+    if (!_listeningPermitted()) return;
+    if (_speech.isListening || _isLocalListening) return;
+    // ONE-TIME VERIFICATION: on the first user-listen after the greeting (not a
+    // barge-in window), capture a biometric sample from genuine user speech BEFORE
+    // transcription. _runVerificationCapture re-arms listening when done.
+    if (_bioPending && !_agentSpeaking) {
+      unawaited(_runVerificationCapture());
+      return;
+    }
+    try {
+      _isLocalListening = true;
+      // Fresh turn: clear dedup guard + partial buffer + any stale silence timer.
+      _turnDispatched = false;
+      _lastPartialText = '';
+      _turnSilenceTimer?.cancel();
+      await _speech.listen(
+        onResult: _onSpeechResult,
+        listenOptions: stt.SpeechListenOptions(
+          partialResults: true,
+          cancelOnError: false,
+          listenMode: stt.ListenMode.dictation,
+          listenFor: const Duration(seconds: 60),
+          // Trailing-silence window that finalises a turn — long enough to tolerate
+          // a mid-sentence breath, short enough to feel responsive.
+          pauseFor: const Duration(milliseconds: 2500),
+          localeId: await _resolveSttLocaleId(),
+        ),
+      );
+    } catch (e) {
+      _isLocalListening = false;
+      print('VoiceSessionCubit: startLocalListening failed: $e');
+    }
+  }
+
+  /// Stop the current listening window (no-op if not listening).
+  Future<void> stopLocalListening() async {
+    _isLocalListening = false;
+    _turnSilenceTimer?.cancel();
+    try {
+      if (_speech.isListening) await _speech.stop();
+    } catch (_) {}
+  }
+
+  /// HYBRID AEC: publish (with echo cancellation) or drop the LiveKit mic for the
+  /// AGENT phase so the server can detect barge-in on clean audio. No-op unless in
+  /// on_device hybrid mode. Echo cancellation + noise suppression + AGC keep the
+  /// agent's own TTS out of the signal the interruption detector sees.
+  Future<void> _setAecMicPublished(bool enabled) async {
+    if (!_onDeviceMode || !_hybridAecBargeIn) return;
+    final lp = _room?.localParticipant;
+    if (lp == null) return;
+    try {
+      await lp.setMicrophoneEnabled(
+        enabled,
+        audioCaptureOptions: enabled
+            ? const AudioCaptureOptions(
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+              )
+            : null,
+      );
+    } catch (e) {
+      print('VoiceSessionCubit: _setAecMicPublished($enabled) failed: $e');
+    }
+  }
+
+  /// Debounced re-arm so a 'done' status that fires immediately after stop()
+  /// doesn't recurse; also lets a pending agent reply land first.
+  void _reArmListeningSoon() {
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (_listeningPermitted() && !_speech.isListening && !_isLocalListening) {
+        startLocalListening();
+      }
+    });
+  }
+
+  /// Handle a recognizer result: render live partial captions (reuses the same
+  /// caption state the server-STT path drives), and on the FINAL (auto-endpointed)
+  /// result commit the turn to history and send the exact text to the agent.
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    if (isClosed || !_onDeviceMode) return;
+    final words = _sanitizeCaptionText(result.recognizedWords);
+
+    // ── BARGE-IN WINDOW: recognizer is open while the agent is speaking ──
+    if (_agentSpeaking && !_bargedInThisTurn) {
+      if (!_bargeInEnabled) return;
+      // Ignore the agent's own TTS bleeding into the mic (speaker echo): the
+      // recognized text would BE the agent's words, so it matches the caption.
+      if (words.isEmpty || _looksLikeEcho(words)) return;
+      // Require a couple of clearly-new words before cutting the agent off, so a
+      // stray blip or partial echo can't false-trigger an interruption.
+      if (_wordCount(words) < _bargeInMinWords && !result.finalResult) return;
+      // Genuine interruption — stop the agent NOW; the rest of this utterance is
+      // captured below and dispatched as the superseding turn.
+      _triggerBargeIn();
+      // fall through (now _agentSpeaking == false) into normal handling
+    }
+
+    if (result.finalResult) {
+      // Native end-of-turn — dispatch (deduped against the silence timer).
+      _turnSilenceTimer?.cancel();
+      _dispatchUserTurn(words);
+      return;
+    }
+
+    // PARTIAL: live preview (flicker-guard mirrors the server interim path).
+    _lastPartialText = words;
+    const minInterimChars = 3;
+    final hasPreview = _currentUserCaption != null && _currentUserCaption!.isNotEmpty;
+    if (words.length >= minInterimChars || hasPreview) {
+      _currentUserCaption = words.isNotEmpty ? words : _currentUserCaption;
+      _setUserSpeaking(); // reflect "you're talking" in the UI
+      _emitCaptionUpdate();
+    }
+    // CLIENT-SIDE TURN DETECTION: reset the silence timer on every partial. If it
+    // elapses (no new speech for the window) we finalise the turn ourselves — this
+    // is what makes end-of-turn detection reliable even when the platform STT never
+    // emits a finalResult after the pause.
+    _turnSilenceTimer?.cancel();
+    _turnSilenceTimer = Timer(_turnSilenceWindow, () {
+      if (_onDeviceMode && !_turnDispatched && _isLocalListening) {
+        _dispatchUserTurn(_lastPartialText);
+      }
+    });
+  }
+
+  /// Number of whitespace-separated words in [text].
+  int _wordCount(String text) =>
+      text.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+
+  /// True when recognized [text] is (mostly) the agent's current spoken caption —
+  /// i.e. speaker echo of the agent's own TTS, not the user. Used to suppress
+  /// false barge-ins while the agent is talking on a loudspeaker.
+  bool _looksLikeEcho(String text) {
+    final agent = (_currentAgentCaption ?? '').toLowerCase();
+    if (agent.isEmpty) return false;
+    final t = text.toLowerCase().trim();
+    if (t.isEmpty) return true;
+    if (agent.contains(t)) return true;
+    final agentTokens = agent.split(RegExp(r'\s+')).toSet();
+    final tTokens = t.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (tTokens.isEmpty) return true;
+    final overlap = tTokens.where(agentTokens.contains).length / tTokens.length;
+    return overlap >= 0.6; // most words are the agent's → echo
+  }
+
+  /// React to a confirmed barge-in: stop the agent immediately (so it stops
+  /// talking and will reason on the new input), clear its bubble, and flip to the
+  /// user's turn. The full superseding utterance is dispatched on end-of-turn.
+  void _triggerBargeIn() {
+    print('VoiceSessionCubit: barge-in detected — interrupting agent');
+    _bargedInThisTurn = true;
+    _agentSpeaking = false;
+    _awaitingAgentReply = false;
+    _isAgentSpeaking = false;
+    _currentAgentCaption = null; // the new reply will replace the bubble
+    _publishInterrupt();
+    _setUserSpeaking();
+    _emitCaptionUpdate();
+  }
+
+  /// Tell the agent to stop speaking immediately (barge-in). The superseding
+  /// turn text follows via _publishUserText once the utterance ends.
+  void _publishInterrupt() {
+    final room = _room;
+    if (room == null) return;
+    try {
+      final payload = utf8.encode(jsonEncode({'type': 'interrupt'}));
+      unawaited(room.localParticipant?.publishData(
+            payload,
+            reliable: true,
+            topic: _userTextTopic,
+          ) ??
+          Future.value());
+    } catch (e) {
+      print('VoiceSessionCubit: publishInterrupt failed: $e');
+    }
+  }
+
+  /// Reflect "user is speaking" in the UI (parity with the LiveKit
+  /// SpeakingChangedEvent path, which doesn't fire in on_device mode since the
+  /// mic isn't published). Skipped while a visual-feedback dialog owns the state.
+  void _setUserSpeaking() {
+    if (_isVisualFeedbackActive || _room == null || isClosed) return;
+    if (state is! VoiceSessionLocalUserSpeaking) {
+      emit(VoiceSessionLocalUserSpeaking(_room!));
+    }
+  }
+
+  /// Finalise exactly one user turn (deduped across the native-final and
+  /// silence-timer paths): commit to history, clear the live bubble, pause the
+  /// recognizer until the agent replies, and send the text to the agent.
+  void _dispatchUserTurn(String words) {
+    if (_turnDispatched) return; // already sent this turn
+    _turnSilenceTimer?.cancel();
+    final text = _sanitizeCaptionText(words);
+    if (text.isEmpty) {
+      // Nothing recognised — drop the empty turn and allow a fresh one.
+      _currentUserCaption = null;
+      _emitCaptionUpdate();
+      return;
+    }
+    _turnDispatched = true;
+    if (_currentSessionId != null) {
+      _chatHistoryCubit.addUserMessage(_currentSessionId!, text);
+    }
+    _currentUserCaption = null;
+    // Pause listening until the agent has finished replying (re-armed on
+    // agent_caption_end) so we never transcribe the agent's own TTS.
+    _awaitingAgentReply = true;
+    _bargedInThisTurn = false; // reset for the upcoming agent turn
+    unawaited(stopLocalListening());
+    // Show "processing" while we wait for the agent (parity with the LiveKit
+    // path's agent-processing state); falls back to a caption tick otherwise.
+    if (_room != null && !_isVisualFeedbackActive && !isClosed) {
+      emit(VoiceSessionAgentProcessing(_room!));
+    } else {
+      _emitCaptionUpdate();
+    }
+    _publishUserText(text);
+  }
+
+  /// Send the final recognized text to the agent over the LiveKit data channel.
+  void _publishUserText(String text) {
+    final room = _room;
+    if (room == null) return;
+    try {
+      final payload = utf8.encode(jsonEncode({'type': 'user_text', 'text': text}));
+      unawaited(room.localParticipant?.publishData(
+            payload,
+            reliable: true,
+            topic: _userTextTopic,
+          ) ??
+          Future.value());
+      print('VoiceSessionCubit: published on-device user text (${text.length} chars)');
+    } catch (e) {
+      print('VoiceSessionCubit: publishData failed: $e');
+      // If we couldn't hand off the turn, don't strand the mic — re-arm.
+      _awaitingAgentReply = false;
+      _reArmListeningSoon();
+    }
+  }
+
+  /// Resolve the best installed recognizer locale for the session language so the
+  /// on-device English model (and others) transcribes accurately. For English we
+  /// PREFER en-US (the most broadly-trained model), then any other English, then
+  /// any locale whose code matches; null falls back to the device default.
+  Future<String?> _resolveSttLocaleId() async {
+    final lang = (_selectedLanguageCode ?? 'en').split(RegExp('[-_]')).first.toLowerCase();
+    try {
+      final locales = await _speech.locales();
+      String? firstLangMatch;
+      String? preferred;
+      for (final l in locales) {
+        final id = l.localeId.replaceAll('-', '_').toLowerCase();
+        if (id == lang || id.startsWith('${lang}_')) {
+          firstLangMatch ??= l.localeId;
+          // Prefer the canonical region for the language (en_US for English).
+          if (lang == 'en' && (id == 'en_us')) preferred = l.localeId;
+        }
+      }
+      return preferred ?? firstLangMatch;
+    } catch (_) {}
+    return null;
+  }
+
+  /// One-time-per-session, background, on-device speaker verification — the
+  /// on_device counterpart to the legacy LiveKit-track biometrics (which can't run
+  /// here because the mic isn't published). Captured ONLY from a CONFIRMED
+  /// user-speech window after the greeting (amplitude-gated) — never during the
+  /// greeting, never on silence, never the agent's voice. Admin-driven, identical
+  /// policy to the server-side path:
+  ///   • skipped entirely when admin `voice_biometrics_enabled` is off;
+  ///   • only verifies enrolled users;
+  ///   • CONFIRMED match → brief success overlay;
+  ///   • MISMATCH → admin `voice_biometrics_mismatch_action_app`:
+  ///       'warn' → non-blocking warning, session continues;
+  ///       'exit' → end the session;
+  ///   • service error / silent user → FAIL-OPEN (continue) unless fail-open is
+  ///     off AND the action is 'exit'.
+  /// When done it hands the mic to the recognizer (startLocalListening).
+  Future<void> _runVerificationCapture() async {
+    if (!_bioPending) return;
+    _bioPending = false; // one attempt per session
+    _bioAttemptedThisSession = true;
+    final uid = _currentUserId;
+    bool reArm = true;
+    String? path;
+    try {
+      if (!_bioEnabled || uid == null || uid.isEmpty) return;
+      final bio = serviceLocator<VoiceBiometricsService>();
+      final status = await bio.checkEnrollmentStatus(uid);
+      if (!status.isEnrolled) {
+        print(_bioEnrollmentRequired
+            ? 'VoiceSessionCubit: enrollment required but user unenrolled (guard bypass?) — skipping verification (fail-open)'
+            : 'VoiceSessionCubit: user not voice-enrolled (optional) — skipping verification');
+        return;
+      }
+      if (!await _bioRecorder.hasPermission()) return;
+      final tmp = await getTemporaryDirectory();
+      path = '${tmp.path}/voice_verify_${DateTime.now().millisecondsSinceEpoch}.wav';
+      _bioCancelled = false;
+      _bioInProgress = true; // recorder owns the mic
+      await _bioRecorder.start(
+        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
+        path: path,
+      );
+      // Gate on REAL speech: wait until the mic actually hears the user before we
+      // accept the sample. If they stay silent, skip (fail-open) — we never verify
+      // against silence or the agent's own audio.
+      final heardUser = await _waitForUserSpeech();
+      if (_bioCancelled || isClosed || !heardUser) {
+        print('VoiceSessionCubit: no user speech for verification — skipping (fail-open)');
+        return;
+      }
+      // Capture a short slice of their speech for the embedding, then hand the mic
+      // straight to the recognizer so the conversation isn't held up.
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (_bioCancelled || isClosed) return;
+      final recorded = await _bioRecorder.stop();
+      _bioInProgress = false;
+      if (recorded == null) return;
+      final bytes = await File(recorded).readAsBytes();
+      if (bytes.isEmpty) return;
+      final result = await bio.verifyVoice(
+        userId: uid,
+        audioSample: Uint8List.fromList(bytes),
+        threshold: _bioThreshold,
+      );
+      print('VoiceSessionCubit: on-device voice verification → verified=${result.verified} (${result.status})');
+      // _applyBiometricVerdict may end the session on a mismatch+exit; don't then
+      // re-arm listening into a torn-down room.
+      reArm = !(result.verified == false && _bioMismatchAction == 'exit');
+      _applyBiometricVerdict(verified: result.verified, message: result.message);
+    } catch (e) {
+      print('VoiceSessionCubit: on-device biometrics error: $e');
+      if (!_bioFailOpen && _bioMismatchAction == 'exit') {
+        reArm = false;
+        await _endSessionForVerification(
+          "We couldn't verify your voice. Please try again.",
+        );
+      }
+    } finally {
+      _bioInProgress = false;
+      if (path != null) {
+        try {
+          final f = File(path);
+          if (await f.exists()) await f.delete();
+        } catch (_) {}
+      }
+      // Hand the mic to the recognizer for the conversation (unless the session
+      // was ended by an 'exit' verdict).
+      if (reArm && _onDeviceMode && !isClosed && !_teardownRequested) {
+        startLocalListening();
+      }
+    }
+  }
+
+  /// Poll the recorder's input level until it crosses a speech threshold (the user
+  /// is actually talking) or a bounded wait elapses. Returns true once real speech
+  /// is heard — this is what guarantees we verify against the USER, not silence or
+  /// the agent's voice.
+  Future<bool> _waitForUserSpeech() async {
+    const maxPolls = 33; // 33 × 150ms ≈ 5s budget for the user to start talking
+    const speechDbThreshold = -35.0; // dBFS; quiet room floor is well below this
+    for (var i = 0; i < maxPolls; i++) {
+      if (_bioCancelled || isClosed || !_bioInProgress) return false;
+      try {
+        final amp = await _bioRecorder.getAmplitude();
+        if (amp.current > speechDbThreshold) return true;
+      } catch (_) {
+        return false;
+      }
+      await Future.delayed(const Duration(milliseconds: 150));
+    }
+    return false; // user stayed silent — skip verification this session
+  }
+
+  /// Apply a verification verdict with admin-driven enforcement + a UI overlay.
+  /// Reuses the SAME states the server-side (livekit) path emits over WS, so both
+  /// modes look identical to the sheet.
+  void _applyBiometricVerdict({required bool verified, String? message}) {
+    if (isClosed || _room == null) return;
+    if (verified) {
+      emit(VoiceSessionVerificationSuccess(
+        _room!,
+        (message != null && message.isNotEmpty) ? message : "Voice verified — it's really you.",
+      ));
+      // Auto-dismiss back to the live session after ~3s.
+      Future.delayed(const Duration(seconds: 3), () {
+        if (!isClosed && state is VoiceSessionVerificationSuccess && _room != null &&
+            _room!.connectionState == ConnectionState.connected) {
+          emit(VoiceSessionConnected(_room!));
+        }
+      });
+      return;
+    }
+    // MISMATCH — enforce the admin action.
+    if (_bioMismatchAction == 'exit') {
+      unawaited(_endSessionForVerification(
+        (message != null && message.isNotEmpty)
+            ? message
+            : "We couldn't confirm it's you. Ending the session for your security.",
+      ));
+    } else {
+      // warn → continue.
+      emit(VoiceSessionLowConfidenceWarning(
+        _room!,
+        (message != null && message.isNotEmpty)
+            ? message
+            : "We couldn't fully confirm your voice — continuing, but please re-enroll if this keeps happening.",
+      ));
+      Future.delayed(const Duration(seconds: 5), () {
+        if (!isClosed && state is VoiceSessionLowConfidenceWarning && _room != null &&
+            _room!.connectionState == ConnectionState.connected) {
+          emit(VoiceSessionConnected(_room!));
+        }
+      });
+    }
+  }
+
+  /// End the session because speaker verification failed and the admin policy is
+  /// 'exit'. Tears down audio + room and surfaces the terminal verification state.
+  Future<void> _endSessionForVerification(String message) async {
+    _teardownRequested = true;
+    await stopLocalListening();
+    if (!isClosed) emit(VoiceSessionVerificationFailed(message));
+    _disconnectWebSocket();
+    await _disposeRoomResources();
+    if (!isClosed) {
+      emit(VoiceSessionEnded(
+        sessionId: _currentSessionId ?? '',
+        endReason: 'voice_verification',
+      ));
+    }
+  }
+
+  /// Preempt an in-flight lazy biometric capture so the conversation can start
+  /// immediately (the recorder must release the mic before the recognizer takes
+  /// it). Best-effort; the capture coroutine sees _bioCancelled and bails.
+  Future<void> _abortBiometricsCapture() async {
+    _bioCancelled = true;
+    try {
+      if (await _bioRecorder.isRecording()) await _bioRecorder.stop();
+    } catch (_) {}
+    _bioInProgress = false;
   }
 
   // ── WebSocket connection to voice-ws-service ──
@@ -851,6 +1624,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             emit(VoiceSessionPinRequired(_room!, eventData));
           }
           break;
+        case 'voice_pin_spoken':
+          // Spoken-PIN mode (voice_txpin_entry_mode == "voice"): the worker captured
+          // the digits the user SAID and sent them here. Verify them through the SAME
+          // TransactionPinService the on-screen sheet uses, then round-trip the
+          // single-use token via submitPinVerification. On any failure fall back to
+          // the on-screen sheet so the user is never stuck.
+          if (_room != null) {
+            _applyPinPayload(eventData);
+            unawaited(_handleSpokenPin(eventData));
+          }
+          break;
         case 'transaction_result':
           if (_room != null) {
             _setVisualFeedbackActive(false);
@@ -986,6 +1770,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           break;
         // ── Caption events for real-time transcription ──
         case 'user_caption_interim':
+          // In on-device mode the client renders user captions locally from the
+          // on-device recognizer and commits the final turn itself; the backend
+          // still echoes the final text (handle_client_text), so ignore inbound
+          // user captions here to avoid a double bubble / double history entry.
+          if (_onDeviceMode) break;
           // Partial transcription — a transient LIVE PREVIEW only. This is the
           // rough, inaccurate text from gpt-4o-transcribe partials; it is NEVER
           // committed to VoiceChatHistoryCubit. It is shown as a faded
@@ -1015,6 +1804,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           }
           break;
         case 'user_caption_final':
+          // Ignored in on-device mode (committed locally — see user_caption_interim).
+          if (_onDeviceMode) break;
           // Final transcription — the user's turn is complete. Commit it to
           // the persistent transcript (so it stays in the scrollable history)
           // and clear the live interim bubble so the finalized history bubble
@@ -1063,6 +1854,25 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // (committing the partial start text would store a truncated turn).
           if (_room != null) {
             _currentUserCaption = null;
+            // On-device mode: the agent is now speaking.
+            if (_onDeviceMode) {
+              _agentSpeaking = true;
+              _awaitingAgentReply = true;
+              _bargedInThisTurn = false;
+              // Pause the on-device recognizer (it has no AEC, would hear the TTS).
+              unawaited(stopLocalListening());
+              if (_hybridAecBargeIn) {
+                // AGENT phase: hand the mic to LiveKit WITH echo cancellation so the
+                // server's interruption detector can hear the user talk over the
+                // agent on clean audio and stop it (true barge-in, no feedback).
+                unawaited(_setAecMicPublished(true));
+              } else if (_bargeInEnabled) {
+                // (Legacy) open-mic acoustic barge-in — off by default (no AEC).
+                Future.delayed(const Duration(milliseconds: 700), () {
+                  if (_agentSpeaking && _listeningPermitted()) startLocalListening();
+                });
+              }
+            }
             final text = eventData['text'] as String?;
             // `replace` = this answer supersedes/merges a prior reply whose bubble
             // is still showing — commit it as a REPLACE on agent_caption_end so the
@@ -1112,6 +1922,20 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             _isAgentSpeaking = false;
             _currentAgentCaption = null;
             _emitCaptionUpdate();
+            // On-device mode: the agent finished (or was interrupted) — end the
+            // AGENT phase. Drop the LiveKit AEC mic so the on-device recognizer can
+            // own it again, then re-arm to capture the user's turn (hands-free,
+            // natural multi-turn). On a server barge-in this fires right after the
+            // interruption, so the user's continuing speech is transcribed.
+            if (_onDeviceMode && !isClosed && !_teardownRequested) {
+              _agentSpeaking = false;
+              _awaitingAgentReply = false;
+              if (_hybridAecBargeIn) {
+                _setAecMicPublished(false).whenComplete(_reArmListeningSoon);
+              } else {
+                _reArmListeningSoon();
+              }
+            }
           }
           break;
         case 'language_changed':
@@ -1124,6 +1948,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             if (_room != null) {
               emit(VoiceSessionLanguageChanged(_room!, newLang, newLocale ?? newLang));
             }
+          }
+          break;
+        case 'voice_clone_degraded':
+          // The user's custom cloned voice failed over to a standard voice mid-call.
+          // Audio keeps working seamlessly — surface a brief notice so the user knows
+          // WHY the voice changed, then auto-revert to the connected state.
+          if (_room != null) {
+            final msg = eventData['message'] as String? ??
+                'Voice cloning is temporarily unavailable — using a standard voice.';
+            emit(VoiceSessionCloneDegraded(_room!, msg));
+            Future.delayed(const Duration(seconds: 4), () {
+              if (!isClosed &&
+                  state is VoiceSessionCloneDegraded &&
+                  _room != null &&
+                  _room!.connectionState == ConnectionState.connected) {
+                emit(VoiceSessionConnected(_room!));
+              }
+            });
           }
           break;
         case 'voice_session_ended':
@@ -1252,7 +2094,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   String _transferTypeLabel(String type) {
     switch (type) {
       case 'internal':
-        return 'LazerVault';
+        return 'Lazervault';
       case 'domestic':
         return 'Bank Transfer';
       case 'international':
@@ -1437,12 +2279,22 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   }
 
   /// PIN entry completed — notify voice agent of the result.
-  Future<void> notifyPinCompleted(bool success, {String? reference, String? error}) async {
+  Future<void> notifyPinCompleted(
+    bool success, {
+    String? reference,
+    String? error,
+    bool isLocked = false,
+    int? remainingAttempts,
+  }) async {
     _setVisualFeedbackActive(false);
     await sendToVoiceAgent('pin_completed', {
       'success': success,
       if (reference != null) 'reference': reference,
       if (error != null) 'error': error,
+      // Real failure detail so the agent speaks the CORRECT outcome (locked vs cancel
+      // vs exhausted) instead of always offering a retry that a locked account rejects.
+      'is_locked': isLocked,
+      if (remainingAttempts != null) 'remaining_attempts': remainingAttempts,
     });
     if (_room != null && !isClosed) {
       emit(VoiceSessionAgentProcessing(_room!));
@@ -1473,6 +2325,71 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     });
     if (_room != null && !isClosed) {
       emit(VoiceSessionAgentProcessing(_room!));
+    }
+  }
+
+  /// Verify a SPOKEN transaction PIN (voice_txpin_entry_mode == "voice").
+  ///
+  /// The voice worker captured the digits the user said and sent them via the
+  /// `voice_pin_spoken` event. We verify them headlessly through the SAME
+  /// [ITransactionPinService.verifyPin] the on-screen sheet uses, then resume the
+  /// agent's saga via [submitPinVerification] with the single-use token — reusing
+  /// the exact verify-then-resume contract of the sheet path (no parallel money
+  /// code). On a wrong/locked PIN, or any error, we fall back to opening the
+  /// on-screen PIN sheet so the user can retry manually and see attempts remaining.
+  Future<void> _handleSpokenPin(Map<String, dynamic> payload) async {
+    final pin = (payload['pin'] ?? '').toString().trim();
+    final transactionId = (payload['transaction_id'] ?? '').toString();
+    final transactionType =
+        (payload['transaction_type'] ?? 'transfer').toString();
+    final currency = (payload['currency'] ?? 'NGN').toString();
+    final amount = _parseNaira(payload['amount']) ?? 0.0;
+    final callbackIntent = (payload['callback_intent'] ?? '').toString();
+    final callbackArgs = payload['callback_args'] is Map
+        ? Map<String, dynamic>.from(payload['callback_args'] as Map)
+        : <String, dynamic>{};
+
+    // Never keep the raw PIN in the payload we might re-emit to the sheet.
+    final sheetPayload = Map<String, dynamic>.from(payload)..remove('pin');
+
+    void fallbackToSheet() {
+      if (_room == null || isClosed) return;
+      _setVisualFeedbackActive(true);
+      emit(VoiceSessionPinRequired(_room!, sheetPayload));
+    }
+
+    if (pin.length < 4 || pin.length > 6) {
+      fallbackToSheet();
+      return;
+    }
+
+    try {
+      final result = await serviceLocator<ITransactionPinService>().verifyPin(
+        pin: pin,
+        transactionId: transactionId,
+        transactionType: transactionType,
+        amount: amount,
+        currency: currency,
+      );
+      if (result.success &&
+          (result.verificationToken?.isNotEmpty ?? false)) {
+        final token = result.verificationToken!;
+        if (callbackIntent.isNotEmpty) {
+          await submitPinVerification(
+            verificationToken: token,
+            callbackIntent: callbackIntent,
+            callbackArgs: callbackArgs,
+          );
+        } else {
+          await notifyPinCompleted(true, reference: token);
+        }
+        return;
+      }
+      // Wrong / locked / no-PIN-set: let the user retry on the on-screen sheet,
+      // which surfaces the exact attempts-remaining / lockout messaging.
+      fallbackToSheet();
+    } catch (_) {
+      fallbackToSheet();
     }
   }
 
@@ -1622,6 +2539,27 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Null the refs first so a late connect / re-entrant call sees a clean slate.
     _roomEventsListener = null;
     _room = null;
+    // Release the on-device recognizer + biometric recorder so the next session
+    // (or another mic consumer) gets a clean audio session. Reset per-session
+    // turn-taking flags so a restart re-arms correctly.
+    _awaitingAgentReply = false;
+    _agentSpeaking = false;
+    _bargedInThisTurn = false;
+    _isLocalListening = false;
+    _bioAttemptedThisSession = false;
+    _bioInProgress = false;
+    _bioCancelled = true; // bail any in-flight capture; a new capture re-arms it
+    _bioPending = false;
+    _turnDispatched = false;
+    _lastPartialText = '';
+    _turnSilenceTimer?.cancel();
+    _turnSilenceTimer = null;
+    try {
+      if (_speech.isListening) await _speech.cancel();
+    } catch (_) {}
+    try {
+      if (await _bioRecorder.isRecording()) await _bioRecorder.stop();
+    } catch (_) {}
     try {
       await listener?.dispose();
     } catch (e) {
@@ -1650,8 +2588,29 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
   }
 
+  /// Keep the process-global "voice session live" flag in sync with the session
+  /// state so the InactivityWatcher suppresses auto-logout for the WHOLE session —
+  /// including while the sheet is minimized to the floating bubble (cubit out of the
+  /// watcher's context). Terminal states (Initial / Ended / Error / CredentialsError /
+  /// MicPermissionDenied) clear it; every engaged state (connecting, connected,
+  /// speaking, processing, PIN, transfer, and transient disconnect/reconnect) keeps it
+  /// set so a reconnect blip never re-arms logout mid-call.
+  @override
+  void onChange(Change<VoiceSessionState> change) {
+    super.onChange(change);
+    final s = change.nextState;
+    final active = s is! VoiceSessionInitial &&
+        s is! VoiceSessionEnded &&
+        s is! VoiceSessionError &&
+        s is! VoiceSessionCredentialsError &&
+        s is! VoiceSessionMicPermissionDenied;
+    VoiceSessionActivity.setActive(active);
+  }
+
   @override
   Future<void> close() async {
+    // Definitive teardown — always release the auto-logout suppression.
+    VoiceSessionActivity.setActive(false);
     _visualFeedbackTimer?.cancel();
     _visualFeedbackTimer = null;
     _disconnectWebSocket();
@@ -1659,6 +2618,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // racing this close()); listeners on the other side guard removeListener.
     try {
       customVoiceLive.dispose();
+    } catch (_) {}
+    try {
+      await _bioRecorder.dispose();
     } catch (_) {}
     await _disposeRoomResources();
     return super.close();

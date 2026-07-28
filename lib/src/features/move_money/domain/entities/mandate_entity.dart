@@ -81,6 +81,13 @@ class MandateEntity extends Equatable {
   final String reference;
   final String? description;
 
+  /// A deposit-method switch (Direct Debit ⇄ one-time DirectPay) has been
+  /// requested but Mono hasn't confirmed it yet — render as a "Switching…" state.
+  final bool switchProcessing;
+
+  /// The method the in-flight switch is moving TO: "direct_debit" / "one_time" / "".
+  final String pendingMethod;
+
   const MandateEntity({
     required this.id,
     required this.monoMandateId,
@@ -109,6 +116,8 @@ class MandateEntity extends Equatable {
     this.cancelledAt,
     this.reference = '',
     this.description,
+    this.switchProcessing = false,
+    this.pendingMethod = '',
   });
 
   /// Whether this mandate is in a usable state for Direct Debit
@@ -131,6 +140,14 @@ class MandateEntity extends Equatable {
 
   /// Temporarily paused by the user — reinstate to use again.
   bool get isPaused => status == MandateStatus.paused;
+
+  /// A switch TO Direct Debit is awaiting Mono confirmation.
+  bool get isSwitchingToDirectDebit =>
+      switchProcessing && pendingMethod == 'direct_debit';
+
+  /// A switch TO one-time DirectPay is awaiting Mono confirmation.
+  bool get isSwitchingToOneTime =>
+      switchProcessing && pendingMethod == 'one_time';
 
   bool get isCancelled => status == MandateStatus.cancelled;
 
@@ -157,5 +174,7 @@ class MandateEntity extends Equatable {
         startDate,
         endDate,
         createdAt,
+        switchProcessing,
+        pendingMethod,
       ];
 }

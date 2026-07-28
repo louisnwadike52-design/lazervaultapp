@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_conversation_model.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/entities/connection_birthday_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/data/models/p2p_message_model.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 
 class P2PChatRemoteDatasource {
   final http.Client _client;
@@ -69,7 +71,16 @@ class P2PChatRemoteDatasource {
     _checkAuth(response);
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to get/create conversation');
+      // Surface the backend's reason (e.g. "cannot create conversation with
+      // yourself", "invalid other_user_id") instead of an opaque failure so the
+      // cubit can show an actionable message and logs are diagnosable.
+      String reason = 'Failed to get/create conversation';
+      try {
+        final body = _decodeBody(response.body);
+        final serverMsg = body['error'];
+        if (serverMsg is String && serverMsg.isNotEmpty) reason = serverMsg;
+      } catch (_) {}
+      throw Exception('$reason (HTTP ${response.statusCode})');
     }
 
     final data = _decodeBody(response.body);
@@ -121,6 +132,26 @@ class P2PChatRemoteDatasource {
     final conversations = data['conversations'] as List<dynamic>? ?? [];
     return conversations
         .map((c) => P2PConversationModel.fromJson(c as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<ConnectionBirthdayEntity>> listConnectionBirthdays(
+      String accessToken,
+      {int withinDays = 60}) async {
+    final url = '$_baseUrl/connections/birthdays?within_days=$withinDays';
+    final response = await _client
+        .get(Uri.parse(url), headers: _headers(accessToken))
+        .timeout(_timeout);
+
+    _checkAuth(response);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to list connection birthdays');
+    }
+    final data = _decodeBody(response.body);
+    final list = data['birthdays'] as List<dynamic>? ?? [];
+    return list
+        .map((b) =>
+            ConnectionBirthdayEntity.fromJson(b as Map<String, dynamic>))
         .toList();
   }
 
@@ -177,6 +208,42 @@ class P2PChatRemoteDatasource {
     }
   }
 
+  /// Archive / unarchive a conversation for THIS user only (list declutter).
+  Future<void> setArchived(
+      String conversationId, bool archived, String accessToken) async {
+    final action = archived ? 'archive' : 'unarchive';
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/conversations/$conversationId/$action'),
+          headers: _headers(accessToken),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to $action conversation');
+    }
+  }
+
+  /// Per-user "delete": hides the conversation from this user's lists only. The
+  /// conversation + messages + the other user's view remain in the DB.
+  Future<void> deleteConversationForMe(
+      String conversationId, String accessToken) async {
+    final response = await _client
+        .delete(
+          Uri.parse('$_baseUrl/conversations/$conversationId'),
+          headers: _headers(accessToken),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete conversation');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> searchUsers(
       String query, String accessToken) async {
     final response = await _client
@@ -222,9 +289,36 @@ class P2PChatRemoteDatasource {
         .toList();
   }
 
+  /// Cursor page (newest-first). [before] fetches only messages older than it.
+  Future<List<P2PMessageModel>> getMessagesPage(
+      String conversationId, String accessToken,
+      {int limit = 30, DateTime? before}) async {
+    final q = StringBuffer('$_baseUrl/conversations/$conversationId/messages?limit=$limit');
+    if (before != null) {
+      q.write('&before=${Uri.encodeComponent(before.toUtc().toIso8601String())}');
+    }
+    final response = await _client
+        .get(Uri.parse(q.toString()), headers: _headers(accessToken))
+        .timeout(_timeout);
+
+    _checkAuth(response);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to get messages');
+    }
+    final data = _decodeBody(response.body);
+    final messages = data['messages'] as List<dynamic>? ?? [];
+    return messages
+        .map((m) => P2PMessageModel.fromJson(m as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<P2PMessageModel> sendMessage(
       String conversationId, String content, String accessToken,
-      {String? clientMessageId, String? mediaUrl, String? mediaType}) async {
+      {String? clientMessageId,
+      String? mediaUrl,
+      String? mediaType,
+      String? replyToMessageId,
+      bool forwarded = false}) async {
     final response = await _client
         .post(
           Uri.parse('$_baseUrl/conversations/$conversationId/messages'),
@@ -234,6 +328,9 @@ class P2PChatRemoteDatasource {
             if (clientMessageId != null) 'client_message_id': clientMessageId,
             if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_url': mediaUrl,
             if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_type': mediaType,
+            if (replyToMessageId != null && replyToMessageId.isNotEmpty)
+              'reply_to_message_id': replyToMessageId,
+            if (forwarded) 'forwarded': true,
           }),
         )
         .timeout(_timeout);
@@ -255,13 +352,88 @@ class P2PChatRemoteDatasource {
     return P2PMessageModel.fromJson(data['message'] as Map<String, dynamic>);
   }
 
+  /// Fast AI draft-reply grounded in the conversation history (dedicated
+  /// single-LLM endpoint, no agent loop). Returns the drafted reply text.
+  Future<String> draftReply(String conversationId, String accessToken,
+      {String? targetMessageId}) async {
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/conversations/$conversationId/draft-reply'),
+          headers: _headers(accessToken),
+          body: jsonEncode({
+            if (targetMessageId != null && targetMessageId.isNotEmpty)
+              'target_message_id': targetMessageId,
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
+    _checkAuth(response);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to draft reply');
+    }
+    final data = _decodeBody(response.body);
+    return (data['reply'] ?? '').toString();
+  }
+
+  Future<P2PMessageModel> editMessage(String conversationId, String messageId,
+      String content, String accessToken) async {
+    final response = await _client
+        .patch(
+          Uri.parse('$_baseUrl/conversations/$conversationId/messages/$messageId'),
+          headers: _headers(accessToken),
+          body: jsonEncode({'content': content}),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+    if (response.statusCode == 403) {
+      final data = _decodeBody(response.body);
+      if (data['code'] == 'EDIT_WINDOW_EXPIRED') {
+        throw const HttpException('EDIT_WINDOW_EXPIRED');
+      }
+    }
+    if (response.statusCode != 200) {
+      throw Exception('Failed to edit message');
+    }
+    final data = _decodeBody(response.body);
+    return P2PMessageModel.fromJson(data['message'] as Map<String, dynamic>);
+  }
+
+  Future<List<P2PReaction>> reactToMessage(String conversationId,
+      String messageId, String emoji, String accessToken) async {
+    final response = await _client
+        .post(
+          Uri.parse(
+              '$_baseUrl/conversations/$conversationId/messages/$messageId/reactions'),
+          headers: _headers(accessToken),
+          body: jsonEncode({'emoji': emoji}),
+        )
+        .timeout(_timeout);
+
+    _checkAuth(response);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to react');
+    }
+    final data = _decodeBody(response.body);
+    final raw = data['reactions'] as List<dynamic>? ?? [];
+    return raw
+        .map((r) => P2PReaction.fromJson(r as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<void> markRead(
-      String conversationId, String messageId, String accessToken) async {
+      String conversationId, String? messageId, String accessToken) async {
+    // message_id is OPTIONAL — omit it for a conversation-level read (the
+    // backend zeroes unread_count regardless). Sending an empty/non-UUID id
+    // would 400 on the server's uuid.Parse, which is exactly what left
+    // transfer-only threads perpetually "unread".
     final response = await _client
         .post(
           Uri.parse('$_baseUrl/conversations/$conversationId/read'),
           headers: _headers(accessToken),
-          body: jsonEncode({'message_id': messageId}),
+          body: jsonEncode({
+            if (messageId != null && messageId.isNotEmpty)
+              'message_id': messageId,
+          }),
         )
         .timeout(_timeout);
 

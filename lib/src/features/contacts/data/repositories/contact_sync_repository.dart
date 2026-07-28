@@ -58,7 +58,7 @@ class ContactSyncRepository {
   /// [page] - Page number (0-indexed)
   /// [pageSize] - Number of contacts per page
   /// [searchQuery] - Optional search filter
-  /// [onlyLazervaultUsers] - If true, only returns contacts that are LazerVault users
+  /// [onlyLazervaultUsers] - If true, only returns contacts that are Lazervault users
   Future<SyncedContactsResult> getSyncedContacts({
     int page = 0,
     int pageSize = 50,
@@ -133,7 +133,7 @@ class ContactSyncRepository {
   /// [accountNumber] - Optional bank account number
   /// [bankName] - Optional bank name
   /// [sortCode] - Optional sort code
-  /// [autoDetectLazervault] - If true, tries to detect if this is a LazerVault user
+  /// [autoDetectLazervault] - If true, tries to detect if this is a Lazervault user
   Future<ConvertResult> convertContactToRecipient({
     required DeviceContact contact,
     String? accountNumber,
@@ -185,7 +185,7 @@ class ContactSyncRepository {
     }
   }
 
-  /// Finds LazerVault users from contact information
+  /// Finds Lazervault users from contact information
   ///
   /// [phoneNumbers] - List of phone numbers to match
   /// [emails] - List of email addresses to match
@@ -222,7 +222,7 @@ class ContactSyncRepository {
   ///
   /// [autoSyncEnabled] - Enable/disable automatic syncing
   /// [syncFrequency] - How often to sync
-  /// [matchWithUsers] - Whether to match contacts with LazerVault users
+  /// [matchWithUsers] - Whether to match contacts with Lazervault users
   /// [syncPhotos] - Whether to include contact photos in sync
   Future<SyncPreferencesModel> updateSyncPreferences({
     bool? autoSyncEnabled,

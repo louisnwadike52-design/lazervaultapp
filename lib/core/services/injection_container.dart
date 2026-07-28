@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:get_it/get_it.dart';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
@@ -11,6 +12,8 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
+import 'package:lazervault/src/features/notifications/data/notifications_remote_datasource.dart';
+import 'package:lazervault/src/features/notifications/presentation/cubit/notification_badge_cubit.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/src/features/p2p_chat/data/datasources/p2p_chat_remote_datasource.dart';
@@ -20,6 +23,9 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_cub
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/services/app_update_service.dart';
+import 'package:lazervault/core/services/app_patch_service.dart';
+import 'package:lazervault/src/features/app_update/cubit/app_update_cubit.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/device_service.dart';
@@ -37,6 +43,8 @@ import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
 // KYC RPCs now on AuthServiceClient — kyc.pbgrpc.dart no longer needed
 import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/passcode_reset_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/face_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/data/repositories/auth_repository.dart';
@@ -159,6 +167,7 @@ import 'package:lazervault/src/features/account_actions/presentation/cubit/accou
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
 import 'package:lazervault/src/features/currency_exchange/data/services/exchange_websocket_service.dart';
 import 'package:lazervault/src/features/currency_exchange/data/services/report_issue_service.dart';
+import 'package:lazervault/core/services/reminder_status_service.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/exchange_feature_config.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
@@ -191,7 +200,6 @@ import 'package:lazervault/src/features/presentation/views/review_funds_transfer
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
-import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_proof_screen.dart';
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
@@ -302,9 +310,6 @@ import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_re
 import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source_mock.dart';
 import 'package:lazervault/src/features/gift_cards/data/repositories/gift_card_repository_impl.dart';
 import 'package:lazervault/src/features/gift_cards/domain/repositories/i_gift_card_repository.dart';
-import 'package:lazervault/src/features/gift_cards/domain/usecases/get_gift_card_brands_usecase.dart';
-import 'package:lazervault/src/features/gift_cards/domain/usecases/purchase_gift_card_usecase.dart';
-import 'package:lazervault/src/features/gift_cards/domain/usecases/get_user_gift_cards_usecase.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
@@ -342,12 +347,13 @@ import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
 
 // Crypto Imports
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
-import 'package:lazervault/src/core/grpc/voice_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/data/datasources/crypto_remote_data_source.dart';
 import 'package:lazervault/src/features/crypto/data/repositories/crypto_repository_impl.dart';
 import 'package:lazervault/src/features/crypto/domain/repositories/crypto_repository.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
+import 'package:lazervault/src/features/rmb/data/rmb_grpc_client.dart';
+import 'package:lazervault/src/features/rmb/cubit/rmb_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart' as CryptoFeature;
@@ -358,6 +364,9 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_s
 // Crowdfund Imports
 import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as crowdfund_grpc;
 import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grpc_data_source.dart';
+import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as uplift_grpc;
+import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
+import 'package:lazervault/src/features/uplift/presentation/cubit/uplift_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/data/repositories/crowdfund_repository_impl.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_donor_rating_service.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_pdf_service.dart';
@@ -402,6 +411,9 @@ import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_c
 import 'package:lazervault/src/features/tag_pay/data/repositories/tag_pay_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/tag_pay/domain/repositories/tag_pay_repository.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
+import 'package:lazervault/src/features/escrow/data/repositories/escrow_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/escrow/domain/repositories/escrow_repository.dart';
+import 'package:lazervault/src/features/escrow/presentation/cubit/escrow_cubit.dart';
 // End Tag Pay Imports
 
 // Split Bills Imports
@@ -511,6 +523,16 @@ import 'package:lazervault/src/features/subscriptions/domain/usecases/get_subscr
 import 'package:lazervault/src/features/subscriptions/presentation/cubit/subscription_tracker_cubit.dart';
 // End Subscription Tracker Imports
 
+// ePIN (Recharge card printing) Imports
+import 'package:lazervault/src/features/epin/data/datasources/epin_remote_datasource.dart';
+import 'package:lazervault/src/features/epin/data/repositories/epin_repository_impl.dart';
+import 'package:lazervault/src/features/epin/domain/repositories/epin_repository.dart';
+import 'package:lazervault/src/features/epin/presentation/cubit/epin_cubit.dart';
+// Betting (Fund betting account) Imports
+import 'package:lazervault/src/features/betting/data/datasources/betting_remote_datasource.dart';
+import 'package:lazervault/src/features/betting/data/repositories/betting_repository_impl.dart';
+import 'package:lazervault/src/features/betting/domain/repositories/betting_repository.dart';
+import 'package:lazervault/src/features/betting/presentation/cubit/betting_cubit.dart';
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_beneficiary_remote_datasource.dart';
@@ -571,14 +593,25 @@ import 'package:lazervault/src/features/plan_my_day/data/repositories/plan_my_da
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/services/calendar_sync_service.dart';
+import 'package:lazervault/src/features/plan_my_day/email/data/email_websocket_service.dart';
+import 'package:lazervault/src/features/plan_my_day/email/data/repositories/email_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/email/presentation/cubit/email_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/contacts/data/contact_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/contacts/presentation/cubit/contact_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/notes/data/note_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/notes/presentation/note_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/habits/data/habit_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/habits/presentation/habit_cubit.dart';
 
 import 'package:lazervault/src/features/sprayme/data/datasources/sprayme_remote_datasource.dart';
 import 'package:lazervault/src/features/sprayme/data/repositories/sprayme_repository_impl.dart';
 import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_live_cubit.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_websocket_service.dart';
 import 'package:lazervault/src/features/sprayme/services/sprayme_chat_service.dart';
+import 'package:lazervault/src/features/sprayme/services/spray_lazerai_service.dart';
 
 // Insurance Imports
 import 'package:lazervault/src/features/insurance/data/datasources/insurance_remote_datasource.dart';
@@ -708,6 +741,8 @@ import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_e
 
 // Business Analytics Imports
 import 'package:lazervault/src/features/business_analytics/presentation/cubit/business_analytics_cubit.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/unified_user_search_repository.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 // End Business Analytics Imports
 
 final serviceLocator = GetIt.instance;
@@ -725,6 +760,23 @@ Future<void> init() async {
       baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent,
       client: serviceLocator<http.Client>(),
     ),
+  );
+
+  // Register App Update Service + Cubit (store version check). The service is a
+  // pure local check (cached FeatureFlags + PackageInfo); the cubit drives the
+  // dashboard update banner/modal/forced-gate. Mirrors the lazySingleton-service
+  // + factory-cubit pattern used across the app.
+  serviceLocator.registerLazySingleton<AppUpdateService>(
+    () => AppUpdateService(),
+  );
+  serviceLocator.registerFactory<AppUpdateCubit>(
+    () => AppUpdateCubit(serviceLocator<AppUpdateService>()),
+  );
+
+  // Register App Patch Service (Shorebird OTA observer). Read-only; no-ops on
+  // non-Shorebird builds. Used to nudge a restart once a Dart patch downloads.
+  serviceLocator.registerLazySingleton<AppPatchService>(
+    () => AppPatchService(),
   );
 
   // Register Transaction PIN Service
@@ -873,6 +925,19 @@ Future<void> init() async {
     instanceName: 'financialChannel',
   );
 
+  // RMB cross-border payout — routes through Financial Gateway (gRPC 50071),
+  // which proxies to rmb-service. Client is a singleton; the cubit is a factory
+  // so each landing screen gets a fresh instance.
+  serviceLocator.registerLazySingleton<RmbGrpcClient>(
+    () => RmbGrpcClient(
+      channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+  serviceLocator.registerFactory<RmbCubit>(
+    () => RmbCubit(serviceLocator<RmbGrpcClient>()),
+  );
+
   // Exchange Service Channel - routes through Financial Gateway (gRPC 50071).
   // financial-gateway/main.go owns `pb.RegisterExchangeServiceServer`;
   // exchange-service itself sits at 50081 and is reached transitively
@@ -981,6 +1046,21 @@ Future<void> init() async {
       serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
     ),
   );
+  // Uplift ("fund a business" — reverse-crowdfund) shares the products gateway.
+  serviceLocator.registerLazySingleton<uplift_grpc.UpliftServiceClient>(
+    () => uplift_grpc.UpliftServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    ),
+  );
+  serviceLocator.registerLazySingleton<UpliftRepository>(
+    () => UpliftRepository(
+      client: serviceLocator<uplift_grpc.UpliftServiceClient>(),
+      callOptions: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+  serviceLocator.registerFactory<UpliftCubit>(
+    () => UpliftCubit(serviceLocator<UpliftRepository>()),
+  );
   // Portfolio temporarily disabled
   // serviceLocator.registerLazySingleton<PortfolioServiceClient>(
   //   () => PortfolioServiceClient(serviceLocator<ClientChannel>()),
@@ -1038,6 +1118,7 @@ Future<void> init() async {
           userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
           authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
           callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          deviceService: serviceLocator<DeviceService>(),
         );
 
         // Wire up automatic token rotation callback
@@ -1099,6 +1180,19 @@ Future<void> init() async {
         accountManager: serviceLocator<AccountManager>(),
         signupStateService: serviceLocator<SignupStateService>(),
         validateReferralCode: serviceLocator<ValidateReferralCodeUseCase>(),
+      ));
+
+  // Dedicated cubit for the "Phone Number + Passcode" auth flow (signup +
+  // login). Factory so each entry into the flow gets a clean instance.
+  serviceLocator.registerFactory(() => PhonePasscodeCubit(
+        authRepository: serviceLocator<IAuthRepository>(),
+        storage: serviceLocator<FlutterSecureStorage>(),
+        signupStateService: serviceLocator<SignupStateService>(),
+      ));
+
+  // Dedicated cubit for the phone+passcode "Forgot your passcode?" reset flow.
+  serviceLocator.registerFactory(() => PasscodeResetCubit(
+        authRepository: serviceLocator<IAuthRepository>(),
       ));
 
   serviceLocator.registerFactory(() => FaceVerificationCubit(
@@ -1265,6 +1359,17 @@ Future<void> init() async {
   // simple user-text CRUD.
   serviceLocator.registerLazySingleton<ReportIssueService>(
     () => ReportIssueService(
+      dio: serviceLocator<Dio>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Authed HTTP client for pausing/resuming bill-payment reminders. Posts to
+  // commerce-gateway's /bills/reminders/{pause,resume} routes; base URL and
+  // bearer token resolve exactly like ReportIssueService (endpoint registry +
+  // GrpcCallOptionsHelper.withAuth). Shared by every reminder list screen.
+  serviceLocator.registerLazySingleton<ReminderStatusService>(
+    () => ReminderStatusService(
       dio: serviceLocator<Dio>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
@@ -1478,6 +1583,14 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => ToggleFavoriteUseCase(serviceLocator<IRecipientRepository>()));
   serviceLocator.registerLazySingleton(() => UpdateAliasUseCase(serviceLocator<IRecipientRepository>()));
   serviceLocator.registerLazySingleton(() => DeleteRecipientUseCase(serviceLocator<IRecipientRepository>()));
+
+  // Unified user search (local saved recipients incl. alias → global users).
+  serviceLocator.registerLazySingleton(() => UnifiedUserSearchRepository(
+        serviceLocator<SecureStorageService>(),
+        client: serviceLocator<http.Client>(),
+      ));
+  serviceLocator.registerFactory(() =>
+      UnifiedUserSearchCubit(serviceLocator<UnifiedUserSearchRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => RecipientCubit(
@@ -1756,7 +1869,10 @@ Future<void> init() async {
   // ================== Feature: Gift Cards ==================
 
   // Data Sources
-  // Try gRPC first, fallback to enhanced mock
+  // Try gRPC first, fallback to enhanced mock — but NEVER in release builds.
+  // The mock serves fabricated catalog/sale data; silently substituting it in
+  // production would show users fake gift cards. In release mode we rethrow so
+  // a misconfigured gRPC client fails loudly instead of faking the money flow.
   serviceLocator.registerLazySingleton<IGiftCardRemoteDataSource>(
     () {
       try {
@@ -1764,7 +1880,10 @@ Future<void> init() async {
           grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
         );
       } catch (e) {
-        print('⚠️ GrpcClient not available for gift cards, using enhanced mock');
+        if (kReleaseMode) {
+          rethrow;
+        }
+        print('⚠️ GrpcClient not available for gift cards, using enhanced mock (debug only)');
         return GiftCardRemoteDataSourceMock();
       }
     },
@@ -1777,10 +1896,9 @@ Future<void> init() async {
     ),
   );
 
-  // Use Cases
-  serviceLocator.registerLazySingleton(() => GetGiftCardBrandsUseCase(serviceLocator<IGiftCardRepository>()));
-  serviceLocator.registerLazySingleton(() => PurchaseGiftCardUseCase(serviceLocator<IGiftCardRepository>()));
-  serviceLocator.registerLazySingleton(() => GetUserGiftCardsUseCase(serviceLocator<IGiftCardRepository>()));
+  // Use cases for this feature were removed — every screen drives the
+  // GiftCardCubit directly (which wraps IGiftCardRepository), so the
+  // single-method use-case wrappers were dead DI registrations.
 
   // Blocs/Cubits
   serviceLocator.registerFactory(
@@ -2126,10 +2244,25 @@ Future<void> init() async {
     mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
+  // ================== Feature: Escrow ==================
+  // Routed via commerce-gateway (EscrowService). Buyer funds a deal into the
+  // ESCROW_POOL; seller delivers; buyer validates → release to seller.
+  serviceLocator.registerLazySingleton<EscrowRepository>(
+    () => EscrowRepositoryGrpcImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => EscrowCubit(
+        repository: serviceLocator<EscrowRepository>(),
+        grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      ));
+
   // ================== Financial Gateway GrpcClient (50071) ==================
-  // Serves: Invoice, GroupAccount, SplitBill, QRPay, IDPay, Portfolio, LockFunds
-  // This distributes load across two gateways — commerce handles bill payments
-  // and TagPay (high-volume), financial handles social finance (invoices, splits, etc.)
+  // Serves: Invoice, GroupAccount, QRPay, IDPay, Portfolio, LockFunds, GiftCards
+  // This distributes load across two gateways — commerce handles bill payments,
+  // TagPay AND SplitBill (social P2P; see the Split Bills feature below, which is
+  // registered on commerce alongside TagPay); financial handles the rest.
+  // NOTE: SplitBill is NOT on financial — it is a commerce-gateway service.
   final financialGrpcClient = GrpcClient(
     channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
     secureStorage: serviceLocator<FlutterSecureStorage>(),
@@ -2163,6 +2296,19 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<SplitBillCountCubit>(
     () => SplitBillCountCubit(
       repository: serviceLocator<SplitBillRepository>(),
+    ),
+  );
+
+  // Singleton unread-count cubit backing the dashboard notification-bell badge.
+  // Reads the authoritative `unread_count` from the same core-gateway
+  // notifications surface the feed uses; cleared when the user opens the feed.
+  serviceLocator.registerLazySingleton<NotificationBadgeCubit>(
+    () => NotificationBadgeCubit(
+      dataSource: NotificationsRemoteDataSource(
+        secureStorage: serviceLocator<SecureStorageService>(),
+        accountManager: serviceLocator<AccountManager>(),
+        localeManager: serviceLocator<LocaleManager>(),
+      ),
     ),
   );
 
@@ -2306,6 +2452,44 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => AirtimeReminderCubit(
     repository: serviceLocator<AirtimeRepository>(),
   ));
+
+  // ================== Feature: ePIN (Recharge card printing) ==================
+
+  serviceLocator.registerLazySingleton<EPinRemoteDataSource>(
+    () => EPinRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+
+  serviceLocator.registerLazySingleton<EPinRepository>(
+    () => EPinRepositoryImpl(
+      remoteDataSource: serviceLocator<EPinRemoteDataSource>(),
+    ),
+  );
+
+  serviceLocator.registerFactory(() => EPinCubit(
+        repository: serviceLocator<EPinRepository>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
+
+  // ================== Feature: Betting (Fund betting account) ==================
+
+  serviceLocator.registerLazySingleton<BettingRemoteDataSource>(
+    () => BettingRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+
+  serviceLocator.registerLazySingleton<BettingRepository>(
+    () => BettingRepositoryImpl(
+      remoteDataSource: serviceLocator<BettingRemoteDataSource>(),
+    ),
+  );
+
+  serviceLocator.registerFactory(() => BettingCubit(
+        repository: serviceLocator<BettingRepository>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
 
   // ================== Feature: International Airtime ==================
 
@@ -2619,7 +2803,6 @@ Future<void> init() async {
   ));
 
   // ================== Screens / Presentation ==================
-  // Note: ModernOnboardingScreen uses const constructor, no registration needed
   serviceLocator
       ..registerFactory(() => DashboardScreen())
       ..registerFactory(() => NewCardScreen())
@@ -2674,8 +2857,6 @@ Future<void> init() async {
           (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
       ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
           (recipient, _) => InitiateSendFundsScreen(recipient:  recipient))
-      ..registerFactoryParam<SendFundScreen, User, void>(
-          (recipient, _) => SendFundScreen(recipient: recipient))
       ..registerFactoryParam<TransferProofScreen, Map<String, dynamic>, void>(
           (transferDetails, _) => TransferProofScreen(transferDetails: transferDetails))
       ..registerFactoryParam<SendFundReceiptScreen, Transaction, void>(
@@ -2703,14 +2884,12 @@ Future<void> init() async {
 
   // ================== Feature: Voice ==================
 
-  // Voice gRPC Client - Uses Core Gateway (7878)
-  serviceLocator.registerLazySingleton<VoiceGrpcClient>(
-    () => VoiceGrpcClient(
-      channel: serviceLocator<ClientChannel>(instanceName: 'coreChannel'),
-    ),
-  );
+  // NOTE: the legacy VoiceGrpcClient (StartVoiceSessionRequest carried only
+  // serviceName+language, no account/locale) has been removed. All voice now
+  // flows through VoiceCommandSheet → VoiceSessionCubit → /voice/session/start,
+  // which passes the active account + active locale and connects to LiveKit.
 
-  // Then, register VoiceSessionCubit and inject AuthenticationCubit:
+  // Register VoiceSessionCubit and inject AuthenticationCubit:
   serviceLocator.registerLazySingleton<VoiceSessionCubit>(
     () => VoiceSessionCubit(),
   );
@@ -2732,8 +2911,6 @@ Future<void> init() async {
   // Voice Enrollment Repository - with real gRPC backend integration
   serviceLocator.registerLazySingleton<VoiceEnrollmentRepository>(
     () => VoiceEnrollmentRepositoryImpl(
-      serviceLocator<VoiceBiometricsServiceClient>(),
-      serviceLocator<GrpcCallOptionsHelper>(),
       serviceLocator<SecureStorageService>(),
     ),
   );
@@ -3472,6 +3649,8 @@ Future<void> init() async {
 
   serviceLocator.registerFactory(() => RecipientTransactionHistoryCubit(
     repository: serviceLocator<TransactionHistoryRepository>(),
+    paymentsDataSource: serviceLocator<IPaymentsTransferDataSource>(),
+    accountManager: serviceLocator<AccountManager>(),
   ));
 
   // Screens
@@ -3733,9 +3912,14 @@ Future<void> init() async {
   // Repository (lazy singleton — shared HTTP client)
   serviceLocator.registerLazySingleton<IPlanMyDayRepository>(
     () => PlanMyDayRepository(
-      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? endpointRegistry.httpPlanning,
+      // Plan My Day rides the SAME gateway as LazerSpray (lifestyle-gateway);
+      // the standalone planning-gateway was removed. Falls back to the lifestyle
+      // REST base which the tunnel routes and which does real JWKS auth.
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       accountManager: serviceLocator<AccountManager>(),
+      // Active dashboard region — planning-service scopes Plan My Day by locale.
+      localeManager: serviceLocator<LocaleManager>(),
       // Use the SHARED secure storage (AndroidOptions encryptedSharedPreferences:
       // true) the auth flow writes the token to. A default FlutterSecureStorage()
       // reads a different Android backend → "No authentication token found".
@@ -3746,16 +3930,86 @@ Future<void> init() async {
   // Calendar Sync Service (lazy singleton — shared calendar sync state)
   serviceLocator.registerLazySingleton<CalendarSyncService>(
     () => CalendarSyncService(
-      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? endpointRegistry.httpPlanning,
+      // Plan My Day rides the SAME gateway as LazerSpray (lifestyle-gateway);
+      // the standalone planning-gateway was removed. Falls back to the lifestyle
+      // REST base which the tunnel routes and which does real JWKS auth.
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       storage: serviceLocator<FlutterSecureStorage>(), // shared encrypted store
     ),
   );
 
-  // Cubit (factory — fresh instance per screen navigation)
+  // Cubit (factory — fresh instance per screen navigation). Also reads CRM
+  // contacts (read-only) so task cards can show a linked-person chip.
   serviceLocator.registerFactory<PlanMyDayCubit>(
-    () => PlanMyDayCubit(serviceLocator<IPlanMyDayRepository>()),
+    () => PlanMyDayCubit(
+      serviceLocator<IPlanMyDayRepository>(),
+      serviceLocator<ContactRepository>(),
+    ),
+  );
+
+  // ── Gmail / email integration inside Plan My Day ──────────────────────
+  // Rides the SAME lifestyle-gateway base + shared encrypted secure storage as
+  // Plan My Day. See EmailRepository (mirrors PlanMyDayRepository).
+  serviceLocator.registerLazySingleton<EmailRepository>(
+    () => EmailRepository(
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      accountManager: serviceLocator<AccountManager>(),
+      storage: serviceLocator<FlutterSecureStorage>(),
+    ),
+  );
+
+  // Realtime WS consumer (factory — one per cubit; disposed with the cubit).
+  serviceLocator.registerFactory<EmailWebSocketService>(
+    () => EmailWebSocketService(storage: serviceLocator<FlutterSecureStorage>()),
+  );
+
+  // Cubit (factory — fresh instance per email flow navigation)
+  serviceLocator.registerFactory<EmailCubit>(
+    () => EmailCubit(
+      serviceLocator<EmailRepository>(),
+      serviceLocator<EmailWebSocketService>(),
+    ),
+  );
+
+  // ── CRM contacts inside Plan My Day (People view) ─────────────────────
+  serviceLocator.registerLazySingleton<ContactRepository>(
+    () => ContactRepository(
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
+      storage: serviceLocator<FlutterSecureStorage>(),
+    ),
+  );
+  serviceLocator.registerFactory<ContactCubit>(
+    () => ContactCubit(serviceLocator<ContactRepository>()),
+  );
+
+  // ── Notes & Habits inside Plan My Day ─────────────────────────────────
+  serviceLocator.registerLazySingleton<NoteRepository>(
+    () => NoteRepository(
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
+      storage: serviceLocator<FlutterSecureStorage>(),
+    ),
+  );
+  serviceLocator.registerFactory<NoteCubit>(
+    () => NoteCubit(serviceLocator<NoteRepository>()),
+  );
+  serviceLocator.registerLazySingleton<HabitRepository>(
+    () => HabitRepository(
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
+      storage: serviceLocator<FlutterSecureStorage>(),
+    ),
+  );
+  serviceLocator.registerFactory<HabitCubit>(
+    () => HabitCubit(serviceLocator<HabitRepository>()),
   );
 
   // ================== Feature: SprayMe ==================
@@ -3769,8 +4023,19 @@ Future<void> init() async {
   // Data Source (HTTP via Dio to lifestyle-gateway, reuses lifestyle gateway URL)
   serviceLocator.registerLazySingleton<SprayMeRemoteDataSource>(
     () {
+      // The SprayMeRemoteDataSource paths already carry the `/api/v1` prefix
+      // (`/api/v1/sprayme/...`). Both LIFESTYLE_GATEWAY_URL and
+      // endpointRegistry.httpLifestyle ALSO end in `/api/v1`, so Dio would
+      // concatenate to `.../api/v1/api/v1/sprayme/...` → 404 (wallet won't
+      // load, gifting/sessions/livestream all fail). Strip a trailing `/api/v1`
+      // (+ slashes) so the final URL has exactly one — same fix as
+      // PlanMyDayRepository._normalizeBase.
+      final spraymeBase = (dotenv.env['LIFESTYLE_GATEWAY_URL'] ??
+              endpointRegistry.httpLifestyle)
+          .replaceAll(RegExp(r'/+$'), '')
+          .replaceAll(RegExp(r'/api/v1$'), '');
       final dio = Dio(BaseOptions(
-        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+        baseUrl: spraymeBase,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
       ));
@@ -3827,9 +4092,24 @@ Future<void> init() async {
     ),
   );
 
+  // LazerAI (voice agent summon + on-device wake-word) for spray lives
+  serviceLocator.registerLazySingleton<SprayLazerAiService>(
+    () => SprayLazerAiService(
+      storage: serviceLocator<SecureStorageService>(),
+    ),
+  );
+
   // Room Cubit (factory — fresh per spray room)
   serviceLocator.registerFactory<SprayRoomCubit>(
     () => SprayRoomCubit(
+      repository: serviceLocator<ISprayMeRepository>(),
+      wsService: serviceLocator<SprayMeWebSocketService>(),
+    ),
+  );
+
+  // Live-video Cubit (factory — fresh per spray room; shares the WS singleton)
+  serviceLocator.registerFactory<SprayLiveCubit>(
+    () => SprayLiveCubit(
       repository: serviceLocator<ISprayMeRepository>(),
       wsService: serviceLocator<SprayMeWebSocketService>(),
     ),
@@ -3891,6 +4171,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<P2PConversationsCubit>(
     () => P2PConversationsCubit(
       repository: serviceLocator<P2PChatRepository>(),
+      wsService: serviceLocator<P2PChatWebSocketService>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
 

@@ -186,12 +186,22 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kGiftCardBgTop,
-      body: GiftCardBackground(child: SafeArea(
+      // Opaque tap-outside-to-dismiss: the global translucent dismiss in
+      // main.dart only fires on truly empty space, so on this dense form the
+      // keyboard could linger when tapping an opaque card/padding area. An
+      // opaque wrapper here catches every body tap (children still win their
+      // own taps first), and onDrag dismisses on scroll.
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: GiftCardBackground(child: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Form(
@@ -215,7 +225,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             ),
           ],
         ),
-      )),
+      ))),
     );
   }
 
@@ -718,8 +728,15 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      // Swap-style accent panel (mirrors the crypto swap summary card): a faint
+      // purple wash over the dark surface so the price breakdown reads as the
+      // key review surface, not a flat block.
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0x1A4E03D0), Color(0xFF1F1F1F)],
+        ),
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
@@ -942,6 +959,10 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card.\n\n$priceNotice';
 
       String? verificationToken;
+
+      // Dismiss the amount-field keyboard before the PIN sheet slides up so it
+      // never lingers behind the modal.
+      FocusScope.of(context).unfocus();
 
       final success = await validateTransactionPin(
         context: context,

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:get/get.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
+import 'insurance_claim_confirmation_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class FileCreditLifeClaimScreen extends StatefulWidget {
@@ -65,14 +66,18 @@ class _FileCreditLifeClaimScreenState
       body: BlocListener<InsuranceCubit, InsuranceState>(
         listener: (context, state) {
           if (state is CreditLifeClaimFiled) {
-            Get.snackbar(
-              'Claim Filed',
-              'Claim ${state.claimNumber} submitted successfully',
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-            );
-            Get.back();
+            // Replace the fleeting snackbar + pop with a proper confirmation the
+            // user can read: claim number to reference + what happens next.
+            // Get.off replaces this form so "Done" returns to the policy view.
+            Get.off(() => InsuranceClaimConfirmationScreen(
+                  claimNumber: state.claimNumber,
+                  status: state.status,
+                  claimType: _selectedClaimType,
+                  policyNumber: widget.policyNumber,
+                  amount: _amountController.text.trim().isNotEmpty
+                      ? _amountController.text.trim()
+                      : null,
+                ));
           } else if (state is InsuranceError) {
             Get.snackbar(
               'Error',

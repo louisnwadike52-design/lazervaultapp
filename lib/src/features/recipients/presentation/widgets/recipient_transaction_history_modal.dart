@@ -5,22 +5,35 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 
+/// Inline-send handler passed by a host that already owns the send flow (e.g.
+/// the Select Recipient screen, whose route provides TransferCubit/RecipientCubit).
+/// Lets "Repeat" / "Send money" run the amount sheet OVER the existing screens
+/// instead of pushing a fresh (blank) send screen. When null, the modal falls
+/// back to [SendFundsLauncher] navigation.
+typedef InlineSendHandler = void Function(
+  RecipientModel recipient, {
+  int? amountMinor,
+  String? currency,
+});
+
 class RecipientTransactionHistoryModal extends StatefulWidget {
   final RecipientModel recipient;
+  final InlineSendHandler? onSend;
 
   const RecipientTransactionHistoryModal({
     super.key,
     required this.recipient,
+    this.onSend,
   });
 
   @override
@@ -324,11 +337,18 @@ class _RecipientTransactionHistoryModalState
               SizedBox(height: 24.h),
               ElevatedButton.icon(
                 onPressed: () {
-                  Get.back();
-                  Get.toNamed(
-                    AppRoutes.initiateSendFunds,
-                    arguments: widget.recipient,
-                  );
+                  final cb = widget.onSend;
+                  Get.back(); // close the history modal
+                  if (cb != null) {
+                    // Host owns the send flow → run it OVER the existing screens
+                    // instead of pushing a fresh (blank) send screen.
+                    cb(widget.recipient);
+                  } else {
+                    // Generic send (no prefill) — honor the user's transfer-style
+                    // choice (classic short vs standard long).
+                    SendFundsLauncher.open(
+                        recipient: widget.recipient, autoContinue: true);
+                  }
                 },
                 icon: Icon(Icons.send, size: 18.sp),
                 label: Text(
@@ -410,6 +430,7 @@ class _RecipientTransactionHistoryModalState
             transaction: tx,
             recipient: widget.recipient,
             matchingRecurring: _matchingRecurring(tx),
+            onSend: widget.onSend,
           );
         },
       ),
@@ -421,11 +442,13 @@ class _TransactionItem extends StatelessWidget {
   final UnifiedTransaction transaction;
   final RecipientModel recipient;
   final RecurringTransferEntity? matchingRecurring;
+  final InlineSendHandler? onSend;
 
   const _TransactionItem({
     required this.transaction,
     required this.recipient,
     this.matchingRecurring,
+    this.onSend,
   });
 
   @override
@@ -725,18 +748,28 @@ class _TransactionItem extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pop(ctx);
+                      Navigator.pop(ctx); // close the detail sheet
                       Get.back(); // close the history modal
-                      Get.toNamed(
-                        AppRoutes.initiateSendFunds,
-                        arguments: <String, dynamic>{
-                          'recipient': recipient,
-                          'prefillAmount': amountMinor,
-                          'prefillCurrency': transaction.currency,
-                          'autoShowConfirm': true,
-                          'checkRecurring': true,
-                        },
-                      );
+                      final cb = onSend;
+                      if (cb != null) {
+                        // Host (Select Recipient) owns the send flow → open the
+                        // amount sheet OVER the existing screens instead of
+                        // pushing a fresh (blank) send screen.
+                        cb(recipient,
+                            amountMinor: amountMinor,
+                            currency: transaction.currency);
+                      } else {
+                        // Route via the launcher so Repeat follows the user's
+                        // transfer style (short vs long) instead of always the
+                        // long form.
+                        SendFundsLauncher.open(
+                          recipient: recipient,
+                          autoContinue: true,
+                          prefillAmountMinor: amountMinor,
+                          prefillCurrency: transaction.currency,
+                          checkRecurring: true,
+                        );
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 14.h),

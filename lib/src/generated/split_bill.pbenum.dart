@@ -51,15 +51,21 @@ class SplitBillParticipantStatus extends $pb.ProtobufEnum {
       SPLIT_BILL_PARTICIPANT_STATUS_DECLINED = SplitBillParticipantStatus._(
           2, _omitEnumNames ? '' : 'SPLIT_BILL_PARTICIPANT_STATUS_DECLINED');
 
+  /// IN_PROGRESS: external-bank payout initiated, provider not yet confirmed.
+  static const SplitBillParticipantStatus
+      SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS = SplitBillParticipantStatus._(
+          3, _omitEnumNames ? '' : 'SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS');
+
   static const $core.List<SplitBillParticipantStatus> values =
       <SplitBillParticipantStatus>[
     SPLIT_BILL_PARTICIPANT_STATUS_PENDING,
     SPLIT_BILL_PARTICIPANT_STATUS_PAID,
     SPLIT_BILL_PARTICIPANT_STATUS_DECLINED,
+    SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS,
   ];
 
   static final $core.List<SplitBillParticipantStatus?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 2);
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
   static SplitBillParticipantStatus? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

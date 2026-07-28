@@ -41,7 +41,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to create IDPay'),
+          message: friendlyGrpcError(e, 'Failed to create PayID'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -58,7 +58,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to lookup IDPay'),
+          message: friendlyGrpcError(e, 'Failed to lookup PayID'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -85,7 +85,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to process IDPay payment'),
+          message: friendlyGrpcError(e, 'Failed to process PayID payment'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -108,7 +108,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to get IDPays'),
+          message: friendlyGrpcError(e, 'Failed to get PayIDs'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -131,7 +131,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to get IDPay transactions'),
+          message: friendlyGrpcError(e, 'Failed to get PayID transactions'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -148,7 +148,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return const Right(null);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to cancel IDPay'),
+          message: friendlyGrpcError(e, 'Failed to cancel PayID'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -165,7 +165,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to get IDPay details'),
+          message: friendlyGrpcError(e, 'Failed to get PayID details'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -292,7 +292,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: friendlyGrpcError(e, 'Failed to lookup IDPay'),
+          message: friendlyGrpcError(e, 'Failed to lookup PayID'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(

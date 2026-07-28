@@ -18,7 +18,6 @@ import 'package:lazervault/src/features/presentation/views/review_transfer_funds
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
-import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
@@ -124,14 +123,13 @@ class Screen {
         return ReviewFundsTransferScreen(
           recipient: param1,
         );
+      // Legacy SendFundScreen removed — these map to the real send-funds entry.
+      // (Unreached today: the only Screen.widget evaluation is over the 5
+      // dashboard tabItems, which don't include these.)
       case ScreenName.sendFunds:
-        return SendFundScreen(
-          recipient: param1,
-        );
+        return const SelectRecipientScreen();
       case ScreenName.requestFunds:
-        return SendFundScreen(
-          recipient: param1,
-        );
+        return const SelectRecipientScreen();
       case ScreenName.sendFundReceipt:
         return SendFundReceiptScreen(
           transaction: param1 as Transaction,

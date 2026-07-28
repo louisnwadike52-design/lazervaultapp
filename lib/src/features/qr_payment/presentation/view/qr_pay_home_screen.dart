@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_trans
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 
 class QRPayHomeScreen extends StatefulWidget {
   const QRPayHomeScreen({super.key});
@@ -59,8 +60,11 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _fadeController.forward();
-    _slideController.forward();
+    // Entrance slide/fade is now owned by the shared, admin-flag-gated
+    // ServiceEntranceAnimation wrapper (see build). Jump these to their end so
+    // this screen's own inline entrance doesn't double-animate on top of it.
+    _fadeController.value = 1.0;
+    _slideController.value = 1.0;
   }
 
   @override
@@ -92,7 +96,8 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
             children: [
               _buildHeader(),
               Expanded(
-                child: SlideTransition(
+                child: ServiceEntranceAnimation(
+                  child: SlideTransition(
                   position: _slideAnimation,
                   child: FadeTransition(
                     opacity: _fadeAnimation,
@@ -117,6 +122,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
                       ),
                     ),
                   ),
+                ),
                 ),
               ),
             ],

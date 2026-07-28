@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 
 /// Dio interceptor that injects JWT authorization and user context headers.
 ///
@@ -84,7 +85,19 @@ class DioAuthInterceptor extends QueuedInterceptor {
 
     options.headers['X-Service-Name'] = 'lazervault-flutter';
 
+    // Telemetry: stamp request start so onResponse/onError can measure latency.
+    options.extra['_t0'] = DateTime.now().millisecondsSinceEpoch;
+
     handler.next(options);
+  }
+
+  @override
+  Future<void> onResponse(
+    Response response,
+    ResponseInterceptorHandler handler,
+  ) async {
+    _recordTelemetry(response.requestOptions, response.statusCode);
+    handler.next(response);
   }
 
   @override
@@ -119,7 +132,54 @@ class DioAuthInterceptor extends QueuedInterceptor {
       }
     }
 
+    // Telemetry: record the failed request (response status if any, else a
+    // network/timeout "error" class).
+    _recordTelemetry(err.requestOptions, err.response?.statusCode);
+
     handler.next(err);
+  }
+
+  // Emit an http_request telemetry event with bounded labels. Best-effort.
+  void _recordTelemetry(RequestOptions options, int? statusCode) {
+    try {
+      int? latencyMs;
+      final t0 = options.extra['_t0'];
+      if (t0 is int) {
+        latencyMs = DateTime.now().millisecondsSinceEpoch - t0;
+      }
+      AnalyticsService.instance.trackHttpRequest(
+        endpointGroup: _endpointGroup(options.path),
+        statusClass: _statusClass(statusCode),
+        latencyMs: latencyMs,
+      );
+    } catch (_) {
+      // Telemetry must never affect the request path.
+    }
+  }
+
+  // Map a request path to a bounded endpoint group (collector allowlist).
+  String _endpointGroup(String path) {
+    final p = path.toLowerCase();
+    if (p.contains('/transfers/')) {
+      if (p.contains('send')) return 'transfers_send';
+      if (p.contains('fee')) return 'transfers_fee';
+      if (p.contains('recipient')) return 'transfers_recipients';
+      return 'other_api';
+    }
+    if (p.contains('/accounts')) return 'accounts';
+    if (p.contains('/auth') || p.contains('/login')) return 'auth';
+    if (p.contains('/pin')) return 'pin_verify';
+    return 'other_api';
+  }
+
+  // Map an HTTP status code to a bounded class. Null code = network/timeout.
+  String _statusClass(int? code) {
+    if (code == null) return 'error';
+    if (code >= 200 && code < 300) return '2xx';
+    if (code >= 300 && code < 400) return '3xx';
+    if (code >= 400 && code < 500) return '4xx';
+    if (code >= 500) return '5xx';
+    return 'error';
   }
 
   Future<bool> _attemptTokenRefresh() async {

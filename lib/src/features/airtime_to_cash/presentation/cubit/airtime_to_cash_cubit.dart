@@ -293,16 +293,19 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
     return checkQuota(network: network, amount: amount);
   }
 
-  /// VTU Africa service verification — aliases `verifyService`. Accepts
-  /// the richer `phoneNumber`/`amount` context the VTU-Africa-specific
-  /// screen collects so the provider can pre-scope the probe; the current
-  /// repo call only needs the network but the extra args are harmless.
+  /// VTU Africa service verification. Delegates to `verifyService`, which calls
+  /// the backend VerifyAirtimeToCashService RPC — that returns the real
+  /// destination phone (VTU's pooled number) that the transfer screen must
+  /// display. (The rich phone/amount context is accepted for parity with the
+  /// screen but the network is all the probe needs.)
   Future<void> verifyVtuafricaService({
     required String phoneNumber,
     required String network,
     required double amount,
   }) {
-    return verifyService(network);
+    // Force the vtuafrica gateway so we always get its destination phone,
+    // regardless of the admin-configured active provider.
+    return verifyService(network, provider: 'vtuafrica');
   }
 
   /// VTU Africa conversion submission. VTU Africa does NOT use the
@@ -327,11 +330,22 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
     final txnId = transactionId.isNotEmpty
         ? transactionId
         : 'A2C${DateTime.now().millisecondsSinceEpoch}';
+    // MONEY-PATH ROUTING: the backend routes an EMPTY sessionToken to the
+    // airtimetocash automation provider, and a NON-EMPTY sessionToken to
+    // vtuafrica (where the sessionToken IS the destination phone the user
+    // transferred airtime to). So for the VTU transfer flow we MUST send the
+    // destination phone as the sessionToken — otherwise the conversion is
+    // silently processed by the wrong provider and VTU never gets the
+    // destination number.
+    final effectiveSessionToken =
+        (destinationPhone != null && destinationPhone.trim().isNotEmpty)
+            ? destinationPhone.trim()
+            : sessionToken;
     return processConversion(
       phoneNumber: phoneNumber,
       network: network,
       amount: amount,
-      sessionToken: sessionToken,
+      sessionToken: effectiveSessionToken,
       sessionId: sessionId,
       pin: pin,
       transactionId: txnId,
@@ -341,11 +355,11 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
   }
 
   /// Verify service availability for the active provider.
-  Future<void> verifyService(String network) async {
+  Future<void> verifyService(String network, {String provider = ''}) async {
     try {
       _safeEmit(AirtimeToCashVerifying());
 
-      final result = await repository.verifyService(network);
+      final result = await repository.verifyService(network, provider: provider);
 
       _safeEmit(AirtimeToCashServiceVerified(
         providerName: result.providerName,

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
@@ -30,13 +29,15 @@ class SprayMeChatService {
       throw Exception('User ID not found');
     }
 
-    final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final port = dotenv.env['CHAT_AGENT_PORT'] ?? '3011';
-    // Port 443 == public tunnel; uses https. Loopback dev (port 3011) stays http.
-    final scheme = port == '443' ? 'https' : 'http';
+    // Use the SAME tunneled base the working general chat uses
+    // (endpointRegistry.httpChatAgent → https://<tunnel>), NOT a hand-built
+    // host:port. Raw port 3011 is not publicly reachable; the tunnel serves the
+    // chat-agent-gateway only via the https `/chat` path. source_context:'sprayme'
+    // is routed correctly by the gateway (DIRECT_ROUTES['sprayme'] → chat-sprayme-service).
+    final base = endpointRegistry.httpChatAgent;
 
     final response = await _dio.post(
-      '$scheme://$host:$port/chat',
+      '$base/chat',
       data: {
         'message': message,
         'session_id': sessionId,
@@ -80,13 +81,11 @@ class SprayMeChatService {
       throw Exception('User ID not found');
     }
 
-    final host = dotenv.env['CHAT_AGENT_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final port = dotenv.env['CHAT_AGENT_PORT'] ?? '3011';
-    final scheme = port == '443' ? 'https' : 'http';
+    final base = endpointRegistry.httpChatAgent;
 
     try {
       final response = await _dio.get(
-        '$scheme://$host:$port/chat/history',
+        '$base/chat/history',
         queryParameters: {
           'user_id': userId,
           'session_id': sessionId,

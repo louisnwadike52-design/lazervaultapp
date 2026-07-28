@@ -131,6 +131,8 @@ class ProveKycHttpService {
     required String phone,
     String idType = 'bvn',
     String email = '',
+    // Advisory only. The Mono Prove billing level is pinned server-side by an
+    // admin setting (kyc.mono.prove_level, default tier_1); this does not select it.
     String tier = 'tier_1',
   }) async {
     final body = jsonEncode({

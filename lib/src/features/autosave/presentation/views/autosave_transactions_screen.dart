@@ -909,6 +909,8 @@ class _TransactionTile extends StatelessWidget {
         return const Color(0xFFFB923C);
       case TriggerType.externalInflow:
         return const Color(0xFFF97316);
+      case TriggerType.scheduledExternal:
+        return const Color(0xFF14B8A6);
       default:
         return const Color(0xFF6B7280);
     }
@@ -924,6 +926,8 @@ class _TransactionTile extends StatelessWidget {
         return Icons.unfold_more;
       case TriggerType.externalInflow:
         return Icons.account_balance;
+      case TriggerType.scheduledExternal:
+        return Icons.account_balance_wallet;
       default:
         return Icons.help_outline;
     }
@@ -939,6 +943,8 @@ class _TransactionTile extends StatelessWidget {
         return 'ROUND-UP';
       case TriggerType.externalInflow:
         return 'BANK INFLOW';
+      case TriggerType.scheduledExternal:
+        return 'STANDING ORDER';
       default:
         return 'OTHER';
     }
@@ -1267,6 +1273,8 @@ class _TransactionDetailsSheet extends StatelessWidget {
         return 'Round-up';
       case TriggerType.externalInflow:
         return 'Bank inflow';
+      case TriggerType.scheduledExternal:
+        return 'Standing order';
       default:
         return 'Other';
     }

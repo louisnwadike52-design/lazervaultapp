@@ -9,8 +9,8 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/price_point.dart';
-import '../../domain/entities/crypto_entity.dart' show CryptoHolding;
 import '../widgets/asset_wallet_sheet.dart';
+import '../widgets/asset_network_badge.dart';
 import 'buy_crypto_sheet.dart';
 import 'sell_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -40,19 +40,50 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   final List<String> _timeframes = ['1D', '7D', '30D', '90D', '1Y', 'ALL'];
   String _selectedTimeframe = '1D';
   bool _isInWatchlist = false;
+  bool _savingWatchlist = false;
 
   @override
   void initState() {
     super.initState();
-    // Hydrate the bookmark state from the crypto entity the caller passed
-    // in — otherwise the icon always renders empty on first frame even
-    // when the asset is already in the user's watchlist. The cubit
-    // refreshes this when CryptosLoaded re-emits (the BlocBuilder below
-    // listens), but we still need a sane initial value for this frame.
+    // Hydrate the bookmark state from the crypto entity the caller passed in
+    // (its isFavorite reflects watchlist membership at tap time) — otherwise
+    // the icon would render empty on first frame even for an already-saved
+    // asset. After this, the flag is driven authoritatively by the return
+    // value of toggleFavorite() on tap.
     _isInWatchlist = widget.crypto.isFavorite;
     _setupAnimations();
     _setupTabController();
     _loadCryptoDetails();
+    // Real-time: refetch THIS user's fresh holding/balance for the asset on
+    // open, so the Portfolio section isn't the (possibly stale) landing
+    // snapshot. Lightweight + non-blocking (no-op if not logged in).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<CryptoCubit>().refreshHoldingsLive();
+    });
+  }
+
+  /// Freshest data for this asset: the detail screen re-fetches full market
+  /// data (getCryptoById) on open + on timeframe change, so prefer that over
+  /// the entity passed from the landing (which would be stale). Uses watch()
+  /// so the stats + header price update the instant the fresh fetch lands.
+  Crypto get _crypto {
+    final s = context.watch<CryptoCubit>().state;
+    if (s is CryptoDetailsLoaded && s.crypto.id == widget.crypto.id) {
+      return s.crypto;
+    }
+    return widget.crypto;
+  }
+
+  /// Same freshest-crypto lookup as [_crypto] but with read() instead of
+  /// watch(), so it is safe to call from event handlers (onTap, etc.). Calling
+  /// [_crypto] (watch) outside build throws and silently swallows the tap —
+  /// which is why the "Show wallet" button stopped opening the sheet.
+  Crypto get _cryptoRead {
+    final s = context.read<CryptoCubit>().state;
+    if (s is CryptoDetailsLoaded && s.crypto.id == widget.crypto.id) {
+      return s.crypto;
+    }
+    return widget.crypto;
   }
 
   void _setupAnimations() {
@@ -174,12 +205,48 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             ),
             Spacer(),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                if (_savingWatchlist) return; // ignore rapid double-taps
+                final previous = _isInWatchlist;
                 setState(() {
-                  _isInWatchlist = !_isInWatchlist;
+                  _isInWatchlist = !previous; // optimistic
+                  _savingWatchlist = true;
                 });
-                // Persist to backend
-                context.read<CryptoCubit>().toggleFavorite(widget.crypto.id);
+                try {
+                  // Returns the AUTHORITATIVE new membership. toggleFavorite is
+                  // state-independent, so it persists even though the detail
+                  // screen's cubit state is CryptoDetailsLoaded (which the old
+                  // guard silently rejected).
+                  final nowSaved = await context
+                      .read<CryptoCubit>()
+                      .toggleFavorite(widget.crypto.id);
+                  if (!mounted) return;
+                  setState(() {
+                    _isInWatchlist = nowSaved;
+                    _savingWatchlist = false;
+                  });
+                  Get.snackbar(
+                    nowSaved ? 'Added to watchlist' : 'Removed from watchlist',
+                    nowSaved
+                        ? '${widget.crypto.name} is now in your watchlist'
+                        : '${widget.crypto.name} was removed from your watchlist',
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2),
+                  );
+                } catch (_) {
+                  if (!mounted) return;
+                  setState(() {
+                    _isInWatchlist = previous; // revert
+                    _savingWatchlist = false;
+                  });
+                  Get.snackbar(
+                    "Couldn't update watchlist",
+                    'Please try again',
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: Colors.white,
+                  );
+                }
               },
               child: Container(
                 padding: EdgeInsets.all(8.w),
@@ -266,8 +333,9 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               ),
               _buildActionButtons(),
               SizedBox(height: 8.h),
-              _buildKeyDataPoints(),
-              _buildMarketStats(),
+              // Key data points + market statistics now live on the Stats tab
+              // (see _buildStatsTab) to keep Overview focused on price, chart,
+              // actions, holdings and the project description.
               _buildPortfolioSection(),
               _buildAboutSection(),
               SizedBox(height: 24.h),
@@ -279,11 +347,17 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   Widget _buildStatsTab() {
+    // The stats tab is the single home for all the numbers: today's trading
+    // figures (Key data points), valuation & supply (Market statistics), and
+    // multi-timeframe price performance. Overview stays focused on price +
+    // chart + actions.
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
       child: Column(
         children: [
-          _buildMarketStatsSection(),
+          _buildKeyDataPoints(),
+          SizedBox(height: 16.h),
+          _buildMarketStats(),
           SizedBox(height: 16.h),
           _buildPerformanceSection(),
         ],
@@ -361,6 +435,15 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                         fontSize: 14.sp,
                       ),
                     ),
+                    // Active network for this asset (Quidax unified balance;
+                    // the network is address/routing only). Self-resolving,
+                    // shimmers while loading, renders nothing when not held.
+                    SizedBox(height: 8.h),
+                    AssetNetworkBadge(
+                      symbol: widget.crypto.symbol,
+                      compact: true,
+                      onGradient: true,
+                    ),
                   ],
                 ),
               ),
@@ -371,14 +454,20 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => showAssetWalletSheet(
-                    context,
-                    cryptoSymbol: widget.crypto.symbol,
-                    cryptoName: widget.crypto.name,
-                    currentPrice: widget.crypto.currentPrice,
-                    priceChange24hPct: widget.crypto.priceChangePercentage24h,
-                    imageUrl: widget.crypto.image,
-                  ),
+                  onTap: () {
+                    // Use the read()-based lookup: _crypto uses watch() which
+                    // throws when evaluated inside a tap handler (outside build)
+                    // and swallows the tap so the sheet never opens.
+                    final c = _cryptoRead;
+                    showAssetWalletSheet(
+                      context,
+                      cryptoSymbol: widget.crypto.symbol,
+                      cryptoName: widget.crypto.name,
+                      currentPrice: c.currentPrice,
+                      priceChange24hPct: c.priceChangePercentage24h,
+                      imageUrl: widget.crypto.image,
+                    );
+                  },
                   borderRadius: BorderRadius.circular(14.r),
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -436,7 +525,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           ),
           SizedBox(height: 16.h),
           Text(
-            '${CurrencySymbols.currentSymbol}${widget.crypto.currentPrice.toStringAsFixed(2)}',
+            '${CurrencySymbols.currentSymbol}${_crypto.currentPrice.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,
@@ -447,22 +536,22 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           Row(
             children: [
               Icon(
-                widget.crypto.priceChangePercentage24h >= 0 ? Icons.trending_up : Icons.trending_down,
-                color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
+                _crypto.priceChangePercentage24h >= 0 ? Icons.trending_up : Icons.trending_down,
+                color: _crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
                 size: 20.sp,
               ),
               SizedBox(width: 4.w),
               Text(
-                '${widget.crypto.priceChangePercentage24h >= 0 ? '+' : ''}${widget.crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
+                '${_crypto.priceChangePercentage24h >= 0 ? '+' : ''}${_crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
                 style: GoogleFonts.inter(
-                  color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
+                  color: _crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               SizedBox(width: 8.w),
               Text(
-                '(${CurrencySymbols.currentSymbol}${widget.crypto.priceChange24h.toStringAsFixed(2)})',
+                '(${CurrencySymbols.currentSymbol}${_crypto.priceChange24h.toStringAsFixed(2)})',
                 style: GoogleFonts.inter(
                   color: Colors.grey[400],
                   fontSize: 14.sp,
@@ -863,38 +952,81 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
 
   Widget _buildMarketStats() {
     final sym = CurrencySymbols.currentSymbol;
+    final coin = _crypto.symbol.toUpperCase();
     return _statsCard(
       headerIcon: Icons.account_balance_rounded,
       title: 'Market statistics',
-      subtitle: 'Snapshot of supply & liquidity',
+      subtitle: 'Valuation, supply & liquidity',
       children: [
         _statTile(
           icon: Icons.pie_chart_rounded,
           label: 'Market cap',
-          value: widget.crypto.marketCap > 0
-              ? '$sym${_formatLargeNumber(widget.crypto.marketCap)}'
-              : '—',
+          // _formatLargeNumber already prepends the currency symbol.
+          value: _crypto.marketCap > 0
+              ? _formatLargeNumber(_crypto.marketCap)
+              : '-',
         ),
+        if (_crypto.marketCapChangePercentage24h != null)
+          _statTile(
+            icon: Icons.stacked_line_chart_rounded,
+            iconTint: _crypto.marketCapChangePercentage24h! >= 0
+                ? const Color(0xFF10B981)
+                : const Color(0xFFEF4444),
+            label: 'Market cap 24h',
+            value: _signedPct(_crypto.marketCapChangePercentage24h!),
+          ),
+        if (_crypto.fullyDilutedValuation != null &&
+            _crypto.fullyDilutedValuation! > 0)
+          _statTile(
+            icon: Icons.account_tree_rounded,
+            label: 'Fully diluted cap',
+            value: _formatLargeNumber(_crypto.fullyDilutedValuation!),
+          ),
         _statTile(
           icon: Icons.show_chart_rounded,
           label: '24h volume',
-          value: widget.crypto.totalVolume > 0
-              ? '$sym${_formatLargeNumber(widget.crypto.totalVolume)}'
-              : '—',
+          value: _crypto.totalVolume > 0
+              ? _formatLargeNumber(_crypto.totalVolume)
+              : '-',
         ),
         _statTile(
           icon: Icons.donut_small_rounded,
           label: 'Circulating supply',
-          value: widget.crypto.circulatingSupply > 0
-              ? _formatLargeNumber(widget.crypto.circulatingSupply)
-              : '—',
+          // Supply is a coin COUNT, not a fiat amount — no currency symbol.
+          value: _crypto.circulatingSupply > 0
+              ? '${_formatCountCompact(_crypto.circulatingSupply)} $coin'
+              : '-',
         ),
-        if (widget.crypto.ath != null)
+        if (_crypto.totalSupply != null && _crypto.totalSupply! > 0)
+          _statTile(
+            icon: Icons.inventory_2_rounded,
+            label: 'Total supply',
+            value: '${_formatCountCompact(_crypto.totalSupply!)} $coin',
+          ),
+        _statTile(
+          icon: Icons.all_inclusive_rounded,
+          label: 'Max supply',
+          value: (_crypto.maxSupply != null && _crypto.maxSupply! > 0)
+              ? '${_formatCountCompact(_crypto.maxSupply!)} $coin'
+              : 'Unlimited',
+        ),
+        if (_crypto.ath != null)
           _statTile(
             icon: Icons.trending_up_rounded,
             iconTint: const Color(0xFF10B981),
             label: 'All-time high',
-            value: '$sym${widget.crypto.ath!.toStringAsFixed(2)}',
+            value: _crypto.athChangePercentage != null
+                ? '$sym${_crypto.ath!.toStringAsFixed(2)}  (${_signedPct(_crypto.athChangePercentage!)})'
+                : '$sym${_crypto.ath!.toStringAsFixed(2)}',
+          ),
+        if (_crypto.atl != null)
+          _statTile(
+            icon: Icons.trending_down_rounded,
+            iconTint: const Color(0xFFEF4444),
+            label: 'All-time low',
+            value: _crypto.atlChangePercentage != null
+                ? '$sym${_crypto.atl!.toStringAsFixed(2)}  (${_signedPct(_crypto.atlChangePercentage!)})'
+                : '$sym${_crypto.atl!.toStringAsFixed(2)}',
           ),
       ],
     );
@@ -902,50 +1034,66 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
 
   Widget _buildKeyDataPoints() {
     final sym = CurrencySymbols.currentSymbol;
+    final chg = _crypto.priceChangePercentage24h;
     return _statsCard(
       headerIcon: Icons.bar_chart_rounded,
       title: 'Key data points',
-      subtitle: 'The numbers that matter today',
+      subtitle: "Today's trading snapshot",
       children: [
+        _statTile(
+          icon: Icons.sell_rounded,
+          iconTint: _accent,
+          label: 'Current price',
+          value: '$sym${_crypto.currentPrice.toStringAsFixed(2)}',
+        ),
+        _statTile(
+          icon: chg >= 0
+              ? Icons.trending_up_rounded
+              : Icons.trending_down_rounded,
+          iconTint: chg >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+          label: '24h change',
+          value: _crypto.priceChange24h != 0
+              ? '${_signedPct(chg)}  (${chg >= 0 ? '+' : '-'}$sym${_crypto.priceChange24h.abs().toStringAsFixed(2)})'
+              : _signedPct(chg),
+        ),
         _statTile(
           icon: Icons.arrow_upward_rounded,
           iconTint: const Color(0xFF10B981),
           label: '24h high',
-          value: widget.crypto.high24h > 0
-              ? '$sym${widget.crypto.high24h.toStringAsFixed(2)}'
-              : '—',
+          value: _crypto.high24h > 0
+              ? '$sym${_crypto.high24h.toStringAsFixed(2)}'
+              : '-',
         ),
         _statTile(
           icon: Icons.arrow_downward_rounded,
           iconTint: const Color(0xFFEF4444),
           label: '24h low',
-          value: widget.crypto.low24h > 0
-              ? '$sym${widget.crypto.low24h.toStringAsFixed(2)}'
-              : '—',
+          value: _crypto.low24h > 0
+              ? '$sym${_crypto.low24h.toStringAsFixed(2)}'
+              : '-',
         ),
-        if (widget.crypto.marketCapRank > 0)
+        if (_crypto.marketCapRank > 0)
           _statTile(
             icon: Icons.workspace_premium_rounded,
             iconTint: _accent,
             label: 'Market cap rank',
-            value: '#${widget.crypto.marketCapRank}',
-          ),
-        if (widget.crypto.ath != null)
-          _statTile(
-            icon: Icons.flag_rounded,
-            iconTint: const Color(0xFF10B981),
-            label: 'All-time high',
-            value: '$sym${widget.crypto.ath!.toStringAsFixed(2)}',
-          ),
-        if (widget.crypto.atl != null)
-          _statTile(
-            icon: Icons.outlined_flag_rounded,
-            iconTint: const Color(0xFFEF4444),
-            label: 'All-time low',
-            value: '$sym${widget.crypto.atl!.toStringAsFixed(2)}',
+            value: '#${_crypto.marketCapRank}',
           ),
       ],
     );
+  }
+
+  /// Signed percentage for stat values, e.g. `+1.23%` / `-4.56%`.
+  String _signedPct(double v) => '${v >= 0 ? '+' : ''}${v.toStringAsFixed(2)}%';
+
+  /// Compact large-number formatter WITHOUT a currency symbol — for coin
+  /// counts like circulating/total/max supply (which are not fiat amounts).
+  String _formatCountCompact(double n) {
+    if (n >= 1e12) return '${(n / 1e12).toStringAsFixed(2)}T';
+    if (n >= 1e9) return '${(n / 1e9).toStringAsFixed(2)}B';
+    if (n >= 1e6) return '${(n / 1e6).toStringAsFixed(2)}M';
+    if (n >= 1e3) return '${(n / 1e3).toStringAsFixed(2)}K';
+    return n.toStringAsFixed(2);
   }
 
   Widget _buildPortfolioSection() {
@@ -1225,84 +1373,6 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildMarketStatsSection() {
-    final sym = CurrencySymbols.currentSymbol;
-    final low24 = widget.crypto.low24h;
-    final high24 = widget.crypto.high24h;
-    return _statsCard(
-      headerIcon: Icons.insights_rounded,
-      title: 'Key data points',
-      subtitle: '24h market snapshot',
-      children: [
-        _statTile(
-          icon: Icons.show_chart_rounded,
-          label: 'Volume',
-          value: _formatLargeNumber(widget.crypto.totalVolume),
-        ),
-        _statTile(
-          icon: Icons.swap_vert_rounded,
-          label: "Day's range",
-          stackValue: true,
-          // Stacked under the label so the low → high pair always
-          // fits, even on narrow widths and when one side jumps a
-          // digit count vs the other.
-          valueWidget: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  low24 > 0 ? '$sym${low24.toStringAsFixed(2)}' : '—',
-                  style: GoogleFonts.robotoMono(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(width: 6.w),
-              Icon(Icons.arrow_forward_rounded,
-                  color: Colors.white.withValues(alpha: 0.5), size: 12.sp),
-              SizedBox(width: 6.w),
-              Flexible(
-                child: Text(
-                  high24 > 0 ? '$sym${high24.toStringAsFixed(2)}' : '—',
-                  style: GoogleFonts.robotoMono(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (widget.crypto.ath != null)
-          _statTile(
-            icon: Icons.trending_up_rounded,
-            iconTint: const Color(0xFF10B981),
-            label: 'All-time high',
-            value: '$sym${widget.crypto.ath!.toStringAsFixed(2)}',
-          ),
-        if (widget.crypto.atl != null)
-          _statTile(
-            icon: Icons.trending_down_rounded,
-            iconTint: const Color(0xFFEF4444),
-            label: 'All-time low',
-            value: '$sym${widget.crypto.atl!.toStringAsFixed(2)}',
-          ),
-        if (widget.crypto.marketCapRank > 0)
-          _statTile(
-            icon: Icons.workspace_premium_rounded,
-            iconTint: _accent,
-            label: 'Market cap rank',
-            value: '#${widget.crypto.marketCapRank}',
-          ),
-      ],
-    );
-  }
-
   // Single row in a stats card. Pass either `value` (string) for simple
   // text, or `valueWidget` for richer content (e.g. the Day's Range mini
   // row). Icons get a 28pt tinted chip on the left — the joint-funds
@@ -1353,7 +1423,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                     alignment: Alignment.centerLeft,
                     child: valueWidget ??
                         Text(
-                          value ?? '—',
+                          value ?? '-',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 14.sp,
@@ -1400,7 +1470,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               alignment: Alignment.centerRight,
               child: valueWidget ??
                   Text(
-                    value ?? '—',
+                    value ?? '-',
                     textAlign: TextAlign.right,
                     style: GoogleFonts.inter(
                       color: Colors.white,
@@ -1432,10 +1502,10 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
 
   Widget _buildPerformanceSection() {
     final entries = <MapEntry<String, double?>>[
-      MapEntry('24 hours', widget.crypto.priceChangePercentage24h),
-      MapEntry('7 days', widget.crypto.priceChangePercentage7d),
-      MapEntry('30 days', widget.crypto.priceChangePercentage30d),
-      MapEntry('1 year', widget.crypto.priceChangePercentage1y),
+      MapEntry('24 hours', _crypto.priceChangePercentage24h),
+      MapEntry('7 days', _crypto.priceChangePercentage7d),
+      MapEntry('30 days', _crypto.priceChangePercentage30d),
+      MapEntry('1 year', _crypto.priceChangePercentage1y),
     ];
     return _statsCard(
       headerIcon: Icons.timeline_rounded,
@@ -1552,11 +1622,11 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   Widget _buildAboutSection() {
-    final hasRank = widget.crypto.marketCapRank > 0;
+    final hasRank = _crypto.marketCapRank > 0;
     final desc = hasRank
         ? 'Trade ${widget.crypto.name} (${widget.crypto.symbol.toUpperCase()}) '
             'securely through Lazervault with our SEC-licensed partner Quidax. '
-            '${widget.crypto.name} is ranked #${widget.crypto.marketCapRank} '
+            '${widget.crypto.name} is ranked #${_crypto.marketCapRank} '
             'by market capitalisation.'
         : 'Trade ${widget.crypto.name} (${widget.crypto.symbol.toUpperCase()}) '
             'securely through Lazervault with our SEC-licensed partner Quidax.';
@@ -1589,7 +1659,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             ),
             if (hasRank)
               _buildAboutChip(
-                label: 'Rank #${widget.crypto.marketCapRank}',
+                label: 'Rank #${_crypto.marketCapRank}',
                 icon: Icons.workspace_premium_rounded,
               ),
             _buildAboutChip(

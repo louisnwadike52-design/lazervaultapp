@@ -13,6 +13,8 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../widgets/asset_wallet_sheet.dart';
+import '../widgets/asset_network_badge.dart';
+import '../widgets/network_picker_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -57,6 +59,18 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       } catch (_) {}
     }
     return (bps ?? 150) / 10000.0;
+  }
+
+  /// Estimated Lazervault sell fee honoring the admin's percentage/fixed config
+  /// (crypto.fee.sell.*). Falls back to the flat display rate before config loads.
+  double _resolveFee() {
+    try {
+      return GetIt.I<CryptoConfigCubit>()
+          .config
+          .feeForOp('sell', _fiatAmount, CurrencySymbols.currentCurrency);
+    } catch (_) {
+      return _fiatAmount * _feeDisplayRate();
+    }
   }
 
   @override
@@ -123,6 +137,30 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       return amount * _selectedHolding!.currentPrice;
     }
     return amount;
+  }
+
+  String _trimNum(double v) {
+    if (!v.isFinite) return '';
+    var s = v.toStringAsFixed(6);
+    if (s.contains('.')) {
+      s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    }
+    return s;
+  }
+
+  /// Flip the amount unit AND convert the entered value so the underlying
+  /// value doesn't silently change meaning on toggle.
+  void _toggleAmountUnit() {
+    final fiat = _fiatAmount; // fiat value in the CURRENT mode
+    final rate = _selectedHolding?.currentPrice ?? 0.0;
+    setState(() {
+      _isAmountInCrypto = !_isAmountInCrypto;
+      if (fiat > 0 && rate > 0) {
+        _amountController.text = _isAmountInCrypto
+            ? _trimNum(fiat / rate)
+            : fiat.toStringAsFixed(2);
+      }
+    });
   }
 
   bool get _hasValidAmount {
@@ -509,7 +547,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               ),
               if (_selectedHolding != null)
                 GestureDetector(
-                  onTap: () => setState(() => _isAmountInCrypto = !_isAmountInCrypto),
+                  onTap: _toggleAmountUnit,
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
@@ -552,6 +590,21 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 ),
             ],
           ),
+          // Active network for the held asset (display only; the Quidax
+          // balance is the same on every chain). heldHint forces it to
+          // show since this screen renders from a holding.
+          if (_selectedHolding != null) ...[
+            SizedBox(height: 12.h),
+            AssetNetworkBadge(
+              symbol: _selectedHolding!.cryptoSymbol,
+              heldHint: true,
+              compact: true,
+              onTap: () => showNetworkPickerForAsset(
+                context,
+                symbol: _selectedHolding!.cryptoSymbol,
+              ),
+            ),
+          ],
           SizedBox(height: 20.h),
           Container(
             padding: EdgeInsets.all(16.w),
@@ -565,7 +618,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
+
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,7 +746,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   Widget _buildOrderSummary() {
     // Display estimate; authoritative fee comes from server swap-quote
     // response. Rate sourced from CryptoConfigCubit (PR5d.4).
-    final fee = _fiatAmount * _feeDisplayRate();
+    final fee = _resolveFee();
     final networkFee = fee * 0.3;
     final tradingFee = fee * 0.7;
     final netProceeds = _fiatAmount - fee;
@@ -1331,7 +1384,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     // spread is computed server-side from system_settings.crypto.spread.*
     // basis points and applied during the swap-quotation flow. The display
     // rate here comes from CryptoConfigCubit (PR5d.4).
-    final fee = _fiatAmount * _feeDisplayRate();
+    final fee = _resolveFee();
     final netProceeds = _fiatAmount - fee;
     final quantity = _cryptoAmount;
 

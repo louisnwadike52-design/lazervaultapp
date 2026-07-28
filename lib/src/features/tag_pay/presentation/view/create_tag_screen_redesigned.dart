@@ -7,6 +7,7 @@ import '../../domain/entities/user_search_result_entity.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 class CreateTagScreenRedesigned extends StatefulWidget {
   const CreateTagScreenRedesigned({super.key});
@@ -83,6 +84,15 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
     setState(() {
       _selectedUsers.add(user);
     });
+  }
+
+  /// Opens the shared unified search (saved contacts incl. alias → global),
+  /// then toggles the picked user into the selection. Reopen to add more.
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Add people');
+    if (result == null || !mounted) return;
+    _toggleUser(result.toUserSearchResultEntity());
   }
 
   void _goToAmountScreen() {
@@ -244,12 +254,14 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
           ),
           child: TextField(
             controller: _searchController,
+            readOnly: true,
+            onTap: _openUnifiedSearch,
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
             ),
             decoration: InputDecoration(
-              hintText: 'Search by @username or name',
+              hintText: 'Search people to add',
               hintStyle: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 16.sp,

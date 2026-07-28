@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:uuid/uuid.dart';
 
 // CryptoWithdrawCubit (PR6) — drives the Send screen end-to-end. States
@@ -86,6 +87,8 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
     String transactionNote = '',
     String narration = '',
     String transactionPin = '',
+    String recipientUserId = '',
+    String recipientUsername = '',
   }) async {
     emit(const CryptoWithdrawSubmitting());
 
@@ -108,6 +111,8 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
         transactionNote: transactionNote,
         narration: narration,
         transactionPin: transactionPin,
+        recipientUserId: recipientUserId,
+        recipientUsername: recipientUsername,
       );
 
       final terminalDone = _isTerminalDone(resp.status);
@@ -177,6 +182,7 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
   }
 
   static String _friendlyError(Object e) {
+    if (isFrozenAccountError(e)) return frozenAccountMessage;
     final s = e.toString();
     if (s.contains('insufficient_funds')) return 'Insufficient balance for this send.';
     if (s.contains('min_order')) return 'Amount is below the minimum send for this currency.';
@@ -185,6 +191,17 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
     if (s.contains('user_not_provisioned')) {
       return 'Your crypto wallet is still being set up. Try again in a minute.';
     }
-    return 'Send failed: ${s.length > 120 ? "${s.substring(0, 120)}..." : s}';
+    // User-to-user send edge cases (backend maps these to InvalidArgument /
+    // FailedPrecondition with clear messages).
+    if (s.contains('yourself')) return "You can't send crypto to yourself.";
+    if (s.contains("recipient isn't set up") ||
+        s.contains('recipient_not_provisioned')) {
+      return 'The recipient isn’t set up to receive crypto yet.';
+    }
+    // Fallback: NEVER dump the raw gRPC/exception string. Route through the
+    // shared sanitizer — clean validation messages (e.g. "minimum send is 0.9
+    // USDT") pass through; technical text (distlock, INTERNAL, transport dumps)
+    // collapses to a generic line.
+    return friendlyError(e, context: 'complete your send');
   }
 }

@@ -42,9 +42,9 @@ class TaggedInvoiceModel extends TaggedInvoice {
       description: json['description'] as String,
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String) : null,
-      paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String) : null,
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String).toLocal() : null,
+      paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String).toLocal() : null,
       paymentStatus: PaymentStatus.values.firstWhere(
         (status) => status.name == json['payment_status'],
         orElse: () => PaymentStatus.pending,

@@ -8,6 +8,12 @@ class CurrencyTransaction {
   final double toAmount;
   final double exchangeRate;
   final double fees;
+
+  /// Fee breakdown (major units of [fromCurrency]). [fees] stays the
+  /// composite total; these split it into the provider's charge and
+  /// Lazervault's explicit service fee for receipt display.
+  final double providerFee;
+  final double serviceFee;
   final double totalCost;
   final Recipient recipient;
   final TransactionStatus status;
@@ -27,6 +33,8 @@ class CurrencyTransaction {
     required this.toAmount,
     required this.exchangeRate,
     required this.fees,
+    this.providerFee = 0,
+    this.serviceFee = 0,
     required this.totalCost,
     required this.recipient,
     required this.status,
@@ -48,14 +56,16 @@ class CurrencyTransaction {
       toAmount: (json['toAmount'] ?? 0.0).toDouble(),
       exchangeRate: (json['exchangeRate'] ?? 0.0).toDouble(),
       fees: (json['fees'] ?? 0.0).toDouble(),
+      providerFee: (json['providerFee'] ?? 0.0).toDouble(),
+      serviceFee: (json['serviceFee'] ?? 0.0).toDouble(),
       totalCost: (json['totalCost'] ?? 0.0).toDouble(),
       recipient: Recipient.fromJson(json['recipient'] ?? {}),
       status: TransactionStatus.values.firstWhere(
         (e) => e.toString() == 'TransactionStatus.${json['status']}',
         orElse: () => TransactionStatus.pending,
       ),
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      completedAt: json['completedAt'] != null ? DateTime.tryParse(json['completedAt']) : null,
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '')?.toLocal() ?? DateTime.now(),
+      completedAt: json['completedAt'] != null ? DateTime.tryParse(json['completedAt'])?.toLocal() : null,
       transactionHash: json['transactionHash'],
       referenceNumber: json['referenceNumber'],
       notes: json['notes'],
@@ -76,6 +86,8 @@ class CurrencyTransaction {
       'toAmount': toAmount,
       'exchangeRate': exchangeRate,
       'fees': fees,
+      'providerFee': providerFee,
+      'serviceFee': serviceFee,
       'totalCost': totalCost,
       'recipient': recipient.toJson(),
       'status': status.toString().split('.').last,
@@ -97,6 +109,8 @@ class CurrencyTransaction {
     double? toAmount,
     double? exchangeRate,
     double? fees,
+    double? providerFee,
+    double? serviceFee,
     double? totalCost,
     Recipient? recipient,
     TransactionStatus? status,
@@ -116,6 +130,8 @@ class CurrencyTransaction {
       toAmount: toAmount ?? this.toAmount,
       exchangeRate: exchangeRate ?? this.exchangeRate,
       fees: fees ?? this.fees,
+      providerFee: providerFee ?? this.providerFee,
+      serviceFee: serviceFee ?? this.serviceFee,
       totalCost: totalCost ?? this.totalCost,
       recipient: recipient ?? this.recipient,
       status: status ?? this.status,
@@ -209,4 +225,33 @@ extension TransactionTypeModeMatch on TransactionType {
   bool get isInternationalLike =>
       this == TransactionType.exchangeInternational ||
       this == TransactionType.send;
+}
+// Daily FX limits for the current user, resolved from GetExchangeLimits. All
+// amounts are in MAJOR units of [currency] (the source wallet currency the
+// limit is tracked against). dailyLimit == 0 means unlimited.
+class ExchangeLimits {
+  final int kycTier;
+  final double dailyLimit;
+  final double dailyUsed;
+  final double dailyRemaining;
+  final String currency;
+  final double minPerTransaction;
+  final double maxPerTransaction;
+
+  const ExchangeLimits({
+    required this.kycTier,
+    required this.dailyLimit,
+    required this.dailyUsed,
+    required this.dailyRemaining,
+    required this.currency,
+    required this.minPerTransaction,
+    required this.maxPerTransaction,
+  });
+
+  bool get isUnlimited => dailyLimit <= 0;
+
+  /// Whether [amount] (in [currency] major units) would breach the remaining
+  /// daily allowance. Always false when unlimited.
+  bool exceedsRemaining(double amount) =>
+      !isUnlimited && amount > dailyRemaining;
 }

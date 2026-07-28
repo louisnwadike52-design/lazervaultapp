@@ -7,13 +7,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
-import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/pending_chat_transfers.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -25,31 +26,29 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/budget_warning_sheet.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_filter_chip_card.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_icon.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
-import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
-import 'package:lazervault/src/features/recipients/presentation/widgets/scan_history_sheet.dart';
-import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
-import 'package:lazervault/src/features/recipients/data/services/bank_scan_upload_service.dart';
-import 'package:lazervault/core/services/secure_storage_service.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart';
-import 'dart:io';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
@@ -57,15 +56,18 @@ import 'package:lazervault/src/features/transaction_history/presentation/cubit/t
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 // Short-flow (admin-gated) send-funds: reuse this screen + the AddRecipient
 // widget inline, and run amount → PIN → receipt on the same screen.
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/recipients/presentation/mixins/bank_scan_flow_mixin.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/add_recipient.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/send_funds_amount_sheet.dart';
+import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -78,24 +80,59 @@ class SelectRecipients extends StatefulWidget {
   /// recipient continues with amount → PIN → receipt on this screen (no
   /// separate add page or initiate-send-funds screen).
   final bool shortFlow;
-  const SelectRecipients({super.key, this.shortFlow = false});
+  /// When set with [autoContinue], the screen immediately runs the send flow for
+  /// this recipient (used when entering send-funds from a known peer, e.g. the
+  /// P2P chat "send money" action) — reusing the same short/long routing + all
+  /// edge-case handling instead of duplicating it.
+  final RecipientModel? preselectedRecipient;
+  final bool autoContinue;
+
+  /// Amount (in minor units) to pre-fill the amount step with when
+  /// [autoContinue] runs — used by "Repeat" from a transaction's history so the
+  /// prior amount is prefilled in whichever send flow is active.
+  final int? prefillAmountMinor;
+  const SelectRecipients({
+    super.key,
+    this.shortFlow = false,
+    this.preselectedRecipient,
+    this.autoContinue = false,
+    this.prefillAmountMinor,
+  });
 
   @override
   State<SelectRecipients> createState() => _SelectRecipientsState();
 }
 
 class _SelectRecipientsState extends State<SelectRecipients>
-    with TransactionPinMixin {
+    with TransactionPinMixin, BankScanFlowMixin<SelectRecipients> {
   // ── Short-flow (send-funds) state ─────────────────────────────────────────
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
+
+  // ── Bank-scan flow (shared mixin) ─────────────────────────────────────────
+  // The scan pipeline lives in BankScanFlowMixin so the long-flow
+  // Add-Recipient screen can run the identical flow. Here it routes through
+  // the existing _continueWithRecipient (short-inline send vs long navigate).
+  @override
+  String get scanCountry => _currentCountry;
+  @override
+  void onScanRecipientResolved(RecipientModel recipient,
+          {Map<String, dynamic>? sendFundsArgs}) =>
+      _continueWithRecipient(recipient, longFlowArguments: sendFundsArgs);
   // Re-entry guard so a fast double-tap can't fire two transfers.
   bool _shortBusy = false;
   Map<String, dynamic>? _shortPendingReceipt;
+  // Max automatic-retry offers when recurring setup fails after a successful
+  // transfer (parity with the long flow's _maxRecurringRetries).
+  static const int _maxShortRecurringRetries = 2;
   // Active method tab inside the embedded AddRecipient — drives which saved
-  // recipients show (Bank → external only, LazerVault user → internal only).
+  // recipients show (Bank → external only, Lazervault user → internal only).
   AddRecipientMethod _shortMethod = AddRecipientMethod.bankDetails;
+
+  // Extra saved-recipient filter applied via the filter-icon sheet (on top of
+  // the bank/Lazervault tab): favourites-only.
+  bool _savedFavoritesOnly = false;
 
   bool _isInternalRecipient(RecipientModel r) =>
       r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
@@ -216,9 +253,33 @@ class _SelectRecipientsState extends State<SelectRecipients>
     );
   }
 
+  /// Pull-to-refresh handler — reloads the recipient list for the active
+  /// account/locale filter. Returns a Future (unlike
+  /// [_refreshRecipientsFromActiveFilter]) so RefreshIndicator keeps the
+  /// spinner up until the fetch completes. Shared by the short-flow body.
+  Future<void> _pullToRefresh() async {
+    if (!mounted) return;
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken = _getAccessTokenFromState(authState);
+    if (accessToken == null) return;
+    final f = _activeFilter();
+    await context.read<RecipientCubit>().getRecipients(
+      accessToken: accessToken,
+      countryCode: f.countryCode,
+      currency: f.currency,
+      // Keep the current list visible while reloading (no blank flicker).
+      forceRefresh: true,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    // Freeze the short/long flow decision while the user is inside the send
+    // journey (this is the recipient step for both flows). Released in dispose
+    // when they leave / land back on the dashboard. Reference-counted in
+    // FeatureFlags, so the long flow's picker → amount hand-off doesn't unfreeze.
+    FeatureFlags.beginSendFlow();
     // Check initial authentication state
     final authState = context.read<AuthenticationCubit>().state;
     final accessToken = _getAccessTokenFromState(authState);
@@ -251,6 +312,40 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
     // Load pending co-payer count so the Split Bills badge shows
     serviceLocator<SplitBillCountCubit>().refresh();
+
+    // Entered with a known recipient (e.g. from the P2P chat "send money"
+    // action) → run the same send flow used everywhere else, after the first
+    // frame so cubits/context are ready. We show a loader instead of the full
+    // recipient list while this runs, and pop back to the caller (chat) if the
+    // user cancels — so this screen never strands them.
+    if (widget.autoContinue && widget.preselectedRecipient != null) {
+      _autoContinuing = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _runAutoContinue());
+    }
+  }
+
+  bool _autoContinuing = false;
+
+  Future<void> _runAutoContinue() async {
+    if (!mounted) return;
+    final r = widget.preselectedRecipient!;
+    if (widget.shortFlow) {
+      // Short flow owns the amount sheet → PIN → receipt here. On success it
+      // navigates away (Get.offAllNamed); if it returns we were cancelled/failed
+      // (still mounted) → go back to the caller rather than showing the list.
+      await _startShortSend(r,
+          saveRecipient: false, prefillAmountMinor: widget.prefillAmountMinor);
+      if (mounted) Get.back();
+    } else {
+      // Long flow: replace this screen with the amount-entry screen so the
+      // select screen isn't left in the back stack.
+      Get.offNamed(AppRoutes.initiateSendFunds, arguments: {
+        'recipient': r,
+        if (widget.prefillAmountMinor != null)
+          'prefillAmount': widget.prefillAmountMinor,
+        if (widget.prefillAmountMinor != null) 'autoShowConfirm': true,
+      });
+    }
   }
 
   @override
@@ -260,6 +355,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
     _recipientsScrollController.dispose();
     _recurringTransferCubit?.close();
     _historyCubit?.close();
+    // Release the flow-pin freeze taken in initState.
+    FeatureFlags.endSendFlow();
     super.dispose();
   }
 
@@ -340,6 +437,15 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   @override
   Widget build(BuildContext context) {
+    // When launched to send to a known recipient (e.g. from chat), don't flash
+    // the full recipient list — show a clean loader while the amount sheet /
+    // send flow runs over it.
+    if (_autoContinuing) {
+      return const ColoredBox(
+        color: Color(0xFF070111),
+        child: Center(child: LazerVaultLoader()),
+      );
+    }
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, authState) {
         // Handle side-effects based on Authentication state.
@@ -381,12 +487,13 @@ class _SelectRecipientsState extends State<SelectRecipients>
               // under the search bar on every screen size, pulling everything
               // below it upward.
               final double topInset = MediaQuery.of(context).padding.top;
-              // 16 top pad + 40 back row + 24 gap + 48 search bar = 128, plus an
-              // 8px peek so the rounded sheet tucks just under the search field.
-              // Short flow hides the search bar, so the white sheet rides up to
-              // just under the back/title row — no empty purple gap.
+              // Long flow: 16 top pad + 40 back row + 24 gap + 48 search bar = 128,
+              // plus an 8px peek so the rounded sheet tucks just under the search
+              // field → 136. Short flow hides the search bar, so there's no field
+              // to tuck under — give the header clear breathing room before the
+              // white sheet begins (16 top + 44 back row + ~30 gap = 90).
               final double sheetTop =
-                  topInset + (widget.shortFlow ? 88.h : 136.h);
+                  topInset + (widget.shortFlow ? 90.h : 136.h);
               return Stack(children: [
                 // Top Purple Section with Gradient.
                 // Height carries extra slack below `sheetTop` so the inner
@@ -449,18 +556,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 ),
                               ),
                             ),
-                            const MicroserviceChatIcon(
-                              serviceName: 'Send Funds',
-                              sourceContext: 'transfers',
-                              iconColor: Colors.white,
-                              chatAccentColor: Color.fromARGB(255, 78, 3, 208),
-                              isDirect: true,
-                              agentDescription: 'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
-                              size: 38,
-                              iconSize: 18,
-                              useDarkInner: true,
-                            ),
-                            SizedBox(width: 8.w),
                             // Financial Connections (P2P Chat) icon with unread badge
                             BlocBuilder<P2PConversationsCubit, P2PConversationsState>(
                               bloc: serviceLocator<P2PConversationsCubit>(),
@@ -528,6 +623,18 @@ class _SelectRecipientsState extends State<SelectRecipients>
                               },
                             ),
                             SizedBox(width: 8.w),
+                            const MicroserviceChatIcon(
+                              serviceName: 'Send Funds',
+                              sourceContext: 'transfers',
+                              iconColor: Colors.white,
+                              chatAccentColor: Color.fromARGB(255, 78, 3, 208),
+                              isDirect: true,
+                              agentDescription: 'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
+                              size: 38,
+                              iconSize: 18,
+                              useDarkInner: true,
+                            ),
+                            SizedBox(width: 8.w),
                             ServiceVoiceButton(
                               serviceName: 'transfers',
                               iconColor: Colors.white,
@@ -536,14 +643,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
                             ),
                           ],
                         ),
+                        // Search Bar — LONG FLOW ONLY. Searches PREVIOUS (saved)
+                        // recipients only, NOT the whole user directory. The short
+                        // flow hides this entirely; there the user picks from the
+                        // inline saved list or the quick actions (scan / add user).
+                        if (!widget.shortFlow) ...[
                         SizedBox(height: 24.h),
-
-                        // Search Bar — long flow only. The short flow keeps the
-                        // header minimal and puts search inside the "View all"
-                        // saved-recipients bottom sheet (more room up top).
-                        if (!widget.shortFlow)
                         GestureDetector(
-                          onTap: _showEnhancedRecipientSelection,
+                          onTap: () => _openSavedRecipientsSheet(savedOnly: true),
                           child: Container(
                             height: 48.h,
                             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -568,7 +675,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 SizedBox(width: 12.w),
                                 Expanded(
                                   child: Text(
-                                    'Search recipients...',
+                                    'Search saved recipients',
                                     style: TextStyle(
                                       color: Colors.white.withValues(alpha: 0.7),
                                       fontSize: 14.sp,
@@ -579,13 +686,18 @@ class _SelectRecipientsState extends State<SelectRecipients>
                             ),
                           ),
                         ),
+                        ],
                       ],
                     ),
                   ),
                 ),
 
-                // Main Content Section
-                Container(
+                // Main Content Section — entrance-animated: the white sheet
+                // (Scan-QR quick-actions strip → filter chips → recipients list)
+                // rises + fades in on load, while the purple header + search bar
+                // above stay static.
+                ServiceEntranceAnimation(
+                  child: Container(
                   margin: EdgeInsets.only(top: sheetTop),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -594,6 +706,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
                   ),
                   child: Column(
                     children: [
+                      // Short flow hides the search bar, so the white sheet sits
+                      // higher — add a little breathing room below its rounded
+                      // top so the content isn't crammed against the header.
+                      if (widget.shortFlow) SizedBox(height: 12.h),
                       // Quick Actions Strip (Scan QR / Add User / Scan Bank
                       // Details / Scan History / Split Bills) — shown in BOTH
                       // flows. In short flow the scans feed the inline send.
@@ -624,64 +740,47 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 label: 'Scan QR',
                                 onTap: _launchQRScanner,
                               ),
-                              _buildQuickAction(
-                                icon: Icons.person_add_outlined,
-                                label: 'Add User',
-                                onTap: () => Get.toNamed(AppRoutes.addRecipient),
-                              ),
-                              _buildQuickAction(
-                                icon: Icons.document_scanner_outlined,
-                                label: 'Scan Bank Details',
-                                onTap: _launchBankDetailsScan,
-                              ),
-                              _buildQuickAction(
-                                icon: Icons.manage_search_outlined,
-                                label: 'Scan History',
-                                onTap: _showScanHistory,
-                              ),
+                              // "Add User" — long flow only. The short flow adds
+                              // recipients inline, so it's replaced by "History"
+                              // at the end of the strip.
+                              if (!widget.shortFlow)
+                                _buildQuickAction(
+                                  icon: Icons.person_add_outlined,
+                                  label: 'Add User',
+                                  onTap: () =>
+                                      Get.toNamed(AppRoutes.addRecipient),
+                                ),
+                              // "Scan Account" moved to a scan button at the
+                              // right edge of the account-number box (see the
+                              // embedded AddRecipient below / the long-flow
+                              // Add-Recipient screen) — cleaner top strip.
+                              if (FeatureFlags.scanAccountDetailsIsEnabled)
+                                _buildQuickAction(
+                                  icon: Icons.manage_search_outlined,
+                                  label: 'Scan History',
+                                  onTap: showScanHistory,
+                                ),
                               // Split Bills quick action with pending co-payer badge
                               BlocBuilder<SplitBillCountCubit, int>(
                                 bloc: serviceLocator<SplitBillCountCubit>(),
                                 builder: (context, pendingCount) {
-                                  return Stack(
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      _buildQuickAction(
-                                        icon: Icons.group_outlined,
-                                        label: 'Split Bills',
-                                        onTap: _launchSplitBills,
-                                      ),
-                                      if (pendingCount > 0)
-                                        Positioned(
-                                          right: -4,
-                                          top: -4,
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: pendingCount > 9 ? 4.w : 0,
-                                            ),
-                                            constraints: BoxConstraints(
-                                              minWidth: 18.w,
-                                              minHeight: 18.w,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFEF4444),
-                                              borderRadius: BorderRadius.circular(9.r),
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              pendingCount > 99 ? '99+' : '$pendingCount',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10.sp,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
+                                  return _buildQuickAction(
+                                    icon: Icons.group_outlined,
+                                    label: 'Split Bills',
+                                    onTap: _launchSplitBills,
+                                    badgeCount: pendingCount,
                                   );
                                 },
                               ),
+                              // Transfer History — short flow only (replaces the
+                              // removed "Add User"); long flow uses the History
+                              // filter chip below.
+                              if (widget.shortFlow)
+                                _buildQuickAction(
+                                  icon: Icons.history,
+                                  label: 'History',
+                                  onTap: _showTransferHistory,
+                                ),
                             ],
                           ),
                         ),
@@ -710,6 +809,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     ],
                   ),
                 ),
+                ),
               ]);
             },
           );
@@ -736,12 +836,169 @@ class _SelectRecipientsState extends State<SelectRecipients>
   // is unchanged.
 
   void _onRecipientTapped(RecipientModel recipient) {
-    if (widget.shortFlow) {
-      // Saved recipient → straight to amount; already persisted, don't re-save.
-      _startShortSend(recipient, saveRecipient: false);
-    } else {
-      Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
-    }
+    // Tapping a saved recipient opens a choice sheet: transfer again OR view
+    // the last receipt. Works for both bank + Lazervault-user recipients and
+    // both flows (the "Transfer again" action routes flow-appropriately).
+    _showSavedRecipientSheet(recipient);
+  }
+
+  /// Bottom sheet shown when a saved recipient is tapped — "Transfer again" or
+  /// "View last receipt". Styled to match the other action sheets on this
+  /// screen (white, rounded top, grab handle, purple accent).
+  void _showSavedRecipientSheet(RecipientModel recipient) {
+    const brand = Color.fromARGB(255, 78, 3, 208);
+    final isInternal = _isInternalRecipient(recipient);
+    final subtitle = isInternal
+        ? '@${recipient.accountNumber.replaceAll('@', '')}'
+        : '${recipient.displayBankName}${recipient.maskedAccount.isNotEmpty ? ' • ${recipient.maskedAccount}' : ''}';
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        Widget action({
+          required IconData icon,
+          required String label,
+          required String sub,
+          required VoidCallback onTap,
+        }) {
+          return InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: BoxDecoration(
+                      color: brand.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(icon, color: brand, size: 20.sp),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label,
+                            style: TextStyle(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87)),
+                        SizedBox(height: 2.h),
+                        Text(sub,
+                            style: TextStyle(
+                                fontSize: 12.sp, color: Colors.grey[600])),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: Colors.grey[400], size: 20.sp),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                margin: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22.r,
+                      backgroundColor: brand.withValues(alpha: 0.12),
+                      child: Text(
+                        recipient.name.isNotEmpty
+                            ? recipient.name[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                            color: brand,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16.sp),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(recipient.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87)),
+                          SizedBox(height: 2.h),
+                          Text(subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 12.sp, color: Colors.grey[600])),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(color: Colors.grey[200], height: 1),
+              action(
+                icon: Icons.send_rounded,
+                label: 'Transfer again',
+                sub: 'Send money to ${recipient.name}',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _continueWithRecipient(recipient);
+                },
+              ),
+              action(
+                icon: Icons.receipt_long_outlined,
+                label: 'View recent transactions',
+                sub: 'See your transfers to ${recipient.name}',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _openRecipientTransactionsSheet(recipient);
+                },
+              ),
+              SizedBox(height: MediaQuery.of(ctx).padding.bottom + 12.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Transfer history bottom sheet (short-flow "History" quick action). Reuses
+  /// the lazy TransactionHistoryCubit and provides it to the sheet (the sheet's
+  /// overlay context is above the route provider).
+  void _showTransferHistory() {
+    _historyCubit ??= GetIt.I<TransactionHistoryCubit>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: _historyCubit!,
+        child: TransferHistoryBottomSheet(onSend: _runInlineSend),
+      ),
+    );
   }
 
   /// Single router for "recipient acquired → go pay". Used by every entry point
@@ -750,9 +1007,13 @@ class _SelectRecipientsState extends State<SelectRecipients>
   /// [longFlowArguments] preserves any extra args (e.g. QR prefill) for the long
   /// flow; the short flow just needs the recipient.
   void _continueWithRecipient(RecipientModel recipient,
-      {Object? longFlowArguments}) {
+      {Object? longFlowArguments, int? prefillAmountMinor}) {
     if (widget.shortFlow) {
-      _startShortSend(recipient, saveRecipient: recipient.isSaved);
+      // Thread a scanned amount-QR prefill into the short flow too — otherwise
+      // the requested amount was silently dropped in classic mode.
+      _startShortSend(recipient,
+          saveRecipient: recipient.isSaved,
+          prefillAmountMinor: prefillAmountMinor);
     } else {
       Get.toNamed(AppRoutes.initiateSendFunds,
           arguments: longFlowArguments ?? recipient);
@@ -789,8 +1050,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
   }
 
   Future<void> _startShortSend(RecipientModel r,
-      {required bool saveRecipient}) async {
+      {required bool saveRecipient, int? prefillAmountMinor}) async {
     if (_shortBusy) return;
+    // Telemetry: short-flow send-funds entry.
+    AnalyticsService.instance.trackSendFundsScreen('select_recipients', 'short');
     final active = _shortActiveSummary;
     if (active == null) {
       Get.snackbar('Please wait', 'Your account is still loading.',
@@ -805,13 +1068,27 @@ class _SelectRecipientsState extends State<SelectRecipients>
       return;
     }
 
-    final minor = await showModalBottomSheet<int>(
+    // Pre-warm the PIN status (slow gRPC check) while the user types the amount,
+    // so the PIN sheet appears instantly after the amount sheet instead of
+    // after a few-second round-trip. Result is cached in the service.
+    if (FeatureFlags.sendFundsPinIsRequired) {
+      // ignore: discarded_futures
+      transactionPinService.checkUserHasPin().catchError((_) => false);
+    }
+
+    AnalyticsService.instance.trackSendFundsScreen('amount', 'short');
+    final result = await showModalBottomSheet<SendFundsAmountResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      // Close only via the X (e.g. so an insufficient-balance state isn't
+      // dismissed by an accidental tap outside).
+      isDismissible: false,
       builder: (_) => SendFundsAmountSheet(
         recipientName: r.name,
-        bankName: r.bankName,
+        // Resolve a raw bank code (e.g. "057") to its display name ("Zenith
+        // Bank"); displayBankName is a no-op when it's already a real name.
+        bankName: r.displayBankName,
         currency: active.currency,
         transferType: isInternal ? 'internal' : 'external',
         destinationBankCode: isInternal ? null : r.sortCode,
@@ -821,36 +1098,88 @@ class _SelectRecipientsState extends State<SelectRecipients>
             ? '${active.accountName} • ••••${active.accountNumberLast4}'
             : '${active.accountType} • ••••${active.accountNumberLast4}',
         transferCubit: context.read<TransferCubit>(),
+        initialAmountMinor: prefillAmountMinor,
       ),
     );
-    if (minor == null || minor <= 0 || !mounted) return;
+    if (result == null || result.amountMinor <= 0 || !mounted) return;
+    final minor = result.amountMinor;
+    final scheduledAt = result.scheduledAt;
+    final category = result.category;
+    final expenseCategory = category?.budgetCategory;
+    final recurring = result.recurring;
+
+    // Budget enforcement (parity with the long flow) — strict budgets BLOCK via
+    // the override dialog, flexible budgets WARN via the warning sheet. Runs
+    // BEFORE the PIN so a cancel cleanly aborts without a dangling busy flag.
+    if (expenseCategory != null) {
+      final proceed = await _shortBudgetGate(
+          expenseCategory, minor, minor / 100.0, active.currency);
+      if (!proceed || !mounted) return;
+    }
 
     _shortBusy = true;
     final transactionId = 'transfer_${const Uuid().v4()}';
     final amountMajor = minor / 100.0;
+    // Narration reused for the (optional) recurring rule's description.
+    final shortSenderProfile = context.read<AuthenticationCubit>().currentProfile;
+    final shortSenderName = shortSenderProfile != null
+        ? '${shortSenderProfile.user.firstName} ${shortSenderProfile.user.lastName}'.trim()
+        : '';
+    final shortNarration = shortSenderName.isNotEmpty
+        ? 'Transfer from $shortSenderName'
+        : 'Transfer from Lazervault';
     try {
       if (FeatureFlags.sendFundsPinIsRequired) {
+        AnalyticsService.instance.trackSendFundsScreen('pin', 'short');
+        var usedToken = '';
+        // Fee quoted live on the amount sheet (same TransferCubit instance) —
+        // surfaced on the PIN sheet so the user confirms the TOTAL debit.
+        // Internal transfers are free (no quote → no fee row).
+        final shortFeeQuote = context.read<TransferCubit>().lastFeeLoaded;
+        final shortFeeMajor = (shortFeeQuote?.fee ?? 0) / 100.0;
         final ok = await validateTransactionPin(
           context: context,
           transactionId: transactionId,
           transactionType: 'transfer',
           amount: amountMajor,
           currency: active.currency,
+          fee: shortFeeMajor > 0 ? shortFeeMajor : null,
           title: 'Confirm Transfer',
           message:
               'Confirm transfer of ${active.currency} ${amountMajor.toStringAsFixed(2)}',
+          // The real outcome is confirmed on the receipt (external transfers
+          // return `pending`), so the sheet says "Initiated", not "Successful".
+          successMessage: 'Transfer Initiated',
           onPinValidated: (verificationToken) async {
+            usedToken = verificationToken;
             await _dispatchShortAndAwait(
                 r, minor, active, transactionId, verificationToken,
-                saveRecipient: saveRecipient);
+                saveRecipient: saveRecipient,
+                scheduledAt: scheduledAt,
+                category: category,
+                expenseCategory: expenseCategory);
           },
         );
         if (!ok) return;
+        // PIN sheet is closed now — safe to surface the recurring retry dialog
+        // (parity with the long flow) before navigating to the receipt.
+        if (recurring != null && mounted) {
+          await _setupRecurringShortWithRetry(
+              r, active, minor, shortNarration, recurring, transactionId, usedToken);
+        }
         _navShortReceipt();
       } else {
         await _dispatchShortAndAwait(r, minor, active, transactionId, '',
-            saveRecipient: saveRecipient);
-        if (mounted) _navShortReceipt();
+            saveRecipient: saveRecipient,
+            scheduledAt: scheduledAt,
+            category: category,
+            expenseCategory: expenseCategory);
+        if (!mounted) return;
+        if (recurring != null) {
+          await _setupRecurringShortWithRetry(
+              r, active, minor, shortNarration, recurring, transactionId, '');
+        }
+        _navShortReceipt();
       }
     } catch (e) {
       Get.snackbar('Transfer failed',
@@ -861,6 +1190,76 @@ class _SelectRecipientsState extends State<SelectRecipients>
     }
   }
 
+  /// Budget enforcement for the short flow (parity with the long flow). Strict
+  /// budgets BLOCK via [BudgetOverrideDialog]; flexible budgets WARN via
+  /// [showBudgetWarningSheet]. Returns true to proceed, false to abort.
+  /// Fail-open: a null result (budget service down) allows the transfer.
+  Future<bool> _shortBudgetGate(int budgetCategory, int amountMinor,
+      double amountMajor, String currency) async {
+    final budgetCubit = serviceLocator<BudgetCubit>();
+    final result = await budgetCubit.validateCategoryBudget(
+      budgetCategory: budgetCategory,
+      amountMinor: amountMinor,
+      currency: currency,
+    );
+    if (!mounted) return false;
+    if (result == null) return true; // fail-open — never block on a down service
+
+    if (result.shouldBlockTransaction) {
+      // STRICT / fixed budget — block with an override choice.
+      final budgetName = result.matchingBudgets.isNotEmpty
+          ? result.matchingBudgets.first.budgetName
+          : 'Budget';
+      final budgetId = result.matchingBudgets.isNotEmpty
+          ? result.matchingBudgets.first.budgetId
+          : '';
+      final action = await BudgetOverrideDialog.show(
+        context,
+        budgetName: budgetName,
+        currentSpent: result.currentSpent,
+        budgetLimit: result.budgetLimit,
+        transactionAmount: amountMajor,
+        percentageUsed: result.percentageUsed,
+        currency: currency,
+        budgetId: budgetId,
+      );
+      if (action == null || action == BudgetOverrideAction.cancel) return false;
+      if (action == BudgetOverrideAction.increaseBudget && budgetId.isNotEmpty) {
+        final overage = result.currentSpent + amountMajor - result.budgetLimit;
+        final increase = overage > 0 ? overage * 1.2 : amountMajor; // 20% buffer
+        await budgetCubit.updateBudget(
+            budgetId: budgetId, amount: result.budgetLimit + increase);
+        final retry = await budgetCubit.validateCategoryBudget(
+          budgetCategory: budgetCategory,
+          amountMinor: amountMinor,
+          currency: currency,
+        );
+        if (!mounted) return false;
+        if (retry != null && retry.shouldBlockTransaction) {
+          Get.snackbar('Still Exceeds Budget',
+              'The increased budget is still not enough.',
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM);
+          return false;
+        }
+      }
+      // overrideOnce → proceed.
+      return true;
+    } else if (result.shouldShowWarning) {
+      // FLEXIBLE / near-limit — non-blocking warning; user confirms.
+      final proceed = await showBudgetWarningSheet(
+        context,
+        result: result,
+        transactionAmount: amountMajor,
+        currency: currency,
+      );
+      if (!mounted) return false;
+      return proceed == true;
+    }
+    return true;
+  }
+
   Future<void> _dispatchShortAndAwait(
     RecipientModel r,
     int amountMinor,
@@ -868,6 +1267,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
     String transactionId,
     String verificationToken, {
     required bool saveRecipient,
+    DateTime? scheduledAt,
+    ServiceCategory? category,
+    int? expenseCategory,
   }) async {
     final transferCubit = context.read<TransferCubit>();
     final recipientCubit = context.read<RecipientCubit>();
@@ -879,9 +1281,17 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final senderName = senderProfile != null
         ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
         : '';
-    final narration = senderName.isNotEmpty
+    final defaultNarration = senderName.isNotEmpty
         ? 'Transfer from $senderName'
-        : 'Transfer from LazerVault';
+        : 'Transfer from Lazervault';
+    // Same builder the long flow uses: stamps the "Category: …" prefix so
+    // subcategory analytics attribute the spend identically across flows. The
+    // short flow has no note field, so the detail falls back to the default.
+    final narration = ServiceCategory.buildTransferNarration(
+      category: category,
+      note: null,
+      defaultNarration: defaultNarration,
+    );
 
     transferCubit.sendFunds(
       fromAccountId: active.spendingAccountId,
@@ -894,6 +1304,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
       verificationToken: verificationToken,
       destinationBankCode: isInternal ? null : r.sortCode,
       beneficiaryName: isInternal ? null : r.name,
+      scheduledAt: scheduledAt,
+      expenseCategory: expenseCategory,
+      flow: 'short',
     );
 
     final terminal = await transferCubit.stream
@@ -911,42 +1324,232 @@ class _SelectRecipientsState extends State<SelectRecipients>
           'Transfer is taking longer than expected. Check your transaction history before retrying.');
     }
     _shortPendingReceipt = _buildShortReceipt(terminal.response, r, active);
-    // Save only newly-added (inline) recipients the user favorited — never a
-    // recipient tapped from the already-persisted saved list.
+    // From-name on the receipt = the sender's REAL name (not the account-type
+    // label like "personal").
+    if (senderName.isNotEmpty) {
+      _shortPendingReceipt!['sourceAccountName'] = senderName;
+    }
+
+    // Seed the P2P financial connection with BOTH real names (parity with the
+    // long flow's _ensureFinancialConnection). Without this the short flow's
+    // connection is created only by the transfer-event consumer, whose names are
+    // account-type labels ("Personal", …) that the p2p service rejects — leaving
+    // the connection as "Unknown User". `my_name` seeds the RECEIVER's view of us
+    // too. Fire-and-forget: never blocks the receipt.
+    if (isInternal && (r.internalUserId?.isNotEmpty ?? false)) {
+      final otherUserId = r.internalUserId!;
+      final recipientName = r.name;
+      // ignore: discarded_futures
+      Future(() async {
+        try {
+          await serviceLocator<P2PChatRepository>().getOrCreateConversation(
+            otherUserId,
+            otherUserName: recipientName,
+            myName: senderName.isNotEmpty ? senderName : null,
+          );
+        } catch (e) {
+          debugPrint('[P2P] short-flow connection seed failed: $e');
+        }
+      });
+    }
+    // Persist only newly-added recipients the user chose to save — never one
+    // tapped from the already-persisted saved list. Honour their explicit
+    // favourite + alias choice from the confirmation/add sheet; don't
+    // force-favourite, or a "save without favourite" (and the alias) would be
+    // silently overridden.
     if (saveRecipient && token != null) {
       recipientCubit.addRecipient(
-        recipient: r.copyWith(id: '0', isSaved: true, isFavorite: true),
+        recipient: r.copyWith(id: '0', isSaved: true),
         accessToken: token,
       );
     }
+    // NOTE: recurring setup is intentionally NOT done here. It runs in
+    // _startShortSend AFTER the PIN sheet has closed, via
+    // _setupRecurringShortWithRetry, so a failure can surface a retry dialog
+    // (parity with the long flow) without racing the PIN sheet dismissal.
+  }
+
+  /// Deferred recurring setup for the short flow, AWAITED with a retry dialog —
+  /// parity with the long flow's _fireRecurringSetup + _showRecurringRetryDialog.
+  /// The transfer already succeeded; this only sets up the recurring rule,
+  /// reusing the same transactionId + verificationToken. Returns when the user
+  /// either succeeds or chooses to continue without recurring.
+  Future<void> _setupRecurringShortWithRetry(
+    RecipientModel r,
+    AccountSummaryEntity active,
+    int amountMinor,
+    String narration,
+    RecurringTransferConfig recurring,
+    String transactionId,
+    String verificationToken,
+  ) async {
+    final cubit = _recurringTransferCubit ??= serviceLocator<RecurringTransferCubit>();
+    var attempt = 0;
+    while (true) {
+      cubit.createRecurringTransfer(
+        fromAccountId: active.id,
+        toAccountNumber: r.accountNumber,
+        recipientName: r.name,
+        recipientBankCode: r.sortCode,
+        recipientBankName: r.displayBankName,
+        amount: amountMinor / 100.0,
+        description: narration,
+        frequency: recurring.frequency,
+        scheduleDay: recurring.scheduleDay,
+        scheduleTime: recurring.scheduleTimeString,
+        endDate: recurring.endDate?.toIso8601String(),
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+      );
+
+      final state = await cubit.stream
+          .firstWhere((s) =>
+              s is RecurringTransferCreated || s is RecurringTransferError)
+          .timeout(const Duration(seconds: 20), onTimeout: () => cubit.state);
+
+      if (state is RecurringTransferCreated) return; // done — recurring set up
+
+      final message = state is RecurringTransferError
+          ? state.message
+          : 'Recurring setup timed out. You can set it up later from transfer history.';
+      attempt++;
+      if (!mounted) return;
+      final retry = await _showShortRecurringRetryDialog(
+        message,
+        canRetry: attempt <= _maxShortRecurringRetries,
+      );
+      if (retry != true) return; // "Continue Without Recurring"
+    }
+  }
+
+  /// Retry dialog shown when short-flow recurring setup fails but the transfer
+  /// succeeded. Returns true to retry, false/null to continue without recurring.
+  /// Mirrors the long flow's _showRecurringRetryDialog.
+  Future<bool?> _showShortRecurringRetryDialog(String errorMessage,
+      {required bool canRetry}) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        icon: Icon(Icons.warning_amber_rounded,
+            color: const Color(0xFFFB923C), size: 48.sp),
+        title: Text(
+          'Recurring Setup Failed',
+          style: TextStyle(
+              color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Your transfer was successful, but the recurring payment could not be set up.',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            ),
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                errorMessage,
+                style:
+                    TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
+              ),
+            ),
+            if (!canRetry)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: Text(
+                  'You can set up recurring payments later from the transfer history.',
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      fontStyle: FontStyle.italic),
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'Continue Without Recurring',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            ),
+          ),
+          if (canRetry)
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                shape:
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                'Retry Setup',
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Map<String, dynamic> _buildShortReceipt(
       TransferEntity res, RecipientModel r, AccountSummaryEntity active) {
     final isInternal =
         r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
-    final masked = r.accountNumber.length > 4
-        ? '•••• ${r.accountNumber.substring(r.accountNumber.length - 4)}'
-        : r.accountNumber;
+    // Internal (Lazervault→Lazervault) send: hand the completed transfer to the
+    // P2P chat with this user so the money bubble renders the moment they open
+    // the chat (the receipt wipes the stack, so the chat can't reload on return).
+    if (isInternal) {
+      final peerId = r.internalUserId?.trim().isNotEmpty == true
+          ? r.internalUserId!.trim()
+          : r.id;
+      PendingChatTransfers.instance.record(
+        peerUserId: peerId,
+        amountMinor: res.amount.toInt(),
+        currency: active.currency,
+        reference: res.internalReference,
+        // Carry the real status so a scheduled (not-yet-fired) send renders the
+        // chat bubble as "Money Scheduled" instead of "Money Sent".
+        status: res.status,
+        scheduledAt: res.scheduledAt,
+      );
+    }
+    // Empty for internal user recipients (no real account number) → the receipt
+    // hides the Account row instead of masking the user-id UUID.
+    final masked = r.maskedAccount;
     return {
       'amount': res.amount.toDouble() / 100.0,
       'fee': res.fee.toDouble() / 100.0,
       'totalAmount': res.totalAmount.toDouble() / 100.0,
       'recipientName': r.name,
       'recipientAccountMasked': masked,
-      'recipientBankName': r.bankName,
+      'recipientBankName': r.displayBankName,
+      'recipientBankCode': r.sortCode,
       'sourceAccountInfo':
           '${active.accountType} •••• ${active.accountNumberLast4}',
       'sourceAccountName': active.accountName ?? '',
       'currency': active.currency,
       'transferId': res.transferId.toString(),
       'timestamp': res.createdAt,
+      // Carry the send-funds flow (long|short) so the processing & receipt
+      // screens emit real telemetry instead of 'unknown'.
+      'flow': AnalyticsService.instance.currentSendFlow,
       'reference': null,
       'providerReference': res.providerReference,
       'internalReference': res.internalReference,
       'status': res.status,
+      // Present only for future-dated sends → drives the receipt's
+      // "Transfer Scheduled" header (mirrors the long flow).
+      if (res.scheduledAt != null) 'scheduledAt': res.scheduledAt,
       'network':
-          isInternal ? 'LazerVault Internal Transfer' : 'External Bank Transfer',
+          isInternal ? 'Lazervault Internal Transfer' : 'External Bank Transfer',
       'transferType': isInternal ? 'Internal Transfer' : 'Domestic Transfer',
     };
   }
@@ -959,21 +1562,40 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   Widget _buildShortFlowBody(RecipientState state) {
     final saved = _orderedSaved(state);
-    return SingleChildScrollView(
-      // 24.w side padding matches the full Add-Recipient page; 24.h top so the
-      // Bank/User/Contacts selector clears the sheet's rounded top corner.
-      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    // Swipe-down to reload the recipient data (matches the long-flow list).
+    // AlwaysScrollableScrollPhysics lets the pull trigger even when the
+    // content is short enough not to scroll on its own.
+    return RefreshIndicator(
+      color: const Color.fromARGB(255, 78, 3, 208),
+      onRefresh: _pullToRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        // 24.w side padding matches the full Add-Recipient page; 24.h top so the
+        // Bank/User/Contacts selector clears the sheet's rounded top corner.
+        padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Inline "add recipient" — the AddRecipient widget embedded as a
           // section right under the header (reuses its forms + confirm sheets).
           AddRecipient(
             embedded: true,
             onRecipientSelected: _onShortRecipientPicked,
             onMethodChanged: (m) => setState(() => _shortMethod = m),
+            // Scan Account now lives at the right edge of the account-number
+            // box; tapping it runs the shared bank-scan → send pipeline.
+            onScanAccount: FeatureFlags.scanAccountDetailsIsEnabled
+                ? launchBankDetailsScan
+                : null,
           ),
-          SizedBox(height: 24.h),
+          // Clear separation between the add-recipient / "Verify recipient" area
+          // above and the saved-recipients list below, so the two read as
+          // distinct sections and the saved list sits at the bottom.
+          SizedBox(height: 28.h),
+          Divider(color: Colors.grey[200], height: 1, thickness: 1),
+          SizedBox(height: 20.h),
           // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
           // (opens the full list + search sheet). Only shown when there are any.
           Row(
@@ -984,6 +1606,25 @@ class _SelectRecipientsState extends State<SelectRecipients>
                   color: Colors.grey[700],
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(width: 6.w),
+              // Filter icon → bottom sheet (Bank / Lazervault user / Favorites /
+              // Recurring). Shows a dot when a non-default filter is active.
+              InkWell(
+                borderRadius: BorderRadius.circular(20.r),
+                onTap: _showSavedFilterSheet,
+                child: Padding(
+                  padding: EdgeInsets.all(4.w),
+                  child: Icon(
+                    _savedFavoritesOnly
+                        ? Icons.filter_alt
+                        : Icons.filter_alt_outlined,
+                    size: 18.sp,
+                    color: _savedFavoritesOnly
+                        ? const Color.fromARGB(255, 78, 3, 208)
+                        : Colors.grey[600],
+                  ),
                 ),
               ),
               const Spacer(),
@@ -1015,7 +1656,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
           ),
           SizedBox(height: 8.h),
           _buildShortSavedList(state),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1034,6 +1676,145 @@ class _SelectRecipientsState extends State<SelectRecipients>
     ];
   }
 
+  /// Filter sheet opened from the icon beside "Saved recipients" — filter the
+  /// saved list by Lazervault user / Bank / Favourites, or jump to Recurring.
+  void _showSavedFilterSheet() {
+    const brand = Color.fromARGB(255, 78, 3, 208);
+    Widget tile({
+      required IconData icon,
+      required String label,
+      required String sub,
+      required bool active,
+      required VoidCallback onTap,
+    }) {
+      return InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 13.h),
+          child: Row(
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: active
+                      ? brand.withValues(alpha: 0.10)
+                      : Colors.grey[100],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon,
+                    size: 20.sp, color: active ? brand : Colors.grey[600]),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87)),
+                    SizedBox(height: 2.h),
+                    Text(sub,
+                        style: TextStyle(
+                            fontSize: 12.sp, color: Colors.grey[500])),
+                  ],
+                ),
+              ),
+              if (active) Icon(Icons.check_circle, size: 20.sp, color: brand),
+            ],
+          ),
+        ),
+      );
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Filter recipients',
+                    style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87)),
+              ),
+            ),
+            tile(
+              icon: Icons.person_outline,
+              label: 'Lazervault users',
+              sub: 'Your saved Lazervault contacts',
+              active: _shortMethod == AddRecipientMethod.lazervaultUser &&
+                  !_savedFavoritesOnly,
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _shortMethod = AddRecipientMethod.lazervaultUser;
+                  _savedFavoritesOnly = false;
+                });
+              },
+            ),
+            tile(
+              icon: Icons.account_balance_outlined,
+              label: 'Bank accounts',
+              sub: 'Your saved bank recipients',
+              active: _shortMethod == AddRecipientMethod.bankDetails &&
+                  !_savedFavoritesOnly,
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _shortMethod = AddRecipientMethod.bankDetails;
+                  _savedFavoritesOnly = false;
+                });
+              },
+            ),
+            tile(
+              icon: _savedFavoritesOnly ? Icons.star : Icons.star_outline,
+              label: 'Favourites',
+              sub: 'Only your favourite recipients',
+              active: _savedFavoritesOnly,
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() => _savedFavoritesOnly = !_savedFavoritesOnly);
+              },
+            ),
+            tile(
+              icon: Icons.repeat,
+              label: 'Recurring transfers',
+              sub: 'View and manage scheduled transfers',
+              active: false,
+              onTap: () {
+                Navigator.pop(ctx);
+                Get.toNamed(AppRoutes.recurringTransfers);
+              },
+            ),
+            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 12.h),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildShortSavedList(RecipientState state) {
     if (state is RecipientLoading || state is RecipientInitial) {
       return Padding(
@@ -1046,31 +1827,70 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final wantInternal = _shortMethod == AddRecipientMethod.lazervaultUser;
     final ordered = _orderedSaved(state)
         .where((r) => _isInternalRecipient(r) == wantInternal)
+        .where((r) => !_savedFavoritesOnly || r.isFavorite)
         .toList();
     if (ordered.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        child: Text(
-            wantInternal
-                ? 'No saved LazerVault recipients yet.'
-                : 'No saved bank recipients yet.',
-            style: TextStyle(color: Colors.grey[500], fontSize: 13.sp)),
+        padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                // Both tabs use the same people icon (bank tab previously used
+                // a bank/house icon — unified per design).
+                Icons.people_outline,
+                size: 40.sp,
+                color: Colors.grey[400],
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                wantInternal
+                    ? 'No saved Lazervault recipients yet'
+                    : 'No saved bank recipients yet',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700]),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                wantInternal
+                    ? 'Add a Lazervault user to send to them in one tap next time.'
+                    : 'Add a bank account to reuse it for future transfers.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 12.sp, color: Colors.grey[500], height: 1.4),
+              ),
+            ],
+          ),
+        ),
       );
     }
-    // Inline preview count: LazerVault users show 5 (faster repeat sends),
-    // bank shows 3. The rest live behind the header "View all" sheet.
-    final previewCount = wantInternal ? 5 : 3;
-    return Column(
-      children: [
-        for (final r in ordered.take(previewCount)) _buildRecipientItem(r),
-      ],
+    // Both tabs show the first 3 saved recipients inline; the rest live behind
+    // the header "View all" sheet (and the filter icon narrows them).
+    const previewCount = 3;
+    return Padding(
+      // Lazervault-user tab sits a little lower for breathing room under the
+      // tab toggle above.
+      padding: EdgeInsets.only(top: wantInternal ? 14.h : 0),
+      child: Column(
+        children: [
+          for (final r in ordered.take(previewCount)) _buildRecipientItem(r),
+        ],
+      ),
     );
   }
 
-  /// Saved-recipients picker for the short flow: an 85%-height bottom sheet with
-  /// search over all saved recipients. Reuses [_buildRecipientItem]; selecting
-  /// one closes the sheet and continues the flow (amount → PIN → receipt).
-  void _openSavedRecipientsSheet() {
+  /// Saved-recipients picker: an 85%-height bottom sheet with search over the
+  /// caller's saved recipients only. Reuses [_buildRecipientItem]; selecting one
+  /// closes the sheet and continues the active flow (short → amount/PIN/receipt;
+  /// long → initiate-send-funds).
+  ///
+  /// [savedOnly] hides the "Search all Lazervault users" directory escape — used
+  /// by the long-flow top search, which must search PREVIOUS recipients only.
+  void _openSavedRecipientsSheet({bool savedOnly = false}) {
     // Capture the cubit from the screen context (the sheet's overlay context is
     // above the route provider). BlocBuilder makes the list + favorite stars
     // update live when a star is toggled inside the sheet.
@@ -1104,10 +1924,13 @@ class _SelectRecipientsState extends State<SelectRecipients>
                             (r.alias ?? '').toLowerCase().contains(q);
                       }))
                 .toList();
-            Widget pillChip(String value, String label) {
+            Widget pillChip(String value, String label, {VoidCallback? onSelect}) {
               final selected = pill == value;
               return GestureDetector(
-                onTap: () => setSheetState(() => pill = value),
+                onTap: () {
+                  onSelect?.call();
+                  setSheetState(() => pill = value);
+                },
                 child: Container(
                   margin: EdgeInsets.only(right: 8.w),
                   padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
@@ -1187,39 +2010,108 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  // Filter pills: All / Bank / Lazervault user.
+                  // Filter pills: All / Bank / Lazervault user / Recurring.
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        pillChip('all', 'All'),
-                        pillChip('bank', 'Bank'),
-                        pillChip('lazervault', 'Lazervault user'),
-                      ],
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          pillChip('all', 'All'),
+                          pillChip('bank', 'Bank'),
+                          pillChip('lazervault', 'Lazervault user'),
+                          // Recurring shows the user's active recurring
+                          // transfers instead of saved recipients. Load the
+                          // cubit lazily on first selection.
+                          pillChip('recurring', 'Recurring', onSelect: () {
+                            _recurringTransferCubit ??=
+                                serviceLocator<RecurringTransferCubit>();
+                            _recurringTransferCubit!
+                                .loadRecurringTransfers(status: 'active');
+                          }),
+                        ],
+                      ),
                     ),
                   ),
+                  // "Search all Lazervault users" belongs to the Lazervault
+                  // users tab only — it escalates beyond saved recipients into
+                  // the full directory. Hidden on All/Bank/Recurring and for the
+                  // long-flow saved-only search.
+                  if (!savedOnly && pill == 'lazervault') ...[
+                    SizedBox(height: 12.h),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(sheetCtx);
+                        _openUnifiedRecipientSearch();
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 14.w, vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: const Color(0xFF4E03D0)
+                                  .withValues(alpha: 0.25)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person_search,
+                                color: const Color(0xFF4E03D0), size: 20.sp),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Text(
+                                'Search all Lazervault users',
+                                style: TextStyle(
+                                  color: const Color(0xFF4E03D0),
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Icon(Icons.chevron_right,
+                                color: const Color(0xFF4E03D0), size: 18.sp),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   SizedBox(height: 8.h),
                   Expanded(
-                    child: filtered.isEmpty
-                        ? Center(
-                            child: Text('No matches',
-                                style: TextStyle(
-                                    color: Colors.grey[500], fontSize: 13.sp)),
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.symmetric(vertical: 8.h),
-                            itemCount: filtered.length,
-                            itemBuilder: (_, i) {
-                              final r = filtered[i];
-                              return _buildRecipientItem(
-                                r,
-                                onTapOverride: () {
-                                  Navigator.pop(sheetCtx);
-                                  _onRecipientTapped(r);
+                    child: pill == 'recurring'
+                        ? _buildRecurringList()
+                        : filtered.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      q.isEmpty
+                                          ? 'No saved recipients yet'
+                                          : 'No saved recipients match "$query"',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 13.sp),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: EdgeInsets.symmetric(vertical: 8.h),
+                                itemCount: filtered.length,
+                                itemBuilder: (_, i) {
+                                  final r = filtered[i];
+                                  return _buildRecipientItem(
+                                    r,
+                                    onTapOverride: () {
+                                      Navigator.pop(sheetCtx);
+                                      _onRecipientTapped(r);
+                                    },
+                                  );
                                 },
-                              );
-                            },
-                          ),
+                              ),
                   ),
                 ],
               ),
@@ -1273,6 +2165,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
               accessToken: authState.profile.session.accessToken,
               countryCode: f.countryCode,
               currency: f.currency,
+              forceRefresh: true,
             );
           }
         },
@@ -1335,6 +2228,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 accessToken: authState.profile.session.accessToken,
                 countryCode: f.countryCode,
                 currency: f.currency,
+                forceRefresh: true,
               );
             }
           },
@@ -1387,6 +2281,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 accessToken: authState.profile.session.accessToken,
                 countryCode: f.countryCode,
                 currency: f.currency,
+                forceRefresh: true,
               );
             }
           },
@@ -1467,6 +2362,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
               accessToken: authState.profile.session.accessToken,
               countryCode: f.countryCode,
               currency: f.currency,
+              forceRefresh: true,
             );
           }
         },
@@ -1564,32 +2460,18 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Name row with favorite icon
-                      Row(
-                        children: [
-                          if (recipient.isFavorite)
-                            Padding(
-                              padding: EdgeInsets.only(right: 6.w),
-                              child: Icon(
-                                Icons.star,
-                                size: 14,
-                                color: Colors.amber[700],
-                              ),
-                            ),
-                          Expanded(
-                            child: Text(
-                              _toTitleCase(recipient.name),
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                                letterSpacing: 0.2,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                      // Name (favourite star removed — toggle it from the
+                      // 3-dots menu instead).
+                      Text(
+                        _toTitleCase(recipient.name),
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                          letterSpacing: 0.2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       // Alias row if exists
                       if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
@@ -1617,119 +2499,81 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           ],
                         ),
                       ],
-                      // Account number row with bank info
+                      // Account + bank line. Bank recipients LEAD with the
+                      // resolved BANK NAME (not the sort code), then the account
+                      // number; Lazervault recipients show just the account.
                       SizedBox(height: 4.h),
-                      Row(
-                        children: [
-                          Text(
-                            recipient.accountNumber,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          // Show bank name next to account number if not LazerVault
-                          if (recipient.bankName.toLowerCase() != 'lazervault') ...[
-                            SizedBox(width: 8.w),
+                      if (recipient.bankName.toLowerCase() != 'lazervault')
+                        Row(
+                          children: [
                             Flexible(
                               child: Text(
-                                '• ${recipient.displayBankName}',
+                                recipient.displayBankName,
                                 style: TextStyle(
                                   fontSize: 13.sp,
-                                  color: Colors.grey[500],
-                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (recipient.accountNumber.isNotEmpty) ...[
+                              SizedBox(width: 6.w),
+                              Text(
+                                '• ${recipient.accountNumber}',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
+                        )
+                      else
+                        Text(
+                          recipient.accountNumber,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                     ],
                   ),
                 ),
                 SizedBox(width: 8.w),
 
-                // Action icons - fixed position on the right.
-                if (widget.shortFlow) ...[
-                  // Short flow: a quick favorite star (right-aligned, under the
-                  // "View all" CTA) + the 3-dot menu. The repeat/chat shortcuts
-                  // are long-flow conveniences, omitted here to stay focused.
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20.r),
-                      onTap: () => _toggleFavorite(recipient),
-                      child: Padding(
-                        padding: EdgeInsets.all(6.w),
-                        child: Icon(
-                          recipient.isFavorite
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: recipient.isFavorite
-                              ? const Color(0xFFF59E0B)
-                              : Colors.grey[500],
-                          size: 22.w,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20.r),
-                      onTap: () => _showRecipientOptionsSheet(recipient),
-                      child: Padding(
-                        padding: EdgeInsets.all(6.w),
-                        child: Icon(Icons.more_vert,
-                            color: Colors.grey[600], size: 22.w),
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  // Quick repeat transfer button
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20.r),
-                      onTap: () => _quickSendToRecipient(recipient),
-                      child: Padding(
-                        padding: EdgeInsets.all(6.w),
-                        child: Icon(
-                          Icons.repeat,
-                          color: const Color(0xFF4E03D0),
-                          size: 20.w,
-                        ),
-                      ),
-                    ),
-                  ),
+                // Action icons - fixed position on the right. Favourite is now
+                // toggled from the overflow (3-dots) menu in BOTH flows — the
+                // inline star has been removed. Per-recipient transaction
+                // history is reached via the recipient tap sheet
+                // ("View recent transactions") and the overflow menu
+                // ("Transaction History") — the redundant inline icon is gone.
 
-                  // P2P chat button (all recipients — dialog for external)
-                  P2PChatIcon(
-                    otherUserId: recipient.internalUserId,
-                    otherUserName: recipient.name,
-                    isInternal: recipient.type == 'internal',
-                    accountNumber: recipient.accountNumber,
-                  ),
+                // P2P chat button (all recipients — dialog for external)
+                P2PChatIcon(
+                  otherUserId: recipient.internalUserId,
+                  otherUserName: recipient.name,
+                  isInternal: recipient.type == 'internal',
+                  accountNumber: recipient.accountNumber,
+                ),
 
-                  // More options button (three-dot menu)
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20.r),
-                      onTap: () => _showRecipientOptionsSheet(recipient),
-                      child: Padding(
-                        padding: EdgeInsets.all(6.w),
-                        child: Icon(
-                          Icons.more_vert,
-                          color: Colors.grey[600],
-                          size: 22.w,
-                        ),
+                // More options button (three-dot menu)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20.r),
+                    onTap: () => _showRecipientOptionsSheet(recipient),
+                    child: Padding(
+                      padding: EdgeInsets.all(6.w),
+                      child: Icon(
+                        Icons.more_vert,
+                        color: Colors.grey[600],
+                        size: 22.w,
                       ),
                     ),
                   ),
-                ],
+                ),
               ],
             ),
           ),
@@ -1738,8 +2582,37 @@ class _SelectRecipientsState extends State<SelectRecipients>
     );
   }
 
-  /// Quick send to recipient - show transaction history modal to select past amount
-  void _quickSendToRecipient(RecipientModel recipient) {
+  /// Runs a "Repeat" / inline send OVER the current screen. This Select
+  /// Recipient screen already owns the send flow (its route provides
+  /// TransferCubit/RecipientCubit), so the amount sheet appears ABOVE the
+  /// existing screens instead of the launcher pushing a fresh (blank) send
+  /// screen. Short flow → the inline amount → PIN → send sheet here; long flow
+  /// → the full amount/confirm screen with the amount pre-filled.
+  void _runInlineSend(RecipientModel r, {int? amountMinor, String? currency}) {
+    if (widget.shortFlow) {
+      // Defer one frame so the just-closed history sheet finishes dismissing
+      // before the amount sheet opens over this screen.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // ignore: discarded_futures
+        _startShortSend(r,
+            saveRecipient: false, prefillAmountMinor: amountMinor);
+      });
+    } else {
+      Get.toNamed(AppRoutes.initiateSendFunds, arguments: {
+        'recipient': r,
+        if (amountMinor != null) 'prefillAmount': amountMinor,
+        if (currency != null) 'prefillCurrency': currency,
+        if (amountMinor != null) 'autoShowConfirm': true,
+        'checkRecurring': true,
+      });
+    }
+  }
+
+  /// Opens the recent-transactions bottom sheet for [recipient] — the list of
+  /// prior transfers to them (internal AND external, including failed ones).
+  /// Tapping a row lets the user re-send a past amount / view its receipt.
+  void _openRecipientTransactionsSheet(RecipientModel recipient) {
     if (recipient.accountNumber.isEmpty) {
       Get.snackbar(
         'No Account Number',
@@ -1754,7 +2627,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
     Get.bottomSheet(
       BlocProvider(
         create: (_) => GetIt.I<RecipientTransactionHistoryCubit>(),
-        child: RecipientTransactionHistoryModal(recipient: recipient),
+        child: RecipientTransactionHistoryModal(
+          recipient: recipient,
+          onSend: _runInlineSend,
+        ),
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1837,12 +2713,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
             // Options List
             _buildOptionTile(
-              icon: Icons.repeat,
-              title: 'Quick Send',
+              icon: Icons.receipt_long_outlined,
+              title: 'Transaction History',
               color: const Color(0xFF4E03D0),
               onTap: () {
                 Get.back();
-                _quickSendToRecipient(recipient);
+                _openRecipientTransactionsSheet(recipient);
               },
             ),
             _buildOptionTile(
@@ -2058,7 +2934,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 SizedBox(width: 12.w),
                                 Expanded(
                                   child: Text(
-                                    recipient.bankName,
+                                    recipient.displayBankName,
                                     style: TextStyle(
                                       color: Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14.sp,
@@ -2237,7 +3113,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
   String _formatRecipientType(String? type) {
     switch (type?.toLowerCase()) {
       case 'internal':
-        return 'Internal (LazerVault)';
+        return 'Internal (Lazervault)';
       case 'external':
         return 'External (Bank)';
       case 'domestic':
@@ -2324,14 +3200,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
           ],
         );
       },
-    );
+    ).whenComplete(() => controller.dispose());
   }
 
   /// Share recipient details
   void _shareRecipient(RecipientModel recipient) {
     var shareText =
         'Account details for:\nName: ${recipient.name}\nAccount Number: ${recipient.accountNumber}';
-    shareText += '\nBank: ${recipient.bankName}';
+    shareText += '\nBank: ${recipient.displayBankName}';
     if (recipient.alias != null && recipient.alias!.isNotEmpty) {
       shareText += '\nAlias: ${recipient.alias}';
     }
@@ -2341,7 +3217,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     if (recipient.currency != null) {
       shareText += '\nCurrency: ${recipient.currency}';
     }
-    shareText += '\n\n-Sent from LazerVault';
+    shareText += '\n\n-Sent from Lazervault';
     SharePlus.instance.share(ShareParams(text: shareText));
   }
 
@@ -2411,6 +3287,26 @@ class _SelectRecipientsState extends State<SelectRecipients>
     );
   }
 
+  /// Primary "find a person to send to" action — opens the shared unified
+  /// search (your saved contacts incl. aliases like "Mum" first, then the
+  /// global directory). Saved hits continue straight to send; global hits go
+  /// through the existing Lazertag confirmation sheet.
+  Future<void> _openUnifiedRecipientSearch() async {
+    final result = await UnifiedUserSearchSheet.show(context, title: 'Send to');
+    if (result == null || !mounted) return;
+    if (result.isSavedHit) {
+      final currency =
+          CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
+      _continueWithRecipient(result.toRecipientModel(
+        countryCode: _currentCountry,
+        currency: currency,
+      ));
+    } else {
+      _showLazertagUserConfirmation(result.toUserSearchResultEntity());
+    }
+  }
+
+  // ignore: unused_element  (retained: device-contacts/bank picker, may be re-surfaced)
   void _showEnhancedRecipientSelection() {
     showModalBottomSheet(
       context: context,
@@ -2467,6 +3363,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
         child: UsernameRecipientConfirmationSheet(
           key: sheetKey,
           user: user,
+          shortFlow: widget.shortFlow,
           onConfirm: () {
             confirmed = true;
             // Read save/favorite/alias state directly via GlobalKey
@@ -2509,7 +3406,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
         type: 'internal',
         internalUserId: user.userId,
       );
-      Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+      // Honour the active flow: short → inline amount/PIN/receipt on this
+      // screen; long → initiate-send-funds. Previously this always pushed the
+      // long-flow route, so a user picked from "Search all Lazervault users" in
+      // classic (short) flow was wrongly dumped into the long flow.
+      _continueWithRecipient(recipient);
     }
   }
 
@@ -2850,7 +3751,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
           },
         );
       },
-    );
+    ).whenComplete(() => searchController.dispose());
   }
 
   /// Step 2: Show account number entry for contact
@@ -3092,7 +3993,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
           },
         );
       },
-    );
+    ).whenComplete(() => accountController.dispose());
   }
 
   /// Step 3: Show confirmation with verified account name
@@ -3383,40 +4284,77 @@ class _SelectRecipientsState extends State<SelectRecipients>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    int badgeCount = 0,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: Color.fromARGB(255, 78, 3, 208),
-              size: 24,
-            ),
+          // Badge overlays the icon circle directly (anchored to the icon, NOT
+          // the wider label box) so it sits snug at the icon's edge.
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: Color.fromARGB(255, 78, 3, 208),
+                  size: 24,
+                ),
+              ),
+              if (badgeCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: badgeCount > 9 ? 4.w : 0,
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 18.w,
+                      minHeight: 18.w,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      borderRadius: BorderRadius.circular(9.r),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      badgeCount > 99 ? '99+' : '$badgeCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 8.h),
-          // Fixed-width, centered, up-to-2-line label so the tiles distribute
-          // evenly with spaceBetween and a long label like "Scan Bank Details"
-          // wraps within its slot instead of pushing the row past the edge.
+          // Fixed-width, centered, single-line label — smaller + tighter
+          // letter-spacing so labels like "Scan Account"/"Scan History" fit on
+          // one line instead of wrapping.
           SizedBox(
-            width: 64.w,
+            width: 72.w,
             child: Text(
               label,
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.black87,
-                fontSize: 11.sp,
+                fontSize: 9.5.sp,
                 fontWeight: FontWeight.w500,
-                height: 1.15,
+                letterSpacing: -0.2,
+                height: 1.1,
               ),
             ),
           ),
@@ -3530,7 +4468,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
             arguments['prefillAmount'] = qrAmount;
             arguments['prefillCurrency'] = currency;
           }
-          _continueWithRecipient(recipient, longFlowArguments: arguments);
+          // qrAmount is in MINOR units — pass it to BOTH flows (long via
+          // arguments, short via prefillAmountMinor) so classic mode prefills too.
+          _continueWithRecipient(recipient,
+              longFlowArguments: arguments, prefillAmountMinor: qrAmount);
         }
       } catch (e) {
         // Dismiss loading sheet if still open
@@ -3552,483 +4493,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
         colorText: Colors.white,
       );
     }
-  }
-
-  /// Source picker for the bank-details scan flow. Returns the chosen
-  /// [ImageSource] or null when the sheet is dismissed without choosing.
-  ///
-  /// Two routes:
-  ///   • Camera  — `ImageSource.camera`  (take a photo right now)
-  ///   • Gallery — `ImageSource.gallery` (pick an existing image)
-  ///
-  /// Same downstream flow for both: OCR via /scan/bank-details → smart
-  /// result sheet → Paystack name verification → recipient + prefill
-  /// route into send-funds. Picking from gallery is the canonical path
-  /// when the user already saved a screenshot of the recipient's
-  /// account details.
-  Future<ImageSource?> _showScanSourcePicker() async {
-    return showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: const Color(0xFF1F1F1F),
-      isScrollControlled: false,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (sheetCtx) {
-        Widget option({
-          required IconData icon,
-          required String label,
-          required String hint,
-          required ImageSource value,
-        }) {
-          return InkWell(
-            onTap: () => Navigator.of(sheetCtx).pop(value),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44.w,
-                    height: 44.w,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 78, 3, 208)
-                          .withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon,
-                      color: const Color.fromARGB(255, 78, 3, 208),
-                      size: 22.sp,
-                    ),
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          label,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          hint,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: Colors.white.withValues(alpha: 0.4),
-                    size: 20.sp,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(0, 12.h, 0, 18.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Drag handle
-                Container(
-                  width: 40.w,
-                  height: 4.h,
-                  margin: EdgeInsets.only(bottom: 16.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Scan Bank Details',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Capture or import an image of the account '
-                        'details. We\'ll extract the recipient and (when '
-                        'the slip carries one) the amount.',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 12.5.sp,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                option(
-                  icon: Icons.photo_camera_outlined,
-                  label: 'Take a Photo',
-                  hint: 'Use your camera to scan now',
-                  value: ImageSource.camera,
-                ),
-                Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
-                option(
-                  icon: Icons.photo_library_outlined,
-                  label: 'Choose from Gallery',
-                  hint: 'Pick a saved screenshot or statement',
-                  value: ImageSource.gallery,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Build a [BankScanDataSource] pointed at the gateway ROOT.
-  ///
-  /// The OCR + history routes live at the gateway ROOT (`/scan/bank-details`,
-  /// `/scan/history`), NOT under `/chat`. CHAT_GATEWAY_URL ends in `/chat`, so
-  /// we MUST strip it — otherwise the datasource posts to `/chat/scan/...`
-  /// which 404s. Shared by the live scan and the history sheet so both hit the
-  /// same base.
-  BankScanDataSource _buildBankScanDataSource() {
-    final gatewayUrl =
-        (dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent)
-            .replaceAll(RegExp(r'/chat/?$'), '');
-    return BankScanDataSource(
-      baseUrl: gatewayUrl,
-      secureStorage: GetIt.I<SecureStorageService>(),
-      uploadService: GetIt.I<BankScanUploadService>(),
-    );
-  }
-
-  /// Open the Scan History bottom sheet. Lists past smart-scans newest-first;
-  /// tapping one re-applies it through the same routing the live scan uses.
-  Future<void> _showScanHistory() async {
-    await ScanHistorySheet.show(
-      context,
-      dataSourceBuilder: _buildBankScanDataSource,
-      onSelectScan: _applyScanHistoryItem,
-    );
-  }
-
-  /// Re-apply a stored scan. Rebuilds a [SmartScanResult] from the history
-  /// row and feeds it through the SAME result-sheet + routing path as the
-  /// live scan, so verification + prefill behave identically. No-data /
-  /// ambiguous-with-nothing rows just surface an info sheet.
-  Future<void> _applyScanHistoryItem(ScanHistoryItem item) async {
-    if (!mounted) return;
-
-    final result = item.toSmartScanResult();
-
-    if (result.extractionType == 'no_data') {
-      _showScanErrorSheet(
-        'No Details Found',
-        'This scan did not capture any payment details. Try scanning again.',
-      );
-      return;
-    }
-
-    // Reuse the live-scan result sheet so the user can review / verify the
-    // stored extraction before it routes into send-funds.
-    final action = await SmartScanResultSheet.show(
-      context,
-      scanResult: result,
-      country: _currentCountry,
-    );
-    if (action == null || !mounted) return;
-
-    Map<String, dynamic> buildSendFundsArgs(RecipientModel recipient) {
-      final args = <String, dynamic>{'recipient': recipient};
-      if (action.amountMinor != null && action.amountMinor! > 0) {
-        args['prefillAmount'] = action.amountMinor;
-      }
-      if (action.description != null && action.description!.isNotEmpty) {
-        args['prefillDescription'] = action.description;
-      }
-      if (args.containsKey('prefillAmount')) {
-        args['autoShowConfirm'] = true;
-      }
-      return args;
-    }
-
-    switch (action.type) {
-      case ScanActionType.bankTransfer:
-        final recipient = RecipientModel(
-          id: '',
-          name: action.accountName ?? '',
-          accountNumber: action.accountNumber ?? '',
-          bankName: action.bankName ?? '',
-          sortCode: action.bankCode ?? '',
-          isFavorite: false,
-          isSaved: false,
-          countryCode: _currentCountry,
-        );
-        _continueWithRecipient(recipient,
-            longFlowArguments: buildSendFundsArgs(recipient));
-      case ScanActionType.internalTransfer:
-        if (action.username != null && action.username!.isNotEmpty) {
-          _handleSmartScanUserSearch(
-            action.username!,
-            prefillAmountMinor: action.amountMinor,
-            prefillDescription: action.description,
-          );
-        }
-      case ScanActionType.phoneTransfer:
-        final recipient = RecipientModel(
-          id: '',
-          name: '',
-          accountNumber: action.phoneNumber ?? '',
-          bankName: '',
-          sortCode: '',
-          isFavorite: false,
-          isSaved: false,
-          phoneNumber: action.phoneNumber,
-          countryCode: _currentCountry,
-        );
-        _continueWithRecipient(recipient,
-            longFlowArguments: buildSendFundsArgs(recipient));
-      case ScanActionType.retryCapture:
-        // From history, "Scan Again" means start a fresh live capture.
-        _launchBankDetailsScan();
-    }
-  }
-
-  Future<void> _launchBankDetailsScan() async {
-    // Get auth cubit before any async operations
-    final authCubit = context.read<AuthenticationCubit>();
-
-    // Step 1: Ask the user how they want to provide the image — camera
-    // (take a photo now) OR gallery (pick an existing screenshot / saved
-    // statement). Both feed into the same OCR + verify + route chain
-    // below. Returning null = user dismissed the picker sheet.
-    final source = await _showScanSourcePicker();
-    if (source == null) return;
-    if (!mounted) return;
-
-    // Step 2: Acquire the image from the chosen source. Same picker
-    // call shape (max 2048×2048, 85% quality) for both paths so the
-    // OCR backend sees consistent inputs. Permission failures show
-    // a source-appropriate error sheet ("Camera Permission Required"
-    // vs "Photo Access Required") and return early.
-    final picker = ImagePicker();
-    final XFile? image;
-    try {
-      image = await picker.pickImage(
-        source: source,
-        maxWidth: 2048,
-        maxHeight: 2048,
-        imageQuality: 85,
-      );
-    } on PlatformException catch (e) {
-      if (!mounted) return;
-      final isDenied = e.code == 'camera_access_denied' ||
-          e.code == 'photo_access_denied' ||
-          (e.message?.toLowerCase().contains('permission') ?? false);
-      if (isDenied) {
-        _showScanErrorSheet(
-          source == ImageSource.camera
-              ? 'Camera Permission Required'
-              : 'Photo Access Required',
-          source == ImageSource.camera
-              ? 'Please enable camera access in your device settings to scan bank details.'
-              : 'Please enable photo library access in your device settings to pick an image.',
-        );
-      } else {
-        _showScanErrorSheet(
-          source == ImageSource.camera ? 'Camera Error' : 'Gallery Error',
-          source == ImageSource.camera
-              ? 'Could not open the camera. Please try again.'
-              : 'Could not open the gallery. Please try again.',
-        );
-      }
-      return;
-    }
-
-    if (image == null) return; // User cancelled the picker
-    if (!mounted) return;
-
-    // Step 2: Show processing sheet
-    _showScanProcessingSheet();
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    BankScanDataSource? dataSource;
-    try {
-      if (!mounted) {
-        if (Get.isBottomSheetOpen ?? false) Get.back();
-        return;
-      }
-
-      final authState = authCubit.state;
-      final userId = (authState is AuthenticationSuccess)
-          ? authState.profile.user.id
-          : '';
-
-      // BankScanDataSource goes through storage-service first (via
-      // BankScanUploadService) and posts only the resulting public URL
-      // to /scan/bank-details — see datasource for the 3-step pipeline.
-      // Gateway-root resolution is shared with the history sheet via
-      // _buildBankScanDataSource so both hit the same base.
-      dataSource = _buildBankScanDataSource();
-
-      final result = await dataSource.scanBankDetails(
-        imageFile: File(image.path),
-        userId: userId,
-        locale: 'en-$_currentCountry',
-        countryCode: _currentCountry,
-      );
-
-      dataSource.dispose();
-      dataSource = null;
-
-      // 2.4: Always dismiss processing sheet before showing next UI
-      if (Get.isBottomSheetOpen ?? false) Get.back();
-      // 2.3: Mounted check after async gap
-      if (!mounted) return;
-
-      // Handle no_data immediately with error sheet
-      if (result.extractionType == 'no_data') {
-        _showScanErrorSheet(
-          'No Details Found',
-          'Could not find payment details in this image. Try with a clearer photo.',
-        );
-        return;
-      }
-
-      // Show smart result sheet for all other types
-      final action = await SmartScanResultSheet.show(
-        context,
-        scanResult: result,
-        country: _currentCountry,
-      );
-
-      // 2.3: Mounted check after showing bottom sheet
-      if (action == null || !mounted) return;
-
-      // Route based on action type. When the OCR captured an amount or
-      // memo (invoice / payment-slip flow), pass them through the Map
-      // argument shape the InitiateSendFunds widget recognises —
-      // `prefillAmount` (minor units) drives the amount controller's
-      // initial value, `prefillDescription` populates the reference
-      // field. The route handler unwraps both into the screen args.
-      Map<String, dynamic> buildSendFundsArgs(RecipientModel recipient) {
-        final args = <String, dynamic>{'recipient': recipient};
-        if (action.amountMinor != null && action.amountMinor! > 0) {
-          args['prefillAmount'] = action.amountMinor;
-        }
-        if (action.description != null && action.description!.isNotEmpty) {
-          args['prefillDescription'] = action.description;
-        }
-        // If we have both recipient and amount, auto-show the
-        // confirmation sheet so the user only has to tap "Send".
-        if (args.containsKey('prefillAmount')) {
-          args['autoShowConfirm'] = true;
-        }
-        return args;
-      }
-
-      switch (action.type) {
-        case ScanActionType.bankTransfer:
-          final recipient = RecipientModel(
-            id: '',
-            name: action.accountName ?? '',
-            accountNumber: action.accountNumber ?? '',
-            bankName: action.bankName ?? '',
-            sortCode: action.bankCode ?? '',
-            isFavorite: false,
-            isSaved: false,
-            countryCode: _currentCountry,
-          );
-          _continueWithRecipient(recipient,
-              longFlowArguments: buildSendFundsArgs(recipient));
-        case ScanActionType.internalTransfer:
-          if (action.username != null && action.username!.isNotEmpty) {
-            _handleSmartScanUserSearch(
-              action.username!,
-              prefillAmountMinor: action.amountMinor,
-              prefillDescription: action.description,
-            );
-          }
-        case ScanActionType.phoneTransfer:
-          final recipient = RecipientModel(
-            id: '',
-            name: '',
-            accountNumber: action.phoneNumber ?? '',
-            bankName: '',
-            sortCode: '',
-            isFavorite: false,
-            isSaved: false,
-            phoneNumber: action.phoneNumber,
-            countryCode: _currentCountry,
-          );
-          _continueWithRecipient(recipient,
-              longFlowArguments: buildSendFundsArgs(recipient));
-        case ScanActionType.retryCapture:
-          _launchBankDetailsScan();
-      }
-    } on BankScanException catch (e) {
-      // 2.4: Always dismiss processing sheet on error
-      if (Get.isBottomSheetOpen ?? false) Get.back();
-      if (!mounted) return;
-      _showScanErrorSheet('Scan Failed', e.message);
-    } catch (e) {
-      // 2.4: Always dismiss processing sheet on error
-      if (Get.isBottomSheetOpen ?? false) Get.back();
-      if (!mounted) return;
-      _showScanErrorSheet('Error', 'Something went wrong. Please try again.');
-    } finally {
-      // Ensure datasource is cleaned up even on unexpected errors
-      dataSource?.dispose();
-    }
-  }
-
-  void _handleSmartScanUserSearch(
-    String username, {
-    int? prefillAmountMinor,
-    String? prefillDescription,
-  }) {
-    final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
-    final recipient = RecipientModel(
-      id: '',
-      name: username,
-      accountNumber: username,
-      bankName: 'LazerVault',
-      sortCode: '',
-      isFavorite: false,
-      isSaved: false,
-      countryCode: _currentCountry,
-      currency: currency,
-      type: 'internal',
-    );
-    // Mirror the Map-argument shape so the prefill from the OCR
-    // scan survives the navigation hop.
-    final args = <String, dynamic>{'recipient': recipient};
-    if (prefillAmountMinor != null && prefillAmountMinor > 0) {
-      args['prefillAmount'] = prefillAmountMinor;
-      args['autoShowConfirm'] = true;
-    }
-    if (prefillDescription != null && prefillDescription.isNotEmpty) {
-      args['prefillDescription'] = prefillDescription;
-    }
-    _continueWithRecipient(recipient, longFlowArguments: args);
   }
 
   void _showQrVerificationLoadingSheet() {
@@ -4173,177 +4637,6 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     onPressed: () {
                       Get.back();
                       _launchQRScanner();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4E03D0),
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Try Again',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showScanProcessingSheet() {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(24.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 32.h),
-            Container(
-              width: 72.w,
-              height: 72.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              // Branded loader replaces the bare CircularProgressIndicator
-              // so the user sees the company logo while the OCR call is
-              // in flight. Same 36px slot — pixel-stable.
-              child: const Center(
-                child: LazerVaultLoader(size: 36),
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              'Scanning Bank Details',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Extracting account information from the image...',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF6B7280),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            LinearProgressIndicator(
-              backgroundColor: const Color(0xFFE5E7EB),
-              valueColor: const AlwaysStoppedAnimation(Color(0xFF4E03D0)),
-              minHeight: 3.h,
-            ),
-            SizedBox(height: 24.h),
-          ],
-        ),
-      ),
-      isDismissible: false,
-      enableDrag: false,
-    );
-  }
-
-  void _showScanErrorSheet(String title, String message, {bool isWarning = false}) {
-    final color = isWarning ? Colors.orange : Colors.red;
-    final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
-
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(24.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 32.h),
-            Container(
-              width: 72.w,
-              height: 72.h,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 36.sp),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF6B7280),
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Get.back(),
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      side: const BorderSide(color: Color(0xFFE5E7EB)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Close',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Get.back();
-                      _launchBankDetailsScan();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4E03D0),
@@ -4612,9 +4905,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
+          // Pass the full entity so the detail screen renders instantly (it
+          // also accepts a bare id as a fallback). Passing `t.id` used to crash
+          // with "String is not a subtype of RecurringTransferEntity".
           onTap: () => Get.toNamed(
             AppRoutes.recurringTransferDetail,
-            arguments: t.id,
+            arguments: t,
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -4650,7 +4946,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        '${t.recipientBankName.isEmpty ? "LazerVault" : t.recipientBankName} • ${t.frequency.label}',
+                        '${t.recipientBankName.isEmpty ? "Lazervault" : t.recipientBankName} • ${t.frequency.label}',
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.grey[600],

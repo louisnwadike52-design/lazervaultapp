@@ -97,12 +97,12 @@ class ContactSyncLoaded extends ContactSyncState {
       ];
 }
 
-/// Finding LazerVault users
+/// Finding Lazervault users
 class ContactSyncFindingUsers extends ContactSyncState {
   const ContactSyncFindingUsers();
 }
 
-/// LazerVault users found
+/// Lazervault users found
 class ContactSyncUsersFound extends ContactSyncState {
   final List<LazerVaultUserMatchModel> matchedUsers;
 

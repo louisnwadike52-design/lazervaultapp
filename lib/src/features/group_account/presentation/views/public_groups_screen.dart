@@ -274,7 +274,10 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
                             itemCount: state.groups.length,
                             itemBuilder: (context, index) {
                               final group = state.groups[index];
-                              return _buildGroupCard(group);
+                              return _buildGroupCard(
+                                group,
+                                state.isMemberOf(group.id),
+                              );
                             },
                           ),
                         ),
@@ -292,7 +295,7 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
     );
   }
 
-  Widget _buildGroupCard(GroupAccount group) {
+  Widget _buildGroupCard(GroupAccount group, bool isMember) {
     return GestureDetector(
       onTap: () => _onGroupTap(group),
       child: Container(
@@ -379,17 +382,48 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
               ),
             ),
             SizedBox(width: 8.w),
-            // Join button
-            _buildJoinButton(group),
+            // Join / Joined CTA
+            _buildCta(group, isMember),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildJoinButton(GroupAccount group) {
-    final isJoining = _joiningGroupIds.contains(group.id);
+  /// Members see a non-actionable "Joined" chip; non-members see the
+  /// interactive "Join" button. Never render a Join CTA for a group the
+  /// user already belongs to.
+  Widget _buildCta(GroupAccount group, bool isMember) {
+    if (isMember) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle,
+              size: 14.sp,
+              color: const Color(0xFF10B981),
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              'Joined',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF10B981),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
+    final isJoining = _joiningGroupIds.contains(group.id);
     return GestureDetector(
       onTap: isJoining
           ? null

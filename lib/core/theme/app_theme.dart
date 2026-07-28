@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Centralized light + dark [ThemeData] for the app. The light theme preserves
 /// the previous in-app appearance; the dark theme uses the LazerVault dark
-/// palette (see CLAUDE.md) so Material-driven widgets adapt when dark mode is on.
+/// palette so Material-driven widgets adapt when dark mode is on.
 ///
 /// NOTE: screens that hardcode colors won't fully adapt until they're migrated
 /// to theme-aware colors — that reskin is intentionally deferred.
@@ -13,7 +13,7 @@ class AppTheme {
 
   static const Color _brand = Color(0xFF4E03D0);
 
-  // Dark palette (CLAUDE.md).
+  // Dark palette.
   static const Color _darkBg = Color(0xFF0A0A0A);
   static const Color _darkSurface = Color(0xFF1F1F1F);
 

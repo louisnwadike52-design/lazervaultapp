@@ -20,7 +20,7 @@ String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
   'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' ||
   'reversals' || 'transfers' || 'banking' || 'payments' ||
   'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
-  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'PiggyVault',
+  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'Piggyvault',
   'autosave' => 'AutoSave',
   'savings & products' => 'Savings & Products',
   'transfer' || 'c2c_transfer' => 'P2P Transfers',
@@ -254,46 +254,46 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
     }
   }
 
-  /// Header chip showing the active money source; tap to change it.
+  /// Header chip showing the active money source; tap to change it. Compact —
+  /// hugs its content and left-aligns instead of spanning the full row.
   Widget _buildSourceChip(BuildContext context, StatisticsSource source) {
-    return GestureDetector(
-      onTap: () => _openSourceSheet(context, source),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              source == StatisticsSource.bank
-                  ? Icons.account_balance_rounded
-                  : source == StatisticsSource.lazervault
-                      ? Icons.account_balance_wallet_rounded
-                      : Icons.dashboard_rounded,
-              color: const Color(0xFF3B82F6),
-              size: 18.sp,
-            ),
-            SizedBox(width: 10.w),
-            Text(
-              'Showing: ',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
-            ),
-            Expanded(
-              child: Text(
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: GestureDetector(
+        onTap: () => _openSourceSheet(context, source),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                source == StatisticsSource.bank
+                    ? Icons.account_balance_rounded
+                    : source == StatisticsSource.lazervault
+                        ? Icons.account_balance_wallet_rounded
+                        : Icons.dashboard_rounded,
+                color: const Color(0xFF4E03D0),
+                size: 15.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
                 source.label,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 13.sp,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                color: const Color(0xFF9CA3AF), size: 20.sp),
-          ],
+              SizedBox(width: 4.w),
+              Icon(Icons.keyboard_arrow_down_rounded,
+                  color: const Color(0xFF9CA3AF), size: 18.sp),
+            ],
+          ),
         ),
       ),
     );

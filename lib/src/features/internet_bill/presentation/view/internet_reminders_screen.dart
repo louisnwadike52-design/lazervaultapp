@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../../domain/entities/internet_reminder.dart';
 import '../cubit/internet_reminder_cubit.dart';
 import '../cubit/internet_reminder_state.dart';
@@ -23,7 +24,8 @@ class InternetRemindersScreen extends StatefulWidget {
       _InternetRemindersScreenState();
 }
 
-class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
+class _InternetRemindersScreenState extends State<InternetRemindersScreen>
+    with ReminderPauseResumeMixin<InternetRemindersScreen> {
   static const _accent = Color(0xFF4E03D0);
 
   @override
@@ -41,7 +43,9 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
   }
 
   bool _isActive(InternetReminder r) =>
-      r.status == 'pending' || r.status == 'notified';
+      r.status == 'pending' ||
+      r.status == 'notified' ||
+      r.status == 'paused';
 
   bool _isCompleted(InternetReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -359,6 +363,27 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
       onPayNow: isDue && !_isCompleted(r) ? () => _payNow(r) : null,
       onMarkComplete: !_isCompleted(r) ? () => _markComplete(r) : null,
       onEdit: !_isCompleted(r) ? () => _edit(r) : null,
+      onPause: r.status == 'pending'
+          ? () => runReminderStatusChange(
+                billType: 'internet',
+                reminderId: r.id,
+                pause: true,
+                onSuccessReload: () => context
+                    .read<InternetReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      onResume: r.status == 'paused'
+          ? () => runReminderStatusChange(
+                billType: 'internet',
+                reminderId: r.id,
+                pause: false,
+                onSuccessReload: () => context
+                    .read<InternetReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      isProcessing: busyReminderId == r.id,
       onDelete: () => _delete(r),
     );
   }

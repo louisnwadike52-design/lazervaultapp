@@ -11,6 +11,7 @@ import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/app_error_view.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 /// Budget List Screen - displays all user budgets
 class BudgetListScreen extends StatelessWidget {
@@ -68,14 +69,14 @@ class BudgetListView extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.message),
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: InvoiceThemeColors.primaryPurple,
                       ),
                     );
                   } else if (state is BudgetDeleted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.message),
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: InvoiceThemeColors.primaryPurple,
                       ),
                     );
                   }
@@ -128,7 +129,7 @@ class BudgetListView extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.toNamed(AppRoutes.createBudget),
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: InvoiceThemeColors.primaryPurple,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -155,7 +156,7 @@ class _BudgetsListView extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () => context.read<BudgetCubit>().loadBudgets(),
-      color: const Color(0xFF10B981),
+      color: InvoiceThemeColors.primaryPurple,
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         padding: EdgeInsets.all(16.w),
@@ -187,6 +188,14 @@ class _SummaryCard extends StatelessWidget {
     required this.overallPercentage,
     super.key,
   });
+
+  /// Green while there's comfortable headroom, amber as the budget fills up,
+  /// red once spending is at/over the limit.
+  static Color _utilizationColor(double percentage) {
+    if (percentage >= 90) return const Color(0xFFEF4444);
+    if (percentage >= 70) return const Color(0xFFFB923C);
+    return InvoiceThemeColors.primaryPurple;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,13 +229,27 @@ class _SummaryCard extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // Progress Ring
+          // Progress Ring — a real determinate arc of budget utilization,
+          // coloured green/amber/red by how much of the budget is used.
           SizedBox(
             height: 120.h,
+            width: 120.h,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                LazerVaultLoader(size: 100),
+                SizedBox(
+                  height: 110.h,
+                  width: 110.h,
+                  child: CircularProgressIndicator(
+                    value: (overallPercentage / 100).clamp(0.0, 1.0),
+                    strokeWidth: 10,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: const Color(0xFF2D2D2D),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _utilizationColor(overallPercentage),
+                    ),
+                  ),
+                ),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -291,7 +314,7 @@ class _SummaryCard extends StatelessWidget {
                     CurrencySymbols.formatAmount(totalBudgetAmount - totalSpentAmount),
                     style: TextStyle(
                       color: (totalBudgetAmount - totalSpentAmount) >= 0
-                          ? const Color(0xFF10B981)
+                          ? InvoiceThemeColors.primaryPurple
                           : const Color(0xFFEF4444),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -403,7 +426,7 @@ class _BudgetCard extends StatelessWidget {
                       ? const Color(0xFFEF4444)
                       : percentage >= 70
                           ? const Color(0xFFFB923C)
-                          : const Color(0xFF10B981),
+                          : InvoiceThemeColors.primaryPurple,
                 ),
                 minHeight: 6.h,
               ),
@@ -504,7 +527,7 @@ class _EmptyStateView extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Create Budget'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(
                   horizontal: 24.w,

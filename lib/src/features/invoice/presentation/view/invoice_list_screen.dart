@@ -6,8 +6,10 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 
+import 'package:open_filex/open_filex.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../../services/invoice_pdf_service.dart';
+import '../utils/share_origin.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../widgets/invoice_card.dart';
@@ -594,9 +596,27 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             ListTile(
               leading: Icon(Icons.share, color: InvoiceThemeColors.primaryPurple),
               title: Text('Share', style: InvoiceTextStyles.body16),
-              onTap: () {
+              onTap: () async {
+                final screenContext = this.context;
                 Navigator.pop(context);
-                context.read<InvoiceCubit>().shareInvoice(invoice.id, []);
+                try {
+                  await InvoicePdfService.shareInvoice(
+                    invoice,
+                    sharePositionOrigin: screenContext.mounted
+                        ? shareOriginFromContext(screenContext)
+                        : null,
+                  );
+                } catch (e) {
+                  if (screenContext.mounted) {
+                    ScaffoldMessenger.of(screenContext).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to share invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
+                        backgroundColor: const Color(0xFFEF4444),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
               },
             ),
             if (invoice.status != InvoiceStatus.paid) ...[
@@ -629,8 +649,9 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               leading: Icon(Icons.download, color: InvoiceThemeColors.successGreen),
               title: Text('Download PDF', style: InvoiceTextStyles.body16),
               onTap: () {
+                final screenContext = this.context;
                 Navigator.pop(context);
-                _downloadInvoice(context, invoice);
+                _downloadInvoice(screenContext, invoice);
               },
             ),
             SizedBox(height: MediaQuery.of(context).padding.bottom),
@@ -807,14 +828,19 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         ),
       );
 
-      await InvoicePdfService.downloadInvoice(invoice);
-      
+      final filePath = await InvoicePdfService.downloadInvoice(invoice);
+
+      // Open the saved PDF so the CTA visibly does something on both platforms.
+      final openResult = await OpenFilex.open(filePath);
+
       // Hide loading and show success
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Invoice PDF downloaded successfully!'),
+          content: Text(openResult.type == ResultType.done
+              ? 'Invoice PDF downloaded'
+              : 'Invoice PDF saved to $filePath'),
           backgroundColor: const Color(0xFF10B981),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,

@@ -9,6 +9,38 @@ import 'package:grpc/grpc.dart';
 const String networkErrorMessage =
     'Network error. Please check your connection and try again.';
 
+/// The single, canonical message shown when a money-moving flow is refused
+/// because the source account is frozen/suspended. accounts-service is the
+/// single source of truth for balances and blocks EVERY debit/hold/transfer on
+/// a frozen source, so mapping this one error covers every transfer-related
+/// service (send, FX/international, withdrawals, bills, crypto, move-money, …).
+const String frozenAccountMessage =
+    'This account is frozen, so this transaction can’t go through. '
+    'Unfreeze it in Account settings to continue.';
+
+/// True when [error] (a GrpcError, a raw string, or anything with a message) is
+/// the accounts-service frozen/suspended-account rejection
+/// (e.g. `account <uuid> is frozen`).
+bool isFrozenAccountError(Object? error) {
+  if (error == null) return false;
+  final raw = error is GrpcError
+      ? (error.message ?? '')
+      : error is String
+          ? error
+          : error.toString();
+  return _messageLooksFrozen(raw);
+}
+
+/// Shared substring detector for the frozen/suspended-account server error.
+bool _messageLooksFrozen(String raw) {
+  if (raw.isEmpty) return false;
+  final m = raw.toLowerCase();
+  return m.contains('is frozen') ||
+      m.contains('account frozen') ||
+      m.contains('is suspended') ||
+      m.contains('account suspended');
+}
+
 /// True when [error] is a connectivity / transport-level failure (no internet,
 /// server unreachable, gateway 5xx, timeout, dropped connection).
 ///
@@ -69,13 +101,21 @@ bool isNetworkStatusCode(dynamic statusCode) {
 /// gate any "pass the server's own message through" branch.
 bool looksTechnical(String? msg) {
   if (msg == null || msg.isEmpty) return true;
+  final trimmed = msg.trim();
   final m = msg.toLowerCase();
   if (m.contains('exception') ||
       m.contains('error:') ||
       m.contains('stacktrace') ||
       m.contains('statuscode') ||
       m.contains('grpcerror') ||
-      m.contains('dioexception')) {
+      m.contains('dioexception') ||
+      m.contains('rpc error') || // raw gRPC status string
+      // A provider/JSON blob leaked to the client (e.g. Klasha's
+      // {"message":"…","error":"com.…Exception"}). Never show raw JSON.
+      trimmed.startsWith('{') ||
+      trimmed.startsWith('[') ||
+      m.contains('{"') ||
+      m.contains('":"')) {
     return true;
   }
   return _messageLooksLikeNetwork(m);
@@ -135,6 +175,11 @@ String friendlyError(Object? error, {String? context}) {
     return networkErrorMessage;
   }
 
+  // --- frozen/suspended source account — clean, actionable, code-agnostic ----
+  if (isFrozenAccountError(error)) {
+    return frozenAccountMessage;
+  }
+
   // --- gRPC: map by status code, never the raw message ----------------------
   if (error is GrpcError) {
     switch (error.code) {
@@ -146,6 +191,14 @@ String friendlyError(Object? error, {String? context}) {
         return contextual();
       case StatusCode.resourceExhausted:
         return 'Too many attempts. Please wait a moment and try again.';
+      case StatusCode.failedPrecondition:
+      case StatusCode.invalidArgument:
+        // Services return clean, user-facing text for known business cases
+        // (quote expired, insufficient balance, payout unavailable, …). Pass
+        // it through the sanitizer so a genuine sentence shows while any raw
+        // rpc/JSON blob still collapses to the generic line. Never e.toString()
+        // — that carries the gRPC status + cloudflare trailers.
+        return sanitizeUserFacingError(error.message);
       default:
         return contextual();
     }
@@ -165,6 +218,23 @@ String friendlyError(Object? error, {String? context}) {
 
   // --- everything else ------------------------------------------------------
   return contextual();
+}
+
+/// Sanitize an ALREADY-EXTRACTED message string for display. Use at the sink
+/// (Failure construction, snackbars, error widgets) where only the string —
+/// not the original error object — is available. Raw transport text (e.g.
+/// "HTTP connection completed with 502 instead of 200") becomes the friendly
+/// network message; other clearly-technical text becomes a generic line;
+/// genuine human/business messages ("Insufficient balance") pass through
+/// unchanged, so downstream logic that reads business messages is unaffected.
+String sanitizeUserFacingError(String? message) {
+  final msg = message?.trim() ?? '';
+  if (msg.isEmpty) return 'Something went wrong. Please try again.';
+  if (_messageLooksLikeNetwork(msg.toLowerCase())) return networkErrorMessage;
+  // Map the raw frozen/suspended-account error (carries a UUID) to a clean line.
+  if (_messageLooksFrozen(msg)) return frozenAccountMessage;
+  if (looksTechnical(msg)) return 'Something went wrong. Please try again.';
+  return msg;
 }
 
 /// True when the error means the user's auth/session is no longer valid, so the

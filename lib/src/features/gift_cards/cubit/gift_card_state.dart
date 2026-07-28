@@ -200,17 +200,22 @@ class TransactionsEmpty extends GiftCardState {
 // Specific Error States (Production Edge Cases)
 class GiftCardInsufficientFunds extends GiftCardState {
   final double required;
-  final double available;
+  // Available balance is OPTIONAL: the authoritative balance lives in
+  // accounts-service (the backend enforces the hold), and this screen has no
+  // reliable real-time figure. We only set it when the backend's error message
+  // carries one — otherwise null, and the UI shows a generic message instead
+  // of fabricating "you have 0.00" (which alarmed users who actually had funds).
+  final double? available;
   final String brandName;
 
   const GiftCardInsufficientFunds({
     required this.required,
-    required this.available,
+    this.available,
     required this.brandName,
   });
 
   @override
-  List<Object> get props => [required, available, brandName];
+  List<Object> get props => [required, available ?? -1, brandName];
 }
 
 class GiftCardExpired extends GiftCardState {
@@ -629,58 +634,4 @@ class SellProviderError extends GiftCardState {
 
   @override
   List<Object> get props => [message];
-}
-
-// ============================================
-// SETTLEMENT HISTORY STATES
-// ============================================
-
-class SettlementHistoryLoading extends GiftCardState {}
-
-class SettlementHistoryLoaded extends GiftCardState {
-  final List<Settlement> settlements;
-
-  const SettlementHistoryLoaded(this.settlements);
-
-  @override
-  List<Object> get props => [settlements];
-}
-
-class SettlementHistoryEmpty extends GiftCardState {
-  const SettlementHistoryEmpty();
-}
-
-class SettlementDetailLoaded extends GiftCardState {
-  final Settlement settlement;
-
-  const SettlementDetailLoaded(this.settlement);
-
-  @override
-  List<Object> get props => [settlement];
-}
-
-class SettlementRetryInitiated extends GiftCardState {
-  final String settlementId;
-  final String message;
-
-  const SettlementRetryInitiated({
-    required this.settlementId,
-    required this.message,
-  });
-
-  @override
-  List<Object> get props => [settlementId, message];
-}
-
-class SettlementExportSuccess extends GiftCardState {
-  final String filePath;
-  final String format; // "pdf" or "csv"
-
-  const SettlementExportSuccess({
-    required this.filePath,
-    required this.format,
-  });
-
-  @override
-  List<Object> get props => [filePath, format];
 }

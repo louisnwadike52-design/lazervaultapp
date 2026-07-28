@@ -45,6 +45,7 @@ class SplitBill extends $pb.GeneratedMessage {
     $core.String? receiverAccountMasked,
     $core.String? settlementStatus,
     $core.double? withdrawalFee,
+    $core.String? title,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -70,6 +71,7 @@ class SplitBill extends $pb.GeneratedMessage {
       result.receiverAccountMasked = receiverAccountMasked;
     if (settlementStatus != null) result.settlementStatus = settlementStatus;
     if (withdrawalFee != null) result.withdrawalFee = withdrawalFee;
+    if (title != null) result.title = title;
     return result;
   }
 
@@ -125,6 +127,7 @@ class SplitBill extends $pb.GeneratedMessage {
     ..aOS(21, _omitFieldNames ? '' : 'settlementStatus')
     ..a<$core.double>(
         22, _omitFieldNames ? '' : 'withdrawalFee', $pb.PbFieldType.OD)
+    ..aOS(23, _omitFieldNames ? '' : 'title')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -343,6 +346,15 @@ class SplitBill extends $pb.GeneratedMessage {
   $core.bool hasWithdrawalFee() => $_has(21);
   @$pb.TagNumber(22)
   void clearWithdrawalFee() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get title => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set title($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasTitle() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearTitle() => $_clearField(23);
 }
 
 class SplitBillParticipant extends $pb.GeneratedMessage {
@@ -537,11 +549,15 @@ class SplitBillParticipantInput extends $pb.GeneratedMessage {
     $core.String? username,
     $core.double? amount,
     $core.double? percentage,
+    $core.String? userId,
+    $core.String? displayName,
   }) {
     final result = create();
     if (username != null) result.username = username;
     if (amount != null) result.amount = amount;
     if (percentage != null) result.percentage = percentage;
+    if (userId != null) result.userId = userId;
+    if (displayName != null) result.displayName = displayName;
     return result;
   }
 
@@ -562,6 +578,8 @@ class SplitBillParticipantInput extends $pb.GeneratedMessage {
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..a<$core.double>(
         3, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'userId')
+    ..aOS(5, _omitFieldNames ? '' : 'displayName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -613,6 +631,24 @@ class SplitBillParticipantInput extends $pb.GeneratedMessage {
   $core.bool hasPercentage() => $_has(2);
   @$pb.TagNumber(3)
   void clearPercentage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get userId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set userId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUserId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get displayName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set displayName($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDisplayName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDisplayName() => $_clearField(5);
 }
 
 /// ReceiverInput selects where co-payers' money goes. When absent, the receiver
@@ -623,12 +659,16 @@ class ReceiverInput extends $pb.GeneratedMessage {
     $core.String? username,
     $core.String? bankCode,
     $core.String? accountNumber,
+    $core.String? userId,
+    $core.String? displayName,
   }) {
     final result = create();
     if (type != null) result.type = type;
     if (username != null) result.username = username;
     if (bankCode != null) result.bankCode = bankCode;
     if (accountNumber != null) result.accountNumber = accountNumber;
+    if (userId != null) result.userId = userId;
+    if (displayName != null) result.displayName = displayName;
     return result;
   }
 
@@ -649,6 +689,8 @@ class ReceiverInput extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'username')
     ..aOS(3, _omitFieldNames ? '' : 'bankCode')
     ..aOS(4, _omitFieldNames ? '' : 'accountNumber')
+    ..aOS(5, _omitFieldNames ? '' : 'userId')
+    ..aOS(6, _omitFieldNames ? '' : 'displayName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -707,6 +749,24 @@ class ReceiverInput extends $pb.GeneratedMessage {
   $core.bool hasAccountNumber() => $_has(3);
   @$pb.TagNumber(4)
   void clearAccountNumber() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get userId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set userId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasUserId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUserId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get displayName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set displayName($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDisplayName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDisplayName() => $_clearField(6);
 }
 
 class SplitBillTransaction extends $pb.GeneratedMessage {
@@ -938,6 +998,7 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
     $core.Iterable<SplitBillParticipantInput>? participants,
     ReceiverInput? receiver,
     $core.bool? includeSelfAsCopayer,
+    $core.String? title,
   }) {
     final result = create();
     if (totalAmount != null) result.totalAmount = totalAmount;
@@ -949,6 +1010,7 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
     if (receiver != null) result.receiver = receiver;
     if (includeSelfAsCopayer != null)
       result.includeSelfAsCopayer = includeSelfAsCopayer;
+    if (title != null) result.title = title;
     return result;
   }
 
@@ -982,6 +1044,7 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
     ..aOM<ReceiverInput>(7, _omitFieldNames ? '' : 'receiver',
         subBuilder: ReceiverInput.create)
     ..aOB(8, _omitFieldNames ? '' : 'includeSelfAsCopayer')
+    ..aOS(9, _omitFieldNames ? '' : 'title')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1074,6 +1137,15 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
   $core.bool hasIncludeSelfAsCopayer() => $_has(7);
   @$pb.TagNumber(8)
   void clearIncludeSelfAsCopayer() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get title => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set title($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasTitle() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTitle() => $_clearField(9);
 }
 
 class CreateSplitBillResponse extends $pb.GeneratedMessage {
@@ -1932,9 +2004,12 @@ class DeclineSplitBillShareResponse extends $pb.GeneratedMessage {
 class SendSplitBillReminderRequest extends $pb.GeneratedMessage {
   factory SendSplitBillReminderRequest({
     $core.String? splitBillId,
+    $core.Iterable<$core.String>? participantUserIds,
   }) {
     final result = create();
     if (splitBillId != null) result.splitBillId = splitBillId;
+    if (participantUserIds != null)
+      result.participantUserIds.addAll(participantUserIds);
     return result;
   }
 
@@ -1952,6 +2027,7 @@ class SendSplitBillReminderRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
+    ..pPS(2, _omitFieldNames ? '' : 'participantUserIds')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1987,6 +2063,11 @@ class SendSplitBillReminderRequest extends $pb.GeneratedMessage {
   $core.bool hasSplitBillId() => $_has(0);
   @$pb.TagNumber(1)
   void clearSplitBillId() => $_clearField(1);
+
+  /// Optional: remind only these participants (by user id). Empty → remind ALL
+  /// unpaid (pending) participants. Non-pending ids in the list are ignored.
+  @$pb.TagNumber(2)
+  $pb.PbList<$core.String> get participantUserIds => $_getList(1);
 }
 
 class SendSplitBillReminderResponse extends $pb.GeneratedMessage {

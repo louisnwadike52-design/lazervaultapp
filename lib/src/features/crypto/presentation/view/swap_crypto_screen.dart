@@ -4,14 +4,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../widgets/crypto_asset_avatar.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../widgets/asset_wallet_sheet.dart';
+import '../widgets/asset_network_badge.dart';
+import '../widgets/network_picker_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
+import 'all_assets_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Removed ServiceVoiceButton import per #212 — voice icons live on
 // the parent crypto landing only; sub-screens like the swap detail
@@ -45,6 +50,27 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   bool _isFromAmountActive = true;
   bool _isLoading = false;
   bool _isTransacting = false;
+  // The FROM amount can be typed in fiat or crypto. `_fromAmount` always returns
+  // the from-crypto QUANTITY (converting when in fiat) so all downstream logic
+  // (validation, rate, submit, summary) stays crypto-denominated and unchanged.
+  bool _fromInFiat = false;
+  double get _fromPrice => _fromHolding?.currentPrice ?? 0.0;
+
+  void _toggleFromUnit() {
+    if (_fromPrice <= 0) return;
+    final typed = double.tryParse(_fromAmountController.text) ?? 0.0;
+    _isUpdatingAmounts = true;
+    setState(() {
+      if (_fromInFiat) {
+        _fromAmountController.text = typed > 0 ? (typed / _fromPrice).toStringAsFixed(6) : '';
+      } else {
+        _fromAmountController.text = typed > 0 ? (typed * _fromPrice).toStringAsFixed(2) : '';
+      }
+      _fromInFiat = !_fromInFiat;
+    });
+    _isUpdatingAmounts = false;
+    _onFromAmountChanged();
+  }
 
   @override
   ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
@@ -53,6 +79,13 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     final state = context.read<CryptoCubit>().state;
     return state is CryptosLoaded ? state.holdings : [];
   }
+
+  /// The ONLY assets valid on the "from" side: the ones the user actually
+  /// holds a positive balance of. A zero-balance holding row is not something
+  /// you can swap from, so it must never appear in the from selector or be
+  /// reachable via the direction-flip.
+  List<CryptoHolding> get _swappableHoldings =>
+      _holdings.where((h) => h.quantity > 0).toList();
 
   List<Crypto> get _availableCryptos {
     final state = context.read<CryptoCubit>().state;
@@ -63,11 +96,38 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     return [];
   }
 
+  /// The user's positive-balance holding for [symbol], or null if not held.
+  /// (Explicit loop instead of firstWhereOrNull to avoid a package:collection
+  /// dependency.)
+  CryptoHolding? _heldBySymbol(String symbol) {
+    final s = symbol.toLowerCase();
+    for (final h in _swappableHoldings) {
+      if (h.cryptoSymbol.toLowerCase() == s) return h;
+    }
+    return null;
+  }
+
+  /// The Quidax-supported catalogue asset for [symbol], or null if absent.
+  Crypto? _supportedBySymbol(String symbol) {
+    final s = symbol.toLowerCase();
+    for (final c in _availableCryptos) {
+      if (c.symbol.toLowerCase() == s) return c;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
     _fromHolding = widget.fromHolding;
     _toCrypto = widget.toCrypto;
+    // Never start with the same asset on both sides (you can't swap X into X).
+    if (_fromHolding != null &&
+        _toCrypto != null &&
+        _fromHolding!.cryptoSymbol.toLowerCase() ==
+            _toCrypto!.symbol.toLowerCase()) {
+      _toCrypto = null;
+    }
     _fromAmountController.addListener(_onFromAmountChanged);
     _toAmountController.addListener(_onToAmountChanged);
     _setupAnimations();
@@ -129,7 +189,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   void _onFromAmountChanged() {
     if (_isUpdatingAmounts) return;
     if (_isFromAmountActive && _fromHolding != null && _toCrypto != null) {
-      final fromAmount = double.tryParse(_fromAmountController.text) ?? 0.0;
+      final fromAmount = _fromAmount; // crypto qty (converts if typed in fiat)
       if (_toCrypto!.currentPrice <= 0) return; // Guard division by zero
       final gbpValue = fromAmount * _fromHolding!.currentPrice;
       final toAmount = gbpValue / _toCrypto!.currentPrice;
@@ -146,15 +206,26 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       final toAmount = double.tryParse(_toAmountController.text) ?? 0.0;
       if (_fromHolding!.currentPrice <= 0) return; // Guard division by zero
       final gbpValue = toAmount * _toCrypto!.currentPrice;
-      final fromAmount = gbpValue / _fromHolding!.currentPrice;
+      final fromCryptoQty = gbpValue / _fromHolding!.currentPrice;
       _isUpdatingAmounts = true;
-      _fromAmountController.text = fromAmount > 0 ? fromAmount.toStringAsFixed(6) : '';
+      // Mirror the FROM field in whichever unit it's currently showing.
+      _fromAmountController.text = fromCryptoQty > 0
+          ? (_fromInFiat
+              ? gbpValue.toStringAsFixed(2)
+              : fromCryptoQty.toStringAsFixed(6))
+          : '';
       _isUpdatingAmounts = false;
     }
     setState(() {});
   }
 
-  double get _fromAmount => double.tryParse(_fromAmountController.text) ?? 0.0;
+  // The from-crypto QUANTITY, whether the user typed fiat or crypto.
+  double get _fromAmount {
+    final typed = double.tryParse(_fromAmountController.text) ?? 0.0;
+    if (_fromInFiat) return _fromPrice > 0 ? typed / _fromPrice : 0.0;
+    return typed;
+  }
+
   double get _toAmount => double.tryParse(_toAmountController.text) ?? 0.0;
   
   bool get _hasValidAmount {
@@ -164,13 +235,70 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
 
   double get _exchangeRate {
     if (_fromHolding == null || _toCrypto == null) return 0.0;
-    if (_fromHolding!.currentPrice <= 0) return 0.0; // Guard division by zero
-    return _toCrypto!.currentPrice / _fromHolding!.currentPrice;
+    // Displayed as "1 <from> → X <to>", so X = value-of-one-from expressed in to
+    // = fromPrice / toPrice. (Previously toPrice/fromPrice, which is the INVERSE
+    // and rendered e.g. "1 TRX → 3.068 USDT" instead of 0.325.)
+    if (_toCrypto!.currentPrice <= 0) return 0.0; // Guard division by zero
+    return _fromHolding!.currentPrice / _toCrypto!.currentPrice;
+  }
+
+  /// Resolves an asset's real logo URL by ticker from the CryptoCubit catalogue
+  /// (holdings + supported + full list all carry the `image`). Null when not
+  /// found → [CryptoAssetAvatar] renders its per-symbol initials chip. Ensures
+  /// USDT/TRX/etc. never borrow the Bitcoin icon.
+  String? _imageForSymbol(String symbol) {
+    final s = symbol.trim().toLowerCase();
+    if (s.isEmpty) return null;
+    try {
+      final st = context.read<CryptoCubit>().state;
+      if (st is! CryptosLoaded) return null;
+      for (final c in [...st.cryptos, ...st.supportedAssets]) {
+        if (c.symbol.toLowerCase() == s && c.image.trim().isNotEmpty) {
+          return c.image;
+        }
+      }
+    } catch (_) {
+      // No CryptoCubit in scope → avatar shows its initials chip.
+    }
+    return null;
+  }
+
+  /// Keeps the active "from" holding in sync with the freshest balances. When
+  /// refreshHoldingsLive() (or any cubit update) lands new holdings, the
+  /// captured _fromHolding can go stale: its balance may have changed, or the
+  /// user may no longer hold it at all (e.g. it was fully swapped/sent from
+  /// another surface). We re-point it at the fresh holding, and DROP it when
+  /// the balance hits zero — preserving the "from is always an asset you own"
+  /// invariant even while the screen is open.
+  void _reconcileFromHolding(BuildContext context, CryptoState state) {
+    if (state is! CryptosLoaded) return;
+    final fh = _fromHolding;
+    if (fh == null) return;
+    CryptoHolding? fresh;
+    for (final h in state.holdings) {
+      if (h.cryptoSymbol.toLowerCase() == fh.cryptoSymbol.toLowerCase()) {
+        fresh = h;
+        break;
+      }
+    }
+    if (fresh == null || fresh.quantity <= 0) {
+      // No longer held → force a re-selection.
+      setState(() {
+        _fromHolding = null;
+        _fromAmountController.clear();
+        _toAmountController.clear();
+      });
+    } else if (fresh.quantity != fh.quantity ||
+        fresh.currentPrice != fh.currentPrice) {
+      setState(() => _fromHolding = fresh);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<CryptoCubit, CryptoState>(
+      listener: _reconcileFromHolding,
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
@@ -244,6 +372,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -382,6 +511,25 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             onTap: () => _showCryptoSelector(true),
             isEmpty: _fromHolding == null,
           ),
+          // Informational: which network the from-asset lives on. Swap is
+          // balance-only and network-agnostic (Quidax unified balance), so
+          // this is display only. heldHint forces it to show since it renders
+          // from a holding.
+          if (_fromHolding != null) ...[
+            SizedBox(height: 12.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AssetNetworkBadge(
+                symbol: _fromHolding!.cryptoSymbol,
+                heldHint: true,
+                compact: true,
+                onTap: () => showNetworkPickerForAsset(
+                  context,
+                  symbol: _fromHolding!.cryptoSymbol,
+                ),
+              ),
+            ),
+          ],
           SizedBox(height: 16.h),
           Center(
             child: GestureDetector(
@@ -468,21 +616,55 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w500,
+              Row(children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
+                // FROM amount unit toggle (fiat <-> crypto).
+                if (isFrom && price > 0) ...[
+                  SizedBox(width: 8.w),
+                  GestureDetector(
+                    onTap: _toggleFromUnit,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF9F7AEA).withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                            color: const Color(0xFF9F7AEA).withValues(alpha: 0.35)),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(
+                          _fromInFiat
+                              ? CurrencySymbols.currentCurrency.toUpperCase()
+                              : symbol.toUpperCase(),
+                          style: GoogleFonts.inter(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF9F7AEA)),
+                        ),
+                        SizedBox(width: 3.w),
+                        Icon(Icons.swap_vert_rounded,
+                            size: 13.sp, color: const Color(0xFF9F7AEA)),
+                      ]),
+                    ),
+                  ),
+                ],
+              ]),
               if (balance != null)
                 GestureDetector(
                   onTap: () {
                     if (balance > 0) {
                       setState(() {
                         _isFromAmountActive = true;
-                        controller.text = balance.toStringAsFixed(6);
+                        controller.text = (isFrom && _fromInFiat && price > 0)
+                            ? (balance * price).toStringAsFixed(2)
+                            : balance.toStringAsFixed(6);
                       });
                     }
                   },
@@ -498,7 +680,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
-                      'Max: ${balance.toStringAsFixed(6)}',
+                      (isFrom && _fromInFiat && price > 0)
+                          ? 'Max: ${CurrencySymbols.currentSymbol}${(balance * price).toStringAsFixed(2)}'
+                          : 'Max: ${balance.toStringAsFixed(6)}',
                       style: GoogleFonts.inter(
                         fontSize: 10.sp,
                         color: const Color.fromARGB(255, 78, 3, 208),
@@ -516,23 +700,26 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 onTap: onTap,
                 child: Row(
                   children: [
-                    Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isEmpty 
-                            ? [Colors.grey.withValues(alpha: 0.3), Colors.grey.withValues(alpha: 0.1)]
-                            : [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
-                        ),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Icon(
-                        isEmpty ? Icons.add : Icons.currency_bitcoin,
-                        color: Colors.white,
-                        size: 20.sp,
-                      ),
-                    ),
+                    isEmpty
+                        ? Container(
+                            width: 40.w,
+                            height: 40.w,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.grey.withValues(alpha: 0.3),
+                                  Colors.grey.withValues(alpha: 0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Icon(Icons.add, color: Colors.white, size: 20.sp),
+                          )
+                        : CryptoAssetAvatar(
+                            symbol: symbol,
+                            imageUrl: _imageForSymbol(symbol),
+                            size: 40,
+                          ),
                     SizedBox(width: 12.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -607,7 +794,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 ),
                 if (controller.text.isNotEmpty)
                   Text(
-                    '≈ ${CurrencySymbols.currentSymbol}${(price * (double.tryParse(controller.text) ?? 0.0)).toStringAsFixed(2)}',
+                    (isFrom && _fromInFiat && price > 0)
+                        ? '≈ ${((double.tryParse(controller.text) ?? 0.0) / price).toStringAsFixed(6)} ${symbol.toUpperCase()}'
+                        : '≈ ${CurrencySymbols.currentSymbol}${(price * (double.tryParse(controller.text) ?? 0.0)).toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       color: Colors.white.withValues(alpha: 0.6),
@@ -744,7 +933,18 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   Widget _buildSwapSummary() {
-    final fee = (_fromAmount * _fromHolding!.currentPrice) * 0.005; // 0.5% fee
+    // Lazervault swap fee honoring the admin config (crypto.fee.swap.*).
+    // A crypto→crypto swap has no fiat leg, so it is percentage-only; the basis
+    // is the from-asset's fiat value. Falls back to 0.5% before config loads.
+    final fiatValue = _fromAmount * _fromHolding!.currentPrice;
+    double fee;
+    try {
+      fee = GetIt.I<CryptoConfigCubit>()
+          .config
+          .feeForOp('swap', fiatValue, CurrencySymbols.currentCurrency);
+    } catch (_) {
+      fee = fiatValue * 0.005;
+    }
     final networkFee = fee * 0.3;
     final tradingFee = fee * 0.7;
     final effectiveRate = _fromAmount > 0 ? _toAmount / _fromAmount : 0.0;
@@ -1042,138 +1242,299 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   void _swapCryptos() {
-    if (_fromHolding != null && _toCrypto != null) {
-      _swapAnimationController.forward().then((_) {
-        _swapAnimationController.reset();
-      });
-      
-      setState(() {
-        // Convert the current _toCrypto to a CryptoHolding for the from side
-        // In real implementation, you'd check if user actually has this crypto
-        final tempFromHolding = _fromHolding;
-        final tempToCrypto = _toCrypto;
-        
-        // Find if user has holdings of the target crypto
-        final existingHolding = _holdings.firstWhere(
-          (holding) => holding.cryptoSymbol.toLowerCase() == tempToCrypto!.symbol.toLowerCase(),
-          orElse: () => CryptoHolding(
-            id: 'temp_${tempToCrypto!.id}',
-            cryptoId: tempToCrypto.id,
-            cryptoName: tempToCrypto.name,
-            cryptoSymbol: tempToCrypto.symbol,
-            quantity: 0.0, // No holdings of this crypto
-            averagePrice: tempToCrypto.currentPrice,
-            currentPrice: tempToCrypto.currentPrice,
-            totalValue: 0.0,
-            totalGainLoss: 0.0,
-            totalGainLossPercentage: 0.0,
-            purchaseDate: DateTime.now(),
-            lastUpdated: DateTime.now(),
-          ),
-        );
-        
-        _fromHolding = existingHolding;
-        _toCrypto = _availableCryptos.firstWhere(
-          (crypto) => crypto.symbol.toLowerCase() == tempFromHolding!.cryptoSymbol.toLowerCase(),
-        );
-        
-        // Clear amounts
-        _fromAmountController.clear();
-        _toAmountController.clear();
-      });
+    if (_fromHolding == null || _toCrypto == null) return;
+
+    // The "from" side may only ever be an asset the user holds. A flip would
+    // move the current TO asset onto the FROM side, so it's only valid when the
+    // user actually holds that TO asset with a positive balance.
+    final targetHolding = _heldBySymbol(_toCrypto!.symbol);
+    if (targetHolding == null) {
+      Get.snackbar(
+        "You don't hold ${_toCrypto!.symbol.toUpperCase()}",
+        'You can only swap from assets you own. Buy ${_toCrypto!.symbol.toUpperCase()} first to swap out of it.',
+        backgroundColor: const Color(0xFF1F1F1F),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+      return;
     }
+
+    // Resolve the new TO asset (the previous FROM). It came from a holding, so
+    // it should be in the supported catalogue; if not, abort cleanly rather
+    // than crash (the old firstWhere had no orElse).
+    final newTo = _supportedBySymbol(_fromHolding!.cryptoSymbol);
+    if (newTo == null) {
+      Get.snackbar(
+        "Can't reverse this pair",
+        '${_fromHolding!.cryptoSymbol.toUpperCase()} isn\'t available to swap into right now.',
+        backgroundColor: const Color(0xFF1F1F1F),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    _swapAnimationController.forward().then((_) {
+      _swapAnimationController.reset();
+    });
+    setState(() {
+      _fromHolding = targetHolding;
+      _toCrypto = newTo;
+      _fromAmountController.clear();
+      _toAmountController.clear();
+    });
   }
 
   void _showCryptoSelector(bool isFrom) {
-    final currentContext = context;
+    _searchController.clear();
+    var query = '';
     showModalBottomSheet(
-      context: currentContext,
+      context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
-        height: Get.height * 0.85,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-            ],
-          ),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2.r),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final q = query.trim().toLowerCase();
+          // Exclude the counterpart asset so a user can't pick X on both
+          // sides (you can't swap an asset into itself).
+          final excludeSymbol = (isFrom
+                  ? _toCrypto?.symbol
+                  : _fromHolding?.cryptoSymbol)
+              ?.toLowerCase();
+
+          // FROM lists ONLY the user's positive-balance holdings; TO lists the
+          // Quidax-supported catalogue. Both honour the live search query.
+          final fromList = isFrom
+              ? _swappableHoldings.where((h) {
+                  if (excludeSymbol != null &&
+                      h.cryptoSymbol.toLowerCase() == excludeSymbol) {
+                    return false;
+                  }
+                  if (q.isEmpty) return true;
+                  return h.cryptoName.toLowerCase().contains(q) ||
+                      h.cryptoSymbol.toLowerCase().contains(q);
+                }).toList()
+              : const <CryptoHolding>[];
+          final toList = !isFrom
+              ? _availableCryptos.where((c) {
+                  if (excludeSymbol != null &&
+                      c.symbol.toLowerCase() == excludeSymbol) {
+                    return false;
+                  }
+                  if (q.isEmpty) return true;
+                  return c.name.toLowerCase().contains(q) ||
+                      c.symbol.toLowerCase().contains(q);
+                }).toList()
+              : const <Crypto>[];
+
+          final isListEmpty = isFrom ? fromList.isEmpty : toList.isEmpty;
+          final noHoldingsAtAll = isFrom && _swappableHoldings.isEmpty;
+
+          return Container(
+            height: Get.height * 0.85,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF1F1F1F),
+                  const Color(0xFF0A0A0A),
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.r),
+                topRight: Radius.circular(24.r),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.all(24.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      isFrom ? 'Select crypto to swap from' : 'Select crypto to swap to',
-                      style: GoogleFonts.inter(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+            child: Column(
+              children: [
+                Container(
+                  margin: EdgeInsets.only(top: 12.h),
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(24.w),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          isFrom
+                              ? 'Select crypto to swap from'
+                              : 'Select crypto to swap to',
+                          style: GoogleFonts.inter(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Get.back(),
+                        child: Icon(Icons.close, color: Colors.white, size: 24.sp),
+                      ),
+                    ],
+                  ),
+                ),
+                // No search bar when the from side has nothing to search.
+                if (!noHoldingsAtAll)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (v) => setSheetState(() => query = v),
+                      style: GoogleFonts.inter(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: isFrom
+                            ? 'Search your holdings...'
+                            : 'Search cryptocurrencies...',
+                        hintStyle: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.5)),
+                        prefixIcon: Icon(Icons.search,
+                            color: Colors.white.withValues(alpha: 0.5)),
+                        filled: true,
+                        fillColor: const Color(0xFF1F1F1F),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Icon(Icons.close, color: Colors.white, size: 24.sp),
-                  ),
-                ],
-              ),
+                SizedBox(height: 16.h),
+                Expanded(
+                  child: isListEmpty
+                      ? _buildSelectorEmptyState(
+                          isFrom: isFrom,
+                          noHoldingsAtAll: noHoldingsAtAll,
+                          hasQuery: q.isNotEmpty,
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 24.w),
+                          itemCount: isFrom ? fromList.length : toList.length,
+                          itemBuilder: (context, index) {
+                            if (isFrom) {
+                              return _buildHoldingOption(fromList[index]);
+                            }
+                            return _buildCryptoOption(toList[index]);
+                          },
+                        ),
+                ),
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: TextField(
-                controller: _searchController,
-                style: GoogleFonts.inter(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Search cryptocurrencies...',
-                  hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
-                  prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
-                  filled: true,
-                  fillColor: const Color(0xFF1F1F1F),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
+          );
+        },
+      ),
+    );
+  }
+
+  /// Empty state for the crypto selector. Three cases:
+  ///  - FROM with no positive-balance holdings at all: nudge to buy first.
+  ///  - active search with no matches: "no results".
+  ///  - otherwise: nothing available.
+  Widget _buildSelectorEmptyState({
+    required bool isFrom,
+    required bool noHoldingsAtAll,
+    required bool hasQuery,
+  }) {
+    final IconData icon;
+    final String title;
+    final String subtitle;
+    if (noHoldingsAtAll) {
+      icon = Icons.account_balance_wallet_outlined;
+      title = 'No crypto to swap from';
+      subtitle =
+          'You can only swap assets you already own. Buy some crypto first, then come back to swap it.';
+    } else if (hasQuery) {
+      icon = Icons.search_off_rounded;
+      title = 'No matches';
+      subtitle = isFrom
+          ? "None of your holdings match that search."
+          : "No supported asset matches that search.";
+    } else {
+      icon = Icons.inbox_outlined;
+      title = isFrom ? 'No holdings available' : 'Nothing available';
+      subtitle = isFrom
+          ? 'You have no other asset to swap from right now.'
+          : 'No other asset is available to swap into right now.';
+    }
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 40.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 56.sp, color: Colors.white.withValues(alpha: 0.35)),
+          SizedBox(height: 16.h),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: Colors.white.withValues(alpha: 0.6),
+              height: 1.4,
+            ),
+          ),
+          if (noHoldingsAtAll) ...[
+            SizedBox(height: 24.h),
+            GestureDetector(
+              onTap: () async {
+                // `context` here is the State's context (this method is an
+                // instance method), which carries the CryptoCubit provider.
+                final cubit = context.read<CryptoCubit>();
+                Get.back(); // close the selector sheet
+                // Route into the integrated buy path (asset picker → buy bottom
+                // sheet) with the shared cubit.
+                await Get.to(() => BlocProvider.value(
+                      value: cubit,
+                      child: const AllAssetsScreen(mode: AssetSelectionMode.buy),
+                    ));
+                // Pull fresh holdings so a just-bought asset is immediately
+                // swappable without a manual refresh.
+                if (mounted) cubit.refreshHoldingsLive();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 78, 3, 208),
+                      Color(0xFF8B7CF6),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_rounded, color: Colors.white, size: 18.sp),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Buy crypto',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                itemCount: isFrom ? _holdings.length : _availableCryptos.length,
-                itemBuilder: (context, index) {
-                  if (isFrom) {
-                    final holding = _holdings[index];
-                    return _buildHoldingOption(holding);
-                  } else {
-                    final crypto = _availableCryptos[index];
-                    return _buildCryptoOption(crypto);
-                  }
-                },
-              ),
-            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -1199,20 +1560,10 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         ),
         child: Row(
           children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
-                ),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Icon(
-                Icons.currency_bitcoin,
-                color: Colors.white,
-                size: 20.sp,
-              ),
+            CryptoAssetAvatar(
+              symbol: holding.cryptoSymbol,
+              imageUrl: _imageForSymbol(holding.cryptoSymbol),
+              size: 40,
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -1299,20 +1650,10 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         ),
         child: Row(
           children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
-                ),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Icon(
-                Icons.currency_bitcoin,
-                color: Colors.white,
-                size: 20.sp,
-              ),
+            CryptoAssetAvatar(
+              symbol: crypto.symbol,
+              imageUrl: crypto.image,
+              size: 40,
             ),
             SizedBox(width: 12.w),
             Expanded(

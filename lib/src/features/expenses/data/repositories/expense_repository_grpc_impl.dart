@@ -43,10 +43,16 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
         if (category != null) {
           req.category = payroll_pb.ExpenseCategory.valueOf(category.index) ??
               payroll_pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
+          // Explicit "filter by category" flag so the server honours enum-0
+          // (OFFICE) as a real filter instead of "no filter". The Dart plugin
+          // suffixes the field getter _11 to avoid colliding with proto3's
+          // hasCategory() presence method.
+          req.hasCategory_11 = true;
         }
         if (status != null) {
           req.status = payroll_pb.ExpenseStatus.valueOf(status.index) ??
               payroll_pb.ExpenseStatus.EXPENSE_STATUS_PENDING;
+          req.hasStatus_12 = true; // enum-0 (PENDING) is a real filter too
         }
         if (startDate != null && startDate.isNotEmpty) req.startDate = startDate;
         if (endDate != null && endDate.isNotEmpty) req.endDate = endDate;
@@ -103,6 +109,7 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
     ExpensePaymentMethod paymentMethod = ExpensePaymentMethod.cash,
     String? expenseDate,
     String vendor = '',
+    String supplierId = '',
     String reference = '',
     String receiptUrl = '',
     List<String> tags = const [],
@@ -121,6 +128,7 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
                   paymentMethod.index) ??
               payroll_pb.ExpensePaymentMethod.EXPENSE_PAYMENT_METHOD_CASH
           ..vendor = vendor
+          ..supplierId = supplierId
           ..reference = reference
           ..receiptUrl = receiptUrl
           ..tags.addAll(tags)
@@ -150,6 +158,7 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
     ExpensePaymentMethod? paymentMethod,
     String? expenseDate,
     String? vendor,
+    String? supplierId,
     String? reference,
     String? receiptUrl,
     List<String>? tags,
@@ -178,6 +187,7 @@ class ExpenseRepositoryGrpcImpl implements ExpenseRepository {
         }
         if (expenseDate != null) req.expenseDate = expenseDate;
         if (vendor != null) req.vendor = vendor;
+        if (supplierId != null) req.supplierId = supplierId;
         if (reference != null) req.reference = reference;
         if (receiptUrl != null) req.receiptUrl = receiptUrl;
         if (tags != null) req.tags.addAll(tags);

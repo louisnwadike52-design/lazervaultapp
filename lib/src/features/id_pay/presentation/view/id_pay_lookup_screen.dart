@@ -392,7 +392,7 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
               height: 52.h,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.toNamed('/id-pay/payment', arguments: {'idPay': idPay});
+                  Get.toNamed(AppRoutes.idPayPayment, arguments: {'idPay': idPay});
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),

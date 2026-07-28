@@ -1080,6 +1080,10 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // the proto default (0), which is also the safe fallback for a
       // group that legitimately has zero contributions.
       contributionCount: group.contributionCount,
+      // Field 16 — set by discovery/list endpoints (ListPublicGroups)
+      // so the UI can render "Joined" vs "Join". Proto default (false)
+      // on endpoints that don't resolve membership or on a stale server.
+      isMember: group.isMember,
     );
   }
 

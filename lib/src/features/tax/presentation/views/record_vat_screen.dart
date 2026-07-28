@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/business/presentation/receipts/business_receipt.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/tax_cubit.dart';
 import '../cubit/tax_state.dart';
@@ -104,16 +106,28 @@ class _RecordVATScreenState extends State<RecordVATScreen> {
     return BlocListener<TaxCubit, TaxState>(
       listener: (context, state) {
         if (state is VATTransactionRecorded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'VAT transaction recorded successfully',
-                style: GoogleFonts.inter(color: Colors.white),
-              ),
-              backgroundColor: const Color(0xFF10B981),
-            ),
+          final tx = buildBusinessReceipt(
+            type: TransactionServiceType.tax,
+            title: 'VAT recorded',
+            amountMajor: _vatAmount,
+            flow: TransactionFlow.neutral,
+            status: UnifiedTransactionStatus.completed,
+            reference: _invoiceRefController.text.trim().isNotEmpty
+                ? _invoiceRefController.text.trim()
+                : null,
+            description: _descriptionController.text.trim().isNotEmpty
+                ? _descriptionController.text.trim()
+                : 'VAT at 7.5%',
+            metadata: {
+              'Base amount':
+                  '₦${_baseAmountNaira.toStringAsFixed(2)}',
+              'VAT (7.5%)': '₦${_vatAmount.toStringAsFixed(2)}',
+              if (_periodController.text.trim().isNotEmpty)
+                'Period': _periodController.text.trim(),
+            },
           );
-          Get.back(result: true);
+          showBusinessReceipt(context, tx).then((_) => Get.back(result: true));
+          return;
         } else if (state is TaxError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -3,17 +3,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/presentation/view/change_phone_screen.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/edit_profile_dialog.dart';
-import 'package:lazervault/src/features/identity/presentation/view/id_verification_screen.dart';
-import 'package:lazervault/src/features/identity/presentation/view/facial_registration_screen.dart';
-import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/settings_tier_badge.dart';
 import 'package:lazervault/src/features/widgets/profile_picture_picker.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -103,15 +102,21 @@ class _MyAccountViewState extends State<_MyAccountView> {
                     return const Center(child: LazerVaultLoader.small());
                   }
 
-                  return SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
+                  return RefreshIndicator(
+                    color: const Color(0xFF4E03D0),
+                    onRefresh: () async {
+                      await context.read<ProfileCubit>().getUserProfile();
+                    },
+                    child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics()),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         SizedBox(height: 16.h),
 
                         // Profile Header
-                        _buildProfileHeader(user, isEmailVerified),
+                        _buildProfileHeader(user),
 
                         SizedBox(height: 24.h),
 
@@ -121,7 +126,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         SizedBox(height: 24.h),
 
                         // Verification Section
-                        _buildVerificationSection(isEmailVerified),
+                        _buildVerificationSection(
+                            isEmailVerified, user?.verified ?? false),
 
                         SizedBox(height: 16.h),
 
@@ -130,6 +136,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
 
                         SizedBox(height: 32.h),
                       ],
+                    ),
                     ),
                   );
                 },
@@ -141,7 +148,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
     );
   }
 
-  Widget _buildProfileHeader(dynamic user, bool isEmailVerified) {
+  Widget _buildProfileHeader(dynamic user) {
     final fullName = user != null
         ? '${user.firstName} ${user.lastName}'
         : 'User Name';
@@ -174,36 +181,14 @@ class _MyAccountViewState extends State<_MyAccountView> {
           Row(
             children: [
               // Profile Picture Picker
-              Stack(
-                children: [
-                  ProfilePicturePicker(
-                    currentProfilePicture: user?.profilePicture,
-                    size: 80,
-                    onImageSelected: (base64Image) {
-                      context.read<ProfileCubit>().updateUserProfile(
-                        profilePicture: base64Image,
-                      );
-                    },
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      width: 28.w,
-                      height: 28.h,
-                      decoration: BoxDecoration(
-                        color: isEmailVerified ? Colors.green : Colors.orange,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: Icon(
-                        isEmailVerified ? Icons.verified : Icons.pending,
-                        size: 16.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+              ProfilePicturePicker(
+                currentProfilePicture: user?.profilePicture,
+                size: 60,
+                onImageSelected: (base64Image) {
+                  context.read<ProfileCubit>().updateUserProfile(
+                    profilePicture: base64Image,
+                  );
+                },
               ),
               SizedBox(width: 16.w),
 
@@ -249,6 +234,13 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         ),
                       ),
                     ],
+                    // Compact KYC tier badge (color-coded per tier + "Verified"
+                    // on the final tier). Verification here is KYC-based, not
+                    // email/phone — and far smaller than the old full-width pill.
+                    if (user != null && (user.id as String).isNotEmpty) ...[
+                      SizedBox(height: 8.h),
+                      SettingsTierBadge(userId: user.id as String, onDark: true),
+                    ],
                   ],
                 ),
               ),
@@ -274,40 +266,6 @@ class _MyAccountViewState extends State<_MyAccountView> {
               ),
             ],
           ),
-
-          SizedBox(height: 16.h),
-
-          // Verification Status Badge
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isEmailVerified ? Icons.verified_user : Icons.warning_amber_rounded,
-                  color: isEmailVerified ? Colors.greenAccent : Colors.orangeAccent,
-                  size: 20.sp,
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  isEmailVerified ? 'Account Verified' : 'Verification Pending',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -332,24 +290,67 @@ class _MyAccountViewState extends State<_MyAccountView> {
             child: _buildQuickActionCard(
               icon: Icons.share_outlined,
               label: 'Share',
-              onTap: () {
-                // Share profile
-              },
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _buildQuickActionCard(
-              icon: Icons.wallet_outlined,
-              label: 'Accounts',
-              onTap: () {
-                // View accounts
-              },
+              onTap: _shareProfile,
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Share the user's Lazervault handle so others can pay/find them. Uses the
+  /// same @username identifier the send-funds search resolves. Robust: reports a
+  /// snackbar if the OS share sheet can't be presented.
+  Future<void> _shareProfile() async {
+    final user = context.read<AuthenticationCubit>().currentProfile?.user;
+    if (user == null) {
+      Get.snackbar(
+        'Profile unavailable',
+        'We couldn\'t load your profile. Pull to refresh and try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+    final name = '${user.firstName} ${user.lastName}'.trim();
+    final hasHandle = user.username != null && user.username!.isNotEmpty;
+    final handle = hasHandle ? '@${user.username}' : user.email;
+
+    // Rich, human body: who they're paying + the exact identifier send-funds
+    // search resolves. Falls back gracefully when no username is set.
+    final buffer = StringBuffer();
+    if (name.isNotEmpty) {
+      buffer.writeln('Pay $name on Lazervault.');
+    } else {
+      buffer.writeln('Pay me on Lazervault.');
+    }
+    if (handle.isNotEmpty) {
+      buffer.writeln();
+      buffer.writeln(hasHandle
+          ? 'Find me by my username: $handle'
+          : 'Find me by my email: $handle');
+    }
+    buffer.write('\nOpen Lazervault → Send → search this to pay me instantly.');
+
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: buffer.toString(),
+          subject: name.isEmpty
+              ? 'Pay me on Lazervault'
+              : 'Pay $name on Lazervault',
+        ),
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Couldn\'t share',
+        'Something went wrong opening the share sheet. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.85),
+        colorText: Colors.white,
+      );
+    }
   }
 
   Widget _buildQuickActionCard({
@@ -394,7 +395,32 @@ class _MyAccountViewState extends State<_MyAccountView> {
     );
   }
 
-  Widget _buildVerificationSection(bool isEmailVerified) {
+  /// Verify the account's phone from My Account. Uses fromSettings=true so the
+  /// verify screen behaves as a logged-in profile action: NO "skip → passcode"
+  /// onboarding hop; back cancels, success returns here and refreshes the badge.
+  Future<void> _verifyPhoneFromAccount() async {
+    final user = context.read<AuthenticationCubit>().currentProfile?.user;
+    final phone = user?.phoneNumber;
+    // No number on file → send them to add + verify one in a single flow
+    // (ChangePhoneScreen applies phone + phone_verified on success).
+    if (phone == null || phone.isEmpty) {
+      final added = await Get.to(() => const ChangePhoneScreen());
+      if (added is String && added.isNotEmpty && context.mounted) {
+        context.read<ProfileCubit>().getUserProfile();
+      }
+      return;
+    }
+    final result = await Get.toNamed(AppRoutes.phoneVerification, arguments: {
+      'phoneNumber': phone,
+      'isRequired': false,
+      'fromSettings': true,
+    });
+    if (result == true && context.mounted) {
+      context.read<ProfileCubit>().getUserProfile();
+    }
+  }
+
+  Widget _buildVerificationSection(bool isEmailVerified, bool isPhoneVerified) {
     return _buildSection(
       title: 'Identity Verification',
       icon: Icons.verified_user_outlined,
@@ -408,67 +434,21 @@ class _MyAccountViewState extends State<_MyAccountView> {
             color: isEmailVerified ? Colors.green : Colors.orange,
             size: 24.sp,
           ),
-          onTap: () {
-            if (!isEmailVerified) {
-              // Resend verification email
-            }
-          },
+          onTap: () {},
         ),
         _buildSettingsTile(
           icon: Icons.phone_outlined,
           title: 'Phone Verification',
-          subtitle: 'Not verified',
+          subtitle: isPhoneVerified ? 'Verified' : 'Tap to verify',
           trailing: Icon(
-            Icons.arrow_forward_ios,
-            size: 16.sp,
-            color: const Color(0xFF9CA3AF),
+            isPhoneVerified ? Icons.check_circle : Icons.pending,
+            color: isPhoneVerified ? Colors.green : Colors.orange,
+            size: 24.sp,
           ),
-          onTap: () {
-            // Navigate to phone verification
-          },
+          onTap: isPhoneVerified ? () {} : _verifyPhoneFromAccount,
         ),
-        _buildSettingsTile(
-          icon: Icons.badge_outlined,
-          title: 'Identity Document',
-          subtitle: 'Upload ID, Passport, or Driver\'s License',
-          trailing: Icon(
-            Icons.arrow_forward_ios,
-            size: 16.sp,
-            color: const Color(0xFF9CA3AF),
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BlocProvider(
-                  create: (_) => serviceLocator<IdentityCubit>(),
-                  child: const IDVerificationScreen(),
-                ),
-              ),
-            );
-          },
-        ),
-        _buildSettingsTile(
-          icon: Icons.person_outline,
-          title: 'Facial Recognition',
-          subtitle: 'Register your face for secure access',
-          trailing: Icon(
-            Icons.arrow_forward_ios,
-            size: 16.sp,
-            color: const Color(0xFF9CA3AF),
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BlocProvider(
-                  create: (_) => serviceLocator<IdentityCubit>(),
-                  child: const FacialRegistrationScreen(),
-                ),
-              ),
-            );
-          },
-        ),
+        // Identity/KYC document verification is handled entirely by the Mono KYC
+        // flow (surfaced via the KYC tier badge above), not from this page.
       ],
     );
   }

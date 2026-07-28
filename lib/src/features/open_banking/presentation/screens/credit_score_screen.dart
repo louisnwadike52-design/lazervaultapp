@@ -14,10 +14,15 @@ class CreditScoreScreen extends StatefulWidget {
   final String userId;
   final bool showAllSources;
 
+  /// When set, the score is scoped to this linked bank (the one selected on the
+  /// AI Budgeting page) instead of the user's default account.
+  final String? linkedAccountId;
+
   const CreditScoreScreen({
     super.key,
     required this.userId,
     this.showAllSources = false,
+    this.linkedAccountId,
   });
 
   @override
@@ -56,9 +61,13 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
       if (widget.showAllSources) {
         context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
               userId: widget.userId,
+              linkedAccountId: widget.linkedAccountId,
             );
       } else {
-        context.read<OpenBankingCubit>().fetchCreditScore(userId: widget.userId);
+        context.read<OpenBankingCubit>().fetchCreditScore(
+              userId: widget.userId,
+              linkedAccountId: widget.linkedAccountId,
+            );
       }
     });
   }
@@ -99,7 +108,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                 labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
                 unselectedLabelStyle: TextStyle(fontSize: 13.sp),
                 tabs: const [
-                  Tab(text: 'LazerVault'),
+                  Tab(text: 'Lazervault'),
                   Tab(text: 'External'),
                   Tab(text: 'Combined'),
                 ],

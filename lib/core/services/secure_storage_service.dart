@@ -28,9 +28,62 @@ class SecureStorageService {
   static const String _keyFaceLogin = 'face_login_enabled';
   static const String _keyVoiceLogin = 'voice_login_enabled';
 
+  /// LEGACY durable-biometric keys. These were a SECOND copy of the refresh
+  /// token that biometric unlock re-minted from. They are gone: the auth-service
+  /// rotates refresh tokens one-time-use and revokes the WHOLE token family on
+  /// any replay, so a second copy inevitably diverged from the volatile
+  /// `refresh_token`, replayed a revoked token, and killed the session (the
+  /// "fingerprint always asks for passcode" bug). Biometric now unlocks over the
+  /// single `refresh_token` directly. These constants remain ONLY so
+  /// [clearBiometricSession] can delete any values left on existing installs.
+  static const String _keyBiometricRefreshToken = 'biometric_refresh_token';
+  static const String _keyBiometricUserId = 'biometric_user_id';
+
+  /// Local mirror of the backend self-lock deadline (RFC3339), written when the
+  /// user arms an account lock / emergency lock. Lets the login screens surface
+  /// the lock PROACTIVELY (on arrival, with a live countdown) instead of only
+  /// after a failed login attempt. Backend `self_locked_until` remains the source
+  /// of truth for the actual gate. Deliberately written AFTER clearAll() when
+  /// arming, and self-clears once it elapses (see `getSelfLockUntil`).
+  static const String _keySelfLockUntil = 'self_lock_until';
+  static const String _keySelfLockReason = 'self_lock_reason';
+
   final FlutterSecureStorage _storage;
 
   SecureStorageService(this._storage);
+
+  // Self-lock (proactive login reflection) --------------------------------
+  Future<void> setSelfLockUntil(DateTime until, {String? reason}) async {
+    await _storage.write(key: _keySelfLockUntil, value: until.toUtc().toIso8601String());
+    if (reason != null && reason.isNotEmpty) {
+      await _storage.write(key: _keySelfLockReason, value: reason);
+    }
+  }
+
+  /// The stored self-lock reason (e.g. 'emergency' | 'scheduled'), if any.
+  Future<String?> getSelfLockReason() async =>
+      _storage.read(key: _keySelfLockReason);
+
+  /// Returns the self-lock deadline if it is still in the FUTURE; if it has
+  /// elapsed, clears the key and returns null (so the login screen stops showing
+  /// the lock the instant it expires without needing a server round-trip).
+  Future<DateTime?> getSelfLockUntil() async {
+    final raw = await _storage.read(key: _keySelfLockUntil);
+    if (raw == null || raw.isEmpty) return null;
+    final until = DateTime.tryParse(raw);
+    if (until == null) {
+      await _storage.delete(key: _keySelfLockUntil);
+      return null;
+    }
+    if (until.toUtc().isAfter(DateTime.now().toUtc())) return until.toLocal();
+    await _storage.delete(key: _keySelfLockUntil);
+    return null;
+  }
+
+  Future<void> clearSelfLock() async {
+    await _storage.delete(key: _keySelfLockUntil);
+    await _storage.delete(key: _keySelfLockReason);
+  }
 
   // Biometric login preferences
   Future<void> setFingerprintLoginEnabled(bool v) async =>
@@ -47,6 +100,15 @@ class SecureStorageService {
       _storage.write(key: _keyVoiceLogin, value: v.toString());
   Future<bool> getVoiceLoginEnabled() async =>
       (await _storage.read(key: _keyVoiceLogin)) == 'true';
+
+  // Legacy durable-biometric cleanup. -----------------------------------------
+  /// Delete any legacy durable-biometric keys left on an existing install. There
+  /// is no writer anymore — biometric unlock uses the single `refresh_token`.
+  /// Safe to call anytime (logout, user switch, biometric disable).
+  Future<void> clearBiometricSession() async {
+    await _storage.delete(key: _keyBiometricRefreshToken);
+    await _storage.delete(key: _keyBiometricUserId);
+  }
 
   // Dark mode (display preference). Cached locally for an instant, offline theme
   // at startup; reconciled with the server preference after profile load.

@@ -6,6 +6,7 @@ import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../../../../core/offline/mutation_queue.dart';
 import '../../../../../core/offline/mutation.dart';
 import '../../domain/entities/invoice_entity.dart';
+import '../../domain/entities/invoice_fee_quote.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import 'invoice_state.dart';
 
@@ -336,6 +337,17 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     }
   }
 
+  /// Fetch the invoice service fee for the active account (admin-configured
+  /// base fee, FX-converted server-side into the account's currency). Returns
+  /// null on failure so callers can fall back gracefully. Does not mutate state.
+  Future<InvoiceFeeQuote?> getServiceFeeQuote({String? accountId}) async {
+    try {
+      return await repository.getServiceFeeQuote(accountId: accountId);
+    } catch (_) {
+      return null;
+    }
+  }
+
   // Create new invoice
   Future<void> createInvoice({
     required String title,
@@ -424,6 +436,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
         invoice: createdInvoice,
       ));
+      // Reload the list so a new invoice appears without relying on the screen
+      // to fire a refresh notifier (parity with updateInvoice/sendInvoice/etc.).
+      if (!isClosed) await loadInvoices();
     } catch (e) {
       if (isClosed) return;
 
@@ -552,6 +567,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         message: 'Invoice marked as paid successfully',
         invoice: updatedInvoice,
       ));
+      // Reload so the paid status is reflected in the list without depending on
+      // the caller to trigger a refresh.
+      if (!isClosed) await loadInvoices();
     } catch (e) {
       if (isClosed) return;
 

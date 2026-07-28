@@ -45,7 +45,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
           borderRadius: BorderRadius.circular(16.r),
         ),
         title: Text(
-          'Cancel IDPay',
+          'Cancel PayID',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -53,7 +53,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
           ),
         ),
         content: Text(
-          'Are you sure you want to cancel this IDPay? This action cannot be undone.',
+          'Are you sure you want to cancel this PayID? This action cannot be undone.',
           style: GoogleFonts.inter(
             color: const Color(0xFF9CA3AF),
             fontSize: 14.sp,
@@ -104,7 +104,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
         } else if (state is IDPayCancelled) {
           Get.snackbar(
             'Cancelled',
-            'IDPay has been cancelled successfully',
+            'PayID has been cancelled successfully',
             backgroundColor: const Color(0xFF10B981),
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
@@ -141,7 +141,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
               ),
             ),
             title: Text(
-              'IDPay Details',
+              'PayID Details',
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 18.sp,
@@ -249,8 +249,8 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
                 label: 'Share',
                 onTap: () {
                   Share.share(
-                    'Pay me using IDPay: ${_idPay.displayPayId}\n\n${_idPay.description.isNotEmpty ? _idPay.description : "Send payment via Lazervault"}',
-                    subject: 'IDPay Payment Request',
+                    'Pay me using PayID: ${_idPay.displayPayId}\n\n${_idPay.description.isNotEmpty ? _idPay.description : "Send payment via Lazervault"}',
+                    subject: 'PayID Payment Request',
                   );
                 },
               ),
@@ -558,7 +558,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
           child: isLoading
               ? LazerVaultLoader(size: 22)
               : Text(
-                  'Cancel IDPay',
+                  'Cancel PayID',
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,

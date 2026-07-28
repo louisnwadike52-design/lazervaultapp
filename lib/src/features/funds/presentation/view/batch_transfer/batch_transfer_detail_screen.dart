@@ -785,7 +785,7 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
                                 _buildDetailRow('Fee', fee == 0 ? 'Free' : '$currencySymbol${fee.toStringAsFixed(2)}',
                                     valueColor: fee == 0 ? btGreen : null),
                                 SizedBox(height: 10.h),
-                                _buildDetailRow('Type', isExternal ? 'Bank Transfer' : 'LazerVault'),
+                                _buildDetailRow('Type', isExternal ? 'Bank Transfer' : 'Lazervault'),
                                 if (isExternal && item.destinationBankName != null) ...[
                                   SizedBox(height: 10.h),
                                   _buildDetailRow('Bank', item.destinationBankName!),

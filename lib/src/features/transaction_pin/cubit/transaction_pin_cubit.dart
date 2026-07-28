@@ -47,11 +47,12 @@ class TransactionPinCubit extends Cubit<TransactionPinState> {
       : super(const TransactionPinState());
 
   /// Check if user has PIN set up
-  Future<void> checkUserHasPin() async {
+  Future<void> checkUserHasPin({bool forceRefresh = false}) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
 
     try {
-      final hasPin = await transactionPinService.checkUserHasPin();
+      final hasPin =
+          await transactionPinService.checkUserHasPin(forceRefresh: forceRefresh);
       emit(state.copyWith(
         hasPin: hasPin,
         isLoading: false,

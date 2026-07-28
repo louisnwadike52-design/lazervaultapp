@@ -32,19 +32,50 @@ class DeviceService {
       String? deviceId = await _storage.read(key: _deviceIdKey);
 
       if (deviceId == null || deviceId.isEmpty) {
-        // Generate a new device ID
-        deviceId = const Uuid().v4();
+        // Seed from a STABLE platform identifier where available (iOS
+        // identifierForVendor) so a Keystore/secure-storage loss re-derives the
+        // SAME id instead of rotating. A rotating device_id registers a NEW FCM
+        // token row per launch while the old stays active → the SAME device gets
+        // the push once per token (duplicate push). Existing installs keep their
+        // already-persisted id (no churn); only fresh/lost state uses the seed.
+        deviceId = await _stablePlatformId() ?? const Uuid().v4();
         await _storage.write(key: _deviceIdKey, value: deviceId);
       }
 
       _cachedDeviceId = deviceId;
       return deviceId;
     } catch (e) {
-      // Fallback to a new UUID if storage fails
-      final deviceId = const Uuid().v4();
-      _cachedDeviceId = deviceId;
-      return deviceId;
+      // Storage failed: still derive a STABLE id and try to persist it, so we
+      // don't hand out a brand-new random id (→ a new FCM token row → duplicate
+      // pushes) on every launch.
+      final fallback = (await _stablePlatformId()) ?? const Uuid().v4();
+      try {
+        await _storage.write(key: _deviceIdKey, value: fallback);
+      } catch (_) {
+        // best-effort; cached below keeps it stable for this process at least
+      }
+      _cachedDeviceId = fallback;
+      return fallback;
     }
+  }
+
+  /// A stable per-device identifier from the OS, used only to SEED [_deviceIdKey]
+  /// when no id is persisted yet. iOS `identifierForVendor` survives app data
+  /// loss (resets only when all vendor apps are uninstalled). Android exposes no
+  /// stable per-install hardware id via device_info_plus (ANDROID_ID was removed
+  /// for privacy), so Android falls back to a persisted UUID. Returns null when
+  /// no stable id is available → caller uses a UUID.
+  Future<String?> _stablePlatformId() async {
+    try {
+      if (Platform.isIOS) {
+        final ios = await _deviceInfo.iosInfo;
+        final idfv = ios.identifierForVendor;
+        if (idfv != null && idfv.isNotEmpty) return 'ios-$idfv';
+      }
+    } catch (_) {
+      // device_info unavailable → fall through to UUID
+    }
+    return null;
   }
 
   /// Get a human-readable device name

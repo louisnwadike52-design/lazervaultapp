@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/utils/image_compressor.dart';
 
 /// Result of a P2P chat-media upload — the public URL persisted on the
 /// message (`media_url`).
@@ -68,6 +69,22 @@ class P2PChatMediaUploadService {
     required String filename,
     required String contentType,
   }) async {
+    // Never upload an empty payload — a silently-failed voice capture would
+    // otherwise produce a broken 0-byte "voice note".
+    if (bytes.isEmpty) {
+      throw const P2PChatMediaUploadException(
+        'Nothing to upload — the file is empty.',
+      );
+    }
+
+    // Compress images before upload (voice notes / non-images pass through
+    // untouched — the compressor is a no-op for audio content types).
+    final compressed =
+        await ImageCompressor.compressForUpload(bytes, contentType: contentType);
+    bytes = compressed.bytes;
+    contentType = compressed.contentType;
+    filename = ImageCompressor.alignedFilename(filename, contentType);
+
     final accessToken = await _storage.read(key: _accessTokenKey);
     if (accessToken == null || accessToken.isEmpty) {
       throw const P2PChatMediaUploadException(

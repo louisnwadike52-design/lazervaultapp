@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,6 +43,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // Panic Balance — when its decoy is active, the DISPLAYED balance is replaced
   // with the decoy amount. Real values (_getAvailableBalance) are untouched.
   final PanicBalanceService _panic = serviceLocator<PanicBalanceService>();
+
+  // Panic toggle plays a SNAPPY roll (both directions) — distinct from the slow
+  // 3s dashboard/credit reveal AND from the instant snap used on login. It is
+  // armed ONLY by the user gesture (_onPanicChanged), so a login-time decoy
+  // load or a real credit/debit is unaffected. Disarmed once the roll finishes.
+  static const Duration _kPanicRollDuration = Duration(milliseconds: 900);
+  bool _panicRolling = false;
+  Timer? _panicRollTimer;
 
   // Store cubit reference early to avoid context.read() in delayed callbacks
   // (accessing context after Element is defunct causes crashes)
@@ -155,11 +165,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
   }
 
   void _onPanicChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    // Arm the snappy roll so the balance ANIMATES on BOTH main→panic and
+    // panic→main (a plain toggle used to snap straight into the decoy). Disarm
+    // shortly after the roll completes so the next real credit/debit falls back
+    // to the normal 3s reveal.
+    setState(() => _panicRolling = true);
+    _panicRollTimer?.cancel();
+    _panicRollTimer = Timer(
+      _kPanicRollDuration + const Duration(milliseconds: 150),
+      () {
+        if (mounted) setState(() => _panicRolling = false);
+      },
+    );
   }
 
   @override
   void dispose() {
+    _panicRollTimer?.cancel();
     _panic.removeListener(_onPanicChanged);
     super.dispose();
   }
@@ -480,46 +503,27 @@ class _AccountCarouselState extends State<AccountCarousel> {
   Future<void> _resolveFamilyIdAndNavigate(AccountSummaryEntity account) async {
     setState(() => _isResolvingFamilyId = true);
     try {
+      // Single canonical resolver (shared with the services "Setup Now" card) so
+      // both setup entry points resolve-or-create the SAME family_accounts record
+      // and land on the SAME activation-setup screen — no divergent flows.
       final familyCubit = serviceLocator<FamilyAccountCubit>();
-      await familyCubit.loadFamilyAccounts();
-      final state = familyCubit.state;
-
-      if (state is FamilyAccountsLoaded && state.familyAccounts.isNotEmpty) {
-        // With multi-family, there may be several family accounts.
-        // This legacy NUBAN has no familyAccountId link, so try to match
-        // by finding the account named "Family & Friends" in pending_setup
-        // (the default name for legacy NUBANs). If none match, fall back
-        // to the oldest pending account, then the first account overall.
-        final pending = state.familyAccounts.where((a) => a.isPendingSetup).toList();
-        final target = pending.where((a) => a.name == 'Family & Friends').firstOrNull
-            ?? pending.firstOrNull
-            ?? state.familyAccounts.first;
-
+      final familyId = await familyCubit.resolveOrCreatePendingFamilyId(
+        currency: account.currency,
+      );
+      if (familyId != null) {
         Get.toNamed(AppRoutes.familyActivationSetup,
-            arguments: {'familyId': target.id});
+            arguments: {'familyId': familyId});
       } else {
-        // No family_accounts record exists — auto-create one for the user.
-        // The virtual NUBAN account (type "family") already exists from signup,
-        // but the family_accounts table record was never created.
-        await familyCubit.createAccount(
-          name: 'Family & Friends',
-          initialCurrency: account.currency,
-          initialFunding: 0.0,
-          allowMemberContributions: true,
+        final s = familyCubit.state;
+        Get.snackbar(
+          'Error',
+          s is FamilyAccountError
+              ? s.message
+              : 'Failed to set up your Family & Friends account. Please try again.',
+          backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
         );
-        final createState = familyCubit.state;
-        if (createState is FamilyAccountCreated) {
-          Get.toNamed(AppRoutes.familyActivationSetup,
-              arguments: {'familyId': createState.familyAccount.id});
-        } else if (createState is FamilyAccountError) {
-          Get.snackbar(
-            'Error',
-            createState.message,
-            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP,
-          );
-        }
       }
     } catch (e) {
       Get.snackbar(
@@ -635,13 +639,22 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(
-                              "${account.accountType} Account",
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    "${account.accountType} Account",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                // (Frozen badge moved to the right end of the
+                                // balance amount below.)
+                              ],
                             ),
                           ),
                         // Trend chip — tap to open the period picker so
@@ -733,16 +746,60 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     // Animated balance counter — shows AVAILABLE balance on dashboard
                     // Long-press the balance to toggle the panic decoy (one of the
                     // two triggers; shake is the other). No-op until configured.
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onLongPress: () => _panic.toggle(),
-                      child: CompactAnimatedBalance(
-                        balance: _displayBalance(account),
-                        currencySymbol: currencySymbol,
-                        fontSize: 28,
-                        color: Colors.white,
-                        duration: const Duration(seconds: 3),
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onLongPress: _panic.longPressTriggerEnabled
+                                ? () => _panic.toggle()
+                                : null,
+                            child: CompactAnimatedBalance(
+                              balance: _displayBalance(account),
+                              currencySymbol: currencySymbol,
+                              fontSize: 28,
+                              color: Colors.white,
+                              duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
+                              startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+                              enableSound: _panic.soundEnabled,
+                              enableVibration: _panic.vibrationEnabled,
+                              // Panic decoy shows instantly (no roll/countdown).
+                              animate: _panicRolling || !_panic.isCamouflageOn,
+                            ),
+                          ),
+                        ),
+                        // Frozen badge — at the right end of the balance amount.
+                        // Mirrors the accounts-service block (no outgoing
+                        // transfers/payments) so the state is visible on the card.
+                        if (account.isFrozen) ...[
+                          SizedBox(width: 10.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.22),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.ac_unit,
+                                    color: Colors.white, size: 11.sp),
+                                SizedBox(width: 3.w),
+                                Text(
+                                  'Frozen',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     // Stale balance indicator — shown while WebSocket update is animating
                     if (_animatingAccounts.contains(account.id))
@@ -971,7 +1028,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                account.accountLabel ?? 'Family & Friends',
+                                // Category label — the specific account name is
+                                // shown as the subtitle below the balance.
+                                'Family & Friends',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 16.sp,
@@ -1039,13 +1098,20 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         // camouflage is on (long-press toggles), matching the
                         // standard card so no wallet leaks the real balance.
                         GestureDetector(
-                          onLongPress: () => _panic.toggle(),
+                          onLongPress: _panic.longPressTriggerEnabled
+                              ? () => _panic.toggle()
+                              : null,
                           child: CompactAnimatedBalance(
                             balance: _displayBalance(account),
                             currencySymbol: currencySymbol,
                             fontSize: 26,
                             color: Colors.white,
-                            duration: const Duration(seconds: 3),
+                            duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
+                            startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+                            enableSound: _panic.soundEnabled,
+                            enableVibration: _panic.vibrationEnabled,
+                            // Panic decoy shows instantly (no roll/countdown).
+                            animate: _panicRolling || !_panic.isCamouflageOn,
                           ),
                         ),
                         SizedBox(height: 2.h),
@@ -1071,7 +1137,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           )
                         else
                           Text(
-                            'Family Balance',
+                            // The account's actual name (falls back to the
+                            // generic label only when the account is unnamed).
+                            (account.accountLabel?.trim().isNotEmpty ?? false)
+                                ? account.accountLabel!.trim()
+                                : 'Family Balance',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 11.sp,
@@ -1157,11 +1229,11 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   Widget _buildBusinessAccountCard(BuildContext context, AccountSummaryEntity account) {
     final currencySymbol = _getCurrencySymbol(account.currency);
-    final isUp = account.trendPercentage >= 0;
 
-    // Same argument shape the personal card passes to the details sheet, so
-    // the Business "Details" CTA can reuse AccountActionsBottomSheet unchanged.
-    final cardArguments = {
+    // selectedCard payload for the Deposit / Withdraw flows so they target the
+    // BUSINESS account (mirrors the personal card's cardArguments). The full
+    // NUBAN is required for deposits.
+    final businessCard = {
       'id': account.id,
       'accountType': account.accountType,
       'currency': account.currency,
@@ -1173,9 +1245,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',
       'bankName': account.bankName ?? 'Wema Bank',
       'accountName': account.accountName ?? 'Lazervault Business',
-      'trend':
-          '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
-      'isUp': isUp,
     };
 
     return StreamBuilder<String?>(
@@ -1185,20 +1254,21 @@ class _AccountCarouselState extends State<AccountCarousel> {
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
-            // Business identity uses the app's ORANGE secondary (personal is
-            // the brand purple) over a dark base — on-theme, distinct.
+            // Business identity uses a violet/purple gradient (like the referral
+            // bonus card) — on-brand, distinct from the personal card, not blue
+            // and not orange.
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFFC2410C), // orange-700
-                Color(0xFF431407), // orange-950 (near-black)
+                Color(0xFF6D28D9), // violet-700
+                Color(0xFF3B0764), // violet-950 (near-black)
               ],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFC2410C).withValues(alpha: 0.3),
+                color: const Color(0xFF6D28D9).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1240,26 +1310,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.business_center,
-                                color: Colors.white,
-                                size: 18.sp,
+                          // Identity — top-left; ellipsised so it never overflows.
+                          Icon(Icons.business_center,
+                              color: Colors.white.withValues(alpha: 0.9), size: 18.sp),
+                          SizedBox(width: 6.w),
+                          Expanded(
+                            child: Text(
+                              'Business',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
                               ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                'Lazervault Business',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
+                          SizedBox(width: 10.w),
+                          // PRO badge + Manage CTA — top-right.
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                             decoration: BoxDecoration(
@@ -1276,6 +1344,15 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ),
                             ),
                           ),
+                          SizedBox(width: 8.w),
+                          _buildActionButton(
+                            "Manage",
+                            Icons.dashboard_customize_rounded,
+                            onTap: () => Get.toNamed(
+                              AppRoutes.businessDashboard,
+                              arguments: account,
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: 12.h),
@@ -1288,7 +1365,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           currencySymbol: currencySymbol,
                           fontSize: 26,
                           color: Colors.white,
-                          duration: const Duration(seconds: 3),
+                          duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
+                          startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+                          // Panic decoy shows instantly (no roll/countdown).
+                          animate: _panicRolling || !_panic.isCamouflageOn,
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -1323,7 +1403,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         ),
                       const Spacer(),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             '•••• ${account.accountNumberLast4}',
@@ -1332,10 +1411,21 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               fontSize: 12.sp,
                             ),
                           ),
+                          const Spacer(),
+                          // Deposit / Withdraw target the BUSINESS account (like
+                          // the personal card). Manage moved to the top-left.
                           _buildActionButton(
-                            "Details",
-                            Icons.info_outline_rounded,
-                            onTap: () => widget.onShowDetails(cardArguments),
+                            "Deposit",
+                            Icons.add_rounded,
+                            onTap: () => Get.toNamed(AppRoutes.depositFunds,
+                                arguments: {'selectedCard': businessCard}),
+                          ),
+                          SizedBox(width: 8.w),
+                          _buildActionButton(
+                            "Withdraw",
+                            Icons.remove_rounded,
+                            onTap: () => Get.toNamed(AppRoutes.withdrawFunds,
+                                arguments: {'selectedCard': businessCard}),
                           ),
                         ],
                       ),

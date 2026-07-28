@@ -30,6 +30,18 @@ def aab_for(flavor)
     "build/app/outputs/bundle/#{flavor}Release/app-#{flavor}-release.aab")
 end
 
+# Delete the exact artifact upload_to_play_store will point at (and the flavor's
+# whole bundle output dir) BEFORE building. Without this the AAB path persists
+# between runs, so any short-circuited/partial build could ship a stale AAB to
+# the internal track — the "Android isn't showing the latest update" bug. After
+# this, the uploaded file is guaranteed to have been written by THIS run (or the
+# lane fails loudly because the file is absent).
+def purge_stale_aab(flavor)
+  require "fileutils"
+  FileUtils.rm_rf(File.join(FLUTTER_DIR, "build/app/outputs/bundle/#{flavor}Release"))
+  FileUtils.rm_f(aab_for(flavor))
+end
+
 def apk_for(flavor, build_type = "release")
   File.join(FLUTTER_DIR,
     "build/app/outputs/flutter-apk/app-#{flavor}-#{build_type}.apk")
@@ -80,7 +92,9 @@ platform :android do
   #                                    human gate before public release)
   desc "Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)"
   lane :dev do
+    purge_stale_aab("dev")
     flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev --dart-define=FLUTTER_FLAVOR=dev #{COMPRESSION_FLAGS}")
+    UI.success("Built fresh AAB: #{aab_for('dev')} (#{File.size(aab_for('dev'))} bytes)")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "internal",
@@ -97,6 +111,7 @@ platform :android do
 
   desc "Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)"
   lane :staging do
+    purge_stale_aab("staging")
     flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging --dart-define=FLUTTER_FLAVOR=staging #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
@@ -114,6 +129,7 @@ platform :android do
 
   desc "Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)"
   lane :production do
+    purge_stale_aab("prod")
     flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod #{COMPRESSION_FLAGS}")
     upload_to_play_store(
       package_name:               "com.lazervault.app",

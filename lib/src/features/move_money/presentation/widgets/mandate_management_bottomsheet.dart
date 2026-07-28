@@ -185,7 +185,39 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                 SizedBox(height: 20.h),
 
                 // Action buttons based on status
-                if (widget.mandate!.isActive) ...[
+                if (widget.mandate!.switchProcessing) ...[
+                  // A switch (pause/reinstate) is awaiting confirmation from the
+                  // bank/Mono — show a read-only note instead of a Pause/Resume
+                  // button so we don't fire a second switch before it settles.
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF818CF8).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: const Color(0xFF818CF8).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.sync, color: const Color(0xFF818CF8), size: 18.sp),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            widget.mandate!.isSwitchingToDirectDebit
+                                ? 'Switching to Direct Debit — confirming with your bank. This settles shortly.'
+                                : 'Switching to one-time — confirming with your bank. This settles shortly.',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFC7D2FE),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (widget.mandate!.isActive) ...[
                   _buildActionButton(
                     context: context,
                     label: 'Pause Direct Debit',

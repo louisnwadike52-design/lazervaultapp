@@ -36,6 +36,14 @@ class EducationPurchaseEntity extends Equatable {
 
   bool get isCompleted => status == 'completed';
   bool get isFailed => status == 'failed';
+  // Async backend returns 'processing'/'awaiting_webhook' for an in-flight
+  // purchase whose PINs haven't been generated yet — treat these as pending so
+  // the result screen renders a pending state (and reconciles) instead of the
+  // misleading "Purchase Successful! / 0 PINs generated".
+  bool get isPending =>
+      status == 'pending' ||
+      status == 'processing' ||
+      status == 'awaiting_webhook';
 
   @override
   List<Object?> get props => [id, userId, accountId, billType, providerId, reference, amount, status, customerNumber, metadata, createdAt, newBalance, pins, message];

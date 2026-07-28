@@ -16,14 +16,14 @@ class AccountConfirmationBottomSheet extends StatefulWidget {
   final VoidCallback onCancel;
 
   const AccountConfirmationBottomSheet({
-    Key? key,
+    super.key,
     required this.accountNumber,
     required this.accountName,
     required this.bankName,
     required this.bankCode,
     required this.onConfirm,
     required this.onCancel,
-  }) : super(key: key);
+  });
 
   @override
   State<AccountConfirmationBottomSheet> createState() =>

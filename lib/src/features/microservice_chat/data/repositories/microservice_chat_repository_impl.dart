@@ -165,6 +165,14 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
             ..['pin_prompt'] = pinPromptFromMetadata;
         }
 
+        // ReceiptCard V2 history hydration (single dict or batch list) so
+        // reloaded history renders batch receipts the same as when live.
+        final receiptCardFromMetadata = msg.metadata?['receipt_card'];
+        if (receiptCardFromMetadata is Map || receiptCardFromMetadata is List) {
+          metadata = (metadata ?? <String, dynamic>{})
+            ..['receipt_card'] = receiptCardFromMetadata;
+        }
+
         final isUser = msg.role == 'user';
         final mediaType = msg.mediaMetadata?['type'] as String?;
         final mediaUrl = msg.mediaMetadata?['url'] as String?;

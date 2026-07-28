@@ -5,6 +5,8 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 extension AppServiceNameMapper on AppServiceName {
   TransactionServiceType? toTransactionServiceType() {
     switch (this) {
+      case AppServiceName.escrow:
+        return TransactionServiceType.unknown;
       case AppServiceName.airtime:
         return TransactionServiceType.airtime;
       case AppServiceName.giftCards:
@@ -13,6 +15,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.electricity;
       case AppServiceName.crypto:
         return TransactionServiceType.crypto;
+      case AppServiceName.rmb:
+        return TransactionServiceType.rmb;
       case AppServiceName.stocks:
         return TransactionServiceType.stocks;
       case AppServiceName.insurance:
@@ -23,6 +27,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.autosave;
       case AppServiceName.crowdfund:
         return TransactionServiceType.crowdfund;
+      case AppServiceName.uplift:
+        return TransactionServiceType.unknown;
       case AppServiceName.qrPay:
         return TransactionServiceType.qrPayment;
       case AppServiceName.sendFunds:
@@ -63,6 +69,12 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.unknown;
       case AppServiceName.tax:
         return TransactionServiceType.unknown;
+      case AppServiceName.sales:
+        return TransactionServiceType.unknown;
+      case AppServiceName.rechargeCard:
+        return TransactionServiceType.airtime;
+      case AppServiceName.betting:
+        return TransactionServiceType.betting;
     }
   }
 }
@@ -99,6 +111,8 @@ extension TransactionServiceTypeMapper on TransactionServiceType {
         return AppServiceName.crowdfund;
       case TransactionServiceType.autosave:
         return AppServiceName.autoSave;
+      case TransactionServiceType.betting:
+        return AppServiceName.betting;
       case TransactionServiceType.deposit:
         return null;
       case TransactionServiceType.withdrawal:

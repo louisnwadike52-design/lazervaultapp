@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 
@@ -77,10 +78,16 @@ class ShareReportBottomSheet extends StatelessWidget {
                     label: 'Facebook',
                     color: const Color(0xFF1877F2),
                     onTap: () {
+                      // Capture the iOS anchor rect BEFORE popping (the render
+                      // box is gone once the sheet closes). Facebook falls back
+                      // to the system share sheet when there's no campaign URL.
+                      final origin =
+                          CrowdfundReportService.shareOriginFromContext(context);
                       Navigator.pop(context);
                       context.read<CrowdfundCubit>().shareReportToFacebook(
                             report,
                             campaignUrl,
+                            sharePositionOrigin: origin,
                           );
                     },
                   ),
@@ -89,10 +96,13 @@ class ShareReportBottomSheet extends StatelessWidget {
                     label: 'Telegram',
                     color: const Color(0xFF0088CC),
                     onTap: () {
+                      final origin =
+                          CrowdfundReportService.shareOriginFromContext(context);
                       Navigator.pop(context);
                       context.read<CrowdfundCubit>().shareReportToTelegram(
                             report,
                             campaignUrl,
+                            sharePositionOrigin: origin,
                           );
                     },
                   ),
@@ -119,10 +129,16 @@ class ShareReportBottomSheet extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    // Anchor the iOS share popover to this sheet's rect (capture
+                    // before pop). Without a non-zero origin, share_plus throws
+                    // the "sharePositionOrigin must be set" error.
+                    final origin =
+                        CrowdfundReportService.shareOriginFromContext(context);
                     Navigator.pop(context);
                     context.read<CrowdfundCubit>().shareReportGeneral(
                           report,
                           campaignUrl,
+                          sharePositionOrigin: origin,
                         );
                   },
                   style: ElevatedButton.styleFrom(

@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 enum SplitBillStatus { active, completed, cancelled, expired }
 
-enum SplitBillParticipantStatus { pending, paid, declined }
+enum SplitBillParticipantStatus { pending, paid, declined, inProgress }
 
 enum SplitMethodType { equal, custom, percentage }
 
@@ -14,6 +14,7 @@ class SplitBillEntity extends Equatable {
   final double totalAmount;
   final double creatorShare;
   final String currency;
+  final String title;
   final String description;
   final SplitMethodType splitMethod;
   final SplitBillStatus status;
@@ -41,6 +42,7 @@ class SplitBillEntity extends Equatable {
     required this.totalAmount,
     required this.creatorShare,
     required this.currency,
+    this.title = '',
     required this.description,
     required this.splitMethod,
     required this.status,
@@ -61,8 +63,17 @@ class SplitBillEntity extends Equatable {
   bool get isCompleted => status == SplitBillStatus.completed;
   bool get isActive => status == SplitBillStatus.active;
 
+  /// The headline shown everywhere. Falls back to the description, then a generic
+  /// label, so bills created before titles existed still render sensibly.
+  String get displayTitle {
+    if (title.trim().isNotEmpty) return title.trim();
+    if (description.trim().isNotEmpty) return description.trim();
+    return 'Split bill';
+  }
+
   /// True when the bill pays an explicit third-party receiver (not the creator).
   bool get hasExternalReceiver => receiverType == 'external_bank';
+  bool get hasInternalReceiver => receiverType == 'internal_user';
   bool get hasReceiver => receiverType.isNotEmpty;
 
   /// Human label for who collects the money ("the receiver").
@@ -76,9 +87,13 @@ class SplitBillEntity extends Equatable {
   List<SplitBillParticipantEntity> get paidParticipants =>
       participants.where((p) => p.isPaid).toList();
 
-  /// Co-payers still owing.
+  /// Co-payers still owing (strictly pending — remindable).
   List<SplitBillParticipantEntity> get pendingParticipants =>
       participants.where((p) => p.isPending).toList();
+
+  /// Co-payers whose share is not yet settled (pending OR payment in progress).
+  List<SplitBillParticipantEntity> get unpaidParticipants =>
+      participants.where((p) => p.isPending || p.isInProgress).toList();
 
   double get progressPercent =>
       totalParticipants > 0
@@ -166,6 +181,7 @@ class SplitBillParticipantEntity extends Equatable {
   bool get isPending => status == SplitBillParticipantStatus.pending;
   bool get isPaid => status == SplitBillParticipantStatus.paid;
   bool get isDeclined => status == SplitBillParticipantStatus.declined;
+  bool get isInProgress => status == SplitBillParticipantStatus.inProgress;
 
   String formattedAmount(String currency) =>
       '${SplitBillEntity._currencySymbol(currency)}${amount.toStringAsFixed(2)}';

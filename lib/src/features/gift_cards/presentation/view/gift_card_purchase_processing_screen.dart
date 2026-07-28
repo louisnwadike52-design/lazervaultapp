@@ -47,7 +47,13 @@ class _GiftCardPurchaseProcessingScreenState
   bool _polling = false;
   String? _awaitingGiftCardId;
   GiftCard? _awaitingCard;
-  static const Duration _pollInterval = Duration(seconds: 3);
+  // Backoff: poll fast early (each GetGiftCard read drives the row's provider
+  // to completion server-side, so early polls finalize promptly), then ease off
+  // so a long-awaiting async purchase doesn't hammer GetGiftCard at 3s for the
+  // full window — gentler on the DB as concurrency scales. Bounded by timeout.
+  static const Duration _pollIntervalStart = Duration(seconds: 3);
+  static const Duration _pollIntervalMax = Duration(seconds: 10);
+  Duration _pollInterval = const Duration(seconds: 3);
   static const Duration _pollTimeout = Duration(seconds: 120);
 
   @override
@@ -63,9 +69,22 @@ class _GiftCardPurchaseProcessingScreenState
     _awaitingCard = card;
     if (_polling) return;
     _polling = true;
-    _pollOnce(); // fire immediately, then on an interval
-    _pollTimer = Timer.periodic(_pollInterval, (_) => _pollOnce());
+    _pollInterval = _pollIntervalStart;
+    _pollOnce(); // fire immediately, then on a backing-off interval
+    _scheduleNextPoll();
     _timeoutTimer = Timer(_pollTimeout, _handlePollTimeout);
+  }
+
+  // Self-rescheduling timer (instead of Timer.periodic) so the interval can
+  // grow between polls: 3s, ~4.5s, ~6.75s, … capped at 10s.
+  void _scheduleNextPoll() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer(_pollInterval, () {
+      _pollOnce();
+      final next = _pollInterval * 1.5;
+      _pollInterval = next > _pollIntervalMax ? _pollIntervalMax : next;
+      if (_polling) _scheduleNextPoll();
+    });
   }
 
   void _pollOnce() {
@@ -401,8 +420,9 @@ class _GiftCardPurchaseProcessingScreenState
 
     if (state is GiftCardInsufficientFunds) {
       title = 'Insufficient Funds';
-      message =
-          'You need ${state.required.toStringAsFixed(2)} but only have ${state.available.toStringAsFixed(2)} in your wallet.';
+      message = state.available != null
+          ? 'You need ${state.required.toStringAsFixed(2)} but only have ${state.available!.toStringAsFixed(2)} in your wallet.'
+          : 'You don\'t have enough funds in your wallet to complete this purchase. Please top up and try again.';
       icon = Icons.account_balance_wallet_outlined;
     } else if (state is GiftCardSoldOut) {
       title = 'Sold Out';

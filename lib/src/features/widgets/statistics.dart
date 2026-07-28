@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,17 +13,20 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_categories.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/linked_banks_widget.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/bank_scope_pills.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/financial_health_score_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/cash_flow_insights_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/failed_transactions_card.dart';
@@ -71,7 +75,7 @@ String _friendlyCategoryName(String raw, {String? serviceName}) {
     'reversals' || 'transfers' || 'banking' || 'payments' => raw,
     'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
 
-    'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'PiggyVault',
+    'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'Piggyvault',
     'autosave' => 'AutoSave',
     'savings & products' => 'Savings & Products',
 
@@ -146,7 +150,9 @@ class _StatisticsState extends State<Statistics> {
   bool _isSyncing = false;
   bool _includeExternalBanks = true; // Track external banks filter state
   StatisticsSource _statsSource = StatisticsSource.both; // 3-way source filter
-  String? _selectedBankId; // null = ALL linked banks (when external in scope)
+  // Selected linked-bank scope. Empty = ALL linked banks; one or more narrows
+  // every external number on the page to that SUBSET of banks (multi-select).
+  Set<String> _selectedBankIds = <String>{};
   ExternalDataStatus _externalStatus = ExternalDataStatus.notApplicable;
   String? _externalError;
   String _userId = '';
@@ -296,7 +302,7 @@ class _StatisticsState extends State<Statistics> {
           color: const Color(0xFF0A0A0A),
           child: RefreshIndicator(
             onRefresh: () => context.read<StatisticsCubit>().refresh(),
-            color: const Color(0xFF3B82F6),
+            color: InvoiceThemeColors.primaryPurple,
             backgroundColor: const Color(0xFF1F1F1F),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -434,7 +440,7 @@ class _StatisticsState extends State<Statistics> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF3B82F6).withValues(alpha: 0.10),
+              InvoiceThemeColors.primaryPurple.withValues(alpha: 0.10),
               Colors.transparent,
             ],
             begin: Alignment.topCenter,
@@ -455,18 +461,18 @@ class _StatisticsState extends State<Statistics> {
                     children: [
                       Icon(
                         Icons.insights,
-                        color: const Color(0xFF3B82F6),
-                        size: 22.sp,
+                        color: InvoiceThemeColors.primaryPurple,
+                        size: 18.sp,
                       ),
                       SizedBox(width: 8.w),
                       Flexible(
                         child: Text(
-                          'AI Budgeting',
+                          'Finance Analytics',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 22.sp,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -475,12 +481,12 @@ class _StatisticsState extends State<Statistics> {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    'Smart budgeting powered by AI',
+                    'Smart financial analytics and budgeting powered by AI',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: const Color(0xFF9CA3AF),
-                      fontSize: 13.sp,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
@@ -493,15 +499,20 @@ class _StatisticsState extends State<Statistics> {
             // pair used across all other dashboard quick services.
             ServiceVoiceButton(
               serviceName: 'statistics',
-              iconColor: const Color(0xFF3B82F6),
-              backgroundColor: const Color(0xFF3B82F6),
+              iconColor: InvoiceThemeColors.primaryPurple,
+              backgroundColor: InvoiceThemeColors.primaryPurple,
+              buttonSize: 36.w,
+              iconSize: 17.sp,
             ),
             SizedBox(width: 8.w),
             MicroserviceChatIcon(
               serviceName: 'Statistics',
               sourceContext: 'statistics',
               icon: Icons.chat_bubble_outline,
-              iconColor: const Color(0xFF3B82F6),
+              iconColor: InvoiceThemeColors.primaryPurple,
+              chatAccentColor: InvoiceThemeColors.primaryPurple,
+              size: 36,
+              iconSize: 19,
             ),
             // Account selector moved OUT of the header (it overflowed beside
             // the title + 2 icon buttons, and is useless on the Banks tab).
@@ -601,13 +612,13 @@ class _StatisticsState extends State<Statistics> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
                         account.currency,
                         style: TextStyle(
-                          color: const Color(0xFF3B82F6),
+                          color: InvoiceThemeColors.primaryPurple,
                           fontSize: 10.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -661,7 +672,7 @@ class _StatisticsState extends State<Statistics> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6), Color(0xFF60A5FA)],
+          colors: [Color(0xFF39026F), Color(0xFF4E03D0), Color(0xFF7C3AED)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -768,7 +779,7 @@ class _StatisticsState extends State<Statistics> {
     } else if (savingsRate >= 10) {
       emoji = '\u{1F4AA}';
       message = 'Good progress \u2014 you saved ${savingsRate.toStringAsFixed(0)}% this month';
-      borderColor = const Color(0xFF3B82F6).withValues(alpha: 0.3);
+      borderColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3);
     } else {
       emoji = '\u{26A0}\u{FE0F}';
       message = 'Heads up \u2014 only ${savingsRate.toStringAsFixed(0)}% saved this month';
@@ -848,6 +859,10 @@ class _StatisticsState extends State<Statistics> {
               arguments: {
                 'userId': _userId,
                 'showAllSources': _includeExternalBanks,
+                // Credit-score screen is single-bank: only pass one when exactly
+                // one bank is selected, else leave unscoped (all banks).
+                'linkedAccountId':
+                    _selectedBankIds.length == 1 ? _selectedBankIds.first : null,
               },
             ),
           ),
@@ -918,7 +933,7 @@ class _StatisticsState extends State<Statistics> {
         title: 'Budgets',
         description: 'Manage budgets',
         icon: Icons.account_balance_wallet,
-        color: const Color(0xFF3B82F6),
+        color: InvoiceThemeColors.primaryPurple,
         route: AppRoutes.budgetList,
       ),
       _FeatureItem(
@@ -1051,7 +1066,7 @@ class _StatisticsState extends State<Statistics> {
           duration: const Duration(milliseconds: 180),
           padding: EdgeInsets.symmetric(vertical: 9.h),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF3B82F6) : Colors.transparent,
+            color: selected ? InvoiceThemeColors.primaryPurple : Colors.transparent,
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Row(
@@ -1076,10 +1091,11 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  /// Bank scope selector: a single pill showing the active bank filter
-  /// ("All banks" or the chosen bank). Tapping it opens a bottom sheet to pick
-  /// the scope — picking one narrows EVERY number on the page to that bank
-  /// (plus the wallet when the source is "All").
+  /// Bank scope selector: a compact, horizontally-scrollable row of bank pills
+  /// ("All banks" + one per linked bank, overflow collapsing into a small
+  /// "More ▾" dropdown), followed by a scope banner that makes it obvious when
+  /// EVERY number on the page is narrowed to a single bank. Picking a pill
+  /// re-scopes the whole page via [_applyBankFilter].
   Widget _buildBankScopeChips() {
     return BlocBuilder<OpenBankingCubit, OpenBankingState>(
       buildWhen: (prev, curr) =>
@@ -1092,218 +1108,152 @@ class _StatisticsState extends State<Statistics> {
         if (banks.isEmpty) {
           // All banks gone (e.g. last one unlinked): drop any stale scope so
           // the page isn't filtered to a bank that no longer exists.
-          if (_selectedBankId != null) {
+          if (_selectedBankIds.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _applyBankFilter(null);
+              if (mounted) _applyBankFilter(const <String>{});
             });
           }
-          return Text(
-            'No banks linked yet. Link one below to see bank activity here.',
-            style: GoogleFonts.inter(
-                color: const Color(0xFF6B7280), fontSize: 11.5.sp),
-          );
+          // No pills to show — the single, beautified empty state lives in the
+          // Linked Banks section below, so we don't duplicate the messaging here.
+          return const SizedBox.shrink();
         }
-        // Selected bank was unlinked but others remain: fall back to All banks
-        // so the numbers don't stay scoped to a dead account.
-        if (_selectedBankId != null &&
-            !banks.any((b) => b.id == _selectedBankId)) {
+        // Some selected banks were unlinked but others remain: prune the dead
+        // ids so the numbers don't stay scoped to accounts that no longer exist.
+        final liveIds = banks.map((b) => b.id).toSet();
+        if (_selectedBankIds.isNotEmpty &&
+            !_selectedBankIds.every(liveIds.contains)) {
+          final pruned = _selectedBankIds.intersection(liveIds);
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _applyBankFilter(null);
+            if (mounted) _applyBankFilter(pruned);
           });
         }
-        return GestureDetector(
-          onTap: () => _showBankFilterSheet(banks),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BankScopePills(
+              banks: banks,
+              selectedIds: _selectedBankIds,
+              onChanged: _applyBankFilter,
             ),
-            child: Row(
-              children: [
-                Icon(
-                  _selectedBankId == null
-                      ? Icons.all_inclusive_rounded
-                      : Icons.account_balance,
-                  size: 14.sp,
-                  color: const Color(0xFFFB923C),
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  'Showing:',
-                  style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-                ),
-                SizedBox(width: 6.w),
-                Expanded(
-                  child: Text(
-                    _selectedBankLabel(banks),
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Icon(Icons.keyboard_arrow_down_rounded,
-                    size: 18.sp, color: const Color(0xFF9CA3AF)),
-              ],
-            ),
-          ),
+            SizedBox(height: 8.h),
+            _buildBankScopeBanner(banks),
+          ],
         );
       },
     );
   }
 
-  /// Label for the active bank scope; falls back to "All banks" when the
-  /// selected id no longer matches a linked account.
-  String _selectedBankLabel(List<LinkedBankAccount> banks) {
-    if (_selectedBankId == null) return 'All banks';
-    final match = banks.where((b) => b.id == _selectedBankId);
-    return match.isNotEmpty ? match.first.bankName : 'All banks';
-  }
+  /// Makes the active scope unmistakable: an orange banner when the page is
+  /// narrowed to ONE bank (with a "View all" escape hatch), or a muted line
+  /// when every linked bank is in scope.
+  Widget _buildBankScopeBanner(List<LinkedBankAccount> banks) {
+    if (_selectedBankIds.isEmpty) {
+      return Row(
+        children: [
+          Icon(Icons.all_inclusive_rounded,
+              size: 12.sp, color: const Color(0xFF6B7280)),
+          SizedBox(width: 6.w),
+          Text(
+            'Across all your linked banks',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF6B7280), fontSize: 11.5.sp),
+          ),
+        ],
+      );
+    }
 
-  /// Bottom sheet to pick the bank scope. Selecting an option updates the page
-  /// to that filter state (narrows every number) and refreshes its balance.
-  void _showBankFilterSheet(List<LinkedBankAccount> banks) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: const Color(0xFF1F1F1F),
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+    // One selected → its name; several → "N banks".
+    final selected =
+        banks.where((b) => _selectedBankIds.contains(b.id)).toList();
+    final bankName = selected.isEmpty
+        ? 'these banks'
+        : selected.length == 1
+            ? selected.first.bankName
+            : '${selected.length} banks';
+    final hidden =
+        _statsSource == StatisticsSource.both ? 'wallet & other banks' : 'other banks';
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFB923C).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
       ),
-      builder: (sheetCtx) {
-        return SafeArea(
-          child: ConstrainedBox(
-            // Cap the sheet so a long list of linked banks scrolls instead of
-            // pushing the sheet past the top of the screen.
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(sheetCtx).size.height * 0.7,
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        children: [
+          Icon(Icons.filter_alt_rounded,
+              size: 14.sp, color: const Color(0xFFFB923C)),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF), fontSize: 11.5.sp, height: 1.35),
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40.w,
-                      height: 4.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2D2D2D),
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Text(
-                      'Filter by bank',
-                      style: GoogleFonts.inter(
+                  const TextSpan(text: 'Analytics scoped to '),
+                  TextSpan(
+                    text: bankName,
+                    style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                        fontSize: 11.5.sp,
+                        fontWeight: FontWeight.w700),
                   ),
-                  SizedBox(height: 6.h),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _bankFilterTile(
-                              sheetCtx: sheetCtx,
-                              label: 'All banks',
-                              id: null,
-                              icon: Icons.all_inclusive_rounded),
-                          for (final b in banks)
-                            _bankFilterTile(
-                                sheetCtx: sheetCtx,
-                                label: b.bankName,
-                                id: b.id,
-                                icon: Icons.account_balance),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
+                  const TextSpan(text: ' only'),
+                  TextSpan(text: ' · $hidden hidden'),
                 ],
               ),
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _bankFilterTile({
-    required BuildContext sheetCtx,
-    required String label,
-    required String? id,
-    required IconData icon,
-  }) {
-    final selected = _selectedBankId == id;
-    return InkWell(
-      onTap: () {
-        Navigator.of(sheetCtx).pop();
-        _applyBankFilter(id);
-      },
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-        child: Row(
-          children: [
-            Icon(icon,
-                size: 18.sp,
-                color: selected
-                    ? const Color(0xFFFB923C)
-                    : const Color(0xFF9CA3AF)),
-            SizedBox(width: 14.w),
-            Expanded(
+          SizedBox(width: 8.w),
+          GestureDetector(
+            onTap: () => _applyBankFilter(const <String>{}),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFB923C),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
               child: Text(
-                label,
+                'View all',
                 style: GoogleFonts.inter(
-                  color: selected ? const Color(0xFFFB923C) : Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                ),
+                    color: Colors.white,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700),
               ),
             ),
-            if (selected)
-              Icon(Icons.check_rounded,
-                  size: 18.sp, color: const Color(0xFFFB923C)),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   /// Apply a bank scope selection: update local state, re-scope every number
   /// on the page via the cubit, and refresh the picked bank's live balance.
-  void _applyBankFilter(String? id) {
-    if (_selectedBankId == id) return;
-    setState(() => _selectedBankId = id);
-    context.read<StatisticsCubit>().changeBank(id);
-    // Live balance for the picked bank, straight from Mono (the Linked Banks
-    // rows reflect it). 'All banks' refreshes every stale account.
-    if (id == null) {
+  void _applyBankFilter(Set<String> ids) {
+    final next = Set<String>.from(ids);
+    if (setEquals(_selectedBankIds, next)) return;
+    final added = next.difference(_selectedBankIds);
+    setState(() => _selectedBankIds = next);
+    context.read<StatisticsCubit>().changeBanks(next.toList());
+    // Live balance straight from Mono (the Linked Banks rows reflect it).
+    // 'All banks' refreshes every stale account; otherwise refresh just the
+    // newly-added bank(s) so the balance under the pill is fresh.
+    if (next.isEmpty) {
       context.read<OpenBankingCubit>().autoRefreshStaleBalances(
             userId: _userId,
             accessToken: _accessToken,
             staleAfter: Duration.zero,
           );
     } else if (_userId.isNotEmpty) {
-      context.read<OpenBankingCubit>().refreshBalance(
-            accountId: id,
-            userId: _userId,
-            accessToken: _accessToken,
-          );
+      for (final id in added) {
+        context.read<OpenBankingCubit>().refreshBalance(
+              accountId: id,
+              userId: _userId,
+              accessToken: _accessToken,
+            );
+      }
     }
   }
 
@@ -1324,12 +1274,13 @@ class _StatisticsState extends State<Statistics> {
     if (!_statsSource.includesExternal) return const SizedBox.shrink();
 
     final bankLabel = () {
-      if (_selectedBankId == null) return 'your banks';
+      if (_selectedBankIds.isEmpty) return 'your banks';
       final banks = context.read<OpenBankingCubit>().linkedAccounts;
-      for (final b in banks) {
-        if (b.id == _selectedBankId) return b.bankName;
-      }
-      return 'this bank';
+      final selected =
+          banks.where((b) => _selectedBankIds.contains(b.id)).toList();
+      if (selected.isEmpty) return 'these banks';
+      if (selected.length == 1) return selected.first.bankName;
+      return '${selected.length} banks';
     }();
 
     Widget card({
@@ -1428,27 +1379,28 @@ class _StatisticsState extends State<Statistics> {
   /// the actual control is the filter bar above.
   Widget _buildScopeBadge() {
     String label = _statsSource.label;
-    if (_statsSource.includesExternal && _selectedBankId != null) {
+    if (_statsSource.includesExternal && _selectedBankIds.isNotEmpty) {
       final banks = context.read<OpenBankingCubit>().linkedAccounts;
-      for (final b in banks) {
-        if (b.id == _selectedBankId) {
-          label = _statsSource == StatisticsSource.both
-              ? 'Wallet + ${b.bankName}'
-              : b.bankName;
-          break;
-        }
+      final selected =
+          banks.where((b) => _selectedBankIds.contains(b.id)).toList();
+      if (selected.isNotEmpty) {
+        final scope = selected.length == 1
+            ? selected.first.bankName
+            : '${selected.length} banks';
+        label =
+            _statsSource == StatisticsSource.both ? 'Wallet + $scope' : scope;
       }
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
         label,
         style: GoogleFonts.inter(
-          color: const Color(0xFF3B82F6),
+          color: InvoiceThemeColors.primaryPurple,
           fontSize: 11.sp,
           fontWeight: FontWeight.w600,
         ),
@@ -1490,10 +1442,10 @@ class _StatisticsState extends State<Statistics> {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: Icon(Icons.show_chart, color: const Color(0xFF3B82F6).withValues(alpha: 0.5), size: 32.r),
+                  child: Icon(Icons.show_chart, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5), size: 32.r),
                 ),
                 SizedBox(height: 12.h),
                 Text(
@@ -1541,7 +1493,7 @@ class _StatisticsState extends State<Statistics> {
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurple,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1561,7 +1513,7 @@ class _StatisticsState extends State<Statistics> {
                       spots: spots,
                       isCurved: true,
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                        colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
                       ),
                       barWidth: 3,
                       dotData: FlDotData(show: false),
@@ -1569,8 +1521,8 @@ class _StatisticsState extends State<Statistics> {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                            const Color(0xFF60A5FA).withValues(alpha: 0.0),
+                            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                            const Color(0xFF7C3AED).withValues(alpha: 0.0),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -1616,7 +1568,7 @@ class _StatisticsState extends State<Statistics> {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: Icon(Icons.bar_chart, color: const Color(0xFFFB923C).withValues(alpha: 0.5), size: 32.r),
@@ -1675,7 +1627,7 @@ class _StatisticsState extends State<Statistics> {
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurple,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1831,6 +1783,10 @@ class _StatisticsState extends State<Statistics> {
         arguments: {
           'userId': _userId,
           'showAllSources': _includeExternalBanks,
+          // The credit-score screen scopes to a SINGLE bank; only pass one when
+          // exactly one bank is selected, else leave it unscoped (all banks).
+          'linkedAccountId':
+              _selectedBankIds.length == 1 ? _selectedBankIds.first : null,
         },
       ),
       child: Container(
@@ -1918,16 +1874,15 @@ class _StatisticsState extends State<Statistics> {
         // the filter on first paint.
         return BlocBuilder<StatisticsCubit, StatisticsState>(
           buildWhen: (prev, curr) {
-            String? extract(StatisticsState s) =>
-                s is StatisticsLoaded ? s.selectedBankAccountId : null;
-            return extract(prev) != extract(curr);
+            List<String> extract(StatisticsState s) =>
+                s is StatisticsLoaded ? s.selectedBankAccountIds : const [];
+            return !setEquals(extract(prev).toSet(), extract(curr).toSet());
           },
           builder: (context, statsState) {
-            final selectedId =
-                context.read<StatisticsCubit>().selectedBankAccountId;
-            final displayed = selectedId == null
-                ? all
-                : all.where((a) => a.id == selectedId).toList();
+            // Filtering now lives in the bank pills above — the Linked Banks
+            // section always lists EVERY bank so any of them can be managed,
+            // regardless of which one the analytics is scoped to.
+            final displayed = all;
             return Container(
               margin: EdgeInsets.symmetric(horizontal: 16.w),
               padding: EdgeInsets.all(16.w),
@@ -1943,12 +1898,14 @@ class _StatisticsState extends State<Statistics> {
                 linkedAccounts: displayed,
                 userId: _userId,
                 accessToken: _accessToken,
-                selectedAccountId: selectedId,
+                // Highlight the single scoped bank when exactly one is selected.
+                selectedAccountId:
+                    _selectedBankIds.length == 1 ? _selectedBankIds.first : null,
                 onBankTap: (account) {
-                  // Toggle: tap the already-selected bank to clear filter,
-                  // tap a new bank to pivot stats to it.
-                  final next = selectedId == account.id ? null : account.id;
-                  context.read<StatisticsCubit>().changeBank(next);
+                  // Tapping a bank opens its management sheet (refresh, set
+                  // default, reconnect, unlink) — filtering is handled by the
+                  // bank pills above, not by tapping the list.
+                  _showBankManagementSheet(account);
                 },
                 onRefresh: all.isNotEmpty
                     ? () => _syncLinkedAccounts(all)
@@ -1958,6 +1915,247 @@ class _StatisticsState extends State<Statistics> {
           },
         );
       },
+    );
+  }
+
+  /// Per-bank management sheet, opened by tapping a linked-bank row. Offers the
+  /// same actions as the full Linked Banks screen (refresh balance, set default,
+  /// reconnect, unlink) without leaving the AI Budgeting page.
+  void _showBankManagementSheet(LinkedBankAccount account) {
+    final cubit = context.read<OpenBankingCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(Icons.account_balance_rounded,
+                          size: 20.sp, color: InvoiceThemeColors.primaryPurple),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            account.bankName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w700),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            account.displayAccountNumber,
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (account.isDefault)
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text('Default',
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF10B981),
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Divider(color: const Color(0xFF2D2D2D), height: 1.h),
+                SizedBox(height: 8.h),
+                if (account.needsReauthorization)
+                  _bankMgmtTile(
+                    icon: Icons.link_off_rounded,
+                    color: const Color(0xFFFB923C),
+                    label: 'Reconnect bank',
+                    subtitle: 'This connection expired — reauthorize to sync',
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      startAccountReauthorization(context, account);
+                    },
+                  ),
+                _bankMgmtTile(
+                  icon: Icons.sync_rounded,
+                  color: InvoiceThemeColors.primaryPurple,
+                  label: 'Refresh balance',
+                  subtitle: 'Pull the latest balance from your bank',
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    cubit.refreshBalance(
+                      accountId: account.id,
+                      userId: _userId,
+                      accessToken: _accessToken,
+                      isManual: true,
+                    );
+                  },
+                ),
+                if (!account.isDefault)
+                  _bankMgmtTile(
+                    icon: Icons.star_rounded,
+                    color: const Color(0xFFF59E0B),
+                    label: 'Set as default',
+                    subtitle: 'Use this bank first for linked-bank actions',
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      cubit.setDefaultAccount(
+                        accountId: account.id,
+                        userId: _userId,
+                        accessToken: _accessToken,
+                      );
+                    },
+                  ),
+                _bankMgmtTile(
+                  icon: Icons.tune_rounded,
+                  color: const Color(0xFF9CA3AF),
+                  label: 'Manage all banks',
+                  subtitle: 'Open the full linked-banks screen',
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    Get.toNamed(
+                      AppRoutes.linkedBanks,
+                      arguments: {
+                        'highlightAccountId': account.id,
+                        'fromStatistics': true,
+                      },
+                    );
+                  },
+                ),
+                _bankMgmtTile(
+                  icon: Icons.link_off_rounded,
+                  color: const Color(0xFFEF4444),
+                  label: 'Unlink bank',
+                  subtitle: 'Remove this bank from Lazervault',
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    _confirmUnlinkBank(account, cubit);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _bankMgmtTile({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Row(
+          children: [
+            Icon(icon, size: 20.sp, color: color),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 2.h),
+                  Text(subtitle,
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.5.sp)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 18.sp, color: const Color(0xFF6B7280)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmUnlinkBank(LinkedBankAccount account, OpenBankingCubit cubit) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r)),
+        title: Text('Unlink ${account.bankName}?',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+          'Its transactions will stop syncing and drop out of your bank analytics. You can link it again anytime.',
+          style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              cubit.unlinkAccount(
+                accountId: account.id,
+                userId: _userId,
+                accessToken: _accessToken,
+              );
+            },
+            child: Text('Unlink',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1983,7 +2181,7 @@ class _StatisticsState extends State<Statistics> {
                 padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: showIncome
-                      ? const Color(0xFF3B82F6)
+                      ? InvoiceThemeColors.primaryPurple
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(10.r),
                 ),

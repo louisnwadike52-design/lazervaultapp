@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/move_transfer.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
@@ -13,6 +15,7 @@ import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_servic
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
 
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
@@ -62,6 +65,20 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   void initState() {
     super.initState();
     transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
+
+    // Telemetry: single-transfer receipt is a successful terminal view.
+    // Skip for the batch variant (it has its own settled metric) and skip
+    // when the processing screen already emitted the same settlement.
+    if (!_isBatch) {
+      AnalyticsService.instance.trackSendFundsScreen(
+        'receipt',
+        (transferDetails['flow'] as String?) ?? 'unknown',
+      );
+      if (transferDetails['settledEmitted'] != true) {
+        AnalyticsService.instance.trackSendFundsSettled(status: 'success');
+      }
+    }
+
     // Generate QR data on init
     _generateQrData();
     _initLiveStatus();
@@ -207,7 +224,16 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     final currency = transferDetails['currency'] as String? ?? 'NGN';
     final isScheduled = transferDetails['scheduledAt'] != null;
 
-    return Scaffold(
+    // Intercept the hardware / edge-swipe back so it runs the same flow-safe
+    // handler as the on-screen arrow — otherwise a raw system pop would drop the
+    // user onto whatever route survived beneath the receipt (the stale amount
+    // screen bug).
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleReceiptBack();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: Column(
@@ -250,7 +276,53 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           ],
         ),
       ),
+      ),
     );
+  }
+
+  // Send-funds flow routes the receipt must NEVER fall back into. A completed
+  // transfer's receipt is terminal — going "back" onto the amount / recipient /
+  // review / processing screen is always wrong (and is exactly the reported bug
+  // where a stale long-flow amount route, left beneath the receipt after a
+  // mid-session flow-flag change + preventDuplicates:false push, gets popped to).
+  static const Set<String> _sendFlowRoutes = {
+    AppRoutes.initiateSendFunds,
+    AppRoutes.selectRecipient,
+    AppRoutes.reviewFundsTransfer,
+    AppRoutes.transferProcessing,
+    AppRoutes.sendFundReceipt,
+  };
+
+  /// Origin-aware, flow-safe back:
+  ///  • an explicit `backRoute` (e.g. Beam) always wins;
+  ///  • if this receipt was PUSHED to VIEW a past transfer (e.g. from a P2P
+  ///    chat) — i.e. the route beneath is NOT a send-funds flow screen — pop
+  ///    back to exactly where we came from;
+  ///  • otherwise (the route beneath is a send-funds flow screen, or nothing is
+  ///    below) reset to the dashboard. This guarantees the receipt can never
+  ///    drop the user back onto the (short OR long) amount screen, regardless of
+  ///    how the stack was built or whether the flow flag flipped mid-journey.
+  void _handleReceiptBack() {
+    final backRoute = transferDetails['backRoute'] as String?;
+    if (backRoute != null) {
+      Get.offAllNamed(backRoute, arguments: transferDetails['backArgs']);
+      return;
+    }
+    final canPop =
+        Get.context != null && Navigator.of(Get.context!).canPop();
+    // Strip any query/args suffix so a route like `/initiate-send-funds?x=1`
+    // still matches the flow set (exact-match would miss it and pop into the
+    // amount screen — the very bug we're fixing).
+    final prev = Get.previousRoute.split('?').first;
+    final beneathIsSendFlow = _sendFlowRoutes.any((r) => prev == r);
+    // Pop back ONLY to a real, non-send-flow origin (e.g. a P2P chat viewing a
+    // past transfer). An empty/unknown previous route, or a send-flow screen
+    // beneath, resets to the dashboard — never re-enters the amount screen.
+    if (canPop && prev.isNotEmpty && !beneathIsSendFlow) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.dashboard);
+    }
   }
 
   Widget _buildBackButton() {
@@ -260,24 +332,50 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            // Beam receipts return to the Beam landing page; everything else
-            // returns to the app dashboard.
-            onPressed: () => Get.offAllNamed(
-                (transferDetails['backRoute'] as String?) ??
-                    AppRoutes.dashboard),
+            // Smart, origin-aware back:
+            //  • Explicit backRoute (e.g. Beam → its landing) always wins.
+            //  • Otherwise, if this receipt was PUSHED on top of an existing
+            //    screen (e.g. opened from a P2P chat's transaction), just pop
+            //    back to exactly where we came from — NOT the dashboard.
+            //  • Only when there's nothing below (reached via offAllNamed at the
+            //    end of a send flow) do we reset to the dashboard.
+            onPressed: _handleReceiptBack,
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          Image.asset(
-            'assets/images/logo.png',
-            width: 28.w,
-            height: 28.w,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.shield_outlined,
-              color: const Color(0xFF3B82F6),
-              size: 24.sp,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 30.w,
+                height: 30.w,
+                padding: EdgeInsets.all(4.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF2D2D2D)),
+                ),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.shield_outlined,
+                    color: const Color(0xFF3B82F6),
+                    size: 16.sp,
+                  ),
+                ),
+              ),
+              SizedBox(width: 7.w),
+              Text(
+                'Lazervault',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -286,7 +384,9 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
 
   Widget _buildHeader(double amount, String currency, bool isScheduled) {
     final currencySymbol = _currencySymbol(currency);
-    final status = transferDetails['status'] as String? ?? 'completed';
+    // Never assume success when a status is absent — an external transfer is
+    // `pending`/`processing` until a webhook/reconciler confirms it.
+    final status = transferDetails['status'] as String? ?? 'processing';
 
     DateTime? timestamp;
     if (transferDetails['timestamp'] != null) {
@@ -300,19 +400,58 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     // green check only when actually delivered; amber in transit; purple on
     // the refund path; red on failure.
     final live = _liveTransfer?.status;
-    Color iconBg = const Color(0xFF10B981);
-    IconData iconData = Icons.check;
-    String titleText = _isBatch
-        ? (isScheduled ? 'Batch Transfer Scheduled' : 'Batch Transfer Successful')
-        : (isScheduled ? 'Transfer Scheduled' : 'Transfer Successful');
-    // A partial batch (some recipients failed) shows an amber state.
-    if (_isBatch) {
+
+    // Base visuals derived from the REAL persisted status — never assume
+    // success. External bank transfers start `pending`/`processing` and only
+    // turn green on a CONFIRMED success (webhook/reconciler). The `live` block
+    // below refines this the moment a live status update arrives.
+    final s = status.toLowerCase();
+    const successStates = {'completed', 'success', 'successful', 'delivered'};
+    const failedStates = {
+      'failed', 'cancelled', 'canceled', 'declined', 'rejected'
+    };
+    const refundedStates = {'reversed', 'refunded'};
+    const refundingStates = {'refunding', 'reversing', 'reversing_fee'};
+
+    Color iconBg;
+    IconData iconData;
+    String titleText;
+    if (isScheduled) {
+      iconBg = const Color(0xFF8B5CF6);
+      iconData = Icons.schedule_rounded;
+      titleText = _isBatch ? 'Batch Transfer Scheduled' : 'Transfer Scheduled';
+    } else if (successStates.contains(s)) {
+      iconBg = const Color(0xFF10B981);
+      iconData = Icons.check_rounded;
+      titleText = _isBatch ? 'Batch Transfer Successful' : 'Transfer Successful';
+    } else if (failedStates.contains(s)) {
+      iconBg = const Color(0xFFEF4444);
+      iconData = Icons.close_rounded;
+      titleText = _isBatch ? 'Batch Transfer Failed' : 'Transfer Failed';
+    } else if (refundedStates.contains(s)) {
+      iconBg = const Color(0xFF8B5CF6);
+      iconData = Icons.account_balance_wallet_rounded;
+      titleText = 'Refunded';
+    } else if (refundingStates.contains(s)) {
+      iconBg = const Color(0xFF8B5CF6);
+      iconData = Icons.replay_rounded;
+      titleText = 'Refund in progress';
+    } else {
+      // pending / processing / awaiting_webhook / unknown → in progress.
+      iconBg = const Color(0xFFFB923C);
+      iconData = Icons.hourglass_top_rounded;
+      titleText = _isBatch ? 'Batch Transfer Processing' : 'Transfer Processing';
+    }
+
+    // A partial batch (some recipients failed) shows amber; a fully failed
+    // batch shows red. Refines the base for batch results.
+    if (_isBatch && !isScheduled) {
       final failed = transferDetails['failedTransfers'] as int? ?? 0;
       final successful = transferDetails['successfulTransfers'] as int? ??
           _recipientCount;
       if (successful == 0 && _recipientCount > 0) {
         iconBg = const Color(0xFFEF4444);
-        iconData = Icons.close;
+        iconData = Icons.close_rounded;
         titleText = 'Batch Transfer Failed';
       } else if (failed > 0) {
         iconBg = const Color(0xFFFB923C);
@@ -329,7 +468,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           break;
         case MoveTransferStatus.failed:
           iconBg = const Color(0xFFEF4444);
-          iconData = Icons.close;
+          iconData = Icons.close_rounded;
           titleText = 'Transfer Failed';
           break;
         case MoveTransferStatus.refunding:
@@ -344,25 +483,59 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           break;
         default:
           iconBg = const Color(0xFFFB923C);
-          iconData = Icons.send_rounded;
+          iconData = Icons.hourglass_top_rounded;
           titleText = 'Transfer in progress';
       }
     }
 
     return Column(
       children: [
-        // Compact stage icon
+        // Layered status badge: soft outer halo → tinted ring → solid core
+        // with a subtle drop glow. Reads as a considered state marker rather
+        // than a flat colored dot.
         Container(
-          width: 48.w,
-          height: 48.w,
+          width: 78.w,
+          height: 78.w,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: iconBg,
+            color: iconBg.withValues(alpha: 0.10),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            iconData,
-            color: Colors.white,
-            size: 26.sp,
+          child: Container(
+            width: 62.w,
+            height: 62.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: iconBg.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Container(
+              width: 46.w,
+              height: 46.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.lerp(iconBg, Colors.white, 0.22) ?? iconBg,
+                    iconBg,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: iconBg.withValues(alpha: 0.40),
+                    blurRadius: 18,
+                    offset: Offset(0, 6.h),
+                  ),
+                ],
+              ),
+              child: Icon(
+                iconData,
+                color: Colors.white,
+                size: 24.sp,
+              ),
+            ),
           ),
         ),
         SizedBox(height: 10.h),
@@ -422,8 +595,16 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     if (_isBatch) return _buildBatchDetails();
     final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
     final recipientBank = transferDetails['recipientBankName'] as String?;
+    final recipientBankCode = transferDetails['recipientBankCode'] as String?;
     final recipientAccount = transferDetails['recipientAccountMasked'] as String?;
-    final reference = transferDetails['reference'] as String? ?? '';
+    // Robust tx reference for the QR label + Reference row — the short flow
+    // doesn't set 'reference', so fall back to the same id the QR encodes.
+    final reference = (transferDetails['reference'] as String?)?.trim().isNotEmpty == true
+        ? (transferDetails['reference'] as String).trim()
+        : ((transferDetails['internalReference'] as String?) ??
+            transferDetails['transferId']?.toString() ??
+            transferDetails['transactionId']?.toString() ??
+            '');
     final providerReference = transferDetails['providerReference'] as String?;
     final narration = transferDetails['narration'] as String?;
     final transferType = transferDetails['transferType'] as String?;
@@ -472,14 +653,14 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
             _buildSectionLabel('To'),
             _buildDetailRow('Name', recipientName),
             if (recipientBank != null && recipientBank.isNotEmpty)
-              _buildDetailRow('Bank', recipientBank),
+              _buildBankRow('Bank', recipientBank, bankCode: recipientBankCode),
             if (recipientAccount != null && recipientAccount.isNotEmpty)
               _buildDetailRow('Account', recipientAccount),
             _buildSectionLabel('Transaction'),
           ] else ...[
             _buildDetailRow('Recipient', recipientName),
             if (recipientBank != null && recipientBank.isNotEmpty)
-              _buildDetailRow('Bank', recipientBank),
+              _buildBankRow('Bank', recipientBank, bankCode: recipientBankCode),
             if (recipientAccount != null && recipientAccount.isNotEmpty)
               _buildDetailRow('Account', recipientAccount),
             if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty)
@@ -888,6 +1069,56 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     );
   }
 
+  /// Bank detail row with the recipient bank's logo alongside the name, so the
+  /// receipt clearly shows WHICH bank received the money.
+  Widget _buildBankRow(String label, String bankName, {String? bankCode}) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 110.w,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(
+                    bankName,
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                BankLogo(
+                  bankName: bankName,
+                  bankCode: bankCode,
+                  size: 22,
+                  borderRadius: 6,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatDate(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
@@ -915,43 +1146,49 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     }
   }
 
+  /// On-screen currency symbol. Renders the REAL glyph (₦, £, €, $, R, GH₵,
+  /// KSh) so amounts read naturally; falls back to the ISO code + a trailing
+  /// space when we have no glyph. The shared PDF (`TagPayPdfService`) applies
+  /// its own ASCII-safe mapping, so a glyph here is safe.
   String _currencySymbol(String currency) {
-    // Return ASCII-safe currency codes for receipts
-    switch (currency.toUpperCase()) {
-      case 'NGN':
-        return 'NGN ';
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      case 'CAD':
-        return 'CAD ';
-      case 'AUD':
-        return 'AUD ';
-      case 'INR':
-        return 'INR ';
-      case 'JPY':
-        return 'JPY ';
-      case 'KES':
-        return 'KES ';
-      case 'GHS':
-        return 'GHS ';
-      case 'EGP':
-        return 'EGP ';
-      default:
-        return '$currency '; // Fallback to code + space
-    }
+    final code = currency.trim().toUpperCase();
+    final sym = CurrencyUtils.getSymbol(code);
+    return sym == code ? '$sym ' : sym;
+  }
+
+  // ── Redo (LazerBeam) ──────────────────────────────────────────────────────
+  // When the payload carries a `redoRoute` (Beam receipts, from the flow OR
+  // from a history tap) the receipt offers a "Redo" CTA that re-opens the
+  // correct transfer flow, best-effort pre-filled via `redoArgs`.
+  String? get _redoRoute {
+    final r = transferDetails['redoRoute'] as String?;
+    return (r != null && r.isNotEmpty) ? r : null;
+  }
+
+  void _onRedo() {
+    final route = _redoRoute;
+    if (route == null) return;
+    final args = transferDetails['redoArgs'];
+    Get.offNamed(route, arguments: args);
   }
 
   Widget _buildActions(BuildContext context) {
+    final redoLabel = (transferDetails['redoLabel'] as String?) ?? 'Redo';
+    final hasRedo = _redoRoute != null;
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
       child: Row(
         children: [
+          if (hasRedo) ...[
+            Expanded(
+              child: _actionButton(
+                icon: Icons.replay_rounded,
+                label: redoLabel,
+                onTap: _onRedo,
+              ),
+            ),
+            SizedBox(width: 12.w),
+          ],
           Expanded(
             child: _actionButton(
               icon: _isDownloading ? null : Icons.download_outlined,
@@ -979,9 +1216,12 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     required String label,
     required VoidCallback onTap,
     bool isLoading = false,
+    bool isPrimary = false,
   }) {
     return Material(
-      color: const Color(0xFF1F1F1F),
+      color: isPrimary
+          ? const Color.fromARGB(255, 78, 3, 208)
+          : const Color(0xFF1F1F1F),
       borderRadius: BorderRadius.circular(12.r),
       child: InkWell(
         onTap: onTap,
@@ -995,13 +1235,17 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                 LazerVaultLoader.tiny()
               else if (icon != null)
                 Icon(icon, color: Colors.white, size: 18.sp),
-              if (!isLoading && icon != null) SizedBox(width: 8.w),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+              if (!isLoading && icon != null) SizedBox(width: 6.w),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

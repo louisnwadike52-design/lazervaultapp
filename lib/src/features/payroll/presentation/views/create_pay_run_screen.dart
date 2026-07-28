@@ -6,6 +6,8 @@ import '../../domain/entities/employee_entity.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/entity_create_sheet.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 class CreatePayRunScreen extends StatefulWidget {
   const CreatePayRunScreen({super.key});
@@ -55,8 +57,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF3B82F6),
-              surface: Color(0xFF1F1F1F),
+              primary: InvoiceThemeColors.primaryPurple,
+              surface: InvoiceThemeColors.secondaryBackground,
             ),
           ),
           child: child!,
@@ -83,8 +85,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF3B82F6),
-              surface: Color(0xFF1F1F1F),
+              primary: InvoiceThemeColors.primaryPurple,
+              surface: InvoiceThemeColors.secondaryBackground,
             ),
           ),
           child: child!,
@@ -100,13 +102,17 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  // Only PAYABLE employees (linked user or bank account) can be in a pay run —
+  // adding an un-payable one would fail the run at calculate/process time.
+  int get _payableCount => _employees.where((e) => e.isPayable).length;
+
   void _toggleSelectAll() {
     setState(() {
       _selectAll = !_selectAll;
       if (_selectAll) {
         _selectedEmployeeIds
           ..clear()
-          ..addAll(_employees.map((e) => e.id));
+          ..addAll(_employees.where((e) => e.isPayable).map((e) => e.id));
       } else {
         _selectedEmployeeIds.clear();
       }
@@ -120,8 +126,38 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
       } else {
         _selectedEmployeeIds.add(id);
       }
-      _selectAll = _selectedEmployeeIds.length == _employees.length;
+      _selectAll = _payableCount > 0 && _selectedEmployeeIds.length == _payableCount;
     });
+  }
+
+  void _snackNotPayable(String name, String issue) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            '$name can\'t be paid yet — $issue. Set up their payout in Employees first.'),
+        backgroundColor: InvoiceThemeColors.warningOrange,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Run the full add-employee flow in a bottom sheet; on create, prepend the
+  /// new employee to the list and pre-select them for this pay run.
+  Future<void> _createAndSelectEmployee() async {
+    final created = await showCreateEmployeeSheet(context);
+    if (created == null || !mounted) return;
+    setState(() {
+      _employees = [created, ..._employees];
+      _selectedEmployeeIds.add(created.id);
+      _selectAll = _selectedEmployeeIds.length == _employees.length;
+      _employeesLoaded = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${created.fullName} added and selected'),
+        backgroundColor: InvoiceThemeColors.successGreen,
+      ),
+    );
   }
 
   void _createPayRun() {
@@ -132,7 +168,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             'Please select both start and end dates',
             style: GoogleFonts.inter(),
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
         ),
       );
       return;
@@ -145,7 +181,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             'End date must be after start date',
             style: GoogleFonts.inter(),
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
         ),
       );
       return;
@@ -158,7 +194,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             'Please select at least one employee',
             style: GoogleFonts.inter(),
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
         ),
       );
       return;
@@ -171,7 +207,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             'Please select a recurrence frequency',
             style: GoogleFonts.inter(),
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
         ),
       );
       return;
@@ -199,7 +235,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.successGreen,
             ),
           );
           Navigator.of(context).pop();
@@ -216,7 +252,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: InvoiceThemeColors.errorRed,
             ),
           );
         }
@@ -226,7 +262,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             state is PayrollLoading && _employeesLoaded;
 
         return Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
+          backgroundColor: InvoiceThemeColors.primaryBackground,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -260,11 +296,11 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                         Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6)
+                            color: InvoiceThemeColors.primaryPurple
                                 .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: const Color(0xFF3B82F6)
+                              color: InvoiceThemeColors.primaryPurple
                                   .withValues(alpha: 0.3),
                             ),
                           ),
@@ -272,7 +308,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: const Color(0xFF3B82F6),
+                                color: InvoiceThemeColors.primaryPurpleLight,
                                 size: 20.sp,
                               ),
                               SizedBox(width: 12.w),
@@ -280,7 +316,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                                 child: Text(
                                   'Configure the pay period, select employees, and set scheduling options.',
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF93C5FD),
+                                    color: InvoiceThemeColors.primaryPurpleLight,
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.w400,
                                     height: 1.4,
@@ -296,7 +332,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                         Text(
                           'Pay Run Name (optional)',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF),
+                            color: InvoiceThemeColors.textGray400,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
                           ),
@@ -311,16 +347,16 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                           decoration: InputDecoration(
                             hintText: 'e.g. January 2026 Salary',
                             hintStyle: GoogleFonts.inter(
-                              color: const Color(0xFF6B7280),
+                              color: InvoiceThemeColors.textGray500,
                               fontSize: 15.sp,
                             ),
                             prefixIcon: Icon(
                               Icons.label_outline,
-                              color: const Color(0xFF9CA3AF),
+                              color: InvoiceThemeColors.textGray400,
                               size: 20.sp,
                             ),
                             filled: true,
-                            fillColor: const Color(0xFF1F1F1F),
+                            fillColor: InvoiceThemeColors.secondaryBackground,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.r),
                               borderSide: BorderSide.none,
@@ -337,7 +373,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                         Text(
                           'Pay Period Start',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF),
+                            color: InvoiceThemeColors.textGray400,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
                           ),
@@ -354,7 +390,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                         Text(
                           'Pay Period End',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF),
+                            color: InvoiceThemeColors.textGray400,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
                           ),
@@ -387,9 +423,9 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                 Container(
                   padding: EdgeInsets.all(20.w),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF0A0A0A),
+                    color: InvoiceThemeColors.primaryBackground,
                     border: Border(
-                      top: BorderSide(color: Color(0xFF2D2D2D)),
+                      top: BorderSide(color: InvoiceThemeColors.borderColor),
                     ),
                   ),
                   child: SizedBox(
@@ -398,9 +434,9 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                     child: ElevatedButton(
                       onPressed: isLoading ? null : _createPayRun,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: InvoiceThemeColors.primaryPurple,
                         disabledBackgroundColor:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),
                         ),
@@ -442,12 +478,12 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: value != null
-                ? const Color(0xFF3B82F6).withValues(alpha: 0.5)
-                : const Color(0xFF2D2D2D),
+                ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5)
+                : InvoiceThemeColors.borderColor,
           ),
         ),
         child: Row(
@@ -455,15 +491,15 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             Icon(
               Icons.calendar_today_outlined,
               color: value != null
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFF9CA3AF),
+                  ? InvoiceThemeColors.primaryPurpleLight
+                  : InvoiceThemeColors.textGray400,
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
             Text(
               value != null ? _formatDate(value) : placeholder,
               style: GoogleFonts.inter(
-                color: value != null ? Colors.white : const Color(0xFF6B7280),
+                color: value != null ? Colors.white : InvoiceThemeColors.textGray500,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -471,7 +507,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             const Spacer(),
             Icon(
               Icons.chevron_right,
-              color: const Color(0xFF6B7280),
+              color: InvoiceThemeColors.textGray500,
               size: 20.sp,
             ),
           ],
@@ -504,7 +540,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
               child: Text(
                 _selectAll ? 'Deselect All' : 'Select All',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurpleLight,
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -516,8 +552,40 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
         Text(
           '${_selectedEmployeeIds.length} of ${_employees.length} selected',
           style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
+            color: InvoiceThemeColors.textGray400,
             fontSize: 12.sp,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        // Add a brand-new employee inline (runs the full add-employee flow in a
+        // sheet, then selects the result for this pay run).
+        InkWell(
+          onTap: _createAndSelectEmployee,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.person_add_alt_1_rounded,
+                    color: InvoiceThemeColors.primaryPurpleLight, size: 20.sp),
+                SizedBox(width: 10.w),
+                Text(
+                  'Add employee',
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.primaryPurpleLight,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         SizedBox(height: 12.h),
@@ -533,14 +601,14 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              color: InvoiceThemeColors.secondaryBackground,
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
               'No employees found. Add employees first.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                color: const Color(0xFF6B7280),
+                color: InvoiceThemeColors.textGray500,
                 fontSize: 13.sp,
               ),
             ),
@@ -549,7 +617,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
           Container(
             constraints: BoxConstraints(maxHeight: 200.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              color: InvoiceThemeColors.secondaryBackground,
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: ListView.separated(
@@ -557,16 +625,28 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
               padding: EdgeInsets.symmetric(vertical: 4.h),
               itemCount: _employees.length,
               separatorBuilder: (_, __) => Divider(
-                color: const Color(0xFF2D2D2D),
+                color: InvoiceThemeColors.borderColor,
                 height: 1,
                 indent: 50.w,
               ),
               itemBuilder: (context, index) {
                 final emp = _employees[index];
                 final isSelected = _selectedEmployeeIds.contains(emp.id);
+                final issue = emp.payoutIssue; // null = payable
                 return InkWell(
-                  onTap: () => _toggleEmployee(emp.id),
-                  child: Padding(
+                  // Un-payable employees (no linked user AND no bank account) can't
+                  // be added — the pay run would fail for them. Tap explains why +
+                  // points to Employees to fix. Mirrors the backend calculate gate.
+                  onTap: () {
+                    if (issue != null) {
+                      _snackNotPayable(emp.fullName, issue);
+                      return;
+                    }
+                    _toggleEmployee(emp.id);
+                  },
+                  child: Opacity(
+                    opacity: issue != null ? 0.6 : 1.0,
+                    child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 12.w,
                       vertical: 10.h,
@@ -578,23 +658,29 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                           height: 22.w,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFF3B82F6)
+                                ? InvoiceThemeColors.primaryPurple
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(4.r),
                             border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFF3B82F6)
-                                  : const Color(0xFF6B7280),
+                              color: issue != null
+                                  ? InvoiceThemeColors.warningOrange
+                                  : isSelected
+                                      ? InvoiceThemeColors.primaryPurpleLight
+                                      : InvoiceThemeColors.textGray500,
                               width: 1.5,
                             ),
                           ),
-                          child: isSelected
-                              ? Icon(
-                                  Icons.check,
-                                  color: Colors.white,
-                                  size: 16.sp,
-                                )
-                              : null,
+                          child: issue != null
+                              ? Icon(Icons.priority_high,
+                                  color: InvoiceThemeColors.warningOrange,
+                                  size: 15.sp)
+                              : isSelected
+                                  ? Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 16.sp,
+                                    )
+                                  : null,
                         ),
                         SizedBox(width: 12.w),
                         Expanded(
@@ -609,11 +695,20 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              if (emp.department.isNotEmpty)
+                              if (issue != null)
+                                Text(
+                                  '$issue — set up payout to pay',
+                                  style: GoogleFonts.inter(
+                                    color: InvoiceThemeColors.warningOrange,
+                                    fontSize: 11.5.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                )
+                              else if (emp.department.isNotEmpty)
                                 Text(
                                   emp.department,
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF9CA3AF),
+                                    color: InvoiceThemeColors.textGray400,
                                     fontSize: 12.sp,
                                   ),
                                 ),
@@ -623,12 +718,13 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                         Text(
                           emp.formattedPayRate,
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF),
+                            color: InvoiceThemeColors.textGray400,
                             fontSize: 12.sp,
                           ),
                         ),
                       ],
                     ),
+                  ),
                   ),
                 );
               },
@@ -646,7 +742,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -666,7 +762,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
               Switch(
                 value: _isRecurring,
                 onChanged: (v) => setState(() => _isRecurring = v),
-                activeThumbColor: const Color(0xFF3B82F6),
+                activeThumbColor: InvoiceThemeColors.primaryPurple,
               ),
             ],
           ),
@@ -675,7 +771,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
             Text(
               'Frequency',
               style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
+                color: InvoiceThemeColors.textGray400,
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -694,14 +790,14 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                       padding: EdgeInsets.symmetric(vertical: 10.h),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? InvoiceThemeColors.primaryPurple
                                 .withValues(alpha: 0.2)
-                            : const Color(0xFF2D2D2D),
+                            : InvoiceThemeColors.borderColor,
                         borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF3B82F6)
-                              : const Color(0xFF2D2D2D),
+                              ? InvoiceThemeColors.primaryPurpleLight
+                              : InvoiceThemeColors.borderColor,
                         ),
                       ),
                       child: Center(
@@ -709,8 +805,8 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                           _frequencyLabels[value],
                           style: GoogleFonts.inter(
                             color: isSelected
-                                ? const Color(0xFF3B82F6)
-                                : const Color(0xFF9CA3AF),
+                                ? InvoiceThemeColors.primaryPurpleLight
+                                : InvoiceThemeColors.textGray400,
                             fontSize: 13.sp,
                             fontWeight: isSelected
                                 ? FontWeight.w600
@@ -730,7 +826,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                 Text(
                   'Auto-approve',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
+                    color: InvoiceThemeColors.textGray400,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -738,7 +834,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
                 Switch(
                   value: _autoApprove,
                   onChanged: (v) => setState(() => _autoApprove = v),
-                  activeThumbColor: const Color(0xFF3B82F6),
+                  activeThumbColor: InvoiceThemeColors.primaryPurple,
                 ),
               ],
             ),
@@ -756,7 +852,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -807,7 +903,7 @@ class _CreatePayRunScreenState extends State<CreatePayRunScreen> {
           Text(
             label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
             ),

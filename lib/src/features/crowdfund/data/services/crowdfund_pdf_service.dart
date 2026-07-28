@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import 'crowdfund_report_service.dart';
 
 class CrowdfundPdfService {
   /// Generate a PDF receipt for a crowdfund donation
@@ -171,12 +173,14 @@ class CrowdfundPdfService {
     return file;
   }
 
-  /// Share a donation receipt PDF
+  /// Share a donation receipt PDF. [sharePositionOrigin] is the iOS share-sheet
+  /// anchor rect (required on iPad; a null/zero value falls back to a valid rect).
   Future<void> shareReceipt(
     CrowdfundReceipt receipt,
     CrowdfundDonation donation,
-    Crowdfund crowdfund,
-  ) async {
+    Crowdfund crowdfund, {
+    Rect? sharePositionOrigin,
+  }) async {
     try {
       final file = await generateDonationReceipt(receipt, donation, crowdfund);
 
@@ -184,6 +188,8 @@ class CrowdfundPdfService {
         files: [XFile(file.path)],
         subject: 'Crowdfund Donation Receipt - ${receipt.receiptNumber}',
         text: 'Thank you for your donation to ${crowdfund.title}!',
+        sharePositionOrigin:
+            CrowdfundReportService.resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

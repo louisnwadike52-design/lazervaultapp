@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
@@ -138,23 +139,32 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
       body: SafeArea(
         child: Column(
           children: [
+            // Header stays static; everything below rises + fades in on load.
             _buildHeader(context),
-            _buildTagPayBadge(context),
-            SizedBox(height: 12.h),
-            _buildStatsSection(context),
-            SizedBox(height: 16.h),
-            _buildTabBar(),
-            _buildFilterChips(),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildReceivedTab(),
-                  _buildCreatedTab(),
-                ],
+              child: ServiceEntranceAnimation(
+                child: Column(
+                  children: [
+                    _buildTagPayBadge(context),
+                    SizedBox(height: 12.h),
+                    _buildStatsSection(context),
+                    SizedBox(height: 16.h),
+                    _buildTabBar(),
+                    _buildFilterChips(),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildReceivedTab(),
+                          _buildCreatedTab(),
+                        ],
+                      ),
+                    ),
+                    _buildPaginationBar(),
+                  ],
+                ),
               ),
             ),
-            _buildPaginationBar(),
           ],
         ),
       ),
@@ -300,7 +310,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Text(
-                        'LazerTag',
+                        'Lazertag',
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 12.sp,
@@ -965,7 +975,7 @@ class _SetUsernameSheetState extends State<_SetUsernameSheet> {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Choose a unique username for your LazerTag. Others can use this to send you money or tag you.',
+              'Choose a unique username for your Lazertag. Others can use this to send you money or tag you.',
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,

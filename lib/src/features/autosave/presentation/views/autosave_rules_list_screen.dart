@@ -14,6 +14,9 @@ import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_s
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_sort_dropdown.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_swipeable_card.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/bulk_action_bottom_bar.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class AutoSaveRulesListScreen extends StatefulWidget {
@@ -38,6 +41,13 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
     super.initState();
     context.read<AutoSaveCubit>().getRulesWithCache();
     _scrollController.addListener(_onScroll);
+    // Populate mandate status so linked-bank rule cards can flag a lapsed
+    // Direct Debit that needs re-authorization. Cheap one-shot; the card chips
+    // read the shared MandateCubit map.
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    if (userId.isNotEmpty) {
+      serviceLocator<MandateCubit>().fetchUserMandates(userId: userId);
+    }
   }
 
   @override
@@ -96,8 +106,11 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   }
 
   void _navigateToEdit(AutoSaveRuleEntity rule) {
+    // The swipe "edit" action must open the EDIT screen — it was opening the
+    // details screen (same as tapping the card), so editing from the list swipe
+    // silently did nothing.
     Get.toNamed(
-      AppRoutes.autoSaveDetails,
+      AppRoutes.editAutoSaveRule,
       arguments: rule,
     )?.then((_) {
       if (!mounted) return;

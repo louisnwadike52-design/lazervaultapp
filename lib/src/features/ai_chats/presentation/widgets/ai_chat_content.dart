@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
@@ -85,6 +86,8 @@ class ChatMessage {
   final int? audioDurationMs;
   final String? transcript;
   final Map<String, dynamic>? receiptData;
+  // ReceiptCard V2 payload — single dict OR a list (batch transfer).
+  final dynamic receiptCard;
   final Map<String, dynamic>? pinPrompt;
 
   ChatMessage({
@@ -100,6 +103,7 @@ class ChatMessage {
     this.audioDurationMs,
     this.transcript,
     this.receiptData,
+    this.receiptCard,
     this.pinPrompt,
   });
 
@@ -117,6 +121,7 @@ class ChatMessage {
       audioDurationMs: entity.audioDurationMs,
       transcript: entity.transcript,
       receiptData: entity.receiptData,
+      receiptCard: entity.receiptCard,
       pinPrompt: entity.pinPrompt,
     );
   }
@@ -1381,7 +1386,16 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             if (!isUser && message.receiptData != null)
               ChatReceiptCard(
                 receipt: TransferReceiptData.fromJson(message.receiptData!),
-              ),
+              )
+            // V2 receipt card(s) — single (ChatReceiptCardV2) or a list for a
+            // batch transfer (ChatReceiptCardV2List). Mirrors the general chat's
+            // _buildReceiptCardV2 so batch receipts render here too. Rendered
+            // ONLY when there's no receiptData: a successful transfer surfaces
+            // both payloads, but the self-contained ChatReceiptCard above is the
+            // single card we show — the V2 card is a fallback for flows that
+            // emit only receipt_card (e.g. batch transfers).
+            else if (!isUser && message.receiptCard != null)
+              _buildReceiptCardV2(message.receiptCard),
             // PIN prompt card — chat-driven money moves collect the PIN inline.
             // "Enter PIN" opens the native modal; on success the single-use
             // token round-trips to the agent (submitPinVerification) and the
@@ -1412,6 +1426,19 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         ),
       ),
     );
+  }
+
+  /// Render the generic ReceiptCard V2 payload (single dict or list). Mirrors
+  /// general_chat_content._buildReceiptCardV2 so batch receipts render in the
+  /// per-service chat too. See chat_services_shared/receipt_protocol.py.
+  Widget _buildReceiptCardV2(dynamic payload) {
+    if (payload is List) {
+      return ChatReceiptCardV2List(payloads: payload);
+    }
+    if (payload is Map) {
+      return ChatReceiptCardV2(payload: Map<String, dynamic>.from(payload));
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildConfirmationCard(ChatMessage message) {

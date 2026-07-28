@@ -74,6 +74,8 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
         return TriggerType.roundUp;
       case autosave_pb.TriggerType.TRIGGER_EXTERNAL_INFLOW:
         return TriggerType.externalInflow;
+      case autosave_pb.TriggerType.TRIGGER_SCHEDULED_EXTERNAL:
+        return TriggerType.scheduledExternal;
       default:
         return TriggerType.unknown;
     }

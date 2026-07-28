@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/utils/image_compressor.dart';
 
 /// Result of a profile-picture upload — the public URL that should be
 /// persisted on the user record via UpdateProfile.
@@ -65,6 +66,17 @@ class ProfilePictureUploadService {
     required String filename,
     required String contentType,
   }) async {
+    // Compress/resize before upload (high quality, no visible loss). Keep the
+    // filename extension aligned with the resulting content-type so the storage
+    // key and Content-Type stay consistent.
+    final compressed = await ImageCompressor.compressForUpload(
+      bytes,
+      contentType: contentType,
+    );
+    bytes = compressed.bytes;
+    contentType = compressed.contentType;
+    filename = _alignExtension(filename, contentType);
+
     final accessToken = await _storage.read(key: _accessTokenKey);
     if (accessToken == null || accessToken.isEmpty) {
       throw const ProfilePictureUploadException(
@@ -167,6 +179,24 @@ class ProfilePictureUploadService {
   }
 
   static String _guessContentType(String filename) => contentTypeFor(filename);
+
+  /// Rewrite [filename]'s extension to match [contentType] (e.g. a PNG that was
+  /// re-encoded to JPEG becomes `*.jpg`) so the storage key/extension and the
+  /// uploaded Content-Type agree.
+  static String _alignExtension(String filename, String contentType) {
+    final ext = switch (contentType.toLowerCase()) {
+      'image/jpeg' => 'jpg',
+      'image/png' => 'png',
+      'image/webp' => 'webp',
+      'image/heic' => 'heic',
+      'image/gif' => 'gif',
+      _ => null,
+    };
+    if (ext == null) return filename;
+    final dot = filename.lastIndexOf('.');
+    final base = dot > 0 ? filename.substring(0, dot) : filename;
+    return '$base.$ext';
+  }
 
   /// Public helper so callers (e.g. repositories that already have raw
   /// bytes + filename in hand) don't have to repeat the same mapping.

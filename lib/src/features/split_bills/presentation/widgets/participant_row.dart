@@ -106,6 +106,11 @@ class ParticipantRow extends StatelessWidget {
           const Color(0xFF10B981),
           'Paid',
         ),
+      SplitBillParticipantStatus.inProgress => (
+          Icons.sync,
+          const Color(0xFF4834D4),
+          'In progress',
+        ),
       SplitBillParticipantStatus.declined => (
           Icons.cancel,
           const Color(0xFFEF4444),

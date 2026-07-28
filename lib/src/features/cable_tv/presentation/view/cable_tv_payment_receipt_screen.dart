@@ -142,6 +142,9 @@ class _CableTVPaymentReceiptScreenState
     final smartCardNumber = args['smartCardNumber'] as String?;
     final saveBeneficiary = (args['saveBeneficiary'] as bool?) ?? false;
     final nickname = args['beneficiaryNickname'] as String?;
+    // Already-saved card: the QuickBuy resolved the existing beneficiary, so
+    // reuse its id (skip the duplicate save) and still attach auto-renew.
+    final existingBeneficiaryId = args['existingBeneficiaryId'] as String?;
     final autoRenewEnabled = (args['autoRenewEnabled'] as bool?) ?? false;
     final pref = args['rolloverPref'] as CableTVRolloverPreference?;
 
@@ -154,8 +157,10 @@ class _CableTVPaymentReceiptScreenState
     final ds = GetIt.I<CableTVBeneficiaryRemoteDataSource>();
 
     // --- Save beneficiary (or reuse existing) ---
-    String? beneficiaryId;
-    if (saveBeneficiary) {
+    // Seed with the id the QuickBuy resolved for an already-saved card so we
+    // never save the same smart card twice.
+    String? beneficiaryId = existingBeneficiaryId;
+    if (saveBeneficiary && beneficiaryId == null && smartCardNumber.isNotEmpty) {
       try {
         final saved = await ds.saveBeneficiary(
           smartCardNumber: smartCardNumber,

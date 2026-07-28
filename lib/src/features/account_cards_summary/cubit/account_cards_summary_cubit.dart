@@ -91,7 +91,23 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     // Use the pre-animation balance (entity snapshot) so the carousel can animate from→to
     final previousBalance = _preAnimationBalances[event.accountId]!;
 
-    // Emit animated update state (entities unchanged — carousel uses _realtimeBalances overlay)
+    // Apply the new balance to the entity IMMEDIATELY so it survives any rebuild
+    // or navigation — previously the entity was only updated by
+    // markBalanceUpdateConsumed() (called by the dashboard carousel after it
+    // animates). When the event arrives while the user is elsewhere (e.g. the
+    // deposit screen), nothing consumed it and the dashboard reverted to the
+    // stale balance until a re-login re-fetched. The animation still works: the
+    // carousel animates _preAnimationBalances → _latestWebSocketBalances.
+    final trendPercentage =
+        _calculateTrendPercentage(previousBalance, event.newBalance);
+    _currentSummaries = List.from(_currentSummaries);
+    _currentSummaries[accountIndex] = _currentSummaries[accountIndex].copyWith(
+      balance: event.newBalance,
+      trendPercentage: trendPercentage,
+    );
+
+    // Emit animated update state (entities now carry the fresh balance; the
+    // carousel animates from→to via the snapshot maps).
     emit(AccountBalanceUpdated(
       accountSummaries: _currentSummaries,
       updatedAccountId: event.accountId,
@@ -166,6 +182,19 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   /// Automatically select the personal account that matches the current locale's currency
   void _autoSelectPersonalAccount(List<AccountSummaryEntity> summaries) {
     if (summaries.isEmpty) return;
+
+    // Preserve the account the user is currently on across refreshes. A
+    // pull-to-refresh re-fetches summaries; without this guard we'd reset the
+    // active account (and therefore the carousel) back to the personal account
+    // every time. Only auto-select on the FIRST load, or when the previously
+    // active account is no longer present (e.g. it was closed/removed).
+    final currentActive = _accountManager.activeAccountId;
+    if (currentActive != null &&
+        currentActive.isNotEmpty &&
+        summaries.any((acc) =>
+            acc.id == currentActive || acc.spendingAccountId == currentActive)) {
+      return; // keep the user's current selection
+    }
 
     // Get current locale to determine expected currency
     final currentLocale = _localeManager.currentLocale;

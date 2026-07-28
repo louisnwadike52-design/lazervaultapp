@@ -8,41 +8,82 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summar
 import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
+import 'package:lazervault/src/features/plan_my_day/contacts/data/contact_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/contacts/domain/entities/contact.dart';
 
 class PlanMyDayCubit extends Cubit<PlanMyDayState> {
   final IPlanMyDayRepository _repository;
+  // CRM contacts, so task cards can show a linked-person chip. Read-only here;
+  // the People segment owns contact mutations via its own ContactCubit.
+  final ContactRepository _contactRepository;
   PlanMyDayLoaded? _cachedState;
 
-  PlanMyDayCubit(this._repository) : super(PlanMyDayInitial());
+  PlanMyDayCubit(this._repository, this._contactRepository)
+      : super(PlanMyDayInitial());
 
   // ==================== DATA LOADING ====================
 
+  /// Load the agenda for [date]. Used by day-selection, pull-to-refresh, and the
+  /// initial load. When we already have data on screen the previous content is
+  /// KEPT and only the changing sections shimmer (via [PlanMyDayLoaded.isDayLoading])
+  /// instead of blanking the whole page with a spinner.
   Future<void> loadDayData(DateTime date, {bool forceRefresh = false}) async {
-    emit(PlanMyDayLoading());
+    // Same day, already cached, not forcing → serve instantly, no flash.
+    final cached = _cachedState;
+    if (cached != null &&
+        !forceRefresh &&
+        _isSameDay(cached.selectedDate, date)) {
+      if (!isClosed) emit(cached);
+      return;
+    }
+    await _fetchDay(date, showSkeleton: true);
+  }
+
+  /// Silently re-fetch the currently-selected day after a mutation. No skeleton:
+  /// the fresh lists arrive and only the sections that actually changed rebuild.
+  /// The optimistic move/reorder paths bypass this and patch state directly.
+  Future<void> _refreshCurrentDay() async {
+    final date = _cachedState?.selectedDate ?? DateTime.now();
+    await _fetchDay(date, showSkeleton: false);
+  }
+
+  /// Fetch + emit the agenda for [date]. When [showSkeleton] and we already have
+  /// data, flip the day-loading flag (keeps header + week strip live, shimmers
+  /// the sections). With no prior data, fall back to the full-screen skeleton
+  /// (PlanMyDayLoading). When not [showSkeleton], fetch quietly and swap in the
+  /// new content when it arrives.
+  Future<void> _fetchDay(DateTime date, {required bool showSkeleton}) async {
+    final cached = _cachedState;
+    if (cached != null) {
+      if (showSkeleton && !isClosed) {
+        emit(cached.copyWith(selectedDate: date, isDayLoading: true));
+      }
+    } else if (!isClosed) {
+      emit(PlanMyDayLoading());
+    }
 
     try {
-      // Use cached data if available and not forcing refresh
-      if (_cachedState != null &&
-          !forceRefresh &&
-          _isSameDay(_cachedState!.selectedDate, date)) {
-        emit(_cachedState!);
-        return;
-      }
-
       final startDate = DateTime(date.year, date.month, date.day);
       final endDate = startDate.add(const Duration(days: 1));
 
       final results = await Future.wait([
         _repository.getEvents(startDate, endDate),
-        _repository.getTasks(startDate: startDate, endDate: endDate),
+        // include_subtasks so parents AND children come back in one list; the UI
+        // nests children under their parent and never shows them as loose cards.
+        _repository.getTasks(
+            startDate: startDate, endDate: endDate, includeSubtasks: true),
         _repository.getTimeBlocks(date: _toDateString(date)),
         _repository.getCategories(type: ''),
+        // Contacts for the linked-person chip. Best-effort — a CRM hiccup must
+        // never block the day from loading.
+        _loadContactsSafely(),
       ]);
 
       final events = results[0] as List<Event>;
       final tasks = results[1] as List<Task>;
       final timeBlocks = results[2] as List<TimeBlock>;
       final categories = results[3] as List<plan.Category>;
+      final contactsById = results[4] as Map<String, Contact>;
 
       DailySummary? dailySummary;
       try {
@@ -59,12 +100,24 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
         categories: categories,
         selectedDate: date,
         dailySummary: dailySummary,
+        contactsById: contactsById,
       );
 
       _cachedState = state;
       if (!isClosed) emit(state);
     } catch (e) {
       if (!isClosed) emit(_parseError(e, 'Failed to load day data'));
+    }
+  }
+
+  /// Fetch contacts as an id→Contact map; never throws (returns {} on failure)
+  /// so a CRM hiccup can't block the day board from loading.
+  Future<Map<String, Contact>> _loadContactsSafely() async {
+    try {
+      final contacts = await _contactRepository.getContacts();
+      return {for (final c in contacts) c.id: c};
+    } catch (_) {
+      return _cachedState?.contactsById ?? const {};
     }
   }
 
@@ -135,9 +188,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
       if (!isClosed) {
         emit(TaskCreated(task: task));
         // Reload data to get fresh state
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
         // The task saved; if only its reminder failed, tell the user (non-blocking).
         if (reminderFailed && !isClosed) {
           _emitAndRestore(PlanMyDayError(
@@ -158,6 +209,8 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
     String? status,
     List<String>? categoryIds,
     String? estimatedDuration,
+    String? contactId,
+    bool clearDueDate = false,
   }) async {
     try {
       final task = await _repository.updateTask(
@@ -169,13 +222,13 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
         status: status,
         categoryIds: categoryIds,
         estimatedDuration: estimatedDuration,
+        contactId: contactId,
+        clearDueDate: clearDueDate,
       );
 
       if (!isClosed) {
         emit(TaskUpdated(task: task));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to update task'));
@@ -188,9 +241,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(TaskDeleted(taskId: id));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to delete task'));
@@ -203,13 +254,55 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(TaskCompleted(task: task));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to complete task'));
     }
+  }
+
+  /// Duplicate a task — clones the editable fields into a brand-new task.
+  /// Status/board position/completion reset to defaults (a fresh To-do).
+  Future<void> duplicateTask(Task task) async {
+    await createTask(
+      title: task.title,
+      description: task.description,
+      dueDate: task.dueDate,
+      priority: task.priority,
+      categoryIds: task.categoryIds,
+      estimatedDuration: task.estimatedDuration,
+    );
+  }
+
+  /// Create a child task under [parentTaskId] (the backend + proto already
+  /// support parent_task_id; this is just a convenience over createTask).
+  Future<void> addSubtask(
+    String parentTaskId,
+    String title, {
+    DateTime? dueDate,
+    int priority = 2,
+  }) async {
+    await createTask(
+      title: title,
+      parentTaskId: parentTaskId,
+      dueDate: dueDate,
+      priority: priority,
+    );
+  }
+
+  /// Change only a task's due date ("Change day" / reschedule / drag-to-day).
+  Future<void> rescheduleTask(String id, DateTime dueDate) async {
+    await updateTask(id: id, dueDate: dueDate);
+  }
+
+  /// Set only a task's priority (1-4).
+  Future<void> setPriority(String id, int priority) async {
+    await updateTask(id: id, priority: priority);
+  }
+
+  /// Link (or unlink with empty string) a task to a CRM contact.
+  Future<void> linkContact(String id, String contactId) async {
+    await updateTask(id: id, contactId: contactId);
   }
 
   /// Move a task to another board column / status (CRM/Kanban drag or menu).
@@ -360,9 +453,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(EventCreated(event: event));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to create event'));
@@ -399,9 +490,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(EventUpdated(event: event));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to update event'));
@@ -414,9 +503,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(EventDeleted(eventId: id));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to delete event'));
@@ -459,9 +546,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(TimeBlockCreated(timeBlock: timeBlock));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to create time block'));
@@ -498,9 +583,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(TimeBlockUpdated(timeBlock: timeBlock));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to update time block'));
@@ -513,9 +596,7 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
 
       if (!isClosed) {
         emit(TimeBlockDeleted(timeBlockId: id));
-        if (_cachedState != null) {
-          await loadDayData(_cachedState!.selectedDate);
-        }
+        await _refreshCurrentDay();
       }
     } catch (e) {
       _emitAndRestore(_parseError(e, 'Failed to delete time block'));

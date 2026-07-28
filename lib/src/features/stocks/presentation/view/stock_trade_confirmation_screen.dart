@@ -106,7 +106,7 @@ Estimated Total: \$${estimatedTotal.toStringAsFixed(2)}
 Date: ${dateFormat.format(widget.order.createdAt)}
 ━━━━━━━━━━━━━━━━━━━━━━
 
-💼 Trade with LazerVault
+💼 Trade with Lazervault
 🚀 Generated with Claude Code
 ''';
 

@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Screen for two-factor authentication verification during login
@@ -12,11 +14,13 @@ class TwoFactorVerificationScreen extends StatefulWidget {
   const TwoFactorVerificationScreen({
     super.key,
     required this.twoFactorToken,
+    this.method = 'totp',
     this.userEmail,
     this.userFirstName,
   });
 
   final String twoFactorToken;
+  final String method; // "totp" | "sms" | "email"
   final String? userEmail;
   final String? userFirstName;
 
@@ -35,6 +39,19 @@ class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScree
   bool _showBackupCodeInput = false;
 
   @override
+  void initState() {
+    super.initState();
+    // SMS/Email: request a fresh code on open. TOTP needs no send.
+    if (widget.method == 'sms' || widget.method == 'email') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<AuthenticationCubit>().sendTwoFactorCode(widget.twoFactorToken);
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     for (var controller in _codeControllers) {
       controller.dispose();
@@ -46,6 +63,10 @@ class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScree
   }
 
   Future<void> _verifyCode() async {
+    // Guard re-entry: the code field auto-submits on the 6th digit AND the
+    // button can be tapped — without this a fast double-trigger could fire two
+    // verify calls that race on the one-time 2FA token.
+    if (_isLoading) return;
     if (_verificationCode.length != 6 && !_showBackupCodeInput) {
       Get.snackbar(
         'Invalid Code',
@@ -68,8 +89,28 @@ class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScree
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        // Login successful, navigate to dashboard
-        Get.offAllNamed(AppRoutes.dashboard);
+        // Route EXACTLY like a non-2FA login: resume onboarding if the backend
+        // says signup is incomplete, else the passcode / transaction-PIN setup
+        // gates, else the dashboard — never jump straight past those.
+        final profile = cubit.currentProfile;
+        // Warm the profile cache like the login screens do (best-effort).
+        try {
+          context.read<ProfileCubit>().getUserProfile();
+        } catch (_) {/* ProfileCubit not in scope — dashboard will load it */}
+        if (profile != null) {
+          final u = profile.user;
+          final route = resolvePostLoginRoute(
+            step: u.currentSignupStep,
+            status: u.signupStatus,
+            email: u.email,
+            phone: u.phoneNumber,
+            hasPasscode: u.hasPasscode,
+            hasTransactionPin: u.hasTransactionPin,
+          );
+          Get.offAllNamed(route.name, arguments: route.args);
+        } else {
+          Get.offAllNamed(AppRoutes.dashboard);
+        }
       } else if (mounted) {
         Get.snackbar(
           'Verification Failed',

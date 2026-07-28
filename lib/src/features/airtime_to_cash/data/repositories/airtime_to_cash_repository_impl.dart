@@ -95,9 +95,9 @@ class AirtimeToCashRepositoryImpl implements AirtimeToCashRepository {
   }
 
   @override
-  Future<ServiceVerificationResult> verifyService(String network) async {
+  Future<ServiceVerificationResult> verifyService(String network, {String provider = ''}) async {
     try {
-      return await remoteDataSource.verifyService(network);
+      return await remoteDataSource.verifyService(network, provider: provider);
     } catch (e) {
       throw Exception('Failed to verify service: $e');
     }

@@ -100,6 +100,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
 
   Future<void> createLockFund({
     required LockType lockType,
+    required String configId,
     required double amount,
     required String currency,
     required int lockDurationDays,
@@ -117,6 +118,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
 
       final lockFund = await _repository.createLockFund(
         lockType: lockType,
+        configId: configId,
         amount: amount,
         currency: currency,
         lockDurationDays: lockDurationDays,

@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../../domain/entities/employee_entity.dart';
+import '../../domain/entities/pay_slip_entity.dart';
+import '../../domain/repositories/payroll_repository.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
 import 'edit_employee_screen.dart';
+import 'pay_slip_details_screen.dart';
 
 class EmployeeDetailsScreen extends StatelessWidget {
   final EmployeeEntity employee;
@@ -24,7 +30,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
                 state.message,
                 style: GoogleFonts.inter(color: Colors.white),
               ),
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.successGreen,
             ),
           );
         } else if (state is PayrollError) {
@@ -34,13 +40,13 @@ class EmployeeDetailsScreen extends StatelessWidget {
                 state.message,
                 style: GoogleFonts.inter(color: Colors.white),
               ),
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: InvoiceThemeColors.errorRed,
             ),
           );
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: InvoiceThemeColors.primaryBackground,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -103,15 +109,26 @@ class EmployeeDetailsScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16.h),
                       _buildSectionCard(
-                        title: 'Banking Details',
-                        icon: Icons.account_balance_outlined,
-                        rows: [
-                          _DetailRow(
-                              'Account Number', employee.bankAccountNumber),
-                          _DetailRow('Bank Name', employee.bankName),
-                          _DetailRow('Bank Code', employee.bankCode),
-                        ],
+                        title: employee.isInternalPayout
+                            ? 'Payout'
+                            : 'Banking Details',
+                        icon: employee.isInternalPayout
+                            ? Icons.account_balance_wallet_outlined
+                            : Icons.account_balance_outlined,
+                        rows: employee.isInternalPayout
+                            ? const [
+                                _DetailRow('Method', 'Lazervault wallet'),
+                              ]
+                            : [
+                                _DetailRow(
+                                    'Account Number', employee.bankAccountNumber),
+                                _DetailRow('Account Name', employee.bankAccountName),
+                                _DetailRow('Bank Name', employee.bankName),
+                                _DetailRow('Bank Code', employee.bankCode),
+                              ],
                       ),
+                      SizedBox(height: 16.h),
+                      _EmployeePayHistory(employeeId: employee.id),
                       SizedBox(height: 24.h),
                     ],
                   ),
@@ -133,13 +150,13 @@ class EmployeeDetailsScreen extends StatelessWidget {
           CircleAvatar(
             radius: 40.r,
             backgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
             child: Text(
               employee.fullName.isNotEmpty
                   ? employee.fullName[0].toUpperCase()
                   : '?',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurpleLight,
                 fontSize: 32.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -161,7 +178,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
             Text(
               '${employee.department}${employee.department.isNotEmpty && employee.jobTitle.isNotEmpty ? ' - ' : ''}${employee.jobTitle}',
               style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
+                color: InvoiceThemeColors.textGray400,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -176,13 +193,13 @@ class EmployeeDetailsScreen extends StatelessWidget {
     Color color;
     switch (employee.status) {
       case EmployeeStatus.active:
-        color = const Color(0xFF10B981);
+        color = InvoiceThemeColors.successGreen;
         break;
       case EmployeeStatus.inactive:
-        color = const Color(0xFFFB923C);
+        color = InvoiceThemeColors.warningOrange;
         break;
       case EmployeeStatus.terminated:
-        color = const Color(0xFFEF4444);
+        color = InvoiceThemeColors.errorRed;
         break;
     }
 
@@ -216,7 +233,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -224,7 +241,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF3B82F6), size: 18.sp),
+              Icon(icon, color: InvoiceThemeColors.primaryPurpleLight, size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 title,
@@ -255,7 +272,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
           Text(
             row.label,
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -282,9 +299,9 @@ class EmployeeDetailsScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: const BoxDecoration(
-        color: Color(0xFF0A0A0A),
+        color: InvoiceThemeColors.primaryBackground,
         border: Border(
-          top: BorderSide(color: Color(0xFF2D2D2D)),
+          top: BorderSide(color: InvoiceThemeColors.borderColor),
         ),
       ),
       child: BlocBuilder<PayrollCubit, PayrollState>(
@@ -302,8 +319,8 @@ class EmployeeDetailsScreen extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(
                         color: isLoading
-                            ? const Color(0xFF2D2D2D)
-                            : const Color(0xFFEF4444),
+                            ? InvoiceThemeColors.borderColor
+                            : InvoiceThemeColors.errorRed,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -313,8 +330,8 @@ class EmployeeDetailsScreen extends StatelessWidget {
                       'Remove Employee',
                       style: GoogleFonts.inter(
                         color: isLoading
-                            ? const Color(0xFF6B7280)
-                            : const Color(0xFFEF4444),
+                            ? InvoiceThemeColors.textGray500
+                            : InvoiceThemeColors.errorRed,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -348,9 +365,9 @@ class EmployeeDetailsScreen extends StatelessWidget {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: InvoiceThemeColors.primaryPurple,
                       disabledBackgroundColor:
-                          const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                          InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
@@ -379,7 +396,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1F1F1F),
+          backgroundColor: InvoiceThemeColors.secondaryBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
@@ -394,7 +411,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
           content: Text(
             'Are you sure you want to remove ${employee.fullName}? This action cannot be undone.',
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: InvoiceThemeColors.textGray400,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -405,7 +422,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
               child: Text(
                 'Cancel',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: InvoiceThemeColors.textGray400,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -419,7 +436,7 @@ class EmployeeDetailsScreen extends StatelessWidget {
               child: Text(
                 'Remove',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFFEF4444),
+                  color: InvoiceThemeColors.errorRed,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -437,4 +454,199 @@ class _DetailRow {
   final String value;
 
   const _DetailRow(this.label, this.value);
+}
+
+/// An employee's pay history across all pay runs. Self-loads via the repository
+/// (NOT the shared PayrollCubit that drives the details screen's remove/edit
+/// states, so it can't clobber the surrounding screen). Each slip opens its
+/// PaySlipDetailsScreen.
+class _EmployeePayHistory extends StatefulWidget {
+  final String employeeId;
+  const _EmployeePayHistory({required this.employeeId});
+
+  @override
+  State<_EmployeePayHistory> createState() => _EmployeePayHistoryState();
+}
+
+class _EmployeePayHistoryState extends State<_EmployeePayHistory> {
+  bool _loading = true;
+  String? _error;
+  List<PaySlipEntity> _slips = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final result = await serviceLocator<PayrollRepository>()
+          .listPaySlips(employeeId: widget.employeeId, limit: 50);
+      if (!mounted) return;
+      setState(() {
+        _slips = result.paySlips;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  void _openSlip(PaySlipEntity slip) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<PayrollCubit>(),
+          child: PaySlipDetailsScreen(paySlipId: slip.id),
+        ),
+      ),
+    );
+  }
+
+  Color _statusColor(PaymentStatus s) {
+    switch (s) {
+      case PaymentStatus.paid:
+        return InvoiceThemeColors.successGreen;
+      case PaymentStatus.failed:
+        return InvoiceThemeColors.errorRed;
+      case PaymentStatus.pending:
+        return InvoiceThemeColors.warningOrange;
+    }
+  }
+
+  String _statusLabel(PaymentStatus s) {
+    switch (s) {
+      case PaymentStatus.paid:
+        return 'Paid';
+      case PaymentStatus.failed:
+        return 'Failed';
+      case PaymentStatus.pending:
+        return 'Pending';
+    }
+  }
+
+  String _fmtDate(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${d.day} ${months[d.month - 1]} ${d.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.receipt_long_outlined,
+                  color: InvoiceThemeColors.primaryPurpleLight, size: 18.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'Pay History',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              if (!_loading && _error == null && _slips.isNotEmpty)
+                Text(
+                  '${_slips.length}',
+                  style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textGray400, fontSize: 13.sp),
+                ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          if (_loading)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Center(child: LazerVaultLoader.small()),
+            )
+          else if (_error != null)
+            Text(
+              'Could not load pay history',
+              style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.textGray500, fontSize: 13.sp),
+            )
+          else if (_slips.isEmpty)
+            Text(
+              'No pay slips yet',
+              style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.textGray500, fontSize: 13.sp),
+            )
+          else
+            ..._slips.asMap().entries.map(
+                  (e) => _row(e.value, e.key == _slips.length - 1),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(PaySlipEntity slip, bool isLast) {
+    final color = _statusColor(slip.paymentStatus);
+    return GestureDetector(
+      onTap: () => _openSlip(slip),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: isLast ? 0 : 12.h),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    slip.formattedNet,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    _fmtDate(slip.createdAt),
+                    style: GoogleFonts.inter(
+                        color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                _statusLabel(slip.paymentStatus),
+                style: GoogleFonts.inter(
+                    color: color, fontSize: 12.sp, fontWeight: FontWeight.w600),
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Icon(Icons.chevron_right_rounded,
+                color: InvoiceThemeColors.textGray500, size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
 }

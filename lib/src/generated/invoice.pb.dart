@@ -424,8 +424,11 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(30)
   void clearCreatorUsername() => $_clearField(30);
 
-  /// Structured party blocks (canonical). sender = the issuer/creator
-  /// ("Invoice From"); receiver = the customer who pays ("Bill To").
+  /// Structured party blocks (canonical). sender = the issuer/creator ("Invoice
+  /// From"); receiver = the customer who pays ("Bill To"). These carry the full
+  /// business details collected at creation so the details page reflects exactly
+  /// what was entered. The legacy flat fields above stay populated for
+  /// back-compat (recipient_* / payer_* / *_logo_url mirror the receiver/sender).
   @$pb.TagNumber(31)
   InvoiceParty get sender => $_getN(30);
   @$pb.TagNumber(31)
@@ -448,7 +451,8 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(32)
   InvoiceParty ensureReceiver() => $_ensure(31);
 
-  /// Document type ("invoice" | "request" | "quote") and a distinct title.
+  /// Document type ("invoice" | "request" | "quote") and a distinct title, so the
+  /// details page reflects exactly what was chosen at creation (not defaults).
   @$pb.TagNumber(33)
   $core.String get invoiceType => $_getSZ(32);
   @$pb.TagNumber(33)
@@ -1101,125 +1105,6 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
   void clearCollectionRate() => $_clearField(11);
 }
 
-/// Inline pagination info for invoice responses
-class InvoicePaginationInfo extends $pb.GeneratedMessage {
-  factory InvoicePaginationInfo({
-    $core.int? currentPage,
-    $core.int? pageSize,
-    $core.int? totalCount,
-    $core.int? totalPages,
-    $core.bool? hasNext,
-    $core.bool? hasPrevious,
-  }) {
-    final result = create();
-    if (currentPage != null) result.currentPage = currentPage;
-    if (pageSize != null) result.pageSize = pageSize;
-    if (totalCount != null) result.totalCount = totalCount;
-    if (totalPages != null) result.totalPages = totalPages;
-    if (hasNext != null) result.hasNext = hasNext;
-    if (hasPrevious != null) result.hasPrevious = hasPrevious;
-    return result;
-  }
-
-  InvoicePaginationInfo._();
-
-  factory InvoicePaginationInfo.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory InvoicePaginationInfo.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'InvoicePaginationInfo',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
-      createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
-    ..aOB(6, _omitFieldNames ? '' : 'hasPrevious')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InvoicePaginationInfo clone() =>
-      InvoicePaginationInfo()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InvoicePaginationInfo copyWith(
-          void Function(InvoicePaginationInfo) updates) =>
-      super.copyWith((message) => updates(message as InvoicePaginationInfo))
-          as InvoicePaginationInfo;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static InvoicePaginationInfo create() => InvoicePaginationInfo._();
-  @$core.override
-  InvoicePaginationInfo createEmptyInstance() => create();
-  static $pb.PbList<InvoicePaginationInfo> createRepeated() =>
-      $pb.PbList<InvoicePaginationInfo>();
-  @$core.pragma('dart2js:noInline')
-  static InvoicePaginationInfo getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<InvoicePaginationInfo>(create);
-  static InvoicePaginationInfo? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.int get currentPage => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set currentPage($core.int value) => $_setSignedInt32(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasCurrentPage() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearCurrentPage() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get pageSize => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set pageSize($core.int value) => $_setSignedInt32(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasPageSize() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPageSize() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.int get totalCount => $_getIZ(2);
-  @$pb.TagNumber(3)
-  set totalCount($core.int value) => $_setSignedInt32(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasTotalCount() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearTotalCount() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.int get totalPages => $_getIZ(3);
-  @$pb.TagNumber(4)
-  set totalPages($core.int value) => $_setSignedInt32(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasTotalPages() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearTotalPages() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.bool get hasNext => $_getBF(4);
-  @$pb.TagNumber(5)
-  set hasNext($core.bool value) => $_setBool(4, value);
-  @$pb.TagNumber(5)
-  $core.bool hasHasNext() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearHasNext() => $_clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.bool get hasPrevious => $_getBF(5);
-  @$pb.TagNumber(6)
-  set hasPrevious($core.bool value) => $_setBool(5, value);
-  @$pb.TagNumber(6)
-  $core.bool hasHasPrevious() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearHasPrevious() => $_clearField(6);
-}
-
 /// ===== CREATE INVOICE =====
 /// NOTE: user_id extracted from JWT token, not from request
 class CreateInvoiceRequest extends $pb.GeneratedMessage {
@@ -1479,7 +1364,8 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   void clearServiceFeeRef() => $_clearField(17);
 
   /// Structured party blocks (canonical). sender = issuer/creator ("Invoice
-  /// From"); receiver = customer ("Bill To"). Source of truth when set.
+  /// From"); receiver = customer ("Bill To"). When set, these are the source of
+  /// truth; the legacy flat fields above are derived from them for back-compat.
   @$pb.TagNumber(18)
   InvoiceParty get sender => $_getN(17);
   @$pb.TagNumber(18)
@@ -1520,13 +1406,15 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(21)
   void clearTitle() => $_clearField(21);
 
-  /// Optional CUSTOM split: per-tagged-user amounts. Unspecified tagged users
-  /// split the remaining total equally; omit entirely for a full equal split.
+  /// Optional CUSTOM split: per-tagged-user amounts. Tagged users without an
+  /// entry (or amount 0) split the REMAINING total equally. When omitted entirely
+  /// the whole invoice is split equally among tagged_user_ids (default).
   @$pb.TagNumber(22)
   $pb.PbList<TaggedShare> get taggedShares => $_getList(21);
 }
 
-/// TaggedShare assigns a specific amount of the invoice total to one tagged user.
+/// TaggedShare assigns a specific amount of the invoice total to one tagged user
+/// (custom/unequal split).
 class TaggedShare extends $pb.GeneratedMessage {
   factory TaggedShare({
     $core.String? userId,
@@ -1665,6 +1553,123 @@ class CreateInvoiceResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
   void clearMessage() => $_clearField(2);
+}
+
+/// Pagination metadata
+class PaginationInfo extends $pb.GeneratedMessage {
+  factory PaginationInfo({
+    $core.int? currentPage,
+    $core.int? pageSize,
+    $core.int? totalCount,
+    $core.int? totalPages,
+    $core.bool? hasNext,
+    $core.bool? hasPrevious,
+  }) {
+    final result = create();
+    if (currentPage != null) result.currentPage = currentPage;
+    if (pageSize != null) result.pageSize = pageSize;
+    if (totalCount != null) result.totalCount = totalCount;
+    if (totalPages != null) result.totalPages = totalPages;
+    if (hasNext != null) result.hasNext = hasNext;
+    if (hasPrevious != null) result.hasPrevious = hasPrevious;
+    return result;
+  }
+
+  PaginationInfo._();
+
+  factory PaginationInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PaginationInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PaginationInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrevious')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PaginationInfo clone() => PaginationInfo()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PaginationInfo copyWith(void Function(PaginationInfo) updates) =>
+      super.copyWith((message) => updates(message as PaginationInfo))
+          as PaginationInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PaginationInfo create() => PaginationInfo._();
+  @$core.override
+  PaginationInfo createEmptyInstance() => create();
+  static $pb.PbList<PaginationInfo> createRepeated() =>
+      $pb.PbList<PaginationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static PaginationInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PaginationInfo>(create);
+  static PaginationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get currentPage => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set currentPage($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCurrentPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrentPage() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get totalCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalCount($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTotalCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalCount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get totalPages => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set totalPages($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTotalPages() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalPages() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasNext => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasNext($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasHasNext() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasNext() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get hasPrevious => $_getBF(5);
+  @$pb.TagNumber(6)
+  set hasPrevious($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasHasPrevious() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHasPrevious() => $_clearField(6);
 }
 
 /// ===== GET INVOICES =====
@@ -1815,7 +1820,7 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
     $core.int? total,
     $core.double? totalAmountPending,
     $core.double? totalAmountPaid,
-    InvoicePaginationInfo? pagination,
+    PaginationInfo? pagination,
   }) {
     final result = create();
     if (invoices != null) result.invoices.addAll(invoices);
@@ -1847,8 +1852,8 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
         3, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
     ..a<$core.double>(
         4, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..aOM<InvoicePaginationInfo>(5, _omitFieldNames ? '' : 'pagination',
-        subBuilder: InvoicePaginationInfo.create)
+    ..aOM<PaginationInfo>(5, _omitFieldNames ? '' : 'pagination',
+        subBuilder: PaginationInfo.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1903,15 +1908,15 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
   void clearTotalAmountPaid() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  InvoicePaginationInfo get pagination => $_getN(4);
+  PaginationInfo get pagination => $_getN(4);
   @$pb.TagNumber(5)
-  set pagination(InvoicePaginationInfo value) => $_setField(5, value);
+  set pagination(PaginationInfo value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasPagination() => $_has(4);
   @$pb.TagNumber(5)
   void clearPagination() => $_clearField(5);
   @$pb.TagNumber(5)
-  InvoicePaginationInfo ensurePagination() => $_ensure(4);
+  PaginationInfo ensurePagination() => $_ensure(4);
 }
 
 /// ===== GET INVOICE =====
@@ -2522,6 +2527,161 @@ class SendInvoiceReminderResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(2);
 }
 
+/// ===== SEND INVOICE TO EMAIL =====
+/// NOTE: user_id extracted from JWT token, not from request
+class SendInvoiceToEmailRequest extends $pb.GeneratedMessage {
+  factory SendInvoiceToEmailRequest({
+    $core.String? invoiceId,
+    $core.String? email,
+    $core.String? locale,
+  }) {
+    final result = create();
+    if (invoiceId != null) result.invoiceId = invoiceId;
+    if (email != null) result.email = email;
+    if (locale != null) result.locale = locale;
+    return result;
+  }
+
+  SendInvoiceToEmailRequest._();
+
+  factory SendInvoiceToEmailRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendInvoiceToEmailRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendInvoiceToEmailRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'email')
+    ..aOS(3, _omitFieldNames ? '' : 'locale')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendInvoiceToEmailRequest clone() =>
+      SendInvoiceToEmailRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendInvoiceToEmailRequest copyWith(
+          void Function(SendInvoiceToEmailRequest) updates) =>
+      super.copyWith((message) => updates(message as SendInvoiceToEmailRequest))
+          as SendInvoiceToEmailRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailRequest create() => SendInvoiceToEmailRequest._();
+  @$core.override
+  SendInvoiceToEmailRequest createEmptyInstance() => create();
+  static $pb.PbList<SendInvoiceToEmailRequest> createRepeated() =>
+      $pb.PbList<SendInvoiceToEmailRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendInvoiceToEmailRequest>(create);
+  static SendInvoiceToEmailRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get invoiceId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set invoiceId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasInvoiceId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvoiceId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get email => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set email($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasEmail() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEmail() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get locale => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set locale($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLocale() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLocale() => $_clearField(3);
+}
+
+class SendInvoiceToEmailResponse extends $pb.GeneratedMessage {
+  factory SendInvoiceToEmailResponse({
+    $core.bool? sent,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (sent != null) result.sent = sent;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  SendInvoiceToEmailResponse._();
+
+  factory SendInvoiceToEmailResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendInvoiceToEmailResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendInvoiceToEmailResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'sent')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendInvoiceToEmailResponse clone() =>
+      SendInvoiceToEmailResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendInvoiceToEmailResponse copyWith(
+          void Function(SendInvoiceToEmailResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as SendInvoiceToEmailResponse))
+          as SendInvoiceToEmailResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailResponse create() => SendInvoiceToEmailResponse._();
+  @$core.override
+  SendInvoiceToEmailResponse createEmptyInstance() => create();
+  static $pb.PbList<SendInvoiceToEmailResponse> createRepeated() =>
+      $pb.PbList<SendInvoiceToEmailResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendInvoiceToEmailResponse>(create);
+  static SendInvoiceToEmailResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get sent => $_getBF(0);
+  @$pb.TagNumber(1)
+  set sent($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSent() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSent() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
 /// ===== UPDATE INVOICE STATUS =====
 /// NOTE: user_id extracted from JWT token, not from request
 class UpdateInvoiceStatusRequest extends $pb.GeneratedMessage {
@@ -2947,7 +3107,7 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
     $core.int? total,
     $core.double? totalAmountPending,
     $core.double? totalAmountPaid,
-    InvoicePaginationInfo? pagination,
+    PaginationInfo? pagination,
   }) {
     final result = create();
     if (invoices != null) result.invoices.addAll(invoices);
@@ -2979,8 +3139,8 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
         3, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
     ..a<$core.double>(
         4, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..aOM<InvoicePaginationInfo>(5, _omitFieldNames ? '' : 'pagination',
-        subBuilder: InvoicePaginationInfo.create)
+    ..aOM<PaginationInfo>(5, _omitFieldNames ? '' : 'pagination',
+        subBuilder: PaginationInfo.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3040,15 +3200,15 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
   void clearTotalAmountPaid() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  InvoicePaginationInfo get pagination => $_getN(4);
+  PaginationInfo get pagination => $_getN(4);
   @$pb.TagNumber(5)
-  set pagination(InvoicePaginationInfo value) => $_setField(5, value);
+  set pagination(PaginationInfo value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasPagination() => $_has(4);
   @$pb.TagNumber(5)
   void clearPagination() => $_clearField(5);
   @$pb.TagNumber(5)
-  InvoicePaginationInfo ensurePagination() => $_ensure(4);
+  PaginationInfo ensurePagination() => $_ensure(4);
 }
 
 /// ===== GET SENT INVOICES =====
@@ -3164,7 +3324,7 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
     $core.int? total,
     $core.double? totalAmountPending,
     $core.double? totalAmountPaid,
-    InvoicePaginationInfo? pagination,
+    PaginationInfo? pagination,
   }) {
     final result = create();
     if (invoices != null) result.invoices.addAll(invoices);
@@ -3196,8 +3356,8 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
         3, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
     ..a<$core.double>(
         4, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..aOM<InvoicePaginationInfo>(5, _omitFieldNames ? '' : 'pagination',
-        subBuilder: InvoicePaginationInfo.create)
+    ..aOM<PaginationInfo>(5, _omitFieldNames ? '' : 'pagination',
+        subBuilder: PaginationInfo.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3254,15 +3414,15 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
   void clearTotalAmountPaid() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  InvoicePaginationInfo get pagination => $_getN(4);
+  PaginationInfo get pagination => $_getN(4);
   @$pb.TagNumber(5)
-  set pagination(InvoicePaginationInfo value) => $_setField(5, value);
+  set pagination(PaginationInfo value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasPagination() => $_has(4);
   @$pb.TagNumber(5)
   void clearPagination() => $_clearField(5);
   @$pb.TagNumber(5)
-  InvoicePaginationInfo ensurePagination() => $_ensure(4);
+  PaginationInfo ensurePagination() => $_ensure(4);
 }
 
 /// ===== UPDATE INVOICE =====
@@ -4095,159 +4255,358 @@ class UploadInvoiceImageResponse extends $pb.GeneratedMessage {
   void clearImageUrl() => $_clearField(1);
 }
 
-/// ===== SEND INVOICE TO EMAIL =====
-/// NOTE: user_id extracted from JWT token, not from request
-class SendInvoiceToEmailRequest extends $pb.GeneratedMessage {
-  factory SendInvoiceToEmailRequest({
-    $core.String? invoiceId,
-    $core.String? email,
-    $core.String? locale,
+/// ===== PAY INVOICE SERVICE FEE =====
+/// Pay the service fee upfront before creating an invoice
+class PayInvoiceServiceFeeRequest extends $pb.GeneratedMessage {
+  factory PayInvoiceServiceFeeRequest({
+    $core.String? accountId,
+    $core.String? pin,
+    $core.String? idempotencyKey,
+    $core.String? verificationToken,
+    $core.String? transactionId,
   }) {
     final result = create();
-    if (invoiceId != null) result.invoiceId = invoiceId;
-    if (email != null) result.email = email;
-    if (locale != null) result.locale = locale;
+    if (accountId != null) result.accountId = accountId;
+    if (pin != null) result.pin = pin;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (verificationToken != null) result.verificationToken = verificationToken;
+    if (transactionId != null) result.transactionId = transactionId;
     return result;
   }
 
-  SendInvoiceToEmailRequest._();
+  PayInvoiceServiceFeeRequest._();
 
-  factory SendInvoiceToEmailRequest.fromBuffer($core.List<$core.int> data,
+  factory PayInvoiceServiceFeeRequest.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromBuffer(data, registry);
-  factory SendInvoiceToEmailRequest.fromJson($core.String json,
+  factory PayInvoiceServiceFeeRequest.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SendInvoiceToEmailRequest',
+      _omitMessageNames ? '' : 'PayInvoiceServiceFeeRequest',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
       createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
-    ..aOS(2, _omitFieldNames ? '' : 'email')
-    ..aOS(3, _omitFieldNames ? '' : 'locale')
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'pin')
+    ..aOS(3, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(4, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(5, _omitFieldNames ? '' : 'transactionId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SendInvoiceToEmailRequest clone() =>
-      SendInvoiceToEmailRequest()..mergeFromMessage(this);
+  PayInvoiceServiceFeeRequest clone() =>
+      PayInvoiceServiceFeeRequest()..mergeFromMessage(this);
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SendInvoiceToEmailRequest copyWith(
-          void Function(SendInvoiceToEmailRequest) updates) =>
-      super.copyWith((message) => updates(message as SendInvoiceToEmailRequest))
-          as SendInvoiceToEmailRequest;
+  PayInvoiceServiceFeeRequest copyWith(
+          void Function(PayInvoiceServiceFeeRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as PayInvoiceServiceFeeRequest))
+          as PayInvoiceServiceFeeRequest;
 
   @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static SendInvoiceToEmailRequest create() => SendInvoiceToEmailRequest._();
+  static PayInvoiceServiceFeeRequest create() =>
+      PayInvoiceServiceFeeRequest._();
   @$core.override
-  SendInvoiceToEmailRequest createEmptyInstance() => create();
-  static $pb.PbList<SendInvoiceToEmailRequest> createRepeated() =>
-      $pb.PbList<SendInvoiceToEmailRequest>();
+  PayInvoiceServiceFeeRequest createEmptyInstance() => create();
+  static $pb.PbList<PayInvoiceServiceFeeRequest> createRepeated() =>
+      $pb.PbList<PayInvoiceServiceFeeRequest>();
   @$core.pragma('dart2js:noInline')
-  static SendInvoiceToEmailRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SendInvoiceToEmailRequest>(create);
-  static SendInvoiceToEmailRequest? _defaultInstance;
+  static PayInvoiceServiceFeeRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PayInvoiceServiceFeeRequest>(create);
+  static PayInvoiceServiceFeeRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get invoiceId => $_getSZ(0);
+  $core.String get accountId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set invoiceId($core.String value) => $_setString(0, value);
+  set accountId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
-  $core.bool hasInvoiceId() => $_has(0);
+  $core.bool hasAccountId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearInvoiceId() => $_clearField(1);
+  void clearAccountId() => $_clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get email => $_getSZ(1);
+  $core.String get pin => $_getSZ(1);
   @$pb.TagNumber(2)
-  set email($core.String value) => $_setString(1, value);
+  set pin($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
-  $core.bool hasEmail() => $_has(1);
+  $core.bool hasPin() => $_has(1);
   @$pb.TagNumber(2)
-  void clearEmail() => $_clearField(2);
+  void clearPin() => $_clearField(2);
 
   @$pb.TagNumber(3)
-  $core.String get locale => $_getSZ(2);
+  $core.String get idempotencyKey => $_getSZ(2);
   @$pb.TagNumber(3)
-  set locale($core.String value) => $_setString(2, value);
+  set idempotencyKey($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
-  $core.bool hasLocale() => $_has(2);
+  $core.bool hasIdempotencyKey() => $_has(2);
   @$pb.TagNumber(3)
-  void clearLocale() => $_clearField(3);
+  void clearIdempotencyKey() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get verificationToken => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set verificationToken($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasVerificationToken() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVerificationToken() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get transactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set transactionId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTransactionId() => $_clearField(5);
 }
 
-class SendInvoiceToEmailResponse extends $pb.GeneratedMessage {
-  factory SendInvoiceToEmailResponse({
-    $core.bool? sent,
+class PayInvoiceServiceFeeResponse extends $pb.GeneratedMessage {
+  factory PayInvoiceServiceFeeResponse({
+    $core.String? serviceFeeRef,
+    $core.double? newBalance,
+    $core.double? feeAmount,
     $core.String? message,
   }) {
     final result = create();
-    if (sent != null) result.sent = sent;
+    if (serviceFeeRef != null) result.serviceFeeRef = serviceFeeRef;
+    if (newBalance != null) result.newBalance = newBalance;
+    if (feeAmount != null) result.feeAmount = feeAmount;
     if (message != null) result.message = message;
     return result;
   }
 
-  SendInvoiceToEmailResponse._();
+  PayInvoiceServiceFeeResponse._();
 
-  factory SendInvoiceToEmailResponse.fromBuffer($core.List<$core.int> data,
+  factory PayInvoiceServiceFeeResponse.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromBuffer(data, registry);
-  factory SendInvoiceToEmailResponse.fromJson($core.String json,
+  factory PayInvoiceServiceFeeResponse.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SendInvoiceToEmailResponse',
+      _omitMessageNames ? '' : 'PayInvoiceServiceFeeResponse',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
       createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'sent')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOS(1, _omitFieldNames ? '' : 'serviceFeeRef')
+    ..a<$core.double>(
+        2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'feeAmount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'message')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SendInvoiceToEmailResponse clone() =>
-      SendInvoiceToEmailResponse()..mergeFromMessage(this);
+  PayInvoiceServiceFeeResponse clone() =>
+      PayInvoiceServiceFeeResponse()..mergeFromMessage(this);
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SendInvoiceToEmailResponse copyWith(
-          void Function(SendInvoiceToEmailResponse) updates) =>
+  PayInvoiceServiceFeeResponse copyWith(
+          void Function(PayInvoiceServiceFeeResponse) updates) =>
       super.copyWith(
-              (message) => updates(message as SendInvoiceToEmailResponse))
-          as SendInvoiceToEmailResponse;
+              (message) => updates(message as PayInvoiceServiceFeeResponse))
+          as PayInvoiceServiceFeeResponse;
 
   @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static SendInvoiceToEmailResponse create() => SendInvoiceToEmailResponse._();
+  static PayInvoiceServiceFeeResponse create() =>
+      PayInvoiceServiceFeeResponse._();
   @$core.override
-  SendInvoiceToEmailResponse createEmptyInstance() => create();
-  static $pb.PbList<SendInvoiceToEmailResponse> createRepeated() =>
-      $pb.PbList<SendInvoiceToEmailResponse>();
+  PayInvoiceServiceFeeResponse createEmptyInstance() => create();
+  static $pb.PbList<PayInvoiceServiceFeeResponse> createRepeated() =>
+      $pb.PbList<PayInvoiceServiceFeeResponse>();
   @$core.pragma('dart2js:noInline')
-  static SendInvoiceToEmailResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SendInvoiceToEmailResponse>(create);
-  static SendInvoiceToEmailResponse? _defaultInstance;
+  static PayInvoiceServiceFeeResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PayInvoiceServiceFeeResponse>(create);
+  static PayInvoiceServiceFeeResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.bool get sent => $_getBF(0);
+  $core.String get serviceFeeRef => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sent($core.bool value) => $_setBool(0, value);
+  set serviceFeeRef($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
-  $core.bool hasSent() => $_has(0);
+  $core.bool hasServiceFeeRef() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSent() => $_clearField(1);
+  void clearServiceFeeRef() => $_clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get message => $_getSZ(1);
+  $core.double get newBalance => $_getN(1);
   @$pb.TagNumber(2)
-  set message($core.String value) => $_setString(1, value);
+  set newBalance($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
-  $core.bool hasMessage() => $_has(1);
+  $core.bool hasNewBalance() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
+  void clearNewBalance() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get feeAmount => $_getN(2);
+  @$pb.TagNumber(3)
+  set feeAmount($core.double value) => $_setDouble(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFeeAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFeeAmount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
+}
+
+/// ===== GET INVOICE SERVICE FEE (quote) =====
+/// Returns the service fee in the account's currency (FX-converted from the
+/// admin-configured base fee) for display before payment.
+class GetInvoiceServiceFeeRequest extends $pb.GeneratedMessage {
+  factory GetInvoiceServiceFeeRequest({
+    $core.String? accountId,
+  }) {
+    final result = create();
+    if (accountId != null) result.accountId = accountId;
+    return result;
+  }
+
+  GetInvoiceServiceFeeRequest._();
+
+  factory GetInvoiceServiceFeeRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetInvoiceServiceFeeRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetInvoiceServiceFeeRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetInvoiceServiceFeeRequest clone() =>
+      GetInvoiceServiceFeeRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetInvoiceServiceFeeRequest copyWith(
+          void Function(GetInvoiceServiceFeeRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetInvoiceServiceFeeRequest))
+          as GetInvoiceServiceFeeRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInvoiceServiceFeeRequest create() =>
+      GetInvoiceServiceFeeRequest._();
+  @$core.override
+  GetInvoiceServiceFeeRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInvoiceServiceFeeRequest> createRepeated() =>
+      $pb.PbList<GetInvoiceServiceFeeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInvoiceServiceFeeRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetInvoiceServiceFeeRequest>(create);
+  static GetInvoiceServiceFeeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => $_clearField(1);
+}
+
+class GetInvoiceServiceFeeResponse extends $pb.GeneratedMessage {
+  factory GetInvoiceServiceFeeResponse({
+    $core.double? feeAmount,
+    $core.String? currency,
+    $core.bool? enabled,
+  }) {
+    final result = create();
+    if (feeAmount != null) result.feeAmount = feeAmount;
+    if (currency != null) result.currency = currency;
+    if (enabled != null) result.enabled = enabled;
+    return result;
+  }
+
+  GetInvoiceServiceFeeResponse._();
+
+  factory GetInvoiceServiceFeeResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetInvoiceServiceFeeResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetInvoiceServiceFeeResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'feeAmount', $pb.PbFieldType.OD)
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOB(3, _omitFieldNames ? '' : 'enabled')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetInvoiceServiceFeeResponse clone() =>
+      GetInvoiceServiceFeeResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetInvoiceServiceFeeResponse copyWith(
+          void Function(GetInvoiceServiceFeeResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetInvoiceServiceFeeResponse))
+          as GetInvoiceServiceFeeResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInvoiceServiceFeeResponse create() =>
+      GetInvoiceServiceFeeResponse._();
+  @$core.override
+  GetInvoiceServiceFeeResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInvoiceServiceFeeResponse> createRepeated() =>
+      $pb.PbList<GetInvoiceServiceFeeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInvoiceServiceFeeResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetInvoiceServiceFeeResponse>(create);
+  static GetInvoiceServiceFeeResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get feeAmount => $_getN(0);
+  @$pb.TagNumber(1)
+  set feeAmount($core.double value) => $_setDouble(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFeeAmount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFeeAmount() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get currency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set currency($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrency() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get enabled => $_getBF(2);
+  @$pb.TagNumber(3)
+  set enabled($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasEnabled() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEnabled() => $_clearField(3);
 }
 
 const $core.bool _omitFieldNames =

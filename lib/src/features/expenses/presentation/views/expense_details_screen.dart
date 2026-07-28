@@ -5,7 +5,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/business/presentation/receipts/business_receipt.dart';
 
 import '../../domain/entities/expense_entity.dart';
 import '../cubit/expense_cubit.dart';
@@ -21,6 +24,9 @@ class ExpenseDetailsScreen extends StatefulWidget {
 
 class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
   late ExpenseEntity _expense;
+  // Set when an in-place mutation (approve/reimburse/delete) changes the record,
+  // so backing out returns `true` and the list re-renders the new status.
+  bool _didMutate = false;
 
   static final _moneyFmt = NumberFormat.currency(
     locale: 'en_NG',
@@ -34,6 +40,26 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     _expense = widget.expense;
   }
 
+  UnifiedTransaction _expenseReceipt(ExpenseEntity e,
+      {required String title, required bool moneyOut}) {
+    return buildBusinessReceipt(
+      type: TransactionServiceType.expense,
+      title: title,
+      amountMajor: e.amountMinor / 100.0,
+      currency: e.currency,
+      flow: moneyOut ? TransactionFlow.outgoing : TransactionFlow.neutral,
+      status: UnifiedTransactionStatus.completed,
+      reference: e.reference.isNotEmpty ? e.reference : null,
+      counterpartyName: e.vendor.isNotEmpty ? e.vendor : null,
+      description: e.description,
+      metadata: {
+        'Category': e.category.label,
+        if (e.vendor.isNotEmpty) 'Vendor': e.vendor,
+        if (e.reference.isNotEmpty) 'Reference': e.reference,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ExpenseCubit, ExpenseState>(
@@ -41,15 +67,25 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
         if (state is ExpenseLoaded) {
           setState(() => _expense = state.expense);
         } else if (state is ExpenseApproved) {
-          setState(() => _expense = state.expense);
-          Get.snackbar('Approved', 'Expense approved',
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white);
+          setState(() {
+            _expense = state.expense;
+            _didMutate = true;
+          });
+          showBusinessReceipt(
+            context,
+            _expenseReceipt(state.expense,
+                title: 'Expense approved', moneyOut: false),
+          );
         } else if (state is ExpenseReimbursed) {
-          setState(() => _expense = state.expense);
-          Get.snackbar('Reimbursed', 'Expense marked reimbursed',
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white);
+          setState(() {
+            _expense = state.expense;
+            _didMutate = true;
+          });
+          showBusinessReceipt(
+            context,
+            _expenseReceipt(state.expense,
+                title: 'Expense reimbursed', moneyOut: true),
+          );
         } else if (state is ExpenseDeleted) {
           Get.back(result: true);
           Get.snackbar('Deleted', 'Expense removed',
@@ -61,13 +97,19 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               colorText: Colors.white);
         }
       },
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          // Return whether an in-place mutation happened so the list refreshes.
+          if (!didPop) Get.back(result: _didMutate);
+        },
+        child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.back(),
+            onPressed: () => Get.back(result: _didMutate),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
           title: Text(
@@ -112,6 +154,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -135,7 +178,16 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(e.category.icon, color: e.status.color, size: 32.sp),
+              Container(
+                width: 46.w,
+                height: 46.w,
+                decoration: BoxDecoration(
+                  color: e.category.color.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(e.category.icon,
+                    color: e.category.color, size: 24.sp),
+              ),
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
@@ -284,9 +336,12 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               onPressed: () =>
                   context.read<ExpenseCubit>().approveExpense(e.id),
               icon: const Icon(Icons.check_circle, color: Colors.white),
-              label: const Text('Approve'),
+              label: Text('Approve',
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
+                elevation: 0,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -301,9 +356,12 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               onPressed: () =>
                   context.read<ExpenseCubit>().markReimbursed(e.id),
               icon: const Icon(Icons.payments, color: Colors.white),
-              label: const Text('Mark Reimbursed'),
+              label: Text('Mark reimbursed',
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: InvoiceThemeColors.successGreen,
+                elevation: 0,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),

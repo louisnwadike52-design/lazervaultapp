@@ -29,19 +29,26 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 ///
 /// When [isDirect] is true, uses the Go Chat Proxy Gateway (direct to microservice,
 /// no intent classification). When false, uses the Python Chat Agent Gateway.
-void showServiceChatBottomSheet(
+Future<void> showServiceChatBottomSheet(
   BuildContext context, {
   required String serviceName,
   required String sourceContext,
   String? agentDescription,
   Color accentColor = const Color.fromARGB(255, 78, 3, 208),
   bool isDirect = true,
+  // Scoped context (e.g. {conversation_id, peer_user_id}) seeded into the
+  // agent's entities — used by the P2P-chat assistant to pin to one chat.
+  Map<String, dynamic>? extraMetadata,
+  // When set, makes the chat SESSION (and therefore its persisted history)
+  // unique to this scope. Without it every P2P chat would share one
+  // `direct_<user>_p2p_chat_<locale>` session and leak history across chats.
+  String? sessionScopeId,
 }) {
   // Read auth cubit from the widget tree (the actual authenticated instance),
   // NOT from serviceLocator which creates a new unauthenticated factory instance.
   final authCubit = context.read<AuthenticationCubit>();
 
-  showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -54,6 +61,8 @@ void showServiceChatBottomSheet(
         authCubit: authCubit,
         sourceContext: sourceContext,
         isDirect: isDirect,
+        seedEntities: extraMetadata,
+        sessionScopeId: sessionScopeId,
       )
         ..initializeChat()
         ..loadHistory(),

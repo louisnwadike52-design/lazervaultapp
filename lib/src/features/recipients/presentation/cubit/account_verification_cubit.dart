@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/datasources/recipient_verification_remote_datasource.dart';
 import '../../domain/entities/account_verification_result.dart';
+import '../../domain/entities/account_suggestion.dart';
 import 'account_verification_state.dart';
 import '../../../../../core/utilities/banks_data.dart';
 
@@ -184,6 +185,30 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
         accountNumber: accountNumber,
         bankCode: bankCode,
       ));
+    }
+  }
+
+  /// Suggest matching bank(s) for a bare 10-digit account number.
+  ///
+  /// Powers the account-number-first UX: the backend narrows candidate banks
+  /// via the NUBAN check-digit algorithm and resolves the holder name against
+  /// each through the admin-selected provider, returning only banks that
+  /// resolved. Best-effort and side-effect-free — it does NOT emit cubit
+  /// states (so it never disturbs the shared verification state machine other
+  /// flows rely on) and returns an empty list on any error, letting the UI
+  /// fall back to manual bank selection.
+  Future<List<AccountSuggestion>> suggestBanks({
+    required String accountNumber,
+    String country = 'NG',
+  }) async {
+    if (accountNumber.length != 10) return const <AccountSuggestion>[];
+    try {
+      return await _dataSource.suggestAccounts(
+        accountNumber: accountNumber,
+        country: country,
+      );
+    } catch (_) {
+      return const <AccountSuggestion>[];
     }
   }
 

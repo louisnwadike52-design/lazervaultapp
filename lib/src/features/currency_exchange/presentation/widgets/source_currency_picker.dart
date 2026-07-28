@@ -10,7 +10,7 @@ import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-// Dark theme palette (per CLAUDE.md).
+// Dark theme palette.
 const Color _background = Color(0xFF0A0A0A);
 const Color _cardBackground = Color(0xFF1F1F1F);
 const Color _divider = Color(0xFF2D2D2D);

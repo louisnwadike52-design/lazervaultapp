@@ -15,6 +15,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice/models/voice_settings_models.dart'
     as settings_models;
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
+import 'package:lazervault/src/features/voice/widgets/voice_txpin_section.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_language_voice_sheet.dart';
@@ -360,6 +361,11 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       children: [
+        // Unified voice-profile summary — aligns recognition + clone + assistant
+        // voice in one place and offers the single most relevant next step.
+        _buildVoiceProfileSummary(),
+        SizedBox(height: 24.h),
+
         // Voice Enrollment Section
         _buildSectionHeader('Voice Enrollment'),
         SizedBox(height: 8.h),
@@ -398,6 +404,23 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         ),
         SizedBox(height: 12.h),
         _buildVoiceLanguageButton(selectedLang),
+
+        SizedBox(height: 28.h),
+        // Voice transactions — per-user PIN policy for money moves made by voice.
+        _buildSectionHeader('Voice transactions'),
+        SizedBox(height: 4.h),
+        Text(
+          'Choose whether the assistant asks for your transaction PIN when you '
+          'move money by voice. When off, voice transactions complete without you '
+          'touching your phone.',
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 12.sp,
+            height: 1.4,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        const VoiceTxPinSection(),
       ],
     );
   }
@@ -527,6 +550,178 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         _selectedVoiceId = result.voice.id;
       });
     }
+  }
+
+  /// Cross-link: make the assistant speak in the user's cloned voice. This is
+  /// the "one setup feeds another" wire — the clone (created from the same voice
+  /// capture) becomes the assistant voice with one tap, without opening the
+  /// full Voice & Language sheet. Persists via the cubit (single source of
+  /// truth) exactly like the sheet's selection flow.
+  Future<void> _useMyClonedVoiceForAssistant() async {
+    final cubit = _voiceSession ?? serviceLocator<VoiceSessionCubit>();
+    await cubit.setVoice(kMyVoiceSentinelId);
+    if (cubit.hasActiveVoiceSession) {
+      await cubit.notifyCustomVoiceChanged(true);
+    }
+    if (!mounted) return;
+    setState(() => _selectedVoiceId = kMyVoiceSentinelId);
+    Get.snackbar(
+      'Voice updated',
+      'Your assistant will now speak in your voice.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF1F1F1F),
+      colorText: Colors.white,
+      margin: EdgeInsets.all(12.w),
+    );
+  }
+
+  /// Re-pull enrolment + clone status from the backend. The profile summary and
+  /// cards are driven by locally-held state that only loads on init and (during
+  /// a live call) `custom_voice_state` WS pushes. When this screen is opened from
+  /// general settings there's NO live session to push updates, so after the user
+  /// completes a setup step we must re-pull or the UI shows stale "not set up".
+  Future<void> _refreshVoiceState() async {
+    if (!mounted) return;
+    await _checkEnrollmentFromBackend();
+    if (mounted && _isEnrolled) _loadCustomVoiceStatus();
+  }
+
+  /// Open voice enrolment, then reconcile state on return (see [_refreshVoiceState]).
+  Future<void> _openEnrollmentThenRefresh() async {
+    await Get.toNamed(AppRoutes.voiceEnrollment);
+    await _refreshVoiceState();
+  }
+
+  /// Open voice cloning, then reload clone status on return (see [_refreshVoiceState]).
+  Future<void> _openCloningThenRefresh() async {
+    await Get.toNamed(AppRoutes.voiceCloning);
+    if (mounted) _loadCustomVoiceStatus();
+  }
+
+  /// A single "voice profile" summary that unifies the three surfaces —
+  /// recognition (biometrics enrollment), custom voice (clone), and the
+  /// assistant voice — so the user sees, in one place, what's set up and what
+  /// one setup unlocks for another. Reuses the state this screen already loads
+  /// (no extra backend calls) and offers the single most relevant next action.
+  Widget _buildVoiceProfileSummary() {
+    final clone = _customVoiceStatus;
+    final cloneReady = clone?.isReady ?? false;
+    final usingClone = _selectedVoiceId == kMyVoiceSentinelId;
+
+    Widget chip(String label, bool on) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: (on ? const Color(0xFF10B981) : Colors.white)
+              .withValues(alpha: on ? 0.14 : 0.05),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+              color: (on ? const Color(0xFF10B981) : Colors.white)
+                  .withValues(alpha: on ? 0.4 : 0.12)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(on ? Icons.check_circle : Icons.circle_outlined,
+                size: 13.sp,
+                color: on ? const Color(0xFF10B981) : Colors.white54),
+            SizedBox(width: 5.w),
+            Text(label,
+                style: GoogleFonts.inter(
+                    color: on ? Colors.white : Colors.white54,
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    }
+
+    // One contextual primary action, in priority order.
+    String? actionLabel;
+    IconData? actionIcon;
+    VoidCallback? action;
+    if (!_isEnrolled) {
+      actionLabel = 'Set up your voice';
+      actionIcon = Icons.mic_none_rounded;
+      action = _openEnrollmentThenRefresh;
+    } else if (!cloneReady && (clone?.isNone ?? true)) {
+      actionLabel = 'Create your voice clone';
+      actionIcon = Icons.graphic_eq_rounded;
+      action = _openCloningThenRefresh;
+    } else if (cloneReady && !usingClone) {
+      actionLabel = 'Use my voice for the assistant';
+      actionIcon = Icons.record_voice_over_rounded;
+      action = _useMyClonedVoiceForAssistant;
+    }
+
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF3B82F6).withValues(alpha: 0.14),
+            const Color(0xFF8B5CF6).withValues(alpha: 0.10),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.graphic_eq_rounded,
+                  color: Colors.white, size: 18.sp),
+              SizedBox(width: 8.w),
+              Text('Your voice profile',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700)),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'One voice setup powers all three. Enrol once to unlock cloning and a personal assistant voice.',
+            style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp),
+          ),
+          SizedBox(height: 12.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              chip('Recognition', _isEnrolled),
+              chip('Cloned voice', cloneReady),
+              chip('Assistant voice', usingClone),
+            ],
+          ),
+          if (actionLabel != null) ...[
+            SizedBox(height: 14.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: action,
+                icon: Icon(actionIcon, size: 18.sp),
+                label: Text(actionLabel,
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildSectionHeader(String title) {
@@ -698,13 +893,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                   await prefs.remove('voice_enrollment_samples');
                 }
                 await Get.toNamed(AppRoutes.voiceEnrollment);
-                // Re-check enrollment from backend when returning
-                if (mounted) {
-                  await _checkEnrollmentFromBackend();
-                  if (mounted && _isEnrolled) {
-                    _loadCustomVoiceStatus();
-                  }
-                }
+                // Re-check enrolment + clone status from backend when returning.
+                await _refreshVoiceState();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isEnrolled
@@ -911,13 +1101,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () async {
-                  await Get.toNamed(AppRoutes.voiceCloning);
-                  // Reload status when returning from cloning screen
-                  if (mounted) {
-                    _loadCustomVoiceStatus();
-                  }
-                },
+                onPressed: _openCloningThenRefresh,
                 icon: Icon(Icons.record_voice_over_rounded, size: 18.sp),
                 label: Text(
                   'Create Custom Voice',
@@ -944,10 +1128,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () async {
-                  await Get.toNamed(AppRoutes.voiceCloning);
-                  if (mounted) _loadCustomVoiceStatus();
-                },
+                onPressed: _openCloningThenRefresh,
                 icon: Icon(Icons.refresh_rounded, size: 18.sp),
                 label: Text(
                   'Re-record & Retry',

@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_transaction.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_stats.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class SprayMeWalletScreen extends StatefulWidget {
   const SprayMeWalletScreen({super.key});
@@ -21,52 +17,17 @@ class SprayMeWalletScreen extends StatefulWidget {
 }
 
 class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
-  final _amountController = TextEditingController();
-  final _pinController = TextEditingController();
-
   SprayWallet? _wallet;
   List<SprayTransaction> _transactions = [];
   MySprayStats? _stats;
   bool _isLoadingWallet = true;
   bool _isLoadingTransactions = true;
   bool _isLoadingStats = true;
-  bool _obscurePin = true;
-
-  // Account pulled from AccountManager
-  late final AccountManager _accountManager;
-  String? _accountId;
-  String _accountDisplay = '';
-  String _accountCurrency = 'NGN';
-  double _accountBalance = 0;
 
   @override
   void initState() {
     super.initState();
-    _accountManager = serviceLocator<AccountManager>();
-    _loadAccountDetails();
     _loadAll();
-  }
-
-  void _loadAccountDetails() {
-    final details = _accountManager.activeAccountDetails;
-    if (details != null) {
-      _accountId = details.id;
-      final accNum = details.accountNumber;
-      _accountDisplay = '${details.accountType} •••• ${accNum.length >= 4 ? accNum.substring(accNum.length - 4) : accNum}';
-      _accountCurrency = details.currency.isNotEmpty ? details.currency : 'NGN';
-      _accountBalance = details.balance;
-    } else {
-      // Fallback to just the account ID
-      _accountId = _accountManager.activeAccountId;
-      _accountDisplay = _accountId != null ? 'Personal Account' : '';
-    }
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _pinController.dispose();
-    super.dispose();
   }
 
   void _loadAll() {
@@ -80,55 +41,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
       _isLoadingStats = true;
     });
     context.read<SprayMeCubit>().loadWallet();
-  }
-
-  void _clearForm() {
-    _amountController.clear();
-    _pinController.clear();
-  }
-
-  bool _isFundingOrWithdrawing = false;
-
-  void _onWithdraw() {
-    if (_isFundingOrWithdrawing) return;
-    final amount = int.tryParse(_amountController.text.trim());
-    final pin = _pinController.text.trim();
-
-    if (amount == null || amount <= 0) {
-      _showError('Please enter a valid amount');
-      return;
-    }
-    if (amount > 10000000) {
-      _showError('Maximum withdrawal amount is $_accountCurrency 10,000,000');
-      return;
-    }
-    if (_wallet == null) {
-      _showError('Wallet not loaded yet. Please wait and try again.');
-      return;
-    }
-    // Withdrawals draw from accumulated EARNINGS (received gifts), not the
-    // spendable spray credit bought to spray with.
-    if (amount * 100 > _wallet!.earningsBalance) {
-      final available = (_wallet!.earningsBalance / 100).toStringAsFixed(0);
-      _showError('Insufficient earnings. Available: $_accountCurrency $available');
-      return;
-    }
-    if (_accountId == null || _accountId!.isEmpty) {
-      _showError('No account found. Please select an account on the home screen first.');
-      return;
-    }
-    if (pin.length < 4 || pin.length > 6) {
-      _showError('PIN must be 4-6 digits');
-      return;
-    }
-
-    _isFundingOrWithdrawing = true;
-    HapticFeedback.lightImpact();
-    context.read<SprayMeCubit>().withdrawFromWallet(
-          amount: amount * 100, // Convert to kobo
-          destinationAccountId: _accountId!,
-          pin: pin,
-        );
   }
 
   void _showError(String message) {
@@ -152,7 +64,7 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
         ),
         title: Text(
-          'LazerSpray Wallet',
+          'Wallet history',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18.sp,
@@ -181,43 +93,21 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
                 _stats = state.stats;
                 _isLoadingStats = false;
               });
-            } else if (state is WalletFunded) {
-              _isFundingOrWithdrawing = false;
-              HapticFeedback.mediumImpact();
-              setState(() {
-                _wallet = state.wallet;
-              });
-              _clearForm();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: const Color(0xFF10B981),
-                ),
-              );
-              // Reload transactions
-              context.read<SprayMeCubit>().loadMyTransactions();
-            } else if (state is WalletWithdrawn) {
-              _isFundingOrWithdrawing = false;
-              HapticFeedback.mediumImpact();
-              setState(() {
-                _wallet = state.wallet;
-              });
-              _clearForm();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: const Color(0xFF10B981),
-                ),
-              );
-              context.read<SprayMeCubit>().loadMyTransactions();
             } else if (state is SprayMeError) {
-              _isFundingOrWithdrawing = false;
+              // Clear the loading flags so a failed wallet/transactions/stats load
+              // stops shimmering forever (the chain aborts on the first error).
+              setState(() {
+                _isLoadingWallet = false;
+                _isLoadingTransactions = false;
+                _isLoadingStats = false;
+              });
               _showError(state.message);
             }
+            // Fund/Withdraw now settle inside the shared action sheet (which
+            // returns the updated wallet); no WalletFunded/WalletWithdrawn
+            // handling is needed here.
           },
           builder: (context, state) {
-            final isLoading = state is SprayMeLoading;
-
             return RefreshIndicator(
               onRefresh: _refresh,
               color: const Color(0xFF3B82F6),
@@ -229,10 +119,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
                   _buildBalanceCard(),
                   SizedBox(height: 20.h),
                   _buildStatsRow(),
-                  SizedBox(height: 20.h),
-                  _buildBuyGiftsInfo(),
-                  SizedBox(height: 16.h),
-                  _buildWithdrawSection(isLoading),
                   SizedBox(height: 24.h),
                   _buildTransactionHistory(),
                   SizedBox(height: 24.h),
@@ -352,7 +238,10 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
         Expanded(
           child: _buildMiniStat(
             label: 'Funded',
-            value: _formatAmountShort((_stats?.totalFunded ?? 0) / 100),
+            // total_funded/total_withdrawn are NOT in the stats response — read
+            // them from the wallet object (walletToJSON carries them), else these
+            // two cards are permanently ₦0.
+            value: _formatAmountShort((_wallet?.totalFunded ?? 0) / 100),
             color: const Color(0xFF3B82F6),
           ),
         ),
@@ -376,7 +265,7 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
         Expanded(
           child: _buildMiniStat(
             label: 'Withdrawn',
-            value: _formatAmountShort((_stats?.totalWithdrawn ?? 0) / 100),
+            value: _formatAmountShort((_wallet?.totalWithdrawn ?? 0) / 100),
             color: const Color(0xFFFB923C),
           ),
         ),
@@ -414,293 +303,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
             style: TextStyle(
               color: const Color(0xFF9CA3AF),
               fontSize: 10.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Buy-gifts info (joiners top up by buying gifts in a live session) ──
-
-  Widget _buildBuyGiftsInfo() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.card_giftcard, color: const Color(0xFF3B82F6), size: 20.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'To top up your gifts-to-spray, buy gifts from your personal account inside a live session. There is no wallet to fund.',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Withdraw earnings ─────────────────────────────────────────────────
-
-  Widget _buildWithdrawSection(bool isLoading) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Withdraw earnings',
-            style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'Move your accumulated received gifts to your personal account.',
-            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-          ),
-          SizedBox(height: 16.h),
-          _buildWithdrawForm(isLoading),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWithdrawForm(bool isLoading) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Destination account card (TagPay-style, locked to personal)
-          _buildAccountCard(
-            label: 'Withdrawing to',
-            isSource: false,
-          ),
-          SizedBox(height: 16.h),
-          _buildFormLabel('Amount ($_accountCurrency)'),
-          SizedBox(height: 6.h),
-          _buildFormField(
-            controller: _amountController,
-            hint: 'Enter amount',
-            keyboardType: TextInputType.number,
-            prefixText: '$_accountCurrency ',
-          ),
-          SizedBox(height: 14.h),
-          _buildFormLabel('Transaction PIN'),
-          SizedBox(height: 6.h),
-          _buildPinField(),
-          SizedBox(height: 20.h),
-          SizedBox(
-            width: double.infinity,
-            height: 48.h,
-            child: ElevatedButton(
-              onPressed: isLoading ? null : _onWithdraw,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFB923C),
-                disabledBackgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.4),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                elevation: 0,
-              ),
-              child: isLoading
-                  ? LazerVaultLoader.small()
-                  : Text(
-                      'Withdraw',
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// TagPay-style account card showing the user's personal Lazervault account.
-  /// Pre-selected, no ability to change — only personal account is allowed.
-  Widget _buildAccountCard({
-    required String label,
-    required bool isSource,
-  }) {
-    if (_accountId == null || _accountId!.isEmpty) {
-      return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5), width: 1.5),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Row(
-            children: [
-              Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(Icons.warning_amber_rounded, color: const Color(0xFFEF4444), size: 22.sp),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'No Account Found',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Please select an account on the home screen first.',
-                      style: TextStyle(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final balanceMajor = _accountBalance / 100;
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF3B82F6), width: 2),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                // Account icon
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    Icons.account_balance_wallet,
-                    color: const Color(0xFF3B82F6),
-                    size: 22.sp,
-                  ),
-                ),
-                SizedBox(width: 14.w),
-
-                // Account info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Personal Account',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        _accountDisplay.isNotEmpty ? _accountDisplay : 'Lazervault Wallet',
-                        style: TextStyle(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 13.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Balance + checkmark
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: const Color(0xFF3B82F6),
-                      size: 24.sp,
-                    ),
-                    if (_accountBalance > 0) ...[
-                      SizedBox(height: 4.h),
-                      Text(
-                        '$_accountCurrency ${_formatAmount(balanceMajor)}',
-                        style: TextStyle(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Flow label
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: (isSource ? const Color(0xFF10B981) : const Color(0xFFFB923C)).withValues(alpha: 0.08),
-              border: Border(
-                top: BorderSide(
-                  color: (isSource ? const Color(0xFF10B981) : const Color(0xFFFB923C)).withValues(alpha: 0.2),
-                ),
-              ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(14.r)),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  isSource ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: isSource ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-                  size: 14.sp,
-                ),
-                SizedBox(width: 6.w),
-                Text(
-                  isSource
-                      ? 'Funding from this account'
-                      : 'Withdrawing to this account',
-                  style: TextStyle(
-                    color: isSource ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
@@ -841,101 +443,6 @@ class _SprayMeWalletScreenState extends State<SprayMeWalletScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // ── Form Helpers ─────────────────────────────────────────────────────────────
-
-  Widget _buildFormLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: const Color(0xFF9CA3AF),
-        fontSize: 13.sp,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-
-  Widget _buildFormField({
-    required TextEditingController controller,
-    required String hint,
-    TextInputType keyboardType = TextInputType.text,
-    String? prefixText,
-    bool readOnly = false,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      readOnly: readOnly,
-      inputFormatters: keyboardType == TextInputType.number
-          ? [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)]
-          : null,
-      style: TextStyle(color: Colors.white, fontSize: 15.sp),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-        prefixText: prefixText,
-        prefixStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 15.sp,
-          fontWeight: FontWeight.w500,
-        ),
-        filled: true,
-        fillColor: const Color(0xFF0A0A0A),
-        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPinField() {
-    return TextFormField(
-      controller: _pinController,
-      keyboardType: TextInputType.number,
-      obscureText: _obscurePin,
-      maxLength: 6,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      style: TextStyle(color: Colors.white, fontSize: 15.sp),
-      decoration: InputDecoration(
-        hintText: 'Enter PIN',
-        hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-        counterText: '',
-        filled: true,
-        fillColor: const Color(0xFF0A0A0A),
-        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
-        ),
-        suffixIcon: IconButton(
-          onPressed: () => setState(() => _obscurePin = !_obscurePin),
-          icon: Icon(
-            _obscurePin ? Icons.visibility_off : Icons.visibility,
-            color: const Color(0xFF9CA3AF),
-            size: 20.sp,
-          ),
-        ),
       ),
     );
   }

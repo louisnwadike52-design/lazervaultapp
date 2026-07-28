@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../../domain/entities/water_reminder.dart';
 import '../cubit/water_reminder_cubit.dart';
 import '../cubit/water_reminder_state.dart';
@@ -24,10 +25,18 @@ class WaterRemindersScreen extends StatefulWidget {
   State<WaterRemindersScreen> createState() => _WaterRemindersScreenState();
 }
 
-class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
+class _WaterRemindersScreenState extends State<WaterRemindersScreen>
+    with ReminderPauseResumeMixin<WaterRemindersScreen> {
   static const Color _bg = Color(0xFF0A0A0A);
   static const Color _primary = Color(0xFF4E03D0);
   static const Color _accentOrange = Color(0xFFFB923C);
+
+  /// Last successfully loaded list — mirrors `DataRemindersScreen`'s
+  /// `_cachedList` pattern so a mutation (delete / mark complete) or a
+  /// transient `WaterReminderError` doesn't flash the "No Reminders"
+  /// empty state over a populated list. Loader shows only when nothing
+  /// has ever loaded (`null`).
+  List<WaterReminder>? _cachedList;
 
   @override
   void initState() {
@@ -44,7 +53,9 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
   }
 
   bool _isActive(WaterReminder r) =>
-      r.status == 'pending' || r.status == 'notified';
+      r.status == 'pending' ||
+      r.status == 'notified' ||
+      r.status == 'paused';
 
   bool _isCompleted(WaterReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -154,21 +165,22 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
                   }
                 },
                 builder: (context, state) {
-                  if (state is WaterReminderLoading ||
-                      state is WaterReminderInitial) {
+                  if (state is WaterRemindersLoaded) {
+                    _cachedList = state.reminders;
+                  }
+                  final list = _cachedList;
+                  if (list == null) {
                     return const Center(
                       child: LazerVaultLoader.tiny(),
                     );
                   }
-                  if (state is WaterRemindersLoaded) {
-                    if (state.reminders.isEmpty) return _buildEmpty();
-                    final due = state.reminders.where(_isDue).toList();
-                    final active = state.reminders
-                        .where((r) => _isActive(r) && !_isDue(r))
-                        .toList();
-                    final completed =
-                        state.reminders.where(_isCompleted).toList();
-                    return RefreshIndicator(
+                  if (list.isEmpty) return _buildEmpty();
+                  final due = list.where(_isDue).toList();
+                  final active = list
+                      .where((r) => _isActive(r) && !_isDue(r))
+                      .toList();
+                  final completed = list.where(_isCompleted).toList();
+                  return RefreshIndicator(
                       color: _primary,
                       backgroundColor: const Color(0xFF1F1F1F),
                       onRefresh: () => context
@@ -207,8 +219,6 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
                         ],
                       ),
                     );
-                  }
-                  return _buildEmpty();
                 },
               ),
             ),
@@ -340,6 +350,27 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
       onPayNow: isDue && !_isCompleted(r) ? () => _payNow(r) : null,
       onMarkComplete: !_isCompleted(r) ? () => _markComplete(r) : null,
       onEdit: !_isCompleted(r) ? () => _edit(r) : null,
+      onPause: r.status == 'pending'
+          ? () => runReminderStatusChange(
+                billType: 'water',
+                reminderId: r.id,
+                pause: true,
+                onSuccessReload: () => context
+                    .read<WaterReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      onResume: r.status == 'paused'
+          ? () => runReminderStatusChange(
+                billType: 'water',
+                reminderId: r.id,
+                pause: false,
+                onSuccessReload: () => context
+                    .read<WaterReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      isProcessing: busyReminderId == r.id,
       onDelete: () => _delete(r),
     );
   }

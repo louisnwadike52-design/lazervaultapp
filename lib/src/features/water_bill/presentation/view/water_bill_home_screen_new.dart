@@ -12,6 +12,7 @@ import '../cubit/water_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/water_history_actions_sheet.dart';
+import '../widgets/water_quick_buy.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Water Bill landing screen.
@@ -37,7 +38,6 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
   static const Color _primary = Color(0xFF4E03D0);
   static const Color _bg = Color(0xFF0A0A0A);
   static const Color _card = Color(0xFF1F1F1F);
-  static const Color _border = Color(0xFF2D2D2D);
   static const Color _textSecondary = Color(0xFF9CA3AF);
 
   List<WaterProviderEntity> _providers = [];
@@ -136,9 +136,10 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
           children: [
             _buildQuickActions(),
             SizedBox(height: 24.h),
-            _buildSectionTitle('Choose Your Provider'),
-            SizedBox(height: 12.h),
-            _buildProviderGrid(_providers),
+            // Streamlined single-page purchase (see WaterQuickBuy): provider
+            // → customer → auto-validate → amount → inline confirm → TX-PIN
+            // sheet runs the payment → receipt.
+            const WaterQuickBuy(),
             SizedBox(height: 28.h),
             _buildRecentPaymentsSection(),
             SizedBox(height: 12.h),
@@ -186,61 +187,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
   // Provider grid — flat, no primary / other split
   // ---------------------------------------------------------------------------
 
-  Widget _buildProviderGrid(List<WaterProviderEntity> providers) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: providers.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: providers.length >= 3 ? 3 : 2,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 0.95,
-      ),
-      itemBuilder: (_, i) => _buildProviderTile(providers[i]),
-    );
-  }
 
-  Widget _buildProviderTile(WaterProviderEntity provider) {
-    return GestureDetector(
-      onTap: () => _navigateToPayment(provider),
-      child: Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: _border, width: 1),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: _primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(Icons.water_drop, color: _primary, size: 20.sp),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              provider.providerName,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                height: 1.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ---------------------------------------------------------------------------
   // Recent payments — top 3 rows via shared BillHistoryItem
@@ -421,12 +368,6 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
   // Actions
   // ---------------------------------------------------------------------------
 
-  void _navigateToPayment(WaterProviderEntity provider) {
-    Get.toNamed(
-      AppRoutes.waterBillCustomerInput,
-      arguments: {'provider': provider},
-    );
-  }
 
   // Delegates to the shared water-specific actions sheet so the landing
   // and history screens dispatch through one code path (saved-contact

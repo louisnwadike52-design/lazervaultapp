@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +18,38 @@ const _kCard = Color(0xFF1F1F1F);
 const _kAccent = Color.fromARGB(255, 78, 3, 208);
 const _kTextSecondary = Color(0xFF9CA3AF);
 const _kDivider = Color(0xFF2D2D2D);
+
+/// Replace em/en dashes with plain hyphens in lesson copy (both hardcoded and
+/// admin-managed backend bodies) so no "ai dash" reaches the reader.
+String _cleanLessonMarkdown(String md) =>
+    md.replaceAll('—', '-').replaceAll('–', '-');
+
+/// Dark-theme markdown styling for lesson bodies so **bold**, headings and
+/// lists render as real formatting instead of raw markdown characters.
+MarkdownStyleSheet _lessonMarkdownStyle() {
+  final body = GoogleFonts.inter(
+    fontSize: 13.sp,
+    color: Colors.white.withValues(alpha: 0.8),
+    height: 1.55,
+  );
+  return MarkdownStyleSheet(
+    p: body,
+    strong: body.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+    em: body.copyWith(fontStyle: FontStyle.italic),
+    h1: GoogleFonts.inter(fontSize: 18.sp, color: Colors.white, fontWeight: FontWeight.w700),
+    h2: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.w700),
+    h3: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white, fontWeight: FontWeight.w600),
+    listBullet: body,
+    blockquote: body.copyWith(color: Colors.white.withValues(alpha: 0.6)),
+    a: body.copyWith(color: const Color(0xFF3B82F6)),
+    code: TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 12.sp,
+      color: const Color(0xFF93C5FD),
+      backgroundColor: Colors.white.withValues(alpha: 0.06),
+    ),
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Educational content data
@@ -794,7 +827,7 @@ class _ExpandableLessonCardState extends State<_ExpandableLessonCard>
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        lesson.summary,
+                        _cleanLessonMarkdown(lesson.summary),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(fontSize: 12.sp, color: _kTextSecondary),
@@ -814,13 +847,12 @@ class _ExpandableLessonCardState extends State<_ExpandableLessonCard>
               firstChild: const SizedBox.shrink(),
               secondChild: Padding(
                 padding: EdgeInsets.only(top: 12.h),
-                child: Text(
-                  lesson.detail,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    color: Colors.white.withValues(alpha: 0.8),
-                    height: 1.55,
-                  ),
+                // Render the lesson body as real markdown (bold, headings,
+                // lists) instead of showing raw "**...**"; strip em/en dashes.
+                child: MarkdownBody(
+                  data: _cleanLessonMarkdown(lesson.detail),
+                  shrinkWrap: true,
+                  styleSheet: _lessonMarkdownStyle(),
                 ),
               ),
               crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,

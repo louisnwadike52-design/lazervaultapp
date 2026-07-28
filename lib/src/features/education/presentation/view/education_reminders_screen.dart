@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../../domain/entities/education_reminder.dart';
 import '../cubit/education_reminder_cubit.dart';
 import '../cubit/education_reminder_state.dart';
@@ -20,8 +21,15 @@ class EducationRemindersScreen extends StatefulWidget {
       _EducationRemindersScreenState();
 }
 
-class _EducationRemindersScreenState extends State<EducationRemindersScreen> {
+class _EducationRemindersScreenState extends State<EducationRemindersScreen>
+    with ReminderPauseResumeMixin<EducationRemindersScreen> {
   static const Color _accent = Color(0xFFFB923C);
+
+  /// Last successfully loaded list — mirrors the sibling reminder screens'
+  /// `_cachedList` pattern so a mutation (delete / mark complete) doesn't
+  /// flash the "No Reminders" empty state over a populated list. The inline
+  /// error is still shown when a load fails before anything ever loaded.
+  List<EducationReminder>? _cachedList;
 
   @override
   void initState() {
@@ -79,22 +87,22 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen> {
           }
         },
         builder: (context, state) {
-          if (state is EducationReminderLoading ||
-              state is EducationReminderInitial) {
-            return const Center(
-              child: LazerVaultLoader.tiny(),
-            );
+          if (state is EducationRemindersLoaded) {
+            _cachedList = state.reminders;
           }
-          if (state is EducationReminderError) {
+          if (state is EducationReminderError && _cachedList == null) {
             return Center(
               child: Text(state.message,
                   style: TextStyle(
                       color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
             );
           }
-          final list = state is EducationRemindersLoaded
-              ? state.reminders
-              : const <EducationReminder>[];
+          final list = _cachedList;
+          if (list == null) {
+            return const Center(
+              child: LazerVaultLoader.tiny(),
+            );
+          }
           if (list.isEmpty) return _buildEmpty();
           return RefreshIndicator(
             color: _accent,
@@ -166,6 +174,27 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen> {
           : () => context
               .read<EducationReminderCubit>()
               .markReminderComplete(reminderId: r.id),
+      onPause: r.status.toLowerCase() == 'pending'
+          ? () => runReminderStatusChange(
+                billType: 'education',
+                reminderId: r.id,
+                pause: true,
+                onSuccessReload: () => context
+                    .read<EducationReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      onResume: r.status.toLowerCase() == 'paused'
+          ? () => runReminderStatusChange(
+                billType: 'education',
+                reminderId: r.id,
+                pause: false,
+                onSuccessReload: () => context
+                    .read<EducationReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      isProcessing: busyReminderId == r.id,
       onDelete: () => context
           .read<EducationReminderCubit>()
           .deleteReminder(reminderId: r.id),

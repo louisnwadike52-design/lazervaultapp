@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 
 /// Budget Reminders Screen
 /// Displays budget alerts from the backend (threshold reached, budget exceeded, etc.)
@@ -50,7 +51,7 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
                   onPressed: () => context.read<BudgetCubit>().loadBudgetAlerts(unreadOnly: true),
                   child: Text(
                     'Unread (${state.unreadCount})',
-                    style: const TextStyle(color: Color(0xFF10B981), fontSize: 14),
+                    style: const TextStyle(color: InvoiceThemeColors.primaryPurple, fontSize: 14),
                   ),
                 );
               }
@@ -73,7 +74,7 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
               ),
             );
           }
@@ -91,7 +92,7 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
             }
             return RefreshIndicator(
               onRefresh: () => context.read<BudgetCubit>().loadBudgetAlerts(),
-              color: const Color(0xFF10B981),
+              color: InvoiceThemeColors.primaryPurple,
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -134,10 +135,10 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
                 width: 80.r,
                 height: 80.r,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.notifications_none, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 40.r),
+                child: Icon(Icons.notifications_none, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5), size: 40.r),
               ),
               SizedBox(height: 16.h),
               Text(
@@ -176,7 +177,7 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
           ElevatedButton(
             onPressed: () => context.read<BudgetCubit>().loadBudgetAlerts(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
             ),
             child: const Text('Retry'),
@@ -313,7 +314,7 @@ class _AlertCard extends StatelessWidget {
                 icon: const Icon(Icons.check, size: 16),
                 label: const Text('Mark as read'),
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF10B981),
+                  foregroundColor: InvoiceThemeColors.primaryPurple,
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
               ),
@@ -333,7 +334,7 @@ class _AlertCard extends StatelessWidget {
       case pb.AlertType.ALERT_TYPE_APPROACHING_LIMIT:
         return const Color(0xFFFB923C);
       case pb.AlertType.ALERT_TYPE_RECURRING_EXPENSE_DUE:
-        return const Color(0xFF10B981);
+        return InvoiceThemeColors.primaryPurple;
       default:
         return const Color(0xFF9CA3AF);
     }

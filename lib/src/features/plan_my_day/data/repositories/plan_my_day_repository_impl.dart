@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 import 'package:lazervault/src/features/plan_my_day/domain/entities/event.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/task.dart';
@@ -18,6 +19,7 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
   final String _baseUrl;
   final GrpcCallOptionsHelper _callOptionsHelper;
   final AccountManager _accountManager;
+  final LocaleManager _localeManager;
   final http.Client _client;
   final FlutterSecureStorage _storage;
 
@@ -52,18 +54,32 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     String? baseUrl,
     required GrpcCallOptionsHelper callOptionsHelper,
     required AccountManager accountManager,
+    required LocaleManager localeManager,
     http.Client? client,
     FlutterSecureStorage? storage,
   })  : _baseUrl = _normalizeBase(baseUrl ?? endpointRegistry.httpPlanning),
         _callOptionsHelper = callOptionsHelper,
         _accountManager = accountManager,
+        _localeManager = localeManager,
         _client = client ?? http.Client(),
         _storage = storage ?? const FlutterSecureStorage();
 
-  Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+  // Every request carries the active dashboard region + virtual account so the
+  // planning-service scopes the board/calendar/reminders to the region the user
+  // is currently viewing (X-Locale / X-Account-Id — the same headers the Dio
+  // interceptor sets for other features; this repo uses a bare http.Client).
+  Map<String, String> get _headers {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Locale': _localeManager.currentLocale,
+    };
+    final accountId = _accountManager.activeAccountId;
+    if (accountId != null && accountId.isNotEmpty) {
+      headers['X-Account-Id'] = accountId;
+    }
+    return headers;
+  }
 
   Future<Map<String, String>> _getAuthHeaders() async {
     final token = await _storage.read(key: _accessTokenKey);
@@ -385,13 +401,22 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     String? status,
     List<String>? categoryIds,
     String? estimatedDuration,
+    String? contactId,
+    bool clearDueDate = false,
   }) async {
     final headers = await _getAuthHeaders();
     final body = <String, dynamic>{};
 
     if (title != null) body['title'] = title.trim();
     if (description != null) body['description'] = description.trim();
-    if (dueDate != null) body['due_date'] = dueDate.toIso8601String();
+    // Explicit clear wins; otherwise only send due_date when one is provided.
+    if (clearDueDate) {
+      body['due_date'] = '';
+    } else if (dueDate != null) {
+      body['due_date'] = dueDate.toIso8601String();
+    }
+    // Empty string clears the link; non-empty sets it.
+    if (contactId != null) body['contact_id'] = contactId;
     if (priority != null) {
       if (priority < 1 || priority > 4) {
         throw PlanMyDayValidationException('Priority must be between 1 and 4');

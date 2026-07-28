@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 
 import '../../domain/entities/supplier_entity.dart';
+import '../../domain/repositories/inventory_enhanced_repository.dart';
 import '../cubit/inventory_enhanced_cubit.dart';
 import '../cubit/inventory_enhanced_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -17,36 +20,80 @@ class SupplierListScreen extends StatefulWidget {
   State<SupplierListScreen> createState() => _SupplierListScreenState();
 }
 
-class _SupplierListScreenState extends State<SupplierListScreen> {
+class _SupplierListScreenState extends State<SupplierListScreen>
+    with InfiniteScrollMixin<SupplierListScreen> {
   final _searchController = TextEditingController();
   final _debouncer = Debouncer.search();
+  final _repo = serviceLocator<InventoryEnhancedRepository>();
+
+  static const _limit = 20;
+
+  List<SupplierEntity> _suppliers = [];
+  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSuppliers();
+    attachInfiniteScroll();
+    _loadFirst();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _debouncer.dispose();
+    detachInfiniteScroll();
     super.dispose();
   }
 
-  void _loadSuppliers() {
-    context.read<InventoryEnhancedCubit>().listSuppliers(
-          search: _searchController.text.isEmpty
-              ? null
-              : _searchController.text,
-        );
+  Future<void> _loadFirst() async {
+    resetPagination();
+    setState(() => _loading = true);
+    try {
+      final res = await _repo.listSuppliers(
+        page: 1,
+        limit: _limit,
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+      );
+      if (!mounted) return;
+      setState(() {
+        _suppliers = res;
+        _loading = false;
+        hasMore = res.length >= _limit;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
   }
+
+  @override
+  Future<void> onLoadMore() => runLoadMore(() async {
+        final res = await _repo.listSuppliers(
+          page: page + 1,
+          limit: _limit,
+          search:
+              _searchController.text.isEmpty ? null : _searchController.text,
+        );
+        if (!mounted) return;
+        setState(() {
+          _suppliers.addAll(res);
+          page += 1;
+          hasMore = res.length >= _limit;
+        });
+      });
 
   void _onSearchChanged(String query) {
     setState(() {}); // Update suffixIcon visibility
     _debouncer.run(() {
       if (!mounted) return;
-      _loadSuppliers();
+      _loadFirst();
     });
   }
 
@@ -54,13 +101,16 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
   // Add Supplier Dialog
   // ---------------------------------------------------------------------------
 
-  void _showAddSupplierDialog() {
-    final nameController = TextEditingController();
-    final contactNameController = TextEditingController();
-    final emailController = TextEditingController();
-    final phoneController = TextEditingController();
-    final addressController = TextEditingController();
-    final notesController = TextEditingController();
+  void _showAddSupplierDialog({SupplierEntity? existing}) {
+    final isEdit = existing != null;
+    final nameController = TextEditingController(text: existing?.name ?? '');
+    final contactNameController =
+        TextEditingController(text: existing?.contactName ?? '');
+    final emailController = TextEditingController(text: existing?.email ?? '');
+    final phoneController = TextEditingController(text: existing?.phone ?? '');
+    final addressController =
+        TextEditingController(text: existing?.address ?? '');
+    final notesController = TextEditingController(text: existing?.notes ?? '');
 
     showDialog(
       context: context,
@@ -76,7 +126,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add Supplier',
+                isEdit ? 'Edit Supplier' : 'Add Supplier',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -157,17 +207,27 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                           return;
                         }
                         Navigator.pop(dialogContext);
-                        context
-                            .read<InventoryEnhancedCubit>()
-                            .createSupplier(
-                              name: name,
-                              contactName:
-                                  contactNameController.text.trim(),
-                              email: emailController.text.trim(),
-                              phone: phoneController.text.trim(),
-                              address: addressController.text.trim(),
-                              notes: notesController.text.trim(),
-                            );
+                        final cubit = context.read<InventoryEnhancedCubit>();
+                        if (isEdit) {
+                          cubit.updateSupplier(
+                            supplierId: existing.id,
+                            name: name,
+                            contactName: contactNameController.text.trim(),
+                            email: emailController.text.trim(),
+                            phone: phoneController.text.trim(),
+                            address: addressController.text.trim(),
+                            notes: notesController.text.trim(),
+                          );
+                        } else {
+                          cubit.createSupplier(
+                            name: name,
+                            contactName: contactNameController.text.trim(),
+                            email: emailController.text.trim(),
+                            phone: phoneController.text.trim(),
+                            address: addressController.text.trim(),
+                            notes: notesController.text.trim(),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF3B82F6),
@@ -177,7 +237,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
                       child: Text(
-                        'Add',
+                        isEdit ? 'Save' : 'Add',
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 14.sp,
@@ -321,7 +381,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                   ),
                   onPressed: () {
                     _searchController.clear();
-                    _loadSuppliers();
+                    _loadFirst();
                   },
                 )
               : null,
@@ -343,7 +403,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildBody() {
-    return BlocConsumer<InventoryEnhancedCubit, InventoryEnhancedState>(
+    return BlocListener<InventoryEnhancedCubit, InventoryEnhancedState>(
       listener: (context, state) {
         if (state is InventoryEnhancedError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -363,7 +423,19 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
               backgroundColor: const Color(0xFF10B981),
             ),
           );
-          _loadSuppliers();
+          _loadFirst();
+        }
+        if (state is SupplierUpdated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Supplier "${state.supplier.name}" updated',
+                style: GoogleFonts.inter(color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+          _loadFirst();
         }
         if (state is SupplierDeleted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -375,38 +447,43 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
               backgroundColor: const Color(0xFF10B981),
             ),
           );
-          _loadSuppliers();
+          _loadFirst();
         }
       },
-      builder: (context, state) {
-        if (state is InventoryEnhancedLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
-          );
-        }
+      child: _buildList(),
+    );
+  }
 
-        if (state is SuppliersLoaded) {
-          if (state.suppliers.isEmpty) {
-            return _buildEmptyState();
+  Widget _buildList() {
+    if (_loading) {
+      return const Center(
+        child: LazerVaultLoader.small(),
+      );
+    }
+
+    if (_suppliers.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async => _loadFirst(),
+      color: const Color(0xFF3B82F6),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView.builder(
+        controller: scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        itemCount: _suppliers.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _suppliers.length) {
+            return Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const Center(child: LazerVaultLoader.small()),
+            );
           }
-
-          return RefreshIndicator(
-            onRefresh: () async => _loadSuppliers(),
-            color: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding:
-                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              itemCount: state.suppliers.length,
-              itemBuilder: (context, index) =>
-                  _buildSupplierCard(state.suppliers[index]),
-            ),
-          );
-        }
-
-        return _buildEmptyState();
-      },
+          return _buildSupplierCard(_suppliers[index]);
+        },
+      ),
     );
   }
 
@@ -415,7 +492,9 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildSupplierCard(SupplierEntity supplier) {
-    return Container(
+    return GestureDetector(
+      onTap: () => _showAddSupplierDialog(existing: supplier),
+      child: Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -504,6 +583,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -536,7 +616,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
 
   Widget _buildEmptyState() {
     return RefreshIndicator(
-      onRefresh: () async => _loadSuppliers(),
+      onRefresh: () async => _loadFirst(),
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(

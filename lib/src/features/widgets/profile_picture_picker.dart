@@ -37,6 +37,19 @@ class ProfilePicturePicker extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20.h),
+            if (currentProfilePicture != null && currentProfilePicture!.isNotEmpty)
+              ListTile(
+                leading: const Icon(Icons.visibility_outlined,
+                    color: Color(0xFF3B82F6)),
+                title: Text(
+                  'View Photo',
+                  style: GoogleFonts.inter(fontSize: 16.sp),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _viewImage(context);
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
               title: Text(
@@ -73,6 +86,62 @@ class ProfilePicturePicker extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Full-screen, pinch-zoomable view of the current picture. Handles both
+  /// base64 data-URIs and remote URLs; dismiss by tapping or the close button.
+  void _viewImage(BuildContext context) {
+    final pic = currentProfilePicture;
+    if (pic == null || pic.isEmpty) return;
+
+    Widget? image;
+    if (pic.startsWith('data:image')) {
+      try {
+        image = Image.memory(base64Decode(pic.split(',')[1]), fit: BoxFit.contain);
+      } catch (_) {
+        image = null;
+      }
+    } else if (pic.startsWith('http')) {
+      image = Image.network(pic, fit: BoxFit.contain);
+    }
+    if (image == null) return;
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black,
+        pageBuilder: (ctx, _, __) => Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.of(ctx).pop(),
+                child: Center(
+                  child: Hero(
+                    tag: 'my-account-avatar',
+                    child: InteractiveViewer(
+                      minScale: 1,
+                      maxScale: 5,
+                      child: image!,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(ctx).padding.top + 8.h,
+                right: 12.w,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
       ),
     );
   }
@@ -121,20 +190,22 @@ class ProfilePicturePicker extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              width: 36.w,
-              height: 36.w,
+              // Small, proportional camera badge (~30% of the avatar) so it
+              // reads as an edit affordance, not a second circle.
+              width: (size * 0.3).w,
+              height: (size * 0.3).w,
               decoration: BoxDecoration(
                 color: const Color(0xFF3B82F6),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Colors.white,
-                  width: 3,
+                  width: 1.5,
                 ),
               ),
               child: Icon(
                 Icons.camera_alt,
                 color: Colors.white,
-                size: 18.sp,
+                size: (size * 0.16).sp,
               ),
             ),
           ),

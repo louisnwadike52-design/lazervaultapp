@@ -7,8 +7,8 @@ import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import '../../domain/entities/crypto_entity.dart';
-import '../../domain/entities/price_point.dart';
 import '../../cubit/crypto_cubit.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_chart_tick_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../../stocks/domain/entities/stock_entity.dart';
@@ -110,7 +110,8 @@ class CryptoChartDetailsScreen extends StatefulWidget {
 }
 
 class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
-  ChartType _selectedChartType = ChartType.candlestick;
+  // Default to Heikin-Ashi on load — smoother trend read than raw candles.
+  ChartType _selectedChartType = ChartType.heikinAshi;
   DrawingTool _selectedDrawingTool = DrawingTool.none;
   String _selectedTimeframe = '1D';
   final List<String> _selectedIndicators = [];
@@ -167,13 +168,26 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // mutates the rightmost candle in `_liveOverlayHistory` and
     // setState — same UX as the Binance / Coinbase mobile apps where
     // the candle wick stretches up/down in real time.
-    _tickCubit = CryptoChartTickCubit(
-      cryptoSymbol: widget.crypto.symbol.toLowerCase(),
-      vsCurrency: 'usdt', // Binance public stream uses USDT pairs
-      interval: _binanceInterval(_selectedTimeframe),
-    );
-    _tickCubit!.start();
-    _tickSub = _tickCubit!.stream.listen(_onTick);
+    // The Binance public stream is USDT-denominated. Overlaying a USDT tick
+    // onto locale-currency (e.g. NGN) candles would corrupt the rightmost
+    // candle, so the live overlay only runs when the active locale is USD-based.
+    // Non-USD locales show the (correct) locale-currency historical candles.
+    if (_localeUsesUsdTicks) {
+      _tickCubit = CryptoChartTickCubit(
+        cryptoSymbol: widget.crypto.symbol.toLowerCase(),
+        vsCurrency: 'usdt',
+        interval: _binanceInterval(_selectedTimeframe),
+      );
+      _tickCubit!.start();
+      _tickSub = _tickCubit!.stream.listen(_onTick);
+    }
+  }
+
+  /// Whether the active locale prices crypto in USD (so a Binance USDT live tick
+  /// is comparable to the historical candles). For NGN/GHS/etc. it is not.
+  bool get _localeUsesUsdTicks {
+    final c = CurrencySymbols.currentCurrency.toUpperCase();
+    return c == 'USD' || c == 'USDT' || c == 'USDC';
   }
 
   void _initializeChart() {
@@ -188,6 +202,42 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       widget.crypto.id,
       timeframe: _timeframeToRange(_selectedTimeframe),
     );
+  }
+
+  /// Switch timeframe end-to-end: refetch history at the new range, reset the
+  /// pan/zoom window to the latest candles, clear the stale live overlay, and
+  /// RESTART the real-time WS on the matching kline interval. Previously only
+  /// the history refetched, so the live rightmost candle kept streaming the old
+  /// interval and the visible window could point at a stale slice.
+  void _changeTimeframe(String tf) {
+    if (tf == _selectedTimeframe) return;
+    setState(() {
+      _selectedTimeframe = tf;
+      _initializeChart(); // reset scale + window to show the newest candles
+      _liveOverlayHistory = null; // re-seed from the fresh fetch
+      _baselinePriceHistory = null;
+    });
+    _loadChartData();
+    _restartTickStream();
+  }
+
+  /// Tear down and reopen the Binance kline WS on the current symbol +
+  /// timeframe. Safe to call repeatedly; the cubit fails soft when the symbol
+  /// isn't listed on Binance (Quidax-only assets) — the chart just shows
+  /// historical candles without a live overlay.
+  void _restartTickStream() {
+    _tickSub?.cancel();
+    _tickCubit?.close();
+    _tickCubit = null;
+    _tickSub = null;
+    if (!_localeUsesUsdTicks) return; // no USDT overlay for non-USD locales
+    _tickCubit = CryptoChartTickCubit(
+      cryptoSymbol: widget.crypto.symbol.toLowerCase(),
+      vsCurrency: 'usdt',
+      interval: _binanceInterval(_selectedTimeframe),
+    );
+    _tickCubit!.start();
+    _tickSub = _tickCubit!.stream.listen(_onTick);
   }
 
   /// Maps the chart screen's UI timeframe string to the kline
@@ -452,7 +502,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
+                    '${CurrencySymbols.currentSymbol}${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14.sp,
@@ -710,11 +760,12 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         volume: point.volume ?? 0.0,
       )).toList();
     } else {
-      // Fallback: generate from current price if no data available
-      // yet. Removing this entirely is tracked separately (#156); for
-      // now the synthetic fill keeps the chart from rendering empty
-      // while the cubit's first fetch is in flight.
-      baseline = _generateFallbackPriceHistory();
+      // No real data (still loading, errored, or the asset genuinely has no
+      // OHLCV). Return empty so the canvas renders an honest "no data" state —
+      // NEVER synthetic candles. Loading/error are shown by their own canvases
+      // (see the BlocBuilder branch), so this only surfaces for a truly empty
+      // asset, where fabricating a price series would be misleading.
+      baseline = const [];
     }
     // Stash the freshest baseline so the tick overlay can build on it
     // when the next WS message arrives.
@@ -727,148 +778,6 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       return overlay;
     }
     return baseline;
-  }
-
-  // Fallback price history when backend data is not yet available
-  List<CryptoPrice> _generateFallbackPriceHistory() {
-    return _generateRealisticCryptoPriceHistory();
-  }
-
-  List<CryptoPrice> _generateRealisticCryptoPriceHistory() {
-    final now = DateTime.now();
-    final prices = <CryptoPrice>[];
-    double basePrice = widget.crypto.currentPrice;
-    
-    // Get interval and data points based on timeframe
-    int dataPoints;
-    Duration interval;
-    
-    switch (_selectedTimeframe) {
-      case '1m':
-        dataPoints = 60;
-        interval = Duration(minutes: 1);
-        break;
-      case '5m':
-        dataPoints = 144;
-        interval = Duration(minutes: 5);
-        break;
-      case '15m':
-        dataPoints = 96;
-        interval = Duration(minutes: 15);
-        break;
-      case '30m':
-        dataPoints = 48;
-        interval = Duration(minutes: 30);
-        break;
-      case '1H':
-        dataPoints = 168;
-        interval = Duration(hours: 1);
-        break;
-      case '4H':
-        dataPoints = 42;
-        interval = Duration(hours: 4);
-        break;
-      case '1D':
-        dataPoints = 90;
-        interval = Duration(days: 1);
-        break;
-      case '1W':
-        dataPoints = 52;
-        interval = Duration(days: 7);
-        break;
-      case '1M':
-        dataPoints = 24;
-        interval = Duration(days: 30);
-        break;
-      default:
-        dataPoints = 60;
-        interval = Duration(days: 1);
-    }
-
-    // Generate crypto-specific price movements (more volatile than stocks)
-    double currentPrice = basePrice;
-    
-    for (int i = dataPoints; i >= 0; i--) {
-      final date = now.subtract(interval * i);
-      
-      // Crypto has higher volatility than stocks
-      final volatilityFactor = _getCryptoVolatilityForTimeframe(_selectedTimeframe);
-      final trendFactor = math.sin(i * 0.02) * 0.002; // Slightly larger trend
-      
-      // Crypto random walk with higher volatility
-      final randomChange = (math.Random().nextDouble() - 0.5) * volatilityFactor;
-      final meanReversion = (basePrice - currentPrice) * 0.001;
-      
-      currentPrice *= (1 + randomChange + trendFactor + meanReversion);
-      
-      // Generate realistic OHLC
-      final open = i == dataPoints ? basePrice : prices.isEmpty ? currentPrice : prices.last.close;
-      
-      // Higher intrabar volatility for crypto
-      final intrabarVolatility = volatilityFactor * 0.4;
-      final highVariation = math.Random().nextDouble() * intrabarVolatility * 0.6;
-      final lowVariation = math.Random().nextDouble() * intrabarVolatility * 0.6;
-      
-      final high = [open, currentPrice].reduce(math.max) * (1 + highVariation);
-      final low = [open, currentPrice].reduce(math.min) * (1 - lowVariation);
-      final close = currentPrice;
-      
-      // Ensure OHLC relationships
-      final validHigh = math.max(math.max(open, close), high);
-      final validLow = math.min(math.min(open, close), low);
-      
-      final volume = _generateRealisticCryptoVolume(i, dataPoints);
-      
-      prices.add(CryptoPrice(
-        timestamp: date,
-        open: open,
-        high: validHigh,
-        low: validLow,
-        close: close,
-        volume: volume,
-      ));
-    }
-    
-    return prices;
-  }
-
-  double _getCryptoVolatilityForTimeframe(String timeframe) {
-    // Crypto has higher volatility than traditional stocks
-    switch (timeframe) {
-      case '1m':
-        return 0.008; // 0.8%
-      case '5m':
-        return 0.015; // 1.5%
-      case '15m':
-        return 0.025; // 2.5%
-      case '30m':
-        return 0.035; // 3.5%
-      case '1H':
-        return 0.050; // 5%
-      case '4H':
-        return 0.080; // 8%
-      case '1D':
-        return 0.120; // 12%
-      case '1W':
-        return 0.200; // 20%
-      case '1M':
-        return 0.350; // 35%
-      default:
-        return 0.050;
-    }
-  }
-
-  double _generateRealisticCryptoVolume(int index, int totalPoints) {
-    final baseVolume = widget.crypto.totalVolume; // Default 1B
-    
-    // Crypto trading is 24/7, but still has patterns
-    final timeOfDay = (index % 24) / 24.0;
-    final peakHours = (timeOfDay > 0.3 && timeOfDay < 0.6) || (timeOfDay > 0.75 && timeOfDay < 0.9) ? 1.3 : 0.8;
-    
-    final randomFactor = 0.3 + (math.Random().nextDouble() * 2.0); // 0.3x to 2.3x
-    final cyclicalFactor = 1 + (math.sin(index * 0.15) * 0.5); // More cyclical variation
-    
-    return baseVolume * peakHours * randomFactor * cyclicalFactor;
   }
 
   // Add all the remaining methods from the stock chart details screen
@@ -965,23 +874,31 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           if ((details.scale - 1.0).abs() > 0.01) {
             _isScaling = true;
             _isDragging = false;
-            
+
             final newScale = (_baseScale * details.scale).clamp(0.5, 5.0);
-            final newVisiblePoints = (50 / newScale).round().clamp(10, priceHistory.length);
+            final newVisiblePoints =
+                _safeVisiblePoints((50 / newScale).round(), priceHistory.length);
             final centerIndex = _startIndex + (_visibleDataPoints / 2).round();
-            
+
             _currentScale = newScale;
             _visibleDataPoints = newVisiblePoints;
-            _startIndex = (centerIndex - (_visibleDataPoints / 2).round())
-                .clamp(0, priceHistory.length - _visibleDataPoints);
+            _startIndex = _safeStartIndex(
+              centerIndex - (newVisiblePoints / 2).round(),
+              priceHistory.length,
+              newVisiblePoints,
+            );
           } else if (!_isScaling) {
             _isDragging = true;
-            
+
             final deltaX = details.focalPoint.dx - _lastPanX;
             final panSensitivity = _visibleDataPoints / 300;
             final indexChange = (-deltaX * panSensitivity).round();
-            
-            _startIndex = (_startIndex + indexChange).clamp(0, priceHistory.length - _visibleDataPoints);
+
+            _startIndex = _safeStartIndex(
+              _startIndex + indexChange,
+              priceHistory.length,
+              _visibleDataPoints,
+            );
             _lastPanX = details.focalPoint.dx;
           }
         });
@@ -1246,6 +1163,22 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ),
               ),
             ),
+            SizedBox(height: 16.h),
+            OutlinedButton.icon(
+              onPressed: _loadChartData,
+              icon: Icon(Icons.refresh_rounded,
+                  color: _getCryptoColor(), size: 18.sp),
+              label: Text('Retry',
+                  style: GoogleFonts.inter(
+                      color: _getCryptoColor(),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: _getCryptoColor()),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r)),
+              ),
+            ),
           ],
         ),
       ),
@@ -1497,11 +1430,42 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     return zoomedWidth.clamp(2.0, 20.0);
   }
 
-  // Continue implementing all the remaining methods...
+  // Safe visible-window helpers. The old code called `x.clamp(lo, hi)` where hi
+  // could fall BELOW lo (e.g. clamp(10, length) when length < 10, or
+  // clamp(0, length - visiblePoints) when visiblePoints > length). Dart's
+  // num.clamp asserts lo <= hi and THROWS otherwise — which, fired mid-swipe
+  // inside setState, was the uncaught exception that blanked the chart on
+  // release builds (physical phones). These never invert their bounds.
+
+  /// Clamp the number of visible candles to a sane, in-range value.
+  int _safeVisiblePoints(int desired, int len) {
+    if (len <= 0) return 0;
+    final lo = len < 10 ? len : 10; // never demand more candles than exist
+    if (desired < lo) return lo;
+    if (desired > len) return len;
+    return desired;
+  }
+
+  /// Clamp the left edge of the window so [start, start+visiblePoints] always
+  /// stays inside the data. Never throws even when visiblePoints >= len.
+  int _safeStartIndex(int desired, int len, int visiblePoints) {
+    final maxStart = len - visiblePoints;
+    if (maxStart <= 0) return 0;
+    if (desired < 0) return 0;
+    if (desired > maxStart) return maxStart;
+    return desired;
+  }
+
   List<CryptoPrice> _getVisibleData(List<CryptoPrice> priceHistory) {
     if (priceHistory.isEmpty) return [];
-    final endIndex = (_startIndex + _visibleDataPoints).clamp(0, priceHistory.length);
-    return priceHistory.sublist(_startIndex, endIndex);
+    final len = priceHistory.length;
+    var start = _startIndex;
+    if (start < 0) start = 0;
+    if (start > len) start = len;
+    var end = start + _visibleDataPoints;
+    if (end > len) end = len;
+    if (end < start) end = start;
+    return priceHistory.sublist(start, end);
   }
 
   // Converts crypto OHLC bars to the StockPrice shape the shared chart
@@ -2052,10 +2016,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                   final isSelected = _selectedTimeframe == timeframe;
                   return GestureDetector(
           onTap: () {
-            setState(() {
-                        _selectedTimeframe = timeframe;
-                      });
-                      _loadChartData();
+                      _changeTimeframe(timeframe);
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -2253,7 +2214,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 Row(
                   children: [
                     Text(
-                                '\$${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
+                                '${CurrencySymbols.currentSymbol}${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                                   fontSize: 24.sp,
@@ -2487,9 +2448,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                   '${pctChange >= 0 ? '+' : ''}${pctChange.toStringAsFixed(2)}%',
                   pctChange >= 0 ? Colors.green : Colors.red),
               _analysisRow(
-                  'High', hi.toStringAsFixed(hi < 1 ? 6 : 2), Colors.white),
+                  'High', '${CurrencySymbols.currentSymbol}${hi.toStringAsFixed(hi < 1 ? 6 : 2)}', Colors.white),
               _analysisRow(
-                  'Low', lo.toStringAsFixed(lo < 1 ? 6 : 2), Colors.white),
+                  'Low', '${CurrencySymbols.currentSymbol}${lo.toStringAsFixed(lo < 1 ? 6 : 2)}', Colors.white),
               _analysisRow('Volume', vol.toStringAsFixed(0), Colors.white),
               _analysisRow('Volatility (stddev of returns)',
                   '${volPct.toStringAsFixed(2)}%', Colors.amber),

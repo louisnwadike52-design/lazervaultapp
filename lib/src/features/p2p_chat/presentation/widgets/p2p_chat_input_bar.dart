@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,13 +13,25 @@ class P2PChatInputBar extends StatefulWidget {
 
   /// Called when a media file (image or voice note) is ready to be sent.
   /// [mediaType] is 'image' | 'voice'. [contentType] is the MIME type.
+  /// [caption] is an optional text the user attached to an image before sending.
   final Function(
     String mediaType,
     String localFilePath,
-    String contentType,
-  )? onSendMedia;
+    String contentType, [
+    String? caption,
+  ])? onSendMedia;
   final Function(bool isTyping)? onTypingChanged;
   final bool enabled;
+
+  /// When non-null the composer preloads this text (edit mode). Changing the
+  /// value re-seeds the field; clearing it (null) empties the field.
+  final String? prefill;
+
+  /// When true, the send button commits an edit (checkmark) instead of sending.
+  final bool isEditing;
+
+  /// Tapped the quick emoji-burst button (fires a floating ❤️ over the chat).
+  final void Function(String emoji)? onEmojiBurst;
 
   const P2PChatInputBar({
     super.key,
@@ -26,6 +39,9 @@ class P2PChatInputBar extends StatefulWidget {
     this.onSendMedia,
     this.onTypingChanged,
     this.enabled = true,
+    this.prefill,
+    this.isEditing = false,
+    this.onEmojiBurst,
   });
 
   @override
@@ -52,6 +68,29 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
+    if (widget.prefill != null && widget.prefill!.isNotEmpty) {
+      _controller.text = widget.prefill!;
+      _controller.selection =
+          TextSelection.collapsed(offset: _controller.text.length);
+      _hasText = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant P2PChatInputBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Entering/leaving edit mode re-seeds the field with the message being
+    // edited (or clears it when edit is cancelled).
+    if (widget.prefill != oldWidget.prefill) {
+      final text = widget.prefill ?? '';
+      _controller.text = text;
+      _controller.selection = TextSelection.collapsed(offset: text.length);
+      if (widget.prefill != null && widget.prefill!.isNotEmpty) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _focusNode.requestFocus());
+      }
+      setState(() => _hasText = text.trim().isNotEmpty);
+    }
   }
 
   void _onTextChanged() {
@@ -119,10 +158,21 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
         imageQuality: 85,
       );
       if (picked != null && mounted) {
+        // Preview the picked image + let the user attach a caption before it
+        // actually sends (WhatsApp-style). Returns the caption ('' allowed) or
+        // null if the user backed out.
+        final caption = await Navigator.of(context).push<String?>(
+          MaterialPageRoute(
+            builder: (_) => _ImageCaptionPreview(imagePath: picked.path),
+            fullscreenDialog: true,
+          ),
+        );
+        if (caption == null || !mounted) return; // cancelled
         widget.onSendMedia?.call(
           'image',
           picked.path,
           picked.mimeType ?? _inferImageMime(picked.path),
+          caption.trim().isEmpty ? null : caption.trim(),
         );
       }
     } catch (_) {
@@ -212,10 +262,32 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
     final dir = await getTemporaryDirectory();
     final path =
         '${dir.path}/p2p_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-    await _audioRecorder.start(
-      const RecordConfig(encoder: AudioEncoder.aacLc),
-      path: path,
-    );
+    try {
+      // Mono capture is correct for voice notes and — unlike the package
+      // default of stereo @ 44.1kHz — is universally supported by Android's
+      // AudioRecord. Stereo silently fails to initialise on most Android
+      // mics/emulators, which recorded an empty clip and made voice notes
+      // "not send" on Android while iOS (lenient AVAudioRecorder) worked.
+      await _audioRecorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          numChannels: 1,
+          sampleRate: 44100,
+          bitRate: 128000,
+        ),
+        path: path,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not start recording. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+      }
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _isRecording = true;
@@ -245,6 +317,24 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
       });
     }
     if (send && path != null && mounted && durationMs > 500) {
+      // Guard against a silently-failed capture producing an empty/corrupt
+      // clip: never hand an empty file to the upload/send pipeline.
+      var hasAudio = false;
+      try {
+        hasAudio = await File(path).length() > 1024;
+      } catch (_) {
+        hasAudio = false;
+      }
+      if (!mounted) return;
+      if (!hasAudio) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not record audio. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
       widget.onSendMedia?.call('voice', path, 'audio/mp4');
     }
   }
@@ -324,25 +414,32 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
             ),
           ),
           SizedBox(width: 8.w),
-          // Send button
-          GestureDetector(
-            onTap: _hasText && widget.enabled ? _onSend : null,
-            child: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _hasText
-                    ? const Color(0xFF3B82F6)
-                    : const Color(0xFF2D2D2D),
+          // Trailing action: SEND (or ✓ when editing) with text; otherwise a
+          // heart button that fires an ephemeral floating-emoji burst.
+          if (_hasText)
+            GestureDetector(
+              onTap: widget.enabled ? _onSend : null,
+              child: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF4E03D0), // brand purple
+                ),
+                child: Icon(
+                  widget.isEditing ? Icons.check_rounded : Icons.send,
+                  color: Colors.white,
+                  size: 20.w,
+                ),
               ),
-              child: Icon(
-                Icons.send,
-                color: _hasText ? Colors.white : const Color(0xFF9CA3AF),
-                size: 20.w,
-              ),
+            )
+          else
+            _buildCircleButton(
+              icon: Icons.favorite_rounded,
+              onTap: widget.enabled && widget.onEmojiBurst != null
+                  ? () => widget.onEmojiBurst!('❤️')
+                  : null,
             ),
-          ),
         ],
     );
   }
@@ -428,6 +525,103 @@ class _P2PChatInputBarState extends State<P2PChatInputBar> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Full-screen preview shown after picking an image (camera or gallery) so the
+/// user can attach a caption before sending (WhatsApp/iMessage-style). Pops the
+/// caption text (possibly empty) on Send, or null on back/cancel.
+class _ImageCaptionPreview extends StatefulWidget {
+  final String imagePath;
+  const _ImageCaptionPreview({required this.imagePath});
+
+  @override
+  State<_ImageCaptionPreview> createState() => _ImageCaptionPreviewState();
+}
+
+class _ImageCaptionPreviewState extends State<_ImageCaptionPreview> {
+  final TextEditingController _caption = TextEditingController();
+
+  @override
+  void dispose() {
+    _caption.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(), // null = cancel
+        ),
+        title: Text('Send photo',
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp)),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: InteractiveViewer(
+                child: Image.file(File(widget.imagePath), fit: BoxFit.contain),
+              ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 8.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _caption,
+                      autofocus: false,
+                      minLines: 1,
+                      maxLines: 4,
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontSize: 14.sp),
+                      decoration: InputDecoration(
+                        hintText: 'Add a caption…',
+                        hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                        filled: true,
+                        fillColor: const Color(0xFF1F1F1F),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24.r),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(_caption.text),
+                    child: Container(
+                      width: 48.w,
+                      height: 48.w,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF7C3AED),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.send_rounded,
+                          color: Colors.white, size: 22.sp),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

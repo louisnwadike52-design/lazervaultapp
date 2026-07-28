@@ -47,6 +47,19 @@ class _DataAutoRechargeScreenState extends State<DataAutoRechargeScreen> {
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white)),
+        actions: [
+          // The confirmation screen's rollover sheet also offers a second
+          // mechanism — "Renew before expiry" (ActiveSubscription.auto_renew
+          // _enabled) — which has no other entry point anywhere in the app.
+          // Surface it here since it's the sibling "keep my data alive"
+          // surface to this recurring-schedule list.
+          IconButton(
+            tooltip: 'Non-expiring data',
+            onPressed: () => Get.toNamed(AppRoutes.autoRenewManagement),
+            icon: Icon(Icons.all_inclusive,
+                color: const Color(0xFF10B981), size: 22.sp),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

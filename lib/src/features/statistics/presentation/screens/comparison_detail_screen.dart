@@ -263,10 +263,10 @@ class ComparisonDetailScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: Colors.blue[300]!.withValues(alpha: 0.2),
+              color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Icon(icon, color: Colors.blue[300], size: 18.r),
+            child: Icon(icon, color: const Color(0xFFA78BFA), size: 18.r),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -285,13 +285,13 @@ class ComparisonDetailScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: (bothZero ? Colors.grey : Colors.blue)[300]!.withValues(alpha: 0.2),
+              color: (bothZero ? Colors.grey[300]! : const Color(0xFFA78BFA)).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
               changeText,
               style: TextStyle(
-                color: bothZero ? Colors.white60 : Colors.blue[300],
+                color: bothZero ? Colors.white60 : const Color(0xFFA78BFA),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),

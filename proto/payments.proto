@@ -237,7 +237,21 @@ service PaymentsService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Verify Bank Account";
-      description: "Verify bank account and retrieve account holder name using Paystack";
+      description: "Verify bank account and retrieve account holder name using the admin-selected provider (Paystack/Mono/Flutterwave)";
+      tags: ["Recipients"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Suggest matching bank(s) for a bare account number (account-number-first UX).
+  rpc SuggestBankAccounts(SuggestBankAccountsRequest) returns (SuggestBankAccountsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/recipients/suggest-account"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Suggest Bank Accounts";
+      description: "Given a 10-digit account number, return the bank(s) whose NUBAN check digit matches and whose name resolves, using the admin-selected verification provider";
       tags: ["Recipients"];
       security: { security_requirement: { key: "bearer"; } };
     };
@@ -1153,13 +1167,35 @@ message VerifyBankAccountRequest {
 message VerifyBankAccountResponse {
   bool success = 1;
   string account_number = 2;
-  string account_name = 3;             // Account holder name from Paystack
+  string account_name = 3;             // Account holder name (normalized across providers)
   string bank_name = 4;                // Bank name
   string bank_code = 5;                // Bank code
   string verification_status = 6;      // "verified", "unverified", "pending"
   string error_code = 7;               // Error code if verification failed
   string error_message = 8;            // Error message if verification failed
   string user_message = 9;             // User-friendly error message
+  string provider = 10;                // Active provider that resolved (paystack/mono/flutterwave)
+}
+
+// ===== SUGGEST BANK ACCOUNTS (account-number-first UX) =====
+
+message SuggestBankAccountsRequest {
+  string account_number = 1;           // 10-digit NUBAN
+  string country = 2;                  // Country code (default: "NG")
+}
+
+message BankAccountMatch {
+  string bank_code = 1;                // Bank code in the ACTIVE provider's scheme
+  string bank_name = 2;                // Bank display name
+  string account_name = 3;             // Resolved account holder name
+  string account_number = 4;           // Echoed account number
+}
+
+message SuggestBankAccountsResponse {
+  bool success = 1;
+  repeated BankAccountMatch matches = 2;
+  string provider = 3;                 // Active provider used for resolution
+  string error_message = 4;
 }
 
 // ===== TRANSFER SUCCESS PREDICTION (informational, read-only) =====

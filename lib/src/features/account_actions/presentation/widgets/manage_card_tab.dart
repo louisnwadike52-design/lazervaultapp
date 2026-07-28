@@ -224,12 +224,12 @@ class ManageCardTab extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
                   icon,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   size: 20.sp,
                 ),
               ),
@@ -421,7 +421,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Freeze',
               style: TextStyle(
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4E03D0),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -755,7 +755,7 @@ class ManageCardTab extends StatelessWidget {
           width: 16.w,
           height: 16.w,
           decoration: const BoxDecoration(
-            color: Color(0xFF6366F1),
+            color: Color(0xFF4E03D0),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -816,7 +816,7 @@ class ManageCardTab extends StatelessWidget {
           children: [
             Icon(
               Icons.fingerprint,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF4E03D0),
               size: 48.sp,
             ),
             SizedBox(height: 16.h),
@@ -906,7 +906,7 @@ class ManageCardTab extends StatelessWidget {
                   'View',
                   style: TextStyle(
                     color: isPinValid
-                        ? const Color(0xFF6366F1)
+                        ? const Color(0xFF4E03D0)
                         : const Color(0xFFD1D5DB),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -953,7 +953,7 @@ class ManageCardTab extends StatelessWidget {
           children: [
             Icon(
               Icons.fingerprint,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF4E03D0),
               size: 48.sp,
             ),
             SizedBox(height: 16.h),
@@ -1043,7 +1043,7 @@ class ManageCardTab extends StatelessWidget {
                   'View',
                   style: TextStyle(
                     color: isPinValid
-                        ? const Color(0xFF6366F1)
+                        ? const Color(0xFF4E03D0)
                         : const Color(0xFFD1D5DB),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,

@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/app_activity_bus.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import '../domain/entities/microservice_chat_message_entity.dart';
@@ -24,11 +26,24 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
   final String sourceContext;
   final bool isDirect;
 
+  /// Scoped context seeded into the round-tripped entities on init — used by
+  /// the P2P-chat assistant to pin the agent to one conversation
+  /// (conversation_id / peer_user_id). Null for normal service chats.
+  final Map<String, dynamic>? seedEntities;
+
   List<MicroserviceChatMessageEntity> _currentMessages = [];
   late String _sessionId;
 
   /// Entity storage for direct chat round-tripping.
   Map<String, dynamic> _entities = {};
+
+  /// Immutable scoping context (e.g. P2P `conversation_id` / `peer_user_id`).
+  /// Unlike normal entities — which the agent OWNS and replaces every turn —
+  /// these fix WHICH conversation the assistant is scoped to and must ride
+  /// along on EVERY outbound turn, even after the agent returns entities that
+  /// omit them. Captured once from [seedEntities]; always merged in on send
+  /// and re-applied after each response replaces [_entities].
+  Map<String, dynamic> _scopeEntities = {};
 
   /// Guard against concurrent sendMessage calls from rapid taps.
   bool _isSending = false;
@@ -41,7 +56,15 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     required this.authCubit,
     required this.sourceContext,
     this.isDirect = false,
+    this.seedEntities,
+    this.sessionScopeId,
   }) : super(const MicroserviceChatInitial());
+
+  /// Optional per-instance scope (e.g. a P2P conversation id) folded into the
+  /// session id so each scope keeps its OWN session + persisted history. Two
+  /// P2P chats with the same source_context would otherwise share one session
+  /// and leak each other's history.
+  final String? sessionScopeId;
 
   /// Initialize chat with a deterministic or provided session ID.
   /// Includes locale in session_id so each locale gets its own session.
@@ -52,14 +75,29 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     } else {
       final authState = authCubit.state;
       final prefix = isDirect ? 'direct' : 'svc';
+      // Per-scope suffix keeps each P2P conversation's AI session + history
+      // separate (else all `p2p_chat` chats collide on one session id).
+      final scope = (sessionScopeId != null && sessionScopeId!.isNotEmpty)
+          ? '_${sessionScopeId!}'
+          : '';
       if (authState is AuthenticationSuccess) {
-        _sessionId = '${prefix}_${authState.profile.user.id}_${sourceContext}_$locale';
+        _sessionId =
+            '${prefix}_${authState.profile.user.id}_${sourceContext}$scope\_$locale';
       } else {
-        _sessionId = '${prefix}_unknown_${sourceContext}_$locale';
+        _sessionId = '${prefix}_unknown_${sourceContext}$scope\_$locale';
       }
     }
     _currentMessages = [];
-    _entities = {};
+    // Seed scoped context (P2P conversation id / peer) so it round-trips to the
+    // agent as entities from the very first message.
+    _entities = seedEntities != null
+        ? Map<String, dynamic>.from(seedEntities!)
+        : {};
+    // Capture the seed as immutable scope so it survives the agent's
+    // replace-every-turn entity ownership (see [_scopeEntities]).
+    _scopeEntities = seedEntities != null
+        ? Map<String, dynamic>.from(seedEntities!)
+        : {};
     _isSending = false;
     emit(MicroserviceChatInitial(messages: _currentMessages));
   }
@@ -125,6 +163,9 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty || _isSending) return;
     _isSending = true;
+    // Active chatting is engagement — don't let inactivity auto-logout fire
+    // mid-conversation.
+    AppActivityBus.instance.ping();
 
     try {
       final authState = authCubit.state;
@@ -147,14 +188,41 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
       emit(MicroserviceChatMessageLoading(messages: List.from(_currentMessages)));
 
-      final locale = serviceLocator<LocaleManager>().currentLocale;
+      final localeManager = serviceLocator<LocaleManager>();
+      final locale = localeManager.currentLocale;
+      // Resolve the ACTIVE account + ACTIVE locale so the agent operates on the
+      // wallet/currency the user is currently looking at — not a JWT-default or
+      // a stale user-profile value. The active account is the source of truth on
+      // every service screen (the dashboard carousel drives AccountManager); the
+      // active locale/country/currency come from LocaleManager (region switcher).
+      // Fall back to the user profile only when the active values are unset.
+      final activeAccountId =
+          serviceLocator<AccountManager>().activeAccountId ?? '';
+      final activeCountry = localeManager.currentCountry.isNotEmpty
+          ? localeManager.currentCountry
+          : (authState.profile.user.country ?? '');
+      final activeCurrency = localeManager.currentCurrency.isNotEmpty
+          ? localeManager.currentCurrency
+          : (authState.profile.user.currency ?? '');
 
       // Use direct path if enabled and use case available
       if (isDirect && directMessageUseCase != null) {
         // For PIN messages, send empty entities to let Go proxy use its
         // authoritative server-side session entities. This prevents desync
         // where Flutter's local _entities are stale (e.g. after cancel).
-        final entitiesToSend = isPinText(text.trim()) ? <String, dynamic>{} : _entities;
+        // For PIN messages, send only the scope (no stale flow entities) so the
+        // Go proxy uses its authoritative server-side session for the transfer;
+        // scope keys still ride along so the turn stays conversation-bound.
+        // Otherwise send accumulated entities. Scope is ALWAYS merged in — it
+        // must never be dropped by the agent's replace-every-turn ownership.
+        final entitiesToSend = <String, dynamic>{
+          if (isPinText(text.trim()))
+            ..._scopeEntities
+          else ...{
+            ..._entities,
+            ..._scopeEntities,
+          },
+        };
 
         final result = await directMessageUseCase!(
           message: text,
@@ -163,9 +231,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           accessToken: '',
           sourceContext: sourceContext,
           entities: entitiesToSend,
-          accountId: '',  // Resolved from JWT by Go gateway
-          userCountry: authState.profile.user.country ?? '',
-          currency: authState.profile.user.currency ?? '',
+          // Active account wins; Go gateway still falls back to JWT if empty.
+          accountId: activeAccountId,
+          userCountry: activeCountry,
+          currency: activeCurrency,
           language: 'en',
           locale: locale,
         );
@@ -182,6 +251,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // REPLACE, not merge — agent is source of truth
             // Always replace, even with empty map (agent clears state after completed operations)
             _entities = Map<String, dynamic>.from(chatResponse.entities);
+            // Re-apply immutable scope: the agent may omit conversation_id /
+            // peer_user_id from its returned entities, but the assistant must
+            // stay bound to this conversation on the next turn.
+            _entities.addAll(_scopeEntities);
 
             // Extract transient receipt_data from entities (not round-tripped)
             final receiptData = _entities.remove('_receipt_data');
@@ -293,6 +366,19 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             messageMetadata['receipt_card'] = receiptCard;
             _invalidateTransferRelatedCaches();
           }
+          // AI "jump to message": the locate tool returns deterministic anchors
+          // under the TRANSIENT `_jump_to_messages` key. Remove it (so it never
+          // persists into a later turn and re-shows a stale "Show in chat") and
+          // carry it (+ the conversation id) on THIS message only.
+          final jumpAnchors = responseEntities.remove('_jump_to_messages');
+          if (jumpAnchors is List && jumpAnchors.isNotEmpty) {
+            messageMetadata['jump_to_messages'] = jumpAnchors;
+            final cid = responseEntities['conversation_id'] ??
+                _entities['conversation_id'];
+            if (cid is String && cid.isNotEmpty) {
+              messageMetadata['jump_conversation_id'] = cid;
+            }
+          }
 
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,
@@ -376,6 +462,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // Re-use the same extraction path the regular sendMessage
             // walks — emit a bot message with extracted metadata.
             _entities = Map<String, dynamic>.from(chatResponse.entities);
+            _entities.addAll(_scopeEntities); // keep conversation scope bound
             final receiptData = _entities.remove('_receipt_data');
             final receiptCard = _entities.remove('_receipt_card_pending');
             final pinPrompt = _entities.remove('_pin_prompt_pending');

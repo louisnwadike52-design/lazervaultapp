@@ -68,6 +68,13 @@ abstract class IGiftCardRepository {
   /// pre-filtered to available==true. Drives the sell-flow payout picker.
   Future<Either<Failure, List<PayoutMethodEntity>>> getPayoutMethods();
 
+  /// Returns the server's currently-active sell provider + a human
+  /// description. The backend is the source of truth (driven by the
+  /// `giftcards` feature flag / system_settings), so the sell flow must
+  /// reflect whatever provider will actually execute the sale — never a
+  /// hardcoded value. Map: `{'provider': slug, 'description': text}`.
+  Future<Either<Failure, Map<String, dynamic>>> getActiveSellProvider();
+
   Future<Either<Failure, GiftCardSale>> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -85,6 +92,10 @@ abstract class IGiftCardRepository {
     String? cardCode,
     /// Required to be true; backend rejects with FailedPrecondition otherwise.
     bool disclaimerAccepted = false,
+    /// Required to be true; the "Verify balance" step's attestation that the
+    /// user declared the card balance and accepted the liability terms.
+    /// Backend rejects with FailedPrecondition otherwise.
+    bool balanceAttested = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -117,6 +128,4 @@ abstract class IGiftCardRepository {
   Future<Either<Failure, Map<String, dynamic>>> extractCardDetails({
     required List<String> imageUrls,
   });
-
-  Future<Either<Failure, List<Settlement>>> getSettlementHistory();
 }

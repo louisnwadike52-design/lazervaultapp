@@ -406,6 +406,22 @@ class _DirectPayProgressBottomsheetState
     }
   }
 
+  /// Dismiss the sheet RELIABLY. `controller.hide()` only collapses the content
+  /// to SizedBox.shrink(); the showModalBottomSheet route + its barrier stay
+  /// mounted and keep eating touches. So the SHEET owns popping its own route
+  /// here — never relying on the host callback to do it, because a callback can
+  /// legitimately no-op (e.g. onExit → _navigateToDashboard early-returns when
+  /// the dashboard redirect already ran) and leave the barrier stuck. The
+  /// callback is then only responsible for post-dismiss side effects (navigate /
+  /// retry / KYC). The host's whenComplete resets its _isProgressSheetShown flag
+  /// when the route pops, so the sheet can always reopen.
+  void _dismiss(BuildContext context, [VoidCallback? then]) {
+    widget.controller.hide();
+    final nav = Navigator.of(context);
+    if (nav.canPop()) nav.pop();
+    if (then != null) then();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.controller.isVisible) {
@@ -435,17 +451,41 @@ class _DirectPayProgressBottomsheetState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
-              Container(
-                margin: EdgeInsets.only(top: 12.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2.r),
+              // Top row: centered drag handle + a cancel (X). The sheet is
+              // isDismissible:false / enableDrag:false, so this X is the user's
+              // only way to bail out of a stuck/long-running step.
+              Padding(
+                padding: EdgeInsets.only(top: 8.h, left: 8.w, right: 4.w),
+                child: Row(
+                  children: [
+                    SizedBox(width: 40.w), // balances the X so the handle stays centered
+                    Expanded(
+                      child: Center(
+                        child: Container(
+                          margin: EdgeInsets.only(top: 4.h),
+                          width: 40.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close,
+                          color: Colors.white.withValues(alpha: 0.75),
+                          size: 22.sp),
+                      tooltip: 'Close',
+                      // The sheet pops its OWN route (see _dismiss); the host
+                      // callback only runs post-dismiss side effects.
+                      onPressed: () =>
+                          _dismiss(context, widget.onDismiss ?? widget.onExit),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 12.h),
 
               // Progress indicator
               _buildProgressSteps(stage),
@@ -573,10 +613,7 @@ class _DirectPayProgressBottomsheetState
                 _buildPrimaryButton(
                   label: 'Go to Dashboard',
                   color: const Color(0xFF10B981),
-                  onPressed: () {
-                    widget.controller.hide();
-                    if (widget.onSuccess != null) widget.onSuccess!();
-                  },
+                  onPressed: () => _dismiss(context, widget.onSuccess),
                 )
               else if (stage == DirectPayStage.failed &&
                   widget.controller.kycRequired) ...[
@@ -586,14 +623,8 @@ class _DirectPayProgressBottomsheetState
                 _buildPrimaryButton(
                   label: 'Verify Now',
                   color: const Color.fromARGB(255, 78, 3, 208),
-                  onPressed: () {
-                    widget.controller.hide();
-                    if (widget.onKycVerify != null) {
-                      widget.onKycVerify!();
-                    } else if (widget.onDismiss != null) {
-                      widget.onDismiss!();
-                    }
-                  },
+                  onPressed: () => _dismiss(
+                      context, widget.onKycVerify ?? widget.onDismiss),
                 ),
                 SizedBox(height: 8.h),
                 Padding(
@@ -601,16 +632,8 @@ class _DirectPayProgressBottomsheetState
                   child: SizedBox(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () {
-                        widget.controller.hide();
-                        // Mirror the success "Go to Dashboard"/close path: just
-                        // dismiss cleanly without launching anything.
-                        if (widget.onExit != null) {
-                          widget.onExit!();
-                        } else if (widget.onDismiss != null) {
-                          widget.onDismiss!();
-                        }
-                      },
+                      onPressed: () =>
+                          _dismiss(context, widget.onExit ?? widget.onDismiss),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white.withValues(alpha: 0.7),
                         padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -636,19 +659,14 @@ class _DirectPayProgressBottomsheetState
                   _buildPrimaryButton(
                     label: 'Try Again',
                     color: const Color.fromARGB(255, 78, 3, 208),
-                    onPressed: () {
-                      widget.controller.hide();
-                      widget.onRetry!();
-                    },
+                    onPressed: () => _dismiss(context, widget.onRetry),
                   )
                 else
                   _buildPrimaryButton(
                     label: 'Edit Deposit',
                     color: Colors.grey.shade700,
-                    onPressed: () {
-                      widget.controller.hide();
-                      if (widget.onDismiss != null) widget.onDismiss!();
-                    },
+                    onPressed: () =>
+                        _dismiss(context, widget.onDismiss ?? widget.onExit),
                   ),
                 SizedBox(height: 8.h),
                 // Secondary: bail out to the dashboard.
@@ -657,14 +675,8 @@ class _DirectPayProgressBottomsheetState
                   child: SizedBox(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () {
-                        widget.controller.hide();
-                        if (widget.onExit != null) {
-                          widget.onExit!();
-                        } else if (widget.onDismiss != null) {
-                          widget.onDismiss!();
-                        }
-                      },
+                      onPressed: () =>
+                          _dismiss(context, widget.onExit ?? widget.onDismiss),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white.withValues(alpha: 0.7),
                         padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -843,22 +855,14 @@ void showDirectPayProgressOverlay({
     isDismissible: false,
     enableDrag: false,
     isScrollControlled: true,
+    // The sheet pops its OWN route (DirectPayProgressBottomsheet._dismiss), so
+    // these callbacks are post-dismiss side effects only — they must NOT pop
+    // (double-pop would remove the wrong route).
     builder: (context) => DirectPayProgressBottomsheet(
       controller: controller,
-      onSuccess: () {
-        Navigator.of(context).pop();
-        if (onSuccess != null) onSuccess();
-      },
-      onDismiss: () {
-        Navigator.of(context).pop();
-        if (onDismiss != null) onDismiss();
-      },
-      onRetry: onRetry == null
-          ? null
-          : () {
-              if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-              onRetry();
-            },
+      onSuccess: onSuccess,
+      onDismiss: onDismiss,
+      onRetry: onRetry,
       onExit: onExit,
     ),
   );

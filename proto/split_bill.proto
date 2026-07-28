@@ -83,6 +83,8 @@ enum SplitBillParticipantStatus {
   SPLIT_BILL_PARTICIPANT_STATUS_PENDING = 0;
   SPLIT_BILL_PARTICIPANT_STATUS_PAID = 1;
   SPLIT_BILL_PARTICIPANT_STATUS_DECLINED = 2;
+  // IN_PROGRESS: external-bank payout initiated, provider not yet confirmed.
+  SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS = 3;
 }
 
 enum SplitMethod {
@@ -119,6 +121,7 @@ message SplitBill {
   string receiver_account_masked = 20;  // masked account no. (external) or @username (internal)
   string settlement_status = 21;        // not_applicable|pending|settling|settled|failed
   double withdrawal_fee = 22;           // external payout fee (major units), folded into the split
+  string title = 23;                    // required headline, ≤100 chars; primary label everywhere
 }
 
 message SplitBillParticipant {
@@ -136,18 +139,22 @@ message SplitBillParticipant {
 }
 
 message SplitBillParticipantInput {
-  string username = 1;
+  string username = 1;        // optional; display / legacy resolution only
   double amount = 2;
   double percentage = 3;
+  string user_id = 4;         // preferred stable key (from the search result)
+  string display_name = 5;    // display only (stored as-is)
 }
 
 // ReceiverInput selects where co-payers' money goes. When absent, the receiver
 // defaults to the creator (legacy behaviour).
 message ReceiverInput {
   string type = 1;            // "internal_user" | "external_bank"
-  string username = 2;        // internal_user: resolved to user_id + primary account
+  string username = 2;        // optional; display / legacy resolution only
   string bank_code = 3;       // external_bank
   string account_number = 4;  // external_bank
+  string user_id = 5;         // internal_user: preferred stable key; account resolved server-side
+  string display_name = 6;    // internal_user: display only
 }
 
 message SplitBillTransaction {
@@ -178,6 +185,7 @@ message CreateSplitBillRequest {
   repeated SplitBillParticipantInput participants = 6;
   ReceiverInput receiver = 7;        // where co-payers pay; absent → creator (legacy)
   bool include_self_as_copayer = 8;  // organizer is also a co-payer (creates an is_creator row)
+  string title = 9;                  // required headline, 1–100 chars; primary label everywhere
 }
 
 message CreateSplitBillResponse {
@@ -243,6 +251,9 @@ message DeclineSplitBillShareResponse {
 
 message SendSplitBillReminderRequest {
   string split_bill_id = 1;
+  // Optional: remind only these participants (by user id). Empty → remind ALL
+  // unpaid (pending) participants. Non-pending ids in the list are ignored.
+  repeated string participant_user_ids = 2;
 }
 
 message SendSplitBillReminderResponse {

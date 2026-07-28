@@ -62,16 +62,55 @@ class EndpointRegistry {
     // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
     'dashboard_cards_section_visible',
     'voice_chat_assistant_section_visible',
+    // African voice-language master gate (English-only when off). Cached so the
+    // language picker can hide African languages even on the offline fallback path.
+    'voice_african_languages_enabled',
     // Send Funds flow config (admin-toggled). Cached after login; the send-funds
     // flow reads these via FeatureFlags for instant, poor-network-safe routing.
     'send_funds_short_flow_enabled',
     'send_funds_pin_required',
+    // Batch Transfer flow config (admin-toggled). Same internal poll; read via
+    // FeatureFlags for instant, poor-network-safe short/long routing.
+    'batch_transfer_short_flow_enabled',
+    'batch_transfer_pin_required',
+    // Scan Account Details (OCR) config (admin-toggled). Gates the scan quick
+    // action + whether scanned identifiers resolve to internal users.
+    'scan_account_details_enabled',
+    'scan_resolve_users_enabled',
     // Insurance hosted-webview entry points (admin-toggled). The toggle gates
     // whether Buy + Manage open MyCover's hosted webview; the link is the
     // universal base the app composes the per-user URL from. Read via
     // FeatureFlags at boot.
     'insurance_hosted_entrypoints_enabled',
     'insurance_hosted_link',
+    // Airtime landing tabs (admin-toggled). Show/hide Buy / International / Sell.
+    // Buy + International default ON; Sell (airtime-to-cash) default OFF. Read via
+    // FeatureFlags so the airtime screen renders only the enabled tabs.
+    'airtime_tab_buy_enabled',
+    'airtime_tab_international_enabled',
+    'airtime_tab_sell_enabled',
+    // Platform authentication mode (email_password | phone_passcode). Cached
+    // from the same internal settings poll and read via FeatureFlags at boot to
+    // pick the signup/login flow.
+    'auth_mode',
+    // Onboarding verification requirement toggles (bool) — read via FeatureFlags
+    // to decide whether the verify-email/phone step is skippable.
+    'email_verification_required',
+    'phone_verification_required',
+    // App auto-update (store version check). Per-platform latest/min build
+    // numbers + store URLs + master toggle + release notes. Cached here so the
+    // version check is instant + offline-safe; AppUpdateService reads them via
+    // FeatureFlags and compares against the running PackageInfo build number.
+    'app_update_enabled',
+    'app_latest_version_ios',
+    'app_latest_build_ios',
+    'app_min_build_ios',
+    'app_store_url_ios',
+    'app_latest_version_android',
+    'app_latest_build_android',
+    'app_min_build_android',
+    'app_store_url_android',
+    'app_update_notes',
   };
 
   /// Snapshot of the cached non-`url_` admin keys (feature flags + runtime
@@ -294,6 +333,14 @@ class EndpointRegistry {
       'url_ws_contactless':       '$wssBase/ws/contactless',
       'url_storage':              '$httpsBase/v1/storage',
       'url_webhook_base':         '$httpsBase/webhooks',
+      // Client telemetry ingest — the telemetry-collector service translates
+      // batched app events into Prometheus metrics. Best-effort; failures are
+      // re-queued and dropped after a cap, never surfaced to the user.
+      'url_telemetry_ingest':     '$httpsBase/api/v1/telemetry/ingest',
+      // Admin ops-alerts feed — read via the ADMIN-GATEWAY (AdminAuthMiddleware
+      // verifies the JWT + admin role), which proxies to notifications-service.
+      // The notifications read surface itself is internal-only (not public).
+      'url_ops_alerts':           '$httpsBase/api/v1/admin/ops-alerts',
     };
     var seeded = 0;
     for (final entry in seeds.entries) {
@@ -460,6 +507,8 @@ class EndpointRegistry {
   String get httpVoiceLang   => _get('url_voice_language_api',  '${_tierBase('https')}/voice/languages');
   String get httpStorage     => _get('url_storage',             '${_tierBase('https')}/v1/storage');
   String get httpWebhookBase => _get('url_webhook_base',        '${_tierBase('https')}/webhooks');
+  String get telemetryIngest => _get('url_telemetry_ingest',    '${_tierBase('https')}/api/v1/telemetry/ingest');
+  String get opsAlerts       => _get('url_ops_alerts',          '${_tierBase('https')}/api/v1/admin/ops-alerts');
 
   String get wsVoice         => _get('url_ws_voice',            '${_tierBase('wss')}/ws/voice');
   String get wsBalance       => _get('url_ws_balance',          '${_tierBase('wss')}/ws/balance');
@@ -467,24 +516,27 @@ class EndpointRegistry {
 
   /// App-wide screen-inactivity auto-logout threshold, in seconds. Admin-tunable
   /// via the `session_inactivity_logout_seconds` system setting (single source of
-  /// truth); defaults to 45s and is clamped to a sane [15, 600] range so a bad
-  /// admin value (or a failed/offline fetch) can never lock users out instantly
-  /// or disable the feature.
+  /// truth — fetched from the admin dashboard). Defaults to **60 (1m) = ENABLED**;
+  /// an admin can raise/lower it (clamped to a sane [15, 600] range so a bad value
+  /// can never lock users out instantly) or set exactly `0` to DISABLE auto-logout.
   int get inactivityTimeoutSeconds {
     final n =
-        int.tryParse(_get('session_inactivity_logout_seconds', '45').trim()) ??
-            45;
+        int.tryParse(_get('session_inactivity_logout_seconds', '60').trim()) ??
+            60;
+    if (n <= 0) return 0; // 0 = disabled (no auto-logout)
     return n.clamp(15, 600);
   }
 
   /// Whether a split bill may be paid to an external bank account (each
   /// co-payer pays the bank directly via the send-funds flow). Admin-tunable
   /// via the `splitbill_external_receiver_enabled` system setting (single
-  /// source of truth); defaults to OFF so the bank-receiver option only shows
-  /// once an operator explicitly enables it.
+  /// source of truth) — NOT hardcoded. Defaults to ON (matches the backend
+  /// seed default) so the bank-receiver option shows out of the box; an admin
+  /// setting the key to "false" in system_settings still hides it (that value
+  /// wins over this default via the background settings refresh).
   bool get splitBillExternalReceiverEnabled =>
-      _get('splitbill_external_receiver_enabled', 'false').trim().toLowerCase() ==
-          'true';
+      _get('splitbill_external_receiver_enabled', 'true').trim().toLowerCase() !=
+          'false';
 
   /// Raw read for any registered key — for places that store/read a key
   /// the typed accessors don't (yet) cover.

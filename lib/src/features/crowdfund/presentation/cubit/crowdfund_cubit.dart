@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
@@ -1498,12 +1499,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Share report to Facebook
   Future<void> shareReportToFacebook(
     CrowdfundReport report,
-    String? campaignUrl,
-  ) async {
+    String? campaignUrl, {
+    Rect? sharePositionOrigin,
+  }) async {
     if (reportService == null) return;
 
     try {
-      await reportService!.shareToFacebook(report, campaignUrl);
+      await reportService!.shareToFacebook(report, campaignUrl,
+          sharePositionOrigin: sharePositionOrigin);
       if (isClosed) return;
       emit(const CrowdfundReportShared(
         platform: 'Facebook',
@@ -1521,12 +1524,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Share report to Telegram
   Future<void> shareReportToTelegram(
     CrowdfundReport report,
-    String? campaignUrl,
-  ) async {
+    String? campaignUrl, {
+    Rect? sharePositionOrigin,
+  }) async {
     if (reportService == null) return;
 
     try {
-      await reportService!.shareToTelegram(report, campaignUrl);
+      await reportService!.shareToTelegram(report, campaignUrl,
+          sharePositionOrigin: sharePositionOrigin);
       if (isClosed) return;
       emit(const CrowdfundReportShared(
         platform: 'Telegram',
@@ -1567,12 +1572,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Share report using system share sheet
   Future<void> shareReportGeneral(
     CrowdfundReport report,
-    String? campaignUrl,
-  ) async {
+    String? campaignUrl, {
+    Rect? sharePositionOrigin,
+  }) async {
     if (reportService == null) return;
 
     try {
-      await reportService!.shareGeneral(report, campaignUrl);
+      await reportService!.shareGeneral(report, campaignUrl,
+          sharePositionOrigin: sharePositionOrigin);
       if (isClosed) return;
       emit(const CrowdfundReportShared(
         platform: 'General',

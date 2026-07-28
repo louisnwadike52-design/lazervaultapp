@@ -4,7 +4,7 @@ import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.da
 import 'package:lazervault/src/features/funds/cubit/transfer_prediction_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_success_prediction.dart';
 
-// Dark theme palette (per CLAUDE.md).
+// Dark theme palette.
 const Color _cardBackground = Color(0xFF1F1F1F);
 const Color _divider = Color(0xFF2D2D2D);
 const Color _textPrimary = Colors.white;

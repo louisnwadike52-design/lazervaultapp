@@ -7,6 +7,10 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
+import 'package:lazervault/src/features/move_money/presentation/receipts/beam_receipt_payload.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/beam_style.dart';
+import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -73,7 +77,51 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         _sourceAccount = source;
         _destinationAccount = dest;
         _currentStep = 1; // Skip to amount entry
+      } else {
+        // Redo (from a receipt): only account IDS + amount are available.
+        _pendingRedoSourceId = args['sourceAccountId'] as String?;
+        _pendingRedoDestId = args['destinationAccountId'] as String?;
+        final amount = args['amount'];
+        if (amount is num && amount > 0) {
+          _amountController.text = amount.toStringAsFixed(2);
+        }
+        _applyRedoIfReady();
       }
+    }
+  }
+
+  // Redo prefill (best-effort): resolve source/destination AccountSummaryEntity
+  // from the ids a receipt's "Redo" passed. Runs at init and whenever the
+  // account list becomes available.
+  String? _pendingRedoSourceId;
+  String? _pendingRedoDestId;
+
+  void _applyRedoIfReady() {
+    if (_pendingRedoSourceId == null && _pendingRedoDestId == null) return;
+    final accounts = _accounts;
+    if (accounts.isEmpty) return;
+    AccountSummaryEntity? byId(String? id) {
+      if (id == null) return null;
+      for (final a in accounts) {
+        if (a.id == id) return a;
+      }
+      return null;
+    }
+
+    final src = byId(_pendingRedoSourceId);
+    final dst = byId(_pendingRedoDestId);
+    if (src != null || dst != null) {
+      setState(() {
+        if (src != null) _sourceAccount = src;
+        if (dst != null) _destinationAccount = dst;
+        // Jump straight to the amount step only when BOTH legs resolved to the
+        // user's own accounts (the flow needs a concrete source + destination).
+        if (_sourceAccount != null && _destinationAccount != null) {
+          _currentStep = 1;
+        }
+      });
+      _pendingRedoSourceId = null;
+      _pendingRedoDestId = null;
     }
   }
 
@@ -215,7 +263,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
       amount: amount,
       currency: currency,
       title: 'Beam Money',
-      message: 'Confirm LazerBeam transfer of $currency ${amount.toStringAsFixed(2)}',
+      message: 'Confirm Lazerbeam transfer of $currency ${amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         final cubit = context.read<WalletTransferCubit>();
         await cubit.transferBetweenAccounts(
@@ -247,32 +295,34 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     if (result is WalletTransferSuccess) {
       // Shared SendFunds-style receipt — wallet variant of the Beam payload.
       // Internal transfers settle synchronously, so the status is final.
-      Get.offNamed(AppRoutes.transferProof, arguments: <String, dynamic>{
-        'transferType': 'LazerBeam Wallet',
-        'amount': result.amount,
-        'fee': 0.0,
-        'currency': result.currency.isNotEmpty ? result.currency : 'NGN',
-        'status': 'completed',
-        'internalReference': result.reference,
-        'transferId': result.transferId,
-        'recipientName': result.destinationAccountName,
-        'recipientBankName': 'Lazervault Wallet',
-        'recipientAccountMasked': destination.accountNumber ?? '',
-        'sourceAccountName': result.sourceAccountName,
-        'sourceBankName': 'Lazervault Wallet',
-        'sourceAccountMasked': source.accountNumber ?? '',
-        'sourceAccountInfo': 'Lazervault Wallet',
-        'narration': description,
-        'timestamp': DateTime.now(),
-        'backRoute': AppRoutes.moveMoney,
-      });
+      final payload = beamReceiptPayloadFromWalletTransfer(
+        PaymentsTransferResult(
+          success: true,
+          transferId: result.transferId,
+          reference: result.reference,
+          status: 'completed',
+          amount: (result.amount * 100).round(),
+          createdAt: DateTime.now(),
+          newBalance: result.newBalance,
+          recipientName: result.destinationAccountName,
+          description: description,
+          currency: result.currency,
+        ),
+        sourceName: result.sourceAccountName,
+        destName: result.destinationAccountName,
+        currency: result.currency,
+        sourceAccountMasked: source.accountNumber ?? '',
+        destinationAccountMasked: destination.accountNumber ?? '',
+      );
+      Get.offNamed(AppRoutes.transferProof, arguments: payload);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+    return AppGradientBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -295,14 +345,27 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         centerTitle: true,
       ),
       body: SafeArea(
-        child: BlocListener<WalletTransferCubit, WalletTransferState>(
-          listener: (context, state) {
-            // Drive the result here (not via a race-prone stream loop): the
-            // listener is subscribed before the transfer is triggered, so the
-            // success/failure state is never missed.
-            // Success → receipt navigation and failure rendering both happen
-            // INSIDE the PIN sheet flow (_confirmTransfer); nothing to do here.
-          },
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<WalletTransferCubit, WalletTransferState>(
+              listener: (context, state) {
+                // Drive the result here (not via a race-prone stream loop): the
+                // listener is subscribed before the transfer is triggered, so
+                // the success/failure state is never missed. Success → receipt
+                // navigation and failure rendering both happen INSIDE the PIN
+                // sheet flow (_confirmTransfer); nothing to do here.
+              },
+            ),
+            // Resolve a pending redo prefill once accounts are available.
+            BlocListener<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+              listener: (context, state) {
+                if (state is AccountCardsSummaryLoaded ||
+                    state is AccountBalanceUpdated) {
+                  _applyRedoIfReady();
+                }
+              },
+            ),
+          ],
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: _currentStep == 0
@@ -313,7 +376,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
           ),
         ),
       ),
-    );
+    ));
   }
 
   // ---------------------------------------------------------------------------
@@ -404,34 +467,14 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         // Continue button
         Padding(
           padding: EdgeInsets.all(20.w),
-          child: SizedBox(
-            width: double.infinity,
-            height: 56.h,
-            child: ElevatedButton(
-              onPressed: _sourceAccount != null &&
-                      _destinationAccount != null &&
-                      _isSameCurrency &&
-                      _sourceAccount!.id != _destinationAccount!.id
-                  ? _goToAmount
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                disabledBackgroundColor:
-                    const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Continue',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+          child: BeamGradientButton(
+            label: 'Continue',
+            icon: Icons.arrow_forward_rounded,
+            enabled: _sourceAccount != null &&
+                _destinationAccount != null &&
+                _isSameCurrency &&
+                _sourceAccount!.id != _destinationAccount!.id,
+            onTap: _goToAmount,
           ),
         ),
       ],
@@ -453,7 +496,12 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
   }
 
   Widget _buildDraggableAccountPair(List<AccountSummaryEntity> accounts) {
-    return Column(
+    // Big rounded outer card holding the From / swap / To slots — the swap
+    // screen's signature "exchange" card.
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BeamStyle.card(radius: 20),
+      child: Column(
       children: [
         // FROM card — drag source + drop target
         _buildDraggableSlot(
@@ -486,30 +534,13 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
             account: _sourceAccount,
           ),
         ),
-        // Swap button — equal spacing above and below
+        // Swap button — purple gradient square, equal spacing above and below
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 6.h),
-          child: GestureDetector(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: BeamSwapButton(
             onTap: (_sourceAccount != null || _destinationAccount != null)
                 ? _swapAccounts
                 : null,
-            child: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
-              ),
-              child: Icon(
-                Icons.swap_vert_rounded,
-                color:
-                    (_sourceAccount != null || _destinationAccount != null)
-                        ? const Color(0xFF3B82F6)
-                        : const Color(0xFF6B7280),
-                size: 22.sp,
-              ),
-            ),
           ),
         ),
         // TO card — drag source + drop target
@@ -541,6 +572,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
           ),
         ),
       ],
+    ),
     );
   }
 
@@ -604,14 +636,14 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         width: double.infinity,
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: BeamStyle.innerSurface,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: highlight
-                ? const Color(0xFF3B82F6)
+                ? BeamStyle.purple
                 : account != null
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.5)
-                    : const Color(0xFF2D2D2D),
+                    ? BeamStyle.purple.withValues(alpha: 0.35)
+                    : Colors.white.withValues(alpha: 0.06),
             width: highlight ? 2 : 1,
           ),
         ),
@@ -1145,29 +1177,11 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         // Continue button
         Padding(
           padding: EdgeInsets.all(20.w),
-          child: SizedBox(
-            width: double.infinity,
-            height: 56.h,
-            child: ElevatedButton(
-              onPressed: _isAmountValid ? _goToReview : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                disabledBackgroundColor:
-                    const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Continue',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+          child: BeamGradientButton(
+            label: 'Continue',
+            icon: Icons.arrow_forward_rounded,
+            enabled: _isAmountValid,
+            onTap: _goToReview,
           ),
         ),
       ],
@@ -1272,34 +1286,10 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         // Confirm button
         Padding(
           padding: EdgeInsets.all(20.w),
-          child: SizedBox(
-            width: double.infinity,
-            height: 56.h,
-            child: ElevatedButton(
-              onPressed: _confirmTransfer,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.lock_outline, color: Colors.white, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Confirm Transfer',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: BeamGradientButton(
+            label: 'Confirm Transfer',
+            icon: Icons.lock_outline,
+            onTap: _confirmTransfer,
           ),
         ),
       ],

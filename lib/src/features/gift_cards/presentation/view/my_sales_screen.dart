@@ -358,6 +358,20 @@ class _MySalesScreenState extends State<MySalesScreen>
                     SizedBox(height: 10.h),
                     _buildSaleDetailRow('Provider', displaySale.providerName),
                   ],
+                  // Provider's own sale id, distinct from our internal reference,
+                  // so support can cross-check with the provider when needed.
+                  if (displaySale.providerSaleId.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    _buildSaleDetailRow('Provider Sale ID', displaySale.providerSaleId),
+                  ],
+                  // Settlement status (pending/verified/failed) — the payout's
+                  // money-movement state, separate from the sale's review status.
+                  if (displaySale.settlementStatus.isNotEmpty &&
+                      displaySale.settlementStatus.toLowerCase() != 'pending') ...[
+                    SizedBox(height: 10.h),
+                    _buildSaleDetailRow('Settlement',
+                        displaySale.settlementStatus.toUpperCase()),
+                  ],
                   SizedBox(height: 10.h),
                   _buildSaleDetailRow('Submitted', _formatDate(displaySale.submittedAt)),
                   if (displaySale.paidAt.isNotEmpty) ...[
@@ -704,7 +718,7 @@ class _MySalesScreenState extends State<MySalesScreen>
 
   String _formatDate(String isoDate) {
     try {
-      final date = DateTime.parse(isoDate);
+      final date = DateTime.parse(isoDate).toLocal();
       return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } catch (_) {
       return isoDate;

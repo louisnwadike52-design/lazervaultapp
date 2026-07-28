@@ -156,10 +156,14 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                 itemBuilder: (context, index) {
                   final currency = _currencies[index];
                   // Currency is fixed to the registration currency: only that
-                  // one is enabled; the rest are shown but locked.
-                  final isSignup = currency['code'] == widget.currentCurrency;
+                  // one is enabled; the rest are shown but locked. Compare
+                  // case-insensitively so the badge reliably lights up
+                  // regardless of how the code was cased on registration.
+                  final isSignup = (currency['code'] ?? '').toUpperCase() ==
+                      widget.currentCurrency.trim().toUpperCase();
                   final enabled = isSignup;
-                  final isSelected = _selectedCurrency == currency['code'];
+                  final isSelected = _selectedCurrency.toUpperCase() ==
+                      (currency['code'] ?? '').toUpperCase();
 
                   return Opacity(
                     opacity: enabled ? 1.0 : 0.45,
@@ -231,8 +235,6 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                                       if (isSignup) ...[
                                         SizedBox(width: 6.w),
                                         _tag('Active', const Color(0xFF10B981)),
-                                        SizedBox(width: 4.w),
-                                        _tag('Signup', const Color(0xFF4E03D0)),
                                       ],
                                     ],
                                   ),

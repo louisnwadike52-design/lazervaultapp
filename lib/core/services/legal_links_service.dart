@@ -16,6 +16,11 @@ class LegalLinksService {
 
   static const String _defaultTerms = 'https://lazervault.app/legal/terms';
   static const String _defaultPrivacy = 'https://lazervault.app/legal/privacy';
+  // Gift-card-specific T&C surfaced on the gift-cards dashboard + sell flow.
+  // Defaults to the generic terms so the link always resolves; admins can
+  // repoint it (banking Configuration → legal_giftcard_terms_url) to a
+  // dedicated gift-card page once published.
+  static const String _defaultGiftcardTerms = _defaultTerms;
 
   // Endpoint the app fetches the admin-configured legal links from. A non-empty
   // TEST_BACKEND_HOST (compile-time) pins the legacy host:port shape (:8073 =
@@ -37,16 +42,21 @@ class LegalLinksService {
 
   String _terms = _defaultTerms;
   String _privacy = _defaultPrivacy;
+  String _giftcardTerms = _defaultGiftcardTerms;
   DateTime? _fetchedAt;
   static const _ttl = Duration(minutes: 30);
 
   String get termsUrl => _terms;
   String get privacyUrl => _privacy;
+  String get giftcardTermsUrl => _giftcardTerms;
 
   /// Apply admin-configured URLs (empty values keep the current/default).
-  void setUrls({String? terms, String? privacy}) {
+  void setUrls({String? terms, String? privacy, String? giftcardTerms}) {
     if (terms != null && terms.trim().isNotEmpty) _terms = terms.trim();
     if (privacy != null && privacy.trim().isNotEmpty) _privacy = privacy.trim();
+    if (giftcardTerms != null && giftcardTerms.trim().isNotEmpty) {
+      _giftcardTerms = giftcardTerms.trim();
+    }
   }
 
   /// Fetches the latest admin-configured URLs from system_settings (cached for
@@ -64,6 +74,7 @@ class LegalLinksService {
         setUrls(
           terms: body['terms_url']?.toString(),
           privacy: body['privacy_url']?.toString(),
+          giftcardTerms: body['giftcard_terms_url']?.toString(),
         );
         _fetchedAt = DateTime.now();
       }

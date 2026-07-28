@@ -7,6 +7,7 @@ enum TriggerType {
   scheduled,    // Trigger on a schedule
   roundUp,      // Round up transactions to nearest value
   externalInflow, // Money arriving in a linked external bank account
+  scheduledExternal, // Recurring standing-order pull from a linked bank on a cadence
 }
 
 enum ScheduleFrequency {
@@ -144,6 +145,11 @@ class AutoSaveRuleEntity extends Equatable {
         return sourceBankName.isNotEmpty
             ? 'When money enters $sourceBankName'
             : 'When money enters your linked bank';
+      case TriggerType.scheduledExternal:
+        final schedule = _scheduleDescription;
+        return sourceBankName.isNotEmpty
+            ? '$schedule from $sourceBankName'
+            : '$schedule from your linked bank';
       default:
         return 'Unknown trigger';
     }

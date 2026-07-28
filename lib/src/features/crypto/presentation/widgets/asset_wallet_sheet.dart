@@ -14,6 +14,8 @@ import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/presentation/utils/crypto_error_messages.dart';
 import 'package:lazervault/src/generated/crypto.pb.dart' as cpb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'asset_network_badge.dart';
+import 'crypto_shimmer_loading.dart';
 
 // AssetWalletSheet — bottom-sheet view of a single asset's wallet.
 // Renders:
@@ -501,6 +503,11 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
                   fontSize: 13.sp,
                 ),
               ),
+              // Active network for this asset (address/routing only; the
+              // Quidax balance is the same on every chain). Self-resolving,
+              // shimmers while loading, hides itself when not held.
+              SizedBox(height: 6.h),
+              AssetNetworkBadge(symbol: symbol, compact: true),
             ],
           ),
         ),
@@ -553,15 +560,19 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
                   ),
                 ),
                 SizedBox(height: 6.h),
-                Text(
-                  '$fiatSym${price.toStringAsFixed(price >= 1 ? 2 : 6)}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
+                if (_refreshingMetrics && _livePrice == null)
+                  CryptoSkeleton(
+                      width: 110.w, height: 22.h, radius: 6.r, onGradient: true)
+                else
+                  Text(
+                    '$fiatSym${price.toStringAsFixed(price >= 1 ? 2 : 6)}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -602,6 +613,9 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
 
   Widget _balanceCard(
       String symbol, double balance, double fiatValue, String fiatSym) {
+    // While the first Quidax balance fetch is in flight (no live value yet),
+    // show shimmer skeletons instead of a misleading 0.00.
+    final loading = _refreshingMetrics && _liveBalance == null;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -623,20 +637,23 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
                       fontSize: 12.sp,
                     ),
                   ),
-                  if (_refreshingMetrics) ...[
+                  if (loading) ...[
                     SizedBox(width: 8.w),
-                    LazerVaultLoader(size: 10),
+                    LazerVaultLoader(size: 16),
                   ],
                 ]),
                 SizedBox(height: 6.h),
-                Text(
-                  '${balance.toStringAsFixed(6)} $symbol',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
+                if (loading)
+                  CryptoSkeleton(width: 120.w, height: 20.h, radius: 6.r)
+                else
+                  Text(
+                    '${balance.toStringAsFixed(6)} $symbol',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -651,14 +668,17 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
                 ),
               ),
               SizedBox(height: 6.h),
-              Text(
-                '$fiatSym${fiatValue.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+              if (loading)
+                CryptoSkeleton(width: 72.w, height: 20.h, radius: 6.r)
+              else
+                Text(
+                  '$fiatSym${fiatValue.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
             ],
           ),
         ],
@@ -891,7 +911,7 @@ class _AssetWalletSheetState extends State<AssetWalletSheet> {
             pending
                 ? "We've started creating your $symbol wallet address. "
                     "This usually takes a few seconds. "
-                    "Close this sheet and check back shortly — your address "
+                    "Close this sheet and check back shortly. Your address "
                     "will appear here once it's ready."
                 : 'Tap refresh to check again. If this keeps happening, our '
                     'team is on it.',

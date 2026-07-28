@@ -76,7 +76,7 @@ class ScannedCodeClassifier {
           raw: raw,
         );
 
-      // ── Pay a LazerVault user (dynamic, signed) → C2C transfer ──
+      // ── Pay a Lazervault user (dynamic, signed) → C2C transfer ──
       case 'lazervault_pay':
         final payload = _decodeTokenPayload(data['token']?.toString());
         if (payload == null) return null;

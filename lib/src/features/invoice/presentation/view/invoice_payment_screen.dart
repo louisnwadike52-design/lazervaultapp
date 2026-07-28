@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/invoice_entity.dart';
+import '../../domain/entities/invoice_fee_quote.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/invoice_cubit.dart';
@@ -29,7 +30,7 @@ class InvoicePaymentScreen extends StatefulWidget {
   const InvoicePaymentScreen({
     super.key,
     this.invoice,
-    this.serviceFee = 99.99,
+    this.serviceFee = 0.0,
     this.isPrePayment = false,
   });
 
@@ -49,7 +50,16 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  String get _currencySymbol => _getCurrencySymbol(widget.invoice?.currency ?? 'NGN');
+  // Service fee resolved by the backend (admin base fee, FX-converted into the
+  // active account's currency). Falls back to the constructor value until loaded.
+  InvoiceFeeQuote? _feeQuote;
+  double get _fee => _feeQuote?.amount ?? widget.serviceFee;
+
+  // The fee (and the active wallet balance) are denominated in the account
+  // currency, which the fee quote reports.
+  String get _feeCurrencySymbol =>
+      _getCurrencySymbol(_feeQuote?.currency ?? widget.invoice?.currency ?? 'NGN');
+  String get _feeCurrencyCode => _feeQuote?.currency ?? widget.invoice?.currency ?? 'NGN';
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
@@ -94,6 +104,14 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     );
     _animationController.forward();
     _fetchAccounts();
+    _loadFeeQuote();
+  }
+
+  Future<void> _loadFeeQuote() async {
+    final quote = await context.read<InvoiceCubit>().getServiceFeeQuote();
+    if (mounted && quote != null) {
+      setState(() => _feeQuote = quote);
+    }
   }
 
   void _fetchAccounts() {
@@ -293,7 +311,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ),
               ),
               Text(
-                '$_currencySymbol${widget.serviceFee.toStringAsFixed(2)}',
+                _feeQuote == null ? '$_feeCurrencySymbol…' : '$_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: Color(0xFF3B82F6),
                   fontSize: 24.sp,
@@ -418,14 +436,14 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         _selectedAccountId = displayAccount.id;
         _selectedPaymentMethod = 'account_${displayAccount.id}';
 
-        final hasEnough = displayAccount.availableBalance >= widget.serviceFee;
+        final hasEnough = displayAccount.availableBalance >= _fee;
 
         return _buildPaymentCategoryCard(
           isSelected: true,
           icon: _getAccountIcon(displayAccount.accountType),
           iconColor: _getAccountColor(displayAccount.accountType),
           title: 'Pay with Lazervault Wallet',
-          subtitle: '${displayAccount.accountType} Account  •  $_currencySymbol${displayAccount.availableBalance.toStringAsFixed(2)}',
+          subtitle: '${displayAccount.accountType} Account  •  ${_getCurrencySymbol(displayAccount.currency)}${displayAccount.availableBalance.toStringAsFixed(2)}',
           insufficientFunds: !hasEnough,
           trailing: Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 22.sp),
           onTap: null,
@@ -639,7 +657,9 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          'Unlock for $_currencySymbol${widget.serviceFee.toStringAsFixed(2)}',
+                          _feeQuote == null
+                              ? 'Loading fee…'
+                              : 'Unlock for $_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -672,7 +692,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         accounts = accountState.accountSummaries;
       }
       final match = accounts.where((a) => a.id == _selectedAccountId);
-      if (match.isNotEmpty && match.first.availableBalance < widget.serviceFee) {
+      if (match.isNotEmpty && match.first.availableBalance < _fee) {
         _showErrorSnackbar(
           'Insufficient balance in this wallet. Please select a different wallet or payment method.',
         );
@@ -710,12 +730,12 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
       context: context,
       transactionId: transactionId,
       transactionType: widget.isPrePayment ? 'invoice_service_fee' : 'invoice_payment',
-      amount: widget.serviceFee,
-      currency: widget.invoice?.currency ?? 'NGN',
+      amount: _fee,
+      currency: _feeCurrencyCode,
       title: widget.isPrePayment ? 'Confirm Service Fee' : 'Confirm Payment',
       message: widget.isPrePayment
-          ? 'Confirm service fee payment of ${widget.invoice?.currency ?? 'NGN'} ${widget.serviceFee.toStringAsFixed(2)}'
-          : 'Confirm invoice payment of ${widget.invoice?.currency ?? 'NGN'} ${widget.serviceFee.toStringAsFixed(2)}',
+          ? 'Confirm service fee payment of $_feeCurrencyCode ${_fee.toStringAsFixed(2)}'
+          : 'Confirm invoice unlock fee of $_feeCurrencyCode ${_fee.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },

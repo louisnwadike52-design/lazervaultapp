@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
@@ -23,8 +25,16 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
       : super(const TransactionHistoryInitial());
 
   /// Load all transactions (for dashboard)
-  Future<void> loadAllTransactions({TransactionFilters? filters}) async {
-    emit(const TransactionHistoryLoading());
+  Future<void> loadAllTransactions({
+    TransactionFilters? filters,
+    bool background = false,
+  }) async {
+    // Background refresh (e.g. scroll-into-view on the dashboard): keep the
+    // current list on screen and update it in place when the fetch returns, so
+    // the section re-renders WITHOUT flashing a loading skeleton.
+    if (!(background && state is TransactionHistoryLoaded)) {
+      emit(const TransactionHistoryLoading());
+    }
 
     try {
       final response = await repository.fetchAllTransactions(
@@ -40,6 +50,13 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
       _serviceType = null;
 
       if (response.transactions.isEmpty) {
+        // A background refresh that comes back empty must NOT wipe a populated
+        // list (transient/edge result) — keep the last good data on screen.
+        if (background &&
+            state is TransactionHistoryLoaded &&
+            (state as TransactionHistoryLoaded).transactions.isNotEmpty) {
+          return;
+        }
         emit(TransactionHistoryEmpty(activeFilters: filters));
       } else {
         TransactionStatistics? stats;
@@ -60,8 +77,19 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
           activeFilters: filters,
           statistics: stats,
         ));
+
+        // Stale-while-revalidate: a cache-served page is instant but can be a
+        // stale SUBSET (no external-transfer merge, hasMore capped false —
+        // the "list only completes after pull-to-refresh" bug). Converge to
+        // the full network result in place, no loading flash.
+        if (response.fromCache && !background) {
+          unawaited(refreshTransactions(background: true));
+        }
       }
     } catch (e) {
+      // A failed background refresh must NOT wipe the visible list — keep the
+      // last good data on screen instead of showing a full error state.
+      if (background && state is TransactionHistoryLoaded) return;
       emit(TransactionHistoryError(
         message: e.toString().replaceAll('Exception: ', ''),
         errorCode: 'LOAD_ALL_FAILED',
@@ -73,10 +101,14 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
   Future<void> loadServiceTransactions(
     TransactionServiceType serviceType, {
     TransactionFilters? filters,
+    bool background = false,
   }) async {
-    emit(TransactionHistoryLoading(
-      message: 'Loading ${serviceType.displayName} transactions...',
-    ));
+    // Background refresh: keep the current list on screen (no loading flash).
+    if (!(background && state is TransactionHistoryLoaded)) {
+      emit(TransactionHistoryLoading(
+        message: 'Loading ${serviceType.displayName} transactions...',
+      ));
+    }
 
     try {
       final response = await repository.fetchServiceTransactions(
@@ -93,6 +125,11 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
       _serviceType = serviceType;
 
       if (response.transactions.isEmpty) {
+        if (background &&
+            state is TransactionHistoryLoaded &&
+            (state as TransactionHistoryLoaded).transactions.isNotEmpty) {
+          return; // keep the populated list on a transient-empty background refresh
+        }
         emit(TransactionHistoryEmpty(
           message: 'No ${serviceType.displayName} transactions found',
           activeFilters: filters,
@@ -117,8 +154,14 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
           activeFilters: filters,
           statistics: stats,
         ));
+
+        // Stale-while-revalidate — same as loadAllTransactions.
+        if (response.fromCache && !background) {
+          unawaited(refreshTransactions(background: true));
+        }
       }
     } catch (e) {
+      if (background && state is TransactionHistoryLoaded) return;
       emit(TransactionHistoryError(
         message: e.toString().replaceAll('Exception: ', ''),
         errorCode: 'LOAD_SERVICE_FAILED',
@@ -169,17 +212,22 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
     }
   }
 
-  /// Refresh transactions
-  Future<void> refreshTransactions() async {
+  /// Refresh transactions. When [background] is true (e.g. the dashboard's
+  /// scroll-into-view auto-refresh) the current list stays on screen and is
+  /// updated in place — no loading skeleton flash, no error-over-data.
+  Future<void> refreshTransactions({bool background = false}) async {
     try {
       await repository.refreshTransactions();
 
       if (_serviceType == null) {
-        await loadAllTransactions(filters: _activeFilters);
+        await loadAllTransactions(
+            filters: _activeFilters, background: background);
       } else {
-        await loadServiceTransactions(_serviceType!, filters: _activeFilters);
+        await loadServiceTransactions(_serviceType!,
+            filters: _activeFilters, background: background);
       }
     } catch (e) {
+      if (background && state is TransactionHistoryLoaded) return;
       emit(TransactionHistoryError(
         message: e.toString().replaceAll('Exception: ', ''),
         errorCode: 'REFRESH_FAILED',

@@ -106,7 +106,7 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
                         onRefresh: () async {
                           context.read<WaterBillCubit>().getPaymentHistory();
                         },
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                         child: ListView.separated(
                           padding: EdgeInsets.all(20.w),
                           itemCount: filtered.length,
@@ -237,8 +237,8 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF3B82F6),
-                      const Color(0xFF2563EB),
+                      const Color(0xFF4E03D0),
+                      const Color(0xFF6B21E0),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
@@ -268,12 +268,12 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
     return BillHistoryItem(
       leadingIcon: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(10.r),
         ),
         child: Icon(
           _getStatusIcon(payment.status),
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF4E03D0),
           size: 22.sp,
         ),
       ),

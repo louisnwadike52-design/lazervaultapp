@@ -344,7 +344,7 @@ void main() {
       () async {
     expect(ruleId, isNotNull);
 
-    // The Mono sandbox debit settles via webhook (ngrok) or the deposit
+    // The Mono sandbox debit settles via webhook (Cloudflare tunnel) or the deposit
     // reconciler (default 120s tick) — poll accounts history generously.
     accounts_pb.Transaction? credit;
     for (var i = 0; i < 45 && credit == null; i++) {

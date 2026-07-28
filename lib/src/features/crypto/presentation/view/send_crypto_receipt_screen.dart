@@ -178,6 +178,9 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
       flow: TransactionFlow.outgoing,
       transactionReference: widget.reference,
       metadata: metadata,
+      // Per-asset hero (logo URL isn't carried on the send flow, so the
+      // receipt shows the asset's initials chip — never a shared Bitcoin icon).
+      assetSymbol: sym,
     );
   }
 

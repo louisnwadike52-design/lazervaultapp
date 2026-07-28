@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/create_sess
 import 'package:lazervault/src/features/sprayme/presentation/screens/join_session_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_wallet_screen.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_wallet_action_sheet.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_detail_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/my_sessions_screen.dart';
 
@@ -33,6 +34,11 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   bool _isLoadingWallet = true;
   bool _isLoadingSessions = true;
   bool _isLoadingStats = true;
+  // Per-section error state. Errors are rendered INLINE on each widget (never a
+  // snackbar) and only retried on an explicit tap — there is NO auto-retry loop.
+  bool _walletError = false;
+  bool _sessionsError = false;
+  bool _statsError = false;
 
   @override
   void initState() {
@@ -41,6 +47,10 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   }
 
   void _loadAll() {
+    setState(() {
+      _isLoadingWallet = true;
+      _walletError = false;
+    });
     context.read<SprayMeCubit>().loadWallet();
   }
 
@@ -49,8 +59,37 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       _isLoadingWallet = true;
       _isLoadingSessions = true;
       _isLoadingStats = true;
+      _walletError = false;
+      _sessionsError = false;
+      _statsError = false;
     });
     context.read<SprayMeCubit>().loadWallet();
+  }
+
+  // Single-shot retry helpers (used by the inline error CTAs). Each clears its
+  // own error, shows the loading state, and kicks exactly one load — no loop.
+  void _retryWallet() {
+    setState(() {
+      _isLoadingWallet = true;
+      _walletError = false;
+    });
+    context.read<SprayMeCubit>().loadWallet();
+  }
+
+  void _retrySessions() {
+    setState(() {
+      _isLoadingSessions = true;
+      _sessionsError = false;
+    });
+    context.read<SprayMeCubit>().loadMySessions();
+  }
+
+  void _retryStats() {
+    setState(() {
+      _isLoadingStats = true;
+      _statsError = false;
+    });
+    context.read<SprayMeCubit>().loadMySprayStats();
   }
 
   @override
@@ -60,10 +99,16 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       body: SafeArea(
         child: BlocConsumer<SprayMeCubit, SprayMeState>(
           listener: (context, state) {
+            // Sections load sequentially (wallet → sessions → stats) so exactly
+            // one stage is in-flight when a result or error arrives; we key off
+            // the loading flags to attribute it. Errors are surfaced INLINE on the
+            // failing section (no snackbar) and never auto-retried, so a persistent
+            // server error can't spin a toast/bottomsheet loop.
             if (state is WalletLoaded) {
               setState(() {
                 _wallet = state.wallet;
                 _isLoadingWallet = false;
+                _walletError = false;
               });
               // Chain: after wallet, load sessions
               context.read<SprayMeCubit>().loadMySessions();
@@ -71,6 +116,7 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               setState(() {
                 _sessions = state.sessions;
                 _isLoadingSessions = false;
+                _sessionsError = false;
               });
               // Chain: after sessions, load stats
               context.read<SprayMeCubit>().loadMySprayStats();
@@ -78,31 +124,32 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               setState(() {
                 _stats = state.stats;
                 _isLoadingStats = false;
+                _statsError = false;
               });
             } else if (state is SprayMeError) {
-              // Determine which stage failed and continue loading chain
+              // Attribute the error to the in-flight stage, mark it failed inline,
+              // and CONTINUE the chain so the other independent sections still load.
               if (_isLoadingWallet) {
                 setState(() {
                   _isLoadingWallet = false;
-                  _wallet = null; // Triggers wallet error UI
+                  _walletError = true;
                 });
-                // Continue loading sessions even if wallet failed
                 context.read<SprayMeCubit>().loadMySessions();
               } else if (_isLoadingSessions) {
-                setState(() => _isLoadingSessions = false);
-                // Continue loading stats even if sessions failed
+                setState(() {
+                  _isLoadingSessions = false;
+                  _sessionsError = true;
+                });
                 context.read<SprayMeCubit>().loadMySprayStats();
               } else if (_isLoadingStats) {
-                setState(() => _isLoadingStats = false);
-              } else {
-                // Error from non-chain operation (e.g. join session)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: const Color(0xFFEF4444),
-                  ),
-                );
+                setState(() {
+                  _isLoadingStats = false;
+                  _statsError = true;
+                });
               }
+              // Errors from non-chain operations (e.g. a join attempt on another
+              // screen sharing this cubit) are intentionally ignored here — the
+              // originating screen renders its own error. No snackbar on landing.
             }
           },
           builder: (context, state) {
@@ -253,8 +300,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: context.read<SprayMeCubit>(),
+                builder: (_) => BlocProvider(
+                  create: (_) => serviceLocator<SprayMeCubit>(),
                   child: const SprayMeWalletScreen(),
                 ),
               ),
@@ -287,8 +334,9 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       );
     }
 
-    // Show wallet load failure with retry
-    if (_wallet == null) {
+    // Inline wallet-load failure (only when we have no cached wallet to show).
+    // A tap retries exactly once — no snackbar, no auto-retry loop.
+    if (_wallet == null && _walletError) {
       return Container(
         height: 120.h,
         padding: EdgeInsets.all(20.w),
@@ -300,26 +348,47 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wallet, color: const Color(0xFFFB923C), size: 28.sp),
+            Icon(Icons.wifi_off_rounded, color: const Color(0xFFFB923C), size: 26.sp),
             SizedBox(height: 8.h),
             Text(
-              'Wallet failed to load',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              "Couldn't load your wallet",
+              style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 4.h),
+            Text(
+              'Check your connection and try again',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+            ),
+            SizedBox(height: 10.h),
             GestureDetector(
-              onTap: () {
-                setState(() => _isLoadingWallet = true);
-                context.read<SprayMeCubit>().loadWallet();
-              },
-              child: Text(
-                'Tap to retry',
-                style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 13.sp, fontWeight: FontWeight.w600),
+              onTap: _retryWallet,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7C3AED).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh_rounded, color: const Color(0xFFB794F6), size: 15.sp),
+                    SizedBox(width: 6.w),
+                    Text('Retry',
+                        style: TextStyle(color: const Color(0xFFB794F6), fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       );
+    }
+
+    // Defensive: no data yet and not (loading|errored) — keep a shimmer rather
+    // than blanking the card. (Should not normally happen.)
+    if (_wallet == null) {
+      return const SizedBox.shrink();
     }
 
     final spendable = (_wallet?.balance ?? 0) / 100;
@@ -330,12 +399,30 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: context.read<SprayMeCubit>(),
+          builder: (_) => BlocProvider(
+            create: (_) => serviceLocator<SprayMeCubit>(),
             child: const SprayMeWalletScreen(),
           ),
         ),
       );
+    }
+
+    // Fund = top up spendable spray balance from the main account (before
+    // buying gifts). Withdraw = move earnings back to the main account. Both
+    // gate on the canonical tx-PIN bottom sheet inside the action sheet.
+    Future<void> openWalletAction(SprayWalletAction action) async {
+      HapticFeedback.lightImpact();
+      final w = _wallet;
+      if (w == null) {
+        openWallet(); // wallet not loaded yet — fall back to the detail screen
+        return;
+      }
+      final updated =
+          await showSprayWalletActionSheet(context, action: action, wallet: w);
+      if (updated != null && mounted) {
+        setState(() => _wallet = updated);
+        context.read<SprayMeCubit>().loadWallet();
+      }
     }
 
     return Container(
@@ -408,9 +495,9 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
             children: [
               Expanded(
                 child: _buildWalletActionButton(
-                  icon: Icons.account_balance_wallet_outlined,
-                  label: 'My Wallet',
-                  onTap: openWallet,
+                  icon: Icons.add_card_rounded,
+                  label: 'Fund Wallet',
+                  onTap: () => openWalletAction(SprayWalletAction.fund),
                 ),
               ),
               SizedBox(width: 12.w),
@@ -418,10 +505,35 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 child: _buildWalletActionButton(
                   icon: Icons.arrow_downward,
                   label: 'Withdraw',
-                  onTap: openWallet,
+                  onTap: () => openWalletAction(SprayWalletAction.withdraw),
                 ),
               ),
             ],
+          ),
+          SizedBox(height: 12.h),
+          // History link — the full wallet screen is now history/earnings only.
+          GestureDetector(
+            onTap: openWallet,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.receipt_long_outlined,
+                    color: Colors.white.withOpacity(0.85), size: 15.sp),
+                SizedBox(width: 6.w),
+                Text(
+                  'View history',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: 3.w),
+                Icon(Icons.arrow_forward_ios,
+                    color: Colors.white.withOpacity(0.7), size: 11.sp),
+              ],
+            ),
           ),
         ],
       ),
@@ -476,8 +588,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SprayMeCubit>(),
+                  builder: (_) => BlocProvider(
+                    create: (_) => serviceLocator<SprayMeCubit>(),
                     child: const CreateSessionScreen(),
                   ),
                 ),
@@ -496,8 +608,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SprayMeCubit>(),
+                  builder: (_) => BlocProvider(
+                    create: (_) => serviceLocator<SprayMeCubit>(),
                     child: const JoinSessionScreen(),
                   ),
                 ),
@@ -575,8 +687,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: context.read<SprayMeCubit>(),
+                builder: (_) => BlocProvider(
+                  create: (_) => serviceLocator<SprayMeCubit>(),
                   child: const MySessionsScreen(),
                 ),
               ),
@@ -630,6 +742,14 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       );
     }
 
+    // Inline sessions-load failure (only when we have nothing cached to show).
+    if (_sessions.isEmpty && _sessionsError) {
+      return _buildInlineSectionError(
+        message: "Couldn't load your sessions",
+        onRetry: _retrySessions,
+      );
+    }
+
     if (_sessions.isEmpty) {
       return Container(
         padding: EdgeInsets.symmetric(vertical: 40.h),
@@ -680,41 +800,7 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
     final occasionColors = OccasionTheme.getGradient(session.occasionType);
 
     return GestureDetector(
-      onTap: () async {
-        HapticFeedback.lightImpact();
-        if (!session.isActive) {
-          // Navigate to session detail for ended sessions
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: context.read<SprayMeCubit>(),
-                child: SessionDetailScreen(
-                  sessionId: session.id,
-                  session: session,
-                ),
-              ),
-            ),
-          );
-          return;
-        }
-        // For active sessions, navigate to live spray room
-        final storage = serviceLocator<SecureStorageService>();
-        final token = await storage.getAccessToken();
-        if (token == null || !mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              create: (_) => serviceLocator<SprayRoomCubit>(),
-              child: SprayRoomScreen(
-                sessionId: session.id,
-                accessToken: token,
-              ),
-            ),
-          ),
-        );
-      },
+      onTap: () => _openSession(session),
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(14.w),
@@ -782,22 +868,81 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 ],
               ),
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                session.status.toUpperCase(),
-                style: TextStyle(
-                  color: statusColor,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
+            // Active sessions get a one-tap "Join" so the creator (or a joiner)
+            // jumps straight back in — no copy-code + manual Join needed.
+            if (session.isActive)
+              GestureDetector(
+                onTap: () => _openSession(session),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.play_arrow_rounded,
+                          color: Colors.white, size: 15.sp),
+                      SizedBox(width: 3.w),
+                      Text('Join',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  session.status.toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Open an active session straight into the live room (re-entry — host or
+  /// joiner — with no code retype); ended sessions open their detail screen.
+  Future<void> _openSession(SpraySession session) async {
+    HapticFeedback.lightImpact();
+    if (!session.isActive) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => serviceLocator<SprayMeCubit>(),
+            child: SessionDetailScreen(sessionId: session.id, session: session),
+          ),
+        ),
+      );
+      return;
+    }
+    final storage = serviceLocator<SecureStorageService>();
+    final token = await storage.getAccessToken();
+    if (token == null || !mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<SprayRoomCubit>(),
+          child: SprayRoomScreen(sessionId: session.id, accessToken: token),
         ),
       ),
     );
@@ -817,6 +962,13 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
             borderRadius: BorderRadius.circular(14.r),
           ),
         ),
+      );
+    }
+
+    if (_stats == null && _statsError) {
+      return _buildInlineSectionError(
+        message: "Couldn't load your stats",
+        onRetry: _retryStats,
       );
     }
 
@@ -913,6 +1065,53 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  /// Inline, tappable error card used for the Sessions/Stats sections. Mirrors
+  /// the wallet inline error — never a snackbar, retry only on explicit tap.
+  Widget _buildInlineSectionError({
+    required String message,
+    required VoidCallback onRetry,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off_rounded, size: 30.sp, color: const Color(0xFFFB923C)),
+          SizedBox(height: 10.h),
+          Text(
+            message,
+            style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 10.h),
+          GestureDetector(
+            onTap: onRetry,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7C3AED).withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.refresh_rounded, color: const Color(0xFFB794F6), size: 15.sp),
+                  SizedBox(width: 6.w),
+                  Text('Retry',
+                      style: TextStyle(color: const Color(0xFFB794F6), fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   String _formatAmount(double amount) {
     if (amount >= 1000000) {

@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Biometric login (local_auth): fingerprint + face unlock. USE_BIOMETRIC is
+         the modern (API 28+) permission; USE_FINGERPRINT is the legacy fallback. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -32,9 +36,13 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" android:minSdkVersion="30" />
 
-    <!-- SMS autofill permissions -->
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- OTP autofill uses the Google SMS Retriever API (sms_autofill:
+         listenForCode + getAppSignature), which needs NO SMS permission — the
+         OTP message carries the app-signature hash. READ_SMS/RECEIVE_SMS were
+         removed: they are unused here and are a Google Play policy-rejection
+         vector (restricted permissions require the default-SMS-handler use
+         case, which this app is not). Do NOT re-add them. -->
+    <!-- (intentionally no RECEIVE_SMS / READ_SMS) -->
 
     <!-- Contacts permission for recipient selection -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />

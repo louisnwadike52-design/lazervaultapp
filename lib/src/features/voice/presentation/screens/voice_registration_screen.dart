@@ -955,7 +955,7 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            LazerVaultLoader(size: 80),
+                            LazerVaultLoader(size: 64),
                             const SizedBox(height: 8),
                             const Text(
                               'Recording...',

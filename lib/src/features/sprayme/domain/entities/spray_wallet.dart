@@ -35,6 +35,32 @@ class SprayWallet {
   double get totalReceivedMajor => totalReceived / 100;
   double get totalWithdrawnMajor => totalWithdrawn / 100;
 
+  /// Field-preserving copy — used to apply a partial update (e.g. only the
+  /// spendable `balance` returned by a spray/gift response) WITHOUT zeroing the
+  /// other fields the way rebuilding from a partial JSON would.
+  SprayWallet copyWith({
+    int? balance,
+    int? earningsBalance,
+    int? totalFunded,
+    int? totalSprayed,
+    int? totalReceived,
+    int? totalWithdrawn,
+  }) {
+    return SprayWallet(
+      id: id,
+      userId: userId,
+      balance: balance ?? this.balance,
+      earningsBalance: earningsBalance ?? this.earningsBalance,
+      currency: currency,
+      totalFunded: totalFunded ?? this.totalFunded,
+      totalSprayed: totalSprayed ?? this.totalSprayed,
+      totalReceived: totalReceived ?? this.totalReceived,
+      totalWithdrawn: totalWithdrawn ?? this.totalWithdrawn,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
   factory SprayWallet.fromJson(Map<String, dynamic> json) {
     return SprayWallet(
       id: json['id'] as String? ?? '',

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import '../data/datasources/open_banking_remote_datasource.dart';
 import '../data/datasources/open_banking_grpc_datasource.dart';
 import '../data/datasources/credit_score_ai_service.dart';
@@ -500,8 +501,17 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
 
       if (isClosed) return;
       emit(DepositInitiated(deposit: deposit));
+      // Telemetry: Mono initiation accepted (mandate vs one-time DirectPay).
+      AnalyticsService.instance.trackDepositOutcome(
+        method: useRecurringAccess ? 'mandate' : 'directpay',
+        outcome: deposit.requiresAuthorization ? 'requires_auth' : 'success',
+      );
     } catch (e) {
       if (isClosed) return;
+      AnalyticsService.instance.trackDepositOutcome(
+        method: useRecurringAccess ? 'mandate' : 'directpay',
+        outcome: 'failure',
+      );
       _emitError(e, operation: 'initiateDeposit');
     }
   }
@@ -797,14 +807,20 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   // =====================================================
 
   /// Fetch the user's credit score
-  Future<void> fetchCreditScore({required String userId}) async {
+  Future<void> fetchCreditScore({
+    required String userId,
+    String? linkedAccountId,
+  }) async {
     if (isClosed) return;
     emit(OpenBankingLoading());
 
     try {
       final CreditScoreEntity creditScore;
       if (useGrpc && _grpcDataSource != null) {
-        creditScore = await _grpcDataSource!.getCreditScore(userId: userId);
+        creditScore = await _grpcDataSource!.getCreditScore(
+          userId: userId,
+          linkedAccountId: linkedAccountId,
+        );
       } else {
         throw UnimplementedError('Credit score is only available via gRPC');
       }
@@ -872,14 +888,20 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   }
 
   /// Fetch multi-source credit scores (LazerVault, External, Combined)
-  Future<void> fetchMultiSourceCreditScores({required String userId}) async {
+  Future<void> fetchMultiSourceCreditScores({
+    required String userId,
+    String? linkedAccountId,
+  }) async {
     if (isClosed) return;
     emit(OpenBankingLoading());
 
     try {
       final MultiSourceCreditScores scores;
       if (useGrpc && _grpcDataSource != null) {
-        scores = await _grpcDataSource!.getMultiSourceCreditScores(userId: userId);
+        scores = await _grpcDataSource!.getMultiSourceCreditScores(
+          userId: userId,
+          linkedAccountId: linkedAccountId,
+        );
       } else {
         throw UnimplementedError('Multi-source credit scores only available via gRPC');
       }

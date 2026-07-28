@@ -90,6 +90,37 @@ enum ExpenseCategory {
         return Icons.receipt_long_rounded;
     }
   }
+
+  /// A distinct-but-cohesive accent per category — used to tint the tile icon
+  /// disc and the summary breakdown. Anchored on the invoice-theme purple with
+  /// a harmonised secondary palette so categories are glanceable without
+  /// clashing with the status colours.
+  Color get color {
+    switch (this) {
+      case ExpenseCategory.office:
+        return const Color(0xFFA78BFA); // purple-light
+      case ExpenseCategory.travel:
+        return const Color(0xFF38BDF8); // sky
+      case ExpenseCategory.meals:
+        return const Color(0xFFFB923C); // orange
+      case ExpenseCategory.marketing:
+        return const Color(0xFFF472B6); // pink
+      case ExpenseCategory.utilities:
+        return const Color(0xFFFACC15); // amber
+      case ExpenseCategory.payroll:
+        return const Color(0xFF34D399); // green
+      case ExpenseCategory.professional:
+        return const Color(0xFF818CF8); // indigo
+      case ExpenseCategory.software:
+        return const Color(0xFF22D3EE); // cyan
+      case ExpenseCategory.inventory:
+        return const Color(0xFF2DD4BF); // teal
+      case ExpenseCategory.taxes:
+        return const Color(0xFFF87171); // red
+      case ExpenseCategory.other:
+        return const Color(0xFF9CA3AF); // grey
+    }
+  }
 }
 
 /// Mirror of payroll.proto ExpenseStatus enum.

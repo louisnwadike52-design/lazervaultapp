@@ -314,6 +314,10 @@ class CountryLocales {
       dialCode: '+27',
       currency: 'ZAR',
     ),
+    // PH/CA are intentionally NOT in the locale list: they're not signup /
+    // wallet countries (Klasha VAs cover only NGN+GHS). They exist only as
+    // exchange INTERNATIONAL-transfer destinations, which the currency-exchange
+    // feature carries via its own currency/country data — not this region list.
   ];
 
   /// Find country locale by country code

@@ -6,6 +6,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../receipts/beam_receipt_payload.dart';
+import '../widgets/beam_style.dart';
+import '../../data/datasources/move_money_grpc_datasource.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -300,6 +305,62 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     return DateFormat('MMM d, yyyy HH:mm').format(date.toLocal());
   }
 
+  // ---------------------------------------------------------------------------
+  // History → receipt (same shared receipt the flows land on, with Redo)
+  // ---------------------------------------------------------------------------
+
+  List<AccountSummaryEntity> _currentAccounts() {
+    final state = context.read<AccountCardsSummaryCubit>().state;
+    return switch (state) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+  }
+
+  void _openBeamBankReceipt(MoveTransfer t) {
+    // A still-processing transfer opened from history gets the SAME live-status
+    // header as the post-transfer receipt (fetch-on-load + pull-to-refresh).
+    Future<MoveTransfer> Function()? fetch;
+    if (!t.status.isTerminal) {
+      final authState = context.read<AuthenticationCubit>().state;
+      final userId =
+          authState is AuthenticationSuccess ? authState.profile.userId : '';
+      final ds = serviceLocator<MoveMoneyGrpcDataSource>();
+      fetch = () => ds.getMoveTransferStatus(transferId: t.id, userId: userId);
+    }
+    Get.toNamed(
+      AppRoutes.transferProof,
+      arguments: beamReceiptPayloadFromMoveTransfer(t, statusFetch: fetch),
+    );
+  }
+
+  void _openBeamWalletReceipt(PaymentsTransferResult r) {
+    final accounts = _currentAccounts();
+    final primary = accounts.isEmpty
+        ? null
+        : accounts.firstWhere((a) => a.isPrimary, orElse: () => accounts.first);
+    Get.toNamed(
+      AppRoutes.transferProof,
+      arguments: beamReceiptPayloadFromWalletTransfer(
+        r,
+        sourceName: primary?.accountName ??
+            primary?.displayName ??
+            'Your Lazervault wallet',
+        destName: r.recipientName ?? 'Lazervault account',
+        currency: primary?.currency ?? 'NGN',
+      ),
+    );
+  }
+
+  /// Leave the Lazerbeam landing back to the Lifestyle landing. Always routes
+  /// THROUGH the bottom-nav dashboard shell (Lifestyle = tab 4) so the bottom
+  /// nav is restored — a plain `Get.back()` here can land on a stranded,
+  /// nav-less frame (e.g. after a Redo clears the stack with `offAllNamed`).
+  void _leaveToLifestyle() {
+    Get.offAllNamed(AppRoutes.dashboard, arguments: {'initialTab': 4});
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppGradientBackground(
@@ -309,11 +370,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: _leaveToLifestyle,
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'LazerBeam',
+          'Lazerbeam',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -332,7 +393,10 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
-            serviceName: 'Beam',
+            // Display name only (the chat sheet renders "<serviceName> Assistant").
+            // Routing is driven by sourceContext:'transfers', so this is safe to
+            // brand as Lazerbeam.
+            serviceName: 'Lazerbeam',
             sourceContext: 'transfers',
             icon: Icons.chat_bubble_outline,
             iconColor: const Color(0xFF4834D4),
@@ -786,29 +850,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               // Continue button
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56.h,
-                  child: ElevatedButton(
-                    onPressed: _walletCanContinue ? _continueWalletTransfer : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4834D4),
-                      disabledBackgroundColor:
-                          const Color(0xFF4834D4).withValues(alpha: 0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Continue',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                child: BeamGradientButton(
+                  label: 'Continue',
+                  icon: Icons.arrow_forward_rounded,
+                  enabled: _walletCanContinue,
+                  onTap: _continueWalletTransfer,
                 ),
               ),
               SizedBox(height: 28.h),
@@ -828,7 +874,12 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   // ---------------------------------------------------------------------------
 
   Widget _buildWalletDraggableAccountPair(List<AccountSummaryEntity> accounts) {
-    return Column(
+    // Big rounded outer card holding the From / swap / To slots — the swap
+    // screen's signature "exchange" card.
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BeamStyle.card(radius: 20),
+      child: Column(
       children: [
         // FROM card
         _buildWalletDraggableSlot(
@@ -856,31 +907,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             account: _walletSourceAccount,
           ),
         ),
-        // Swap button — equal spacing above and below
+        // Swap button — purple gradient square, equal spacing above and below
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 6.h),
-          child: GestureDetector(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: BeamSwapButton(
             onTap:
                 (_walletSourceAccount != null || _walletDestinationAccount != null)
                     ? _swapWalletAccounts
                     : null,
-            child: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
-              ),
-              child: Icon(
-                Icons.swap_vert_rounded,
-                color:
-                    (_walletSourceAccount != null || _walletDestinationAccount != null)
-                        ? const Color(0xFF4834D4)
-                        : const Color(0xFF6B7280),
-                size: 22.sp,
-              ),
-            ),
           ),
         ),
         // TO card
@@ -910,6 +944,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           ),
         ),
       ],
+    ),
     );
   }
 
@@ -972,14 +1007,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         width: double.infinity,
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: BeamStyle.innerSurface,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: highlight
-                ? const Color(0xFF4834D4)
+                ? BeamStyle.purple
                 : account != null
-                    ? const Color(0xFF4834D4).withValues(alpha: 0.5)
-                    : const Color(0xFF2D2D2D),
+                    ? BeamStyle.purple.withValues(alpha: 0.35)
+                    : Colors.white.withValues(alpha: 0.06),
             width: highlight ? 2 : 1,
           ),
         ),
@@ -1312,7 +1347,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.walletTransferHistory),
                       child: Text(
-                        'See All',
+                        'View all',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF60A5FA),
                           fontSize: 13.sp,
@@ -1334,7 +1369,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             else if (transfers.isEmpty)
               _buildNoWalletTransfersState()
             else
-              ...transfers.map((t) => _buildWalletTransferItem(t)),
+              // Only the 3 most-recent inter-account transfers here; the full
+              // paginated list is behind "See All".
+              ...transfers.take(3).map((t) => _buildWalletTransferItem(t)),
             SizedBox(height: 24.h),
           ],
         );
@@ -1381,34 +1418,35 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   }
 
   Widget _buildWalletTransferItem(PaymentsTransferResult transfer) {
-    final amountDisplay = transfer.amount != null
-        ? _formatNaira(transfer.amount! / 100)
-        : 'NGN 0.00';
-    final description = transfer.reference ?? transfer.transferId ?? 'Transfer';
+    final ccy = transfer.currency ?? 'NGN';
+    final amountDisplay =
+        '${CurrencyUtils.getSymbol(ccy)}${NumberFormat('#,##0.00', 'en_NG').format((transfer.amount ?? 0) / 100)}';
+    // Prefer a human label (counterparty / narration) over the opaque ref.
+    final description = transfer.recipientName ??
+        transfer.description ??
+        transfer.reference ??
+        transfer.transferId ??
+        'Transfer';
     final date = transfer.createdAt ?? DateTime.now();
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       child: GestureDetector(
-        onTap: () => _showWalletTransferDetailSheet(transfer),
+        onTap: () => _openBeamWalletReceipt(transfer),
         child: Container(
         padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
+        decoration: BeamStyle.card(radius: 12),
         child: Row(
           children: [
             Container(
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF4834D4).withValues(alpha: 0.15),
+                color: BeamStyle.purple.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(Icons.account_balance_wallet_outlined,
-                  color: const Color(0xFF60A5FA), size: 20.sp),
+                  color: BeamStyle.purpleLight, size: 20.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -2199,7 +2237,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                     GestureDetector(
                       onTap: () => Get.toNamed('/move-money/history'),
                       child: Text(
-                        'See All',
+                        'View all',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF60A5FA),
                           fontSize: 13.sp,
@@ -2221,7 +2259,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             else if (transfers.isEmpty)
               _buildNoTransfersState()
             else
-              ...transfers.map((t) => _buildTransferItem(t)),
+              // Only the 3 most-recent LazerBeam interbank transfers here;
+              // the full paginated list is behind "See All".
+              ...transfers.take(3).map((t) => _buildTransferItem(t)),
             SizedBox(height: 24.h),
           ],
         );
@@ -2271,25 +2311,21 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       child: GestureDetector(
-        onTap: () => _showMoveTransferDetailSheet(transfer),
+        onTap: () => _openBeamBankReceipt(transfer),
         child: Container(
           padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
-          ),
+          decoration: BeamStyle.card(radius: 12),
           child: Row(
             children: [
               Container(
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4834D4).withValues(alpha: 0.15),
+                  color: BeamStyle.purple.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(Icons.swap_horiz_rounded,
-                    color: const Color(0xFF60A5FA), size: 20.sp),
+                    color: BeamStyle.purpleLight, size: 20.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(

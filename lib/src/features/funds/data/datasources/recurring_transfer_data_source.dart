@@ -241,7 +241,7 @@ class RecurringTransferDataSourceImpl implements IRecurringTransferDataSource {
       consecutiveFailures: rt.consecutiveFailures,
       lastExecutedAt: rt.lastExecutedAt.isNotEmpty ? DateTime.tryParse(rt.lastExecutedAt) : null,
       lastFailureReason: rt.lastFailureReason,
-      createdAt: DateTime.tryParse(rt.createdAt) ?? DateTime.now(),
+      createdAt: DateTime.tryParse(rt.createdAt)?.toLocal() ?? DateTime.now(),
       updatedAt: DateTime.tryParse(rt.updatedAt) ?? DateTime.now(),
     );
   }

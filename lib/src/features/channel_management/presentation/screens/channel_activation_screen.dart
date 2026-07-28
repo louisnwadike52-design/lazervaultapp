@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../cubit/channel_management_cubit.dart';
 import '../../cubit/channel_management_state.dart';
 import 'channel_pin_setup_screen.dart';
@@ -74,11 +75,24 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                 backgroundColor: const Color(0xFF10B981),
                 colorText: Colors.white,
               );
-              // Navigate to PIN setup
-              Get.off(() => ChannelPinSetupScreen(
-                    channelType: widget.channelType,
-                    isChange: false,
-                  ));
+              if (state.registration.hasPin) {
+                // Re-activation of a channel that still has a PIN — there's
+                // nothing to create (a Create would fail with "already have a
+                // PIN"). Pop back to Banking Channels, which reloads and shows a
+                // "Change PIN" option for this channel.
+                Get.until((route) =>
+                    route.settings.name == AppRoutes.channelManagement ||
+                    route.isFirst);
+              } else {
+                // New channel — guide the user straight into creating its PIN.
+                // Push (not replace) so this activation route stays under it;
+                // when PIN setup finishes it pops all the way back to Banking
+                // Channels, whose reload listener refreshes the PIN status.
+                Get.to(() => ChannelPinSetupScreen(
+                      channelType: widget.channelType,
+                      isChange: false,
+                    ));
+              }
             } else if (state is ChannelManagementError) {
               Get.snackbar(
                 'Error',

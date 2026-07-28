@@ -23,6 +23,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
   late Animation<double> _checkAnimation;
 
   Map<String, dynamic> ruleData = {};
+  bool _invalidArgs = false;
 
   @override
   void initState() {
@@ -33,6 +34,17 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
 
   void _initializeData() {
     ruleData = Get.arguments as Map<String, dynamic>? ?? {};
+    // Guard: this receipt is only valid straight after a rule was created (full
+    // args). On a blank/deep-link entry the trigger/amount casts in build would
+    // crash — route back to the autosave home instead.
+    if (ruleData['triggerType'] == null ||
+        ruleData['amountType'] == null ||
+        ruleData['amountValue'] == null) {
+      _invalidArgs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+      });
+    }
   }
 
   void _setupAnimations() {
@@ -75,6 +87,14 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
     Get.offAllNamed(AppRoutes.autoSaveDashboard);
   }
 
+  // "View All Rules" must open the rules list (it previously landed on the
+  // dashboard). Reset to the autosave home first so the rules list has a sane
+  // back target (→ dashboard) instead of an empty stack that would exit.
+  void _navigateToRules() {
+    Get.offAllNamed(AppRoutes.autoSaveDashboard);
+    Get.toNamed(AppRoutes.autoSaveRulesList);
+  }
+
   String _getTriggerDescription() {
     final triggerType = ruleData['triggerType'] as TriggerType;
     switch (triggerType) {
@@ -101,6 +121,29 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
         return bank != null && bank.isNotEmpty
             ? 'Bank Inflow ($bank)'
             : 'Bank Inflow';
+      case TriggerType.scheduledExternal:
+        final bank = ruleData['sourceBankName'] as String?;
+        final frequency = ruleData['frequency'] as ScheduleFrequency?;
+        String freqText;
+        switch (frequency) {
+          case ScheduleFrequency.daily:
+            freqText = 'Daily';
+            break;
+          case ScheduleFrequency.weekly:
+            freqText = 'Weekly';
+            break;
+          case ScheduleFrequency.biweekly:
+            freqText = 'Bi-Weekly';
+            break;
+          case ScheduleFrequency.monthly:
+            freqText = 'Monthly';
+            break;
+          default:
+            freqText = 'Scheduled';
+        }
+        return bank != null && bank.isNotEmpty
+            ? '$freqText Standing Order ($bank)'
+            : '$freqText Standing Order';
       default:
         return 'Unknown';
     }
@@ -119,6 +162,12 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (_invalidArgs) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: SizedBox.shrink(),
+      );
+    }
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -434,7 +483,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16.r),
-                  onTap: _navigateToDashboard,
+                  onTap: _navigateToRules,
                   child: Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,

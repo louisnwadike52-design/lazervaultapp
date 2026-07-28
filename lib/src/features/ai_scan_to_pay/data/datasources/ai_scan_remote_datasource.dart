@@ -35,8 +35,9 @@ abstract class AiScanRemoteDataSource {
     String imagePath,
     String userId,
     String sessionId,
-    String accessToken,
-  );
+    String accessToken, {
+    bool lean = false,
+  });
   Future<PaymentReceiptModel> processBankDetailsPayment({
     required BankDetailsModel bankDetails,
     required double amount,
@@ -380,12 +381,18 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
         if (responseData['success'] == true) {
-          final extractedData =
-              responseData['extracted_data'] as Map<String, dynamic>;
+          // Fields live under `data` (top-level `confidence`), not the legacy
+          // `extracted_data`/`confidence_score`. Read both for back-compat.
+          final extractedData = (responseData['data'] as Map?)
+                  ?.cast<String, dynamic>() ??
+              (responseData['extracted_data'] as Map?)?.cast<String, dynamic>() ??
+              <String, dynamic>{};
 
-          // Check confidence score
+          // Check confidence score (top-level `confidence`, legacy fallback).
           final confidenceScore =
-              (extractedData['confidence_score'] as num?)?.toDouble() ?? 0.0;
+              (responseData['confidence'] as num?)?.toDouble() ??
+                  (extractedData['confidence_score'] as num?)?.toDouble() ??
+                  0.0;
           if (confidenceScore < 0.3) {
             throw OCRException.lowConfidence(confidence: confidenceScore);
           }
@@ -473,8 +480,9 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     String imagePath,
     String userId,
     String sessionId,
-    String accessToken,
-  ) async {
+    String accessToken, {
+    bool lean = false,
+  }) async {
     try {
       // Validate image file.
       final imageFile = File(imagePath);
@@ -519,7 +527,11 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
 
       final scanBase =
           chatGatewayBaseUrl.replaceAll(RegExp(r'/chat/?$'), '');
-      final uri = Uri.parse('$scanBase/scan/bank-details');
+      // Manual "tap to capture" fallback hits the lean per-service route
+      // (/scan/extract) — same OCR on chat-transfers-service, minus the busy
+      // gateway orchestration. Auto-detect keeps the full /scan/bank-details.
+      final uri =
+          Uri.parse('$scanBase/scan/${lean ? 'extract' : 'bank-details'}');
       final headers = await _getHeaders(overrideAccessToken: accessToken);
       final response = await httpClient
           .post(uri, headers: headers, body: jsonEncode(payload))
@@ -534,10 +546,31 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
         // could not extract anything payable — surface that as a no_data
         // analysis so the unified flow shows the retry UI rather than crashing.
         if (responseData['success'] == true) {
-          final extractedData =
-              (responseData['extracted_data'] as Map?)?.cast<String, dynamic>() ??
+          // Backend contract (SmartScanResponse): the extracted FIELDS live in
+          // `data`, while the authoritative `extraction_type` + `confidence` are
+          // TOP-LEVEL. The old code read the non-existent `extracted_data`, so
+          // every scan parsed as an empty map → inferred `no_data` → "couldn't
+          // find payment details" on 100% of scans. Merge the envelope + data
+          // (mirrors the working recipients SmartScanResult parser).
+          final data =
+              (responseData['data'] as Map?)?.cast<String, dynamic>() ??
+                  (responseData['extracted_data'] as Map?)
+                      ?.cast<String, dynamic>() ??
                   <String, dynamic>{};
-          return ScanAnalysisModel.fromExtractedData(extractedData);
+          final merged = <String, dynamic>{
+            ...data,
+            'extraction_type':
+                responseData['extraction_type'] ?? data['extraction_type'],
+            if (responseData['confidence'] != null)
+              'confidence': responseData['confidence'],
+            if (responseData['possible_types'] != null)
+              'possible_types': responseData['possible_types'],
+            if (responseData['disambiguation_hint'] != null)
+              'disambiguation_hint': responseData['disambiguation_hint'],
+            if (responseData['missing_fields'] != null)
+              'missing_fields': responseData['missing_fields'],
+          };
+          return ScanAnalysisModel.fromExtractedData(merged);
         }
         // Non-success 200 — treat as no_data (caller decides messaging).
         return const ScanAnalysisModel(extractionType: 'no_data');

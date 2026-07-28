@@ -23,11 +23,21 @@ class _AutoSaveRuleProcessingScreenState
 
   Map<String, dynamic> ruleData = {};
   bool _hasStartedProcessing = false;
+  bool _invalidArgs = false;
 
   @override
   void initState() {
     super.initState();
     ruleData = Get.arguments as Map<String, dynamic>? ?? {};
+    // Guard: this screen only exists mid-creation with a full rule map. On a
+    // blank/deep-link entry (or missing keys) the createRule cast would crash —
+    // bail to the autosave home instead.
+    if (ruleData['name'] == null || ruleData['triggerType'] == null) {
+      _invalidArgs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
+      });
+    }
 
     _animationController = AnimationController(
       vsync: this,
@@ -47,9 +57,23 @@ class _AutoSaveRuleProcessingScreenState
   }
 
   void _startProcessing() {
-    if (_hasStartedProcessing) return;
+    if (_invalidArgs || _hasStartedProcessing) return;
     _hasStartedProcessing = true;
 
+    // Defensive: the map is complete in the normal create flow, but a
+    // malformed/partial map (missing amountValue/sourceAccountId/… which are
+    // hard-cast below) must bail home, not crash. Catches any cast error during
+    // argument evaluation.
+    try {
+      _dispatchCreate();
+    } catch (_) {
+      if (mounted) {
+        Get.offAllNamed(AppRoutes.autoSaveDashboard);
+      }
+    }
+  }
+
+  void _dispatchCreate() {
     context.read<AutoSaveCubit>().createRule(
           name: ruleData['name'] as String,
           description: ruleData['description'] as String,

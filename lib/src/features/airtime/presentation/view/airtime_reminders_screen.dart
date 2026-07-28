@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../cubit/airtime_reminder_cubit.dart';
 import '../cubit/airtime_reminder_state.dart';
 import '../cubit/airtime_state.dart' show AirtimeReminder;
@@ -23,7 +24,8 @@ class AirtimeRemindersScreen extends StatefulWidget {
   State<AirtimeRemindersScreen> createState() => _AirtimeRemindersScreenState();
 }
 
-class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen> {
+class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
+    with ReminderPauseResumeMixin<AirtimeRemindersScreen> {
   /// Cached list from the most recent successful load — so post-create/
   /// complete/delete refetches don't flash a full-screen shimmer.
   List<AirtimeReminder>? _cachedList;
@@ -47,7 +49,9 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen> {
   }
 
   bool _isActive(AirtimeReminder r) =>
-      r.status == 'pending' || r.status == 'notified';
+      r.status == 'pending' ||
+      r.status == 'notified' ||
+      r.status == 'paused';
 
   bool _isCompleted(AirtimeReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -197,6 +201,14 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen> {
                   }
                   final list = _cachedList;
                   if (list == null) {
+                    // No successful load yet — if the initial fetch failed,
+                    // show an inline retry state instead of shimmering
+                    // forever (the listener above already surfaced a
+                    // transient snackbar, but that alone would leave the
+                    // screen stuck on a loading skeleton with no way out).
+                    if (state is AirtimeReminderError) {
+                      return _buildLoadErrorState(state.message);
+                    }
                     return AirtimeAutoRechargeShimmer(itemCount: 4);
                   }
                   if (list.isEmpty) return _buildEmpty();
@@ -374,6 +386,64 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen> {
     );
   }
 
+  /// Inline error state for the initial reminders load — shown only when
+  /// no successful load has landed yet (a later refresh error just shows
+  /// its snackbar without disturbing the already-rendered list). Retry is
+  /// a single explicit user tap, never an automatic loop.
+  Widget _buildLoadErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(40.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline,
+                size: 56.sp, color: const Color(0xFFEF4444)),
+            SizedBox(height: 20.h),
+            Text(
+              'Couldn\'t load reminders',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 14.sp,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton(
+              onPressed: () => context
+                  .read<AirtimeReminderCubit>()
+                  .getReminders(includePast: true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child: Text(
+                'Retry',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _reminderCard(AirtimeReminder r, {bool isDue = false}) {
     final date = _parseDate(r.reminderDate);
 
@@ -390,6 +460,27 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen> {
       onPayNow: isDue && !_isCompleted(r) ? () => _payNow(r) : null,
       onMarkComplete: !_isCompleted(r) ? () => _markComplete(r) : null,
       onEdit: !_isCompleted(r) ? () => _edit(r) : null,
+      onPause: r.status == 'pending'
+          ? () => runReminderStatusChange(
+                billType: 'airtime',
+                reminderId: r.id,
+                pause: true,
+                onSuccessReload: () => context
+                    .read<AirtimeReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      onResume: r.status == 'paused'
+          ? () => runReminderStatusChange(
+                billType: 'airtime',
+                reminderId: r.id,
+                pause: false,
+                onSuccessReload: () => context
+                    .read<AirtimeReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      isProcessing: busyReminderId == r.id,
       onDelete: () => _delete(r),
     );
   }

@@ -90,37 +90,43 @@ class VoiceTransferSummaryCard extends StatelessWidget {
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: Padding(
-        padding: EdgeInsets.all(24.w),
+        // Compact padding so the selected-transfer card leaves room for the
+        // conversation transcript above it (was 24 all round).
+        padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 16.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header icon
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.send_rounded,
-                color: const Color(0xFF3B82F6),
-                size: 28.sp,
-              ),
+            // Compact header: icon + title on one row (was a stacked 56px circle
+            // + 20sp title taking ~90px of height).
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 34.w,
+                  height: 34.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.send_rounded,
+                    color: const Color(0xFF3B82F6),
+                    size: 18.sp,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Text(
+                  'Confirm Transfer',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
 
-            SizedBox(height: 16.h),
-
-            Text(
-              'Confirm Transfer',
-              style: GoogleFonts.inter(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-
-            SizedBox(height: 20.h),
+            SizedBox(height: 12.h),
 
             // Details
             _buildDetailRow('To', recipient),
@@ -154,14 +160,14 @@ class VoiceTransferSummaryCard extends StatelessWidget {
               isBold: true,
             ),
 
-            SizedBox(height: 24.h),
+            SizedBox(height: 16.h),
 
             // Buttons
             Row(
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 48.h,
+                    height: 44.h,
                     child: OutlinedButton(
                       onPressed: onCancel,
                       style: OutlinedButton.styleFrom(
@@ -181,7 +187,7 @@ class VoiceTransferSummaryCard extends StatelessWidget {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: SizedBox(
-                    height: 48.h,
+                    height: 44.h,
                     child: ElevatedButton(
                       onPressed: onConfirm,
                       style: ElevatedButton.styleFrom(
@@ -208,14 +214,15 @@ class VoiceTransferSummaryCard extends StatelessWidget {
 
   Widget _buildDetailRow(String label, String value, {bool isBold = false, bool isSubtle = false}) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: isSubtle ? 2.h : 10.h),
+      // Tighter rows so the whole summary stays compact (was 10.h per row).
+      padding: EdgeInsets.symmetric(vertical: isSubtle ? 2.h : 5.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: GoogleFonts.inter(
-              fontSize: isSubtle ? 12.sp : 14.sp,
+              fontSize: isSubtle ? 12.sp : 13.sp,
               color: const Color(0xFF9CA3AF),
             ),
           ),
@@ -223,7 +230,7 @@ class VoiceTransferSummaryCard extends StatelessWidget {
             child: Text(
               value,
               style: GoogleFonts.inter(
-                fontSize: isSubtle ? 12.sp : 14.sp,
+                fontSize: isSubtle ? 12.sp : 13.sp,
                 fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
                 color: isSubtle ? const Color(0xFF9CA3AF) : Colors.white,
               ),

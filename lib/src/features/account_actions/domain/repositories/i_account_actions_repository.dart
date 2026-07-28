@@ -39,6 +39,12 @@ abstract class IAccountActionsRepository {
     String? accessToken,
   });
 
+  /// Read current spending usage (limits + today's/this month's spend).
+  Future<Either<Failure, SpendingUsageEntity>> getSpendingUsage({
+    required String accountId,
+    String? accessToken,
+  });
+
   /// Reveal card PIN (with authentication)
   Future<Either<Failure, String>> revealPIN({
     required String accountId,
@@ -82,6 +88,29 @@ enum AccountStatusAction {
   temporarilyBlock,
   permanentlyBlock,
   reportStolen,
+}
+
+/// Current spending usage for an account (limits + spend so far).
+class SpendingUsageEntity {
+  final String currency;
+  final double dailyLimit; // 0 = no limit
+  final double monthlyLimit; // 0 = no limit
+  final double singleTransactionLimit; // 0 = no limit
+  final double dailySpent;
+  final double monthlySpent;
+  final double remainingDaily; // -1 when no limit
+  final double remainingMonthly; // -1 when no limit
+
+  const SpendingUsageEntity({
+    required this.currency,
+    required this.dailyLimit,
+    required this.monthlyLimit,
+    required this.singleTransactionLimit,
+    required this.dailySpent,
+    required this.monthlySpent,
+    required this.remainingDaily,
+    required this.remainingMonthly,
+  });
 }
 
 /// Card details revealed after authentication

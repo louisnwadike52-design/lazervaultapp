@@ -13,7 +13,7 @@ class ConvertContactToRecipientUseCase {
   /// [accountNumber] - Optional bank account number
   /// [bankName] - Optional bank name
   /// [sortCode] - Optional sort code
-  /// [autoDetectLazervault] - If true, tries to detect if this is a LazerVault user
+  /// [autoDetectLazervault] - If true, tries to detect if this is a Lazervault user
   Future<ConvertResult> call({
     required DeviceContact contact,
     String? accountNumber,

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
@@ -16,9 +17,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/invoice_entity.dart';
+import '../../domain/entities/invoice_fee_quote.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../../services/invoice_pdf_service.dart';
 import '../../services/invoice_qr_service.dart';
+import '../utils/share_origin.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../contacts/data/repositories/contact_sync_repository.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -30,10 +33,10 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
-import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 String _getCurrencySymbolFromCode(String code) {
   switch (code.toUpperCase()) {
@@ -78,6 +81,16 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
   bool _isProcessingPayment = false;
   String? _selectedAccountId;
 
+  // Service fee resolved by the backend (admin base fee, FX-converted into the
+  // active account's currency). No hardcoded amount.
+  InvoiceFeeQuote? _feeQuote;
+  double get _feeAmount => _feeQuote?.amount ?? 0.0;
+  String get _feeCurrencyCode => _feeQuote?.currency ?? invoice.currency;
+  String get _feeCurrencySymbol => _getCurrencySymbolFromCode(_feeCurrencyCode);
+  String get _feeLabel => _feeQuote == null
+      ? 'Pay Service Fee'
+      : 'Pay Service Fee ($_feeCurrencySymbol${_feeAmount.toStringAsFixed(2)})';
+
   // Get the invoice from arguments (handles both direct invoice and wrapped in map)
   Invoice get _invoice {
     final args = Get.arguments as Map<String, dynamic>?;
@@ -105,6 +118,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     }
     // Set default account
     _fetchAccounts();
+    _loadFeeQuote();
   }
 
   void _fetchAccounts() {
@@ -115,6 +129,13 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
           userId: authState.profile.userId,
         );
       }
+    } catch (_) {}
+  }
+
+  Future<void> _loadFeeQuote() async {
+    try {
+      final quote = await serviceLocator<InvoiceRepository>().getServiceFeeQuote();
+      if (mounted) setState(() => _feeQuote = quote);
     } catch (_) {}
   }
 
@@ -924,8 +945,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
                     'invoice_id': invoice.id,
                     'payment_reference': state.invoice != null ? 'UNLOCK-${state.invoice!.id.substring(0, 8)}' : 'UNLOCK-${DateTime.now().millisecondsSinceEpoch}',
-                    'amount': 99.99,
-                    'currency': invoice.currency,
+                    'amount': _feeAmount,
+                    'currency': _feeCurrencyCode,
                     'status': 'completed',
                   });
                 } else if (state is InvoiceServiceFeePaid) {
@@ -934,8 +955,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
                     'invoice_id': invoice.id,
                     'payment_reference': state.serviceFeeRef,
-                    'amount': 99.99,
-                    'currency': invoice.currency,
+                    'amount': _feeAmount,
+                    'currency': _feeCurrencyCode,
                     'status': 'completed',
                   });
                 } else if (state is InvoiceError) {
@@ -968,7 +989,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
                   label: Text(
                     _isProcessingPayment
                         ? 'Processing Payment...'
-                        : 'Pay Service Fee (₦99.99)',
+                        : _feeLabel,
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 15.sp,
@@ -1433,16 +1454,33 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
 
       final filePath = await InvoicePdfService.downloadInvoice(invoice);
 
+      // Open the saved PDF so the CTA visibly does something on both platforms
+      // (on iOS the download dir isn't user-visible; opening lets the user
+      // save-to-Files / print / share from the viewer).
+      final openResult = await OpenFilex.open(filePath);
+
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Invoice PDF saved to $filePath'),
-          backgroundColor: InvoiceThemeColors.successGreen,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (openResult.type == ResultType.done) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Invoice PDF downloaded'),
+            backgroundColor: InvoiceThemeColors.successGreen,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        // Saved but no viewer could open it — tell the user where it is.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Invoice PDF saved to $filePath'),
+            backgroundColor: InvoiceThemeColors.infoBlue,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -1477,8 +1515,11 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         ),
       );
 
-      await InvoicePdfService.shareInvoice(invoice);
-      
+      await InvoicePdfService.shareInvoice(
+        invoice,
+        sharePositionOrigin: shareOriginFromContext(context),
+      );
+
       // Hide loading indicator
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -2045,7 +2086,12 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       );
 
       // Capture the QR code widget as an image
-      RenderRepaintBoundary boundary = qrKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final qrCtx = qrKey.currentContext;
+      final boundaryObj = qrCtx?.findRenderObject();
+      if (boundaryObj is! RenderRepaintBoundary) {
+        throw Exception('QR code is not ready yet, please try again');
+      }
+      final RenderRepaintBoundary boundary = boundaryObj;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       
@@ -2072,6 +2118,8 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         files: [XFile(file.path)],
         text: '$title - ${invoice.title}\nAmount: ${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
         subject: '$title - ${invoice.title}',
+        // Required by iOS/iPadOS to anchor the share sheet popover.
+        sharePositionOrigin: context.mounted ? shareOriginFromContext(context) : null,
       ));
 
       // Clean up temp file after a delay
@@ -2128,10 +2176,10 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       context: context,
       transactionId: transactionId,
       transactionType: 'invoice_unlock',
-      amount: 99.99,
-      currency: invoice.currency,
+      amount: _feeAmount,
+      currency: _feeCurrencyCode,
       title: 'Confirm Service Fee',
-      message: 'Confirm invoice unlock fee of ${invoice.currency} 99.99',
+      message: 'Confirm invoice unlock fee of $_feeCurrencyCode ${_feeAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -2204,13 +2252,13 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
 
   String _searchQuery = '';
   final Set<String> _selectedUserIds = {};
+  // Display identity for each tagged user id, captured at selection time from
+  // the unified search result so the preview shows the real name/username
+  // immediately (never "Unknown user") without a round-trip.
+  final Map<String, InvoiceUser> _taggedUserDetails = {};
   final Set<String> _selectedEmails = {};
   final Set<String> _selectedPhones = {};
   Set<String> _alreadyTaggedUserIds = {};
-
-  // Payment-related properties
-  String? _selectedAccountId;
-  bool _isProcessingPayment = false;
 
   Invoice get invoice => widget.invoice;
 
@@ -2410,28 +2458,55 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
           ),
           if (_selectedUserIds.isNotEmpty) ...[
             SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-              ),
-              child: Text(
-                '${_selectedUserIds.length} user${_selectedUserIds.length == 1 ? '' : 's'} selected',
-                style: GoogleFonts.inter(
-                  color: InvoiceThemeColors.infoBlue,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: _selectedUserIds.map((id) {
+                final u = _taggedUserDetails[id];
+                final label = (u?.name.trim().isNotEmpty ?? false)
+                    ? u!.name.trim()
+                    : ((u?.username.trim().isNotEmpty ?? false)
+                        ? '@${u!.username.trim()}'
+                        : 'Lazervault user');
+                return Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                  decoration: BoxDecoration(
+                    color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                        color: InvoiceThemeColors.infoBlue
+                            .withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.person,
+                          size: 14.sp, color: InvoiceThemeColors.infoBlue),
+                      SizedBox(width: 6.w),
+                      Text(
+                        label,
+                        style: GoogleFonts.inter(
+                          color: InvoiceThemeColors.infoBlue,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _selectedUserIds.remove(id);
+                          _taggedUserDetails.remove(id);
+                        }),
+                        child: Icon(Icons.close,
+                            size: 15.sp,
+                            color: InvoiceThemeColors.infoBlue
+                                .withValues(alpha: 0.8)),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ],
@@ -2535,6 +2610,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             ),
             child: TextField(
               controller: _searchController,
+              readOnly: true,
+              onTap: _openUnifiedSearch,
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
@@ -2545,7 +2622,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
-                hintText: 'Search by name, email, or @username...',
+                hintText: 'Search people to tag',
                 hintStyle: GoogleFonts.inter(
                   color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 16.sp,
@@ -3480,6 +3557,40 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     }
   }
 
+  /// Opens the shared unified search (saved contacts incl. alias → global) and
+  /// toggles the picked user into the tagged set.
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Tag people');
+    if (result == null || !mounted) return;
+    final id = result.userId;
+    if (id.isEmpty) return;
+    setState(() {
+      if (_selectedUserIds.contains(id)) {
+        _selectedUserIds.remove(id);
+        _taggedUserDetails.remove(id);
+      } else {
+        _selectedUserIds.add(id);
+        // Capture the resolved identity so the preview chip shows a real name.
+        final display = result.displayName.trim().isNotEmpty
+            ? result.displayName.trim()
+            : (result.name.trim().isNotEmpty
+                ? result.name.trim()
+                : (result.username.trim().isNotEmpty
+                    ? '@${result.username.trim()}'
+                    : 'Lazervault user'));
+        _taggedUserDetails[id] = InvoiceUser(
+          id: id,
+          name: display,
+          email: result.email,
+          username: result.username,
+          phone: result.phoneNumber,
+          isOnline: false,
+        );
+      }
+    });
+  }
+
   Future<void> _searchUsers(String query) async {
     if (_loadingSearch) return;
 
@@ -3673,62 +3784,4 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     );
   }
 
-  Future<void> _handleServiceFeePayment() async {
-    // Get the default account for payment
-    try {
-      final accountState = Get.find<AccountCardsSummaryCubit>().state;
-      if (accountState is AccountCardsSummaryLoaded && accountState.accountSummaries.isNotEmpty) {
-        _selectedAccountId = accountState.accountSummaries.first.id;
-      }
-    } catch (_) {
-      _showErrorSnackbar('Could not load account information');
-      return;
-    }
-
-    if (_selectedAccountId == null || _selectedAccountId!.isEmpty) {
-      _showErrorSnackbar('No account available for payment');
-      return;
-    }
-
-    HapticFeedback.mediumImpact();
-
-    // Generate transaction ID
-    final transactionId = 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
-
-    // Show PIN bottomsheet and verify
-    String? verificationToken;
-
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: transactionId,
-      transactionType: 'invoice_unlock',
-      amount: 99.99,
-      currency: invoice.currency,
-      title: 'Confirm Service Fee',
-      message: 'Confirm invoice unlock fee of ${invoice.currency} 99.99',
-      onPinValidated: (token) async {
-        verificationToken = token;
-      },
-    );
-
-    if (!success || verificationToken == null) return;
-
-    // Set the selected account on AccountManager so x-account-id metadata is sent
-    try {
-      GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId!);
-    } catch (_) {}
-
-    setState(() {
-      _isProcessingPayment = true;
-    });
-
-    // Process the payment - unlock the invoice by paying service fee
-    final cubit = Get.find<InvoiceCubit>();
-    await cubit.unlockInvoice(
-      invoice.id,
-      accountId: _selectedAccountId,
-      verificationToken: verificationToken,
-      transactionId: transactionId,
-    );
-  }
 }

@@ -111,12 +111,12 @@ class CashFlowInsightsCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(6.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
                     Icons.trending_up,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     size: 18.sp,
                   ),
                 ),
@@ -308,7 +308,7 @@ class CashFlowInsightsCard extends StatelessWidget {
               value: (category.percentage / 100).clamp(0.0, 1.0),
               minHeight: 4.h,
               backgroundColor: Colors.white.withValues(alpha: 0.05),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
             ),
           ),
         ],

@@ -979,6 +979,96 @@ service UtilityPaymentsService {
       body: "*"
     };
   }
+
+  // === ePIN (RECHARGE CARD PRINTING) — VTU Africa ===
+
+  // List networks + denominations available for recharge-card printing.
+  rpc GetEPinNetworks(GetEPinNetworksRequest) returns (GetEPinNetworksResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/epin/networks"
+    };
+  }
+
+  // Buy a batch of recharge-card PINs.
+  rpc InitiateEPinPurchase(InitiateEPinPurchaseRequest) returns (InitiateEPinPurchaseResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/epin/purchase"
+      body: "*"
+    };
+  }
+
+  // Fetch a single ePIN order with its generated PINs (owner-only).
+  rpc GetEPinOrder(GetEPinOrderRequest) returns (GetEPinOrderResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/epin/orders/{order_id}"
+    };
+  }
+
+  // List the caller's ePIN orders (paginated).
+  rpc ListEPinOrders(ListEPinOrdersRequest) returns (ListEPinOrdersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/epin/orders"
+    };
+  }
+
+  // Receipt (with optional PDF URL) for an ePIN order.
+  rpc GetEPinReceipt(GetEPinReceiptRequest) returns (GetEPinReceiptResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/epin/orders/{order_id}/receipt"
+    };
+  }
+
+  // === BETTING WALLET FUNDING ("BERT") — VTU Africa ===
+
+  // List supported betting platforms.
+  rpc GetBettingPlatforms(GetBettingPlatformsRequest) returns (GetBettingPlatformsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/betting/platforms"
+    };
+  }
+
+  // Verify a betting account id and resolve the holder name.
+  rpc VerifyBettingAccount(VerifyBettingAccountRequest) returns (VerifyBettingAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/betting/verify"
+      body: "*"
+    };
+  }
+
+  // Fund a betting account.
+  rpc InitiateBettingFunding(InitiateBettingFundingRequest) returns (InitiateBettingFundingResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/betting/fund"
+      body: "*"
+    };
+  }
+
+  // Betting funding history (paginated).
+  rpc GetBettingHistory(GetBettingHistoryRequest) returns (GetBettingHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/betting/history"
+    };
+  }
+
+  // Saved betting accounts.
+  rpc SaveBettingBeneficiary(SaveBettingBeneficiaryRequest) returns (SaveBettingBeneficiaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/betting/beneficiaries"
+      body: "*"
+    };
+  }
+
+  rpc GetBettingBeneficiaries(GetBettingBeneficiariesRequest) returns (GetBettingBeneficiariesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/betting/beneficiaries"
+    };
+  }
+
+  rpc DeleteBettingBeneficiary(DeleteBettingBeneficiaryRequest) returns (DeleteBettingBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/betting/beneficiaries/{beneficiary_id}"
+    };
+  }
 }
 
 // ===== MODELS =====
@@ -1003,6 +1093,10 @@ message BillPayment {
   // `vtpass_failed`, `reloadly_primary_failed`, `both_failed`,
   // `admin_disabled_all_gateways`, `kafka_publish_failed`, etc.
   string refund_source = 14;
+  // final_provider: the gateway that actually fulfilled this bill
+  // (vtpass | vtuafrica | reloadly) after any failover. Populated on
+  // history/status reads. Empty until provider-terminal.
+  string final_provider = 15;
 }
 
 message BillProvider {
@@ -1703,6 +1797,8 @@ message GetAirtimeToCashHistoryResponse {
 
 message VerifyAirtimeToCashServiceRequest {
   string network = 1;
+  // Optional gateway to probe (vtuafrica | airtimetocash). Empty = active provider.
+  string provider = 2;
 }
 
 message VerifyAirtimeToCashServiceResponse {
@@ -3343,5 +3439,205 @@ message MarkInternetReminderCompleteRequest {
 }
 
 message MarkInternetReminderCompleteResponse {
+  string message = 1;
+}
+
+// ===================== ePIN (RECHARGE CARD PRINTING) =====================
+
+message EPinDenomination {
+  double amount = 1;         // face value in naira
+  string variation = 2;      // VTU Africa variation/denomination code
+  string label = 3;          // display label, e.g. "₦100"
+}
+
+message EPinNetwork {
+  string code = 1;           // "MTN", "GLO", "AIRTEL", "9MOBILE"
+  string name = 2;
+  string logo_url = 3;
+  bool is_active = 4;
+  repeated EPinDenomination denominations = 5;
+}
+
+message GetEPinNetworksRequest {}
+
+message GetEPinNetworksResponse {
+  repeated EPinNetwork networks = 1;
+}
+
+message InitiateEPinPurchaseRequest {
+  string network = 1;                 // "MTN" ...
+  double denomination = 2;            // face value in naira
+  int32 quantity = 3;
+  string source_account_id = 4;
+  string phone_number = 5;            // optional contact for receipt
+
+  // Transaction PIN verification
+  string transaction_id = 6;
+  string verification_token = 7;
+
+  // Idempotency
+  string idempotency_key = 8;
+
+  // Optional vendor/business name printed on each card (else the merchant name).
+  string business_name = 9;
+}
+
+message EPinCard {
+  string id = 1;
+  string network = 2;
+  double denomination = 3;
+  string product_name = 4;
+  string pin = 5;                     // decrypted; owner-only responses
+  string serial = 6;
+  string status = 7;                  // active | used
+  string created_at = 8;
+}
+
+message EPinOrder {
+  string id = 1;                      // bill_payment id
+  string network = 2;
+  double denomination = 3;
+  int32 quantity = 4;
+  double amount = 5;
+  double service_fee = 6;
+  double total_amount = 7;
+  string status = 8;                  // pending | processing | completed | failed | reversed
+  string reference = 9;
+  string provider_reference = 10;
+  string created_at = 11;
+  repeated EPinCard cards = 12;       // populated on order/receipt fetch (owner-only)
+  string business_name = 13;          // optional vendor name printed on the cards
+}
+
+message InitiateEPinPurchaseResponse {
+  EPinOrder order = 1;
+  double new_balance = 2;
+  string message = 3;
+}
+
+message GetEPinOrderRequest {
+  string order_id = 1;
+}
+
+message GetEPinOrderResponse {
+  EPinOrder order = 1;
+}
+
+message ListEPinOrdersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListEPinOrdersResponse {
+  repeated EPinOrder orders = 1;
+  int32 total = 2;
+}
+
+message GetEPinReceiptRequest {
+  string order_id = 1;
+}
+
+message GetEPinReceiptResponse {
+  EPinOrder order = 1;
+  string pdf_url = 2;                 // storage-service public URL (optional)
+}
+
+// ===================== BETTING WALLET FUNDING =====================
+
+message BettingPlatform {
+  string code = 1;                    // "bet9ja", "sportybet", ...
+  string name = 2;                    // "Bet9ja"
+  string logo_url = 3;
+  bool is_active = 4;
+  double min_amount = 5;
+  double max_amount = 6;
+}
+
+message GetBettingPlatformsRequest {}
+
+message GetBettingPlatformsResponse {
+  repeated BettingPlatform platforms = 1;
+}
+
+message VerifyBettingAccountRequest {
+  string platform = 1;
+  string account_userid = 2;
+}
+
+message VerifyBettingAccountResponse {
+  bool valid = 1;
+  string account_name = 2;
+  string message = 3;
+}
+
+message InitiateBettingFundingRequest {
+  string platform = 1;
+  string account_userid = 2;
+  string account_name = 3;            // from verify step (display/audit)
+  double amount = 4;
+  string source_account_id = 5;
+  string phone_number = 6;
+
+  // Transaction PIN verification
+  string transaction_id = 7;
+  string verification_token = 8;
+
+  // Idempotency
+  string idempotency_key = 9;
+
+  bool save_beneficiary = 10;
+  string nickname = 11;
+}
+
+message InitiateBettingFundingResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string provider_reference = 3;
+  string message = 4;
+}
+
+message GetBettingHistoryRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetBettingHistoryResponse {
+  repeated BillPayment payments = 1;
+  int32 total = 2;
+}
+
+message BettingBeneficiary {
+  string id = 1;
+  string platform = 2;
+  string account_userid = 3;
+  string account_name = 4;
+  string nickname = 5;
+  bool is_default = 6;
+  string created_at = 7;
+}
+
+message SaveBettingBeneficiaryRequest {
+  string platform = 1;
+  string account_userid = 2;
+  string account_name = 3;
+  string nickname = 4;
+  bool is_default = 5;
+}
+
+message SaveBettingBeneficiaryResponse {
+  BettingBeneficiary beneficiary = 1;
+}
+
+message GetBettingBeneficiariesRequest {}
+
+message GetBettingBeneficiariesResponse {
+  repeated BettingBeneficiary beneficiaries = 1;
+}
+
+message DeleteBettingBeneficiaryRequest {
+  string beneficiary_id = 1;
+}
+
+message DeleteBettingBeneficiaryResponse {
   string message = 1;
 }

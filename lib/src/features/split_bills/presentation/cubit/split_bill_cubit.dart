@@ -86,6 +86,7 @@ class SplitBillCubit extends Cubit<SplitBillState> {
   }
 
   Future<void> createSplitBill({
+    required String title,
     required double totalAmount,
     required String currency,
     required String description,
@@ -99,6 +100,7 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       if (isClosed) return;
       emit(SplitBillLoading());
       final bill = await repository.createSplitBill(
+        title: title,
         totalAmount: totalAmount,
         currency: currency,
         description: description,
@@ -207,12 +209,16 @@ class SplitBillCubit extends Cubit<SplitBillState> {
     }
   }
 
-  Future<void> sendReminder(String splitBillId) async {
+  Future<void> sendReminder(
+    String splitBillId, {
+    List<String>? participantUserIds,
+  }) async {
     try {
       if (isClosed) return;
       emit(SplitBillLoading());
       final count = await repository.sendSplitBillReminder(
         splitBillId: splitBillId,
+        participantUserIds: participantUserIds,
       );
       if (isClosed) return;
       emit(SplitBillReminderSent(

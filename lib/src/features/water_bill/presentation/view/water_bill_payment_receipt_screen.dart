@@ -51,6 +51,9 @@ class _WaterBillPaymentReceiptScreenState
 
     final saveBeneficiary = (args['saveBeneficiary'] as bool?) ?? false;
     final nickname = args['beneficiaryNickname'] as String?;
+    // Already-saved account: the QuickBuy resolved the existing beneficiary,
+    // so reuse its id (skip the duplicate save) and still attach auto-pay.
+    final existingBeneficiaryId = args['existingBeneficiaryId'] as String?;
     final autoPayEnabled = (args['autoPayEnabled'] as bool?) ?? false;
     final rolloverAmount = args['rolloverAmount'] as double?;
     final rolloverFrequency = args['rolloverFrequency'] as String?;
@@ -67,8 +70,8 @@ class _WaterBillPaymentReceiptScreenState
     final ds = GetIt.I<WaterBeneficiaryRemoteDataSource>();
 
     // --- Save beneficiary (or reuse existing) ---
-    String? beneficiaryId;
-    if (saveBeneficiary) {
+    String? beneficiaryId = existingBeneficiaryId;
+    if (saveBeneficiary && beneficiaryId == null && accountNumber.isNotEmpty) {
       try {
         final saved = await ds.saveBeneficiary(
           accountNumber: accountNumber,

@@ -157,7 +157,8 @@ class AiScanRepositoryImpl implements AiScanRepository {
   }
 
   @override
-  Future<ScanAnalysis> analyzeScan(String imagePath, String sessionId) async {
+  Future<ScanAnalysis> analyzeScan(String imagePath, String sessionId,
+      {bool lean = false}) async {
     final userId = await _getUserId();
     final accessToken = await secureStorage.getAccessToken();
 
@@ -170,6 +171,7 @@ class AiScanRepositoryImpl implements AiScanRepository {
       userId,
       sessionId,
       accessToken,
+      lean: lean,
     );
   }
 

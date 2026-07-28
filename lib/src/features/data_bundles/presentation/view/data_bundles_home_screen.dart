@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../widgets/data_recent_purchases_card.dart';
+import '../widgets/data_quick_buy.dart';
 
 /// Two-tab landing for data bundles mirroring the airtime landing page:
 ///   - Local: NGN network grid → BuyData / GetDataPlans (eBills Africa).
@@ -38,32 +39,6 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   static const _intlColor = Color(0xFF4E03D0);
   static const _localColor = _intlColor;
 
-  static const _networks = [
-    _NetworkInfo(
-      name: 'MTN',
-      code: 'mtn-data',
-      color: Color(0xFFFBBF24),
-      icon: Icons.cell_tower,
-    ),
-    _NetworkInfo(
-      name: 'Airtel',
-      code: 'airtel-data',
-      color: Color(0xFFEF4444),
-      icon: Icons.cell_tower,
-    ),
-    _NetworkInfo(
-      name: 'Glo',
-      code: 'glo-data',
-      color: Color(0xFF10B981),
-      icon: Icons.cell_tower,
-    ),
-    _NetworkInfo(
-      name: '9mobile',
-      code: 'etisalat-data',
-      color: Color(0xFF10B981),
-      icon: Icons.cell_tower,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -254,84 +229,16 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   // -------------------- LOCAL TAB --------------------
 
   List<Widget> _buildLocalContent() {
-    return [
-      Text(
-        'Choose Your Network',
-        style: GoogleFonts.inter(
-          color: Colors.white,
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      SizedBox(height: 12.h),
-      GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: _networks.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 16.h,
-          childAspectRatio: 1.0,
-        ),
-        itemBuilder: (context, index) => _buildNetworkCard(_networks[index]),
-      ),
+    // Streamlined single-page purchase: phone (prefilled) → auto-detected
+    // network → plans in a styled bottom sheet → inline confirmation → TX-PIN
+    // sheet (which runs the purchase) → receipt. Replaces the old
+    // choose-network grid → recipient → review → processing chain. The
+    // Beneficiaries / Rollover / Reminders flows stay on the quick-action row.
+    return const [
+      DataQuickBuy(),
     ];
   }
 
-  Widget _buildNetworkCard(_NetworkInfo network) {
-    return GestureDetector(
-      onTap: () {
-        Get.toNamed(
-          AppRoutes.dataBundlesPlanSelection,
-          arguments: {
-            'network': network.code,
-            'networkName': network.name,
-            'networkColor': network.color.toARGB32(),
-          },
-        );
-      },
-      child: Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                color: network.color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Icon(
-                network.icon,
-                color: network.color,
-                size: 28.sp,
-              ),
-            ),
-            SizedBox(height: 14.h),
-            Text(
-              network.name.toUpperCase(),
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // -------------------- INTERNATIONAL TAB --------------------
 
@@ -543,19 +450,6 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
   }
 }
 
-class _NetworkInfo {
-  final String name;
-  final String code;
-  final Color color;
-  final IconData icon;
-
-  const _NetworkInfo({
-    required this.name,
-    required this.code,
-    required this.color,
-    required this.icon,
-  });
-}
 
 /// Flat quick-action tile used above the tab toggle. Mirrors
 /// [_QuickActionCard] on the internet bill landing so every utility's

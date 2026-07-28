@@ -198,24 +198,32 @@ class _AirtimePaymentConfirmationScreenState
     );
   }
 
-  /// Pull-to-refresh handler — re-renders this receipt so live updates
-  /// from a webhook (e.g. `pending` → `completed`) are picked up. The
-  /// payment is identified solely via the transaction object passed in
-  /// from processing; we don't have a `receipt-by-id` RPC for airtime
-  /// today, so the refresh is best-effort: it triggers any pending
-  /// state-changes from the cubit and rebuilds the screen.
+  /// Pull-to-refresh handler — re-fetches the user's airtime history and
+  /// swaps the local [transaction] with the matching row so a webhook
+  /// update (e.g. `pending` → `completed`) is reflected on the receipt.
+  /// There's no `receipt-by-id` RPC for airtime, so we match the freshest
+  /// history row by id/reference (mirrors the cable receipt's reconcile).
   Future<void> _refreshReceipt() async {
-    if (transaction == null) return;
+    final current = transaction;
+    if (current == null) return;
+    final userId = current.userId;
+    if (userId.isEmpty) return;
     try {
-      final userId = transaction!.userId;
-      if (userId.isNotEmpty) {
-        await context.read<AirtimeCubit>().loadTransactionHistory(userId);
-        // Ignore — the AirtimeTransactionHistoryLoaded state carries the
-        // updated row, but we don't currently swap the local
-        // `transaction` field; future improvement would patch from
-        // history. The pull is still useful: reconciler-side state will
-        // be reflected in the history list opened from the actions row.
-      }
+      final cubit = context.read<AirtimeCubit>();
+      await cubit.loadTransactionHistory(userId);
+      if (!mounted) return;
+      final state = cubit.state;
+      if (state is! AirtimeTransactionHistoryLoaded) return;
+      final matches = state.transactions.where((t) =>
+          (current.id.isNotEmpty && t.id == current.id) ||
+          (current.transactionReference.isNotEmpty &&
+              t.transactionReference == current.transactionReference));
+      if (matches.isEmpty) return;
+      final fresh = matches.first;
+      setState(() {
+        transaction = fresh;
+        isSuccess = !fresh.isFailed;
+      });
     } catch (_) {
       // Silent — refresh is opportunistic.
     }

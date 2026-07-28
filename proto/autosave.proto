@@ -26,6 +26,7 @@ enum TriggerType {
     TRIGGER_SCHEDULED = 2;        // Trigger on a schedule
     TRIGGER_ROUND_UP = 3;         // Round up transactions to nearest value
     TRIGGER_EXTERNAL_INFLOW = 4;  // Money arriving in a linked external bank account
+    TRIGGER_SCHEDULED_EXTERNAL = 5; // Recurring standing-order pull from a linked bank account
 }
 
 // Schedule frequency for scheduled auto-saves

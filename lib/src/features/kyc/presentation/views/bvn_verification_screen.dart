@@ -609,7 +609,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
           _buildBenefit(
             icon: Icons.account_balance_wallet,
             title: 'Higher Limits',
-            description: 'Send up to ₦500,000 daily after verification',
+            description: 'Send up to ₦200,000 daily after verification',
           ),
           SizedBox(height: 8.h),
           _buildBenefit(

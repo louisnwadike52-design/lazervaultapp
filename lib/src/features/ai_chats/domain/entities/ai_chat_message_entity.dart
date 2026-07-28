@@ -61,6 +61,11 @@ class ChatMessageEntity extends Equatable {
   final String? mime;
   final String? transcript;
   final Map<String, dynamic>? receiptData;
+  // ReceiptCard payload(s) (chat_services_shared/receipt_protocol.py). A single
+  // dict for one receipt, or a LIST of dicts for a batch transfer — drives the
+  // ChatReceiptCardV2 / ChatReceiptCardV2List so batch receipts render in the
+  // per-service chat the same way the general chat renders them.
+  final dynamic receiptCard;
   // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
   // inline ChatPinPromptCard so a chat-driven money move collects the PIN in
   // the chat thread instead of telling the user to open a screen.
@@ -85,6 +90,7 @@ class ChatMessageEntity extends Equatable {
     this.mime,
     this.transcript,
     this.receiptData,
+    this.receiptCard,
     this.pinPrompt,
   });
 
@@ -107,6 +113,7 @@ class ChatMessageEntity extends Equatable {
     String? mime,
     String? transcript,
     Map<String, dynamic>? receiptData,
+    dynamic receiptCard,
     Map<String, dynamic>? pinPrompt,
   }) {
     return ChatMessageEntity(
@@ -128,6 +135,7 @@ class ChatMessageEntity extends Equatable {
       mime: mime ?? this.mime,
       transcript: transcript ?? this.transcript,
       receiptData: receiptData ?? this.receiptData,
+      receiptCard: receiptCard ?? this.receiptCard,
       pinPrompt: pinPrompt ?? this.pinPrompt,
     );
   }
@@ -145,6 +153,7 @@ class ChatMessageEntity extends Equatable {
         mediaType,
         localMediaPath,
         receiptData,
+        receiptCard,
         pinPrompt,
       ];
 }

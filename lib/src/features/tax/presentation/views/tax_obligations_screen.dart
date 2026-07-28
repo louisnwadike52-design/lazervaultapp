@@ -4,9 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/tax/domain/entities/tax_obligation_entity.dart';
+import 'package:lazervault/src/features/tax/domain/repositories/tax_repository.dart';
 import '../cubit/tax_cubit.dart';
 import '../cubit/tax_state.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 
 class TaxObligationsScreen extends StatefulWidget {
   const TaxObligationsScreen({super.key});
@@ -15,8 +18,15 @@ class TaxObligationsScreen extends StatefulWidget {
   State<TaxObligationsScreen> createState() => _TaxObligationsScreenState();
 }
 
-class _TaxObligationsScreenState extends State<TaxObligationsScreen> {
+class _TaxObligationsScreenState extends State<TaxObligationsScreen>
+    with InfiniteScrollMixin<TaxObligationsScreen> {
+  static const int _limit = 20;
+
   String _selectedFilter = 'All';
+
+  List<TaxObligationEntity> _items = [];
+  bool _loading = false;
+  String? _error;
 
   static const _filterLabels = ['All', 'VAT', 'PAYE', 'WHT', 'CIT'];
   static const _filterToType = <String, int?>{
@@ -30,17 +40,61 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadObligations();
+    attachInfiniteScroll();
+    _loadFirst();
   }
 
-  void _loadObligations() {
-    final taxType = _filterToType[_selectedFilter];
-    context.read<TaxCubit>().listObligations(taxType: taxType);
+  @override
+  void dispose() {
+    detachInfiniteScroll();
+    super.dispose();
   }
+
+  Future<void> _loadFirst() async {
+    resetPagination();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await serviceLocator<TaxRepository>().listObligations(
+        page: 1,
+        limit: _limit,
+        taxType: _filterToType[_selectedFilter],
+      );
+      if (!mounted) return;
+      setState(() {
+        _items = res;
+        _loading = false;
+        hasMore = res.length >= _limit;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() => runLoadMore(() async {
+        final res = await serviceLocator<TaxRepository>().listObligations(
+          page: page + 1,
+          limit: _limit,
+          taxType: _filterToType[_selectedFilter],
+        );
+        if (!mounted) return;
+        setState(() {
+          _items.addAll(res);
+          page += 1;
+          hasMore = res.length >= _limit;
+        });
+      });
 
   void _onFilterSelected(String label) {
     setState(() => _selectedFilter = label);
-    _loadObligations();
+    _loadFirst();
   }
 
   @override
@@ -136,7 +190,7 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildBody() {
-    return BlocConsumer<TaxCubit, TaxState>(
+    return BlocListener<TaxCubit, TaxState>(
       listener: (context, state) {
         if (state is TaxError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -153,37 +207,49 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen> {
               backgroundColor: const Color(0xFF10B981),
             ),
           );
-          _loadObligations();
+          _loadFirst();
         }
       },
-      builder: (context, state) {
-        if (state is TaxLoading) {
-          return const Center(
-            child: LazerVaultLoader.small(),
-          );
-        }
+      child: Builder(
+        builder: (context) {
+          if (_loading) {
+            return const Center(
+              child: LazerVaultLoader.small(),
+            );
+          }
 
-        if (state is ObligationsLoaded) {
-          if (state.obligations.isEmpty) {
+          if (_error != null) {
+            return _buildEmptyState();
+          }
+
+          if (_items.isEmpty) {
             return _buildEmptyState();
           }
 
           return RefreshIndicator(
-            onRefresh: () async => _loadObligations(),
+            onRefresh: () async => _loadFirst(),
             color: const Color(0xFF3B82F6),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView.builder(
+              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              itemCount: state.obligations.length,
-              itemBuilder: (context, index) =>
-                  _buildObligationCard(state.obligations[index]),
+              itemCount: _items.length + (isLoadingMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= _items.length) {
+                  return Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: const Center(
+                      child: LazerVaultLoader.small(),
+                    ),
+                  );
+                }
+                return _buildObligationCard(_items[index]);
+              },
             ),
           );
-        }
-
-        return _buildEmptyState();
-      },
+        },
+      ),
     );
   }
 
@@ -664,7 +730,7 @@ class _TaxObligationsScreenState extends State<TaxObligationsScreen> {
 
   Widget _buildEmptyState() {
     return RefreshIndicator(
-      onRefresh: () async => _loadObligations(),
+      onRefresh: () async => _loadFirst(),
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(

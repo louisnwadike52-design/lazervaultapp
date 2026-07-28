@@ -279,6 +279,27 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
     );
   }
 
+  /// Toggle the account-level international / send-abroad transfer gate.
+  /// Reuses updateSecuritySettings — the backend persists only the
+  /// international flag (allow_international_transfers); the other args are
+  /// pass-through no-ops kept for wire compatibility.
+  Future<void> setInternationalTransfers({
+    required String accountId,
+    required bool allowed,
+    String? accessToken,
+  }) async {
+    final details = _accountDetailsCache[accountId];
+    await updateSecuritySettings(
+      accountId: accountId,
+      enable3DSecure: details?.enable3DSecure ?? false,
+      enableContactless: details?.enableContactless ?? false,
+      enableOnlinePayments: details?.enableOnlinePayments ?? true,
+      enableATMWithdrawals: details?.enableATMWithdrawals ?? false,
+      enableInternationalPayments: allowed,
+      accessToken: accessToken,
+    );
+  }
+
   /// Update a single security setting
   Future<void> toggleSecuritySetting({
     required String accountId,
@@ -350,6 +371,21 @@ class AccountActionsCubit extends Cubit<AccountActionsState> {
         emit(SpendingLimitsUpdated(updatedDetails));
       },
     );
+  }
+
+  /// Fetch current spending usage (limits + today's/this month's spend).
+  /// Returns null on failure so the caller can degrade gracefully. Kept as a
+  /// plain Future (not a state) so the usage bar can load independently without
+  /// disturbing the tab's main state machine.
+  Future<SpendingUsageEntity?> fetchSpendingUsage({
+    required String accountId,
+    String? accessToken,
+  }) async {
+    final result = await _repository.getSpendingUsage(
+      accountId: accountId,
+      accessToken: accessToken,
+    );
+    return result.fold((_) => null, (usage) => usage);
   }
 
   /// Reveal PIN

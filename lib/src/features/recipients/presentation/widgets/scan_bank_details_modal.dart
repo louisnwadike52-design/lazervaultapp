@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
@@ -15,7 +16,15 @@ const Color _purple = Color.fromARGB(255, 78, 3, 208);
 
 // ── Action types returned from the sheet ────────────────────────────────────
 
-enum ScanActionType { bankTransfer, internalTransfer, phoneTransfer, retryCapture }
+enum ScanActionType {
+  bankTransfer,
+  internalTransfer,
+  // The scan resolved to an existing Lazervault user — route as a free internal
+  // C2C transfer using resolvedUserId / resolvedAccountId (no username search).
+  resolvedUserTransfer,
+  phoneTransfer,
+  retryCapture,
+}
 
 class ScanAction {
   final ScanActionType type;
@@ -25,6 +34,10 @@ class ScanAction {
   final String? bankCode;
   final String? username;
   final String? phoneNumber;
+  // Resolved Lazervault user (resolvedUserTransfer).
+  final String? resolvedUserId;
+  final String? resolvedAccountId;
+  final String? resolvedDisplayName;
   // Optional pre-fill values flowed in from the OCR result when the
   // server detects an invoice / payment slip. amountMinor is kobo
   // (or pence) so it can be handed straight to the amount controller
@@ -41,6 +54,9 @@ class ScanAction {
     this.bankCode,
     this.username,
     this.phoneNumber,
+    this.resolvedUserId,
+    this.resolvedAccountId,
+    this.resolvedDisplayName,
     this.amountMinor,
     this.description,
   });
@@ -94,15 +110,31 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   @override
   void initState() {
     super.initState();
-    serviceLocator<BankRepository>().warmUp(widget.country);
     _accountNumberController = TextEditingController(
       text: widget.scanResult.accountNumber ?? '',
     );
     _selectedBankName = widget.scanResult.bankName;
-    _selectedBankCode = widget.scanResult.bankCode;
+    // Treat an empty/blank scanned code as "unresolved" so _bootstrap re-derives
+    // it from the name. An empty-string code would otherwise slip past the
+    // `!= null` Verify gate and be sent to the verifier as a blank bank code.
+    final scannedCode = widget.scanResult.bankCode?.trim();
+    _selectedBankCode =
+        (scannedCode != null && scannedCode.isNotEmpty) ? scannedCode : null;
+    // Warm the bank list, then resolve the bank code from the scanned name if
+    // the OCR didn't provide one — so the prefilled sheet lands with a resolved
+    // bank and the "Verify Account" CTA is ACTIVE (no manual bank re-pick, no
+    // auto-verify: the user taps Verify themselves).
+    _bootstrap();
+  }
 
-    // Try to resolve bank code from name if not provided
-    if (_selectedBankCode == null && _selectedBankName != null) {
+  Future<void> _bootstrap() async {
+    try {
+      await serviceLocator<BankRepository>().warmUp(widget.country);
+    } catch (_) {/* offline — the synchronous cache / manual pick still works */}
+    if (!mounted) return;
+    // Now the bank list is warm, resolve the code from the scanned name so the
+    // Verify CTA enables without the user re-picking the bank.
+    if (_selectedBankCode == null && (_selectedBankName ?? '').isNotEmpty) {
       _resolveBankCode(_selectedBankName!);
     }
   }
@@ -121,17 +153,86 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
 
   void _resolveBankCode(String bankName) {
     final banks = serviceLocator<BankRepository>().cachedSync(widget.country);
-    final lower = bankName.toLowerCase();
+    final match = _matchBank(bankName, banks);
+    if (match != null) {
+      setState(() {
+        _selectedBankCode = match['code'];
+        // Snap the label to the canonical list name so display + logo agree.
+        _selectedBankName = match['name'];
+      });
+    }
+  }
+
+  /// Fuzzy-match a scanned bank name against the canonical list. OCR routinely
+  /// yields abbreviations ("GTB", "UBA", "FCMB") or noisy names ("Access Bank
+  /// Plc") that a plain two-way `contains` misses — leaving the Verify CTA dead
+  /// even though a bank is clearly displayed. This normalises both sides (alias
+  /// expansion + noise-word stripping) and scores candidates so the closest
+  /// match wins.
+  Map<String, String>? _matchBank(String scanned, List<Map<String, String>> banks) {
+    if (banks.isEmpty) return null;
+    final target = _canonicalBank(scanned);
+    if (target.isEmpty) return null;
+
+    Map<String, String>? best;
+    int bestScore = 0;
     for (final bank in banks) {
-      if (bank['name']!.toLowerCase().contains(lower) ||
-          lower.contains(bank['name']!.toLowerCase())) {
-        setState(() {
-          _selectedBankCode = bank['code'];
-          _selectedBankName = bank['name'];
-        });
-        return;
+      final name = bank['name'] ?? '';
+      final cand = _canonicalBank(name);
+      if (cand.isEmpty) continue;
+
+      int score;
+      if (cand == target) {
+        score = 100;
+      } else if (cand.contains(target) || target.contains(cand)) {
+        // Closer lengths = a tighter match; penalise big length gaps so a short
+        // token doesn't latch onto a much longer unrelated name.
+        score = 70 - (cand.length - target.length).abs().clamp(0, 60);
+      } else {
+        final overlap = target
+            .split(' ')
+            .toSet()
+            .intersection(cand.split(' ').toSet())
+            .length;
+        score = overlap > 0 ? 20 + overlap * 5 : 0;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = bank;
       }
     }
+    // Require a meaningful match (shared token or better) — never guess.
+    return bestScore >= 20 ? best : null;
+  }
+
+  /// Lowercase, expand common OCR abbreviations, then strip punctuation and
+  /// generic banking noise words so only the distinctive tokens remain.
+  String _canonicalBank(String raw) {
+    var s = raw.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), ' ');
+    const alias = <String, String>{
+      'gtb': 'guaranty trust',
+      'gt': 'guaranty trust',
+      'gtbank': 'guaranty trust',
+      'gtco': 'guaranty trust',
+      'uba': 'united bank for africa',
+      'fcmb': 'first city monument',
+      'fbn': 'first',
+      'stanbic': 'stanbic ibtc',
+    };
+    final expanded = s
+        .split(RegExp(r'\s+'))
+        .where((t) => t.isNotEmpty)
+        .map((t) => alias[t] ?? t)
+        .join(' ');
+    const noise = {
+      'bank', 'plc', 'limited', 'ltd', 'nigeria', 'ng', 'microfinance',
+      'mfb', 'the', 'of', 'and', 'company', 'co',
+    };
+    return expanded
+        .split(RegExp(r'\s+'))
+        .where((t) => t.isNotEmpty && !noise.contains(t))
+        .join(' ')
+        .trim();
   }
 
   @override
@@ -145,7 +246,17 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   String get _effectiveType {
     final dt = _disambiguatedType;
     if (dt != null && dt != 'ambiguous') return dt;
-    return widget.scanResult.extractionType;
+    final base = widget.scanResult.extractionType;
+    // A backend-resolved Lazervault user takes precedence over phone/email/
+    // username/ambiguous — but NOT over real bank details (bank present →
+    // external transfer, per product rule). Lets us offer a one-tap free
+    // internal transfer.
+    if (widget.scanResult.hasResolvedUser &&
+        base != 'bank_details' &&
+        FeatureFlags.scanResolveUsersIsEnabled) {
+      return 'resolved_user';
+    }
+    return base;
   }
 
   @override
@@ -189,45 +300,9 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       ),
     );
 
-    if (_hasVerificationCubit) {
-      return BlocListener<AccountVerificationCubit, AccountVerificationState>(
-        listener: _onVerificationState,
-        child: content,
-      );
-    }
+    // Verification is now driven deterministically inside _onVerifyAccount
+    // (await + pop), so no ambient BlocListener is needed here.
     return content;
-  }
-
-  void _onVerificationState(BuildContext context, AccountVerificationState state) {
-    if (state is AccountVerificationLoading) {
-      setState(() => _isVerifying = true);
-    } else if (state is AccountVerificationSuccess) {
-      setState(() => _isVerifying = false);
-      Navigator.pop(
-        context,
-        ScanAction(
-          type: ScanActionType.bankTransfer,
-          accountNumber: state.accountNumber,
-          accountName: state.accountName,
-          bankName: state.bankName,
-          bankCode: state.bankCode,
-          // Carry the OCR-extracted amount + memo through so the
-          // send-funds amount + reference fields can pre-fill.
-          // amountMinor is kobo / pence — see SmartScanResult docs.
-          amountMinor: widget.scanResult.amountMinor,
-          description: widget.scanResult.description,
-        ),
-      );
-    } else if (state is AccountVerificationFailure) {
-      setState(() => _isVerifying = false);
-      Get.snackbar(
-        'Verification Failed',
-        state.userMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.8),
-        colorText: Colors.white,
-      );
-    }
   }
 
   // ── Handle bar ──────────────────────────────────────────────────────────
@@ -252,6 +327,11 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         'Bank Details Found',
         'Review and verify the extracted details',
       ),
+      'resolved_user' => (
+        Icons.verified_user_outlined,
+        'Lazervault User',
+        'Send instantly — free internal transfer',
+      ),
       'internal_user' => (
         Icons.person_outline,
         'Lazervault User Found',
@@ -261,6 +341,11 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         Icons.phone_outlined,
         'Phone Number Found',
         'We detected a phone number',
+      ),
+      'email' => (
+        Icons.email_outlined,
+        'Email Found',
+        'We detected an email address',
       ),
       'ambiguous' => (
         Icons.help_outline,
@@ -312,12 +397,153 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   // ── Body: type-specific content ─────────────────────────────────────────
 
   Widget _buildBody() => switch (_effectiveType) {
+        'resolved_user' => _buildResolvedUserBody(),
         'bank_details' => _buildBankDetailsBody(),
         'internal_user' => _buildInternalUserBody(),
         'phone_number' => _buildPhoneNumberBody(),
+        'email' => _buildEmailBody(),
         'ambiguous' => _buildAmbiguousBody(),
         _ => _buildNoDataBody(),
       };
+
+  // ── Resolved Lazervault user ────────────────────────────────────────────
+
+  Widget _buildResolvedUserBody() {
+    final r = widget.scanResult;
+    final name = (r.resolvedDisplayName ?? '').trim().isNotEmpty
+        ? r.resolvedDisplayName!.trim()
+        : (r.resolvedUsername ?? r.displayName ?? 'Lazervault User');
+    // What identifier matched — shown as a subtle secondary line.
+    final matchedVia = (r.username ?? '').isNotEmpty
+        ? '@${r.username}'
+        : (r.phoneNumber ?? r.email ?? '');
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: _purple.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: _purple.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44.w,
+            height: 44.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _purple.withValues(alpha: 0.12),
+            ),
+            child: Center(
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: TextStyle(
+                  color: _purple,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (matchedVia.isNotEmpty) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    matchedVia,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
+                  ),
+                ],
+                SizedBox(height: 6.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bolt, color: Colors.green[600], size: 14.sp),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Free instant transfer',
+                      style: TextStyle(
+                        color: Colors.green[700],
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Email ───────────────────────────────────────────────────────────────
+
+  Widget _buildEmailBody() {
+    final email = widget.scanResult.email ?? '';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildFieldLabel('Email Address'),
+        SizedBox(height: 8.h),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.email_outlined, color: Colors.grey[600], size: 20.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  email.isNotEmpty ? email : 'No email detected',
+                  style: TextStyle(color: Colors.black87, fontSize: 15.sp),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange[700], size: 18.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'No Lazervault user matched this email. Search by username or scan a bank account instead.',
+                  style: TextStyle(color: Colors.orange[800], fontSize: 12.sp),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   // ── Bank Details ────────────────────────────────────────────────────────
 
@@ -721,12 +947,111 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   // 1.4: Use _effectiveType directly (not _buildAmbiguousActions calling
   // _buildActions) to guarantee no recursion.
   Widget _buildActions() => switch (_effectiveType) {
+        'resolved_user' => _buildResolvedUserActions(),
         'bank_details' => _buildBankDetailsActions(),
         'internal_user' => _buildInternalUserActions(),
         'phone_number' => _buildPhoneNumberActions(),
+        'email' => _buildEmailActions(),
         'ambiguous' => _buildAmbiguousActions(),
         _ => _buildNoDataActions(),
       };
+
+  Widget _buildResolvedUserActions() {
+    final r = widget.scanResult;
+    final name = (r.resolvedDisplayName ?? '').trim().isNotEmpty
+        ? r.resolvedDisplayName!.trim()
+        : (r.resolvedUsername ?? 'user');
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                ScanAction(
+                  type: ScanActionType.resolvedUserTransfer,
+                  resolvedUserId: r.resolvedUserId,
+                  resolvedAccountId: r.resolvedAccountId,
+                  resolvedDisplayName: name,
+                  username: r.resolvedUsername ?? r.username,
+                  amountMinor: r.amountMinor,
+                  description: r.description,
+                ),
+              );
+            },
+            icon: const Icon(Icons.send_rounded),
+            label: Text('Send to $name',
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _purple,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 10.h),
+        _buildScanAgainButton(),
+      ],
+    );
+  }
+
+  Widget _buildEmailActions() {
+    return Column(
+      children: [
+        // Email never resolved (resolved emails are handled by the
+        // 'resolved_user' path), so the only forward action is to scan again
+        // or fall back to a manual search.
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                const ScanAction(type: ScanActionType.retryCapture),
+              );
+            },
+            icon: const Icon(Icons.document_scanner_outlined),
+            label: Text('Scan Again',
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _purple,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScanAgainButton() => SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () {
+            Navigator.pop(
+              context,
+              const ScanAction(type: ScanActionType.retryCapture),
+            );
+          },
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _purple,
+            side: BorderSide(color: _purple),
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+          ),
+          child: Text('Scan Again',
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+        ),
+      );
 
   Widget _buildBankDetailsActions() {
     final canVerify = !_isVerifying &&
@@ -1017,13 +1342,58 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
 
   // ── Verify button handler ───────────────────────────────────────────────
 
-  void _onVerifyAccount() {
-    if (!_hasVerificationCubit) return;
-    context.read<AccountVerificationCubit>().verifyAccount(
-          bankCode: _selectedBankCode!,
-          accountNumber: _accountNumberController.text,
-          bankName: _selectedBankName ?? '',
-        );
+  Future<void> _onVerifyAccount() async {
+    if (!_hasVerificationCubit || _isVerifying) return;
+    final cubit = context.read<AccountVerificationCubit>();
+
+    setState(() => _isVerifying = true);
+
+    // Drive the outcome deterministically off the awaited result instead of an
+    // ambient BlocListener state-*change*. A cache hit (same account verified
+    // <30min ago, e.g. re-opening a scan from history) re-emits an identical
+    // success that the listener could swallow — leaving the sheet stuck open
+    // with no amount sheet. Awaiting the cubit and reading its terminal state
+    // guarantees we always close + continue.
+    try {
+      await cubit.verifyAccount(
+        bankCode: _selectedBankCode!,
+        accountNumber: _accountNumberController.text,
+        bankName: _selectedBankName ?? '',
+        country: widget.country,
+      );
+    } catch (_) {
+      // verifyAccount swallows its own errors into Failure states; this guards
+      // against an unexpected throw so the spinner never sticks.
+    }
+
+    if (!mounted) return;
+    final state = cubit.state;
+    setState(() => _isVerifying = false);
+
+    if (state is AccountVerificationSuccess) {
+      Navigator.pop(
+        context,
+        ScanAction(
+          type: ScanActionType.bankTransfer,
+          accountNumber: state.accountNumber,
+          accountName: state.accountName,
+          bankName: state.bankName,
+          bankCode: state.bankCode,
+          // Carry OCR-extracted amount + memo through so the send-funds amount
+          // + reference fields can pre-fill.
+          amountMinor: widget.scanResult.amountMinor,
+          description: widget.scanResult.description,
+        ),
+      );
+    } else if (state is AccountVerificationFailure) {
+      Get.snackbar(
+        'Verification Failed',
+        state.userMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
+        colorText: Colors.white,
+      );
+    }
   }
 
   // ── Shared widgets ──────────────────────────────────────────────────────
@@ -1117,7 +1487,12 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         ),
         child: Row(
           children: [
-            if (_selectedBankCode != null)
+            // Show the real bank image as soon as a name is present — BankLogo
+            // resolves its asset from the name (or code) and falls back to a
+            // branded gradient tile, so we never show the generic placeholder
+            // once a bank is picked/scanned, even before the code resolves.
+            if ((_selectedBankName ?? '').trim().isNotEmpty ||
+                _selectedBankCode != null)
               BankLogo(
                 bankName: _selectedBankName ?? '',
                 bankCode: _selectedBankCode,

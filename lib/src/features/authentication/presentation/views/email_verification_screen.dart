@@ -6,10 +6,13 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_state.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 /// Email OTP Verification Screen
 ///
@@ -26,6 +29,15 @@ class EmailVerificationScreen extends StatelessWidget {
   final bool codeSent;
   final bool isRequired;
   final String? secondaryPhone;
+  // When set, verifying (or skipping) navigates here instead of the default
+  // email-onboarding chain. Used by the phone+passcode flow to continue to
+  // transaction-PIN setup after the optional email step. Null = unchanged
+  // email-flow behaviour.
+  final String? nextRoute;
+  // When true, the screen was launched from Settings (not onboarding): it
+  // requests a fresh code on load and, on success, returns to Settings instead
+  // of routing into the signup/passcode-setup chain. Skip is hidden.
+  final bool fromSettings;
 
   const EmailVerificationScreen({
     super.key,
@@ -33,6 +45,8 @@ class EmailVerificationScreen extends StatelessWidget {
     this.codeSent = true,
     this.isRequired = true,
     this.secondaryPhone,
+    this.nextRoute,
+    this.fromSettings = false,
   });
 
   @override
@@ -43,6 +57,7 @@ class EmailVerificationScreen extends StatelessWidget {
     bool otpSent = codeSent;
     bool required = isRequired;
     String? secondaryPhoneArg = secondaryPhone;
+    String? nextRouteArg = nextRoute;
 
     // Handle Map arguments - check for general Map type to handle both
     // Map<String, dynamic> and Map<String, Object> from route arguments
@@ -52,6 +67,7 @@ class EmailVerificationScreen extends StatelessWidget {
       otpSent = mapArgs['codeSent'] as bool? ?? otpSent;
       required = mapArgs['isRequired'] as bool? ?? required;
       secondaryPhoneArg = mapArgs['secondaryPhone']?.toString();
+      nextRouteArg = mapArgs['nextRoute']?.toString() ?? nextRouteArg;
     } else if (args is String) {
       // Simple string argument (email only)
       emailArg = args;
@@ -59,9 +75,12 @@ class EmailVerificationScreen extends StatelessWidget {
 
     return _EmailOtpVerificationView(
       email: emailArg ?? '',
-      codeSent: otpSent,
+      // From Settings we always want a fresh code requested on load.
+      codeSent: fromSettings ? false : otpSent,
       isRequired: required,
       secondaryPhone: secondaryPhoneArg,
+      nextRoute: nextRouteArg,
+      fromSettings: fromSettings,
     );
   }
 }
@@ -71,12 +90,16 @@ class _EmailOtpVerificationView extends StatefulWidget {
   final bool codeSent;
   final bool isRequired;
   final String? secondaryPhone;
+  final String? nextRoute;
+  final bool fromSettings;
 
   const _EmailOtpVerificationView({
     required this.email,
     required this.codeSent,
     required this.isRequired,
     this.secondaryPhone,
+    this.nextRoute,
+    this.fromSettings = false,
   });
 
   @override
@@ -86,14 +109,28 @@ class _EmailOtpVerificationView extends StatefulWidget {
 class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   Timer? _resendTimer;
   int _resendCooldown = 0;
+  // Resolved email — widget.email when navigated with args, else recovered from
+  // the persisted session on a cold-resume (app relaunched mid-onboarding, so
+  // there are no route arguments).
+  late String _email = widget.email;
 
   @override
   void initState() {
     super.initState();
 
     // Initialize the cubit with email for resending
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EmailVerificationCubit>().initialize(widget.email);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_email.isEmpty) {
+        // Cold resume: recover the signup email from secure storage so the
+        // verification screen isn't stranded without an address to verify.
+        final storage = serviceLocator<FlutterSecureStorage>();
+        _email = (await storage.read(key: 'stored_email')) ??
+            (await storage.read(key: 'user_email')) ??
+            '';
+        if (mounted) setState(() {});
+      }
+      if (!mounted) return;
+      context.read<EmailVerificationCubit>().initialize(_email);
       context.read<EmailVerificationCubit>().updateVerificationCode('');
 
       if (widget.codeSent) {
@@ -121,23 +158,13 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   /// Send verification email when the page loads (if not already sent)
   /// This runs in the background and doesn't block the UI
   void _sendVerificationEmailOnLoad() {
-    if (widget.email.isEmpty) return;
+    if (_email.isEmpty) return;
 
-    // Fire and forget - send email in background without blocking
-    context.read<EmailVerificationCubit>().resendVerificationEmail().then((_) {
-      if (mounted) {
-        Get.snackbar(
-          'Email Sent',
-          'A 6-digit verification code has been sent to your email.',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          margin: EdgeInsets.all(16.w),
-          borderRadius: 12.r,
-          duration: const Duration(seconds: 4),
-        );
-      }
-    }).catchError((e) {
+    // Fire and forget. The success "code sent" snackbar is shown exactly ONCE
+    // by the BlocListener below (on the cubit's successMessage emit) — which
+    // also covers the "Resend Code" button. Do NOT also show one here or two
+    // snackbars (same meaning, different text) appear on load.
+    context.read<EmailVerificationCubit>().resendVerificationEmail().catchError((e) {
       if (mounted) {
         Get.snackbar(
           "Couldn't send email",
@@ -197,6 +224,19 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   }
 
   void _navigateToNextScreen() {
+    // Launched from Settings: just return there (the caller refreshes the
+    // verified badge). Never route into the onboarding/passcode-setup chain.
+    if (widget.fromSettings) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    // Phone+passcode flow: a caller-supplied nextRoute overrides the default
+    // email-onboarding chain (the user already has a passcode + verified phone,
+    // so continue straight to the next step, e.g. transaction-PIN setup).
+    if (widget.nextRoute != null && widget.nextRoute!.isNotEmpty) {
+      Get.offAllNamed(widget.nextRoute!);
+      return;
+    }
     // Phone is now captured at the bottom of signup page 2 (with country
     // chip + SIM-hint prefill + length validation), so by the time we
     // reach email verification a phone always exists. Go straight to OTP
@@ -230,7 +270,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
 
   @override
   Widget build(BuildContext context) {
-    final maskedEmail = _maskEmail(widget.email);
+    final maskedEmail = _maskEmail(_email);
 
     return PopScope(
       canPop: true, // Verification is skippable, so back navigation is allowed
@@ -309,33 +349,26 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 60.h),
-
-                      // Email icon with gradient background
-                      Container(
-                        width: 100.w,
-                        height: 100.h,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF4834D4), Color(0xFF7C3AED)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4834D4).withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                      // When launched from Settings this is a normal sub-screen,
+                      // so give it a real back button. The onboarding flow (no
+                      // fromSettings) stays forward-only with no back affordance.
+                      if (widget.fromSettings)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 8.h),
+                            child: IconButton(
+                              onPressed: () => Navigator.of(context).maybePop(),
+                              icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+                              tooltip: 'Back',
                             ),
-                          ],
+                          ),
                         ),
-                        child: Icon(
-                          Icons.email_rounded,
-                          size: 48.sp,
-                          color: Colors.white,
-                        ),
-                      ),
+                      SizedBox(height: widget.fromSettings ? 12.h : 60.h),
+
+                      // Shared gradient badge icon (same widget the phone
+                      // verification + phone_passcode OTP screens use).
+                      const VerificationBadgeIcon(icon: Icons.email_rounded),
                       SizedBox(height: 32.h),
 
                       // Title
@@ -461,12 +494,10 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                         ],
                       ),
 
-                      // Skip CTA — a prominent TEXT action, NOT a bordered button,
-                      // so it's clearly secondary to the primary "Verify" CTA and
-                      // never mistaken for it (still easy to find: accent colour,
-                      // bold, with a forward arrow).
-                      SizedBox(height: 12.h),
-                      Center(
+                      // Skip CTA — onboarding only. From Settings there's nothing
+                      // to skip to, so it's hidden.
+                      if (!widget.fromSettings) SizedBox(height: 12.h),
+                      if (!widget.fromSettings) Center(
                         child: TextButton(
                           onPressed: _skipVerification,
                           style: TextButton.styleFrom(
@@ -499,59 +530,10 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
 
                       SizedBox(height: 48.h),
 
-                      // Info Card
-                      Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(16.r),
-                          border: Border.all(
-                            color: const Color(0xFFE5E7EB),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF4834D4).withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.security_rounded,
-                                color: const Color(0xFF4834D4),
-                                size: 20.sp,
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Secure Verification',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF1F2937),
-                                    ),
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Text(
-                                    'Check your inbox and spam folder for the 6-digit verification code. The code expires in 15 minutes.',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12.sp,
-                                      color: const Color(0xFF6B7280),
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      // Shared "Secure Verification" note.
+                      const SecureVerificationNote(
+                        message:
+                            'Check your inbox and spam folder for the 6-digit verification code. The code expires in 15 minutes.',
                       ),
                       SizedBox(height: 32.h),
                     ],

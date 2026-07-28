@@ -60,32 +60,43 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
       _error = null;
     });
 
-    try {
-      final results = await Future.wait([
-        _client.getFearGreedIndex(),
-        _client.getGlobalMarketData(),
-        _client.getCryptoNews(currencies: ['BTC', 'ETH', 'SOL'], limit: 20),
-      ]);
+    // Fetch each source INDEPENDENTLY so one flaky/undeployed RPC (e.g. the free
+    // Fear & Greed feed) can never blank the whole screen — the others still
+    // render. Only a total failure (all three) surfaces the retry error.
+    // A bounded timeout on each call guarantees the spinner resolves even if a
+    // gateway is unreachable and the RPC hangs (never errors, never returns).
+    const budget = Duration(seconds: 12);
+    final results = await Future.wait([
+      _client
+          .getFearGreedIndex()
+          .then<Object?>((r) => r, onError: (_) => null)
+          .timeout(budget, onTimeout: () => null),
+      _client
+          .getGlobalMarketData()
+          .then<Object?>((r) => r, onError: (_) => null)
+          .timeout(budget, onTimeout: () => null),
+      _client
+          .getCryptoNews(currencies: ['BTC', 'ETH', 'SOL'], limit: 20)
+          .then<Object?>((r) => r, onError: (_) => null)
+          .timeout(budget, onTimeout: () => null),
+    ]);
+    if (!mounted) return;
+    final fearGreed = results[0] as GetFearGreedIndexResponse?;
+    final market = results[1] as GetGlobalMarketDataResponse?;
+    final news = results[2] as GetCryptoNewsResponse?;
 
-      final fearGreed = results[0] as GetFearGreedIndexResponse;
-      final market = results[1] as GetGlobalMarketDataResponse;
-      final news = results[2] as GetCryptoNewsResponse;
-
-      if (!mounted) return;
-      setState(() {
-        _currentFearGreed = fearGreed.current;
+    setState(() {
+      if (fearGreed != null) {
+        _currentFearGreed = fearGreed.hasCurrent() ? fearGreed.current : null;
         _fearGreedHistory = fearGreed.history.toList();
-        _globalMarket = market;
-        _newsItems = news.items.toList();
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Failed to load market data. Pull down to retry.';
-        _loading = false;
-      });
-    }
+      }
+      if (market != null) _globalMarket = market;
+      if (news != null) _newsItems = news.items.toList();
+      _error = (fearGreed == null && market == null && news == null)
+          ? 'Failed to load market data. Pull down to retry.'
+          : null;
+      _loading = false;
+    });
   }
 
   // ---------------------------------------------------------------------------

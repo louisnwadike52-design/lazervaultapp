@@ -200,7 +200,12 @@ class VoiceBiometricsService {
   Future<VoiceVerificationResult> verifyVoice({
     required String userId,
     required Uint8List audioSample,
-    double threshold = 0.85,
+    // ECAPA-TDNN cosine similarity for the SAME speaker across different
+    // sessions/devices commonly lands in the 0.6–0.85 band, so the old 0.85
+    // default rejected many legitimate logins as "not recognised". 0.70 keeps
+    // genuine users in while still separating them from impostors (whose
+    // cross-speaker similarity is typically < 0.5).
+    double threshold = 0.70,
   }) async {
     // Input validation
     if (userId.isEmpty) {
@@ -277,6 +282,76 @@ class VoiceBiometricsService {
     } catch (e) {
       if (e is VoiceBiometricsException) rethrow;
       throw VoiceBiometricsException('Error verifying voice: $e');
+    }
+  }
+
+  /// SERVER-ATTESTED voice login ("voice = password"). Sends the voice sample +
+  /// cached identity to the gateway, which verifies the voiceprint with a
+  /// SERVER-enforced threshold and — only on a match — mints a REAL session
+  /// (bound to the same user). Returns the fresh tokens; the caller persists
+  /// them exactly like a passcode login. This does NOT depend on a still-valid
+  /// cached session, so it works as a primary credential.
+  Future<VoiceLoginResult> loginWithVoice({
+    required String userId,
+    required String phone,
+    required Uint8List audioSample,
+  }) async {
+    if (userId.isEmpty || phone.isEmpty) {
+      throw VoiceBiometricsException('userId and phone are required');
+    }
+    if (audioSample.isEmpty) {
+      throw VoiceBiometricsException('audioSample cannot be empty');
+    }
+    try {
+      final uri = Uri.parse('$baseUrl/voice/auth/login');
+      final response = await _retryRequest(
+        () => _client
+            .post(
+              uri,
+              headers: _buildHeaders(),
+              body: json.encode({
+                'user_id': userId,
+                'phone': phone,
+                'audio_sample': base64Encode(audioSample),
+              }),
+            )
+            .timeout(timeout),
+      );
+
+      if (response.statusCode == 200) {
+        return VoiceLoginResult.fromJson(_parseJson(response.body));
+      }
+      // Map the server's typed failures so the UI can message precisely.
+      String status;
+      switch (response.statusCode) {
+        case 401:
+          status = 'VOICE_NOT_RECOGNIZED';
+          break;
+        case 403:
+          status = 'IDENTITY_MISMATCH';
+          break;
+        case 404:
+          status = 'NOT_ENROLLED';
+          break;
+        default:
+          if (response.statusCode >= 500) {
+            throw VoiceBiometricsServerException(
+                'Voice login server error: ${response.statusCode}',
+                statusCode: response.statusCode);
+          }
+          status = 'ERROR';
+      }
+      return VoiceLoginResult(verified: false, status: status);
+    } on SocketException catch (e) {
+      throw VoiceBiometricsNetworkException('No internet connection: ${e.message}');
+    } on TimeoutException catch (_) {
+      throw VoiceBiometricsNetworkException(
+          'Voice login timed out after ${timeout.inSeconds} seconds');
+    } on http.ClientException catch (e) {
+      throw VoiceBiometricsNetworkException('Network error during voice login: ${e.message}');
+    } catch (e) {
+      if (e is VoiceBiometricsException) rethrow;
+      throw VoiceBiometricsException('Error during voice login: $e');
     }
   }
 
@@ -391,7 +466,19 @@ class VoiceBiometricsService {
   }
 
 
-  /// Check if the voice biometrics service is available
+  /// Soft availability probe for the voice agent.
+  ///
+  /// FAIL-OPEN by design. This is only a *hint* for the entry points — the
+  /// authoritative gate is `POST /voice/session/start`, which returns a
+  /// specific 503 (`voice_recognition_disabled` / `service_voice_disabled`)
+  /// when an admin has actually turned voice off, and which the cubit surfaces
+  /// with the real reason. A bare `/voice/health` 200-check used to fail CLOSED
+  /// on any timeout / DNS blip / mis-seeded `url_voice_agent_gateway` base URL,
+  /// which permanently showed "voice not available" even when voice worked. So:
+  ///   - 200                    → available.
+  ///   - explicit 503 "disabled" → unavailable (admin turned it off).
+  ///   - anything else / error   → available (open the sheet; session-start
+  ///                                decides). We never block on a transient probe.
   Future<bool> isServiceAvailable() async {
     try {
       // `/voice/health` (not `/health`) because the cloudflared edge only
@@ -405,10 +492,19 @@ class VoiceBiometricsService {
       final response = await _client.get(uri).timeout(
         const Duration(seconds: 5),
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return true;
+      // Only treat an EXPLICIT admin-disabled signal as unavailable; every other
+      // non-200 (gateway warming up, 404 through a mis-seeded base, 5xx) fails open.
+      if (response.statusCode == 503 &&
+          response.body.toLowerCase().contains('disabled')) {
+        return false;
+      }
+      return true;
     } catch (e) {
-      print('VoiceBiometricsService: Service unavailable: $e');
-      return false;
+      // Unreachable / timeout / TLS-DNS error: fail OPEN. Let /voice/session/start
+      // report the real reason instead of a permanent "not available".
+      print('VoiceBiometricsService: health probe failed, failing open: $e');
+      return true;
     }
   }
 
@@ -488,6 +584,52 @@ class VoiceEnrollmentResult {
   String toString() {
     return 'VoiceEnrollmentResult(success: $success, qualityScore: $qualityScore, message: $message)';
   }
+}
+
+/// Result of a server-attested voice LOGIN (voice = password). On success it
+/// carries a FRESH minted session the caller persists like a passcode login.
+class VoiceLoginResult {
+  final bool verified;
+  final String? accessToken;
+  final String? refreshToken;
+  final String? userId;
+  final int? expiresIn;
+  final String? firstName;
+  final String? lastName;
+  final double? similarityScore;
+  /// Failure classifier when not verified: VOICE_NOT_RECOGNIZED / NOT_ENROLLED
+  /// / IDENTITY_MISMATCH / ERROR.
+  final String? status;
+
+  VoiceLoginResult({
+    required this.verified,
+    this.accessToken,
+    this.refreshToken,
+    this.userId,
+    this.expiresIn,
+    this.firstName,
+    this.lastName,
+    this.similarityScore,
+    this.status,
+  });
+
+  bool get hasSession =>
+      verified &&
+      (accessToken?.isNotEmpty ?? false) &&
+      (refreshToken?.isNotEmpty ?? false);
+  bool get isNotEnrolled => status == 'NOT_ENROLLED';
+
+  factory VoiceLoginResult.fromJson(Map<String, dynamic> json) => VoiceLoginResult(
+        verified: json['verified'] == true,
+        accessToken: json['access_token'] as String?,
+        refreshToken: json['refresh_token'] as String?,
+        userId: json['user_id'] as String?,
+        expiresIn: (json['expires_in'] as num?)?.toInt(),
+        firstName: json['first_name'] as String?,
+        lastName: json['last_name'] as String?,
+        similarityScore: (json['similarity_score'] as num?)?.toDouble(),
+        status: json['status'] as String?,
+      );
 }
 
 /// Voice verification result

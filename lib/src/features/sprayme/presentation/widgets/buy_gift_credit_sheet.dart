@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
 import 'package:lazervault/src/features/sprayme/data/gift_catalog_defaults.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 /// Buy-gifts-from-personal bottom sheet. Joiners do NOT fund a separate wallet —
 /// they buy gift credit straight from their personal account, which becomes the
 /// spendable "gifts to spray" balance. Shows the source account + its balance,
-/// handles insufficient balance, takes a PIN, and calls [onBuy].
+/// handles insufficient balance, gates on the canonical tx-PIN bottom sheet,
+/// and calls [onBuy] with the minted verification token.
 class BuyGiftCreditSheet extends StatefulWidget {
   final List<SprayGift> gifts;
   final String accountId;
@@ -17,8 +21,10 @@ class BuyGiftCreditSheet extends StatefulWidget {
   final double accountBalanceMajor;
   final String currency;
 
-  /// Returns an error message on failure, or null on success.
-  final Future<String?> Function(List<Map<String, dynamic>> items, String pin) onBuy;
+  /// Returns an error message on failure, or null on success. Receives the
+  /// PIN verification token (NOT a raw PIN) from the tx-PIN modal.
+  final Future<String?> Function(
+      List<Map<String, dynamic>> items, String verificationToken) onBuy;
 
   const BuyGiftCreditSheet({
     super.key,
@@ -34,13 +40,16 @@ class BuyGiftCreditSheet extends StatefulWidget {
   State<BuyGiftCreditSheet> createState() => _BuyGiftCreditSheetState();
 }
 
-class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet> {
+class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet>
+    with TransactionPinMixin<BuyGiftCreditSheet> {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   late final List<SprayGift> _gifts;
-  final _pinController = TextEditingController();
   String? _selectedGiftId;
   int _quantity = 1;
   bool _busy = false;
-  bool _obscurePin = true;
 
   @override
   void initState() {
@@ -49,12 +58,6 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet> {
     _gifts = GiftCatalogDefaults.mergeWithBackend(widget.gifts)
         .where((g) => !g.isFree && g.priceMajor > 0)
         .toList();
-  }
-
-  @override
-  void dispose() {
-    _pinController.dispose();
-    super.dispose();
   }
 
   SprayGift? get _selected =>
@@ -68,30 +71,44 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet> {
   Future<void> _buy() async {
     final gift = _selected;
     if (gift == null || _busy) return;
-    final pin = _pinController.text.trim();
-    if (pin.length < 4 || pin.length > 6) {
-      _toast('Enter your 4-6 digit PIN', const Color(0xFFEF4444));
-      return;
-    }
     if (_insufficient) {
       _toast('Insufficient account balance', const Color(0xFFEF4444));
       return;
     }
     setState(() => _busy = true);
     HapticFeedback.mediumImpact();
-    final err = await widget.onBuy(
-      [
-        {'gift_id': gift.id, 'quantity': _quantity},
-      ],
-      pin,
+
+    // CRITICAL: mint the token with transactionId == the source account id. The
+    // sprayme-service BuyGiftCredit handler re-validates the token against
+    // req.SourceAccountId (PreValidate); a UUID-bound token never matches and the
+    // purchase is rejected with a PIN error. widget.accountId is the source account.
+    final ok = await validateTransactionPin(
+      context: context,
+      transactionId: widget.accountId,
+      transactionType: 'spray_buy_gift',
+      amount: _totalMajor,
+      currency: widget.currency,
+      title: 'Buy gifts',
+      message:
+          'Confirm buying ${gift.emoji} ×$_quantity for ${widget.currency} ${_totalMajor.toStringAsFixed(0)}',
+      successMessage: 'Gifts purchased',
+      onPinValidated: (verificationToken) async {
+        final err = await widget.onBuy(
+          [
+            {'gift_id': gift.id, 'quantity': _quantity},
+          ],
+          verificationToken,
+        );
+        // Surface a backend failure inside the PIN sheet (setFailed).
+        if (err != null) throw Exception(err);
+      },
     );
+
     if (!mounted) return;
-    if (err == null) {
+    setState(() => _busy = false);
+    if (ok) {
       Navigator.of(context).pop();
       _toast('Gifts purchased — ready to spray', const Color(0xFF10B981));
-    } else {
-      setState(() => _busy = false);
-      _toast(err, const Color(0xFFEF4444));
     }
   }
 
@@ -253,39 +270,6 @@ class _BuyGiftCreditSheetState extends State<BuyGiftCreditSheet> {
                   ),
                 ),
               SizedBox(height: 14.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: TextField(
-                  controller: _pinController,
-                  keyboardType: TextInputType.number,
-                  obscureText: _obscurePin,
-                  maxLength: 6,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp),
-                  decoration: InputDecoration(
-                    hintText: 'Transaction PIN',
-                    hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-                    counterText: '',
-                    filled: true,
-                    fillColor: const Color(0xFF0A0A0A),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () => setState(() => _obscurePin = !_obscurePin),
-                      icon: Icon(_obscurePin ? Icons.visibility_off : Icons.visibility,
-                          color: const Color(0xFF9CA3AF), size: 20.sp),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
               Padding(
                 padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
                 child: SizedBox(

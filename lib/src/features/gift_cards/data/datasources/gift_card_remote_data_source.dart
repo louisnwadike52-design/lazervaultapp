@@ -80,6 +80,7 @@ abstract class IGiftCardRemoteDataSource {
     String? subcategoryId,
     String? cardCode,
     bool disclaimerAccepted = false,
+    bool balanceAttested = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -113,9 +114,6 @@ abstract class IGiftCardRemoteDataSource {
     required List<String> imageUrls,
   });
 
-  // Settlement and provider management methods (admin only)
+  // Active sell-provider resolution (drives the sell-flow provider display).
   Future<Map<String, dynamic>> getActiveSellProvider();
-  Future<Map<String, dynamic>?> retrySettlement(String saleId);
-  Future<Map<String, dynamic>?> exportSettlementHistory(String format);
-  Future<List<Settlement>> getSettlementHistory();
 }

@@ -7,6 +7,7 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
+import '../../../../../core/widgets/network_logo.dart';
 import '../widgets/airtime_step_indicator.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -189,24 +190,14 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 52.w,
-              height: 52.w,
-              decoration: BoxDecoration(
-                color: Color(int.parse(
-                    provider.primaryColor.replaceFirst('#', '0xFF'))),
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Center(
-                child: Text(
-                  provider.shortName.substring(0, 1),
-                  style: TextStyle(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            NetworkLogo(
+              networkType: provider.type.name,
+              operatorId: provider.operatorId,
+              shortName: provider.shortName,
+              name: provider.name,
+              primaryColorHex: provider.primaryColor,
+              size: 52,
+              borderRadius: 14,
             ),
             SizedBox(width: 14.w),
             Expanded(

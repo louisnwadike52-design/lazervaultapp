@@ -99,7 +99,7 @@ Payment Method: ${widget.paymentMethod}
 Date: ${dateFormat.format(now)}
 ━━━━━━━━━━━━━━━━━━━━━━
 
-💼 LazerVault Portfolio
+💼 Lazervault Portfolio
 🚀 Generated with Claude Code
 ''';
 

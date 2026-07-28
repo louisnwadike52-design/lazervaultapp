@@ -16,6 +16,7 @@ import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
+import '../widgets/crypto_kyc_gate.dart';
 import '../widgets/quote_timer_card.dart';
 import 'crypto_swap_processing_screen.dart';
 import 'crypto_receipt_screen.dart';
@@ -85,6 +86,20 @@ Future<SwapFlowResult> runSwapFlow({
   if (side != 'buy' && side != 'sell' && side != 'convert') {
     return const SwapFlowResult.error('Invalid side');
   }
+  // Preventive KYC gate for every buy/sell/swap entry (single chokepoint). Shows
+  // the identity-verification modal when the user's tier is too low and returns
+  // a silent no-op result (null message → callers don't snackbar) so the user
+  // never falls into a failed Quidax flow. The crypto-service enforces the same
+  // gate server-side as the authoritative backstop.
+  final tradeVerb = side == 'buy'
+      ? 'buy crypto'
+      : side == 'sell'
+          ? 'sell crypto'
+          : 'swap crypto';
+  if (!await ensureCryptoTradeAllowed(context, operation: tradeVerb)) {
+    return const SwapFlowResult.error(null);
+  }
+  if (!context.mounted) return const SwapFlowResult.error(null);
   // Resolve fiat from the user's active locale when the caller didn't
   // pass one explicitly. Quidax wants lowercase tickers.
   if (fiatCurrency.trim().isEmpty) {

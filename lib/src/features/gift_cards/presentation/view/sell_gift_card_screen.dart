@@ -21,6 +21,8 @@ import '../../../../../core/types/app_routes.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'widgets/sell_rejection_reasons_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/legal_links_service.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 
 class SellGiftCardScreen extends StatefulWidget {
   final SellableCard? preselectedCard;
@@ -90,6 +92,16 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // FailedPrecondition when this is false.
   bool _disclaimerAccepted = false;
 
+  // Step 2 (Verify balance): the balance-attestation gate. No gift-card
+  // issuer nor either trade-in provider (Prestmit/Reloadly) exposes a
+  // public API to check a customer-supplied card's remaining balance, so
+  // the balance can only be verified out-of-band AFTER submission. The
+  // dedicated "Verify balance" step makes the user declare the balance
+  // (== denomination) and accept the liability/privacy terms; this flag
+  // is the audit signal that they did. Backend rejects with
+  // FailedPrecondition when false; the Continue button gates on it too.
+  bool _balanceAttested = false;
+
   static const _sellCategories = [
     {'slug': '', 'label': 'All'},
     {'slug': 'gaming', 'label': 'Gaming'},
@@ -131,6 +143,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     }
     _selectedCard = widget.preselectedCard;
     _currentStep = 1;
+    // Refresh the admin-configured gift-card T&C URL (cached; never throws) so
+    // the "Read the full terms" links in steps 2/3 open the latest page even
+    // when the user deep-links straight into the sell flow.
+    LegalLinksService.instance.refresh();
     // Auto-prefill the denomination so the Get-Rate CTA is reachable
     // without an extra tap. Many Prestmit subcategories ship with
     // ONLY a `minimum` (no fixed denominations[]); the user otherwise
@@ -181,7 +197,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         ),
         centerTitle: true,
       ),
-      body: GiftCardBackground(child: BlocConsumer<GiftCardCubit, GiftCardState>(
+      // Opaque tap-outside-to-dismiss for the card-number / card-PIN /
+      // denomination fields (the global translucent dismiss only fires on
+      // empty space; this dense multi-step form needs a reliable catch-all).
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: GiftCardBackground(child: BlocConsumer<GiftCardCubit, GiftCardState>(
         listener: _onStateChanged,
         builder: (context, state) {
           if (state is SellableCardsLoading && _currentStep == 0) {
@@ -194,7 +216,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           }
           return _buildCurrentStep(state);
         },
-      )),
+      ))),
     ),
     );
   }
@@ -206,7 +228,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       case 1:
         return 'Card Details';
       case 2:
-        return 'Payout Method';
+        return 'Verify balance';
       case 3:
         return 'Confirm Sale';
       case 4:
@@ -225,10 +247,19 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       return;
     }
     if (_currentStep == 3) {
-      // Confirm → back to Card Details (step 1). The payout-currency step
-      // (old step 2) was removed; payout follows the active-locale currency.
+      // Confirm → back to the Verify-balance step (step 2). Reset the
+      // confirm-step disclaimer so the user re-affirms it on return.
       setState(() {
         _disclaimerAccepted = false;
+        _currentStep = 2;
+      });
+      return;
+    }
+    if (_currentStep == 2) {
+      // Verify balance → back to Card Details (step 1). Reset the balance
+      // attestation so it must be re-affirmed.
+      setState(() {
+        _balanceAttested = false;
         _currentStep = 1;
       });
       return;
@@ -458,10 +489,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       case 1:
         return _buildStep1CardDetailsAndImages();
       case 2:
-        // Payout-currency selection screen removed — payout follows the
-        // active-locale currency (dashboard default). Defensive: a stale
-        // step==2 renders confirm rather than a deleted screen.
-        return _buildStep3Confirm();
+        // Verify-balance step: user declares the card's available balance
+        // and accepts the liability/privacy terms before the sale is
+        // created. There is no issuer/provider balance-check API, so this
+        // attestation is our pre-sale "balance check".
+        return _buildStep2VerifyBalance();
       case 3:
         return _buildStep3Confirm();
       case 4:
@@ -1560,7 +1592,207 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       denomination: _selectedDenomination!,
     );
     context.read<GiftCardCubit>().loadPayoutMethods();
-    setState(() => _currentStep = 3);
+    // Advance to the Verify-balance step (step 2). The rate loads in the
+    // background while the user reviews the balance declaration + terms,
+    // then Continue moves on to Confirm (step 3).
+    setState(() => _currentStep = 2);
+  }
+
+  // ============================================
+  // STEP 2: Verify balance
+  // ============================================
+
+  /// Pre-sale balance verification. No gift-card issuer (Apple, Amazon,
+  /// Steam, …) nor either trade-in provider (Prestmit, Reloadly) exposes a
+  /// public API to check a customer-supplied card's remaining balance, so
+  /// we can't verify it live. Instead the user explicitly DECLARES the
+  /// balance (== the denomination they entered) and accepts the
+  /// liability/privacy terms — the balance is verified out-of-band only
+  /// AFTER submission (provider redemption / admin review). This step is
+  /// the flow's pre-sale "balance check" and its attestation gate.
+  Widget _buildStep2VerifyBalance() {
+    final ccy = _faceCurrencyCode();
+    final sym = _currencySymbolFor(ccy);
+    final declared = _selectedDenomination?.toStringAsFixed(0) ?? '-';
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSelectedCardHeader(),
+          SizedBox(height: 20.h),
+          // Declared balance — shown prominently. This is the value the
+          // user is asserting is available on the card.
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(18.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Declared card balance',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  '$sym $ccy $declared',
+                  key: const Key('sell_declared_balance'),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF10B981),
+                    fontSize: 26.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  "You're declaring this card currently holds this full, unused balance. We use it to price your payout.",
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          // "We can't check this automatically" notice — the honest
+          // explanation + liability terms. Amber warning card matching the
+          // confirm-step disclaimer style.
+          Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.orange.withValues(alpha: 0.12),
+                  Colors.orange.withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        color: Colors.orange, size: 20.sp),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Text(
+                        "We can't check this balance automatically",
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  'Card issuers and our trade-in partners do not offer a public way to look up a gift card’s balance. We verify the real balance only after you submit, when the card is redeemed by our partner or reviewed by our team.\n\n'
+                  '• Your final payout is based on the balance we actually verify. If it is lower than declared, your payout is adjusted to match.\n'
+                  '• If the card is invalid, already used, expired, or worth less than declared, the sale is rejected or repriced and Lazervault is not liable for the declared amount.\n'
+                  '• Your card details are stored securely and used only to complete this verification.',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12.sp,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 14.h),
+          // Attestation checkbox — the balance gate.
+          GestureDetector(
+            key: const Key('sell_balance_attest_checkbox'),
+            onTap: () => setState(() => _balanceAttested = !_balanceAttested),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(
+                  color: _balanceAttested
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF2D2D2D),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    _balanceAttested
+                        ? Icons.check_box_rounded
+                        : Icons.check_box_outline_blank_rounded,
+                    color: _balanceAttested
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF9CA3AF),
+                    size: 22.sp,
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'I confirm this card currently holds the balance shown above, and I accept that Lazervault verifies the balance after submission and is not liable if it differs.',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 18.h),
+          SizedBox(
+            width: double.infinity,
+            height: 52.h,
+            child: ElevatedButton(
+              key: const Key('sell_balance_continue_button'),
+              onPressed: _balanceAttested
+                  ? () => setState(() => _currentStep = 3)
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                disabledBackgroundColor: const Color(0xFF2D2D2D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Continue',
+                style: GoogleFonts.inter(
+                  color: _balanceAttested
+                      ? Colors.white
+                      : const Color(0xFF6B7280),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+        ],
+      ),
+    );
   }
 
   // ============================================
@@ -1700,7 +1932,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               ),
             ),
           ),
-          SizedBox(height: 18.h),
+          SizedBox(height: 14.h),
+          // Full terms reference — the last thing before completing the sale.
+          _buildTermsLink(),
+          SizedBox(height: 14.h),
           // Submit button
           SizedBox(
             width: double.infinity,
@@ -1734,6 +1969,45 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ),
           SizedBox(height: 16.h),
         ],
+      ),
+    );
+  }
+
+  /// Opens the admin-configurable Gift Card Terms & Conditions in a themed
+  /// in-app WebView bottom sheet (graceful fallback if the page can't load).
+  Future<void> _openGiftcardTerms() {
+    return showWebViewBottomSheet(
+      context,
+      url: LegalLinksService.instance.giftcardTermsUrl,
+      title: 'Gift Card Terms & Conditions',
+    );
+  }
+
+  /// Full-terms reference shown on the Confirm step (step 3), right before the
+  /// Sell CTA — the standard, point-of-completion location for a T&C link.
+  /// Rendered as a standard text-colored CTA (white, underlined) rather than an
+  /// accent so it reads as informational, not a primary action.
+  Widget _buildTermsLink() {
+    return Center(
+      child: TextButton(
+        key: const Key('sell_terms_link'),
+        onPressed: _openGiftcardTerms,
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text(
+          'Read the full Gift Card Terms & Conditions',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 12.5.sp,
+            fontWeight: FontWeight.w500,
+            decoration: TextDecoration.underline,
+            decorationColor: Colors.white70,
+          ),
+        ),
       ),
     );
   }
@@ -2610,10 +2884,12 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           setState(() {
             _currentRate = null;
             // Rate expired — send the user back to Card Details (step 1)
-            // to re-fetch a fresh rate. The payout-currency step was
-            // removed; payout follows the active-locale currency.
+            // to re-fetch a fresh rate. Reset both attestations so they
+            // are re-affirmed on the way back through Verify balance +
+            // Confirm.
             _currentStep = 1;
             _disclaimerAccepted = false;
+            _balanceAttested = false;
           });
           return;
         }
@@ -2624,17 +2900,25 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
 
     final transactionId = 'SELL-${DateTime.now().millisecondsSinceEpoch}';
     final payoutAmount = _currentRate?.payoutAmount ?? _selectedDenomination!;
+    // Payout currency comes from the quoted rate (NGN today, but don't hardcode
+    // so a future non-NGN payout rail surfaces the right currency on the PIN
+    // sheet + confirmation).
+    final payoutCurrency =
+        (_currentRate?.currency.isNotEmpty ?? false) ? _currentRate!.currency : 'NGN';
 
     String? verificationToken;
+
+    // Dismiss any field keyboard before the PIN sheet appears.
+    FocusScope.of(context).unfocus();
 
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'gift_card_sell',
       amount: payoutAmount,
-      currency: 'NGN',
+      currency: payoutCurrency,
       title: 'Confirm Sale',
-      message: 'Confirm gift card sale for NGN ${payoutAmount.toStringAsFixed(2)}',
+      message: 'Confirm gift card sale for $payoutCurrency ${payoutAmount.toStringAsFixed(2)}',
       // Gift card sell: cubit.sellGiftCard runs *after* the modal closes
       // (line below), and either submits to Prestmit or queues for manual
       // review. The modal has nothing to wait on, so it should stop at
@@ -2676,6 +2960,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ? _cardNumberController.text.trim()
           : null,
       disclaimerAccepted: _disclaimerAccepted,
+      balanceAttested: _balanceAttested,
       images: _uploadedImageUrls.isNotEmpty ? _uploadedImageUrls : null,
       providerName: _selectedCard!.providerName.isNotEmpty ? _selectedCard!.providerName : null,
       cardCountry: _selectedCountry,

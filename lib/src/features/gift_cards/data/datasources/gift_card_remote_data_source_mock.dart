@@ -276,6 +276,7 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     String? subcategoryId,
     String? cardCode,
     bool disclaimerAccepted = false,
+    bool balanceAttested = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -460,34 +461,6 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
       'provider': 'manual',
       'description': 'Manual review mode',
     };
-  }
-
-  @override
-  Future<Map<String, dynamic>?> retrySettlement(String saleId) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-    return {
-      'success': true,
-      'message': 'Settlement retry initiated',
-    };
-  }
-
-  @override
-  Future<Map<String, dynamic>?> exportSettlementHistory(String format) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-    return {
-      'success': true,
-      'filePath': '/tmp/settlement_history.$format',
-    };
-  }
-
-  @override
-  Future<List<Settlement>> getSettlementHistory() async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-    // Return mock settlement data
-    return [];
   }
 
   // Mock brand data

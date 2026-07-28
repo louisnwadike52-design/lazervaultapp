@@ -26,7 +26,8 @@ abstract class AiScanRepository {
 
   /// Richer multi-target scan analysis (same OCR endpoint as
   /// [scanBankDetails], but exposes extraction_type + recipient/contact data).
-  Future<ScanAnalysis> analyzeScan(String imagePath, String sessionId);
+  Future<ScanAnalysis> analyzeScan(String imagePath, String sessionId,
+      {bool lean = false});
   Future<PaymentReceipt> processBankDetailsPayment({
     required BankDetails bankDetails,
     required double amount,

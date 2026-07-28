@@ -92,6 +92,28 @@ enum LockType {
   }
 }
 
+/// Helpers for mapping the backend `lock_type` slug onto the legacy
+/// display enum. Plans are identified by their config UUID end-to-end;
+/// this mapping only drives cosmetic bits (icon) and the enum-keyed
+/// getters kept for back-compat.
+extension LockTypeX on LockType {
+  /// Resolve the display enum from a backend lock_type slug. Returns
+  /// null for admin-defined slugs the enum doesn't know about — the
+  /// caller decides the fallback (typically savings for icons).
+  static LockType? fromBackendKey(String key) {
+    switch (key.trim().toLowerCase()) {
+      case 'savings':
+        return LockType.savings;
+      case 'investment':
+        return LockType.investment;
+      case 'goal_based':
+        return LockType.goalBased;
+      default:
+        return null;
+    }
+  }
+}
+
 enum LockStatus {
   active,
   matured,
@@ -470,6 +492,9 @@ class LockFund {
 
   /// Lock duration formatted
   String get durationText {
+    // Flex / no-fixed-term plans carry a 0-day duration — render it as the
+    // product concept ("Flexible"), never a literal "0 days".
+    if (lockDurationDays <= 0) return 'Flexible';
     if (lockDurationDays < 30) return '$lockDurationDays days';
     if (lockDurationDays < 365) {
       final months = (lockDurationDays / 30).floor();

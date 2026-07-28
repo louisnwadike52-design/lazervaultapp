@@ -10,6 +10,8 @@ import '../../../qr_payment/domain/repositories/qr_payment_repository.dart';
 import '../../../pay_invoice/domain/repositories/pay_invoice_repository.dart';
 import '../../../funds/data/datasources/payments_transfer_data_source.dart';
 import '../../../profile/domain/repositories/i_profile_repository.dart';
+import '../../../recipients/data/datasources/bank_scan_datasource.dart'
+    show SmartScanResult;
 import 'ai_scan_state.dart';
 
 class AiScanCubit extends Cubit<AiScanState> {
@@ -182,124 +184,6 @@ class AiScanCubit extends Cubit<AiScanState> {
     emit(AiScanTypeSelection(_supportedScanTypes));
   }
 
-  // Start a new scan session with selected type
-  Future<void> startScanSession(ScanType scanType) async {
-    try {
-      if (isClosed) return;
-      emit(const AiScanLoading(message: 'Initializing scan session...'));
-
-      final session = await startScanSessionUseCase(scanType);
-      _currentSession = session;
-
-      // Journal the freshly-created session so it can be resumed if
-      // the user navigates away before completing the scan.
-      // Fire-and-forget — a write failure must not block the scan.
-      // ignore: discarded_futures
-      _store.save(session: session);
-
-      // Navigate to camera for scanning
-      if (isClosed) return;
-      emit(AiScanCamera(session: session));
-    } catch (e) {
-      if (isClosed) return;
-      emit(AiScanError(message: 'Failed to start scan session: ${e.toString()}'));
-    }
-  }
-
-  // Capture and process image
-  Future<void> captureAndProcessImage(String imagePath) async {
-    final currentState = state;
-    if (currentState is! AiScanCamera) return;
-
-    try {
-      if (isClosed) return;
-      emit(AiScanCamera(session: currentState.session, isCapturing: true));
-      
-      // Update session status
-      if (isClosed) return;
-      emit(AiScanProcessing(
-        session: currentState.session,
-        status: 'Processing image...',
-        progress: 0.3,
-      ));
-
-      // Extract data from image
-      final extractedData = await processScanUseCase(imagePath, currentState.session.scanType);
-      
-      if (isClosed) return;
-      emit(AiScanProcessing(
-        session: currentState.session,
-        status: 'Analyzing content...',
-        progress: 0.7,
-      ));
-
-      // Get initial chat history and add AI response with extracted data
-      final chatHistory = <AiChatMessage>[];
-      
-      // Generate AI response based on extracted data
-      final aiResponse = await aiChatUseCase(
-        currentState.session.id,
-        'Image processed',
-        extractedData: extractedData,
-      );
-
-      chatHistory.add(aiResponse);
-
-      // Transition to chat with extracted data
-      if (isClosed) return;
-      emit(AiScanChatActive(
-        session: currentState.session,
-        messages: chatHistory,
-        extractedData: extractedData,
-      ));
-    } catch (e) {
-      if (isClosed) return;
-      emit(AiScanError(message: 'Failed to process image: ${e.toString()}'));
-    }
-  }
-
-  // Send message in chat
-  Future<void> sendChatMessage(String message) async {
-    final currentState = state;
-    if (currentState is! AiScanChatActive) return;
-
-    try {
-      // Add user message immediately
-      final userMessage = AiChatMessage(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        content: message,
-        isUser: true,
-        timestamp: DateTime.now(),
-      );
-
-      final updatedMessages = [...currentState.messages, userMessage];
-      
-      if (isClosed) return;
-      emit(currentState.copyWith(
-        messages: updatedMessages,
-        isTyping: true,
-      ));
-
-      // Get AI response
-      final aiResponse = await aiChatUseCase(
-        currentState.session.id,
-        message,
-        extractedData: currentState.extractedData,
-      );
-
-      final finalMessages = [...updatedMessages, aiResponse];
-
-      if (isClosed) return;
-      emit(currentState.copyWith(
-        messages: finalMessages,
-        isTyping: false,
-      ));
-    } catch (e) {
-      if (isClosed) return;
-      emit(AiScanError(message: 'Failed to send message: ${e.toString()}'));
-    }
-  }
-
   // NOTE: the legacy processPayment / AiScanPaymentProcessing /
   // AiScanPaymentSuccess flow was removed. It was emitted only via the
   // generic AiScanChatActive path and never reached the canonical
@@ -309,37 +193,6 @@ class AiScanCubit extends Cubit<AiScanState> {
   // remain in place because they're independent of the UI flow; if a
   // future "pay-via-chat" surface is rebuilt it'll wire to them
   // directly.
-
-  // Load scan history
-  Future<void> loadScanHistory() async {
-    try {
-      if (isClosed) return;
-      emit(const AiScanLoading(message: 'Loading scan history...'));
-      
-      final sessions = await getScanHistoryUseCase();
-      
-      if (isClosed) return;
-      emit(AiScanHistoryLoaded(sessions));
-    } catch (e) {
-      if (isClosed) return;
-      emit(AiScanError(message: 'Failed to load scan history: ${e.toString()}'));
-    }
-  }
-
-  // Return to scan type selection
-  void returnToScanTypeSelection() {
-    if (isClosed) return;
-    emit(AiScanTypeSelection(_supportedScanTypes));
-  }
-
-  // Return to camera from chat
-  void returnToCamera() {
-    final currentState = state;
-    if (currentState is AiScanChatActive) {
-      if (isClosed) return;
-      emit(AiScanCamera(session: currentState.session));
-    }
-  }
 
   // Reset to initial state. Also clears the resume journal — a manual
   // reset is the user saying "discard whatever was in flight".
@@ -351,47 +204,13 @@ class AiScanCubit extends Cubit<AiScanState> {
     emit(AiScanInitial());
   }
 
-  // Handle manual image upload instead of camera
-  Future<void> uploadImage(String imagePath) async {
-    final currentState = state;
-    if (currentState is! AiScanCamera) return;
-
-    await captureAndProcessImage(imagePath);
-  }
-
-  // Update scan session status
-  Future<void> updateSessionStatus(ScanStatus status) async {
-    final currentState = state;
-    ScanSession? session;
-
-    if (currentState is AiScanCamera) {
-      session = currentState.session;
-    } else if (currentState is AiScanChatActive) {
-      session = currentState.session;
-    } else if (currentState is AiScanSessionActive) {
-      session = currentState.session;
-    }
-
-    if (session != null) {
-      final updatedSession = session.copyWith(status: status);
-
-      // Emit updated state based on current state type
-      if (currentState is AiScanCamera) {
-        if (isClosed) return;
-        emit(AiScanCamera(session: updatedSession));
-      } else if (currentState is AiScanChatActive) {
-        if (isClosed) return;
-        emit(currentState.copyWith(session: updatedSession));
-      }
-    }
-  }
-
   // ========== Unified Intelligent-Scan Flow ==========
 
   /// Analyze a captured/uploaded image and resolve it to a single payable
   /// [ScanPaymentIntent]. Runs the local QR decode and the OCR analysis in
   /// PARALLEL, then applies bank-details-priority routing.
-  Future<void> analyzeImage(String imagePath, ScanSource source) async {
+  Future<void> analyzeImage(String imagePath, ScanSource source,
+      {bool lean = false}) async {
     if (isClosed) return;
     emit(const AiScanAnalyzing());
 
@@ -409,7 +228,7 @@ class AiScanCubit extends Cubit<AiScanState> {
     try {
       final results = await Future.wait<dynamic>([
         _decodeQr(imagePath),
-        _runOcr(imagePath, sessionId),
+        _runOcr(imagePath, sessionId, lean: lean),
       ]);
 
       final qrIntent = results[0] as ScanPaymentIntent?;
@@ -417,83 +236,38 @@ class AiScanCubit extends Cubit<AiScanState> {
 
       if (isClosed) return;
 
-      // 1) Bank-details PRIORITY — a confident document extraction wins.
+      // 1) Bank-details PRIORITY — a confident document extraction wins. Route
+      //    it (and every other OCR-derived target below) through the shared
+      //    verify sheet BEFORE any amount is entered, exactly mirroring the
+      //    send-funds "Scan Account" flow: the extracted account is confirmed
+      //    (NUBAN name resolution) first, so we never send to an unverified
+      //    OCR-read account number.
       if (analysis != null && analysis.isBankDetails) {
-        final bank = analysis.toBankDetails();
-        emit(AiScanIntentResolved(ScanPaymentIntent(
-          type: ScanIntentType.bankDetails,
-          title: bank.accountName.isNotEmpty ? bank.accountName : 'Bank Transfer',
-          subtitle: '${bank.maskedAccountNumber} • ${bank.bankName}',
-          amount: analysis.amount,
-          amountEditable: true,
-          description: analysis.description,
-          bankDetails: bank,
-          accountNumber: bank.accountNumber,
-          bankName: bank.bankName,
-          bankCode: bank.bankCode,
-        )));
+        emit(AiScanOcrResolved(analysis));
         return;
       }
 
-      // 2) A recognized LazerVault QR (qr-pay / invoice / recipient).
+      // 2) A recognized LazerVault QR (qr-pay / invoice / recipient). A QR code
+      //    carries no OCR-read account name to verify, so it goes straight to
+      //    the confirm/amount path.
       if (qrIntent != null) {
         emit(AiScanIntentResolved(qrIntent));
         return;
       }
 
-      // 3) OCR resolved an internal user.
-      if (analysis != null && analysis.isInternalUser) {
-        emit(AiScanIntentResolved(ScanPaymentIntent(
-          type: ScanIntentType.recipient,
-          title: analysis.displayName ?? analysis.username ?? 'Recipient',
-          subtitle: analysis.username != null ? '@${analysis.username}' : 'LazerVault user',
-          username: analysis.username,
-          amount: analysis.amount,
-          amountEditable: true,
-          description: analysis.description,
-        )));
+      // 3) Any other OCR-derived payable target — internal user, phone, email,
+      //    or an ambiguous value. All get the same review/verify sheet (which
+      //    also renders the disambiguation choices) before amount.
+      if (analysis != null &&
+          (analysis.isInternalUser ||
+              analysis.isPhone ||
+              analysis.isEmail ||
+              analysis.isAmbiguous)) {
+        emit(AiScanOcrResolved(analysis));
         return;
       }
 
-      // 4) OCR resolved a phone number → recipient by phone.
-      if (analysis != null && analysis.isPhone) {
-        emit(AiScanIntentResolved(ScanPaymentIntent(
-          type: ScanIntentType.recipient,
-          title: analysis.displayName ?? analysis.phoneNumber ?? 'Recipient',
-          subtitle: analysis.phoneNumber ?? 'Phone number',
-          username: analysis.phoneNumber, // resolved via search at pay time
-          amount: analysis.amount,
-          amountEditable: true,
-          description: analysis.description,
-        )));
-        return;
-      }
-
-      // 4b) OCR resolved an email → LazerVault user resolved by email at pay time.
-      if (analysis != null && analysis.isEmail) {
-        emit(AiScanIntentResolved(ScanPaymentIntent(
-          type: ScanIntentType.recipient,
-          title: analysis.displayName ?? analysis.email ?? 'Recipient',
-          subtitle: analysis.email ?? 'Email',
-          username: analysis.email, // resolved via search at pay time
-          amount: analysis.amount,
-          amountEditable: true,
-          description: analysis.description,
-        )));
-        return;
-      }
-
-      // 5) Ambiguous (10–11 digit value).
-      if (analysis != null && analysis.isAmbiguous) {
-        emit(AiScanAmbiguousResult(
-          possibleTypes: analysis.possibleTypes,
-          hint: analysis.disambiguationHint,
-          data: analysis.raw,
-        ));
-        return;
-      }
-
-      // 6) Nothing payable.
+      // 4) Nothing payable.
       emit(const AiScanNoDataResult());
     } on ScanException catch (e) {
       if (isClosed) return;
@@ -502,6 +276,58 @@ class AiScanCubit extends Cubit<AiScanState> {
       if (isClosed) return;
       emit(const AiScanNoDataResult());
     }
+  }
+
+  /// On-device fast-path entry: the captured still was OCR'd + parsed on-device
+  /// (OnDeviceScanExtractor) into a [SmartScanResult] — no backend GPT-vision
+  /// call. Feed it through the SAME state machine as [analyzeImage] so the host
+  /// screen opens the identical Verify sheet (NIP name-enquiry + PIN unchanged).
+  /// Emits [AiScanAnalyzing] first (so the camera page pops back to the host,
+  /// exactly like the backend path), then the resolved state.
+  Future<void> resolveOnDeviceScan(SmartScanResult result) async {
+    if (isClosed) return;
+    emit(const AiScanAnalyzing());
+    // Let the Analyzing state settle so the camera page pops back to the host
+    // (its listener pops on a post-frame callback) BEFORE we emit the resolved
+    // state — otherwise the Verify sheet would open under the camera. The
+    // backend path gets this gap for free from the OCR round-trip; on-device we
+    // add a short one explicitly.
+    await Future.delayed(const Duration(milliseconds: 150));
+    final analysis = _analysisFromSmartScan(result);
+    if (isClosed) return;
+    if (analysis.isBankDetails ||
+        analysis.isInternalUser ||
+        analysis.isPhone ||
+        analysis.isEmail ||
+        analysis.isAmbiguous) {
+      emit(AiScanOcrResolved(analysis));
+    } else {
+      emit(const AiScanNoDataResult());
+    }
+  }
+
+  /// Bridge the send-funds [SmartScanResult] shape onto the AI-scan
+  /// [ScanAnalysis] entity (the reverse of the mapping `_handleOcrResolved`
+  /// does when opening the sheet). amount_minor → major units.
+  ScanAnalysis _analysisFromSmartScan(SmartScanResult r) {
+    return ScanAnalysis(
+      extractionType: r.extractionType,
+      accountNumber: r.accountNumber,
+      accountName: r.accountName,
+      bankName: r.bankName,
+      bankCode: r.bankCode,
+      username: r.username,
+      displayName: r.displayName,
+      phoneNumber: r.phoneNumber,
+      email: r.email,
+      amount: (r.amountMinor != null && r.amountMinor! > 0)
+          ? r.amountMinor! / 100.0
+          : null,
+      description: r.description,
+      possibleTypes: r.possibleTypes,
+      disambiguationHint: r.disambiguationHint,
+      confidence: r.confidence,
+    );
   }
 
   /// Resolve an ambiguous scan to a concrete intent (user picked account vs
@@ -535,9 +361,11 @@ class AiScanCubit extends Cubit<AiScanState> {
 
   /// Run the OCR analysis. Never throws for "no data" cases — returns null so
   /// a QR result can win; only genuine auth/network errors propagate.
-  Future<ScanAnalysis?> _runOcr(String imagePath, String sessionId) async {
+  Future<ScanAnalysis?> _runOcr(String imagePath, String sessionId,
+      {bool lean = false}) async {
     try {
-      return await aiScanRepository.analyzeScan(imagePath, sessionId);
+      return await aiScanRepository.analyzeScan(imagePath, sessionId,
+          lean: lean);
     } on ScanException {
       rethrow;
     } catch (_) {
@@ -834,182 +662,4 @@ class AiScanCubit extends Cubit<AiScanState> {
     }
   }
 
-  /// Initiate payment with bank details
-  Future<void> initiatePayment({
-    required BankDetails bankDetails,
-    required double amount,
-    required String description,
-  }) async {
-    try {
-      // Generate transaction ID for idempotency
-      final transactionId = 'TRF-${DateTime.now().millisecondsSinceEpoch}';
-
-      // Show PIN modal by emitting awaiting PIN state
-      if (isClosed) return;
-      emit(AiScanBankDetailsAwaitingPIN(
-        bankDetails: bankDetails,
-        amount: amount,
-        description: description,
-        transactionId: transactionId,
-      ));
-
-      // PIN entry handled by UI, wait for PIN verification
-      // processPaymentWithPIN will be called after PIN is verified
-    } catch (e) {
-      if (isClosed) return;
-      emit(AiScanError(message: 'Payment initiation failed: ${e.toString()}'));
-    }
-  }
-
-  /// Process payment with verified PIN
-  Future<void> processPaymentWithPIN({
-    required BankDetails bankDetails,
-    required double amount,
-    required String description,
-    required String verificationToken,
-    required String transactionId,
-  }) async {
-    try {
-      // Step 1: Verifying PIN
-      if (isClosed) return;
-      emit(const AiScanBankDetailsProcessing(
-        status: 'Verifying your PIN...',
-        progress: 0.2,
-      ));
-
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate PIN verification
-
-      // Step 2: Validating account
-      if (isClosed) return;
-      emit(const AiScanBankDetailsProcessing(
-        status: 'Validating account details...',
-        progress: 0.4,
-      ));
-
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Step 3: Processing payment
-      if (isClosed) return;
-      emit(AiScanBankDetailsProcessing(
-        status: bankDetails.isExternal
-            ? 'Initiating bank transfer...'
-            : 'Processing payment...',
-        progress: 0.6,
-      ));
-
-      final receipt = await processBankDetailsPaymentUseCase(
-        bankDetails: bankDetails,
-        amount: amount,
-        description: description,
-        verificationToken: verificationToken,
-        transactionId: transactionId,
-      );
-
-      // Step 4: Updating balance
-      if (isClosed) return;
-      emit(AiScanBankDetailsProcessing(
-        status: bankDetails.isExternal
-            ? 'Awaiting confirmation...'
-            : 'Updating your balance...',
-        progress: 0.8,
-      ));
-
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Step 5: Generating receipt
-      if (isClosed) return;
-      emit(const AiScanBankDetailsProcessing(
-        status: 'Generating receipt...',
-        progress: 1.0,
-      ));
-
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      // Show receipt. Payment landed — drop the resume journal so the
-      // next AI Scan visit starts fresh instead of offering to resume
-      // an already-paid session.
-      // ignore: discarded_futures
-      _store.clear();
-      if (isClosed) return;
-      emit(AiScanBankDetailsPaymentSuccess(receipt: receipt));
-    } on PaymentException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: e.canRetry,
-      ));
-    } on ValidationException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: false,
-      ));
-    } on BankValidationException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: e.canRetry,
-      ));
-    } on NetworkException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: e.canRetry,
-      ));
-    } on AuthenticationException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: false,
-      ));
-    } on RateLimitException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: e.canRetry,
-      ));
-    } on ScanException catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: e.getUserMessage(),
-        bankDetails: bankDetails,
-        canRetry: e.canRetry,
-      ));
-    } catch (e) {
-      if (isClosed) return;
-
-      emit(AiScanBankDetailsPaymentFailed(
-        errorMessage: 'An unexpected error occurred. Please try again.',
-        bankDetails: bankDetails,
-        canRetry: true,
-      ));
-    }
-  }
-
-  /// Retry payment after failure
-  Future<void> retryBankDetailsPayment({
-    required BankDetails bankDetails,
-    required double amount,
-    required String description,
-  }) async {
-    // Re-initiate payment flow
-    await initiatePayment(
-      bankDetails: bankDetails,
-      amount: amount,
-      description: description,
-    );
-  }
 } 

@@ -56,6 +56,7 @@ const _onDepositTint = Color(0xFF3B82F6); // blue — on-deposit
 const _scheduledTint = Color(0xFF10B981); // emerald — scheduled
 const _roundUpTint = Color(0xFFF59E0B); // amber — round-up
 const _inflowTint = Color(0xFFFB923C); // orange — bank inflow (external)
+const _scheduledExternalTint = Color(0xFF14B8A6); // teal — bank standing order
 const _textMuted = Color(0xFF9CA3AF);
 const _danger = Color(0xFFEF4444);
 const _success = Color(0xFF10B981);
@@ -137,8 +138,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           );
     }
 
+    // Optional "duplicate rule" prefill. Type-check the value (not just the key)
+    // so a malformed argument can't crash the create wizard; a wrong-typed
+    // duplicateFrom simply opens a blank create form.
     final args = Get.arguments;
-    if (args is Map && args.containsKey('duplicateFrom')) {
+    if (args is Map && args['duplicateFrom'] is AutoSaveRuleEntity) {
       _populateFromDuplicate(args['duplicateFrom'] as AutoSaveRuleEntity);
     }
   }
@@ -160,7 +164,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     if (rule.maximumPerSave != null) {
       _maximumPerSaveController.text = rule.maximumPerSave.toString();
     }
-    if (rule.triggerType == TriggerType.scheduled) {
+    if (rule.triggerType == TriggerType.scheduled ||
+        rule.triggerType == TriggerType.scheduledExternal) {
       _selectedFrequency = rule.frequency;
       _selectedScheduleDay = rule.scheduleDay;
       if (rule.scheduleTime != null && rule.scheduleTime!.length >= 4) {
@@ -204,7 +209,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         return null;
       case 1:
         // Configure: trigger-specific config THEN amount.
-        if (_selectedTriggerType == TriggerType.scheduled) {
+        if (_selectedTriggerType == TriggerType.scheduled ||
+            _selectedTriggerType == TriggerType.scheduledExternal) {
           if (_selectedFrequency == null) return 'Pick how often it should run';
           if (_needsScheduleDay(_selectedFrequency!) &&
               _selectedScheduleDay == null) {
@@ -222,7 +228,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         }
         return null;
       case 2:
-        if (_selectedTriggerType == TriggerType.externalInflow) {
+        if (_selectedTriggerType == TriggerType.externalInflow ||
+            _selectedTriggerType == TriggerType.scheduledExternal) {
           if (_selectedLinkedAccount == null) {
             return 'Pick the linked bank to save from';
           }
@@ -304,11 +311,16 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   void _submit() {
     final accountsState = context.read<AccountCardsSummaryCubit>().state;
     final isInflow = _selectedTriggerType == TriggerType.externalInflow;
+    final isScheduledExternal =
+        _selectedTriggerType == TriggerType.scheduledExternal;
+    // Both bank-inflow and standing-order rules pull from a linked bank, so
+    // the LazerVault wallet source is unused and the linked account is set.
+    final usesLinkedSource = isInflow || isScheduledExternal;
     String sourceName = 'Source';
     String destName = 'Destination';
     if (accountsState is AccountCardsSummaryLoaded) {
       final summaries = accountsState.accountSummaries;
-      if (!isInflow) {
+      if (!usesLinkedSource) {
         final src = summaries.firstWhere(
           (a) => a.id.toString() == _selectedSourceAccountId,
           orElse: () => summaries.first,
@@ -321,12 +333,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       );
       destName = '${dst.accountType} (****${dst.accountNumberLast4})';
     }
-    if (isInflow && _selectedLinkedAccount != null) {
+    if (usesLinkedSource && _selectedLinkedAccount != null) {
       sourceName =
           '${_selectedLinkedAccount!.bankName} (${_selectedLinkedAccount!.accountNumber})';
     }
 
-    final isScheduled = _selectedTriggerType == TriggerType.scheduled;
+    // Standing orders reuse the scheduled cadence fields on top of the
+    // linked-bank source.
+    final usesSchedule =
+        _selectedTriggerType == TriggerType.scheduled || isScheduledExternal;
     final isRoundUp = _selectedTriggerType == TriggerType.roundUp;
 
     Get.toNamed(
@@ -339,16 +354,17 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         'amountValue': double.parse(_amountController.text),
         // External-inflow rules have no LazerVault source wallet — the
         // linked bank is the source (banking-service mandate pulls from it).
-        'sourceAccountId': isInflow ? '' : _selectedSourceAccountId!,
+        'sourceAccountId': usesLinkedSource ? '' : _selectedSourceAccountId!,
         'sourceLinkedAccountId':
-            isInflow ? _selectedLinkedAccount!.id : null,
-        'sourceBankName': isInflow ? _selectedLinkedAccount!.bankName : null,
+            usesLinkedSource ? _selectedLinkedAccount!.id : null,
+        'sourceBankName':
+            usesLinkedSource ? _selectedLinkedAccount!.bankName : null,
         'destinationAccountId': _selectedDestinationAccountId!,
         'sourceAccountName': sourceName,
         'destinationAccountName': destName,
-        'frequency': isScheduled ? _selectedFrequency : null,
-        'scheduleTime': isScheduled ? _formatTime(_selectedTime) : null,
-        'scheduleDay': isScheduled ? _selectedScheduleDay : null,
+        'frequency': usesSchedule ? _selectedFrequency : null,
+        'scheduleTime': usesSchedule ? _formatTime(_selectedTime) : null,
+        'scheduleDay': usesSchedule ? _selectedScheduleDay : null,
         'roundUpTo': isRoundUp ? _resolvedRoundUpTo() : null,
         'targetAmount': _targetAmountController.text.isEmpty
             ? null
@@ -436,12 +452,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             return 'Save a fixed amount or a percentage of each deposit.';
           case TriggerType.externalInflow:
             return 'Save a fixed amount or a percentage of each bank inflow.';
+          case TriggerType.scheduledExternal:
+            return 'Choose the cadence, then a fixed amount to pull from your bank each run.';
           case TriggerType.unknown:
             return '';
         }
       case 2:
-        return _selectedTriggerType == TriggerType.externalInflow
-            ? 'Pick the linked bank to watch and the Lazervault account the savings land in.'
+        return (_selectedTriggerType == TriggerType.externalInflow ||
+                _selectedTriggerType == TriggerType.scheduledExternal)
+            ? 'Pick the linked bank to pull from and the Lazervault account the savings land in.'
             : 'Money goes from the source to the destination. Pick a destination savings account.';
       case 3:
         return 'Goals and guardrails. Skip anything you don\'t need.';
@@ -466,6 +485,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         return _roundUpTint;
       case TriggerType.externalInflow:
         return _inflowTint;
+      case TriggerType.scheduledExternal:
+        return _scheduledExternalTint;
       case TriggerType.unknown:
         return _accent;
     }
@@ -578,6 +599,21 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               _stepError = null;
             }),
           ),
+          SizedBox(height: 14.h),
+          _TriggerCard(
+            tint: _scheduledExternalTint,
+            icon: Icons.account_balance_wallet_rounded,
+            title: 'Bank standing order',
+            description:
+                'Pull a fixed amount from your linked bank into savings on a recurring schedule.',
+            selected: _selectedTriggerType == TriggerType.scheduledExternal,
+            onTap: () => setState(() {
+              _selectedTriggerType = TriggerType.scheduledExternal;
+              // Standing orders are fixed-amount only.
+              _selectedAmountType = AmountType.fixed;
+              _stepError = null;
+            }),
+          ),
         ],
       );
   }
@@ -611,6 +647,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         return _onDepositConfig();
       case TriggerType.externalInflow:
         return _externalInflowConfig();
+      case TriggerType.scheduledExternal:
+        // Bank standing order = the scheduled cadence config, driving a
+        // Direct Debit pull from the linked bank picked on the accounts step.
+        return _scheduledConfig();
       case TriggerType.unknown:
         return const SizedBox.shrink();
     }
@@ -874,7 +914,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (_selectedTriggerType != TriggerType.roundUp) ...[
+          if (_selectedTriggerType != TriggerType.roundUp &&
+              _selectedTriggerType != TriggerType.scheduledExternal) ...[
             _SectionTitle('Amount type'),
             SizedBox(height: 12.h),
             _SegmentedToggle(
@@ -894,14 +935,17 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             builder: (context, snapshot) {
               final symbol = snapshot.data ?? '\$';
               final isPct = _selectedAmountType == AmountType.percentage &&
-                  _selectedTriggerType != TriggerType.roundUp;
+                  _selectedTriggerType != TriggerType.roundUp &&
+                  _selectedTriggerType != TriggerType.scheduledExternal;
               final pctLabel =
                   _selectedTriggerType == TriggerType.externalInflow
                       ? 'Percentage of each inflow'
                       : 'Percentage of deposit';
               final label = _selectedTriggerType == TriggerType.roundUp
                   ? 'Per-fire cap ($symbol)'
-                  : (isPct ? pctLabel : 'Save amount ($symbol)');
+                  : _selectedTriggerType == TriggerType.scheduledExternal
+                      ? 'Amount to pull each time ($symbol)'
+                      : (isPct ? pctLabel : 'Save amount ($symbol)');
               return _LabeledField(
                 label: label,
                 child: _TextInput(
@@ -952,7 +996,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   // ─── Step 5: Accounts ───────────────────────────────────────────
 
   Widget _stepAccounts() {
-    if (_selectedTriggerType == TriggerType.externalInflow) {
+    if (_selectedTriggerType == TriggerType.externalInflow ||
+        _selectedTriggerType == TriggerType.scheduledExternal) {
       return _stepAccountsExternalInflow();
     }
     return _StepBody(

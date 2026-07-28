@@ -43,8 +43,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final storage = serviceLocator<FlutterSecureStorage>();
     await storage.write(key: 'has_seen_onboarding', value: 'true');
 
-    // Navigate to sign up screen
-    Get.offAllNamed(AppRoutes.signUp);
+    // Navigate to the signup start for the active auth_mode (phone+passcode or
+    // email/password).
+    Get.offAllNamed(AppRoutes.signupEntry);
   }
 
   @override

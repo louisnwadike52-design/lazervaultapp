@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
@@ -289,28 +292,35 @@ class ChatReceiptPdfService {
 
   /// Generate the PDF and hand it to the native share sheet as a real file
   /// (so it can be saved/downloaded), mirroring the send-funds flow.
-  static Future<void> shareReceipt(Map<String, dynamic> payload) async {
+  static Future<void> shareReceipt(
+    Map<String, dynamic> payload, {
+    Rect? sharePositionOrigin,
+  }) async {
     final pdfBytes = await generateReceipt(payload);
     final reference = _s(payload, 'reference');
     final safeRef = reference.isEmpty
         ? 'receipt'
         : reference.replaceAll(RegExp(r'[^a-zA-Z0-9-]'), '_');
     final fileName = 'Lazervault_Receipt_$safeRef.pdf';
+    // Write the PDF to a REAL file and share its PATH. XFile.fromData (in-memory
+    // bytes) is unreliable — on iOS the share sheet frequently receives no
+    // attachment ("share not working"), and Android saves a 0-byte file. A file
+    // path is the canonical, cross-platform-reliable way to share a document.
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(pdfBytes, flush: true);
     final subject = _s(payload, 'shareable_email_subject').isNotEmpty
         ? _s(payload, 'shareable_email_subject')
         : 'Lazervault Transaction Receipt';
     final body = _s(payload, 'shareable_text');
     // ignore: deprecated_member_use
     await Share.shareXFiles(
-      [
-        XFile.fromData(
-          pdfBytes,
-          name: fileName,
-          mimeType: 'application/pdf',
-        ),
-      ],
+      [XFile(file.path, mimeType: 'application/pdf', name: fileName)],
       subject: subject,
       text: body.isEmpty ? null : body,
+      // iPad requires a non-zero popover origin or the share sheet crashes; pass
+      // the tapped button's rect through when available.
+      sharePositionOrigin: sharePositionOrigin,
     );
   }
 }

@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/signup_resume.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/login_otp_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
+import 'package:lazervault/core/services/server_status_service.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -30,6 +38,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _storage = serviceLocator<FlutterSecureStorage>();
   bool _hasPasscodeSetup = false;
+  // The identifier field accepts an email OR a phone number. We detect which as
+  // the user types: when a phone is detected we reveal a selectable country-code
+  // pill beside the field and validate/format per that country (default Nigeria).
+  bool _isPhone = false;
+  String _selectedCountryIso = 'NG';
   // One-shot guard: the async AuthenticationSuccess listener can re-fire
   // (success snackbar + getUserProfile re-entrancy), which navigated to the
   // dashboard twice (the "double swipe"). Navigate exactly once.
@@ -47,11 +60,16 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       ),
     );
     _checkPasscodeAvailability();
+    // Reflect an armed self-lock / emergency lock proactively (countdown modal)
+    // on arrival — this is where an email-mode lock lands the user.
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => maybeShowSelfLockOnLaunch(context));
   }
 
   Future<void> _checkPasscodeAvailability() async {
     try {
       final loginMethod = await _storage.read(key: 'login_method');
+      final hasPasscode = await _storage.read(key: 'has_passcode');
       final storedEmail = await _storage.read(key: 'stored_email');
       final userEmail = await _storage.read(key: 'user_email');
 
@@ -60,7 +78,12 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
       if (mounted) {
         setState(() {
-          _hasPasscodeSetup = loginMethod == 'passcode' && hasEmail;
+          // Offer "Use Passcode Instead" whenever the account actually HAS a
+          // passcode — driven by the mirrored has_passcode flag (canonical) with
+          // the legacy login_method as a fallback. Consistent with the resolver.
+          _hasPasscodeSetup = hasPasscode == 'true' ||
+              (loginMethod == 'passcode' && hasEmail) ||
+              loginMethod == 'phone_passcode';
         });
       }
     } catch (e) {
@@ -98,24 +121,55 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             ),
           ),
           BlocListener<AuthenticationCubit, AuthenticationState>(
+            // Only react on a real transition INTO a terminal login state.
+            // AuthenticationSuccess is re-emitted from ~15 cubit sites (e.g.
+            // getUserProfile() -> updateCurrentUser() re-entrancy), which used
+            // to re-fire this listener repeatedly. Gate on an actual transition
+            // so post-login profile refreshes never re-trigger navigation.
+            listenWhen: (prev, curr) {
+              // React ONLY on a genuine transition INTO a terminal state. Both
+              // AuthenticationSuccess and AuthenticationFailure can be re-emitted
+              // (profile-refresh re-entrancy, rebuilds, repeated identical
+              // errors), which previously re-fired navigation / the error
+              // snackbar multiple times. Gating on the transition means a
+              // re-emit of the SAME terminal state never re-triggers the handler.
+              if (curr is AuthenticationSuccess) return prev is! AuthenticationSuccess;
+              if (curr is AuthenticationFailure) return prev is! AuthenticationFailure;
+              return true;
+            },
             listener: (context, state) async {
               switch (state) {
+              case LoginTwoFactorRequired(
+                  twoFactorToken: final tfToken,
+                  method: final tfMethod,
+                ):
+                Get.to(() => BlocProvider(
+                      create: (_) => serviceLocator<AuthenticationCubit>(),
+                      child: TwoFactorVerificationScreen(
+                        twoFactorToken: tfToken,
+                        method: tfMethod,
+                      ),
+                    ));
+                break;
+              case LoginStepUpRequired(
+                  stepUpToken: final token,
+                  method: final method,
+                  destination: final dest,
+                ):
+                // Risk-based step-up: collect the OTP. The screen is self-
+                // contained (owns a fresh cubit + routes to dashboard on success).
+                Get.to(() => LoginOtpScreen(
+                      stepUpToken: token,
+                      method: method,
+                      destination: dest,
+                    ));
+                break;
               case AuthenticationSuccess(profile: final profile):
                 // Guard against a duplicate navigation if the listener re-fires.
                 if (_navigated) break;
                 _navigated = true;
                 // Load user profile after successful authentication
                 context.read<ProfileCubit>().getUserProfile();
-
-                Get.snackbar(
-                  'Success',
-                  'Login Successful!',
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-                );
 
                 if (fromForgotPasscode) {
                   // Go to passcode setup when resetting — pass hasTransactionPin
@@ -136,7 +190,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 // route instead of the dashboard. `null` / empty / the
                 // "complete" status means signup is done → fall through
                 // to the usual dashboard-or-passcode-setup branch.
-                final resumeRoute = _signupResumeRoute(
+                final resumeRoute = signupResumeRoute(
                   profile.user.currentSignupStep,
                   profile.user.signupStatus,
                   email: profile.user.email,
@@ -150,9 +204,16 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
                 // Backend is source of truth — use login response data
                 if (profile.user.hasPasscode) {
-                  // Passcode already set — persist login method and go to dashboard
+                  // Passcode already set — persist login method.
                   await _storage.write(key: 'login_method', value: 'passcode');
-                  Get.offAllNamed(AppRoutes.dashboard);
+                  if (!profile.user.hasTransactionPin) {
+                    // No transaction PIN yet — resume the (skippable) PIN setup
+                    // before the dashboard, mirroring the KYC onboarding gate.
+                    Get.offAllNamed(AppRoutes.transactionPinSetup,
+                        arguments: {'fromLoginFlow': true});
+                  } else {
+                    Get.offAllNamed(AppRoutes.dashboard);
+                  }
                 } else {
                   // No passcode — route to setup, pass hasTransactionPin for downstream
                   Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
@@ -162,9 +223,36 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 }
                 break;
               case AuthenticationFailure(message: final msg):
+                // Self-lock / failed-login lockout: show the blocking countdown
+                // modal instead of a transient snackbar (there's no early unlock).
+                final lockUntil = parseAccountLockUntil(msg);
+                if (lockUntil != null) {
+                  showAccountLockedModal(context, lockUntil,
+                      selfLock: isSelfLock(msg));
+                  break;
+                }
+                // Never stack error snackbars — GetX queues them, so a fast
+                // retry (or any re-fire) would show several. Close any open one
+                // first so at most a single login-error toast is visible.
+                if (Get.isSnackbarOpen) {
+                  Get.closeAllSnackbars();
+                }
+                // A connectivity/edge failure is NOT a bad credential — don't
+                // say "Login Error" (reads as wrong password). Poke the health
+                // gate to re-probe (a genuine outage surfaces the maintenance
+                // modal; the user's own offline network stays this snackbar).
+                final ml = msg.toLowerCase();
+                final looksNetwork = isNetworkError(msg) ||
+                    ml.contains('network error') ||
+                    ml.contains('check your connection');
+                if (looksNetwork) {
+                  ServerHealthNotifier.instance.pokeRecheck();
+                }
                 Get.snackbar(
-                  'Login Error',
-                  msg,
+                  looksNetwork ? 'Connection problem' : 'Login Error',
+                  looksNetwork
+                      ? "We couldn't reach our servers. Please try again in a moment."
+                      : msg,
                   snackPosition: SnackPosition.TOP,
                   backgroundColor: Colors.redAccent,
                   colorText: Colors.white,
@@ -246,6 +334,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                                     context.read<AuthenticationCubit>().loginUser(
                                       email: _emailController.text.trim(),
                                       password: _passwordController.text.trim(),
+                                      countryIso: _selectedCountryIso,
                                     );
                                 },
                                 child: Text(
@@ -285,9 +374,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                           }),
                         ],
                       ),
-                      SizedBox(height: 120.h),
+                      SizedBox(height: 56.h),
                       _buildSignUpLink(context),
-                      SizedBox(height: 30.h),
+                      SizedBox(height: 16.h),
                     ],
                     ),
                   ),
@@ -301,23 +390,260 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     );
   }
 
+  // --- Email-or-phone identifier detection + country selection ---
+
+  /// True when [raw] looks like the start of a phone number (only digits and an
+  /// optional leading "+", no "@"). Lighter than [isPhoneIdentifier] so the
+  /// country pill appears as soon as the user starts typing digits.
+  bool _looksLikePhone(String raw) {
+    final v = raw.trim();
+    if (v.isEmpty || v.contains('@')) return false;
+    final cleaned = v.replaceAll(RegExp(r'[\s\-()]'), '');
+    return RegExp(r'^\+?[0-9]+$').hasMatch(cleaned);
+  }
+
+  bool _startsWithPlus() =>
+      _emailController.text.trim().replaceAll(RegExp(r'[\s\-()]'), '').startsWith('+');
+
+  /// National digits (dial code stripped when the user typed a leading "+",
+  /// national trunk "0" dropped) for the current identifier.
+  String _nationalDigits() {
+    final cleaned =
+        _emailController.text.trim().replaceAll(RegExp(r'[\s\-()]'), '');
+    if (cleaned.startsWith('+')) return cleaned.substring(1);
+    return cleaned.replaceFirst(RegExp(r'^0+'), '');
+  }
+
+  /// National significant number length for the selected country (NG=10, etc.).
+  int _expectedNationalLength() =>
+      CountryConfigs.getByCode(_selectedCountryIso)?.nationalNumberLength ?? 10;
+
+  /// Max characters accepted while typing a national number: national length + 1
+  /// so a single leading "0" trunk can be entered before it's stripped.
+  int _phoneMaxInputLength() => _expectedNationalLength() + 1;
+
+  /// Live phone validity for the selected country. Returns an error string when
+  /// the typed national number is too long, `null` when it is valid or still
+  /// incomplete (incomplete is not surfaced as an error while typing).
+  String? _phoneLiveError() {
+    final national = _nationalDigits();
+    if (national.isEmpty) return null;
+    final expected = _expectedNationalLength();
+    if (national.length > expected) {
+      final name = CountryConfigs.getByCode(_selectedCountryIso)?.name ?? 'this country';
+      return 'Too long for $name — $expected digits';
+    }
+    return null;
+  }
+
+  bool _phoneComplete() =>
+      _nationalDigits().length == _expectedNationalLength();
+
+  void _onIdentifierChanged(String value) {
+    final phone = _looksLikePhone(value);
+    if (phone != _isPhone) {
+      setState(() => _isPhone = phone);
+    } else if (phone) {
+      // keep the hint's live E.164 preview in sync as digits change
+      setState(() {});
+    }
+  }
+
+  Widget _buildCountryPill() {
+    final cfg = CountryConfigs.getByCode(_selectedCountryIso);
+    return GestureDetector(
+      onTap: _openCountryPicker,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(cfg?.flag ?? '🇳🇬', style: TextStyle(fontSize: 18.sp)),
+          SizedBox(width: 4.w),
+          Text(
+            cfg?.dialingCode ?? '+234',
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const Icon(Icons.arrow_drop_down, color: Colors.black54),
+        ],
+      ),
+    );
+  }
+
+  void _openCountryPicker() {
+    FocusScope.of(context).unfocus();
+    final countries = CountryConfigs.activeCountries;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Select country',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              ...countries.map((c) {
+                final selected = c.code == _selectedCountryIso;
+                return ListTile(
+                  leading: Text(c.flag, style: TextStyle(fontSize: 22.sp)),
+                  title: Text(
+                    c.name,
+                    style: TextStyle(fontSize: 15.sp, color: Colors.black87),
+                  ),
+                  trailing: Text(
+                    c.dialingCode,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: selected ? const Color(0xFF4834D4) : Colors.grey.shade600,
+                    ),
+                  ),
+                  selected: selected,
+                  onTap: () {
+                    setState(() => _selectedCountryIso = c.code);
+                    Navigator.of(sheetCtx).pop();
+                  },
+                );
+              }),
+              SizedBox(height: 8.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetectionHint() {
+    final raw = _emailController.text.trim();
+    if (raw.isEmpty) return const SizedBox.shrink();
+
+    IconData icon;
+    Color color;
+    String text;
+
+    if (_isPhone) {
+      final liveError = _startsWithPlus() ? null : _phoneLiveError();
+      if (liveError != null) {
+        icon = Icons.error_outline;
+        color = const Color(0xFFEF4444); // error red
+        text = liveError;
+      } else if (!_startsWithPlus() && _phoneComplete()) {
+        icon = Icons.check_circle_outline;
+        color = const Color(0xFF10B981); // success green
+        text = 'Phone number detected';
+      } else {
+        icon = Icons.phone_iphone;
+        color = Colors.black54;
+        text = 'Phone number detected';
+      }
+    } else if (isEmailIdentifier(raw)) {
+      icon = Icons.check_circle_outline;
+      color = const Color(0xFF10B981); // success green
+      text = 'Email address detected';
+    } else if (isUsernameIdentifier(raw)) {
+      icon = Icons.alternate_email;
+      color = const Color(0xFF10B981); // success green
+      text = 'Username detected';
+    } else {
+      icon = Icons.alternate_email;
+      color = Colors.black54;
+      text = 'Email or username';
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(top: 6.h, left: 12.w, right: 8.w),
+      child: Row(
+        children: [
+          Icon(icon, size: 14.sp, color: color),
+          SizedBox(width: 4.w),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 12.sp, color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Type-aware validation: per-country length for phone (lenient — length only,
+  /// leading-zero tolerant), standard email check otherwise.
+  String? _validateIdentifier(String? value) {
+    final v = (value ?? '').trim();
+    if (v.isEmpty) {
+      Haptics.error();
+      return 'Please enter your email, phone or username';
+    }
+    if (_looksLikePhone(v)) {
+      final cleaned = v.replaceAll(RegExp(r'[\s\-()]'), '');
+      if (cleaned.startsWith('+')) {
+        // Explicit international number — just require a plausible length.
+        final digits = cleaned.substring(1);
+        if (digits.length < 7 || digits.length > 15) {
+          Haptics.error();
+          return 'Enter a valid phone number';
+        }
+        return null;
+      }
+      final national = cleaned.replaceFirst(RegExp(r'^0+'), '');
+      final cfg = CountryConfigs.getByCode(_selectedCountryIso);
+      final expected = cfg?.nationalNumberLength ?? 10;
+      if (national.length != expected) {
+        Haptics.error();
+        return 'Enter a valid ${cfg?.name ?? 'phone'} number';
+      }
+      return null;
+    }
+    if (!isEmailIdentifier(v) && !isUsernameIdentifier(v)) {
+      Haptics.error();
+      return 'Enter a valid email, phone or username';
+    }
+    return null;
+  }
+
   Widget _buildSignInForm(BuildContext context) {
       return Column(
         children: [
           BuildFormField(
             name: "email",
-          placeholder: "Email",
+            placeholder: "Email, phone or username",
             keyboardType: TextInputType.emailAddress,
-          prefixIcon: const Icon(Icons.email, color: Colors.black45),
-          controller: _emailController,
-          validator: (value) {
-            if (value == null || value.isEmpty || !GetUtils.isEmail(value)) {
-              Haptics.error();
-              return 'Please enter a valid email';
-            }
-            return null;
-          },
+            prefixIcon: _isPhone
+                ? null
+                : const Icon(Icons.person, color: Colors.black45),
+            leading: (_isPhone && !_startsWithPlus()) ? _buildCountryPill() : null,
+            controller: _emailController,
+            onChanged: _onIdentifierChanged,
+            validator: _validateIdentifier,
+            // Cap the number of characters accepted while a national phone number
+            // is being typed, based on the selected country (national length + 1
+            // for an optional leading "0"). No cap in email mode or for an
+            // explicit "+" international number.
+            inputFormatters: (_isPhone && !_startsWithPlus())
+                ? [LengthLimitingTextInputFormatter(_phoneMaxInputLength())]
+                : null,
           ),
+          _buildDetectionHint(),
         SizedBox(height: 8.0.h),
           BuildFormField(
             name: "password",
@@ -398,7 +724,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            onPressed: () => Get.toNamed(AppRoutes.signUp),
+            onPressed: () => Get.toNamed(AppRoutes.signupEntry),
           )
         ],
     );
@@ -416,67 +742,3 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 /// **MUST stay in sync with `_getRouteForSignupStep` in main.dart** —
 /// both files resolve the same set of step strings to GetX routes; one
 /// for cold-start resume, the other for post-login resume.
-({String name, Map<String, dynamic> args})? _signupResumeRoute(
-  String? step,
-  String? status, {
-  required String email,
-  String? phone,
-  bool hasTransactionPin = false,
-}) {
-  // Backend treats "complete" as the terminal status; anything else is
-  // either explicit-incomplete or null (legacy users predating the
-  // tracking table — fall through to default routing).
-  if (status == null || status.isEmpty) return null;
-  if (status == 'complete') return null;
-  if (step == null || step.isEmpty) return null;
-
-  switch (step) {
-    case 'email_verify':
-      return (
-        name: AppRoutes.emailVerification,
-        args: <String, dynamic>{
-          'email': email,
-          'codeSent': false,
-          'isRequired': true,
-          'secondaryPhone': phone,
-        },
-      );
-    case 'phone_verify':
-      if (phone == null || phone.isEmpty) {
-        // No phone on file but backend expects phone verify — defensive
-        // fallback to passcode setup; user can add phone in Settings.
-        return (
-          name: AppRoutes.passcodeSetup,
-          args: <String, dynamic>{
-            'fromLoginFlow': true,
-            'hasTransactionPin': hasTransactionPin,
-          },
-        );
-      }
-      return (
-        name: AppRoutes.phoneVerification,
-        args: <String, dynamic>{
-          'phoneNumber': phone,
-          'codeSent': false,
-          'isRequired': false,
-          'expiresIn': 600,
-        },
-      );
-    case 'identity_verify':
-      // BVN/NIN flow — KYC entry point.
-      return (
-        name: AppRoutes.kycBVNVerification,
-        args: <String, dynamic>{'fromSignup': true},
-      );
-    case 'passcode_setup':
-    case 'account_created': // user signed up but bailed before any verify
-      return (
-        name: AppRoutes.passcodeSetup,
-        args: <String, dynamic>{
-          'fromLoginFlow': true,
-          'hasTransactionPin': hasTransactionPin,
-        },
-      );
-  }
-  return null;
-}

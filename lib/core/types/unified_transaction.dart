@@ -12,6 +12,8 @@ enum TransactionServiceType {
   tvSubscription('TV Subscription', Icons.tv, Color(0xFFEF4444)),
   internet('Internet Bill', Icons.wifi, Color(0xFF0EA5E9)),
   education('Education', Icons.school, Color(0xFFA855F7)),
+  betting('Betting', Icons.sports_soccer, Color(0xFF8B5CF6)),
+  epin('Recharge Card', Icons.confirmation_number, Color(0xFFF97316)),
 
   // Send / receive money family — outgoing flows.
   transfer('Transfer', Icons.swap_horiz, Color.fromARGB(255, 78, 3, 208)),
@@ -21,6 +23,7 @@ enum TransactionServiceType {
   qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
   idPay('PayID', Icons.badge_outlined, Color(0xFF6366F1)),
   contactlessPay('Tap to Pay', Icons.contactless_outlined, Color(0xFF6F42C1)),
+  rmb('RMB Transfer', Icons.currency_yuan, Color(0xFFE60012)),
 
   // Stored value / commerce.
   invoice('Invoice', Icons.receipt_long, Color(0xFF6366F1)),
@@ -79,7 +82,10 @@ enum UnifiedTransactionStatus {
   failed('Failed', Color(0xFFEF4444)),
   cancelled('Cancelled', Color(0xFF6B7280)),
   refunded('Refunded', Color.fromARGB(255, 78, 3, 208)),
-  expired('Expired', Color(0xFF9CA3AF));
+  expired('Expired', Color(0xFF9CA3AF)),
+  // A future-dated transfer that hasn't fired yet — distinct violet so it never
+  // reads as Completed/Pending. The scheduler flips it to completed on execution.
+  scheduled('Scheduled', Color(0xFF8B5CF6));
 
   final String displayName;
   final Color color;
@@ -138,6 +144,17 @@ class UnifiedTransaction extends Equatable {
   /// the receipt formats [amount] with [currency] as before.
   final String? amountDisplayOverride;
 
+  /// For crypto receipts: the asset's real logo URL (CoinGecko/Quidax image).
+  /// When set (with [assetSymbol]), the receipt hero renders the actual asset
+  /// logo (with an initials fallback) instead of the generic service icon, so
+  /// a USDT receipt shows the Tether logo — never a shared Bitcoin icon.
+  final String? assetImageUrl;
+
+  /// For crypto receipts: the asset ticker (e.g. "USDT"). Presence of this
+  /// value switches the hero to the per-asset avatar; drives the initials
+  /// fallback when [assetImageUrl] is absent or fails to load.
+  final String? assetSymbol;
+
   const UnifiedTransaction({
     required this.id,
     required this.serviceType,
@@ -153,6 +170,8 @@ class UnifiedTransaction extends Equatable {
     this.counterpartyName,
     this.counterpartyAccount,
     this.amountDisplayOverride,
+    this.assetImageUrl,
+    this.assetSymbol,
   });
 
   /// Format amount with currency symbol and flow indicator
@@ -186,6 +205,8 @@ class UnifiedTransaction extends Equatable {
         counterpartyName,
         counterpartyAccount,
         amountDisplayOverride,
+        assetImageUrl,
+        assetSymbol,
       ];
 
   /// Convert to JSON
@@ -218,7 +239,7 @@ class UnifiedTransaction extends Equatable {
       description: json['description'] as String?,
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String? ?? 'USD',
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
       status: UnifiedTransactionStatus.fromString(
         json['status'] as String? ?? 'pending',
       ),
@@ -242,7 +263,7 @@ class UnifiedTransaction extends Equatable {
       description: airtimeTxn['recipientPhoneNumber'] as String?,
       amount: (airtimeTxn['amount'] as num).toDouble(),
       currency: airtimeTxn['currency'] as String? ?? 'NGN',
-      createdAt: DateTime.parse(airtimeTxn['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(airtimeTxn['createdAt'] as String? ?? DateTime.now().toIso8601String()).toLocal(),
       status: UnifiedTransactionStatus.fromString(
         airtimeTxn['status'] as String? ?? 'pending',
       ),
@@ -265,7 +286,7 @@ class UnifiedTransaction extends Equatable {
       description: giftCardTxn['description'] as String?,
       amount: (giftCardTxn['amount'] as num).toDouble(),
       currency: giftCardTxn['currency'] as String? ?? 'USD',
-      createdAt: DateTime.parse(giftCardTxn['transactionDate'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(giftCardTxn['transactionDate'] as String? ?? DateTime.now().toIso8601String()).toLocal(),
       status: UnifiedTransactionStatus.fromString(
         giftCardTxn['status'] as String? ?? 'pending',
       ),
@@ -287,7 +308,7 @@ class UnifiedTransaction extends Equatable {
       description: billTxn['meterNumber'] as String?,
       amount: (billTxn['amount'] as num).toDouble(),
       currency: billTxn['currency'] as String? ?? 'NGN',
-      createdAt: DateTime.parse(billTxn['paymentDate'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(billTxn['paymentDate'] as String? ?? DateTime.now().toIso8601String()).toLocal(),
       status: UnifiedTransactionStatus.fromString(
         billTxn['status'] as String? ?? 'pending',
       ),
@@ -317,6 +338,8 @@ class UnifiedTransaction extends Equatable {
     String? counterpartyName,
     String? counterpartyAccount,
     String? amountDisplayOverride,
+    String? assetImageUrl,
+    String? assetSymbol,
   }) {
     return UnifiedTransaction(
       id: id ?? this.id,
@@ -334,6 +357,8 @@ class UnifiedTransaction extends Equatable {
       counterpartyAccount: counterpartyAccount ?? this.counterpartyAccount,
       amountDisplayOverride:
           amountDisplayOverride ?? this.amountDisplayOverride,
+      assetImageUrl: assetImageUrl ?? this.assetImageUrl,
+      assetSymbol: assetSymbol ?? this.assetSymbol,
     );
   }
 }
@@ -346,16 +371,24 @@ class TransactionListResponse extends Equatable {
   final int totalPages;
   final String? nextCursor;
 
+  /// True when this page was served from the local cache (a possibly stale
+  /// subset with no external-transfer merge). Consumers use it to trigger a
+  /// background network refresh so the visible list converges to complete
+  /// data without a loading flash.
+  final bool fromCache;
+
   const TransactionListResponse({
     required this.transactions,
     required this.hasMore,
     required this.currentPage,
     required this.totalPages,
     this.nextCursor,
+    this.fromCache = false,
   });
 
   @override
-  List<Object?> get props => [transactions, hasMore, currentPage, totalPages, nextCursor];
+  List<Object?> get props =>
+      [transactions, hasMore, currentPage, totalPages, nextCursor, fromCache];
 }
 
 /// Transaction statistics model

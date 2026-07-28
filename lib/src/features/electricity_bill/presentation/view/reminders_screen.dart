@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/reminder_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../cubit/reminder_cubit.dart';
 import '../cubit/reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -17,7 +18,8 @@ class RemindersScreen extends StatefulWidget {
   State<RemindersScreen> createState() => _RemindersScreenState();
 }
 
-class _RemindersScreenState extends State<RemindersScreen> {
+class _RemindersScreenState extends State<RemindersScreen>
+    with ReminderPauseResumeMixin<RemindersScreen> {
   /// Cached list from the most recent successful load. Refetches after
   /// create/complete/delete render the cached list instead of flashing a
   /// full-screen spinner.
@@ -31,6 +33,24 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   void _markAsComplete(PaymentReminderEntity reminder) {
     context.read<ReminderCubit>().markReminderComplete(reminderId: reminder.id);
+  }
+
+  void _pauseReminder(PaymentReminderEntity reminder) {
+    runReminderStatusChange(
+      billType: 'electricity',
+      reminderId: reminder.id,
+      pause: true,
+      onSuccessReload: () => context.read<ReminderCubit>().getReminders(),
+    );
+  }
+
+  void _resumeReminder(PaymentReminderEntity reminder) {
+    runReminderStatusChange(
+      billType: 'electricity',
+      reminderId: reminder.id,
+      pause: false,
+      onSuccessReload: () => context.read<ReminderCubit>().getReminders(),
+    );
   }
 
   void _payNowReminder(PaymentReminderEntity reminder) {
@@ -189,8 +209,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     }
                     {
                       // Separate upcoming and past reminders
-                      final active =
-                          list.where((r) => r.isActive && !r.isDue).toList();
+                      // Paused reminders never fire while paused, so they sit
+                      // in "Upcoming" regardless of their date (they can't be
+                      // "due").
+                      final active = list
+                          .where((r) => (r.isActive && !r.isDue) || r.isPaused)
+                          .toList();
                       final due =
                           list.where((r) => r.isActive && r.isDue).toList();
                       final completed =
@@ -576,7 +600,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
           SizedBox(height: 16.h),
           Row(
             children: [
-              if (!reminder.isCompleted)
+              if (!reminder.isCompleted && !reminder.isPaused)
                 Expanded(
                   child: GestureDetector(
                     onTap: () => _markAsComplete(reminder),
@@ -612,7 +636,76 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     ),
                   ),
                 ),
+              // Paused reminders offer Resume instead of Mark Complete.
+              if (reminder.isPaused)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: busyReminderId == reminder.id
+                        ? null
+                        : () => _resumeReminder(reminder),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: const Color(0xFF4CAF50),
+                          width: 1,
+                        ),
+                      ),
+                      child: busyReminderId == reminder.id
+                          ? _actionSpinner(const Color(0xFF4CAF50))
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.play_arrow,
+                                  color: const Color(0xFF4CAF50),
+                                  size: 18.sp,
+                                ),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  'Resume',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF4CAF50),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
               if (!reminder.isCompleted) SizedBox(width: 8.w),
+              // Pause action for active reminders.
+              if (reminder.isActive) ...[
+                GestureDetector(
+                  onTap: busyReminderId == reminder.id
+                      ? null
+                      : () => _pauseReminder(reminder),
+                  child: Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: const Color(0xFFFB923C),
+                        width: 1,
+                      ),
+                    ),
+                    child: busyReminderId == reminder.id
+                        ? _actionSpinner(const Color(0xFFFB923C))
+                        : Icon(
+                            Icons.pause,
+                            color: const Color(0xFFFB923C),
+                            size: 20.sp,
+                          ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+              ],
               GestureDetector(
                 onTap: () => _deleteReminder(reminder),
                 child: Container(
@@ -636,6 +729,21 @@ class _RemindersScreenState extends State<RemindersScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// Centered spinner shown inside a pause/resume button while its status
+  /// change is in flight.
+  Widget _actionSpinner(Color color) {
+    return Center(
+      child: SizedBox(
+        width: 18.w,
+        height: 18.w,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(color),
+        ),
       ),
     );
   }
@@ -677,6 +785,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
     switch (status) {
       case ReminderStatus.active:
         return const Color(0xFF4E03D0);
+      case ReminderStatus.paused:
+        return const Color(0xFF9CA3AF);
       case ReminderStatus.completed:
         return const Color(0xFF4CAF50);
       case ReminderStatus.cancelled:

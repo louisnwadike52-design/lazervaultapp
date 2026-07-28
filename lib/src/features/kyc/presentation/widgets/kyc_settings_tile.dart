@@ -84,7 +84,12 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
     bool isMax,
     String avatarColor,
   ) {
-    return Row(
+    // Left-inset the whole tile so the avatar aligns with the icon column of
+    // the other settings sections (which use a 16.w horizontal inset), instead
+    // of sitting flush against the accordion card edge.
+    return Padding(
+      padding: EdgeInsets.only(left: 16.w, right: 4.w),
+      child: Row(
       children: [
         Stack(
           children: [
@@ -135,6 +140,7 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
           ),
         ),
       ],
+      ),
     );
   }
 

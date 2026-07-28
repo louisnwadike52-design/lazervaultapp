@@ -273,13 +273,6 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     return '$minutes:$seconds';
   }
 
-  double get _timerProgress {
-    final totalSeconds =
-        widget.session.expiresAt.difference(widget.session.createdAt).inSeconds;
-    if (totalSeconds <= 0) return 0;
-    return _remainingSeconds / totalSeconds;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

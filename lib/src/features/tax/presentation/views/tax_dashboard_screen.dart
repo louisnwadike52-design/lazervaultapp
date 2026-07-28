@@ -536,7 +536,10 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
             _buildQuickActionCard(
               icon: Icons.assignment,
               label: 'Obligations',
-              onTap: () => Get.toNamed(AppRoutes.taxObligations),
+              onTap: () async {
+                await Get.toNamed(AppRoutes.taxObligations);
+                if (mounted) context.read<TaxCubit>().getDashboard();
+              },
             ),
             _buildQuickActionCard(
               icon: Icons.calendar_month,
@@ -551,12 +554,28 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
             _buildQuickActionCard(
               icon: Icons.schedule,
               label: 'VAT Schedule',
-              onTap: () => Get.toNamed(AppRoutes.vatSchedule),
+              onTap: () async {
+                await Get.toNamed(AppRoutes.vatSchedule);
+                if (mounted) context.read<TaxCubit>().getDashboard();
+              },
             ),
             _buildQuickActionCard(
               icon: Icons.add_chart,
               label: 'Record VAT',
-              onTap: () => Get.toNamed(AppRoutes.recordVat),
+              onTap: () async {
+                // Await so recording a VAT transaction refreshes the dashboard
+                // figures on return (previously fire-and-forget → stale cards).
+                await Get.toNamed(AppRoutes.recordVat);
+                if (mounted) context.read<TaxCubit>().getDashboard();
+              },
+            ),
+            _buildQuickActionCard(
+              icon: Icons.account_balance_outlined,
+              label: 'WHT Schedule',
+              onTap: () async {
+                await Get.toNamed(AppRoutes.whtSchedule);
+                if (mounted) context.read<TaxCubit>().getDashboard();
+              },
             ),
           ],
         ),

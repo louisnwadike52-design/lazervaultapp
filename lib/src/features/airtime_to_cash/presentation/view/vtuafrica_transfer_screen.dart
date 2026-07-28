@@ -9,8 +9,18 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// VTU Africa transfer confirmation screen.
 /// Shows the destination number to transfer airtime to, then submits the conversion.
-class VtuafricaTransferScreen extends StatelessWidget {
+class VtuafricaTransferScreen extends StatefulWidget {
   const VtuafricaTransferScreen({super.key});
+
+  @override
+  State<VtuafricaTransferScreen> createState() =>
+      _VtuafricaTransferScreenState();
+}
+
+class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
+  // Conversion-submit failures render inline here, not as a snackbar
+  // (repo rule: on-widget error states, single-shot retry on the button).
+  String? _errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -24,20 +34,24 @@ class VtuafricaTransferScreen extends StatelessWidget {
 
     return BlocListener<AirtimeToCashCubit, AirtimeToCashState>(
       listener: (context, state) {
-        if (state is AirtimeToCashProcessingPending) {
-          // Conversion submitted, waiting for webhook
+        if (state is AirtimeToCashSuccess) {
+          // Conversion completed synchronously — land on the receipt.
+          // (Previously unhandled: a completed VTU conversion left the user
+          // stranded on the transfer screen.)
+          Get.offAllNamed('/airtime-to-cash/result', arguments: {
+            'conversion': state.conversion,
+            'isSuccess': true,
+          });
+        } else if (state is AirtimeToCashProcessingPending) {
+          // Conversion submitted, cash credited once the provider confirms.
           Get.offAllNamed('/airtime-to-cash/pending', arguments: {
             'conversion': state.conversion,
             'message': state.message,
           });
         } else if (state is AirtimeToCashFailed) {
-          Get.snackbar(
-            'Conversion Failed',
-            state.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-            duration: const Duration(seconds: 5),
-          );
+          setState(() => _errorText = state.message);
+        } else if (state is AirtimeToCashProcessing) {
+          if (_errorText != null) setState(() => _errorText = null);
         }
       },
       child: Scaffold(
@@ -76,10 +90,48 @@ class VtuafricaTransferScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              if (_errorText != null)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 4.h),
+                  child: _buildInlineError(_errorText!),
+                ),
               _buildConfirmButton(context, phoneNumber, network, amount, destinationPhone),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInlineError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: const Color(0xFFEF4444),
+                fontWeight: FontWeight.w500,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

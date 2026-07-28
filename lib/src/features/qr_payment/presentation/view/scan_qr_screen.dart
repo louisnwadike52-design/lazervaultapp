@@ -1,8 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/qr_payment/domain/qr_payload_parser.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 
 class ScanQRScreen extends StatefulWidget {
   const ScanQRScreen({super.key});
@@ -143,34 +146,86 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
     _isProcessing = true;
     _scannerController.stop();
 
-    final rawValue = barcode.rawValue!;
+    // Classify via the shared parser so this scanner understands every payload
+    // the My-QR screen and send-funds scanner emit (server amount QR, static
+    // recipient QR, legacy token, bare QR- reference).
+    final payload = QrPayload.parse(barcode.rawValue!);
 
-    try {
-      final data = jsonDecode(rawValue) as Map<String, dynamic>;
-      if (data['type'] == 'qr_payment' && data['qr_code'] != null) {
+    switch (payload) {
+      case ServerPayQr(:final qrCode):
+        // Amount / server-backed QR → confirmation screen validates the
+        // reference via getQRDetails and shows the fixed amount.
         Get.offNamed(
           AppRoutes.qrPaymentConfirmation,
-          arguments: data,
+          arguments: {'qr_code': qrCode},
         );
         return;
-      }
-    } catch (_) {
-      // Not JSON, treat as raw QR code string
+      case RecipientQr(:final recipientId, :final username, :final name):
+        // A "pay this person" code (no amount) belongs in the send-funds
+        // flow, where the payer enters the amount.
+        _openSendFunds(recipientId: recipientId, username: username, name: name);
+        return;
+      case LegacyTokenQr(:final recipientId, :final username, :final name):
+        if (recipientId.isEmpty) {
+          _rejectInvalid();
+          return;
+        }
+        if (payload.isExpired) {
+          _rejectInvalid(
+            message: 'This payment QR code has expired. '
+                'Ask the recipient to generate a new one.',
+          );
+          return;
+        }
+        _openSendFunds(
+          recipientId: recipientId,
+          username: username,
+          name: name,
+          currency: payload.currency,
+        );
+        return;
+      case InvalidQr():
+        _rejectInvalid();
+        return;
     }
+  }
 
-    // Try as raw QR code string
-    if (rawValue.startsWith('QR-')) {
-      Get.offNamed(
-        AppRoutes.qrPaymentConfirmation,
-        arguments: {'qr_code': rawValue},
-      );
+  void _openSendFunds({
+    required String recipientId,
+    required String username,
+    required String name,
+    String currency = 'NGN',
+  }) {
+    // Self-scan prevention — comparing against the real auth user id (the same
+    // id a recipient QR encodes), matching the payment-confirmation screen.
+    final currentUserId = context.read<AuthenticationCubit>().userId;
+    if (currentUserId != null && currentUserId == recipientId) {
+      _rejectInvalid(message: 'You can\'t pay your own QR code.');
       return;
     }
+    final recipient = RecipientModel(
+      id: recipientId,
+      name: name.isNotEmpty ? name : username,
+      accountNumber: username,
+      bankName: 'LazerVault',
+      sortCode: '',
+      isFavorite: false,
+      isSaved: false,
+      currency: currency,
+      type: 'internal',
+      internalUserId: recipientId,
+    );
+    // NOTE: the initiateSendFunds route builds its screen from `recipient`
+    // only; it has no amount-prefill hook, so a legacy amount token just seeds
+    // the recipient and the payer enters the amount (server amount QRs take the
+    // confirmation path above instead).
+    Get.offNamed(AppRoutes.initiateSendFunds, arguments: {'recipient': recipient});
+  }
 
-    // Unknown format
+  void _rejectInvalid({String? message}) {
     Get.snackbar(
       'Invalid QR Code',
-      'This QR code is not a valid payment QR code',
+      message ?? 'This QR code is not a valid Lazervault payment code',
       backgroundColor: const Color(0xFFEF4444),
       colorText: Colors.white,
     );

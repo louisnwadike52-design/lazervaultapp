@@ -9,6 +9,7 @@ import '../../domain/entities/channel_pin_status.dart';
 import 'channel_activation_screen.dart';
 import 'channel_pin_setup_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 
 class ChannelManagementScreen extends StatelessWidget {
   const ChannelManagementScreen({super.key});
@@ -33,7 +34,8 @@ class ChannelManagementScreen extends StatelessWidget {
           ),
           centerTitle: true,
         ),
-        body: BlocConsumer<ChannelManagementCubit, ChannelManagementState>(
+        body: ServiceEntranceAnimation(
+          child: BlocConsumer<ChannelManagementCubit, ChannelManagementState>(
           listener: (context, state) {
             if (state is ChannelDeactivated) {
               Get.snackbar(
@@ -89,6 +91,7 @@ class ChannelManagementScreen extends StatelessWidget {
 
             return const SizedBox.shrink();
           },
+        ),
         ),
       ),
     );
@@ -254,10 +257,16 @@ class ChannelManagementScreen extends StatelessWidget {
                 ),
                 _buildActionButton(
                   hasPin ? 'Change PIN' : 'Set PIN',
-                  () => Get.to(() => ChannelPinSetupScreen(
-                        channelType: channelType,
-                        isChange: hasPin,
-                      )),
+                  () {
+                    // Capture the cubit before navigating, then reload on return
+                    // so the PIN status ("PIN set up" / "not set up") reflects
+                    // what just happened in the setup flow.
+                    final cubit = context.read<ChannelManagementCubit>();
+                    Get.to(() => ChannelPinSetupScreen(
+                          channelType: channelType,
+                          isChange: hasPin,
+                        ))?.then((_) => cubit.loadChannels());
+                  },
                 ),
               ],
             ),

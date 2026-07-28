@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/move_money/presentation/receipts/beam_receipt_payload.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/beam_style.dart';
 import 'package:lazervault/src/features/move_money/data/datasources/move_money_grpc_datasource.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
@@ -94,11 +96,45 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       serviceLocator<TransferPredictionCubit>();
   String? _lastPredictedDestKey;
 
+  // Redo prefill (best-effort): a Beam receipt's "Redo" passes the previous
+  // destination linked-account id + amount + narration. Amount/narration apply
+  // immediately; the destination is re-selected once linked accounts load.
+  String? _pendingRedoDestId;
+
   @override
   void initState() {
     super.initState();
+    final args = Get.arguments;
+    if (args is Map) {
+      final destId = args['destinationLinkedAccountId'];
+      if (destId is String && destId.isNotEmpty) _pendingRedoDestId = destId;
+      final amount = args['amount'];
+      if (amount is num && amount > 0) {
+        _amountController.text = amount.toStringAsFixed(2);
+      }
+      final narration = args['narration'];
+      if (narration is String && narration.isNotEmpty) {
+        _narrationController.text = narration;
+      }
+    }
     _loadAccounts();
     _amountController.addListener(_onAmountChanged);
+  }
+
+  /// Re-select the redo destination once linked accounts are available.
+  void _applyRedoIfReady() {
+    final destId = _pendingRedoDestId;
+    if (destId == null) return;
+    final accounts = context.read<OpenBankingCubit>().linkedAccounts;
+    for (final a in accounts) {
+      if (a.id == destId) {
+        _pendingRedoDestId = null;
+        setState(() => _destinationAccount = a);
+        _refreshAccountBalance(a.id);
+        _maybeFetchPrediction();
+        return;
+      }
+    }
   }
 
   /// Fetch the success prediction once the destination bank code + account
@@ -146,6 +182,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     _balanceRefreshSub ??=
         context.read<OpenBankingCubit>().stream.listen((s) {
       if (!mounted) return;
+      if (s is LinkedAccountsLoaded) {
+        _applyRedoIfReady();
+      }
       if (s is BalanceRefreshing) {
         setState(() => _refreshingBalanceIds.add(s.accountId));
       } else if (s is BalanceRefreshed) {
@@ -709,38 +748,14 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     return () => ds.getMoveTransferStatus(transferId: t.id, userId: userId);
   }
 
-  Map<String, dynamic> _beamReceiptPayload(MoveTransfer t) {
-    return <String, dynamic>{
-      'transferType': 'LazerBeam',
-      'amount': t.amount / 100.0,
-      'fee': t.totalFee / 100.0,
-      'currency': 'NGN',
-      'status': t.status.displayName,
-      'internalReference': t.reference,
-      'providerReference':
-          (t.debitReference?.isNotEmpty ?? false) ? t.debitReference : null,
-      'transferId': t.id,
-      'recipientName': t.destinationAccountName,
-      'recipientBankName': t.destinationBankName,
-      'recipientAccountMasked': t.destinationAccountNumber,
-      'sourceAccountName': t.sourceAccountName,
-      'sourceAccountInfo': '${t.sourceBankName}  ${t.sourceAccountNumber}',
-      // Structured source leg -> receipt renders symmetric From/To sections
-      // with full account details for both sides.
-      'sourceBankName': t.sourceBankName,
-      'sourceAccountMasked': t.sourceAccountNumber,
-      // LIVE status on the receipt: fetch-on-load + WS push + pull-to-refresh.
-      // The closure captures GetIt singletons only, so it stays valid after
-      // this screen is disposed by Get.offNamed.
-      'moveStatusFetch': _liveStatusFetcher(t),
-      'liveStatusReference': t.reference,
-      // Back from the Beam receipt returns to the Beam landing page.
-      'backRoute': AppRoutes.moveMoney,
-      'narration': t.narration,
-      'timestamp': t.createdAt.toLocal(),
-      'createdAt': t.createdAt.toLocal(),
-    };
-  }
+  Map<String, dynamic> _beamReceiptPayload(MoveTransfer t) =>
+      beamReceiptPayloadFromMoveTransfer(
+        t,
+        // LIVE status on the receipt: fetch-on-load + WS push + pull-to-refresh.
+        // The closure captures GetIt singletons only, so it stays valid after
+        // this screen is disposed by Get.offNamed.
+        statusFetch: _liveStatusFetcher(t),
+      );
 
   /// Fire a fresh Mono balance read for [accountId] — used whenever the user
   /// PICKS an account so the figure shown is real-time, not cached.
@@ -924,7 +939,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           _feeCalculation != null ? _feeCalculation!.totalDebit / 100.0 : null,
       currency: 'NGN',
       title: 'Beam Money',
-      message: 'Confirm LazerBeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
+      message: 'Confirm Lazerbeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         final cubit = context.read<MoveMoneyCubit>();
         // The debit rail is derived LIVE from the source's mandate state —
@@ -1044,7 +1059,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'LazerBeam',
+          'Lazerbeam',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -1410,29 +1425,12 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: canProceed ? _onMoveMoneyTap : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          disabledBackgroundColor:
-                              const Color(0xFF10B981).withValues(alpha: 0.3),
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Transfer',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+                    child: BeamGradientButton(
+                      label: 'Transfer',
+                      icon: Icons.bolt_rounded,
+                      enabled: canProceed,
+                      isLoading: _isTransferInProgress,
+                      onTap: _onMoveMoneyTap,
                     ),
                   ),
                 ),
@@ -1450,7 +1448,12 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   // ---------------------------------------------------------------------------
 
   Widget _buildDraggableAccountPair() {
-    return Column(
+    // Big rounded outer card holding the From / swap / To slots — the swap
+    // screen's signature "exchange" card.
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BeamStyle.card(radius: 20),
+      child: Column(
       children: [
         // FROM card – drag source + drop target
         _buildDraggableSlot(
@@ -1477,30 +1480,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             showDragHandle: true,
           ),
         ),
-        // Swap button — equal spacing above and below
+        // Swap button — purple gradient square, equal spacing above and below
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 6.h),
-          child: GestureDetector(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: BeamSwapButton(
             onTap: (_sourceAccount != null || _destinationAccount != null)
                 ? _swapAccounts
                 : null,
-            child: Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
-              ),
-              child: Icon(
-                Icons.swap_vert_rounded,
-                color:
-                    (_sourceAccount != null || _destinationAccount != null)
-                        ? const Color(0xFF3B82F6)
-                        : const Color(0xFF6B7280),
-                size: 22.sp,
-              ),
-            ),
           ),
         ),
         // TO card – drag source + drop target
@@ -1529,6 +1515,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           ),
         ),
       ],
+    ),
     );
   }
 
@@ -1604,14 +1591,14 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         width: double.infinity,
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          color: BeamStyle.innerSurface,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: highlight
-                ? const Color(0xFF3B82F6)
+                ? BeamStyle.purple
                 : account != null
-                    ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                    : const Color(0xFF2D2D2D),
+                    ? BeamStyle.purple.withValues(alpha: 0.35)
+                    : Colors.white.withValues(alpha: 0.06),
             width: highlight ? 2 : 1,
           ),
         ),

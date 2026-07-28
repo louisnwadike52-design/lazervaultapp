@@ -347,7 +347,7 @@ class _CryptoSwapProcessingScreenState extends State<CryptoSwapProcessingScreen>
       case 'swap_pending':
         return 'The exchange has accepted the order. Settlement usually completes in under a minute.';
       case 'submission_unknown':
-        return 'We didn\'t get a clear response from the exchange. Reconciling — your funds are safe.';
+        return 'We didn\'t get a clear response from the exchange. Reconciling now, your funds are safe.';
       default:
         return 'This usually takes a few seconds.';
     }
@@ -367,7 +367,7 @@ class _CryptoSwapProcessingScreenState extends State<CryptoSwapProcessingScreen>
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'Your hold and trade are safe. Closing this screen won\'t cancel the order — you can track it from Transaction History at any time.',
+              'Your hold and trade are safe. Closing this screen won\'t cancel the order. You can track it from Transaction History at any time.',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 color: Colors.white.withValues(alpha: 0.6),

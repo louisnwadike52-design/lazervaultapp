@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/airtime_to_cash_conversion.dart';
+import '../../../airtime/domain/entities/airtime_transaction.dart';
 
 class A2CResultScreen extends StatefulWidget {
   const A2CResultScreen({super.key});
@@ -20,8 +21,11 @@ class _A2CResultScreenState extends State<A2CResultScreen>
   late Animation<double> _fadeAnimation;
 
   bool isSuccess = false;
+  bool isProcessingPending = false;
   String? errorMessage;
+  String? pendingMessage;
   AirtimeToCashConversion? conversion;
+  AirtimeTransaction? historyTxn;
   double? newBalance;
   String? phoneNumber;
   String? network;
@@ -46,6 +50,28 @@ class _A2CResultScreenState extends State<A2CResultScreen>
       network = args['network'];
       amount = args['amount'];
       estimatedCash = args['estimatedCash'];
+      pendingMessage = args['message'] as String?;
+      // Opening a past A2C receipt from history passes an AirtimeTransaction
+      // (the airtime-history model), not a conversion. Render from it so the
+      // receipt shows instead of the old "Conversion Failed" dead-end.
+      final txn = args['transaction'];
+      if (txn is AirtimeTransaction) {
+        historyTxn = txn;
+        phoneNumber ??= txn.recipientPhoneNumber;
+        network ??= txn.networkProvider.name.toUpperCase();
+        amount ??= txn.amount;
+        if (txn.isCompleted) {
+          isSuccess = true;
+        } else if (txn.isPending) {
+          isProcessingPending = true;
+        }
+      }
+      // The automation path passes isProcessingPending on the submit result so
+      // a still-processing conversion isn't mislabeled "Successful".
+      if (args['isProcessingPending'] == true) {
+        isProcessingPending = true;
+        isSuccess = true; // has a valid conversion payload; just not terminal
+      }
     }
   }
 
@@ -110,14 +136,22 @@ class _A2CResultScreenState extends State<A2CResultScreen>
 
                 SizedBox(height: 40.h),
 
-                // Receipt card
-                if (isSuccess && conversion != null)
+                // Receipt card — full conversion receipt when we have one…
+                if ((isSuccess || isProcessingPending) && conversion != null)
                   SlideTransition(
                     position: _slideAnimation,
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: _buildReceiptCard(),
                     ),
+                  )
+                // …otherwise render the history receipt straight from the
+                // AirtimeTransaction so a past A2C entry shows real details
+                // instead of the old "Conversion Failed" dead-end.
+                else if (conversion == null && historyTxn != null)
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: _buildHistoryReceiptCard(historyTxn!),
                   ),
 
                 SizedBox(height: 24.h),
@@ -137,6 +171,10 @@ class _A2CResultScreenState extends State<A2CResultScreen>
     );
   }
 
+  Color get _statusColor => isProcessingPending
+      ? const Color(0xFFFB923C)
+      : (isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444));
+
   Widget _buildStatusSection() {
     return Column(
       children: [
@@ -146,22 +184,19 @@ class _A2CResultScreenState extends State<A2CResultScreen>
           height: 100.w,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isSuccess
-                ? const Color(0xFF10B981)
-                : const Color(0xFFEF4444),
+            color: _statusColor,
             boxShadow: [
               BoxShadow(
-                color: (isSuccess
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444))
-                    .withValues(alpha: 0.3),
+                color: _statusColor.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Icon(
-            isSuccess ? Icons.check : Icons.close,
+            isProcessingPending
+                ? Icons.hourglass_top
+                : (isSuccess ? Icons.check : Icons.close),
             color: Colors.white,
             size: 48.sp,
           ),
@@ -171,7 +206,9 @@ class _A2CResultScreenState extends State<A2CResultScreen>
 
         // Status title
         Text(
-          isSuccess ? 'Conversion Successful!' : 'Conversion Failed',
+          isProcessingPending
+              ? 'Conversion Processing'
+              : (isSuccess ? 'Conversion Successful!' : 'Conversion Failed'),
           style: TextStyle(
             fontSize: 28.sp,
             fontWeight: FontWeight.w700,
@@ -186,9 +223,12 @@ class _A2CResultScreenState extends State<A2CResultScreen>
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Text(
-            isSuccess
-                ? '\u20A6${conversion?.cashAmount.toStringAsFixed(2) ?? estimatedCash?.toStringAsFixed(2) ?? '0.00'} credited to your wallet'
-                : errorMessage ?? 'Something went wrong with your conversion',
+            isProcessingPending
+                ? (pendingMessage ??
+                    'Your cash will be credited once the transfer is confirmed. This usually takes 2-5 minutes.')
+                : isSuccess
+                    ? '\u20A6${conversion?.cashAmount.toStringAsFixed(2) ?? estimatedCash?.toStringAsFixed(2) ?? '0.00'} credited to your wallet'
+                    : errorMessage ?? 'Something went wrong with your conversion',
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.white.withValues(alpha: 0.6),
@@ -199,6 +239,116 @@ class _A2CResultScreenState extends State<A2CResultScreen>
           ),
         ),
       ],
+    );
+  }
+
+  double? _metaNum(Map<String, dynamic>? m, List<String> keys) {
+    if (m == null) return null;
+    for (final k in keys) {
+      final v = m[k];
+      if (v is num) return v.toDouble();
+      if (v is String) {
+        final p = double.tryParse(v);
+        if (p != null) return p;
+      }
+    }
+    return null;
+  }
+
+  // Receipt rendered from a history AirtimeTransaction (no full conversion
+  // object). Shows the reliable fields; cash amount + rate come from the
+  // payment metadata when the backend stamped them, otherwise they're omitted
+  // rather than shown as a misleading ₦0.00.
+  Widget _buildHistoryReceiptCard(AirtimeTransaction t) {
+    final cash = _metaNum(t.metadata, ['cash_amount', 'cashAmount', 'amount_paid']);
+    final rate = _metaNum(t.metadata, ['conversion_rate', 'conversionRate']);
+    final fee = t.fee ?? _metaNum(t.metadata, ['fee', 'automation_fee', 'charge']);
+    final headline = cash ?? t.amount;
+    final headlineLabel = cash != null ? 'Cash Received' : 'Airtime Converted';
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.r)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24.r),
+        child: Container(
+          decoration: const BoxDecoration(color: Color(0xFF1F1F1F)),
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.all(24.w),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text('Airtime to Cash',
+                        style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
+                    SizedBox(height: 16.h),
+                    Text('₦${headline.toStringAsFixed(2)}',
+                        style: TextStyle(
+                            fontSize: 34.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
+                    SizedBox(height: 4.h),
+                    Text(headlineLabel,
+                        style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.white.withValues(alpha: 0.7))),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  children: [
+                    if (t.transactionReference.isNotEmpty) ...[
+                      _buildReceiptRow('Reference', t.transactionReference),
+                      _buildDivider(),
+                    ],
+                    _buildReceiptRow('Phone Number', t.recipientPhoneNumber),
+                    _buildDivider(),
+                    _buildReceiptRow('Network', t.networkProvider.name.toUpperCase()),
+                    _buildDivider(),
+                    _buildReceiptRow('Airtime Amount', '₦${t.amount.toStringAsFixed(2)}'),
+                    if (cash != null) ...[
+                      _buildDivider(),
+                      _buildReceiptRow('Cash Received', '₦${cash.toStringAsFixed(2)}'),
+                    ],
+                    if (rate != null && rate > 0) ...[
+                      _buildDivider(),
+                      _buildReceiptRow('Conversion Rate', '${(rate * 100).toStringAsFixed(0)}%'),
+                    ],
+                    if (fee != null && fee > 0) ...[
+                      _buildDivider(),
+                      _buildReceiptRow('Fee', '₦${fee.toStringAsFixed(2)}'),
+                    ],
+                    _buildDivider(),
+                    _buildReceiptRow('Status', t.status.displayName,
+                        valueColor: t.isCompleted
+                            ? const Color(0xFF10B981)
+                            : (t.isPending
+                                ? const Color(0xFFFB923C)
+                                : const Color(0xFFEF4444))),
+                    _buildDivider(),
+                    _buildReceiptRow(
+                      'Date & Time',
+                      DateFormat('MMM dd, yyyy • hh:mm a').format(t.createdAt),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -547,7 +697,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
               Expanded(
                 child: OutlinedButton(
                   onPressed: () =>
-                      Get.toNamed(AppRoutes.airtimeToCashHistory),
+                      Get.toNamed(AppRoutes.airtimeHistory),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF1F1F1F)),
                     padding: EdgeInsets.symmetric(vertical: 14.h),

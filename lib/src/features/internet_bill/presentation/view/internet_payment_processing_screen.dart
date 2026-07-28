@@ -655,6 +655,16 @@ class _InternetPaymentProcessingScreenState
       return null;
     }
 
+    // Frozen/suspended source wallet — accounts-service refused the debit. Show
+    // it clearly (checked before the account-number branch so "account frozen"
+    // doesn't get misread as a bad account number).
+    if (m.contains('frozen') || m.contains('suspended')) {
+      return (
+        title: 'Account frozen',
+        detail: 'This account is frozen, so this payment can\'t go through. '
+            'Unfreeze it in Account settings to continue.',
+      );
+    }
     if (m.contains('invalid') &&
         (m.contains('account number') || m.contains('account'))) {
       return (

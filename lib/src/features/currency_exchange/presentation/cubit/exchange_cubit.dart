@@ -27,6 +27,20 @@ class ExchangeCubit extends Cubit<ExchangeState> {
   StreamSubscription<ExchangeWsEvent>? _wsSub;
   String? _activeWsTxId;
 
+  // Bounded auto-poll fallback for the terminal event. The WS push is the
+  // fast path, but it depends on Flutterwave's webhook reaching the
+  // backend — which never happens in local/dev and can lag in prod. The
+  // reconciler settles the money server-side regardless, so we poll
+  // GetTransactionStatus on a bounded schedule until we observe a terminal
+  // status (or the WS beats us to it). This is a recovery fallback, NOT
+  // business polling — it stops the instant the transfer resolves.
+  Timer? _pollTimer;
+  int _pollTick = 0;
+  static const _pollInterval = Duration(seconds: 4);
+  // ~2.5 min ceiling (37 ticks × 4s). Past this the processing screen
+  // still offers manual pull-to-refresh; we don't spin forever.
+  static const _pollMaxTicks = 37;
+
   // Cached state for the current flow
   ExchangeMode _currentMode = ExchangeMode.convert;
   String _fromCurrency = 'NGN';
@@ -44,6 +58,41 @@ class ExchangeCubit extends Cubit<ExchangeState> {
 
   // Cached home data for composite state updates
   List<CurrencyTransaction> _recentTransactions = [];
+
+  /// Last-loaded recent exchanges, readable regardless of the current state
+  /// (the recipient screen's previous-beneficiaries picker reads this after
+  /// navigation has moved the cubit past ExchangeHomeWithRate).
+  List<CurrencyTransaction> get recentTransactionsCache =>
+      List.unmodifiable(_recentTransactions);
+
+  // Latest daily FX limits for the current source currency (pre-flight).
+  ExchangeLimits? _limits;
+  ExchangeLimits? get limits => _limits;
+
+  /// Fetch the user's daily FX limits for the current source currency and
+  /// return a friendly, actionable message if [amount] would breach the
+  /// remaining daily allowance — else null. Called BEFORE navigating to the
+  /// recipient screen / PIN so a limit breach never first surfaces at PIN
+  /// time. Fails OPEN (returns null) on a lookup error so a transient limits
+  /// RPC failure never blocks a legitimate transfer — the backend re-checks
+  /// atomically under lock anyway.
+  Future<String?> checkDailyLimit(double amount) async {
+    final result =
+        await _repository.getExchangeLimits(currency: _fromCurrency);
+    if (isClosed) return null;
+    return result.fold(
+      (_) => null,
+      (limits) {
+        _limits = limits;
+        if (!limits.exceedsRemaining(amount)) return null;
+        final cur = limits.currency.isNotEmpty ? limits.currency : _fromCurrency;
+        return 'This exceeds your daily transfer limit for tier ${limits.kycTier}. '
+            'Remaining today: ${limits.dailyRemaining.toStringAsFixed(2)} $cur '
+            '(daily cap ${limits.dailyLimit.toStringAsFixed(2)} $cur). '
+            'Upgrade your KYC tier to send more.';
+      },
+    );
+  }
 
   /// Initialize cubit state from route arguments (fixes state loss between screens).
   void initFromArguments({
@@ -379,6 +428,10 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     }
     _cancelWsSub();
     _activeWsTxId = transactionId;
+    // Belt-and-suspenders: start the bounded RPC poll alongside the WS so
+    // completion is observed even when the WS never delivers (no webhook
+    // in local/dev, dropped socket, etc.).
+    _startPollFallback(transactionId);
 
     _wsSub = _wsService.events.listen((event) async {
       if (isClosed || _activeWsTxId != transactionId) return;
@@ -432,9 +485,49 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     );
   }
 
+  /// Bounded RPC poll that runs alongside the WS subscription. Fires
+  /// GetTransactionStatus every [_pollInterval] until it sees a terminal
+  /// status (then emits ExchangeSuccess) or hits [_pollMaxTicks]. Cancels
+  /// itself the moment the WS delivers first — both paths clear
+  /// [_activeWsTxId], and this guards on it every tick.
+  void _startPollFallback(String transactionId) {
+    _pollTimer?.cancel();
+    _pollTick = 0;
+    _pollTimer = Timer.periodic(_pollInterval, (timer) async {
+      if (isClosed || _activeWsTxId != transactionId) {
+        timer.cancel();
+        return;
+      }
+      _pollTick++;
+      if (_pollTick > _pollMaxTicks) {
+        timer.cancel();
+        return;
+      }
+      final result =
+          await _repository.getTransactionStatus(transactionId: transactionId);
+      if (isClosed || _activeWsTxId != transactionId) {
+        timer.cancel();
+        return;
+      }
+      result.fold(
+        (_) {/* transient network blip — keep polling */},
+        (tx) {
+          final st = tx.statusString.toLowerCase();
+          if (tx.isCompleted || tx.isFailed || st == 'cancelled') {
+            timer.cancel();
+            _activeWsTxId = null;
+            emit(ExchangeSuccess(transaction: tx));
+          }
+        },
+      );
+    });
+  }
+
   void _cancelWsSub() {
     _wsSub?.cancel();
     _wsSub = null;
+    _pollTimer?.cancel();
+    _pollTimer = null;
   }
 
   /// Load exchange history. Fetches all transactions; UI tabs handle type filtering.

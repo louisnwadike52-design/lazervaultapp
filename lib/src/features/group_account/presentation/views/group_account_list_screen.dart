@@ -20,6 +20,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 
 class GroupAccountListScreen extends StatefulWidget {
   const GroupAccountListScreen({super.key});
@@ -196,7 +197,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             _buildHeader(),
             _buildTabBar(),
             Expanded(
-              child: TabBarView(
+              child: ServiceEntranceAnimation(
+                child: TabBarView(
                 controller: _tabController,
                 children: [
                   _buildMyGroupsTab(),
@@ -204,6 +206,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                   _buildInvitesTab(),
                   _buildLeaderboardTab(),
                 ],
+              ),
               ),
             ),
           ],

@@ -497,6 +497,8 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
         amountReturned: widget.amountReturned,
         penaltyAmount: widget.penaltyAmount,
         interestEarned: widget.interestEarned,
+        sharePositionOrigin:
+            LockFundsPdfService.shareOriginFromContext(context),
       );
     } catch (e) {
       Get.snackbar(

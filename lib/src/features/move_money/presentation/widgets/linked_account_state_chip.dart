@@ -31,6 +31,10 @@ enum LinkedAccountState {
   /// Mandate paused — currently using one-time approval, reinstatable.
   paused,
 
+  /// A deposit-method switch (Direct Debit ⇄ one-time) is awaiting confirmation
+  /// from the bank/Mono — transient "processing" state.
+  switching,
+
   /// Mandate expired — needs a fresh setup.
   expired,
 
@@ -64,6 +68,8 @@ _ChipCfg _configFor(LinkedAccountState s) {
       return const _ChipCfg(Color(0xFFFB923C), Icons.refresh, 'Reconnect');
     case LinkedAccountState.paused:
       return const _ChipCfg(Color(0xFFFBBF24), Icons.pause_circle_outline, 'Paused');
+    case LinkedAccountState.switching:
+      return const _ChipCfg(Color(0xFF818CF8), Icons.sync, 'Switching…');
     case LinkedAccountState.expired:
       return const _ChipCfg(Color(0xFFEF4444), Icons.error_outline, 'Expired');
     case LinkedAccountState.cancelled:

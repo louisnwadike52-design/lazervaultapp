@@ -36,7 +36,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   late TabController _tabController;
 
   /// Insurance object refreshed from the backend, used in preference to
-  /// the constructor-time `widget.insurance` when we've just live-fetched
+  /// the constructor-time `_currentInsurance` when we've just live-fetched
   /// (so the composed claim_url is available immediately without a
   /// rebuild from a parent route).
   Insurance? _refreshedInsurance;
@@ -48,7 +48,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<InsuranceCubit>().loadInsuranceDetailsWithData(widget.insurance);
+      context.read<InsuranceCubit>().loadInsuranceDetailsWithData(_currentInsurance);
     });
     // The list-view path (GetUserInsurances) does not include the
     // per-policy metadata extras — claim_url, renew_url, certificate_url,
@@ -66,6 +66,11 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
           .getInsuranceById(widget.insurance.id);
       if (!mounted || refreshed == null) return;
       setState(() => _refreshedInsurance = refreshed);
+      // Re-load the tabs with the fully-populated policy so payments/holder
+      // info reflect the GetInsurancePolicy data (the list path omits them).
+      if (mounted) {
+        context.read<InsuranceCubit>().loadInsuranceDetailsWithData(refreshed);
+      }
     } catch (_) {
       // Silent failure — the slow-path refresh on tap will surface
       // any error message to the user. We don't want to block the
@@ -102,7 +107,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
               ),
             ),
             Text(
-              widget.insurance.policyNumber,
+              _currentInsurance.policyNumber,
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 color: const Color(0xFF9CA3AF),
@@ -173,6 +178,8 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildPolicyOverviewCard(),
+          SizedBox(height: 12.h),
+          _buildPolicyNumberCard(),
           if (_certificateUrl() != null) ...[
             SizedBox(height: 12.h),
             _buildCertificateButton(),
@@ -196,7 +203,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
           SizedBox(height: 12.h),
           _buildPolicyDates(),
           SizedBox(height: 20.h),
-          if (widget.insurance.beneficiaries.isNotEmpty) ...[
+          if (_currentInsurance.beneficiaries.isNotEmpty) ...[
             _buildSectionHeader('Beneficiaries'),
             SizedBox(height: 12.h),
             _buildBeneficiaries(),
@@ -228,7 +235,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
             message: state.message,
             onRetry: () => context
                 .read<InsuranceCubit>()
-                .loadInsuranceDetailsWithData(widget.insurance),
+                .loadInsuranceDetailsWithData(_currentInsurance),
           );
         }
         if (state is InsuranceDetailsLoaded) {
@@ -247,7 +254,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
             backgroundColor: const Color(0xFF1F1F1F),
             onRefresh: () async => context
                 .read<InsuranceCubit>()
-                .loadInsuranceDetailsWithData(widget.insurance),
+                .loadInsuranceDetailsWithData(_currentInsurance),
             child: ListView.builder(
               padding: EdgeInsets.all(20.w),
               itemCount: payments.length,
@@ -311,7 +318,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${CurrencySymbols.formatAmountWithCurrency(payment.amount, payment.currency.isNotEmpty ? payment.currency : widget.insurance.currency)}',
+                  '${CurrencySymbols.formatAmountWithCurrency(payment.amount, payment.currency.isNotEmpty ? payment.currency : _currentInsurance.currency)}',
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
@@ -363,7 +370,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
             message: state.message,
             onRetry: () => context
                 .read<InsuranceCubit>()
-                .loadInsuranceDetailsWithData(widget.insurance),
+                .loadInsuranceDetailsWithData(_currentInsurance),
           );
         }
         if (state is InsuranceDetailsLoaded) {
@@ -382,7 +389,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
             backgroundColor: const Color(0xFF1F1F1F),
             onRefresh: () async => context
                 .read<InsuranceCubit>()
-                .loadInsuranceDetailsWithData(widget.insurance),
+                .loadInsuranceDetailsWithData(_currentInsurance),
             child: ListView.builder(
               padding: EdgeInsets.all(20.w),
               itemCount: claims.length,
@@ -643,7 +650,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
           Row(
             children: [
               Text(
-                widget.insurance.type.icon,
+                _currentInsurance.type.icon,
                 style: TextStyle(fontSize: 32.sp),
               ),
               SizedBox(width: 12.w),
@@ -652,7 +659,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.insurance.type.displayName,
+                      _currentInsurance.type.displayName,
                       style: GoogleFonts.inter(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
@@ -660,7 +667,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
                       ),
                     ),
                     Text(
-                      widget.insurance.provider,
+                      _currentInsurance.provider,
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         color: Colors.white.withValues(alpha: 0.9),
@@ -669,7 +676,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
                   ],
                 ),
               ),
-              _buildStatusBadge(widget.insurance.status),
+              _buildStatusBadge(_currentInsurance.status),
             ],
           ),
           SizedBox(height: 20.h),
@@ -690,7 +697,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '${CurrencySymbols.formatAmountWithCurrency(widget.insurance.premiumAmount, widget.insurance.currency)}',
+                      '${CurrencySymbols.formatAmountWithCurrency(_currentInsurance.premiumAmount, _currentInsurance.currency)}',
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -713,7 +720,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '${CurrencySymbols.formatAmountWithCurrency(widget.insurance.coverageAmount, widget.insurance.currency)}',
+                      '${CurrencySymbols.formatAmountWithCurrency(_currentInsurance.coverageAmount, _currentInsurance.currency)}',
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -834,11 +841,11 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     final cached = _claimUrlFromInsurance(_currentInsurance);
     if (cached != null) return cached;
     final refreshed = await GetIt.I<InsuranceRepository>()
-        .getInsuranceById(widget.insurance.id);
+        .getInsuranceById(_currentInsurance.id);
     if (mounted && refreshed != null) {
       setState(() => _refreshedInsurance = refreshed);
     }
-    return _claimUrlFromInsurance(refreshed ?? widget.insurance);
+    return _claimUrlFromInsurance(refreshed ?? _currentInsurance);
   }
 
   // =====================================================================
@@ -918,11 +925,11 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     final cached = _renewUrlFromInsurance(_currentInsurance);
     if (cached != null) return cached;
     final refreshed = await GetIt.I<InsuranceRepository>()
-        .getInsuranceById(widget.insurance.id);
+        .getInsuranceById(_currentInsurance.id);
     if (mounted && refreshed != null) {
       setState(() => _refreshedInsurance = refreshed);
     }
-    return _renewUrlFromInsurance(refreshed ?? widget.insurance);
+    return _renewUrlFromInsurance(refreshed ?? _currentInsurance);
   }
 
   // Pull the certificate URL from coverageDetails — the backend stuffs
@@ -930,7 +937,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   // parses into `coverageDetails`. Live-fetched on the backend from
   // MyCover.GetPolicyByID, so this stays fresh.
   String? _certificateUrl() {
-    final raw = widget.insurance.coverageDetails['certificate_url'];
+    final raw = _currentInsurance.coverageDetails['certificate_url'];
     if (raw == null) return null;
     final s = raw.toString().trim();
     if (s.isEmpty || s == 'null') return null;
@@ -1033,6 +1040,55 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
     );
   }
 
+  /// Prominent, copyable policy number — the identifier users quote to
+  /// support or the provider. Hidden until it's known (blank on the list path,
+  /// filled once the detail hydrate lands).
+  Widget _buildPolicyNumberCard() {
+    final pn = _currentInsurance.policyNumber.trim();
+    if (pn.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6366F1).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.confirmation_number_outlined,
+              color: const Color(0xFF6366F1), size: 20.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Policy Number',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+                SizedBox(height: 2.h),
+                Text(pn,
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.copy_rounded,
+                color: const Color(0xFF6366F1), size: 18.sp),
+            tooltip: 'Copy',
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: pn));
+              Get.snackbar('Copied', 'Policy number copied to clipboard',
+                  snackPosition: SnackPosition.BOTTOM);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPolicyHolderInfo() {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -1045,11 +1101,11 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       ),
       child: Column(
         children: [
-          _buildDetailRow('Name', widget.insurance.policyHolderName, Icons.person),
+          _buildDetailRow('Name', _currentInsurance.policyHolderName, Icons.person),
           SizedBox(height: 12.h),
-          _buildDetailRow('Email', widget.insurance.policyHolderEmail, Icons.email),
+          _buildDetailRow('Email', _currentInsurance.policyHolderEmail, Icons.email),
           SizedBox(height: 12.h),
-          _buildDetailRow('Phone', widget.insurance.policyHolderPhone, Icons.phone),
+          _buildDetailRow('Phone', _currentInsurance.policyHolderPhone, Icons.phone),
         ],
       ),
     );
@@ -1069,19 +1125,19 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
         children: [
           _buildDetailRow(
             'Premium Amount',
-            '${CurrencySymbols.formatAmountWithCurrency(widget.insurance.premiumAmount, widget.insurance.currency)}',
+            '${CurrencySymbols.formatAmountWithCurrency(_currentInsurance.premiumAmount, _currentInsurance.currency)}',
             Icons.attach_money,
           ),
           SizedBox(height: 12.h),
           _buildDetailRow(
             'Coverage Amount',
-            '${CurrencySymbols.formatAmountWithCurrency(widget.insurance.coverageAmount, widget.insurance.currency)}',
+            '${CurrencySymbols.formatAmountWithCurrency(_currentInsurance.coverageAmount, _currentInsurance.currency)}',
             Icons.account_balance_wallet,
           ),
           SizedBox(height: 12.h),
           _buildDetailRow(
             'Currency',
-            widget.insurance.currency,
+            _currentInsurance.currency,
             Icons.monetization_on,
           ),
         ],
@@ -1145,7 +1201,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       child: Wrap(
         spacing: 8.w,
         runSpacing: 8.h,
-        children: widget.insurance.beneficiaries.map((beneficiary) {
+        children: _currentInsurance.beneficiaries.map((beneficiary) {
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
@@ -1181,7 +1237,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   }
 
   Widget _buildFeatures() {
-    final features = widget.insurance.coverageDetails['features'] as List? ?? [];
+    final features = _currentInsurance.coverageDetails['features'] as List? ?? [];
 
     if (features.isEmpty) {
       return Container(
@@ -1251,7 +1307,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   }
 
   Widget _buildOptionalFieldsSection() {
-    final coverageDetails = widget.insurance.coverageDetails;
+    final coverageDetails = _currentInsurance.coverageDetails;
     bool hasOptionalFields = false;
     List<Widget> fieldWidgets = [];
 
@@ -1260,7 +1316,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       hasOptionalFields = true;
       fieldWidgets.add(_buildDetailRow(
         'Deductible',
-        '${CurrencySymbols.formatAmountWithCurrency((coverageDetails['deductible'] as num).toDouble(), widget.insurance.currency)}',
+        '${CurrencySymbols.formatAmountWithCurrency((coverageDetails['deductible'] as num).toDouble(), _currentInsurance.currency)}',
         Icons.attach_money,
       ));
       fieldWidgets.add(SizedBox(height: 12.h));
@@ -1271,18 +1327,18 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       hasOptionalFields = true;
       fieldWidgets.add(_buildDetailRow(
         'Coverage Limit',
-        '${CurrencySymbols.formatAmountWithCurrency((coverageDetails['coverage_limit'] as num).toDouble(), widget.insurance.currency)}',
+        '${CurrencySymbols.formatAmountWithCurrency((coverageDetails['coverage_limit'] as num).toDouble(), _currentInsurance.currency)}',
         Icons.trending_up,
       ));
       fieldWidgets.add(SizedBox(height: 12.h));
     }
 
     // Check and display description
-    if (widget.insurance.description != null && widget.insurance.description!.isNotEmpty) {
+    if (_currentInsurance.description != null && _currentInsurance.description!.isNotEmpty) {
       hasOptionalFields = true;
       fieldWidgets.add(_buildDetailRow(
         'Description',
-        widget.insurance.description!,
+        _currentInsurance.description!,
         Icons.description,
       ));
     }

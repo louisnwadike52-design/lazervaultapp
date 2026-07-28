@@ -390,9 +390,13 @@ class _EducationPaymentProcessingScreenState
         'Please wait while we process your education PIN purchase.\nThis may take a few moments.';
 
     if (state is EducationPurchaseSuccess) {
-      title = 'Purchase Successful!';
-      subtitle =
-          'Your education PINs have been generated.\nRedirecting to results...';
+      // A non-completed (pending/processing) purchase must NOT claim the PINs
+      // were generated — the result screen renders the pending state.
+      final pending = state.purchase.isPending;
+      title = pending ? 'Purchase submitted' : 'Purchase Successful!';
+      subtitle = pending
+          ? 'Your purchase is processing.\nRedirecting to results...'
+          : 'Your education PINs have been generated.\nRedirecting to results...';
     } else if (state is EducationPurchaseFailed) {
       title = 'Purchase Failed';
       subtitle =

@@ -7,6 +7,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utilities/passcode_policy.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -136,6 +139,12 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
       _showSnackbar('PINs do not match');
       return;
     }
+    // Reject trivially guessable PINs up front — same policy the PIN keypad and
+    // the backend enforce — so a weak PIN never consumes the one-time code.
+    if (isWeakNumericCode(newPin)) {
+      _showSnackbar('Choose a less predictable PIN (avoid 1111 or 1234).');
+      return;
+    }
 
     _cubit.completeForgotPin(
       otpCode: _storedOtpCode,
@@ -159,14 +168,16 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
 
   void _handleStateChange(PinManagementState state) {
     if (state is PinManagementReady) {
-      // Check if there are any available channels
-      final hasAvailableChannels = state.channels.any((ch) => ch.isAvailable);
+      // A user can verify via email/SMS OR an enrolled authenticator app, so
+      // only block when NONE of those paths is available.
+      final hasAvailableChannels =
+          state.channels.any((ch) => ch.isAvailable) || _isAuthenticatorEnrolled();
       if (!hasAvailableChannels) {
-        // No available channels - show error
+        // No verification path at all - show error
         setState(() {
           _currentStep = 5; // Error step
         });
-        _showSnackbar('No verified contact methods available. Please add a verified email or phone number.', isError: false);
+        _showSnackbar('No verification method available. Add a verified email or phone number, or set up an authenticator app in Settings.', isError: false);
         return;
       }
       setState(() {
@@ -190,7 +201,10 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
       _autoNavTimer = Timer(const Duration(seconds: 2), () {
         if (mounted) {
           _showSnackbar('Your transaction PIN has been reset', isError: false);
-          Get.back();
+          // Return `true` so a caller that pushed us (e.g. the Change-PIN
+          // screen's "Forgot PIN?" hand-off) knows the reset succeeded and can
+          // close itself — the user already has a fresh, working PIN.
+          Get.back(result: true);
         }
       });
     } else if (state is PinManagementError) {
@@ -203,6 +217,21 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         String msg = state.message;
         if (state.remainingAttempts != null) {
           msg += ' (${state.remainingAttempts} attempts remaining)';
+        }
+        // A verification failure surfaces at the final submit (step 3, new PIN).
+        // The bad/expired code lives on step 2, so drop back there with cleared
+        // fields — otherwise the user is stranded on the new-PIN step re-typing a
+        // PIN while the dead code silently fails every time. (New-PIN format is
+        // validated client-side before submit, so errors here are code-related.)
+        if (_currentStep >= 3) {
+          _clearOtpFields();
+          setState(() {
+            _storedOtpCode = '';
+            _currentStep = 2;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _otpFocusNodes[0].requestFocus();
+          });
         }
         _showSnackbar(msg);
       }
@@ -218,14 +247,19 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         builder: (context, state) {
           final bool isLoading = state is PinManagementLoading;
 
-          return Scaffold(
+          // Block back-nav while an OTP send / verify / reset is in flight — a
+          // mid-request pop would dispose the screen with the request still
+          // running (and could double-pop against the success auto-nav).
+          return PopScope(
+            canPop: !isLoading,
+            child: Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: Colors.white,
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
-                onPressed: () => Get.back(),
+                onPressed: isLoading ? null : () => Get.back(),
               ),
               title: Text(
                 'Forgot PIN',
@@ -254,6 +288,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
                 ],
               ),
             ),
+          ),
           );
         },
       ),
@@ -282,7 +317,25 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
   // ── Step 0: Loading ──
 
   Widget _buildLoadingStep() {
-    return LazerVaultLoader(size: 400);
+    return Padding(
+      padding: EdgeInsets.only(top: 120.h),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const LazerVaultLoader.small(),
+            SizedBox(height: 16.h),
+            Text(
+              'Checking your verification options…',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   // ── Step 1: Channel Selection ──
@@ -366,6 +419,12 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
             ),
           );
         }),
+        // Authenticator app — always offered. If the user hasn't set one up we
+        // open a modal that routes them to Settings to enable it.
+        Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: _buildAuthenticatorCard(),
+        ),
         SizedBox(height: 32.h),
         // Send Code button
         SizedBox(
@@ -382,7 +441,9 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
               elevation: 0,
             ),
             child: Text(
-              'Send Code',
+              // Nothing is "sent" for an authenticator — the code already lives
+              // in the user's app — so label the action honestly.
+              _selectedChannel == 'authenticator' ? 'Continue' : 'Send Code',
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
@@ -505,10 +566,208 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
     );
   }
 
+  bool _isAuthenticatorEnrolled() {
+    final user = context.read<AuthenticationCubit>().currentProfile?.user;
+    if (user == null || !user.twoFactorEnabled) return false;
+    final m = (user.twoFactorMethod ?? '').toLowerCase();
+    return m == 'authenticator' || m == 'totp' || m == 'app';
+  }
+
+  Future<void> _onAuthenticatorTap() async {
+    if (_isAuthenticatorEnrolled()) {
+      setState(() => _selectedChannel = 'authenticator');
+      return;
+    }
+    // Not enrolled — offer to set it up. The modal may route to the 2FA settings
+    // screen and come back; re-evaluate enrollment on return so the card (and
+    // selection) reflect a just-completed setup without leaving this screen.
+    await _showAuthenticatorSetupModal();
+    if (!mounted) return;
+    setState(() {
+      if (_isAuthenticatorEnrolled()) _selectedChannel = 'authenticator';
+    });
+  }
+
+  Widget _buildAuthenticatorCard() {
+    final isSelected = _selectedChannel == 'authenticator';
+    final enrolled = _isAuthenticatorEnrolled();
+    return GestureDetector(
+      onTap: _onAuthenticatorTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? _purpleAccent.withValues(alpha: 0.06)
+              : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected ? _purpleAccent : Colors.grey.shade200,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected
+                    ? _purpleAccent.withValues(alpha: 0.12)
+                    : Colors.grey.shade100,
+              ),
+              child: Icon(Icons.shield_moon_outlined,
+                  color: isSelected ? _purpleAccent : Colors.grey.shade600,
+                  size: 22.sp),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Authenticator app',
+                      style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black)),
+                  SizedBox(height: 2.h),
+                  Text(
+                    enrolled
+                        ? 'Use a code from your authenticator'
+                        : 'Not set up — tap to enable',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+            enrolled
+                ? Container(
+                    width: 22.w,
+                    height: 22.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? _purpleAccent : Colors.grey.shade400,
+                        width: isSelected ? 6 : 1.5,
+                      ),
+                    ),
+                  )
+                : Icon(Icons.chevron_right,
+                    color: Colors.grey.shade400, size: 22.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAuthenticatorSetupModal() async {
+    final goSetup = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            24.w, 16.h, 24.w, 24.h + MediaQuery.of(sheetCtx).padding.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _purpleAccent.withValues(alpha: 0.1),
+              ),
+              child: Icon(Icons.shield_moon_outlined,
+                  color: _purpleAccent, size: 28.sp),
+            ),
+            SizedBox(height: 16.h),
+            Text('Set up an authenticator app',
+                style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black)),
+            SizedBox(height: 8.h),
+            Text(
+              "You haven't set up an authenticator app yet. Enable it in "
+              "Settings to verify with a time-based code (Google Authenticator, "
+              "Authy, etc.).",
+              style: GoogleFonts.inter(
+                  fontSize: 14.sp, color: Colors.grey.shade600, height: 1.5),
+            ),
+            SizedBox(height: 24.h),
+            SizedBox(
+              width: double.infinity,
+              height: 52.h,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(sheetCtx).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _purpleAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text('Set up in Settings',
+                    style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(sheetCtx).pop(false),
+                child: Text('Maybe later',
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, color: Colors.grey.shade600)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Navigate to 2FA settings only AFTER the sheet has closed, and await the
+    // round-trip so the caller (_onAuthenticatorTap) can re-check enrollment
+    // when the user returns.
+    if (goSetup == true && mounted) {
+      await Get.toNamed(AppRoutes.twoFactorSettings);
+    }
+  }
+
   // ── Step 2: OTP Verification ──
 
   Widget _buildOtpStep() {
-    final isEmail = _channelUsed.toLowerCase() == 'email';
+    final channel = _channelUsed.toLowerCase();
+    final isEmail = channel == 'email';
+    final isAuthenticator = channel == 'authenticator';
+
+    final IconData headerIcon = isAuthenticator
+        ? Icons.shield_moon_outlined
+        : (isEmail ? Icons.email_outlined : Icons.sms_outlined);
+    final String headerTitle =
+        isAuthenticator ? 'Enter Authenticator Code' : 'Enter Verification Code';
+    final String headerSubtitle = isAuthenticator
+        ? 'Enter the current 6-digit code from your authenticator app'
+        : 'We sent a 6-digit code to $_maskedDestination';
 
     return Column(
       children: [
@@ -521,14 +780,14 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
             color: _purpleAccent.withValues(alpha: 0.08),
           ),
           child: Icon(
-            isEmail ? Icons.email_outlined : Icons.sms_outlined,
+            headerIcon,
             color: _purpleAccent,
             size: 40.sp,
           ),
         ),
         SizedBox(height: 24.h),
         Text(
-          'Enter Verification Code',
+          headerTitle,
           style: GoogleFonts.inter(
             fontSize: 22.sp,
             fontWeight: FontWeight.w700,
@@ -538,7 +797,7 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'We sent a 6-digit code to $_maskedDestination',
+          headerSubtitle,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             color: Colors.grey.shade600,
@@ -590,32 +849,44 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
           }),
         ),
         SizedBox(height: 28.h),
-        // Resend row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Didn't receive a code? ",
-              style: GoogleFonts.inter(
-                fontSize: 13.sp,
-                color: Colors.grey.shade600,
-              ),
+        // Resend row — only for email/SMS. A time-based authenticator code has
+        // no "resend" (the app rotates it every 30s), so we hide it and instead
+        // remind the user that the code refreshes.
+        if (isAuthenticator)
+          Text(
+            'The code refreshes every 30 seconds in your app.',
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: Colors.grey.shade600,
             ),
-            GestureDetector(
-              onTap: _cooldownSeconds > 0 ? null : _onResendCode,
-              child: Text(
-                _cooldownSeconds > 0
-                    ? 'Resend in ${_cooldownSeconds}s'
-                    : 'Resend Code',
+            textAlign: TextAlign.center,
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Didn't receive a code? ",
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: _cooldownSeconds > 0 ? Colors.grey : _purpleAccent,
+                  color: Colors.grey.shade600,
                 ),
               ),
-            ),
-          ],
-        ),
+              GestureDetector(
+                onTap: _cooldownSeconds > 0 ? null : _onResendCode,
+                child: Text(
+                  _cooldownSeconds > 0
+                      ? 'Resend in ${_cooldownSeconds}s'
+                      : 'Resend Code',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _cooldownSeconds > 0 ? Colors.grey : _purpleAccent,
+                  ),
+                ),
+              ),
+            ],
+          ),
         SizedBox(height: 24.h),
       ],
     );

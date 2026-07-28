@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
-import '../screens/voice_registration_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
+import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Status Badge - Shows voice enrollment status and allows navigation to registration
@@ -54,14 +57,30 @@ class _VoiceStatusBadgeState extends State<VoiceStatusBadge> {
   }
 
   Future<void> _navigateToRegistration() async {
-    final result = await Navigator.push<bool>(
+    // Route to the SHARED, cubit-backed enrollment screen (single source of
+    // truth) rather than the divergent VoiceRegistrationScreen — same
+    // VoiceEnrollmentCubit + VoiceBiometricsService backend as every other
+    // enrollment entry point. openVoiceSheetOnComplete:false so finishing
+    // returns here instead of jumping to the dashboard voice sheet.
+    var enrolled = false;
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => VoiceRegistrationScreen(userId: widget.userId),
+        builder: (_) => BlocProvider<VoiceEnrollmentCubit>(
+          create: (_) => GetIt.I<VoiceEnrollmentCubit>(),
+          child: VoiceEnrollmentCarouselScreen(
+            userId: widget.userId,
+            openVoiceSheetOnComplete: false,
+            onEnrollmentComplete: () {
+              enrolled = true;
+              VoiceActivationManager.markVoiceEnrolled(widget.userId);
+            },
+          ),
+        ),
       ),
     );
 
-    if (result == true) {
+    if (enrolled) {
       // Voice was registered successfully
       await _checkStatus();
       widget.onEnrollmentChanged?.call();

@@ -65,6 +65,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
   @override
   Future<LockFund> createLockFund({
     required LockType lockType,
+    required String configId,
     required double amount,
     required String currency,
     required int lockDurationDays,
@@ -79,6 +80,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
     try {
       final request = LockFundModel.toCreateRequest(
         lockType: lockType,
+        configId: configId,
         amount: amount,
         currency: currency,
         lockDurationDays: lockDurationDays,

@@ -87,7 +87,13 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // Tapping anywhere in the sheet (outside the search field) dismisses its
+    // keyboard — the global dismiss in main.dart can't reach inside a modal
+    // sheet's opaque surface.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
@@ -127,7 +133,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildHandle() {

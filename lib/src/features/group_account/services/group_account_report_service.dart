@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -138,7 +139,7 @@ class GroupAccountReportService {
 
   /// Share report to WhatsApp
   Future<void> shareToWhatsApp(GroupAccountReport report, {String? groupUrl}) async {
-    final text = _buildShareText(report.sharingText['whatsapp'] ?? report.summary, groupUrl);
+    final text = _buildShareText(report.sharingText['whatsapp'] ?? report.summary, report, groupUrl);
     final whatsappUrl = Uri.parse(
       'whatsapp://send?text=${Uri.encodeComponent(text)}',
     );
@@ -155,8 +156,9 @@ class GroupAccountReportService {
   }
 
   /// Share report to Telegram
-  Future<void> shareToTelegram(GroupAccountReport report, {String? groupUrl}) async {
-    final text = _buildShareText(report.sharingText['telegram'] ?? report.summary, groupUrl);
+  Future<void> shareToTelegram(GroupAccountReport report,
+      {String? groupUrl, Rect? sharePositionOrigin}) async {
+    final text = _buildShareText(report.sharingText['telegram'] ?? report.summary, report, groupUrl);
     final telegramUrl = Uri.parse(
       'https://t.me/share/url?url=${Uri.encodeComponent(groupUrl ?? '')}&text=${Uri.encodeComponent(text)}',
     );
@@ -164,25 +166,28 @@ class GroupAccountReportService {
     if (await canLaunchUrl(telegramUrl)) {
       await launchUrl(telegramUrl, mode: LaunchMode.externalApplication);
     } else {
-      await shareGeneral(report, groupUrl: groupUrl);
+      await shareGeneral(report,
+          groupUrl: groupUrl, sharePositionOrigin: sharePositionOrigin);
     }
   }
 
   /// Share report to Facebook
-  Future<void> shareToFacebook(GroupAccountReport report, {String? groupUrl}) async {
+  Future<void> shareToFacebook(GroupAccountReport report,
+      {String? groupUrl, Rect? sharePositionOrigin}) async {
     if (groupUrl != null) {
       final facebookUrl = Uri.parse(
         'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(groupUrl)}&quote=${Uri.encodeComponent(report.summary)}',
       );
       await launchUrl(facebookUrl, mode: LaunchMode.externalApplication);
     } else {
-      await shareGeneral(report, groupUrl: groupUrl);
+      await shareGeneral(report,
+          groupUrl: groupUrl, sharePositionOrigin: sharePositionOrigin);
     }
   }
 
   /// Share report to Twitter/X
   Future<void> shareToTwitter(GroupAccountReport report, {String? groupUrl}) async {
-    final text = _buildShareText(report.sharingText['twitter'] ?? report.summary, groupUrl);
+    final text = _buildShareText(report.sharingText['twitter'] ?? report.summary, report, groupUrl);
     final hashtags = report.hashtags.join(',');
     final twitterUrl = Uri.parse(
       'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(text)}&hashtags=$hashtags',
@@ -191,13 +196,20 @@ class GroupAccountReportService {
     await launchUrl(twitterUrl, mode: LaunchMode.externalApplication);
   }
 
-  /// General share using system share sheet
-  Future<void> shareGeneral(GroupAccountReport report, {String? groupUrl}) async {
-    final text = _buildShareText(report.sharingText['general'] ?? report.summary, groupUrl);
+  /// General share using system share sheet.
+  ///
+  /// [sharePositionOrigin] is REQUIRED on iOS/iPad — share_plus throws
+  /// `PlatformException("sharePositionOrigin: argument must be set …")` for an
+  /// unset/zero rect. Callers pass the tapped widget's rect via
+  /// [shareOriginFromContext]; null/zero falls back to a valid rect.
+  Future<void> shareGeneral(GroupAccountReport report,
+      {String? groupUrl, Rect? sharePositionOrigin}) async {
+    final text = _buildShareText(report.sharingText['general'] ?? report.summary, report, groupUrl);
 
     await SharePlus.instance.share(ShareParams(
       text: text,
       subject: report.title,
+      sharePositionOrigin: resolveShareOrigin(sharePositionOrigin),
     ));
   }
 
@@ -211,6 +223,7 @@ class GroupAccountReportService {
     GroupAccountReport report, {
     String? groupUrl,
     String? groupName,
+    Rect? sharePositionOrigin,
   }) async {
     final pdfBytes = await _buildReportPdf(
       report,
@@ -228,6 +241,7 @@ class GroupAccountReportService {
 
     final caption = _buildShareText(
       report.sharingText['general'] ?? report.summary,
+      report,
       groupUrl,
     );
 
@@ -236,6 +250,7 @@ class GroupAccountReportService {
         files: [XFile(file.path, mimeType: 'application/pdf')],
         text: caption,
         subject: report.title,
+        sharePositionOrigin: resolveShareOrigin(sharePositionOrigin),
       ),
     );
   }
@@ -398,16 +413,51 @@ class GroupAccountReportService {
     return sanitized.isEmpty ? 'group-report' : sanitized;
   }
 
-  /// Copy report text to clipboard
+  /// The full report text for copy-to-clipboard. Robust: never empty just
+  /// because the AI left `sharingText['general']`/summary blank.
   String getShareableText(GroupAccountReport report, {String? groupUrl}) {
-    return _buildShareText(report.sharingText['general'] ?? report.summary, groupUrl);
+    return _buildShareText(report.sharingText['general'] ?? report.summary, report, groupUrl);
   }
 
-  String _buildShareText(String baseText, String? groupUrl) {
-    if (groupUrl != null && groupUrl.isNotEmpty) {
-      return '$baseText\n\n$groupUrl';
+  /// Compose the shareable text. Prefers [baseText]; when blank, falls back to a
+  /// composed message from the report body so share AND copy always produce
+  /// meaningful content (not an empty clipboard).
+  String _buildShareText(
+      String baseText, GroupAccountReport report, String? groupUrl) {
+    var body = baseText.trim();
+    if (body.isEmpty) {
+      final parts = <String>[
+        if (report.title.trim().isNotEmpty) report.title.trim(),
+        if (report.summary.trim().isNotEmpty) report.summary.trim(),
+      ];
+      body = parts.join('\n\n');
     }
-    return baseText;
+    if (report.hashtags.isNotEmpty) {
+      final tags =
+          report.hashtags.map((t) => t.startsWith('#') ? t : '#$t').join(' ');
+      body = body.isEmpty ? tags : '$body\n\n$tags';
+    }
+    if (groupUrl != null && groupUrl.isNotEmpty) {
+      body = body.isEmpty ? groupUrl : '$body\n\n$groupUrl';
+    }
+    return body;
+  }
+
+  // ── iOS share-sheet anchor ────────────────────────────────────────────
+  // share_plus on iOS REQUIRES a non-zero `sharePositionOrigin`; an unset/zero
+  // rect throws "argument must be set, {{0,0},{0,0}} must be non-zero".
+  static Rect resolveShareOrigin(Rect? origin) {
+    if (origin != null && origin.width > 0 && origin.height > 0) return origin;
+    return const Rect.fromLTWH(0, 0, 1, 1);
+  }
+
+  /// Build a share-sheet anchor rect from a widget's [context] (global bounds).
+  static Rect? shareOriginFromContext(BuildContext context) {
+    final obj = context.findRenderObject();
+    if (obj is RenderBox && obj.hasSize) {
+      return obj.localToGlobal(Offset.zero) & obj.size;
+    }
+    return null;
   }
 }
 

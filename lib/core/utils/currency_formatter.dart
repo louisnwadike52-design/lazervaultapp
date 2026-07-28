@@ -20,6 +20,7 @@ class CurrencySymbols {
     'INR': '₹',
     'KES': 'KSh',
     'GHS': 'GH₵',
+    'PHP': '₱',
   };
 
   /// Get currency symbol for a given currency code

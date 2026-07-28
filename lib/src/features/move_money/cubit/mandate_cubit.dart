@@ -148,6 +148,9 @@ class MandateCubit extends Cubit<MandateState> {
       );
       _mandatesByAccountId[mandate.linkedAccountId] = mandate;
       emit(MandatePaused(mandate: mandate));
+      // Converge the "Switching…" badge to the confirmed state once Mono acks the
+      // pause — every pause surface (deposit card, Manage sheet) gets this.
+      pollSwitchUntilSettled(mandateId: mandateId, userId: userId);
     } catch (e) {
       emit(MandateError(message: 'Failed to pause mandate: $e'));
     } finally {
@@ -170,6 +173,9 @@ class MandateCubit extends Cubit<MandateState> {
       );
       _mandatesByAccountId[mandate.linkedAccountId] = mandate;
       emit(MandateReinstated(mandate: mandate));
+      // Converge the "Switching…" badge to the confirmed state once Mono acks the
+      // reinstate — every reinstate surface (deposit card, Manage sheet) gets this.
+      pollSwitchUntilSettled(mandateId: mandateId, userId: userId);
     } catch (e) {
       emit(MandateError(message: 'Failed to reinstate mandate: $e'));
     } finally {
@@ -341,6 +347,41 @@ class MandateCubit extends Cubit<MandateState> {
     _mandatePollTimer = null;
   }
 
+  /// Poll a mandate after a deposit-method switch (pause⇄reinstate) until Mono
+  /// confirms it — i.e. until [MandateEntity.switchProcessing] clears — refreshing
+  /// the cache/badges so the card converges from "Switching…" to the settled
+  /// state without a manual pull-to-refresh. Bounded ([maxTicks]) so it never
+  /// polls forever; best-effort + silent on transient errors.
+  Timer? _switchPollTimer;
+
+  void pollSwitchUntilSettled({
+    required String mandateId,
+    required String userId,
+    int maxTicks = 8,
+  }) {
+    _switchPollTimer?.cancel();
+    var ticks = 0;
+    _switchPollTimer = Timer.periodic(const Duration(seconds: 12), (timer) async {
+      ticks++;
+      if (isClosed || ticks > maxTicks) {
+        timer.cancel();
+        return;
+      }
+      try {
+        final fresh = await _dataSource.getMandate(mandateId: mandateId, userId: userId);
+        _mandatesByAccountId[fresh.linkedAccountId] = fresh;
+        if (!isClosed) {
+          emit(UserMandatesLoaded(mandates: _mandatesByAccountId.values.toList()));
+        }
+        if (!fresh.switchProcessing) {
+          timer.cancel();
+        }
+      } catch (_) {
+        // best-effort — keep trying until maxTicks
+      }
+    });
+  }
+
   /// Prefer active/readyToDebit mandates over others.
   bool _isBetterMandate(MandateEntity candidate, MandateEntity existing) {
     if (candidate.isActive && !existing.isActive) return true;
@@ -353,6 +394,7 @@ class MandateCubit extends Cubit<MandateState> {
   @override
   Future<void> close() {
     _mandatePollTimer?.cancel();
+    _switchPollTimer?.cancel();
     return super.close();
   }
 }

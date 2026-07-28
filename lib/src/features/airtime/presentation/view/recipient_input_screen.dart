@@ -64,15 +64,36 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     super.initState();
     _loadArguments();
     _phoneController.addListener(_onPhoneChanged);
-    // Buy-for-self shortcut: if the user has a registered phone, validate
-    // it in the background and route-replace to amount selection without
-    // ever rendering the recipient form. On failure we drop the flag and
-    // fall back to the standard UI.
+    // A prefilled number (buy-for-self registered phone, repeat purchase,
+    // saved contact) is written to the controller in _loadArguments BEFORE the
+    // listener above is attached, so network detection never fires on its own —
+    // the screen would sit on "Detecting network…" forever. Kick detection off
+    // once after the first frame whenever the field arrives pre-filled.
+    if (_phoneController.text.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onPhoneChanged();
+      });
+    }
+    // Buy-for-self prefills the registered phone on the Phone step (see
+    // _loadArguments) but no longer auto-advances — the user sees + confirms
+    // the number and taps Continue. _autoAdvance is retained as an inert hook
+    // for any future caller that wants the old skip-straight-to-amount flow.
     if (_autoAdvance) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _validateAndProceed();
       });
     }
+  }
+
+  /// Focus the phone field and select the whole number so the user can
+  /// overwrite the prefilled registered number in a single tap. Safe when the
+  /// field is empty (selects nothing) or already focused (re-selects).
+  void _focusAndSelectPhone() {
+    _phoneFocusNode.requestFocus();
+    _phoneController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _phoneController.text.length,
+    );
   }
 
   void _loadArguments() {
@@ -91,16 +112,20 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
       }
 
       if (_isBuyForSelf) {
-        // Auto-fill logged-in user's phone number (read-only)
-        final authState = context.read<AuthenticationCubit>().state;
-        String? userPhone;
-        if (authState is AuthenticationAuthenticated) {
-          userPhone = authState.profile.user.phoneNumber;
+        // Auto-fill logged-in user's phone number (read-only).
+        // Read it STATE-AGNOSTICALLY: the cubit emits AuthenticationSuccess on
+        // most login paths and AuthenticationAuthenticated only on session
+        // restore, but currentProfile is populated in both — so keying off a
+        // single state variant (as before) missed the common case and wrongly
+        // showed "you haven't set a phone number".
+        final authCubit = context.read<AuthenticationCubit>();
+        String? userPhone = authCubit.currentProfile?.user.phoneNumber;
+        // Mid-signup fallback: no profile persisted yet, but the entered phone
+        // is on the in-progress signup state.
+        if ((userPhone == null || userPhone.isEmpty) &&
+            authCubit.state is SignUpInProgress) {
+          userPhone = (authCubit.state as SignUpInProgress).phoneNumber;
         }
-        // Also try from the cubit's convenience getter
-        userPhone ??= context.read<AuthenticationCubit>().state is SignUpInProgress
-            ? (context.read<AuthenticationCubit>().state as SignUpInProgress).phoneNumber
-            : null;
         if (userPhone != null && userPhone.isNotEmpty) {
           // Ensure local format (e.g., 08012345678)
           if (userPhone.startsWith('+234')) {
@@ -112,7 +137,9 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           isPhoneValid = userPhone.length >= 10;
           _nameController.text = 'Self';
           _hasProfilePhone = true;
-          _autoAdvance = true;
+          // Prefill only — do NOT auto-advance. The user should still land on
+          // the Phone step (step 1) with their registered number filled in and
+          // tap Continue, rather than the flow silently skipping the step.
         } else {
           // No profile phone on file — keep buy-for-self intent (header
           // copy + default 'Self' name) but leave the field editable so
@@ -282,8 +309,12 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     try {
       final cubit = context.read<AirtimeCubit>();
       final countryCode = selectedCountry?.code ?? 'NG';
-      detected = await cubit.detectNetworkFromPhoneNumber(
-          phoneNumber, countryCode);
+      // Bound the detection so a slow/hung lookup can never strand the screen
+      // on "Detecting network…" — on timeout we fall through to the manual
+      // "Pick a network" path (detected stays null).
+      detected = await cubit
+          .detectNetworkFromPhoneNumber(phoneNumber, countryCode)
+          .timeout(const Duration(seconds: 6), onTimeout: () => null);
     } catch (_) {
       // Detection is best-effort. A failure leaves `detected` null so the
       // user falls into the "Pick a network" path.
@@ -787,15 +818,14 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   ],
                 ),
               ),
-              // Phone number input. Locked only when buy-for-self AND the
-              // user has a phone on their profile — otherwise it stays
-              // editable so users without a profile phone can still pay.
+              // Phone number input — always EDITABLE. Buy-for-self prefills the
+              // user's registered number but they can overwrite it; the trailing
+              // edit icon focuses the field with the text selected for a quick
+              // replace.
               Expanded(
                 child: TextField(
                   controller: _phoneController,
                   focusNode: _phoneFocusNode,
-                  readOnly: _isBuyForSelf && _hasProfilePhone,
-                  enabled: !(_isBuyForSelf && _hasProfilePhone),
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
@@ -803,9 +833,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   ],
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: (_isBuyForSelf && _hasProfilePhone)
-                        ? const Color(0xFF9CA3AF)
-                        : Colors.white,
+                    color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
@@ -814,14 +842,19 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                       color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
                       fontSize: 16.sp,
                     ),
+                    // Edit affordance for the prefilled registered number: shown
+                    // only for buy-for-self with a profile phone (the "send to
+                    // others" / no-profile-phone paths get the field bare). Tap
+                    // focuses + selects-all so the user can replace it in one go.
                     suffixIcon: (_isBuyForSelf && _hasProfilePhone)
-                        ? Padding(
-                            padding: EdgeInsets.all(12.w),
-                            child: Icon(
-                              Icons.lock_outline,
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.edit_outlined,
                               color: const Color(0xFF9CA3AF),
                               size: 18.sp,
                             ),
+                            tooltip: 'Edit number',
+                            onPressed: _focusAndSelectPhone,
                           )
                         : null,
                     border: InputBorder.none,
@@ -1138,12 +1171,12 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     } else if (_isDetectingNetwork) {
       blockedLabel = 'Detecting network…';
       blockedAction = null;
-    } else if (!hasNetwork && _detectionAttempted) {
+    } else if (!hasNetwork) {
+      // No provider yet and we're not actively detecting (detection finished
+      // with an unknown prefix, timed out, or hasn't produced one) — let the
+      // user pick manually instead of sitting on a misleading "Detecting…".
       blockedLabel = 'Pick a network';
       blockedAction = _showNetworkPicker;
-    } else if (!hasNetwork) {
-      blockedLabel = 'Detecting network…';
-      blockedAction = null;
     } else {
       blockedLabel = 'Continue';
       blockedAction = null;

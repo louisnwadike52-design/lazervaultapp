@@ -13,7 +13,10 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../widgets/asset_wallet_sheet.dart';
+import '../widgets/network_picker_sheet.dart';
 import '../widgets/price_quote_card.dart';
+import '../../../../core/grpc/crypto_grpc_client.dart';
+import '../../../../generated/crypto.pbgrpc.dart' show QuidaxAssetNetwork;
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -46,6 +49,17 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   bool _isLoading = false;
   bool _isTransacting = false;
 
+  // Receive-network selection. Quidax keeps one unified balance per currency, so
+  // picking a network here doesn't change the buy (an internal, network-agnostic
+  // master->sub delivery); it provisions the chosen chain's deposit address and
+  // marks it the user's active network for the asset, so future receive/send
+  // default to it. Deposit-enabled networks only.
+  CryptoGrpcClient get _networkClient => GetIt.I<CryptoGrpcClient>();
+  List<QuidaxAssetNetwork> _networks = const [];
+  String? _selectedNetwork;
+  bool _loadingNetworks = false;
+  bool _switchingNetwork = false;
+
   @override
   ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
@@ -64,15 +78,114 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     return (bps ?? 150) / 10000.0;
   }
 
+  /// Estimated Lazervault buy fee honoring the admin's percentage/fixed config
+  /// (crypto.fee.buy.*). Falls back to the flat display rate before config loads.
+  double _resolveFee() {
+    try {
+      return GetIt.I<CryptoConfigCubit>()
+          .config
+          .feeForOp('buy', _fiatAmount, CurrencySymbols.currentCurrency);
+    } catch (_) {
+      return _fiatAmount * _feeDisplayRate();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _selectedCrypto = widget.selectedCrypto;
     _amountController.addListener(_onAmountChanged);
     _setupAnimations();
-    
+
     // Load cryptocurrencies if not already loaded
     context.read<CryptoCubit>().loadCryptos();
+    if (_selectedCrypto != null) _loadNetworks();
+  }
+
+  /// Loads the deposit-enabled networks for the selected asset and picks the
+  /// active/default one. Cheap (DB-backed GetAssetNetworkStatus), non-blocking.
+  Future<void> _loadNetworks() async {
+    final sym = _selectedCrypto?.symbol.toLowerCase();
+    if (sym == null || sym.isEmpty) return;
+    setState(() {
+      _loadingNetworks = true;
+      _networks = const [];
+      _selectedNetwork = null;
+    });
+    try {
+      final res = await _networkClient.getAssetNetworkStatus(currency: sym);
+      if (!mounted) return;
+      final deposit = res.networks
+          .where((e) => e.network.depositEnabled)
+          .map((e) => e.network)
+          .toList(growable: false);
+      String? active = res.activeNetwork.isNotEmpty ? res.activeNetwork : null;
+      if (active == null) {
+        for (final n in deposit) {
+          if (n.isDefault) {
+            active = n.network;
+            break;
+          }
+        }
+      }
+      active ??= deposit.isNotEmpty ? deposit.first.network : null;
+      setState(() {
+        _networks = deposit;
+        _selectedNetwork = active;
+        _loadingNetworks = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingNetworks = false);
+    }
+  }
+
+  String _networkLabel(String slug) {
+    for (final n in _networks) {
+      if (n.network == slug) {
+        return n.networkName.isNotEmpty
+            ? n.networkName
+            : n.network.toUpperCase();
+      }
+    }
+    return slug.toUpperCase();
+  }
+
+  Future<void> _pickNetwork() async {
+    if (_selectedCrypto == null || _networks.isEmpty || _switchingNetwork) {
+      return;
+    }
+    final chosen = await showNetworkPickerSheet(
+      context,
+      currency: _selectedCrypto!.symbol.toLowerCase(),
+      networks: _networks,
+      selectedNetwork: _selectedNetwork,
+      title: 'Receive ${_selectedCrypto!.symbol.toUpperCase()} on',
+      subtitle:
+          'Your balance is the same on every network. This sets the chain your ${_selectedCrypto!.symbol.toUpperCase()} address uses for receiving and sending.',
+    );
+    if (chosen == null || chosen == _selectedNetwork || !mounted) return;
+    setState(() {
+      _selectedNetwork = chosen;
+      _switchingNetwork = true;
+    });
+    try {
+      // Provision the chosen chain's address and mark it active for the asset.
+      // Does NOT touch the buy money path.
+      // Provision the chosen chain's address and mark it active for the asset.
+      // Does NOT touch the buy money path. Mirrors buy_crypto_sheet's
+      // _pickNetwork: local _selectedNetwork drives the UI; the server-side
+      // active network is set by ensureWalletAddress — no extra cubit refresh.
+      await _networkClient.ensureWalletAddress(
+        currency: _selectedCrypto!.symbol.toLowerCase(),
+        network: chosen,
+      );
+    } catch (_) {
+      // Non-fatal: the selection still stands for display; provisioning retries
+      // when the user opens the wallet sheet.
+    } finally {
+      if (mounted) setState(() => _switchingNetwork = false);
+    }
   }
 
   void _setupAnimations() {
@@ -207,6 +320,10 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                           ],
                           SizedBox(height: 24.h),
                           _buildAmountInput(),
+                          if (_selectedCrypto != null) ...[
+                            SizedBox(height: 16.h),
+                            _buildNetworkAlert(),
+                          ],
                           SizedBox(height: 24.h),
                           if (_selectedCrypto != null && _amountController.text.isNotEmpty)
                             _buildOrderSummary(),
@@ -509,6 +626,123 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     );
   }
 
+  /// Emphasized card telling the user which network their purchased asset will
+  /// live on, with a prominent, well styled dropdown to change it. Balance is
+  /// the same on every network (Quidax unified balance); the network only sets
+  /// the receiving/sending chain.
+  Widget _buildNetworkAlert() {
+    const accent = Color(0xFF3B82F6);
+    final sym = _selectedCrypto?.symbol.toUpperCase() ?? '';
+    final label = _selectedNetwork != null
+        ? _networkLabel(_selectedNetwork!)
+        : 'Choose network';
+    final canChange = _networks.length > 1 && !_switchingNetwork;
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            accent.withValues(alpha: 0.16),
+            accent.withValues(alpha: 0.06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: accent.withValues(alpha: 0.40)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38.w,
+            height: 38.w,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(Icons.lan_rounded, color: const Color(0xFF93C5FD), size: 18.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Receiving network',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 3.h),
+                if (_loadingNetworks)
+                  Text(
+                    'Loading networks...',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 13.sp,
+                    ),
+                  )
+                else
+                  Text(
+                    _networks.isEmpty
+                        ? 'Default network'
+                        : 'Your $sym will use $label',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          // Prominent dropdown affordance.
+          Material(
+            color: canChange ? accent : accent.withValues(alpha: 0.25),
+            borderRadius: BorderRadius.circular(10.r),
+            child: InkWell(
+              onTap: canChange ? _pickNetwork : null,
+              borderRadius: BorderRadius.circular(10.r),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_switchingNetwork)
+                      SizedBox(
+                        width: 14.w,
+                        height: 14.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                        ),
+                      )
+                    else ...[
+                      Text(
+                        _networks.length > 1 ? 'Change' : label,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (_networks.length > 1) ...[
+                        SizedBox(width: 4.w),
+                        Icon(Icons.keyboard_arrow_down_rounded,
+                            color: Colors.white, size: 16.sp),
+                      ],
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAmountInput() {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -753,8 +987,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     } else {
       // Loaded — compute against the live rate. Fee is a display
       // estimate; the real one comes back from CreateSwapQuote.
-      final feeRate = _feeDisplayRate();
-      final fee = _fiatAmount * feeRate;
+      final fee = _resolveFee();
       final networkFee = fee * 0.3;
       final tradingFee = fee * 0.7;
       final total = _fiatAmount + fee;
@@ -1486,6 +1719,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 _liveRate = null;
               });
               _searchController.clear();
+              _loadNetworks();
               Get.back();
             },
             child: Row(

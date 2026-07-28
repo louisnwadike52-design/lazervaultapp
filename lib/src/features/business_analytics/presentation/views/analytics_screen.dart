@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../cubit/business_analytics_cubit.dart';
@@ -52,20 +54,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: InvoiceThemeColors.textWhite, size: 18),
         ),
         title: Text(
           'Business Analytics',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            color: InvoiceThemeColors.textWhite,
           ),
         ),
         centerTitle: true,
@@ -77,21 +80,39 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             child: MicroserviceChatIcon(
               serviceName: 'Analytics',
               sourceContext: 'statistics',
+              chatAccentColor: InvoiceThemeColors.primaryPurple,
             ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFF3B82F6),
-          labelColor: Colors.white,
-          unselectedLabelColor: const Color(0xFF9CA3AF),
-          labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: TextStyle(fontSize: 13.sp),
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Revenue'),
-            Tab(text: 'Expenses'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(56.h),
+          child: Container(
+            margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 12.h),
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.secondaryBackground,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelColor: Colors.white,
+              unselectedLabelColor: InvoiceThemeColors.textGray400,
+              labelStyle:
+                  GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
+              unselectedLabelStyle:
+                  GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
+              tabs: const [
+                Tab(text: 'Overview'),
+                Tab(text: 'Revenue'),
+                Tab(text: 'Expenses'),
+              ],
+            ),
+          ),
         ),
       ),
       body: BlocBuilder<BusinessAnalyticsCubit, BusinessAnalyticsState>(
@@ -150,8 +171,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   Widget _buildOverviewTab(BusinessAnalyticsLoaded state) {
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      color: InvoiceThemeColors.primaryPurpleLight,
+      backgroundColor: InvoiceThemeColors.secondaryBackground,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -175,13 +196,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildRevenueTab(BusinessAnalyticsLoaded state) {
-    final financial = state.financialAnalytics;
     final incomeCategories = state.categoryAnalytics.incomeCategories;
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      color: InvoiceThemeColors.primaryPurpleLight,
+      backgroundColor: InvoiceThemeColors.secondaryBackground,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -193,14 +213,96 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             },
           ),
           SizedBox(height: 16.h),
-          _buildRevenueHeader(financial),
+          _buildSalesRevenueHeader(state),
           SizedBox(height: 20.h),
           RevenueExpenseBarChart(months: state.monthlyTrends.months),
           SizedBox(height: 20.h),
           if (incomeCategories.isNotEmpty) ...[
-            _buildCategoryList('Income Sources', incomeCategories,
+            _buildCategoryList('Wallet inflows', incomeCategories,
                 const Color(0xFF10B981)),
             SizedBox(height: 20.h),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Revenue headline from the SALES ledger (GetSalesSummary via the business
+  /// overview), not the wallet. Recorded sales show here as revenue + outstanding
+  /// receivables without ever crediting the wallet balance.
+  Widget _buildSalesRevenueHeader(BusinessAnalyticsLoaded state) {
+    final cur = state.salesCurrency.isNotEmpty ? state.salesCurrency : 'NGN';
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.point_of_sale_rounded,
+                  size: 16.sp, color: InvoiceThemeColors.primaryPurpleLight),
+              SizedBox(width: 6.w),
+              Text(
+                'Sales revenue',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: InvoiceThemeColors.textGray400,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            '$cur ${_formatAmount(state.salesRevenue.toDouble())}',
+            style: GoogleFonts.inter(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w700,
+              color: InvoiceThemeColors.primaryPurpleLight,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'From recorded sales · does not include wallet transfers',
+            style: GoogleFonts.inter(
+                fontSize: 11.sp, color: InvoiceThemeColors.textGray500),
+          ),
+          if (state.salesReceivables > 0) ...[
+            SizedBox(height: 14.h),
+            Divider(color: InvoiceThemeColors.borderColor, height: 1),
+            SizedBox(height: 14.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 15.sp, color: const Color(0xFFFB923C)),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Outstanding receivables',
+                      style: GoogleFonts.inter(
+                          fontSize: 12.5.sp,
+                          color: InvoiceThemeColors.textGray400),
+                    ),
+                  ],
+                ),
+                Text(
+                  '$cur ${_formatAmount(state.salesReceivables.toDouble())}',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFFB923C),
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),
@@ -210,8 +312,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   Widget _buildExpensesTab(BusinessAnalyticsLoaded state) {
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      color: InvoiceThemeColors.primaryPurpleLight,
+      backgroundColor: InvoiceThemeColors.secondaryBackground,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -234,73 +336,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildRevenueHeader(dynamic financial) {
-    final current = financial.currentPeriod;
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-            color: const Color(0xFF10B981).withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Total Revenue',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: const Color(0xFF9CA3AF),
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'NGN ${_formatAmount(current.totalIncome * 100)}',
-            style: TextStyle(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF10B981),
-            ),
-          ),
-          if (financial.incomeChangePercent != 0) ...[
-            SizedBox(height: 4.h),
-            Row(
-              children: [
-                Icon(
-                  financial.incomeChangePercent >= 0
-                      ? Icons.trending_up_rounded
-                      : Icons.trending_down_rounded,
-                  size: 16.sp,
-                  color: financial.incomeChangePercent >= 0
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFEF4444),
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  '${financial.incomeChangePercent.abs().toStringAsFixed(1)}% from previous period',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildExpenseHeader(dynamic financial) {
     final current = financial.currentPeriod;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
             color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
@@ -358,8 +401,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: InvoiceThemeColors.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,7 +448,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   ),
                   SizedBox(width: 12.w),
                   Text(
-                    'NGN ${_formatAmount(cat.amount)}',
+                    // cat.amount is in MAJOR units (transactions.amount); _formatAmount
+                    // expects minor units (it divides by 100), so scale up — matches
+                    // the expenses header (line ~362) which does the same *100.
+                    'NGN ${_formatAmount(cat.amount * 100)}',
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
@@ -456,13 +503,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 context.read<BusinessAnalyticsCubit>().refresh();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: const Text('Retry'),
+              child: Text('Retry',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
             ),
           ],
         ),

@@ -237,6 +237,19 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       return;
     }
 
+    // Image was picked but its upload failed (preview still shows, URL empty).
+    // Don't silently create a session with no cover — make the user retry the
+    // upload or remove the image first.
+    if (_selectedImage != null && _uploadedImageUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Your cover image didn't upload. Remove it or pick again before creating."),
+          backgroundColor: Color(0xFFFB923C),
+        ),
+      );
+      return;
+    }
+
     HapticFeedback.lightImpact();
     context.read<SprayMeCubit>().createSession(
           title: _titleController.text.trim(),
@@ -250,11 +263,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   void _shareSessionCode() {
     HapticFeedback.lightImpact();
     Share.share(
-      'Join my LazerSpray session on Lazervault!\n\n'
+      'Join my Lazerspray session on Lazervault!\n\n'
       'Session: ${_titleController.text.trim()}\n'
       'Code: $_sessionCode\n\n'
       'Open Lazervault and enter the code to join.',
-      subject: 'Join my LazerSpray session',
+      subject: 'Join my Lazerspray session',
     );
   }
 
@@ -743,7 +756,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 );
               },
               child: Text(
-                'Enter LazerSpray Room',
+                'Enter Lazerspray Room',
                 style: TextStyle(
                   color: const Color(0xFF3B82F6),
                   fontSize: 15.sp,

@@ -51,3 +51,7 @@ app.*.map.json
 *.env
 # Generated proto files
 **/pb/
+
+# Portable signing/deploy credentials (keystores, ASC/APNs .p8, SA JSON).
+# In-repo for device portability; MUST NEVER be committed.
+credentials/

@@ -161,7 +161,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     return BlocListener<IDPayCubit, IDPayState>(
       listener: (context, state) {
         if (state is IDPayCreated) {
-          Get.offNamed('/id-pay/created', arguments: {'idPay': state.idPay});
+          Get.offNamed(AppRoutes.idPayCreated, arguments: {'idPay': state.idPay});
         } else if (state is IDPayError) {
           Get.snackbar(
             'Error',
@@ -187,7 +187,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             ),
           ),
           title: Text(
-            'Create IDPay',
+            'Create PayID',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 18.sp,
@@ -848,7 +848,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Please review your IDPay details before creating',
+            'Please review your PayID details before creating',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,

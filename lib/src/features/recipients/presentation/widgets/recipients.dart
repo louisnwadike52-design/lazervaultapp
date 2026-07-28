@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -58,7 +58,7 @@ class _RecipientsState extends State<Recipients> {
   void _shareRecipient(RecipientModel recipient) {
     var shareText =
         'Account details for:\nName: ${recipient.name}\nAccount Number: ${recipient.accountNumber}';
-    shareText += '\nBank: ${recipient.bankName}';
+    shareText += '\nBank: ${recipient.displayBankName}';
     if (recipient.countryCode != null) {
       shareText += '\nCountry: ${recipient.countryCode}';
     }
@@ -531,7 +531,8 @@ class _RecipientsState extends State<Recipients> {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(16.r),
-              onTap: () => Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient),
+              onTap: () =>
+                  SendFundsLauncher.open(recipient: recipient, autoContinue: true),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 child: Row(

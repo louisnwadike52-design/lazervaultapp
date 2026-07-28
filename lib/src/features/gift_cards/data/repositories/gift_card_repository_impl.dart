@@ -229,6 +229,18 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
+  Future<Either<Failure, Map<String, dynamic>>> getActiveSellProvider() async {
+    try {
+      final provider = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getActiveSellProvider(),
+      );
+      return Right(provider);
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
+
+  @override
   Future<Either<Failure, GiftCardSale>> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -241,6 +253,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? subcategoryId,
     String? cardCode,
     bool disclaimerAccepted = false,
+    bool balanceAttested = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -269,6 +282,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           subcategoryId: subcategoryId,
           cardCode: cardCode,
           disclaimerAccepted: disclaimerAccepted,
+          balanceAttested: balanceAttested,
           currency: currency,
           images: images,
           idempotencyKey: idempotencyKey,
@@ -352,13 +366,4 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, List<Settlement>>> getSettlementHistory() async {
-    try {
-      final result = await _remoteDataSource.getSettlementHistory();
-      return Right(result);
-    } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
-    }
-  }
 }

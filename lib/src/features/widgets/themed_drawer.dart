@@ -7,8 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/services/help_config_service.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/presentation/widgets/profile_picture_actions.dart';
 import 'package:lazervault/src/features/widgets/my_account.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
+import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 
 class ThemedDrawer extends StatelessWidget {
   const ThemedDrawer({super.key});
@@ -16,8 +21,17 @@ class ThemedDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.white,
-      child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      backgroundColor: const Color(0xFF0A0A0A),
+      child: Container(
+        // Shared brand curved-edges background (same asset the email/password
+        // login flow uses) over a dark base — stylish + consistent.
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bg/up-down-curve-bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
         builder: (context, state) {
           final authCubit = context.read<AuthenticationCubit>();
           final currentProfile = authCubit.currentProfile;
@@ -34,32 +48,45 @@ class ThemedDrawer extends StatelessWidget {
           return SafeArea(
             child: Column(
               children: [
-                // Header Section with Gradient
+                // Header — a subtle frosted panel over the curved background so
+                // the brand curve reads through while the profile block stays
+                // legible.
                 Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF4E03D0),
-                        Color(0xFF7C3AED),
-                      ],
+                    color: Colors.white.withValues(alpha: 0.06),
+                    borderRadius:
+                        BorderRadius.vertical(bottom: Radius.circular(28.r)),
+                    border: Border(
+                      bottom: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(24.w),
                     child: Column(
                       children: [
-                      // Profile Avatar
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            width: 3,
+                      // Profile Avatar — tap for photo actions (view full
+                      // screen / change photo / account / settings).
+                      GestureDetector(
+                        onTap: () => showProfilePictureActions(
+                          context,
+                          imageUrl: profilePicture,
+                          profileCubit: context.read<ProfileCubit>(),
+                          showNavigationActions: true,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 3,
+                            ),
+                          ),
+                          child: Hero(
+                            tag: kProfileAvatarHeroTag,
+                            child: _buildProfileAvatar(profilePicture, userInitials),
                           ),
                         ),
-                        child: _buildProfileAvatar(profilePicture, userInitials),
                       ),
                       SizedBox(height: 16.h),
 
@@ -172,13 +199,28 @@ class ThemedDrawer extends StatelessWidget {
                             },
                           ),
                           _DrawerMenuItem(
+                            icon: Icons.support_agent,
+                            title: 'Contact support',
+                            iconColor: Color(0xFF4E03D0),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  // Land on the ticket hub (open/closed +
+                                  // new-ticket FAB) — not straight into a
+                                  // chat thread.
+                                  builder: (context) =>
+                                      const SupportTicketsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          _DrawerMenuItem(
                             icon: Icons.info_outline,
                             title: 'About Lazervault',
                             iconColor: Color(0xFF3784F9),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showAboutDialog(context);
-                            },
+                            onTap: () => _openAbout(context),
                           ),
                         ],
                       ),
@@ -191,7 +233,7 @@ class ThemedDrawer extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: Colors.grey.shade200,
+                        color: Colors.white.withValues(alpha: 0.1),
                         width: 1,
                       ),
                     ),
@@ -229,25 +271,16 @@ class ThemedDrawer extends StatelessWidget {
           );
         },
       ),
+      ),
     );
   }
 
   Widget _buildMenuSection(String title, List<_DrawerMenuItem> items) {
+    // Section label intentionally omitted (the "Menu" heading was removed).
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          child: Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
+        SizedBox(height: 8.h),
         ...items.map((item) => _buildMenuItem(item)),
       ],
     );
@@ -260,8 +293,8 @@ class ThemedDrawer extends StatelessWidget {
           leading: Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: item.iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8.r),
+              color: item.iconColor.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               item.icon,
@@ -272,14 +305,14 @@ class ThemedDrawer extends StatelessWidget {
           title: Text(
             item.title,
             style: GoogleFonts.inter(
-              fontSize: 14.sp,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
+              color: Colors.white,
             ),
           ),
           trailing: Icon(
             Icons.chevron_right,
-            color: Colors.grey.shade400,
+            color: Colors.white.withValues(alpha: 0.35),
             size: 20.sp,
           ),
           onTap: item.onTap ?? () {},
@@ -326,7 +359,10 @@ class ThemedDrawer extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(dialogContext);
                 authCubit.logout();
-                Get.offAllNamed(AppRoutes.signIn);
+                // Logout keeps the cached identity → returning user; mode-aware
+                // login entry (email login vs passcode lock), not a hardcoded
+                // passcode lock (wrong for email accounts).
+                Get.offAllNamed(AppRoutes.loginEntry);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFFF2D2D),
@@ -349,69 +385,20 @@ class ThemedDrawer extends StatelessWidget {
     );
   }
 
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          title: Column(
-            children: [
-              Icon(
-                Icons.account_balance_wallet,
-                size: 48.sp,
-                color: Color(0xFF4E03D0),
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                'Lazervault',
-                style: GoogleFonts.inter(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Version 1.0.0',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Your trusted financial companion for seamless transactions and secure digital banking.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade700,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Close',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF4E03D0),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  /// Opens About in the styled webview bottom sheet (same as Terms & Privacy),
+  /// using the admin-configured URL (system_settings `help_about_url`, the
+  /// central source of truth) with a safe default. The sheet itself handles the
+  /// empty/unavailable/failed-to-load states — there is no dialog fallback.
+  Future<void> _openAbout(BuildContext context) async {
+    HelpConfig cfg = HelpConfig.fallback;
+    try {
+      cfg = await HelpConfigService.instance.ensure();
+    } catch (_) {/* use fallback */}
+    if (!context.mounted) return;
+    final url =
+        cfg.aboutUrl.isNotEmpty ? cfg.aboutUrl : HelpConfig.fallback.aboutUrl;
+    await showWebViewBottomSheet(context,
+        url: url, title: 'About Lazervault');
   }
 
   Widget _buildProfileAvatar(String? profilePicture, String userInitials) {
@@ -422,7 +409,7 @@ class ThemedDrawer extends StatelessWidget {
           final base64String = profilePicture.split(',')[1];
           final bytes = base64Decode(base64String);
           return CircleAvatar(
-            radius: 40.r,
+            radius: 30.r,
             backgroundColor: Colors.white.withValues(alpha: 0.2),
             backgroundImage: MemoryImage(bytes),
           );
@@ -432,7 +419,7 @@ class ThemedDrawer extends StatelessWidget {
       } else if (profilePicture.startsWith('http')) {
         // It's a URL
         return CircleAvatar(
-          radius: 40.r,
+          radius: 30.r,
           backgroundColor: Colors.white.withValues(alpha: 0.2),
           backgroundImage: NetworkImage(profilePicture),
         );
@@ -441,12 +428,12 @@ class ThemedDrawer extends StatelessWidget {
 
     // Default: show initials
     return CircleAvatar(
-      radius: 40.r,
+      radius: 30.r,
       backgroundColor: Colors.white.withValues(alpha: 0.2),
       child: Text(
         userInitials,
         style: GoogleFonts.inter(
-          fontSize: 28.sp,
+          fontSize: 22.sp,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),

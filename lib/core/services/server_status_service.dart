@@ -1,0 +1,75 @@
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:lazervault/core/services/endpoint_registry.dart';
+
+/// App-global "re-check the backend now" signal.
+///
+/// The [AppStartupGate] only probes on launch, on resume, and on the
+/// maintenance modal's "Try again" tap — so if the server goes down WHILE the
+/// user is already sitting on an auth screen, the modal wouldn't appear until
+/// one of those happens. Any pre-login flow (passcode/email/phone login, OTP,
+/// signup) that hits a server-UNREACHABLE failure can call [pokeRecheck] to ask
+/// the gate to re-probe immediately. It is only a *request to re-probe* — the
+/// gate still confirms with a real 2xx health check + a device-online check
+/// before showing maintenance, so a one-off blip or the user's own offline
+/// network never forces a false modal (offline stays a "check your connection"
+/// snackbar; slow/flaky network is handled per-request, never here).
+class ServerHealthNotifier extends ChangeNotifier {
+  ServerHealthNotifier._();
+  static final ServerHealthNotifier instance = ServerHealthNotifier._();
+
+  /// Ask any listening [AppStartupGate] to re-probe backend health right now.
+  void pokeRecheck() => notifyListeners();
+}
+
+/// Background reachability probe for the backend edge.
+///
+/// Hosting note: the backend can run on a local machine (even in prod, fronted
+/// by a Cloudflare tunnel). If that machine is off/asleep, its battery died, or
+/// the server process is down, Cloudflare answers with a 5xx / the request
+/// times out — never a 200. So the only "healthy" signal we trust is a **2xx**.
+///
+/// Which URL: the core-gateway's real `/health` lives at the ORIGIN root, but
+/// the Cloudflare tunnel only routes `^/api/v1/...` (root `/health` isn't
+/// routed — probing it would falsely fail for every user). We therefore probe
+/// the PUBLIC, unauthenticated `/api/v1/internal/voice-agents/settings` — it's
+/// routed by the `(admin|internal)` ingress rule, needs no auth (200), and the
+/// app already fetches it for config, so it's guaranteed reachable via the same
+/// origin the app uses. A 200 there proves the edge + a gateway on the host are
+/// alive; a machine/server outage yields 5xx/timeout on it too.
+///
+/// The probe runs entirely in the background (see AppStartupGate); it never
+/// blocks app startup or the current screen.
+class ServerStatusService {
+  ServerStatusService({http.Client? client}) : _client = client ?? http.Client();
+
+  final http.Client _client;
+
+  static const Duration _timeout = Duration(seconds: 6);
+
+  /// Public, unauthenticated, Cloudflare-routed reachability endpoint.
+  /// [endpointRegistry.httpCore] ends in `/api/v1`.
+  Uri _healthUri() =>
+      Uri.parse('${endpointRegistry.httpCore}/internal/voice-agents/settings');
+
+  Future<bool> _probeOnce() async {
+    try {
+      final resp = await _client.get(_healthUri()).timeout(_timeout);
+      // Strictly 2xx = backend up AND healthy. 401/404 would mean a wrong/gated
+      // path, and 5xx/503 means degraded — both treated as NOT healthy here
+      // because the public root /health is expected to answer 200 when good.
+      return resp.statusCode >= 200 && resp.statusCode < 300;
+    } catch (_) {
+      return false; // socket/DNS/timeout → edge unreachable (machine off, etc.)
+    }
+  }
+
+  /// Returns true when the backend answered a 2xx health check. Retries ONCE on
+  /// failure (short gap) so a single transient blip doesn't flash maintenance.
+  Future<bool> isBackendHealthy() async {
+    if (await _probeOnce()) return true;
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    return _probeOnce();
+  }
+}

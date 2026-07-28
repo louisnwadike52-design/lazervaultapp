@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -53,7 +54,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
   void _onSearchSubmitted(String payId) {
     final trimmed = payId.trim();
     if (trimmed.isEmpty) return;
-    Get.toNamed('/id-pay/lookup', arguments: {'payId': trimmed});
+    Get.toNamed(AppRoutes.idPayLookup, arguments: {'payId': trimmed});
   }
 
   @override
@@ -62,12 +63,12 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
       backgroundColor: const Color(0xFF0A0A0A),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Get.toNamed('/id-pay/create');
+          Get.toNamed(AppRoutes.createIdPay);
         },
         backgroundColor: const Color(0xFF3B82F6),
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
-          'Create IDPay',
+          'Create PayID',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 14.sp,
@@ -83,12 +84,14 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
             _buildTabBar(),
             SizedBox(height: 8.h),
             Expanded(
-              child: TabBarView(
+              child: ServiceEntranceAnimation(
+                child: TabBarView(
                 controller: _tabController,
                 children: [
                   _buildMyPayIDsTab(),
                   _buildPayTab(),
                 ],
+              ),
               ),
             ),
           ],
@@ -121,7 +124,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
           SizedBox(width: 16.w),
           Expanded(
             child: Text(
-              'IDPay',
+              'PayID',
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 24.sp,
@@ -161,7 +164,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
           ServiceVoiceButton(serviceName: 'idpay'),
           SizedBox(width: 8.w),
           const MicroserviceChatIcon(
-            serviceName: 'IDPay',
+            serviceName: 'PayID',
             sourceContext: 'idpay',
           ),
         ],
@@ -537,11 +540,11 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                   SizedBox(height: 20.h),
                   ElevatedButton.icon(
                     onPressed: () {
-                      Get.toNamed('/id-pay/create');
+                      Get.toNamed(AppRoutes.createIdPay);
                     },
                     icon: Icon(Icons.add, size: 20.sp, color: Colors.white),
                     label: Text(
-                      'Create IDPay',
+                      'Create PayID',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,

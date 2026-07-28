@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../cubit/airtime_cubit.dart';
-import '../widgets/quick_actions_card.dart';
+import '../widgets/airtime_quick_buy.dart';
 import '../widgets/recent_transactions_card.dart';
 
 /// Airtime landing page.
@@ -50,9 +52,34 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
   static const _invoicePurple = Color(0xFF4E03D0);
   static const _buyColor = _invoicePurple;
 
+  // Which of the three tabs the admin has enabled (Buy / International / Sell).
+  // Buy + International default ON, Sell (airtime-to-cash) defaults OFF — all
+  // read from the admin system_settings snapshot via FeatureFlags.
+  bool get _buyTabEnabled => FeatureFlags.airtimeBuyTabIsEnabled;
+  bool get _intlTabEnabled => FeatureFlags.airtimeInternationalTabIsEnabled;
+  bool get _sellTabEnabled => FeatureFlags.airtimeSellTabIsEnabled;
+
+  bool _tabEnabled(int index) => switch (index) {
+        0 => _buyTabEnabled,
+        1 => _intlTabEnabled,
+        2 => _sellTabEnabled,
+        _ => false,
+      };
+
+  /// First enabled tab index (falls back to 0 so the screen is never blank
+  /// even if an admin disables everything).
+  int get _firstEnabledTab {
+    for (final i in const [0, 1, 2]) {
+      if (_tabEnabled(i)) return i;
+    }
+    return 0;
+  }
+
   @override
   void initState() {
     super.initState();
+    // Land on the first enabled tab (e.g. if Buy is hidden, open International).
+    _selectedTab = _firstEnabledTab;
     _loadInitialData();
     // Reload whenever an unrelated screen (receipt, auto-recharge edit,
     // saved-contact write) bumps the cross-route nudge. Without this
@@ -100,7 +127,8 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
             children: [
               _buildHeader(),
               Expanded(
-                child: RefreshIndicator(
+                child: ServiceEntranceAnimation(
+                  child: RefreshIndicator(
                   onRefresh: _onRefresh,
                   color: _invoicePurple,
                   backgroundColor: const Color(0xFF1F1F1F),
@@ -122,6 +150,7 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
                       ],
                     ),
                   ),
+                ),
                 ),
               ),
             ],
@@ -218,20 +247,24 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
   }
 
   Widget _buildTabToggle() {
+    // Only render the tabs an admin has enabled. When a single tab is enabled
+    // the toggle is pointless — collapse it to nothing (that tab's content
+    // shows on its own).
+    final items = <Widget>[
+      if (_buyTabEnabled) _buildTabItem(0, Icons.phone_android, 'Buy', _buyColor),
+      if (_intlTabEnabled)
+        _buildTabItem(1, Icons.public, 'International', _invoicePurple),
+      if (_sellTabEnabled)
+        _buildTabItem(2, Icons.currency_exchange, 'Sell', _invoicePurple),
+    ];
+    if (items.length < 2) return const SizedBox.shrink();
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
-      child: Row(
-        children: [
-          _buildTabItem(0, Icons.phone_android, 'Buy', _buyColor),
-          _buildTabItem(1, Icons.public, 'International', _invoicePurple),
-          _buildTabItem(
-              2, Icons.currency_exchange, 'Sell', _invoicePurple),
-        ],
-      ),
+      child: Row(children: items),
     );
   }
 
@@ -275,12 +308,13 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
   // ----------------------- BUY TAB -----------------------
 
   List<Widget> _buildBuyContent() {
-    // Network picker was removed from the landing; users pick their
-    // network on the recipient-input screen after tapping Buy/Send.
-    // The quick-actions card + recent list is enough to get them into
-    // the purchase flow without the redundant grid.
+    // Streamlined single-page purchase: phone (prefilled from profile) →
+    // auto-detected network → amount → inline confirmation → TX-PIN sheet
+    // (which also runs the purchase) → receipt. No network-select / review /
+    // processing screens. The saved-contacts / auto-recharge / reminders flows
+    // stay reachable from the quick-action tiles above.
     return [
-      const QuickActionsCard(),
+      const AirtimeQuickBuy(),
       SizedBox(height: 24.h),
       const RecentTransactionsCard(
         scope: AirtimeScope.buy,

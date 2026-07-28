@@ -31,6 +31,8 @@ class EmployeeEntity extends Equatable {
   final String bankAccountNumber;
   final String bankCode;
   final String bankName;
+  final String bankAccountName;
+  final String payoutType; // "internal" (Lazervault user) | "external" (bank account)
   final EmploymentType employmentType;
   final double payRate; // Display amount (major units)
   final PayFrequency payFrequency;
@@ -52,6 +54,8 @@ class EmployeeEntity extends Equatable {
     required this.bankAccountNumber,
     required this.bankCode,
     required this.bankName,
+    this.bankAccountName = '',
+    this.payoutType = 'external',
     required this.employmentType,
     required this.payRate,
     required this.payFrequency,
@@ -99,6 +103,34 @@ class EmployeeEntity extends Equatable {
   }
 
   bool get isActive => status == EmployeeStatus.active;
+
+  bool get isInternalPayout =>
+      payoutType == 'internal' || (userId != null && userId!.isNotEmpty);
+
+  /// Why this employee can't be paid, or null if they can — mirrors the backend
+  /// `employeePayoutIssue`: a linked Lazervault user → internal wallet credit;
+  /// else bank account number + code → external transfer; else NO destination.
+  /// Used to flag/gate un-payable employees before a pay run is created.
+  String? get payoutIssue {
+    if (userId != null && userId!.trim().isNotEmpty) return null;
+    if (bankAccountNumber.trim().isNotEmpty && bankCode.trim().isNotEmpty) {
+      return null;
+    }
+    return payoutType == 'internal'
+        ? 'No linked Lazervault user'
+        : 'No bank account';
+  }
+
+  bool get isPayable => payoutIssue == null;
+
+  /// Short label for where this employee is paid.
+  String get payoutDisplay {
+    if (isInternalPayout) return 'Lazervault';
+    if (bankAccountNumber.length >= 4) {
+      return 'Bank •••• ${bankAccountNumber.substring(bankAccountNumber.length - 4)}';
+    }
+    return 'Bank transfer';
+  }
 
   @override
   List<Object?> get props => [id, fullName, email, status, payRate];

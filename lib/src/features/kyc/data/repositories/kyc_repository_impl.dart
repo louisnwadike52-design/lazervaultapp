@@ -389,8 +389,11 @@ class KYCRepositoryImpl implements KYCRepository {
           [],
       addressProofRequired: data['address_proof_required'] as bool? ?? false,
       livenessCheckRequired: data['liveness_check_required'] as bool? ?? false,
+      // Fallbacks match the canonical shared/kyctiers table (CBN): Tier 1
+      // ₦50,000/day, Tier 2 ₦200,000/day, Tier 3 unlimited (0). Real values come
+      // from the backend (auth-service, sourced from shared/kyctiers).
       tier1DailyLimit: data['tier_1_daily_limit'] as int? ?? 5000000,
-      tier2DailyLimit: data['tier_2_daily_limit'] as int? ?? 50000000,
+      tier2DailyLimit: data['tier_2_daily_limit'] as int? ?? 20000000,
       tier3DailyLimit: data['tier_3_daily_limit'] as int? ?? 0,
     );
   }

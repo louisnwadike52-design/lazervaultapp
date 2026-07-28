@@ -17,7 +17,7 @@ bool handleKYCError(
   BuildContext context,
   String operationName,
 ) {
-  String? errorMessage;
+  String errorMessage;
 
   if (error is GrpcError) {
     errorMessage = error.message ?? '';
@@ -25,7 +25,7 @@ bool handleKYCError(
     errorMessage = error.toString();
   }
 
-  if (errorMessage == null || errorMessage.isEmpty) return false;
+  if (errorMessage.isEmpty) return false;
 
   // Check for KYC_TIER_INSUFFICIENT error code from accounts-service
   if (!errorMessage.contains('KYC_TIER_INSUFFICIENT') &&

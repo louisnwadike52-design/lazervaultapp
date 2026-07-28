@@ -37,6 +37,8 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
     String jobTitle = '',
     String? startDate,
     String? userId,
+    String payoutType = 'external',
+    String bankAccountName = '',
   }) async {
     return retryWithBackoff(
       operation: () async {
@@ -48,6 +50,8 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
           ..bankAccountNumber = bankAccountNumber
           ..bankCode = bankCode
           ..bankName = bankName
+          ..bankAccountName = bankAccountName
+          ..payoutType = payoutType
           ..employmentType = _employmentTypeToProto(employmentType)
           ..payRate = $fixnum.Int64(payRate)
           ..payFrequency = _payFrequencyToProto(payFrequency)
@@ -89,6 +93,9 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
     String? department,
     String? jobTitle,
     EmployeeStatus? status,
+    String? userId,
+    String? payoutType,
+    String? bankAccountName,
   }) async {
     return retryWithBackoff(
       operation: () async {
@@ -104,6 +111,9 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
         }
         if (bankCode != null) request.bankCode = bankCode;
         if (bankName != null) request.bankName = bankName;
+        if (bankAccountName != null) request.bankAccountName = bankAccountName;
+        if (payoutType != null) request.payoutType = payoutType;
+        if (userId != null) request.userId = userId;
         if (employmentType != null) {
           request.employmentType = _employmentTypeToProto(employmentType);
         }
@@ -402,16 +412,18 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
 
   @override
   Future<PaySlipsPageResult> listPaySlips({
-    required String payRunId,
+    String payRunId = '',
+    String employeeId = '',
     int page = 1,
     int limit = 20,
   }) async {
     return retryWithBackoff(
       operation: () async {
         final request = payroll_pb.ListPaySlipsRequest()
-          ..payRunId = payRunId
           ..page = page
           ..limit = limit;
+        if (payRunId.isNotEmpty) request.payRunId = payRunId;
+        if (employeeId.isNotEmpty) request.employeeId = employeeId;
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.listPaySlips(
@@ -489,6 +501,19 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
           'totalNsitf': response.totalNsitf.toInt() / 100.0,
           'totalItf': response.totalItf.toInt() / 100.0,
           'employeeCount': response.employeeSummaries.length,
+          // Per-employee breakdown (naira). Previously DROPPED — the tax sheet's
+          // per-employee rows AND the Reports-tab payroll report both read this.
+          'employeeSummaries': response.employeeSummaries
+              .map((e) => {
+                    'employeeId': e.employeeId,
+                    'employeeName': e.employeeName,
+                    'grossPay': e.grossPay.toInt() / 100.0,
+                    'paye': e.paye.toInt() / 100.0,
+                    'nhf': e.nhf.toInt() / 100.0,
+                    'pension': e.pension.toInt() / 100.0,
+                    'netPay': e.netPay.toInt() / 100.0,
+                  })
+              .toList(growable: false),
         };
       },
     );
@@ -510,6 +535,10 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
       bankAccountNumber: proto.bankAccountNumber,
       bankCode: proto.bankCode,
       bankName: proto.bankName,
+      bankAccountName: proto.bankAccountName,
+      payoutType: proto.payoutType.isNotEmpty
+          ? proto.payoutType
+          : (proto.userId.isNotEmpty ? 'internal' : 'external'),
       employmentType: _employmentTypeFromProto(proto.employmentType),
       payRate: proto.payRate.toInt() / 100.0,
       payFrequency: _payFrequencyFromProto(proto.payFrequency),

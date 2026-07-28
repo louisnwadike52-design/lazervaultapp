@@ -16,6 +16,7 @@ class Task {
   final DateTime? completedAt;
   final int boardOrder; // Kanban position within its column (lower = higher)
   final List<String> reminderIds;
+  final String? contactId; // CRM: linked person (People view)
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -35,6 +36,7 @@ class Task {
     this.completedAt,
     this.boardOrder = 0,
     this.reminderIds = const [],
+    this.contactId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -56,6 +58,9 @@ class Task {
       completedAt: parsePlanTimestamp(json['completed_at']),
       boardOrder: json['board_order'] as int? ?? 0,
       reminderIds: (json['reminder_ids'] as List<dynamic>?)?.cast<String>() ?? [],
+      contactId: (json['contact_id'] as String?)?.isEmpty ?? true
+          ? null
+          : json['contact_id'] as String?,
       createdAt: parsePlanTimestampRequired(json['created_at']),
       updatedAt: parsePlanTimestampRequired(json['updated_at']),
     );
@@ -78,6 +83,7 @@ class Task {
       'completed_at': completedAt?.toIso8601String(),
       'board_order': boardOrder,
       'reminder_ids': reminderIds,
+      'contact_id': contactId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -106,6 +112,7 @@ class Task {
     DateTime? completedAt,
     int? boardOrder,
     List<String>? reminderIds,
+    String? contactId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -125,6 +132,7 @@ class Task {
       completedAt: completedAt ?? this.completedAt,
       boardOrder: boardOrder ?? this.boardOrder,
       reminderIds: reminderIds ?? this.reminderIds,
+      contactId: contactId ?? this.contactId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

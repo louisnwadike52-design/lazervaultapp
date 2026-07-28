@@ -247,9 +247,9 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
           ),
           SizedBox(height: 24.h),
 
-          // Title
+          // Title (not a duplicate of the AppBar's "Password Recovery")
           Text(
-            'Password Recovery',
+            'Forgot your password?',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
@@ -270,10 +270,10 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
           ),
           SizedBox(height: 32.h),
 
-          // Tabs
+          // Tabs — light track for the white theme.
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: TabBar(
@@ -475,7 +475,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
   Widget _buildSubmitButton() {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
+        // Brand purple — consistent with the login + reset-password buttons.
+        backgroundColor: const Color(0xFF4834D4),
         foregroundColor: Colors.white,
         elevation: 0,
         shape: const StadiumBorder(),

@@ -11,7 +11,10 @@ import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
-import '../screens/voice_registration_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
+import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Voice Transaction Screen - Records voice command and processes transaction
@@ -164,17 +167,32 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              final result = await Navigator.push<bool>(
+              // Route to the SHARED, cubit-backed enrollment screen (single
+              // source of truth) instead of the divergent VoiceRegistrationScreen.
+              // Same VoiceEnrollmentCubit + VoiceBiometricsService backend as the
+              // biometric-login and voice-agent enrollment flows.
+              var enrolled = false;
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => VoiceRegistrationScreen(
-                    userId: widget.userId,
+                  builder: (_) => BlocProvider<VoiceEnrollmentCubit>(
+                    create: (_) => GetIt.I<VoiceEnrollmentCubit>(),
+                    child: VoiceEnrollmentCarouselScreen(
+                      userId: widget.userId,
+                      openVoiceSheetOnComplete: false,
+                      onEnrollmentComplete: () {
+                        enrolled = true;
+                        // Keep the status cache + login preference in sync so
+                        // voice login works after enrolling from this path too.
+                        VoiceActivationManager.markVoiceEnrolled(widget.userId);
+                      },
+                    ),
                   ),
                 ),
               );
 
               if (mounted) {
-                if (result == true) {
+                if (enrolled) {
                   // Successfully enrolled, initialize again
                   _initialize();
                 } else {

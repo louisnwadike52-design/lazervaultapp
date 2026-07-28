@@ -11,9 +11,8 @@ import 'report_issue_dialog.dart';
 /// Bottom sheet of actions available on a past exchange transaction
 /// (Convert or Send Abroad). Modelled on `WaterHistoryActionsSheet`:
 ///
-///   * View Receipt     — always available.
+///   * View Receipt     — always available (share lives on that screen).
 ///   * Repeat Exchange  — prefills the home flow with the same pair/amount.
-///   * Share Receipt    — launches a native share intent (TODO).
 ///   * Report Issue     — opens the support / contact route with the
 ///                        transaction reference pre-filled.
 class ExchangeHistoryActionsSheet {
@@ -92,22 +91,9 @@ class ExchangeHistoryActionsSheet {
             }
           },
         ),
-        BillHistoryAction(
-          icon: Icons.ios_share,
-          color: ExchangeTheme.primaryDark,
-          label: 'Share Receipt',
-          onTap: () {
-            Get.back();
-            // Native share — delegated to the receipt screen's existing
-            // share action. We open the receipt so the user can tap share
-            // there; this keeps a single code path for share formatting.
-            Get.toNamed(
-              AppRoutes.exchangeDetail,
-              arguments: tx,
-              parameters: {'action': 'share'},
-            );
-          },
-        ),
+        // Share Receipt intentionally omitted here — the receipt/detail screen
+        // (opened via "View Receipt") already has its own share action, so a
+        // duplicate here is redundant.
         // Report Issue surfaces only on terminal sad-path states — failed
         // or cancelled (refunded). Happy-path and in-flight transactions
         // don't need a complaint channel; there's nothing to complain

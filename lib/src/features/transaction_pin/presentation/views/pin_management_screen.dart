@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
@@ -362,6 +363,19 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
     }
   }
 
+  /// Hand off to the OTP-based reset flow for a user who has forgotten their
+  /// current PIN (the only way out of the `enterCurrent` stage / a lockout
+  /// without it). On a successful reset the user already has a brand-new PIN,
+  /// so the change goal is met — close this screen with success so Settings
+  /// refreshes, rather than dropping them back onto the current-PIN prompt.
+  Future<void> _onForgotPin() async {
+    final result = await Get.toNamed(AppRoutes.forgotPin);
+    if (!mounted) return;
+    if (result == true) {
+      Get.back(result: true);
+    }
+  }
+
   Future<void> _submit() async {
     setState(() {
       _stage = _PinStage.submitting;
@@ -705,6 +719,24 @@ class _PinManagementScreenState extends State<PinManagementScreen> {
                       disabled: _locked,
                     ),
                   ),
+                ),
+              ),
+            ),
+          // "Forgot PIN?" — the recovery hand-off, shown only while entering the
+          // CURRENT pin (where it's needed) and never mid-write. Stays tappable
+          // during a lockout so it's the way out of "too many attempts".
+          if (_hasExistingPin &&
+              _stage == _PinStage.enterCurrent &&
+              !_verifyingCurrent &&
+              !submitting)
+            TextButton(
+              onPressed: _onForgotPin,
+              child: Text(
+                'Forgot PIN?',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF8B5CF6),
                 ),
               ),
             ),

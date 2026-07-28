@@ -15,6 +15,8 @@ import 'package:lazervault/src/features/transaction_history/presentation/widgets
 import 'package:lazervault/src/features/transaction_history/utils/transaction_export_helper.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 
 /// Revolut-style dashboard transaction history screen
 class DashboardTransactionHistoryScreen extends StatefulWidget {
@@ -260,23 +262,39 @@ class _DashboardTransactionHistoryScreenState
             Row(
               children: [
                 // Repeat transaction
-                if (tx.serviceType == TransactionServiceType.transfer && !isIncoming)
+                if (tx.serviceType == TransactionServiceType.transfer &&
+                    !isIncoming &&
+                    tx.counterpartyName != null)
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(ctx);
-                        // Navigate to send funds with prefilled data
-                        Get.toNamed(
-                          '/initiate-send-funds',
-                          arguments: <String, dynamic>{
-                            'prefillAmount': (tx.amount * 100).toInt(),
-                            'prefillCurrency': tx.currency,
-                            'autoShowConfirm': true,
-                            if (tx.counterpartyName != null)
-                              'recipientName': tx.counterpartyName,
-                            if (tx.counterpartyAccount != null)
-                              'recipientAccount': tx.counterpartyAccount,
-                          },
+                        // Re-initiate a pre-filled send via the shared
+                        // launcher (honors the short/long flow preference).
+                        // Carry the payee's user id (stamped in tx metadata) so
+                        // a save dedups by internal_user_id, not account number.
+                        final counterpartyUid =
+                            (tx.metadata?['counterparty_user_id'] ??
+                                    tx.metadata?['recipient_user_id'])
+                                ?.toString();
+                        final recipient = RecipientModel(
+                          id: '',
+                          name: tx.counterpartyName ?? '',
+                          accountNumber: tx.counterpartyAccount ?? '',
+                          bankName: 'LazerVault',
+                          isFavorite: false,
+                          sortCode: '',
+                          type: 'internal',
+                          internalUserId: (counterpartyUid != null &&
+                                  counterpartyUid.isNotEmpty)
+                              ? counterpartyUid
+                              : null,
+                        );
+                        SendFundsLauncher.open(
+                          recipient: recipient,
+                          autoContinue: true,
+                          prefillAmountMinor: (tx.amount * 100).toInt(),
+                          prefillCurrency: tx.currency,
                         );
                       },
                       child: Container(
@@ -304,7 +322,9 @@ class _DashboardTransactionHistoryScreenState
                       ),
                     ),
                   ),
-                if (tx.serviceType == TransactionServiceType.transfer && !isIncoming)
+                if (tx.serviceType == TransactionServiceType.transfer &&
+                    !isIncoming &&
+                    tx.counterpartyName != null)
                   SizedBox(width: 12.w),
                 // View receipt
                 Expanded(

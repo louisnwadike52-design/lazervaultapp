@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import '../../domain/entities/split_bill_entity.dart';
+import '../../domain/repositories/split_bill_repository.dart';
 import '../../services/split_bill_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -19,8 +22,21 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   late final String creatorName;
   late final String receiverName;
   late final String description;
-  late final int paidCount;
-  late final int totalParticipants;
+  int paidCount = 0;
+  int totalParticipants = 0;
+  // Authoritative (bill-derived) fields — null/'Paid' when built from legacy args.
+  DateTime? _paidAt;
+  String _statusLabel = 'Paid';
+  bool _authoritative = false;
+  // For pull-to-refresh: re-fetch the bill and update the payer's live status
+  // (in_progress → paid once the external payout confirms).
+  String? _billId;
+  String? _payerUserId;
+  bool _refreshing = false;
+  // When opened to VIEW an existing payer's receipt (from the detail sheet),
+  // Done/back returns to the previous screen instead of resetting to the bills
+  // list (which is the correct behavior only after just paying).
+  bool _viewOnly = false;
   bool _isDownloading = false;
   bool _isSharing = false;
 
@@ -34,14 +50,90 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   void initState() {
     super.initState();
     final args = Get.arguments as Map<String, dynamic>? ?? {};
-    transactionReference = args['transactionReference'] as String? ?? '';
-    amount = (args['amount'] as num?)?.toDouble() ?? 0.0;
-    currency = args['currency'] as String? ?? 'NGN';
-    creatorName = args['creatorName'] as String? ?? 'Unknown';
-    receiverName = args['receiverName'] as String? ?? '';
-    description = args['description'] as String? ?? '';
-    paidCount = args['paidCount'] as int? ?? 0;
-    totalParticipants = args['totalParticipants'] as int? ?? 0;
+    final bill = args['bill'];
+    final payerUserId = args['payerUserId'] as String?;
+    _viewOnly = args['viewOnly'] == true;
+
+    // Preferred path: derive every field from the authoritative bill + the
+    // target payer's participant record (real paidAt / reference / status /
+    // amount / payee). Falls back to the legacy scalar args for back-compat.
+    if (bill is SplitBillEntity && payerUserId != null && payerUserId.isNotEmpty) {
+      final p = bill.participantForUser(payerUserId);
+      _authoritative = true;
+      _billId = bill.id;
+      _payerUserId = payerUserId;
+      amount = p?.amount ?? 0.0;
+      currency = bill.currency;
+      creatorName = bill.creatorName;
+      receiverName = bill.receiverDisplay; // bill-authoritative payee
+      description = bill.description;
+      transactionReference =
+          (p?.transactionReference != null && p!.transactionReference!.isNotEmpty)
+              ? p.transactionReference!
+              : bill.reference;
+      paidCount = bill.paidCount;
+      totalParticipants = bill.totalParticipants;
+      _paidAt = p?.paidAt;
+      _statusLabel = _statusText(p?.status);
+    } else {
+      transactionReference = args['transactionReference'] as String? ?? '';
+      amount = (args['amount'] as num?)?.toDouble() ?? 0.0;
+      currency = args['currency'] as String? ?? 'NGN';
+      creatorName = args['creatorName'] as String? ?? 'Unknown';
+      receiverName = args['receiverName'] as String? ?? '';
+      description = args['description'] as String? ?? '';
+      paidCount = args['paidCount'] as int? ?? 0;
+      totalParticipants = args['totalParticipants'] as int? ?? 0;
+    }
+  }
+
+  /// Leaves the receipt: pop back when just viewing an existing payer's receipt,
+  /// otherwise (post-payment flow) reset to the split-bills list.
+  void _closeReceipt() {
+    if (_viewOnly) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.splitBills);
+    }
+  }
+
+  /// Pull-to-refresh: re-fetch the bill and update this payer's live status
+  /// (e.g. in_progress → paid once the external payout confirms). No-op for
+  /// legacy receipts opened without a bill id.
+  Future<void> _refresh() async {
+    if (_billId == null || _payerUserId == null || _refreshing) return;
+    setState(() => _refreshing = true);
+    try {
+      final repo = serviceLocator<SplitBillRepository>();
+      final bill = await repo.getSplitBill(splitBillId: _billId!);
+      final p = bill.participantForUser(_payerUserId!);
+      if (!mounted) return;
+      setState(() {
+        paidCount = bill.paidCount;
+        totalParticipants = bill.totalParticipants;
+        _paidAt = p?.paidAt;
+        _statusLabel = _statusText(p?.status);
+      });
+    } catch (_) {
+      // Silent — leave the current state; the user can pull again.
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
+
+  String _statusText(SplitBillParticipantStatus? s) {
+    switch (s) {
+      case SplitBillParticipantStatus.paid:
+        return 'Paid';
+      case SplitBillParticipantStatus.inProgress:
+        return 'In progress';
+      case SplitBillParticipantStatus.declined:
+        return 'Declined';
+      case SplitBillParticipantStatus.pending:
+        return 'Pending';
+      default:
+        return 'Paid';
+    }
   }
 
   Future<void> _downloadReceipt() async {
@@ -53,9 +145,12 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         amount: amount,
         currency: currency,
         creatorName: creatorName,
+        receiverName: receiverName,
         description: description,
         paidCount: paidCount,
         totalParticipants: totalParticipants,
+        paidAt: _authoritative ? _paidAt : null,
+        status: _statusLabel,
       );
       Get.snackbar(
         'Download Complete',
@@ -81,14 +176,23 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     if (_isSharing) return;
     setState(() => _isSharing = true);
     try {
+      // Anchor the iOS/iPad share sheet to this screen (harmless elsewhere; omitting
+      // it makes share_plus throw on iPad, which reads as "share not working").
+      final box = context.findRenderObject() as RenderBox?;
+      final origin =
+          box != null ? box.localToGlobal(Offset.zero) & box.size : null;
       await SplitBillPdfService.shareReceipt(
         transactionReference: transactionReference,
         amount: amount,
         currency: currency,
         creatorName: creatorName,
+        receiverName: receiverName,
         description: description,
         paidCount: paidCount,
         totalParticipants: totalParticipants,
+        paidAt: _authoritative ? _paidAt : null,
+        status: _statusLabel,
+        sharePositionOrigin: origin,
       );
     } catch (e) {
       Get.snackbar(
@@ -143,7 +247,13 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    // Use the participant's real paid time when available; otherwise "now".
+    final now = _paidAt ?? DateTime.now();
+    final isPaid = _statusLabel == 'Paid';
+    final isInProgress = _statusLabel == 'In progress';
+    final headerText = isPaid
+        ? 'Payment Successful!'
+        : (isInProgress ? 'Transfer initiated' : 'Payment $_statusLabel');
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -151,7 +261,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.splitBills),
+          onPressed: _closeReceipt,
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(
@@ -168,26 +278,39 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                color: const Color(0xFF4834D4),
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 8),
-                    _buildSuccessIcon(),
+                    _buildSuccessIcon(isPaid),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Payment Successful!',
-                      style: TextStyle(
+                    if (isInProgress) ...[
+                      const Text(
+                        'Pull down to refresh the status',
+                        style: TextStyle(
+                            color: Color(0xFF6B7280), fontSize: 12),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    Text(
+                      headerText,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Your share has been paid',
-                      style: TextStyle(
+                    Text(
+                      isPaid ? 'This share has been paid' : 'Share status: $_statusLabel',
+                      style: const TextStyle(
                         color: Color(0xFF9CA3AF),
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
@@ -204,6 +327,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                   ],
                 ),
               ),
+              ),
             ),
             _buildActions(),
           ],
@@ -212,17 +336,22 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     );
   }
 
-  Widget _buildSuccessIcon() {
+  Widget _buildSuccessIcon(bool isPaid) {
+    final color = isPaid
+        ? const Color(0xFF10B981)
+        : (_statusLabel == 'Declined'
+            ? const Color(0xFFEF4444)
+            : const Color(0xFFFB923C));
     return Container(
       width: 100,
       height: 100,
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: const Icon(
-        Icons.check_circle,
-        color: Color(0xFF10B981),
+      child: Icon(
+        isPaid ? Icons.check_circle : Icons.receipt_long,
+        color: color,
         size: 60,
       ),
     );
@@ -283,7 +412,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
           const SizedBox(height: 12),
           _buildDetailRow('Reference', transactionReference),
           const SizedBox(height: 12),
-          _buildDetailRow('Status', 'Paid'),
+          _buildDetailRow('Status', _statusLabel),
           const SizedBox(height: 12),
           _buildDetailRow('Date', _formatDate(now)),
           const SizedBox(height: 12),
@@ -464,7 +593,7 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.splitBills),
+                onPressed: _closeReceipt,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4834D4),
                   padding: const EdgeInsets.symmetric(vertical: 16),

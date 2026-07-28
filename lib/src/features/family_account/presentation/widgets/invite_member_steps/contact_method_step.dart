@@ -6,6 +6,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
 /// Step 1: Search & Select User
 /// Unified search across username, name, phone, email using ProfileCubit.searchUsers()
@@ -97,6 +98,15 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
     FocusScope.of(context).unfocus();
   }
 
+  /// Opens the shared unified search (saved contacts incl. alias → global)
+  /// and selects the picked user.
+  Future<void> _openUnifiedSearch() async {
+    final result =
+        await UnifiedUserSearchSheet.show(context, title: 'Find member');
+    if (result == null || !mounted) return;
+    _selectUser(result.toUserSearchResultEntity());
+  }
+
   void _clearSelection() {
     setState(() {
       _selectedUser = null;
@@ -180,8 +190,9 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
   Widget _buildSearchField() {
     return TextField(
       controller: _searchController,
-      onChanged: _onSearchChanged,
-      autofocus: true,
+      readOnly: true,
+      onTap: _openUnifiedSearch,
+      onChanged: _onSearchChanged, // retained (no-op while readOnly)
       style: TextStyle(
         color: Colors.white,
         fontSize: 16.sp,

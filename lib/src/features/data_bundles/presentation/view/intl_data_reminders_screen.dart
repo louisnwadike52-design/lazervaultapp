@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
+import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
 import '../../domain/entities/data_reminder.dart';
 import '../cubit/data_reminder_cubit.dart';
 import '../cubit/data_reminder_state.dart';
@@ -23,8 +24,17 @@ class IntlDataRemindersScreen extends StatefulWidget {
       _IntlDataRemindersScreenState();
 }
 
-class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen> {
+class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen>
+    with ReminderPauseResumeMixin<IntlDataRemindersScreen> {
   static const Color _primary = Color(0xFF4E03D0);
+
+  /// Last successfully loaded (unfiltered) list — mirrors
+  /// `AirtimeRemindersScreen`'s `_cachedList` pattern. Without this, every
+  /// mutation (delete / mark complete) or a transient `DataReminderError`
+  /// momentarily falls through to the builder's default branch and
+  /// flashes the "No Intl Reminders" empty state over a populated list.
+  /// Only shows the loader when nothing has ever loaded (`null`).
+  List<DataReminder>? _cachedList;
 
   @override
   void initState() {
@@ -41,7 +51,9 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen> {
   }
 
   bool _isActive(DataReminder r) =>
-      r.status == 'pending' || r.status == 'notified';
+      r.status == 'pending' ||
+      r.status == 'notified' ||
+      r.status == 'paused';
 
   bool _isCompleted(DataReminder r) =>
       r.status == 'completed' || r.status == 'cancelled';
@@ -166,63 +178,63 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen> {
                   }
                 },
                 builder: (context, state) {
-                  if (state is DataReminderLoading ||
-                      state is DataReminderInitial) {
+                  if (state is DataRemindersLoaded) {
+                    _cachedList = state.reminders;
+                  }
+                  final list = _cachedList;
+                  if (list == null) {
                     return const Center(
                       child: LazerVaultLoader.tiny(),
                     );
                   }
-                  if (state is DataRemindersLoaded) {
-                    final intl = _filterIntl(state.reminders);
-                    if (intl.isEmpty) return _buildEmpty();
-                    final due = intl.where(_isDue).toList();
-                    final active = intl
-                        .where((r) => _isActive(r) && !_isDue(r))
-                        .toList();
-                    final completed = intl.where(_isCompleted).toList();
-                    return RefreshIndicator(
-                      color: _primary,
-                      onRefresh: () async {
-                        await context
-                            .read<DataReminderCubit>()
-                            .getReminders(includePast: true);
-                      },
-                      child: ListView(
-                        padding: EdgeInsets.all(20.w),
-                        children: [
-                          if (due.isNotEmpty) ...[
-                            _sectionHeader(
-                                'Due', const Color(0xFFF59E0B)),
-                            SizedBox(height: 12.h),
-                            ...due.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r, isDue: true),
-                                )),
-                            SizedBox(height: 24.h),
-                          ],
-                          if (active.isNotEmpty) ...[
-                            _sectionHeader('Upcoming', _primary),
-                            SizedBox(height: 12.h),
-                            ...active.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r),
-                                )),
-                          ],
-                          if (completed.isNotEmpty) ...[
-                            if (active.isNotEmpty || due.isNotEmpty)
-                              SizedBox(height: 24.h),
-                            _sectionHeader('Completed', Colors.grey),
-                            SizedBox(height: 12.h),
-                            ...completed.map((r) => Padding(
-                                  padding: EdgeInsets.only(bottom: 12.h),
-                                  child: _reminderCard(r),
-                                )),
-                          ],
+                  final intl = _filterIntl(list);
+                  if (intl.isEmpty) return _buildEmpty();
+                  final due = intl.where(_isDue).toList();
+                  final active = intl
+                      .where((r) => _isActive(r) && !_isDue(r))
+                      .toList();
+                  final completed = intl.where(_isCompleted).toList();
+                  return RefreshIndicator(
+                    color: _primary,
+                    onRefresh: () async {
+                      await context
+                          .read<DataReminderCubit>()
+                          .getReminders(includePast: true);
+                    },
+                    child: ListView(
+                      padding: EdgeInsets.all(20.w),
+                      children: [
+                        if (due.isNotEmpty) ...[
+                          _sectionHeader(
+                              'Due', const Color(0xFFF59E0B)),
+                          SizedBox(height: 12.h),
+                          ...due.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r, isDue: true),
+                              )),
+                          SizedBox(height: 24.h),
                         ],
-                      ),
-                    );
-                  }
-                  return _buildEmpty();
+                        if (active.isNotEmpty) ...[
+                          _sectionHeader('Upcoming', _primary),
+                          SizedBox(height: 12.h),
+                          ...active.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r),
+                              )),
+                        ],
+                        if (completed.isNotEmpty) ...[
+                          if (active.isNotEmpty || due.isNotEmpty)
+                            SizedBox(height: 24.h),
+                          _sectionHeader('Completed', Colors.grey),
+                          SizedBox(height: 12.h),
+                          ...completed.map((r) => Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _reminderCard(r),
+                              )),
+                        ],
+                      ],
+                    ),
+                  );
                 },
               ),
             ),
@@ -343,6 +355,27 @@ class _IntlDataRemindersScreenState extends State<IntlDataRemindersScreen> {
       onPayNow: isDue && !_isCompleted(r) ? () => _payNow(r) : null,
       onMarkComplete: !_isCompleted(r) ? () => _markComplete(r) : null,
       onEdit: !_isCompleted(r) ? () => _edit(r) : null,
+      onPause: r.status == 'pending'
+          ? () => runReminderStatusChange(
+                billType: 'data',
+                reminderId: r.id,
+                pause: true,
+                onSuccessReload: () => context
+                    .read<DataReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      onResume: r.status == 'paused'
+          ? () => runReminderStatusChange(
+                billType: 'data',
+                reminderId: r.id,
+                pause: false,
+                onSuccessReload: () => context
+                    .read<DataReminderCubit>()
+                    .getReminders(includePast: true),
+              )
+          : null,
+      isProcessing: busyReminderId == r.id,
       onDelete: () => _delete(r),
     );
   }

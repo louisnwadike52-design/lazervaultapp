@@ -46,6 +46,37 @@ class RecipientModel {
   /// payout provider; the user only ever sees the name.
   String get displayBankName => BanksData.displayName(bankName, sortCode);
 
+  /// True when [accountNumber] is a REAL, maskable account number (all digits,
+  /// NUBAN-style). Internal Lazervault recipients created from a chat/username
+  /// carry the user-id UUID in [accountNumber] purely to satisfy send-flow
+  /// validation — that is NOT an account number and must never be masked and
+  /// shown to the user (it would surface a meaningless UUID fragment).
+  bool get hasRealAccountNumber {
+    final a = accountNumber.trim();
+    if (a.length < 4) return false;
+    // The chat/username path copies the user-id straight into accountNumber —
+    // that exact value is never an account number (covers hyphenated AND
+    // hyphenless UUIDs).
+    if (internalUserId != null && a == internalUserId!.trim()) return false;
+    // Real account numbers are contiguous alphanumerics (NUBAN digits, IBAN
+    // letters+digits); a UUID contains hyphens and fails this.
+    return RegExp(r'^[A-Za-z0-9]+$').hasMatch(a);
+  }
+
+  /// A Lazervault internal recipient identified only by user id — there is no
+  /// account number to display; show the name + "Lazervault" instead.
+  bool get isInternalUserRecipient =>
+      (type == 'internal' || bankName.toLowerCase() == 'lazervault') &&
+      !hasRealAccountNumber;
+
+  /// Masked account number for display, or '' when there is no real account
+  /// number (internal user recipient). Every send confirm/receipt masking site
+  /// MUST use this instead of blindly masking [accountNumber], so an internal
+  /// transfer never renders a masked `uuid-fragment`.
+  String get maskedAccount => hasRealAccountNumber
+      ? '•••• ${accountNumber.substring(accountNumber.length - 4)}'
+      : '';
+
   /// Account-TYPE tokens that must NEVER be shown as a person's display name.
   /// Some legacy/internal connection records were saved with the account type
   /// (e.g. "personal") in the `name` field instead of a real name.
@@ -81,13 +112,11 @@ class RecipientModel {
       final local = email!.split('@').first.trim();
       if (local.isNotEmpty) return local;
     }
-    if (accountNumber.isNotEmpty) {
-      final acct = accountNumber.startsWith('@')
-          ? accountNumber
-          : (accountNumber.length >= 4
-              ? '••••${accountNumber.substring(accountNumber.length - 4)}'
-              : accountNumber);
-      return acct;
+    if (accountNumber.startsWith('@')) return accountNumber;
+    // Only fall back to a masked account when it's a REAL account number — never
+    // mask the internal user-id UUID (that would read as "••••<uuid-fragment>").
+    if (hasRealAccountNumber) {
+      return '••••${accountNumber.substring(accountNumber.length - 4)}';
     }
     return 'Unknown';
   }
@@ -184,7 +213,11 @@ class RecipientModel {
       ..swiftCode = swiftCode ?? ''
       ..iban = iban ?? ''
       ..alias = alias ?? ''
-      ..type = type ?? '';
+      ..type = type ?? ''
+      // Carry the internal payee id so any save routed through toProto() still
+      // hits the server's internal_user_id dedup (matches the field-by-field
+      // request builder in recipient_repository_impl).
+      ..internalUserId = internalUserId ?? '';
   }
 
   RecipientModel copyWith({
