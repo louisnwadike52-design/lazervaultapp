@@ -8,6 +8,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
@@ -62,9 +63,15 @@ class _FinancialConnectionsScreenState
   List<RecipientModel> _savedContacts = [];
   bool _contactsLoading = false;
 
+  /// Removes this page's inactivity-auto-logout suppression on dispose.
+  VoidCallback? _releaseAutoLogout;
+
   @override
   void initState() {
     super.initState();
+    // Financial connections is an exempt page: don't auto-logout while it's open
+    // (re-enables on navigate-away, since dispose always fires on route pop).
+    _releaseAutoLogout = AutoLogoutGuard.register(() => true);
     // Paint cached saved contacts immediately (no "Loading..." flash on
     // re-entry); the fetch below reconciles them silently.
     _savedContacts = List<RecipientModel>.from(p2pSavedContactsCache);
@@ -74,6 +81,7 @@ class _FinancialConnectionsScreenState
 
   @override
   void dispose() {
+    _releaseAutoLogout?.call();
     _searchController.dispose();
     _debouncer.dispose();
     super.dispose();

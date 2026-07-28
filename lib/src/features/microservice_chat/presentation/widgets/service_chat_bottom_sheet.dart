@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../../cubit/microservice_chat_cubit.dart';
@@ -113,9 +114,15 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   Timer? _recordingTimer;
   static const _maxRecordingDuration = Duration(minutes: 5);
 
+  /// Removes this sheet's inactivity-auto-logout suppression on dispose.
+  VoidCallback? _releaseAutoLogout;
+
   @override
   void initState() {
     super.initState();
+    // Per-service chatbot is an exempt page: suppress auto-logout while open;
+    // it re-enables when the sheet closes (dispose fires on pop).
+    _releaseAutoLogout = AutoLogoutGuard.register(() => true);
     _typingDotsController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -140,6 +147,7 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
 
   @override
   void dispose() {
+    _releaseAutoLogout?.call();
     _messageController.dispose();
     _scrollController.dispose();
     _typingDotsController.dispose();

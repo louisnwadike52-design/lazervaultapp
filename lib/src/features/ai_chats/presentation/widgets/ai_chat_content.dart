@@ -13,6 +13,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
@@ -234,6 +235,20 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   ];
   // --- End State Variables ---
 
+  /// Removes this tab's inactivity-auto-logout suppression predicate on dispose.
+  VoidCallback? _releaseAutoLogout;
+
+  /// The route this kept-alive tab lives in (the dashboard). Captured in
+  /// didChangeDependencies; `isCurrent` tells the suppression predicate whether
+  /// the dashboard is topmost (false while a flow is pushed over it).
+  ModalRoute<dynamic>? _hostRoute;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _hostRoute = ModalRoute.of(context);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -243,6 +258,20 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     )..repeat();
 
     _loadSettings();
+
+    // Suppress inactivity auto-logout while the chatbot tab is the visible,
+    // foreground surface. This page is KEPT ALIVE by the dashboard TabBarView,
+    // so a plain register/dispose pair would keep suppressing even after the
+    // user switched tabs or pushed a flow over the dashboard. Instead the
+    // predicate is evaluated FRESH each idle tick and is true only when: this
+    // is the active bottom-nav tab AND the dashboard is the topmost route
+    // (isCurrent) — so it re-enables the moment the user leaves, with no leak.
+    _releaseAutoLogout = AutoLogoutGuard.register(
+      () =>
+          mounted &&
+          widget.activeTab?.value == widget.chatTabIndex &&
+          (_hostRoute?.isCurrent ?? true),
+    );
 
     // Scroll to the bottom each time the chatbot tab is opened (the page is
     // kept alive by TabBarView, so this is the only signal that it became
@@ -337,6 +366,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   @override
   void dispose() {
+    _releaseAutoLogout?.call();
     widget.activeTab?.removeListener(_onActiveTabChanged);
     // Leaving the chat page entirely — stop any playing voice note.
     ChatVoiceNotePlayer.instance.stop();

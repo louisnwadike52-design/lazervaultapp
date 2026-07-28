@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../cubit/chat_sessions_cubit.dart';
 import '../../cubit/general_chat_cubit.dart';
@@ -39,7 +40,9 @@ class GeneralChatScreen extends StatelessWidget {
             ..loadHistory(),
         ),
       ],
-      child: const GeneralChatContent(),
+      // Suppress inactivity auto-logout while the chatbot is on screen (the user
+      // may sit reading a long reply); it re-enables on navigate-away (dispose).
+      child: const AutoLogoutSuppressed(child: GeneralChatContent()),
     );
   }
 }

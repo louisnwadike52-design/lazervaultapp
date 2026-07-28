@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
 import 'package:lazervault/core/services/app_activity_bus.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -168,11 +169,15 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     if (_loggingOut || !_isAuthenticated || _inOnboardingFlow) return;
     // Defer logout while the user is demonstrably engaged rather than idle:
     //   * a voice-agent session is live (general or per-service) — hands-free,
-    //   * the soft keyboard is up (composing a chat/message/form).
+    //   * the soft keyboard is up (composing a chat/message/form),
+    //   * an exempt page is on screen (chatbot / financial connections) — the
+    //     user may sit reading with no interaction; auto-logout re-enables the
+    //     instant they navigate away (the page's suppression clears on dispose /
+    //     its predicate reports it's no longer the active surface).
     // Re-arm and re-check after the next window instead of logging out mid-use.
     // (Chat send/receive + streaming replies keep the timer fresh via
     // AppActivityBus, so an active conversation never reaches this point.)
-    if (_voiceActive || _keyboardUp) {
+    if (_voiceActive || _keyboardUp || AutoLogoutGuard.isSuppressed) {
       _armTimer();
       return;
     }
