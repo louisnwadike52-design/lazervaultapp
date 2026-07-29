@@ -215,13 +215,10 @@ class _StatisticsState extends State<Statistics> {
       await context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: userId, accessToken: accessToken);
       if (mounted) {
         context.read<OpenBankingCubit>().fetchCreditScore(userId: userId);
-        // Live-only balances: kick a Mono refresh for every stale account so
-        // the bank rows show REAL figures, never a DB cache as truth.
-        context.read<OpenBankingCubit>().autoRefreshStaleBalances(
-              userId: userId,
-              accessToken: accessToken,
-              staleAfter: Duration.zero,
-            );
+        // COST-AWARE: do NOT auto-refresh bank balances on stats load — a live
+        // Mono read per account burns Connect quota. Rows show the last-known
+        // (cached) balance labelled "not live"; the user refreshes explicitly
+        // (cost-confirmed) to pull live figures.
       }
     }
   }

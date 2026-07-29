@@ -228,22 +228,12 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         defaultAccount: _defaultAccount,
       ));
 
-      // SOURCE OF TRUTH: commercial-bank balances are NEVER displayed from
-      // our DB — every screen load fires a live Mono read per account
-      // (async, non-blocking). The DB figure is only a before/after
-      // transaction snapshot for reconciliation; widgets render
-      // "Fetching balance…" until this session's live read lands.
-      //
-      // IMPORTANT: We honour `balanceStaleAfter` (10 min) instead of
-      // forcing every account to look stale on every fetch — a previous
-      // `staleAfter: Duration.zero` caused a snackbar-loop on the Linked
-      // Banks screen (each refresh fired BalanceRefreshed, the screen
-      // re-called fetchLinkedAccounts, which re-emitted Loading, which
-      // re-fired auto-refresh, ad infinitum).
-      autoRefreshStaleBalances(
-        userId: userId,
-        accessToken: accessToken,
-      );
+      // COST-AWARE: a live Mono balance read consumes our Connect quota, so we
+      // NO LONGER auto-refresh every balance on screen load. Widgets render the
+      // last-known (cached) balance with a "not live · refresh" affordance; a
+      // fresh read happens ONLY when the user explicitly taps refresh (which is
+      // cost-confirmed). `autoRefreshStaleBalances` remains available for that
+      // explicit, user-initiated path — it is intentionally NOT called here.
     } catch (e) {
       if (isClosed) return;
       _emitError(e, operation: 'fetchLinkedAccounts');
@@ -363,17 +353,38 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     }
   }
 
+  /// Quote the balance-refresh fee (kobo) without charging or reading Mono.
+  /// The refresh CTA shows this in a cost-confirm modal before taking a txPIN.
+  /// Returns 0 (free) on any error so the UI can still offer a free refresh.
+  Future<int> quoteRefreshFee({
+    required String accountId,
+    required String userId,
+    required String accessToken,
+  }) async {
+    try {
+      if (useGrpc && _grpcDataSource != null) {
+        return await _grpcDataSource!.quoteRefreshFee(
+          accountId: accountId,
+          userId: userId,
+        );
+      }
+    } catch (_) {/* fall through to free */}
+    return 0;
+  }
+
   /// Refresh balance for a linked account.
   ///
   /// Pass `isManual: true` when the user explicitly tapped the Refresh
-  /// button so the UI surfaces a snackbar. Auto-sweeps via
-  /// `autoRefreshStaleBalances` leave it `false` (default) and update
-  /// silently.
+  /// button so the UI surfaces a snackbar. When a refresh fee applies, pass the
+  /// txPIN `verificationToken` + `transactionId` (from the cost-confirm modal)
+  /// so the backend charges the fee before the live Mono read.
   Future<void> refreshBalance({
     required String accountId,
     required String userId,
     required String accessToken,
     bool isManual = false,
+    String? verificationToken,
+    String? transactionId,
   }) async {
     if (isClosed) return;
     emit(BalanceRefreshing(accountId: accountId));
@@ -384,6 +395,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         newBalance = await _grpcDataSource!.refreshLinkedAccountBalance(
           accountId: accountId,
           userId: userId,
+          verificationToken: verificationToken,
+          transactionId: transactionId,
         );
       } else {
         newBalance = await _restDataSource!.refreshLinkedAccountBalance(
@@ -618,6 +631,19 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       if (isClosed) return;
       _emitError(e, operation: 'cancelDeposit');
     }
+  }
+
+  /// Returns the deposit fee calculation (aggregated Mono + LazerVault fee + net)
+  /// for an amount WITHOUT emitting a state — used for the inline fee preview
+  /// under the amount field. Returns null on error so the UI hides the preview.
+  Future<DepositFeeCalculation?> depositFeeQuote(int amountKobo) async {
+    if (amountKobo <= 0) return null;
+    try {
+      if (useGrpc && _grpcDataSource != null) {
+        return await _grpcDataSource!.calculateDepositFee(amountInKobo: amountKobo);
+      }
+    } catch (_) {/* hide preview on error */}
+    return null;
   }
 
   /// Calculate deposit fee

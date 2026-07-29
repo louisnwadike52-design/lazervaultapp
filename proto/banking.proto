@@ -1394,6 +1394,11 @@ message SetDefaultLinkedAccountResponse {
 message RefreshLinkedAccountBalanceRequest {
     string account_id = 1;
     string user_id = 2;
+    // Cost-confirmed refresh: call quote_only=true for the fee, then again with
+    // the txPIN verification_token to charge (→ REVENUE) + do the live Mono read.
+    bool quote_only = 3;
+    string verification_token = 4;
+    string transaction_id = 5;
 }
 
 message RefreshLinkedAccountBalanceResponse {
@@ -1402,6 +1407,8 @@ message RefreshLinkedAccountBalanceResponse {
     string error_message = 3;
     int64 new_balance = 4;            // Updated balance in minor units
     string currency = 5;
+    int64 fee = 6;                    // Refresh fee in minor units (quote + charged)
+    bool charged = 7;                 // true when the fee was actually debited
 }
 
 // Reauthorization Token

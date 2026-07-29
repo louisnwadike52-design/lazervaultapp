@@ -133,14 +133,11 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
           retryAfter: Duration(seconds: retrySeconds),
           message: e.message,
         ));
-      case 'AMOUNT_BELOW_MINIMUM':
+      case 'AMOUNT_BELOW_MINIMUM' || 'AMOUNT_ABOVE_MAXIMUM':
+        // The backend message carries the real, admin-tunable bound (single
+        // source of truth) — surface it rather than a hardcoded amount.
         emit(MoveMoneyError(
-          message: 'Minimum transfer amount is NGN 1,500.',
-          errorCode: e.code,
-        ));
-      case 'AMOUNT_ABOVE_MAXIMUM':
-        emit(MoveMoneyError(
-          message: 'Maximum transfer amount is NGN 5,000,000.',
+          message: e.message,
           errorCode: e.code,
         ));
       case 'CROSS_CURRENCY':

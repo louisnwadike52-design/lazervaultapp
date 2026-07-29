@@ -69,9 +69,12 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
 
-  // Backend constants (kobo)
-  static const int _minAmountKobo = 150000; // NGN 1,500
-  static const int _maxAmountKobo = 500000000; // NGN 5,000,000
+  // Beam bounds (kobo). These are admin-tunable server-side; the values below are
+  // only a PRE-RESPONSE fallback and are overwritten with the authoritative
+  // min/max returned by CalculateMoveFee (see the fee-calculated listener). The
+  // backend re-enforces the real cap regardless of the client.
+  int _minAmountKobo = 150000; // fallback until the server responds
+  int _maxAmountKobo = 500000000; // fallback until the server responds
 
   LinkedBankAccount? _sourceAccount;
   LinkedBankAccount? _destinationAccount;
@@ -1077,6 +1080,14 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
               if (state is MoveMoneyFeeCalculated) {
                 setState(() {
                   _feeCalculation = state.feeCalculation;
+                  // Adopt the authoritative, admin-tunable bounds from the server
+                  // so the client enforces/displays the SAME cap as the backend.
+                  if (state.feeCalculation.minAmount > 0) {
+                    _minAmountKobo = state.feeCalculation.minAmount;
+                  }
+                  if (state.feeCalculation.maxAmount > 0) {
+                    _maxAmountKobo = state.feeCalculation.maxAmount;
+                  }
                   _isCalculatingFee = false;
                 });
               } else if (state is MoveMoneyFeeError) {

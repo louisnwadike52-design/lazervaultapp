@@ -45,9 +45,12 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
   AccountSummaryEntity? _sourceAccount;
   AccountSummaryEntity? _destinationAccount;
 
-  // Amount validation
-  static const double _minAmount = 100.0;
-  static const double _maxAmount = 5000000.0;
+  // Own-account (wallet-to-wallet) transfers are server-authoritative: the
+  // backend intentionally exempts them from per-transaction/daily KYC caps and
+  // enforces only its own single-transfer ceiling + balance, surfacing any
+  // rejection message through the cubit. So we do NOT hardcode a client cap here
+  // (the old ₦5M/₦100 were arbitrary — half the real backend ceiling, and above
+  // the real ₦0.01 minimum). The only meaningful client-side guard is balance.
 
   // Drag-to-swap visual state
   bool _isHoveringFrom = false;
@@ -149,14 +152,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
   String? get _amountError {
     final amount = _parsedAmount;
     if (amount == null || amount == 0) return null;
-    if (amount < _minAmount) {
-      return 'Minimum amount is ${_formatCurrency(
-        _minAmount, _sourceAccount?.currency ?? 'NGN')}';
-    }
-    if (amount > _maxAmount) {
-      return 'Maximum amount is ${_formatCurrency(
-        _maxAmount, _sourceAccount?.currency ?? 'NGN')}';
-    }
+    // No arbitrary client cap — the backend is authoritative (see note above).
     if (_sourceAccount != null && amount > _sourceAccount!.availableBalance) {
       return 'Insufficient balance (${_formatCurrency(
         _sourceAccount!.availableBalance, _sourceAccount!.currency)})';
@@ -166,7 +162,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
 
   bool get _isAmountValid {
     final amount = _parsedAmount;
-    if (amount == null || amount < _minAmount || amount > _maxAmount) {
+    if (amount == null || amount <= 0) {
       return false;
     }
     if (_sourceAccount != null && amount > _sourceAccount!.availableBalance) {

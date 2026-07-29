@@ -191,7 +191,9 @@ class OpenBankingGrpcDataSource {
   }
 
   /// Refresh balance for a linked account
-  Future<double> refreshLinkedAccountBalance({
+  /// Returns the balance-refresh fee (kobo) WITHOUT charging or reading Mono
+  /// (quote_only). 0 = free. The app shows this in the cost-confirm modal.
+  Future<int> quoteRefreshFee({
     required String accountId,
     required String userId,
   }) async {
@@ -199,6 +201,35 @@ class OpenBankingGrpcDataSource {
       final request = banking_pb.RefreshLinkedAccountBalanceRequest(
         accountId: accountId,
         userId: userId,
+        quoteOnly: true,
+      );
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.refreshLinkedAccountBalance(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 15)),
+          ),
+        );
+      });
+      return response.fee.toInt();
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'quoteRefreshFee');
+    }
+  }
+
+  Future<double> refreshLinkedAccountBalance({
+    required String accountId,
+    required String userId,
+    String? verificationToken,
+    String? transactionId,
+  }) async {
+    try {
+      final request = banking_pb.RefreshLinkedAccountBalanceRequest(
+        accountId: accountId,
+        userId: userId,
+        verificationToken: verificationToken ?? '',
+        transactionId: transactionId ?? '',
       );
 
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {

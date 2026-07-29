@@ -6,7 +6,6 @@ import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
 
 import 'mandate_status_badge.dart';
-import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// A card displaying a linked bank account for selection in the Move Money flow.
 ///
@@ -126,36 +125,33 @@ class MoveAccountCard extends StatelessWidget {
             // Live bank balance (Mono-read; auto/manual refresh keeps it
             // current). Edge states: unreadable/never-read balances show a
             // neutral placeholder instead of a misleading ₦0.00.
-            // LIVE-ONLY display: the figure renders ONLY when this session's
-            // Mono read has landed (balanceUpdatedAt within minutes) — a DB
-            // cache is never shown as a current balance.
+            // COST-AWARE display: we no longer auto-read Mono on load, so show
+            // the last-known (cached) balance and label it "not live" when stale;
+            // the user refreshes explicitly (cost-confirmed) to get a live figure.
             Builder(builder: (_) {
-              final fresh = account.balanceUpdatedAt != null &&
+              final hasBalance = account.balanceUpdatedAt != null;
+              final fresh = hasBalance &&
                   DateTime.now()
                           .difference(account.balanceUpdatedAt!)
                           .inMinutes <
                       3;
-              if (fresh) {
+              if (!hasBalance) {
                 return Text(
-                  '₦${account.lastKnownBalance.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                );
-              }
-              return Row(mainAxisSize: MainAxisSize.min, children: [
-                LazerVaultLoader(size: 9),
-                SizedBox(width: 5.w),
-                Text(
-                  'Fetching balance…',
+                  'Tap refresh to load balance',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF6B7280),
                     fontSize: 11.sp,
                   ),
+                );
+              }
+              return Text(
+                '₦${account.lastKnownBalance.toStringAsFixed(2)}${fresh ? '' : ' · not live'}',
+                style: GoogleFonts.inter(
+                  color: fresh ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w700,
                 ),
-              ]);
+              );
             }),
             SizedBox(height: 2.h),
 

@@ -213,14 +213,19 @@ class KYCUpgradeModal extends StatelessWidget {
     );
   }
 
+  // Display-only tier daily-limit labels. These MUST mirror the canonical CBN
+  // limits in the backend `shared/kyctiers` Matrix (NG): Tier 1 \u20A650,000/day,
+  // Tier 2 \u20A6200,000/day, Tier 3 Unlimited. Kept in sync with the app's own
+  // verification_badge copy. Do not invent tier caps here \u2014 the backend is
+  // authoritative and enforces the real limits.
   String _getTierLimits(int tier) {
     switch (tier) {
       case 1:
         return '\u20A650,000/day';
       case 2:
-        return '\u20A6500,000/day';
+        return '\u20A6200,000/day';
       case 3:
-        return '\u20A65,000,000/day';
+        return 'Unlimited';
       default:
         return 'N/A';
     }

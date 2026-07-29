@@ -734,12 +734,18 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       );
       if (!mounted) return;
 
-      // If the user closed/cancelled the verification window without finishing,
-      // there is no Mono customer yet — don't call complete() (it would fail
-      // with a raw "customer not found"). Just reset to the screen quietly.
+      // The user closed/cancelled the verification window. Client-side this is
+      // INDISTINGUISHABLE from a genuine completion whose success redirect
+      // raced or was missed. Don't call complete() (on a true abandon there is
+      // no Mono customer yet → raw "customer not found"); instead run the
+      // bounded status reconcile, which polls the server /status endpoint
+      // (self-heals via GetProveKYCStatus). A real completion lands the tier
+      // within a few polls; a true abandon simply advances nothing. The
+      // server-side Prove reconciler is the ultimate backstop if the app is
+      // gone entirely.
       if (!sheetResult.success) {
         setState(() => _isSubmitting = false);
-        _refreshStatusQuietly();
+        _reconcileAfterProcessing();
         return;
       }
 

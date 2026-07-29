@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -60,8 +62,18 @@ class DepositFundsScreen extends StatefulWidget {
   State<DepositFundsScreen> createState() => _DepositFundsScreenState();
 }
 
-class _DepositFundsScreenState extends State<DepositFundsScreen> {
+class _DepositFundsScreenState extends State<DepositFundsScreen>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   final TextEditingController _amountController = TextEditingController();
+  // Inline deposit fee preview (aggregated Mono + LazerVault fee + net credit),
+  // fetched from the backend as the user types. Decoupled from the sheet's
+  // setState via a ValueNotifier so the async result redraws just the fee row.
+  final ValueNotifier<DepositFeeCalculation?> _feePreview = ValueNotifier(null);
+  Timer? _feeDebounce;
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speech = stt.SpeechToText();
   String _selectedBank = '';
@@ -364,6 +376,72 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     if (mounted) {
       setState(() {});
     }
+    _updateFeePreview();
+  }
+
+  // Debounced backend fee quote for the inline preview shown under the amount
+  // field. Clears when the amount is empty/invalid; otherwise sets _feePreview to
+  // the aggregated (Mono provider fee + LazerVault fee) + net credit.
+  void _updateFeePreview() {
+    _feeDebounce?.cancel();
+    final amount = double.tryParse(_amountController.text.trim()) ?? 0;
+    if (amount <= 0) {
+      _feePreview.value = null;
+      return;
+    }
+    _feeDebounce = Timer(const Duration(milliseconds: 400), () async {
+      final calc = await serviceLocator<OpenBankingCubit>()
+          .depositFeeQuote((amount * 100).round());
+      if (mounted) _feePreview.value = calc;
+    });
+  }
+
+  // Cost-confirmed refresh of a linked SOURCE bank's balance from the deposit
+  // screen (the balance tells the user whether the bank has funds to pull). A
+  // live Mono read is billed, so quote the fee and, when > 0, show it + take a
+  // txPIN before charging + reading. Mirrors the Linked Banks refresh flow.
+  Future<void> _refreshSourceBalance(dynamic account) async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final userId = authState.profile.user.id;
+    final accessToken = authState.profile.session.accessToken;
+    final cubit = serviceLocator<OpenBankingCubit>();
+
+    final feeKobo = await cubit.quoteRefreshFee(
+      accountId: account.id, userId: userId, accessToken: accessToken,
+    );
+    if (!mounted) return;
+    if (feeKobo <= 0) {
+      cubit.refreshBalance(
+        accountId: account.id, userId: userId, accessToken: accessToken, isManual: true,
+      );
+      return;
+    }
+    final feeNaira = feeKobo / 100.0;
+    final txnId = 'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    await validateTransactionPin(
+      context: context,
+      transactionId: txnId,
+      transactionType: 'balance_refresh',
+      amount: feeNaira,
+      fee: feeNaira,
+      totalAmount: feeNaira,
+      currency: 'NGN',
+      title: 'Refresh balance',
+      message:
+          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}.',
+      successMessage: 'Balance refreshed',
+      onPinValidated: (token) async {
+        await cubit.refreshBalance(
+          accountId: account.id,
+          userId: userId,
+          accessToken: accessToken,
+          isManual: true,
+          verificationToken: token,
+          transactionId: txnId,
+        );
+      },
+    );
   }
 
   /// Swipe-down-to-refresh: re-pull linked accounts, mandates and live
@@ -874,6 +952,34 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             Text('Min: ₦200 • Max: ₦1,000,000',
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.sp)),
           ],
+          // Inline aggregated fee + net credit (the user sees ONE fee; the
+          // Mono/LazerVault split is a settlement concern). Hidden when 0.
+          ValueListenableBuilder<DepositFeeCalculation?>(
+            valueListenable: _feePreview,
+            builder: (_, calc, __) {
+              if (calc == null || calc.fee <= 0) return const SizedBox.shrink();
+              return Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Transaction fee',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
+                    Flexible(
+                      child: Text(
+                        '₦${(calc.fee / 100).toStringAsFixed(2)} · you receive ₦${(calc.netAmount / 100).toStringAsFixed(2)}',
+                        textAlign: TextAlign.right,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1112,11 +1218,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp),
             ),
             SizedBox(height: 4.h),
-            // LIVE-ONLY: show a figure only when this session's Mono read
-            // landed (within minutes) — never a DB cache as current balance.
+            // COST-AWARE: we no longer fire a live Mono read on load. Show the
+            // last-known (cached) balance; label it "not live" when it's stale so
+            // the user knows to refresh explicitly (a cost-confirmed action). Only
+            // show the loader while an explicit refresh is actually in flight.
             Builder(builder: (_) {
-              final fresh = account.balanceUpdatedAt != null &&
+              final hasBalance = account.balanceUpdatedAt != null;
+              final fresh = hasBalance &&
                   DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
+              if (!hasBalance) {
+                return Text('Tap refresh to load balance',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 11.sp));
+              }
               if (fresh) {
                 return Text('₦${account.lastKnownBalance.toStringAsFixed(2)}',
                     maxLines: 1,
@@ -1126,14 +1243,24 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                         fontSize: 12.5.sp,
                         fontWeight: FontWeight.w700));
               }
-              return Row(mainAxisSize: MainAxisSize.min, children: [
-                LazerVaultLoader(size: 9),
-                SizedBox(width: 5.w),
-                Text('Fetching balance…',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 11.sp)),
-              ]);
+              // Stale/cached — tap to pull a live (cost-confirmed) read.
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _refreshSourceBalance(account),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Flexible(
+                    child: Text('₦${account.lastKnownBalance.toStringAsFixed(2)} · not live',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                  SizedBox(width: 5.w),
+                  Icon(Icons.refresh, size: 13.sp, color: const Color(0xFF3B82F6)),
+                ]),
+              );
             }),
             SizedBox(height: 6.h),
             // Setting-up state gets the tappable "Setting up Direct Debit" badge
@@ -3872,6 +3999,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     _cancelLinkWatchdog();
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
+    _feeDebounce?.cancel();
+    _feePreview.dispose();
     _flutterTts.stop();
     _speech.cancel();
     _progressController.dispose();

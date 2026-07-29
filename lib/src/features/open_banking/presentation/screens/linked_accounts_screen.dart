@@ -14,6 +14,9 @@ import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
 import 'link_bank_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 /// Screen to manage linked bank accounts
 class LinkedAccountsScreen extends StatefulWidget {
@@ -30,7 +33,12 @@ class LinkedAccountsScreen extends StatefulWidget {
   State<LinkedAccountsScreen> createState() => _LinkedAccountsScreenState();
 }
 
-class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
+class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   // Account a manual balance refresh is in flight for, so a
   // reauthorizationRequired failure can offer Reconnect for the right bank.
   LinkedBankAccount? _lastRefreshAccount;
@@ -150,14 +158,52 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     _lastRefreshAccount = account;
     final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
     final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
-    if (userId.isNotEmpty && accessToken.isNotEmpty) {
-      context.read<OpenBankingCubit>().refreshBalance(
-            accountId: account.id,
-            userId: userId,
-            accessToken: accessToken,
-            isManual: true, // user tapped Refresh — show the snackbar
-          );
+    if (userId.isEmpty || accessToken.isEmpty || !mounted) return;
+    final cubit = context.read<OpenBankingCubit>();
+
+    // COST-CONFIRMED refresh: a live Mono read is billed, so quote the fee and,
+    // when it's > 0, show the cost + take a txPIN before charging + reading.
+    final feeKobo = await cubit.quoteRefreshFee(
+      accountId: account.id,
+      userId: userId,
+      accessToken: accessToken,
+    );
+    if (!mounted) return;
+    if (feeKobo <= 0) {
+      cubit.refreshBalance(
+        accountId: account.id,
+        userId: userId,
+        accessToken: accessToken,
+        isManual: true,
+      );
+      return;
     }
+
+    final feeNaira = feeKobo / 100.0;
+    final txnId = 'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    await validateTransactionPin(
+      context: context,
+      transactionId: txnId,
+      transactionType: 'balance_refresh',
+      amount: feeNaira,
+      fee: feeNaira,
+      totalAmount: feeNaira,
+      currency: 'NGN',
+      title: 'Refresh balance',
+      message:
+          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Do this once in a while — your last-known balance is shown otherwise.',
+      successMessage: 'Balance refreshed',
+      onPinValidated: (token) async {
+        await cubit.refreshBalance(
+          accountId: account.id,
+          userId: userId,
+          accessToken: accessToken,
+          isManual: true,
+          verificationToken: token,
+          transactionId: txnId,
+        );
+      },
+    );
   }
 
   @override

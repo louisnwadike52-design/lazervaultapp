@@ -458,32 +458,30 @@ class _BankAccountItem extends StatelessWidget {
               LazerVaultLoader.tiny()
             else
               Builder(builder: (_) {
-                // LIVE-ONLY: show a figure only when this session's Mono
-                // read landed (minutes-fresh) — never a DB cache as truth.
-                final fresh = account.balanceUpdatedAt != null &&
+                // COST-AWARE: no auto Mono read on load — show the last-known
+                // (cached) balance, labelled "not live" when stale. A live figure
+                // comes only from an explicit, cost-confirmed refresh.
+                final hasBalance = account.balanceUpdatedAt != null;
+                final fresh = hasBalance &&
                     DateTime.now()
                             .difference(account.balanceUpdatedAt!)
                             .inMinutes <
                         3;
-                if (fresh) {
+                if (!hasBalance) {
                   return Text(
-                    CurrencySymbols.formatAmount(account.lastKnownBalance),
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  );
-                }
-                return Row(mainAxisSize: MainAxisSize.min, children: [
-                  LazerVaultLoader(size: 10),
-                  SizedBox(width: 6.w),
-                  Text(
-                    'Fetching balance…',
+                    'Tap refresh to load balance',
                     style: GoogleFonts.inter(
                         color: const Color(0xFF6B7280), fontSize: 11.sp),
+                  );
+                }
+                return Text(
+                  '${CurrencySymbols.formatAmount(account.lastKnownBalance)}${fresh ? '' : ' · not live'}',
+                  style: GoogleFonts.inter(
+                    color: fresh ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
                   ),
-                ]);
+                );
               }),
           ],
         ),
