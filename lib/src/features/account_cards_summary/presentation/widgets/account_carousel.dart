@@ -396,9 +396,15 @@ class _AccountCarouselState extends State<AccountCarousel> {
     if (identical(_lastAnimatedEvent, event)) return;
     _lastAnimatedEvent = event;
 
-    // Lifecycle/non-balance events (insurance, claims, etc.) carry no
-    // account balance snapshot — skip them so we don't animate a card to 0.
+    // Lifecycle/non-balance events (insurance renewals, TagPay & similar
+    // notification events, etc.) carry NO account balance snapshot —
+    // BalanceUpdateEvent defaults new_balance/available_balance to 0 for those
+    // (see its fromJson). Applying such an event would overwrite the card's real
+    // balance with 0, and the panic shake-reveal would then show ₦0 even though
+    // the balance is intact (the reported bug: after TagPay → dashboard → shake).
+    // Skip anything that isn't a real snapshot.
     if (accountId.isEmpty) return;
+    if (newBalance <= 0 && event.availableBalance <= 0) return;
 
     // Check if dashboard is the current visible route
     final isVisible = ModalRoute.of(context)?.isCurrent ?? false;
