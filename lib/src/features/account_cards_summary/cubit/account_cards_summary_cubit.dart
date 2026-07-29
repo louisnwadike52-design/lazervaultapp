@@ -80,6 +80,16 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       return;
     }
 
+    // Lifecycle / non-balance events (insurance renewals, TagPay & similar
+    // notifications) carry NO real balance snapshot — BalanceUpdateEvent defaults
+    // new_balance/available_balance to 0 for those. Applying one would overwrite
+    // the entity + snapshot maps with 0, corrupting the real balance (and the
+    // panic shake-reveal would then show ₦0 after e.g. TagPay). Skip anything
+    // without a real snapshot — the carousel widget guards the same case.
+    if (event.newBalance <= 0 && event.availableBalance <= 0) {
+      return;
+    }
+
     // Record the entity balance before any WebSocket update (only on first update per account)
     final entityBalance = _currentSummaries[accountIndex].balance;
     _preAnimationBalances.putIfAbsent(event.accountId, () => entityBalance);

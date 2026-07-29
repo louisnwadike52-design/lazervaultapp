@@ -180,8 +180,13 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
       counterpartyAccount:
           ex('recipient_account').isNotEmpty ? ex('recipient_account') : null,
       metadata: <String, dynamic>{
-        'fee': _s('fee'),
-        'total_amount': _s('total_amount'),
+        // Pre-format money rows WITH the currency symbol — the receipt renders
+        // metadata values verbatim, so raw '10'/'510' would show as bare numbers
+        // (the reported "Total says 500 without a symbol"). ₦10 / ₦510 instead.
+        if (_s('fee').isNotEmpty && (double.tryParse(_s('fee')) ?? 0) > 0)
+          'fee': '${_symbol(_s('currency'))}${_s('fee')}',
+        if (_s('total_amount').isNotEmpty)
+          'total_amount': '${_symbol(_s('currency'))}${_s('total_amount')}',
         'status': _s('status'),
         ...extra,
       },

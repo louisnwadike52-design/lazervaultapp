@@ -515,10 +515,10 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
               ),
             ],
             const Spacer(),
-            // Show Refresh while pending, but ALSO when no PIN has surfaced yet
-            // — a post-charge-ambiguous order can flip to "completed" with zero
-            // cards, and the user still needs a way to re-fetch for the PIN.
-            if (order.isPending || cardsWithPins.isEmpty)
+            // Show Refresh while pending, OR when a COMPLETED order surfaced no
+            // PIN yet (post-charge-ambiguous). NEVER on a failed/refunded order —
+            // no PIN will ever exist there, so a Refresh CTA would be a dead-end.
+            if (order.isPending || (order.isCompleted && cardsWithPins.isEmpty))
               GestureDetector(
                 onTap: _refresh,
                 child: Row(
@@ -550,7 +550,9 @@ class _EPinReceiptScreenState extends State<EPinReceiptScreen> {
             child: Text(
               order.isPending
                   ? 'Your PINs are being generated. Tap Refresh in a moment to reveal them.'
-                  : "No PINs have surfaced yet. Tap Refresh to check again — if they still don't appear, our team will resolve it.",
+                  : order.isFailed
+                      ? 'This purchase did not go through and has been refunded — no PINs were issued.'
+                      : "No PINs have surfaced yet. Tap Refresh to check again — if they still don't appear, our team will resolve it.",
               style: TextStyle(color: _textSecondary, fontSize: 13.sp),
             ),
           )

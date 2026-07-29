@@ -15,6 +15,9 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -1075,12 +1078,31 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   /// formatted with that account's own currency. Falls back to a neutral line
   /// when no account is selected yet (e.g. right after login).
   String _balancePreviewText() {
-    final details = serviceLocator<AccountManager>().activeAccountDetails;
-    if (details == null) {
+    try {
+      // Read the SAME live source the dashboard + money flows use — the account
+      // cards summary cubit (AccountManager.activeAccountDetails is never
+      // populated, so it always fell back to the generic line). Pick the active
+      // account (else the first) and show its spendable balance in its currency.
+      final summaries = switch (serviceLocator<AccountCardsSummaryCubit>().state) {
+        AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+        AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+        _ => const <AccountSummaryEntity>[],
+      };
+      if (summaries.isEmpty) {
+        return 'Preview: This is how your messages will look';
+      }
+      final activeId = serviceLocator<AccountManager>().activeAccountId;
+      final active = summaries.firstWhere(
+        (a) => a.id == activeId,
+        orElse: () => summaries.first,
+      );
+      final bal =
+          active.availableBalance > 0 ? active.availableBalance : active.balance;
+      final amount = NumberFormat('#,##0.00').format(bal);
+      return 'Preview: Your balance is ${active.currency} $amount';
+    } catch (_) {
       return 'Preview: This is how your messages will look';
     }
-    final amount = NumberFormat('#,##0.00').format(details.balance);
-    return 'Preview: Your balance is ${details.currency} $amount';
   }
 
   Widget _settingsLabel(String text) {
