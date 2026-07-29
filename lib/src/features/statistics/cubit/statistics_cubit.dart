@@ -25,6 +25,13 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 /// sync-all so the numbers reflect the banks' latest statements; sync
 /// failures are non-fatal (the last synced rows still serve).
 class StatisticsCubit extends Cubit<StatisticsState> {
+  /// Hard ceiling on the wallet-analytics + monthly-trends gRPC awaits. Without
+  /// it, an unreachable/slow accounts-service left `loadStatistics` hung forever
+  /// — the cubit never emitted Loaded OR Error, so the spending/statistics
+  /// screen sat on a blank loader indefinitely. On timeout the outer catch emits
+  /// StatisticsError, which the screens render as a retryable error state.
+  static const Duration _statsLoadTimeout = Duration(seconds: 20);
+
   final FinancialAnalyticsRepository analyticsRepository;
 
   /// Banking-service surface for external-bank analytics + sync. Optional so
@@ -271,7 +278,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
               startDate: start, endDate: end, includeExternalBanks: false),
           analyticsRepository.getExpenseTimeSeries(
               startDate: start, endDate: end, includeExternalBanks: false),
-        ]);
+        ]).timeout(_statsLoadTimeout);
         walletFinancial =
             walletResults[0] as accounts_pb.GetFinancialAnalyticsResponse;
         walletCategory =
@@ -344,7 +351,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         } catch (_) {}
       }
 
-      final monthlyTrends = await monthlyTrendsFuture;
+      final monthlyTrends = await monthlyTrendsFuture.timeout(_statsLoadTimeout);
 
       if (isClosed) return;
       final loaded = StatisticsLoaded(
