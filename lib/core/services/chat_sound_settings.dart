@@ -94,6 +94,18 @@ class ChatSoundSettings {
     await prefs.setDouble(_kGlobalVolume, _globalVolume);
   }
 
+  /// Live (non-persisting) volume update for the drag path. Updates the cached
+  /// value + any live player so the slider feels responsive, but does NOT touch
+  /// SharedPreferences — a `Slider.onChanged` fires every frame, and awaiting a
+  /// disk write per tick is wasteful. Commit with [setGlobalVolume] on
+  /// `onChangeEnd`.
+  void setGlobalVolumeLive(double volume) {
+    _globalVolume = volume.clamp(0.0, 1.0);
+    try {
+      _player?.setVolume(_globalVolume);
+    } catch (_) {}
+  }
+
   // ---- Per-chat overrides ----------------------------------------------
   /// The explicit per-chat override, or null when the chat inherits the global.
   bool? soundOverrideFor(String conversationId) => _chatSound[conversationId];

@@ -15,6 +15,7 @@ import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/pending_chat_transfers.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
@@ -3426,11 +3427,25 @@ class _SelectRecipientsState extends State<SelectRecipients>
     }
   }
 
+  /// The per-user MRU pref key. The MRU is a personal signal, so namespace it by
+  /// the signed-in user id — a device-global key leaks one user's recent banks
+  /// to the next user who signs in on the same device. Falls back to the plain
+  /// key when no user id is resolvable.
+  Future<String> _recentBanksKey() async {
+    try {
+      final userId = await serviceLocator<SecureStorageService>().getUserId();
+      if (userId != null && userId.isNotEmpty) {
+        return '${_kRecentBanksKey}_$userId';
+      }
+    } catch (_) {/* fall back to the plain key */}
+    return _kRecentBanksKey;
+  }
+
   /// Load the MRU bank codes (for the picker's "Recent" sort). Best-effort.
   Future<void> _loadRecentBanks() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _recentBankCodes = prefs.getStringList(_kRecentBanksKey) ?? [];
+      _recentBankCodes = prefs.getStringList(await _recentBanksKey()) ?? [];
     } catch (_) {/* no recents */}
   }
 
@@ -3442,7 +3457,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
         .toList();
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(_kRecentBanksKey, _recentBankCodes);
+      await prefs.setStringList(await _recentBanksKey(), _recentBankCodes);
     } catch (_) {/* best-effort */}
   }
 

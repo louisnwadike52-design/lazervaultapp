@@ -377,15 +377,27 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       return;
     }
     // After the prepended messages lay out, keep the same message under the
-    // viewport by advancing by however much the extent grew.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _scrollController.hasClients) {
-        final delta = _scrollController.position.maxScrollExtent - beforeExtent;
-        if (delta > 0) {
-          _scrollController.jumpTo(beforePixels + delta);
-        }
+    // viewport by advancing by however much the extent grew. Media (chat
+    // images / receipt cards) finish laying out and GROW the list AFTER the
+    // first post-frame, so a single jump drifts. Re-apply the anchoring jump at
+    // a few staggered delays — mirroring _scrollChatToBottom — so the anchored
+    // message survives late layout growth. _isPrependingOlder stays true for the
+    // whole window so _onScroll can't re-fire a fetch when an intermediate jump
+    // lands the viewport back near the top (pixels <= 120).
+    void reAnchor() {
+      if (!mounted || !_scrollController.hasClients) return;
+      final delta = _scrollController.position.maxScrollExtent - beforeExtent;
+      if (delta > 0) {
+        _scrollController.jumpTo(beforePixels + delta);
       }
-      _isPrependingOlder = false;
+    }
+
+    for (final ms in const [0, 120, 300]) {
+      Future.delayed(Duration(milliseconds: ms), reAnchor);
+    }
+    // Release the guard only after the last re-anchor settles.
+    Future.delayed(const Duration(milliseconds: 320), () {
+      if (mounted) _isPrependingOlder = false;
     });
   }
 

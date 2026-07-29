@@ -1235,11 +1235,18 @@ class _SettingsViewState extends State<_SettingsView> {
                                 value: ChatSoundSettings.instance.globalVolume,
                                 activeColor: _kBrand,
                                 onChanged: (v) {
-                                  ChatSoundSettings.instance.setGlobalVolume(v);
+                                  // Live-update only (no disk write per frame);
+                                  // persist once the drag ends.
+                                  ChatSoundSettings.instance
+                                      .setGlobalVolumeLive(v);
                                   if (mounted) setState(() {});
                                 },
-                                onChangeEnd: (_) => ChatSoundSettings.instance
-                                    .playSendFeedback(null),
+                                onChangeEnd: (v) {
+                                  ChatSoundSettings.instance
+                                      .setGlobalVolume(v); // persist final value
+                                  ChatSoundSettings.instance
+                                      .playSendFeedback(null); // preview tone
+                                },
                               ),
                             ),
                             Icon(Icons.volume_up_rounded,

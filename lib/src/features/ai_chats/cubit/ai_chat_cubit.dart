@@ -60,6 +60,13 @@ class AIChatCubit extends Cubit<AIChatState> {
   bool _isLoadingOlder = false;
   bool get isLoadingOlder => _isLoadingOlder;
 
+  /// True while a [sendMessage] round-trip is in flight. The user bubble is
+  /// appended optimistically BEFORE Postgres persists it, so the newest-end
+  /// count is momentarily ahead of the server — a "load older" fired in this
+  /// window would compute a drifted offset and skip/duplicate a boundary
+  /// message. Load-older is suppressed until the send completes.
+  bool _isSending = false;
+
   AIChatCubit({
     required ProcessChatUseCase processChatUseCase,
     required GetAIChatHistoryUseCase getAIChatHistoryUseCase,
@@ -116,6 +123,11 @@ class AIChatCubit extends Cubit<AIChatState> {
         // A full page implies older messages may still exist behind it, so the
         // scroll-up "load older" trigger stays armed.
         _hasMoreHistory = history.length >= historyPageSize;
+        // Fresh session/history: drop any in-flight load-older guard so a late
+        // older-page from a PREVIOUS session can't prepend onto this one (the
+        // stale fetch is also dropped by the session-id check in
+        // loadOlderHistory).
+        _isLoadingOlder = false;
         emit(AIChatHistorySuccess(messages: _currentMessages));
       },
     );
@@ -127,13 +139,19 @@ class AIChatCubit extends Cubit<AIChatState> {
   /// next page never overlaps or skips. Prior history is preserved — older
   /// messages are prepended, never replacing what's already on screen.
   Future<void> loadOlderHistory({required String accessToken}) async {
-    if (isClosed || _isLoadingOlder || !_hasMoreHistory) return;
+    // Never paginate mid-send: the optimistic user bubble makes the newest-end
+    // count run ahead of the server, so the computed offset would drift.
+    if (isClosed || _isSending || _isLoadingOlder || !_hasMoreHistory) return;
     _isLoadingOlder = true;
 
     if (_sessionId == null && _chatSessionManager != null) {
       _sessionId = await _chatSessionManager!.getGeneralSessionId();
     }
 
+    // Capture the session this fetch belongs to. If the user switches sessions
+    // (loadChatHistory / clearChat) while the older page is in flight, the
+    // result is stale and must NOT prepend onto the now-active session.
+    final sessionAtStart = _sessionId;
     final offset = _currentMessages.length;
     final result = await _getAIChatHistoryUseCase(
       accessToken: accessToken,
@@ -144,6 +162,11 @@ class AIChatCubit extends Cubit<AIChatState> {
     );
 
     if (isClosed) {
+      _isLoadingOlder = false;
+      return;
+    }
+    // Session changed during the await — drop this page entirely.
+    if (_sessionId != sessionAtStart) {
       _isLoadingOlder = false;
       return;
     }
@@ -166,6 +189,10 @@ class AIChatCubit extends Cubit<AIChatState> {
   // Send message to the backend
   Future<void> sendMessage(String text, {required String accessToken}) async {
     if (text.trim().isEmpty) return;
+    // Mark a send in flight so load-older pagination doesn't run against the
+    // optimistically-appended (not-yet-persisted) user bubble. Cleared on both
+    // the success and error paths below.
+    _isSending = true;
     // Chatting is engagement — keep the inactivity auto-logout from firing
     // mid-conversation (the reply lands within the next window).
     AppActivityBus.instance.ping();
@@ -182,7 +209,10 @@ class AIChatCubit extends Cubit<AIChatState> {
     _currentMessages.add(userMessageEntity);
 
     // Emit loading state with updated messages list and isTyping=true
-    if (isClosed) return;
+    if (isClosed) {
+      _isSending = false;
+      return;
+    }
     emit(AIChatMessageLoading(messages: List.from(_currentMessages)));
 
     // Ensure we have a deterministic session ID
@@ -198,13 +228,18 @@ class AIChatCubit extends Cubit<AIChatState> {
       language: _language,
     );
 
-    if (isClosed) return;
+    if (isClosed) {
+      _isSending = false;
+      return;
+    }
     result.fold(
       (failure) {
+        _isSending = false;
         // Emit error state, keeping existing messages, set isTyping=false
         emit(AIChatMessageError(errorMessage: failure.message, messages: List.from(_currentMessages)));
       },
       (response) {
+        _isSending = false;
         if (response.success) {
           // Parse action buttons from proto response
           List<ActionButtonEntity>? actionButtons;
