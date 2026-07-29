@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart' as grpc_helper;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -573,16 +574,34 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
       }
 
       if (recipient != null) {
-        final args = <String, dynamic>{
-          'recipient': recipient,
-        };
-        if (widget.transferAmount != null && widget.transferAmount! > 0) {
-          args['prefillAmount'] = widget.transferAmount;
+        final amount =
+            (widget.transferAmount != null && widget.transferAmount! > 0)
+                ? widget.transferAmount
+                : null;
+        // Honour the user's send-funds flow preference (short/classic vs
+        // long/standard) exactly like the chat header's "send money" does.
+        // Repeating a transfer must NOT force the long flow when the user is
+        // pinned to the short flow — the session flow is resolved/pinned at
+        // login (FeatureFlags.sendFlowShortForSession).
+        if (FeatureFlags.sendFlowShortForSession) {
+          // Short flow runs amount → PIN → send on the select-recipient screen.
+          Get.toNamed(
+            AppRoutes.selectRecipient,
+            arguments: {
+              'shortFlow': true,
+              'preselectedRecipient': recipient,
+              'autoContinue': true,
+              if (amount != null) 'prefillAmount': amount,
+            },
+          );
+        } else {
+          final args = <String, dynamic>{'recipient': recipient};
+          if (amount != null) args['prefillAmount'] = amount;
+          if (widget.transferCurrency != null) {
+            args['prefillCurrency'] = widget.transferCurrency;
+          }
+          Get.toNamed(AppRoutes.initiateSendFunds, arguments: args);
         }
-        if (widget.transferCurrency != null) {
-          args['prefillCurrency'] = widget.transferCurrency;
-        }
-        Get.toNamed(AppRoutes.initiateSendFunds, arguments: args);
       } else {
         Get.snackbar(
           'Error',
