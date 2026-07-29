@@ -232,7 +232,6 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final effectiveSessionId = sessionId ?? '';
       final token = await _secureStorageService.getAccessToken() ?? '';
 
-      final activeLocale = _localeManager?.currentLocale ?? '';
       // offset 0 = newest page; a growing offset walks backwards into older
       // history (scroll-up "load older"). The gateway returns each page
       // chronological ASC with the true total_count.
@@ -243,10 +242,14 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         'offset': offset ?? 0,
       };
 
-      // Filter history by active locale
-      if (activeLocale.isNotEmpty) {
-        queryParams['locale'] = activeLocale;
-      }
+      // DO NOT filter history by locale. The conversation is uniquely scoped by
+      // its deterministic session_id (general_{userId}); a locale filter here
+      // WIPES the whole conversation on every open, because the READ pinned the
+      // device's active locale while each turn was WRITTEN with the chat-
+      // language-picker locale (or an X-Locale header) — the two diverge (any
+      // non-English chatbot language, or a device locale that drifts off en-NG),
+      // so `WHERE locale = $n` matched zero rows. History is DB-backed and was
+      // never deleted; dropping the filter makes it all reappear.
 
       // Only include session_id if provided (backend treats empty as "all")
       if (effectiveSessionId.isNotEmpty) {
