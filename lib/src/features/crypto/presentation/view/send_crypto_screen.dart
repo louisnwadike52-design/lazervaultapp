@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart'
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_asset_avatar.dart';
 import 'package:lazervault/src/features/crypto/presentation/utils/crypto_address_validator.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_address_scanner_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/network_picker_sheet.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_kyc_gate.dart';
@@ -1455,6 +1456,35 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     return _addressError == null;
   }
 
+  /// Open the camera to scan the recipient's crypto-address QR, then fill the
+  /// address field with the parsed address. Validated against the selected
+  /// network exactly like a typed/pasted address — a scanned wrong-chain address
+  /// is caught the same way (an irreversible-loss guard), never silently sent.
+  Future<void> _scanRecipientAddress() async {
+    final scanned = await Get.to<String>(
+      () => const CryptoAddressScannerScreen(),
+      fullscreenDialog: true,
+    );
+    if (scanned == null || !mounted) return;
+    final addr = scanned.trim();
+    if (addr.isEmpty) return;
+    _addressController.text = addr;
+    final err = validateCryptoAddress(network: _networkValue(), address: addr);
+    setState(() => _addressError = err);
+    if (err != null) {
+      Get.snackbar(
+        'Check the network',
+        "The scanned address doesn't match the selected "
+            '${_networkValue().toUpperCase()} network. Make sure you picked the '
+            'right network before sending.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFB923C),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
   /// Destination-address field for external sends, with inline per-network
   /// validation and a hard max-length cap.
   Widget _buildAddressField() {
@@ -1492,6 +1522,14 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                         : const Color(0xFFEF4444))),
             contentPadding:
                 EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+            // Scan the recipient's address QR — the alternative to typing/
+            // pasting. Fills the same field, validated the same way.
+            suffixIcon: IconButton(
+              tooltip: 'Scan address QR',
+              icon: Icon(Icons.qr_code_scanner_rounded,
+                  color: const Color(0xFF7C3AED), size: 22.sp),
+              onPressed: _scanRecipientAddress,
+            ),
           ),
         ),
         if (_addressError != null) ...[

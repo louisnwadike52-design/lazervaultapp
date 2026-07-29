@@ -40,6 +40,59 @@ final RegExp _tonAddress = RegExp(r'^[A-Za-z0-9_-]{48}$');
 /// supported chain's address is well under this; it just stops absurd pastes.
 const int kMaxCryptoAddressLength = 128;
 
+/// Crypto payment-URI schemes we unwrap when a scanned QR encodes an address as
+/// `scheme:address[?query][@chainId]` (BIP-21 `bitcoin:`, EIP-681 `ethereum:`,
+/// and the common chain-name schemes). NOTE: `bitcoincash:` is deliberately
+/// EXCLUDED — for Bitcoin Cash CashAddr the `bitcoincash:` prefix is part of the
+/// address itself (the validator accepts it), so it must NOT be stripped.
+const Set<String> _cryptoUriSchemes = {
+  'bitcoin',
+  'ethereum',
+  'litecoin',
+  'dogecoin',
+  'dash',
+  'tron',
+  'ripple',
+  'xrp',
+  'solana',
+  'cardano',
+  'stellar',
+  'xlm',
+  'ton',
+  'celo',
+  'polygon',
+  'arbitrum',
+  'optimism',
+  'base',
+  'binance',
+  'bsc',
+};
+
+/// Extract the bare on-chain address from a scanned QR value. Handles a plain
+/// address, a payment URI (`bitcoin:bc1…?amount=…`, `ethereum:0x…@1?value=…`),
+/// and leaves Bitcoin Cash CashAddr (`bitcoincash:q…`) intact. Best-effort — the
+/// result is still run through [validateCryptoAddress] against the selected
+/// network before use.
+String parseScannedCryptoAddress(String raw) {
+  var s = raw.trim();
+  if (s.isEmpty) return s;
+
+  // Bitcoin Cash CashAddr keeps its scheme as part of the address — don't strip.
+  if (!s.toLowerCase().startsWith('bitcoincash:')) {
+    final m = RegExp(r'^([a-zA-Z]+):(.+)$').firstMatch(s);
+    if (m != null && _cryptoUriSchemes.contains(m.group(1)!.toLowerCase())) {
+      s = m.group(2)!.trim();
+    }
+  }
+
+  // Strip an EIP-681 chain suffix (`@chainId`) and any query string.
+  final at = s.indexOf('@');
+  if (at > 0) s = s.substring(0, at);
+  final q = s.indexOf('?');
+  if (q > 0) s = s.substring(0, q);
+  return s.trim();
+}
+
 /// Returns a user-facing error string when [address] does not look like a valid
 /// address for [network], or null when it is plausible (or cannot be judged).
 String? validateCryptoAddress({
