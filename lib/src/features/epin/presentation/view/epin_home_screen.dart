@@ -115,17 +115,25 @@ class _EPinHomeScreenState extends State<EPinHomeScreen>
 
   Widget _buildBody(List<EPinNetwork> networks) {
     // Streamlined single-page purchase (see EPinQuickBuy).
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 8.h),
-          const EPinQuickBuy(),
-          SizedBox(height: 28.h),
-          _buildRecentSection(),
-          SizedBox(height: 24.h),
-        ],
+    return RefreshIndicator(
+      color: EpinTheme.primary,
+      onRefresh: () async {
+        context.read<EPinCubit>().loadNetworks();
+        if (mounted) setState(_loadRecent);
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 8.h),
+            const EPinQuickBuy(),
+            SizedBox(height: 28.h),
+            _buildRecentSection(),
+            SizedBox(height: 24.h),
+          ],
+        ),
       ),
     );
   }

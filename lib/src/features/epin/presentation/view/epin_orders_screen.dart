@@ -224,42 +224,73 @@ class _EPinOrdersScreenState extends State<EPinOrdersScreen> {
   }
 
   Widget _buildError(String message) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(24.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, color: _error, size: 40.sp),
-            SizedBox(height: 12.h),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: _textSecondary, fontSize: 14.sp),
+    // Scrollable inside a RefreshIndicator so pull-to-refresh works on the
+    // error state too (the retry button and a pull both re-run loadOrders).
+    return RefreshIndicator(
+      color: _primary,
+      onRefresh: () => context.read<EPinCubit>().loadOrders(),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline, color: _error, size: 40.sp),
+                    SizedBox(height: 12.h),
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(color: _textSecondary, fontSize: 14.sp),
+                    ),
+                    SizedBox(height: 16.h),
+                    TextButton(
+                      onPressed: () =>
+                          context.read<EPinCubit>().loadOrders(),
+                      child: const Text('Retry',
+                          style: TextStyle(color: _primary)),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 16.h),
-            TextButton(
-              onPressed: () => context.read<EPinCubit>().loadOrders(),
-              child: const Text('Retry', style: TextStyle(color: _primary)),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.receipt_long, color: _textSecondary, size: 44.sp),
-          SizedBox(height: 12.h),
-          Text(
-            'No recharge card orders yet',
-            style: TextStyle(color: _textSecondary, fontSize: 14.sp),
+    // Scrollable inside a RefreshIndicator so pull-to-refresh works even with
+    // no orders yet.
+    return RefreshIndicator(
+      color: _primary,
+      onRefresh: () => context.read<EPinCubit>().loadOrders(),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.receipt_long, color: _textSecondary, size: 44.sp),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'No recharge card orders yet',
+                    style: TextStyle(color: _textSecondary, fontSize: 14.sp),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
