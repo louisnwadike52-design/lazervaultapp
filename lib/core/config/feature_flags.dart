@@ -1,4 +1,4 @@
-import 'package:meta/meta.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Lightweight client-side feature-flag cache.
@@ -301,6 +301,44 @@ class FeatureFlags {
     return _prefs?.getBool(sendFundsShortFlowEnabled) ?? true;
   }
 
+  // ── Dashboard layout style ───────────────────────────────────────────────
+  // User-selectable dashboard layout, mirroring the transfer-style override:
+  //   "classic" (DEFAULT)  = today's layout — full-height quick-services grid
+  //     with the refer-a-friend card directly below it.
+  //   "showcase"           = compact quick-services grid + a small adverts
+  //     carousel below it, with the refer-a-friend entry moved into a compact
+  //     "view all" row that opens a modal. Purely a client-side preference.
+  // Defaults to classic so the current view is retained until the user opts in.
+  static const String userDashboardLayout = 'user_dashboard_layout';
+  static const String dashboardLayoutClassic = 'classic';
+  static const String dashboardLayoutShowcase = 'showcase';
+
+  /// Bumps whenever the dashboard layout choice changes so a live dashboard can
+  /// rebuild immediately (it may be kept alive inside the TabBarView). Widgets
+  /// wrap the affected region in a `ValueListenableBuilder`.
+  static final ValueNotifier<int> dashboardLayoutRevision =
+      ValueNotifier<int>(0);
+
+  /// `true` when the user has opted into the showcase layout (compact services +
+  /// adverts carousel). Defaults to `false` (classic). Synchronous — call after
+  /// [init].
+  static bool get dashboardShowcaseLayout =>
+      _prefs?.getString(userDashboardLayout) == dashboardLayoutShowcase;
+
+  /// Persist the user's dashboard-layout choice. Pass anything other than
+  /// "showcase" to fall back to the classic (default) layout.
+  static Future<void> setDashboardLayout(String style) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    final s = style.toLowerCase().trim();
+    if (s == dashboardLayoutShowcase) {
+      await prefs.setString(userDashboardLayout, s);
+    } else {
+      await prefs.remove(userDashboardLayout);
+    }
+    dashboardLayoutRevision.value++;
+  }
+
   // User-selectable transfer style: "classic" (short flow) | "standard" (long
   // flow) | "" (follow the platform default). Client-side preference, mirroring
   // the auth_mode override pattern.
@@ -337,8 +375,9 @@ class FeatureFlags {
       await prefs.remove(userTransferStyle);
     }
     // A style change is a DELIBERATE user action (Settings, never mid-send) —
-    // re-pin immediately so the new choice takes effect for the next send.
-    pinSendFlowForSession();
+    // force-re-pin so the new choice takes effect immediately for the next send,
+    // even if a stray freeze were somehow active.
+    pinSendFlowForSession(force: true);
   }
 
   /// The Send Funds flow decision to use everywhere the app STARTS a send
@@ -356,15 +395,22 @@ class FeatureFlags {
   /// Called at login/session-revalidation (authentication_cubit, beside
   /// `LoginFlowResolver`) and on an explicit Settings change.
   ///
-  /// FROZEN while a send flow is active ([_sendFlowDepth] > 0): the resolve is
-  /// deferred until the user is back on the dashboard, so a change can never take
-  /// effect mid-journey. Memory is updated BEFORE the (async, fire-and-forget)
-  /// disk write so the fast path is instant.
-  static void pinSendFlowForSession() {
-    if (_sendFlowDepth > 0) {
+  /// A BACKGROUND re-resolve (login/session-revalidation) is FROZEN while a send
+  /// flow is active ([_sendFlowDepth] > 0): it's deferred until the user is back
+  /// on the dashboard, so a change can never take effect mid-journey. Memory is
+  /// updated BEFORE the (async, fire-and-forget) disk write so the fast path is
+  /// instant.
+  ///
+  /// A DELIBERATE user change (Settings) passes [force] — it is never mid-send,
+  /// so it applies immediately and clears any deferred pin. `force` also makes
+  /// the setting robust to a (bug-path) leaked [_sendFlowDepth] that would
+  /// otherwise silently swallow the user's own change for the whole session.
+  static void pinSendFlowForSession({bool force = false}) {
+    if (!force && _sendFlowDepth > 0) {
       _repinPending = true; // apply when the last flow ends
       return;
     }
+    _repinPending = false;
     final v = useShortSendFlow;
     if (_sessionShortSendFlow == v) return; // unchanged — no memory/disk churn
     _sessionShortSendFlow = v;

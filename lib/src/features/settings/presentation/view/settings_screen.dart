@@ -159,6 +159,10 @@ class _SettingsViewState extends State<_SettingsView> {
   /// (long flow). Seeded from FeatureFlags (per-user override → platform default).
   bool _transferStyleClassic = FeatureFlags.useShortSendFlow;
 
+  /// Dashboard layout: true = showcase (compact services + adverts carousel),
+  /// false = classic (current view). Seeded from the per-user preference.
+  bool _dashboardShowcase = FeatureFlags.dashboardShowcaseLayout;
+
   @override
   void initState() {
     super.initState();
@@ -745,11 +749,28 @@ class _SettingsViewState extends State<_SettingsView> {
               : 'Phone + passcode',
           onTap: () => _openLoginMethodSheet(hasPassword),
         );
+        final dashboardLayoutTile = _navTile(
+          icon: Icons.dashboard_customize_rounded,
+          title: 'Dashboard Layout',
+          keywords: const [
+            'dashboard',
+            'layout',
+            'home',
+            'adverts',
+            'showcase',
+            'classic',
+          ],
+          subtitle: _dashboardShowcase
+              ? 'Showcase — compact services + adverts'
+              : 'Classic — current view',
+          onTap: _openDashboardLayoutSheet,
+        );
         // While searching, drop the group labels/spacing and filter down to the
         // matching tiles (item-level search, consistent with the other
         // sections). Non-searching keeps the grouped, spaced layout with labels.
         if (_searchQuery.trim().isNotEmpty) {
-          return _filterableColumn([sendMoneyTile, loginMethodTile]);
+          return _filterableColumn(
+              [sendMoneyTile, dashboardLayoutTile, loginMethodTile]);
         }
         // The group labels need the same 16.w side inset the header and nav rows
         // use, so they don't sit flush against the accordion card's edges.
@@ -765,6 +786,13 @@ class _SettingsViewState extends State<_SettingsView> {
             // Transfer style is now chosen in a bottom sheet — same interaction
             // as Login Method below — instead of inline cards.
             sendMoneyTile,
+            SizedBox(height: 18.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: _customizeGroupLabel('Dashboard'),
+            ),
+            SizedBox(height: 10.h),
+            dashboardLayoutTile,
             SizedBox(height: 18.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1755,6 +1783,28 @@ class _SettingsViewState extends State<_SettingsView> {
       _transferStyleClassic
           ? 'Classic — fast, streamlined send.'
           : 'Standard — the full transfer form.',
+      type: AppSnackbarType.success,
+    );
+  }
+
+  /// Opens the Dashboard Layout picker (bottom sheet, same interaction as Send
+  /// Money) and persists the choice. Local pref via FeatureFlags — the live
+  /// dashboard rebuilds via [FeatureFlags.dashboardLayoutRevision].
+  Future<void> _openDashboardLayoutSheet() async {
+    final current = _dashboardShowcase
+        ? FeatureFlags.dashboardLayoutShowcase
+        : FeatureFlags.dashboardLayoutClassic;
+    final chosen = await showDashboardLayoutSheet(context, current: current);
+    if (chosen == null || chosen == current || !mounted) return;
+    await FeatureFlags.setDashboardLayout(chosen);
+    if (!mounted) return;
+    setState(() => _dashboardShowcase =
+        chosen == FeatureFlags.dashboardLayoutShowcase);
+    showAppSnackbar(
+      'Dashboard updated',
+      _dashboardShowcase
+          ? 'Showcase — compact services with a rotating adverts carousel.'
+          : 'Classic — your familiar dashboard view.',
       type: AppSnackbarType.success,
     );
   }

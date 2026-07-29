@@ -22,7 +22,14 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // Quick Services carousel - 3 rows with reduced indicator spacing
 // Context-aware: switches between personal and business services based on active account
 class AppServicesBuilder extends StatefulWidget {
-  const AppServicesBuilder({super.key});
+  /// When true the quick-service tiles render slightly shorter (the showcase
+  /// dashboard layout uses this to make room for the adverts carousel below).
+  final bool compact;
+  const AppServicesBuilder({super.key, this.compact = false});
+
+  /// Tile aspect ratio — higher = shorter tiles. Kept in ONE place so the
+  /// carousel height (computed from it) and the grid delegate never drift.
+  double get tileAspectRatio => compact ? 0.95 : 0.85;
 
   /// Every platform service across all account types (deduped) — the corpus the
   /// dashboard swipe-down search filters over. Public forwarder to the State's
@@ -460,7 +467,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
 
     const crossAxisSpacing = 8.0;
     const mainAxisSpacing = 8.0;
-    const childAspectRatio = 0.85;
+    final childAspectRatio = widget.tileAspectRatio;
 
     final itemWidth = (availableWidth - (crossAxisSpacing.w * (_itemsPerRow - 1))) / _itemsPerRow;
     final itemHeight = itemWidth / childAspectRatio;
@@ -605,7 +612,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   crossAxisCount: _itemsPerRow,
                   crossAxisSpacing: 8.w,
                   mainAxisSpacing: 8.h,
-                  childAspectRatio: 0.85,
+                  childAspectRatio: widget.tileAspectRatio,
                 ),
                 itemCount: servicesOnPage.length,
                 shrinkWrap: true,

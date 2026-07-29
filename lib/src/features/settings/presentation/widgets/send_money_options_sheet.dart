@@ -74,6 +74,80 @@ Future<String?> showSendMoneySheet(
   );
 }
 
+/// Bottom sheet to choose the dashboard layout — same interaction/styling as
+/// [showSendMoneySheet] (reuses [_StyleOption]). Returns the chosen layout
+/// ([FeatureFlags.dashboardLayoutClassic] | [FeatureFlags.dashboardLayoutShowcase])
+/// or null if dismissed. Purely a picker — the caller persists the choice.
+Future<String?> showDashboardLayoutSheet(
+  BuildContext context, {
+  required String current,
+}) {
+  return showModalBottomSheet<String>(
+    context: context,
+    backgroundColor: const Color(0xFF1F1F1F),
+    isScrollControlled: true,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+    ),
+    builder: (sheetCtx) => SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              'Dashboard layout',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Choose how your home dashboard is arranged. You can switch back any time.',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+            ),
+            SizedBox(height: 20.h),
+            _StyleOption(
+              icon: Icons.grid_view_rounded,
+              title: 'Classic',
+              subtitle:
+                  'The current view — full quick-services grid with the refer-a-friend card below.',
+              selected: current == FeatureFlags.dashboardLayoutClassic,
+              onTap: () => Navigator.of(sheetCtx)
+                  .pop(FeatureFlags.dashboardLayoutClassic),
+            ),
+            SizedBox(height: 12.h),
+            _StyleOption(
+              icon: Icons.view_carousel_rounded,
+              title: 'Showcase',
+              subtitle:
+                  'Compact quick services with a rotating adverts carousel; refer-a-friend moves into a "view all" row.',
+              selected: current == FeatureFlags.dashboardLayoutShowcase,
+              onTap: () => Navigator.of(sheetCtx)
+                  .pop(FeatureFlags.dashboardLayoutShowcase),
+            ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 class _StyleOption extends StatelessWidget {
   final IconData icon;
   final String title;
