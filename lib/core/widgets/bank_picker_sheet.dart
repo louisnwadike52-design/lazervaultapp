@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/utilities/bank_sort.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
@@ -119,10 +120,19 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
   bool _loading = false;
   String? _error;
 
+  // Bank list sort — defaults to "Most popular" (Nigerian ranking). Shared with
+  // the send-funds recipient screen via [bank_sort.dart] so every picker sorts
+  // identically and shares the same recently-used list.
+  BankSort _sort = BankSort.popular;
+  List<String> _recentCodes = [];
+
   @override
   void initState() {
     super.initState();
     _loadBanks();
+    RecentBanks.load().then((codes) {
+      if (mounted) setState(() => _recentCodes = codes);
+    });
   }
 
   @override
@@ -163,11 +173,43 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
     });
   }
 
-  List<Map<String, String>> get _filtered => _query.isEmpty
-      ? _banks
-      : _banks
-          .where((b) => (b['name'] ?? '').toLowerCase().contains(_query))
-          .toList();
+  List<Map<String, String>> get _filtered {
+    final matched = _query.isEmpty
+        ? _banks
+        : _banks
+            .where((b) => (b['name'] ?? '').toLowerCase().contains(_query))
+            .toList();
+    // Sorting only makes sense for the Nigerian ranking; for other countries the
+    // static list is already curated, so leave the order untouched unless the
+    // user picked alphabetical/recent explicitly.
+    return sortBanks(matched, _sort, _recentCodes);
+  }
+
+  /// A single sort pill. Matches the send-funds recipient screen's pills so the
+  /// two "choose a bank" surfaces look and behave identically.
+  Widget _sortPill(String label, BankSort value, BankPickerTheme t) {
+    final isSel = value == _sort;
+    return GestureDetector(
+      onTap: () => setState(() => _sort = value),
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSel ? t.accent : t.fieldFill,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSel ? t.accent : t.border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSel ? Colors.white : t.muted,
+            fontSize: 13,
+            fontWeight: isSel ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -260,6 +302,22 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Sort pills — default "Most popular" (Nigerian bank ranking).
+          SizedBox(
+            height: 34,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _sortPill('Most popular', BankSort.popular, t),
+                const SizedBox(width: 8),
+                _sortPill('A–Z', BankSort.alphabetical, t),
+                const SizedBox(width: 8),
+                _sortPill('Recent', BankSort.recent, t),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -370,7 +428,10 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
                           const Icon(Icons.check, color: Colors.white, size: 16),
                     )
                   : Icon(Icons.chevron_right, color: t.muted, size: 20),
-              onTap: () => Navigator.pop(context, bank),
+              onTap: () {
+                RecentBanks.record(bank['code']);
+                Navigator.pop(context, bank);
+              },
             ),
           ),
         );

@@ -17,6 +17,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/pending_chat_transfers.dart';
+import 'package:lazervault/core/utilities/bank_sort.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -5117,76 +5118,4 @@ class _SelectRecipientsState extends State<SelectRecipients>
       ),
     );
   }
-}
-
-/// Bank-list sort options for the picker sheet.
-enum BankSort { popular, alphabetical, recent }
-
-/// Curated popularity ranking for Nigerian banks (lower index = more popular).
-/// Fintech/mobile banks lead — they dominate P2P volume — followed by the big
-/// commercial banks. Matched case-insensitively against the bank name; anything
-/// not listed sorts after the ranked ones, alphabetically.
-const List<String> _kPopularNgBanks = [
-  'opay',
-  'palmpay',
-  'moniepoint',
-  'kuda',
-  'guaranty trust', // GTBank / GTCO
-  'gtbank',
-  'access bank',
-  'zenith bank',
-  'united bank for africa', // UBA
-  'first bank',
-  'fidelity bank',
-  'union bank',
-  'fcmb', // First City Monument Bank
-  'sterling bank',
-  'stanbic ibtc',
-  'wema bank',
-  'ecobank',
-  'polaris bank',
-  'keystone bank',
-  'providus bank',
-];
-
-int _popularRank(String name) {
-  final n = name.toLowerCase();
-  for (var i = 0; i < _kPopularNgBanks.length; i++) {
-    if (n.contains(_kPopularNgBanks[i])) return i;
-  }
-  return _kPopularNgBanks.length; // unlisted → after all ranked banks
-}
-
-/// Return a NEW sorted copy of [banks] per [sort]. [recentCodes] is the user's
-/// most-recently-used bank codes (newest first) for the "recent" option.
-List<Map<String, String>> sortBanks(
-  List<Map<String, String>> banks,
-  BankSort sort,
-  List<String> recentCodes,
-) {
-  final list = List<Map<String, String>>.from(banks);
-  switch (sort) {
-    case BankSort.alphabetical:
-      list.sort((a, b) =>
-          (a['name'] ?? '').toLowerCase().compareTo((b['name'] ?? '').toLowerCase()));
-    case BankSort.recent:
-      int recentIdx(Map<String, String> b) {
-        final i = recentCodes.indexOf(b['code'] ?? '');
-        return i < 0 ? recentCodes.length : i;
-      }
-      list.sort((a, b) {
-        final byRecent = recentIdx(a).compareTo(recentIdx(b));
-        if (byRecent != 0) return byRecent;
-        // Ties (both unused) fall back to popularity so the list still reads well.
-        return _popularRank(a['name'] ?? '').compareTo(_popularRank(b['name'] ?? ''));
-      });
-    case BankSort.popular:
-      list.sort((a, b) {
-        final byRank =
-            _popularRank(a['name'] ?? '').compareTo(_popularRank(b['name'] ?? ''));
-        if (byRank != 0) return byRank;
-        return (a['name'] ?? '').toLowerCase().compareTo((b['name'] ?? '').toLowerCase());
-      });
-  }
-  return list;
 }
