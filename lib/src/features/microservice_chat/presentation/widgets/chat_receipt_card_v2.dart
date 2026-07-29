@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/chat_receipt_pdf_service.dart';
@@ -48,6 +49,31 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
   bool _isSharing = false;
 
   String _s(String key) => widget.payload[key]?.toString() ?? '';
+
+  /// Currency symbol for the amount display (₦500, not "500 NGN"). Falls back to
+  /// the code + space for currencies without a common single-glyph symbol.
+  String _symbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'GHS':
+        return '₵';
+      case 'ZAR':
+        return 'R';
+      case 'KES':
+        return 'KSh ';
+      case 'CAD':
+        return 'C\$';
+      default:
+        return currency.isEmpty ? '' : '$currency ';
+    }
+  }
 
   Color get _statusColor {
     switch (_s('status')) {
@@ -218,14 +244,11 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     if (_isSharing) return;
     setState(() => _isSharing = true);
     try {
-      // iPad share-sheet popover origin (crashes without one).
-      final box = context.findRenderObject() as RenderBox?;
-      final origin = box != null
-          ? box.localToGlobal(Offset.zero) & box.size
-          : null;
-      await ChatReceiptPdfService.shareReceipt(
-        widget.payload,
-        sharePositionOrigin: origin,
+      // Share the SAME Revolut-style PDF the send-funds / UnifiedTransactionReceipt
+      // uses (Lazervault branding, barcode, both currencies) — built from this
+      // card's payload — so the voice/chat receipt share matches the app receipt.
+      await TagPayPdfService.shareUnifiedTransferReceipt(
+        transaction: _toUnifiedTransaction(),
       );
     } catch (e) {
       if (mounted) {
@@ -292,8 +315,8 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$amount $currency'
-                      '${feeNum > 0 ? ' · Fee $fee $currency' : ''}',
+                      '${_symbol(currency)}$amount'
+                      '${feeNum > 0 ? ' · Fee ${_symbol(currency)}$fee' : ''}',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 11,
