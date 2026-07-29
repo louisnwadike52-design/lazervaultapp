@@ -171,13 +171,17 @@ class FeatureFlags {
   static bool _repinPending = false;
 
   /// Called once from app boot (after SharedPreferences is available) so the
-  /// synchronous getters below don't have to await. Idempotent. Also hydrates
-  /// the in-memory Send Funds flow pin from its persisted value so the first
-  /// send routes instantly with the last-known decision (offline-safe).
+  /// synchronous getters below don't have to await. Idempotent.
+  ///
+  /// Note: it deliberately does NOT seed the in-memory session pin
+  /// [_sessionShortSendFlow] from the persisted value. The pin is established
+  /// ONCE per login-session by the first genuine login (or a Settings change),
+  /// so an in-session re-pin (app-lock unlock, background default change) can't
+  /// flip the user. Cold-boot routing before that first login stays instant +
+  /// offline-safe because [sendFlowShortForSession] falls back to the persisted
+  /// [sendFlowPinned] value.
   static Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
-    final storedFlow = _prefs?.getBool(sendFlowPinned);
-    if (storedFlow != null) _sessionShortSendFlow = storedFlow;
   }
 
   /// Test-only: rebind + clear the backing store so each test starts clean.
@@ -388,7 +392,7 @@ class FeatureFlags {
   /// network). Falls back to the live [useShortSendFlow] only before the first
   /// pin (a brand-new install that has never resolved one).
   static bool get sendFlowShortForSession =>
-      _sessionShortSendFlow ?? useShortSendFlow;
+      _sessionShortSendFlow ?? _prefs?.getBool(sendFlowPinned) ?? useShortSendFlow;
 
   /// (Re)resolve [useShortSendFlow] and pin it in memory + persist it (write-
   /// through) so the next cold start routes instantly with the last-known value.
@@ -406,15 +410,33 @@ class FeatureFlags {
   /// the setting robust to a (bug-path) leaked [_sendFlowDepth] that would
   /// otherwise silently swallow the user's own change for the whole session.
   static void pinSendFlowForSession({bool force = false}) {
-    if (!force && _sendFlowDepth > 0) {
-      _repinPending = true; // apply when the last flow ends
-      return;
+    if (!force) {
+      // Establish the flow ONCE per login-session. A NON-force re-pin — an
+      // app-lock passcode/biometric/voice unlock (session revalidation), a
+      // background admin/remote default change, or a deferred re-pin applied
+      // when a send journey ends — must NEVER flip the user mid-session (the
+      // reported bug: short flow flipped to the long amount page right after a
+      // send / after the receipt). It is re-resolved only on a GENUINE fresh
+      // login (the pin is cleared on logout) or an explicit Settings change
+      // ([force]).
+      _repinPending = false;
+      if (_sessionShortSendFlow != null) return;
+    } else {
+      _repinPending = false;
     }
-    _repinPending = false;
     final v = useShortSendFlow;
     if (_sessionShortSendFlow == v) return; // unchanged — no memory/disk churn
     _sessionShortSendFlow = v;
     _prefs?.setBool(sendFlowPinned, v);
+  }
+
+  /// Clear the in-memory session flow pin (call on logout) so the NEXT genuine
+  /// login re-resolves the flow (and picks up any changed platform default).
+  /// The persisted [sendFlowPinned] value is intentionally KEPT so cold-boot
+  /// routing before that login is still instant + offline-safe.
+  static void clearSessionSendFlowPin() {
+    _sessionShortSendFlow = null;
+    _repinPending = false;
   }
 
   /// Mark that a Send Funds journey has been entered (the user tapped into it).

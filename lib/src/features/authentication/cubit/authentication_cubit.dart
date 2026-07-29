@@ -492,9 +492,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Clear active account to prevent using stale account_id from previous user
       _accountManager.clearActiveAccount();
       _currentProfile = null;
-      // NOTE: the Send Funds flow pin is deliberately KEPT across logout so the
-      // next launch (fast resumption / passcode) routes instantly with the
-      // last-known flow; it is re-resolved + re-persisted on the next login.
+      // Clear the IN-MEMORY Send Funds flow pin so the NEXT genuine login
+      // re-resolves it (and picks up any changed platform default). The
+      // PERSISTED value is kept (clearSessionSendFlowPin doesn't touch prefs) so
+      // cold-boot routing before that login is still instant + offline-safe.
+      // In-session revalidations (app-lock unlock) no longer re-pin, so this is
+      // the only place — besides a Settings change — the flow can be re-resolved.
+      FeatureFlags.clearSessionSendFlowPin();
       // Stop tagging Loki logs with the logged-out user.
       RemoteLogSink.instance.setUserId(null);
       // Drop the session "has transaction PIN" cache. Without this, if the next
