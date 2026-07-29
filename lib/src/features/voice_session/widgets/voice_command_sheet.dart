@@ -180,6 +180,20 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _resetIfNeeded();
 
     _checkVoiceActivation();
+
+    // Mount-time PIN recovery: when the sheet is re-opened from the minimized
+    // floating bubble AFTER a PIN was already requested, the cubit is already
+    // sitting in VoiceSessionPinRequired — the BlocConsumer listener only fires
+    // on state CHANGES, so it will never re-show the PIN sheet on this fresh
+    // mount. Re-present it once from a post-frame callback so the secure PIN
+    // entry appears even when the transaction was confirmed while minimized.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final st = context.read<VoiceSessionCubit>().state;
+      if (st is VoiceSessionPinRequired && !_isPinSheetShowing) {
+        _showPinEntrySheet(st.transactionPayload);
+      }
+    });
   }
 
   /// Reset the cubit state if we're in a disconnected state

@@ -155,9 +155,21 @@ class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
           s is VoiceSessionEnded ||
           s is VoiceSessionDisconnected ||
           s is VoiceSessionClosedByAgent ||
-          s is VoiceSessionInitial,
-      // Session reached a terminal state — the bubble must auto-remove itself.
-      listener: (_, __) => VoiceMiniBubbleController.instance.hide(),
+          s is VoiceSessionInitial ||
+          s is VoiceSessionPinRequired,
+      listener: (_, state) {
+        if (state is VoiceSessionPinRequired) {
+          // A transaction was confirmed while the sheet was minimized and now
+          // needs a PIN. The floating bubble can't render the secure PIN entry,
+          // so re-expand the full voice sheet — its mount-time recovery then
+          // shows the PIN bottom sheet. The user enters the PIN on screen (the
+          // agent never asks for it by voice in sheet mode).
+          _reopen();
+        } else {
+          // Session reached a terminal state — the bubble auto-removes itself.
+          VoiceMiniBubbleController.instance.hide();
+        }
+      },
       child: Stack(
         children: [
           Positioned(
