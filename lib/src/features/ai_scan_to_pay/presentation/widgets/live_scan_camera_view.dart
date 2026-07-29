@@ -42,10 +42,13 @@ class LiveScanCameraView extends StatefulWidget {
     this.onResolved,
     this.title = 'Scan to Pay',
     this.hintText =
-        'Line the account or phone number up in the green band — we read it automatically',
+        'Point at the account details inside the box — we read them automatically',
     this.pollInterval = const Duration(milliseconds: 400),
     this.stabilityThreshold = 2,
-    this.roiHeightFraction = 0.22,
+    // OCR reads a large central region matching the viewfinder box (was a thin
+    // 0.22 band that was hard to line a single line up in — the "not scanning"
+    // feel). ~0.6 covers the box so pointing at the details just reads them.
+    this.roiHeightFraction = 0.6,
     this.showBack = true,
   });
 
@@ -81,12 +84,10 @@ class LiveScanCameraView extends StatefulWidget {
   final Duration pollInterval;
   final int stabilityThreshold;
 
-  /// Fraction of the preview height used as the live-detection band (the green
-  /// strip). ML Kit only OCRs this centred band — NOT the whole frame — so a
-  /// single line (the account/phone) is read ~3-5x faster with far fewer
-  /// competing candidates, which is what makes auto-detect converge and fire
-  /// without a shutter tap. The overlay draws the same band so the user knows
-  /// exactly where to hold the details.
+  /// Fraction of the preview height ML Kit OCRs (a centred region, NOT the whole
+  /// frame). Sized to cover the purple viewfinder box so the user can point at
+  /// the bank details (account number + bank + name) anywhere inside the box and
+  /// they're read — natural scanning, not lining a single line up in a thin band.
   final double roiHeightFraction;
 
   final bool showBack;
@@ -784,7 +785,7 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
         ),
         Positioned.fill(
           child: CustomPaint(
-            painter: CameraOverlayPainter(roiHeightFraction: widget.roiHeightFraction),
+            painter: const CameraOverlayPainter(),
           ),
         ),
 
@@ -1045,19 +1046,11 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
   }
 }
 
-/// Dim overlay + purple viewfinder (the aim guide) + a bright green
-/// **detection band** in the centre. The band is the ONLY region ML Kit OCRs
-/// (see [LiveScanCameraView.roiHeightFraction] and `_croppedRoi`) — its height
-/// matches [roiHeightFraction] so what the user lines the details up against is
-/// exactly what gets read. Lining a single line up in a small band is what
-/// makes auto-detect converge and capture without a shutter tap.
+/// Dim overlay + a single purple viewfinder (the aim guide). The viewfinder IS
+/// the OCR region now — line the bank details up anywhere inside the box and ML
+/// Kit reads them automatically (no separate detection band).
 class CameraOverlayPainter extends CustomPainter {
-  const CameraOverlayPainter({this.roiHeightFraction = 0.22});
-
-  /// Height of the green detection band as a fraction of the preview height.
-  final double roiHeightFraction;
-
-  static const Color _kBand = Color(0xFF25F4A0);
+  const CameraOverlayPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1131,37 +1124,13 @@ class CameraOverlayPainter extends CustomPainter {
         Offset(left + viewfinderWidth - cornerRadius, top + viewfinderHeight),
         cornerPaint);
 
-    // Green detection band — the small strip ML Kit actually reads. Full-width,
-    // vertically centred, height == roiHeightFraction of the preview (matches
-    // the sensor-buffer crop in `_croppedRoi`). A faint fill + bright outline so
-    // the user knows to line one line of details up here for instant capture.
-    final bandHeight = size.height * roiHeightFraction;
-    final bandRect = Rect.fromLTWH(
-      size.width * 0.06,
-      (size.height - bandHeight) / 2,
-      size.width * 0.88,
-      bandHeight,
-    );
-    final bandRRect =
-        RRect.fromRectAndRadius(bandRect, const Radius.circular(12));
-    canvas.drawRRect(
-      bandRRect,
-      Paint()
-        ..color = _kBand.withValues(alpha: 0.08)
-        ..style = PaintingStyle.fill,
-    );
-    canvas.drawRRect(
-      bandRRect,
-      Paint()
-        ..color = _kBand
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.0,
-    );
+    // (Removed the separate green detection band — OCR now reads the whole
+    // viewfinder region, so the single purple frame IS the aim guide. Line the
+    // bank details up anywhere inside the box and it reads them automatically.)
   }
 
   @override
-  bool shouldRepaint(covariant CameraOverlayPainter oldDelegate) =>
-      oldDelegate.roiHeightFraction != roiHeightFraction;
+  bool shouldRepaint(covariant CameraOverlayPainter oldDelegate) => false;
 }
 
 /// A tightly-packed, cropped single-plane image buffer for ML Kit (Y+VU for
