@@ -133,7 +133,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       if (a.id == destId) {
         _pendingRedoDestId = null;
         setState(() => _destinationAccount = a);
-        _refreshAccountBalance(a.id);
+        // No billed auto-refresh — the last-known balance is shown; the user
+        // taps the tile to pull a live (cost-confirmed) figure if they want one.
         _maybeFetchPrediction();
         return;
       }
@@ -172,11 +173,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     _listenForBalanceRefreshes();
   }
 
-  /// Stale balances are refreshed automatically in the background
-  /// (OpenBankingCubit.autoRefreshStaleBalances fires on every account load).
-  /// This listener keeps the screen's picked accounts in sync with the
-  /// refreshed figures and records FAILURES — the only case the user is told
-  /// about (no passive "balance may be outdated" nag).
+  /// Balances are refreshed only on an explicit, cost-confirmed user tap (never
+  /// auto-pulled). This listener keeps the screen's picked accounts in sync with
+  /// a completed manual refresh and records FAILURES so the tile can offer a
+  /// retry.
   StreamSubscription<OpenBankingState>? _balanceRefreshSub;
   final Set<String> _balanceRefreshFailedIds = <String>{};
   final Set<String> _refreshingBalanceIds = <String>{};
@@ -291,13 +291,11 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           setState(() {
             if (isSource) {
               _sourceAccount = account;
-              _refreshAccountBalance(account.id);
               if (_destinationAccount?.id == account.id) {
                 _destinationAccount = null;
               }
             } else {
               _destinationAccount = account;
-              _refreshAccountBalance(account.id);
               if (_sourceAccount?.id == account.id) {
                 _sourceAccount = null;
               }
@@ -760,69 +758,126 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         statusFetch: _liveStatusFetcher(t),
       );
 
-  /// Fire a fresh Mono balance read for [accountId] — used whenever the user
-  /// PICKS an account so the figure shown is real-time, not cached.
-  void _refreshAccountBalance(String accountId) {
+  /// User-initiated, COST-CONFIRMED balance refresh. A live Mono read is billed
+  /// (Mono Connect is a paid connection), so we NEVER auto-pull one on load or
+  /// account-pick — the last-known figure is shown until the user asks. When
+  /// they do, quote the fee and, if it's > 0, show the cost + take a txPIN
+  /// before charging the wallet and reading the live balance.
+  Future<void> _manualRefreshBalance(LinkedBankAccount account) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
-    context.read<OpenBankingCubit>().refreshBalance(
-          accountId: accountId,
-          userId: authState.profile.userId,
-          accessToken: authState.profile.session.accessToken,
+    final userId = authState.profile.userId;
+    final accessToken = authState.profile.session.accessToken;
+    final cubit = context.read<OpenBankingCubit>();
+
+    final feeKobo = await cubit.quoteRefreshFee(
+      accountId: account.id,
+      userId: userId,
+      accessToken: accessToken,
+    );
+    if (!mounted) return;
+    if (feeKobo <= 0) {
+      cubit.refreshBalance(
+        accountId: account.id,
+        userId: userId,
+        accessToken: accessToken,
+        isManual: true,
+      );
+      return;
+    }
+
+    final feeNaira = feeKobo / 100.0;
+    final txnId =
+        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    await validateTransactionPin(
+      context: context,
+      transactionId: txnId,
+      transactionType: 'balance_refresh',
+      amount: feeNaira,
+      fee: feeNaira,
+      totalAmount: feeNaira,
+      currency: 'NGN',
+      title: 'Refresh balance',
+      message:
+          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Your last-known balance is shown otherwise.',
+      successMessage: 'Balance refreshed',
+      onPinValidated: (token) async {
+        await cubit.refreshBalance(
+          accountId: account.id,
+          userId: userId,
+          accessToken: accessToken,
+          isManual: true,
+          verificationToken: token,
+          transactionId: txnId,
         );
+      },
+    );
   }
 
-  /// Balance line for the From/To tiles with explicit states:
-  /// fetching → "Fetching balance…", failed → "Balance unavailable · Retry",
-  /// available → the live figure.
+  /// Balance line for the From/To tiles. We never auto-pull a billed live read,
+  /// so the tile shows the LAST-KNOWN figure with a tap-to-refresh (cost-
+  /// confirmed) affordance; states: refreshing → spinner, failed → "Refresh",
+  /// otherwise the cached figure (green tick when it just went live, else a
+  /// grey "not live" hint).
   Widget _buildTileBalance(LinkedBankAccount account) {
     if (_refreshingBalanceIds.contains(account.id)) {
       return Row(mainAxisSize: MainAxisSize.min, children: [
         LazerVaultLoader(size: 10),
         SizedBox(width: 6.w),
-        Text('Fetching balance…',
+        Text('Refreshing…',
             style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
       ]);
     }
     if (_balanceRefreshFailedIds.contains(account.id)) {
       return GestureDetector(
-        onTap: () => _refreshAccountBalance(account.id),
-        child: Text('Balance unavailable · Retry',
+        onTap: () => _manualRefreshBalance(account),
+        child: Text('Balance unavailable · Refresh',
             style: GoogleFonts.inter(
                 color: const Color(0xFFFB923C),
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w600)),
       );
     }
-    // LIVE-ONLY: a figure is current only if this session's Mono read landed.
-    final hasFigure = account.balanceUpdatedAt != null &&
+    final everFetched = account.balanceUpdatedAt != null;
+    final isLive = everFetched &&
         DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
-    if (!hasFigure) {
-      return Row(mainAxisSize: MainAxisSize.min, children: [
-        LazerVaultLoader(size: 9),
+    return GestureDetector(
+      onTap: () => _manualRefreshBalance(account),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(
+          everFetched
+              ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+              : 'Tap to fetch balance',
+          style: GoogleFonts.inter(
+              color: everFetched ? Colors.white : const Color(0xFF3B82F6),
+              fontSize: 12.5.sp,
+              fontWeight: FontWeight.w700),
+        ),
         SizedBox(width: 5.w),
-        Text('Fetching balance…',
-            style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
-      ]);
-    }
-    return Text(
-      '₦${account.lastKnownBalance.toStringAsFixed(2)}',
-      style: GoogleFonts.inter(
-          color: Colors.white, fontSize: 12.5.sp, fontWeight: FontWeight.w700),
+        Icon(Icons.refresh,
+            size: 12.sp,
+            color: isLive
+                ? const Color(0xFF10B981)
+                : const Color(0xFF9CA3AF)),
+        if (everFetched && !isLive) ...[
+          SizedBox(width: 3.w),
+          Text('not live',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 9.5.sp)),
+        ],
+      ]),
     );
   }
 
-  /// Returns a non-blocking warning ONLY when an automatic balance refresh
-  /// FAILED. Plain staleness is handled silently by the background
-  /// auto-refresh, so the user is never nagged about something the app can
-  /// (and does) fix itself.
+  /// Returns a non-blocking warning ONLY when a user-initiated balance refresh
+  /// FAILED. We show the last-known figure otherwise (no live auto-pull), so
+  /// plain staleness is expected and never nagged about.
   String? _getBalanceWarning() {
     if (_sourceAccount == null) return null;
     if (_balanceRefreshFailedIds.contains(_sourceAccount!.id)) {
       return 'Could not refresh this balance (last updated '
-          '${_formatLastRefresh(_sourceAccount!)}). Tap Refresh to retry.';
+          '${_formatLastRefresh(_sourceAccount!)}). Tap the balance to retry.';
     }
     if (_sourceAccount!.lastKnownBalance <= 0 && !_sourceAccount!.isBalanceStale) {
       return 'Balance information unavailable for this account.';
