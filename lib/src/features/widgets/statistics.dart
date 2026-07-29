@@ -22,6 +22,8 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -142,12 +144,15 @@ class Statistics extends StatefulWidget {
   State<Statistics> createState() => _StatisticsState();
 }
 
-class _StatisticsState extends State<Statistics> {
+class _StatisticsState extends State<Statistics> with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   final List<String> timePeriods = ["Day", "Week", "Month", "Quarter", "Year"];
   String selectedPeriod = "Week"; // Default to week instead of Day
 
   bool showIncome = true;
-  bool _isSyncing = false;
   bool _includeExternalBanks = true; // Track external banks filter state
   StatisticsSource _statsSource = StatisticsSource.both; // 3-way source filter
   // Selected linked-bank scope. Empty = ALL linked banks; one or more narrows
@@ -223,28 +228,54 @@ class _StatisticsState extends State<Statistics> {
     }
   }
 
-  Future<void> _syncLinkedAccounts(List<LinkedBankAccount> accounts) async {
-    if (_isSyncing || _userId.isEmpty || accounts.isEmpty) return;
-    setState(() => _isSyncing = true);
+  /// User-initiated, COST-CONFIRMED live balance refresh for one bank (same path
+  /// as Linked Banks / LazerBeam): quote the fee, and when it's > 0 show the cost
+  /// + take a txPIN before charging the wallet and pulling the live figure. A
+  /// live Mono balance read is billed, so we never fire it silently.
+  Future<void> _costConfirmedRefresh(LinkedBankAccount account) async {
+    if (_userId.isEmpty) return;
     final cubit = context.read<OpenBankingCubit>();
-    try {
-      for (final account in accounts) {
-        try {
-          await cubit.refreshBalance(
-            accountId: account.id,
-            userId: _userId,
-            accessToken: _accessToken,
-          );
-        } catch (_) {
-          // Continue syncing remaining accounts even if one fails
-        }
-      }
-      if (mounted) {
-        await cubit.fetchLinkedAccounts(userId: _userId, accessToken: _accessToken);
-      }
-    } finally {
-      if (mounted) setState(() => _isSyncing = false);
+    final feeKobo = await cubit.quoteRefreshFee(
+      accountId: account.id,
+      userId: _userId,
+      accessToken: _accessToken,
+    );
+    if (!mounted) return;
+    if (feeKobo <= 0) {
+      cubit.refreshBalance(
+        accountId: account.id,
+        userId: _userId,
+        accessToken: _accessToken,
+        isManual: true,
+      );
+      return;
     }
+    final feeNaira = feeKobo / 100.0;
+    final txnId =
+        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    await validateTransactionPin(
+      context: context,
+      transactionId: txnId,
+      transactionType: 'balance_refresh',
+      amount: feeNaira,
+      fee: feeNaira,
+      totalAmount: feeNaira,
+      currency: 'NGN',
+      title: 'Refresh balance',
+      message:
+          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Your last-known balance is shown otherwise.',
+      successMessage: 'Balance refreshed',
+      onPinValidated: (token) async {
+        await cubit.refreshBalance(
+          accountId: account.id,
+          userId: _userId,
+          accessToken: _accessToken,
+          isManual: true,
+          verificationToken: token,
+          transactionId: txnId,
+        );
+      },
+    );
   }
 
   @override
@@ -1226,32 +1257,15 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  /// Apply a bank scope selection: update local state, re-scope every number
-  /// on the page via the cubit, and refresh the picked bank's live balance.
+  /// Apply a bank scope selection: update local state and re-scope every number
+  /// on the page via the cubit. No billed live balance read is fired here —
+  /// filtering analytics must never cost money. The Linked Banks rows carry
+  /// their own explicit, cost-confirmed balance refresh.
   void _applyBankFilter(Set<String> ids) {
     final next = Set<String>.from(ids);
     if (setEquals(_selectedBankIds, next)) return;
-    final added = next.difference(_selectedBankIds);
     setState(() => _selectedBankIds = next);
     context.read<StatisticsCubit>().changeBanks(next.toList());
-    // Live balance straight from Mono (the Linked Banks rows reflect it).
-    // 'All banks' refreshes every stale account; otherwise refresh just the
-    // newly-added bank(s) so the balance under the pill is fresh.
-    if (next.isEmpty) {
-      context.read<OpenBankingCubit>().autoRefreshStaleBalances(
-            userId: _userId,
-            accessToken: _accessToken,
-            staleAfter: Duration.zero,
-          );
-    } else if (_userId.isNotEmpty) {
-      for (final id in added) {
-        context.read<OpenBankingCubit>().refreshBalance(
-              accountId: id,
-              userId: _userId,
-              accessToken: _accessToken,
-            );
-      }
-    }
   }
 
   /// True when the active scope is BANK-ONLY and that bank data could not be
@@ -1904,9 +1918,10 @@ class _StatisticsState extends State<Statistics> {
                   // bank pills above, not by tapping the list.
                   _showBankManagementSheet(account);
                 },
-                onRefresh: all.isNotEmpty
-                    ? () => _syncLinkedAccounts(all)
-                    : null,
+                // Refresh is handled inside the widget (transactions sync) and
+                // per-bank via the management sheet (cost-confirmed balance
+                // read) — no silent bulk balance pull here.
+                onRefresh: null,
               ),
             );
           },
@@ -2018,12 +2033,7 @@ class _StatisticsState extends State<Statistics> {
                   subtitle: 'Pull the latest balance from your bank',
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
-                    cubit.refreshBalance(
-                      accountId: account.id,
-                      userId: _userId,
-                      accessToken: _accessToken,
-                      isManual: true,
-                    );
+                    _costConfirmedRefresh(account);
                   },
                 ),
                 if (!account.isDefault)
