@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -33,6 +36,9 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
+
+/// Container formats offered when exporting the central chatbot transcript.
+enum ChatExportFormat { pdf, csv, whatsapp, text }
 
 /// Local model for AI chat settings, persisted via SharedPreferences.
 class AiChatSettings {
@@ -801,7 +807,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
               InvoiceThemeColors.primaryPurple,
               () {
                 Get.back();
-                _exportChat();
+                _showExportFormatSheet();
               },
             ),
             _buildOptionTile(
@@ -862,7 +868,71 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     );
   }
 
-  Future<void> _exportChat() async {
+  /// Present the export-format chooser. Each option shares the FULL transcript
+  /// in a different container: PDF (portable document), CSV (spreadsheet),
+  /// WhatsApp-style .txt (the `[dd/mm/yy, hh:mm:ss] Sender: message` format
+  /// WhatsApp's chat export/import tools recognise), or plain text.
+  void _showExportFormatSheet() {
+    Widget tile(String label, String sub, IconData icon, ChatExportFormat fmt) {
+      return ListTile(
+        leading: Icon(icon, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
+        title: Text(label,
+            style: TextStyle(
+                color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+        subtitle: Text(sub,
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+        onTap: () {
+          Get.back();
+          _exportChat(fmt);
+        },
+      );
+    }
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+        decoration: BoxDecoration(
+          color: InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              margin: EdgeInsets.only(bottom: 12.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 8.w, bottom: 4.h),
+              child: Text('Export chat as',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+            ),
+            tile('PDF document', 'Formatted, shareable transcript',
+                Icons.picture_as_pdf_rounded, ChatExportFormat.pdf),
+            tile('CSV spreadsheet', 'Time, sender and message columns',
+                Icons.grid_on_rounded, ChatExportFormat.csv),
+            tile('WhatsApp format', 'Import into a WhatsApp chat',
+                Icons.chat_rounded, ChatExportFormat.whatsapp),
+            tile('Plain text', 'Simple .txt transcript',
+                Icons.notes_rounded, ChatExportFormat.text),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    );
+  }
+
+  Future<void> _exportChat(ChatExportFormat format) async {
     final cubit = context.read<AIChatCubit>();
     // Export the COMPLETE transcript, not just the pages currently scrolled into
     // view. Pull the full history from the server; fall back to the in-memory
@@ -879,34 +949,132 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       }
     }
     if (messages.isEmpty) {
-      Get.snackbar('Info', 'No messages to export', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Info', 'No messages to export',
+          snackPosition: SnackPosition.BOTTOM);
       return;
-    }
-
-    final buffer = StringBuffer();
-    buffer.writeln('Lazervault AI Chat Export');
-    buffer.writeln('Exported on: ${DateTime.now().toString().split('.').first}');
-    buffer.writeln('${'─' * 40}\n');
-
-    for (final msg in messages) {
-      final sender = msg.isUser ? 'You' : 'NOVA';
-      final time = '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}';
-      buffer.writeln('[$time] $sender:');
-      buffer.writeln(msg.text);
-      buffer.writeln();
     }
 
     try {
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/lazervault_chat_export.txt');
-      await file.writeAsString(buffer.toString());
+      final stamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+      late final File file;
+      switch (format) {
+        case ChatExportFormat.pdf:
+          file = File('${dir.path}/lazervault_chat_$stamp.pdf');
+          await file.writeAsBytes(await _buildTranscriptPdf(messages));
+          break;
+        case ChatExportFormat.csv:
+          file = File('${dir.path}/lazervault_chat_$stamp.csv');
+          await file.writeAsString(_buildTranscriptCsv(messages));
+          break;
+        case ChatExportFormat.whatsapp:
+          // WhatsApp names its exports "WhatsApp Chat with X.txt"; matching the
+          // "_chat.txt" suffix + line format helps import tools recognise it.
+          file = File('${dir.path}/lazervault_nova_chat.txt');
+          await file.writeAsString(_buildTranscriptWhatsapp(messages));
+          break;
+        case ChatExportFormat.text:
+          file = File('${dir.path}/lazervault_chat_$stamp.txt');
+          await file.writeAsString(_buildTranscriptText(messages));
+          break;
+      }
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         title: 'Lazervault Chat Export',
       ));
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to export chat', snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to export chat',
+          snackPosition: SnackPosition.BOTTOM);
     }
+  }
+
+  /// Plain-text transcript (the original format).
+  String _buildTranscriptText(List<ChatMessageEntity> messages) {
+    final buffer = StringBuffer()
+      ..writeln('Lazervault AI Chat Export')
+      ..writeln(
+          'Exported on: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}')
+      ..writeln('${'─' * 40}\n');
+    for (final msg in messages) {
+      final sender = msg.isUser ? 'You' : 'Nova';
+      final time = DateFormat('HH:mm').format(msg.timestamp);
+      buffer
+        ..writeln('[$time] $sender:')
+        ..writeln(msg.text)
+        ..writeln();
+    }
+    return buffer.toString();
+  }
+
+  /// WhatsApp export format: one line per message,
+  /// `dd/MM/yyyy, HH:mm - Sender: message` (newlines within a message are
+  /// collapsed to spaces, as WhatsApp's line-per-message parser expects).
+  String _buildTranscriptWhatsapp(List<ChatMessageEntity> messages) {
+    final fmt = DateFormat('dd/MM/yyyy, HH:mm');
+    final buffer = StringBuffer();
+    for (final msg in messages) {
+      final sender = msg.isUser ? 'You' : 'Nova';
+      final body = msg.text.replaceAll('\n', ' ').trim();
+      buffer.writeln('${fmt.format(msg.timestamp)} - $sender: $body');
+    }
+    return buffer.toString();
+  }
+
+  /// CSV with a header row + Timestamp, Sender, Message columns.
+  String _buildTranscriptCsv(List<ChatMessageEntity> messages) {
+    final fmt = DateFormat('yyyy-MM-dd HH:mm:ss');
+    final rows = <List<String>>[
+      ['Timestamp', 'Sender', 'Message'],
+      for (final msg in messages)
+        [fmt.format(msg.timestamp), msg.isUser ? 'You' : 'Nova', msg.text],
+    ];
+    return const ListToCsvConverter().convert(rows);
+  }
+
+  /// A simple, readable PDF: a title page header then one block per message.
+  Future<List<int>> _buildTranscriptPdf(
+      List<ChatMessageEntity> messages) async {
+    final doc = pw.Document();
+    final fmt = DateFormat('yyyy-MM-dd HH:mm');
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (context) => [
+          pw.Header(
+            level: 0,
+            child: pw.Text('Lazervault AI Chat',
+                style: pw.TextStyle(
+                    fontSize: 20, fontWeight: pw.FontWeight.bold)),
+          ),
+          pw.Text('Exported ${fmt.format(DateTime.now())}',
+              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+          pw.SizedBox(height: 12),
+          ...messages.map((msg) {
+            final isUser = msg.isUser;
+            return pw.Container(
+              margin: const pw.EdgeInsets.only(bottom: 10),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    '${isUser ? 'You' : 'Nova'}  ·  ${fmt.format(msg.timestamp)}',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: isUser ? PdfColors.blue800 : PdfColors.purple800,
+                    ),
+                  ),
+                  pw.SizedBox(height: 2),
+                  pw.Text(msg.text, style: const pw.TextStyle(fontSize: 11)),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+    return doc.save();
   }
 
   void _showAiSettingsModal() {
