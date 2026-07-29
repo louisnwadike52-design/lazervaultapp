@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/models/device_contact.dart';
@@ -141,6 +142,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
   List<Map<String, String>> _banksList = [];
   bool _isLoadingBanks = false;
   String? _banksError;
+  // Most-recently-used bank codes (newest first) for the picker's "Recent" sort.
+  static const String _kRecentBanksKey = 'recent_bank_codes';
+  List<String> _recentBankCodes = [];
   String? _contactSelectedBankCode;
   String? _contactSelectedBankName;
   AccountVerificationResult? _contactVerificationResult;
@@ -1125,9 +1129,17 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final shortSenderName = shortSenderProfile != null
         ? '${shortSenderProfile.user.firstName} ${shortSenderProfile.user.lastName}'.trim()
         : '';
-    final shortNarration = shortSenderName.isNotEmpty
+    final shortDefaultNarration = shortSenderName.isNotEmpty
         ? 'Transfer from $shortSenderName'
         : 'Transfer from Lazervault';
+    // Category-aware narration for the (optional) recurring rule's description —
+    // same builder as the immediate send, so recurring executions are attributed
+    // to the right subcategory (short flow has no note field → detail defaults).
+    final shortNarration = ServiceCategory.buildTransferNarration(
+      category: category,
+      note: null,
+      defaultNarration: shortDefaultNarration,
+    );
     try {
       if (FeatureFlags.sendFundsPinIsRequired) {
         AnalyticsService.instance.trackSendFundsScreen('pin', 'short');
@@ -3414,8 +3426,56 @@ class _SelectRecipientsState extends State<SelectRecipients>
     }
   }
 
+  /// Load the MRU bank codes (for the picker's "Recent" sort). Best-effort.
+  Future<void> _loadRecentBanks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _recentBankCodes = prefs.getStringList(_kRecentBanksKey) ?? [];
+    } catch (_) {/* no recents */}
+  }
+
+  /// Remember a just-selected bank as most-recent (newest first, deduped, cap 8).
+  Future<void> _recordRecentBank(String? code) async {
+    if (code == null || code.isEmpty) return;
+    _recentBankCodes = [code, ..._recentBankCodes.where((c) => c != code)]
+        .take(8)
+        .toList();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_kRecentBanksKey, _recentBankCodes);
+    } catch (_) {/* best-effort */}
+  }
+
+  /// A single sort pill for the bank picker (Most popular / A–Z / Recent).
+  Widget _bankSortPill(
+      String label, BankSort value, BankSort selected, VoidCallback onTap) {
+    final isSel = value == selected;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 14.w),
+        decoration: BoxDecoration(
+          color: isSel ? const Color(0xFF4E03D0) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+              color: isSel ? const Color(0xFF4E03D0) : Colors.grey[300]!),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSel ? Colors.white : Colors.grey[700],
+            fontSize: 13.sp,
+            fontWeight: isSel ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _loadBanksIfNeeded() {
     if (_banksList.isNotEmpty || _isLoadingBanks) return;
+    _loadRecentBanks();
 
     // Get country from LocaleManager
     try {
@@ -3460,6 +3520,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
     // next frame, so the search appeared to do nothing.
     final searchController = TextEditingController();
     String searchQuery = '';
+    // Bank list sort — defaults to most-popular (Nigerian ranking). Hoisted like
+    // searchQuery so setSheetState mutations survive rebuilds.
+    BankSort bankSort = BankSort.popular;
 
     showModalBottomSheet(
       context: context,
@@ -3597,7 +3660,28 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     ),
                   ),
 
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 12.h),
+
+                  // Sort pills — default "Most popular" (Nigerian bank ranking).
+                  SizedBox(
+                    height: 34.h,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _bankSortPill('Most popular', BankSort.popular, bankSort,
+                            () => setSheetState(() => bankSort = BankSort.popular)),
+                        SizedBox(width: 8.w),
+                        _bankSortPill('A–Z', BankSort.alphabetical, bankSort,
+                            () => setSheetState(
+                                () => bankSort = BankSort.alphabetical)),
+                        SizedBox(width: 8.w),
+                        _bankSortPill('Recent', BankSort.recent, bankSort,
+                            () => setSheetState(() => bankSort = BankSort.recent)),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 12.h),
 
                   // Banks List
                   Expanded(
@@ -3653,13 +3737,15 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           );
                         }
 
-                        final filteredBanks = searchQuery.isEmpty
+                        final matched = searchQuery.isEmpty
                             ? _banksList
                             : _banksList
                                 .where((bank) => bank["name"]!
                                     .toLowerCase()
                                     .contains(searchQuery))
                                 .toList();
+                        final filteredBanks =
+                            sortBanks(matched, bankSort, _recentBankCodes);
 
                         if (filteredBanks.isEmpty) {
                           return Center(
@@ -3698,6 +3784,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                     Navigator.pop(bottomSheetContext);
                                     _contactSelectedBankCode = bank["code"];
                                     _contactSelectedBankName = bank["name"];
+                                    _recordRecentBank(bank["code"]);
                                     _showContactAccountNumberSheet(contact);
                                   },
                                   borderRadius: BorderRadius.circular(12.r),
@@ -5015,4 +5102,76 @@ class _SelectRecipientsState extends State<SelectRecipients>
       ),
     );
   }
+}
+
+/// Bank-list sort options for the picker sheet.
+enum BankSort { popular, alphabetical, recent }
+
+/// Curated popularity ranking for Nigerian banks (lower index = more popular).
+/// Fintech/mobile banks lead — they dominate P2P volume — followed by the big
+/// commercial banks. Matched case-insensitively against the bank name; anything
+/// not listed sorts after the ranked ones, alphabetically.
+const List<String> _kPopularNgBanks = [
+  'opay',
+  'palmpay',
+  'moniepoint',
+  'kuda',
+  'guaranty trust', // GTBank / GTCO
+  'gtbank',
+  'access bank',
+  'zenith bank',
+  'united bank for africa', // UBA
+  'first bank',
+  'fidelity bank',
+  'union bank',
+  'fcmb', // First City Monument Bank
+  'sterling bank',
+  'stanbic ibtc',
+  'wema bank',
+  'ecobank',
+  'polaris bank',
+  'keystone bank',
+  'providus bank',
+];
+
+int _popularRank(String name) {
+  final n = name.toLowerCase();
+  for (var i = 0; i < _kPopularNgBanks.length; i++) {
+    if (n.contains(_kPopularNgBanks[i])) return i;
+  }
+  return _kPopularNgBanks.length; // unlisted → after all ranked banks
+}
+
+/// Return a NEW sorted copy of [banks] per [sort]. [recentCodes] is the user's
+/// most-recently-used bank codes (newest first) for the "recent" option.
+List<Map<String, String>> sortBanks(
+  List<Map<String, String>> banks,
+  BankSort sort,
+  List<String> recentCodes,
+) {
+  final list = List<Map<String, String>>.from(banks);
+  switch (sort) {
+    case BankSort.alphabetical:
+      list.sort((a, b) =>
+          (a['name'] ?? '').toLowerCase().compareTo((b['name'] ?? '').toLowerCase()));
+    case BankSort.recent:
+      int recentIdx(Map<String, String> b) {
+        final i = recentCodes.indexOf(b['code'] ?? '');
+        return i < 0 ? recentCodes.length : i;
+      }
+      list.sort((a, b) {
+        final byRecent = recentIdx(a).compareTo(recentIdx(b));
+        if (byRecent != 0) return byRecent;
+        // Ties (both unused) fall back to popularity so the list still reads well.
+        return _popularRank(a['name'] ?? '').compareTo(_popularRank(b['name'] ?? ''));
+      });
+    case BankSort.popular:
+      list.sort((a, b) {
+        final byRank =
+            _popularRank(a['name'] ?? '').compareTo(_popularRank(b['name'] ?? ''));
+        if (byRank != 0) return byRank;
+        return (a['name'] ?? '').toLowerCase().compareTo((b['name'] ?? '').toLowerCase());
+      });
+  }
+  return list;
 }
