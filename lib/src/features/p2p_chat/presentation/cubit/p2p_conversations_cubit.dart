@@ -314,7 +314,9 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   Future<void> _loadUpcomingBirthdays(int seq) async {
     List birthdays;
     try {
-      birthdays = await _repository.listConnectionBirthdays();
+      // Surface a connection's birthday starting 7 days before the date (not the
+      // 60-day default) so the Birthdays tab stays timely and uncluttered.
+      birthdays = await _repository.listConnectionBirthdays(withinDays: 7);
     } catch (e) {
       debugPrint('P2PConversationsCubit: listConnectionBirthdays failed: $e');
       return;

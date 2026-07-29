@@ -27,7 +27,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_sna
 /// Chat-list organisation filter. Keeps the money-heavy connections list clean:
 /// Chats = active conversations, Unread = active with unread messages, Archived
 /// = the user's archived chats. (Per-user "deleted" chats are hidden entirely.)
-enum _ChatFilter { chats, unread, archived }
+enum _ChatFilter { chats, unread, archived, birthdays }
 
 class FinancialConnectionsScreen extends StatefulWidget {
   const FinancialConnectionsScreen({super.key});
@@ -410,6 +410,8 @@ class _FinancialConnectionsScreenState
       _ChatFilter.unread =>
         searched.where((c) => !c.isArchived && c.unreadCount > 0).toList(),
       _ChatFilter.archived => searched.where((c) => c.isArchived).toList(),
+      // Birthdays is its own tab — it lists upcoming birthdays, not conversations.
+      _ChatFilter.birthdays => searched.where((c) => false).toList(),
     };
 
     // Pill badge counts (from the full, unsearched list).
@@ -418,9 +420,12 @@ class _FinancialConnectionsScreenState
         .length;
     final archivedPillCount =
         state.conversations.where((c) => c.isArchived).length;
+    final birthdaysPillCount = state.upcomingBirthdays.length;
 
     // Requests + saved-contacts belong to the main "Chats" view only.
     final onChats = _filter == _ChatFilter.chats;
+    // The Birthdays tab shows upcoming-birthday tiles instead of conversations.
+    final onBirthdays = _filter == _ChatFilter.birthdays;
     final contactsWithoutConv = onChats
         ? _getContactsWithoutConversation(
             state.conversations,
@@ -433,13 +438,17 @@ class _FinancialConnectionsScreenState
     // Saved-contacts (start a chat without sending money) is a manual add path,
     // so it's hidden alongside the add button — connections form on money send.
     final hasContacts = _kManualAddVisible && contactsWithoutConv.isNotEmpty;
-    final anything = hasRequests || hasConnections || hasContacts;
+    final hasBirthdays = onBirthdays && state.upcomingBirthdays.isNotEmpty;
+    final anything = onBirthdays
+        ? hasBirthdays
+        : (hasRequests || hasConnections || hasContacts);
 
     return Column(
       children: [
         _buildFilterPills(
           unread: unreadPillCount,
           archived: archivedPillCount,
+          birthdays: birthdaysPillCount,
         ),
         Expanded(
           // Enables Slidable `groupTag` auto-close: opening one row's swipe
@@ -460,36 +469,38 @@ class _FinancialConnectionsScreenState
                 : ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 96.h),
-                    children: [
-                      if (onChats && state.upcomingBirthdays.isNotEmpty) ...[
-                        _buildSectionHeader('UPCOMING BIRTHDAYS'),
-                        ...state.upcomingBirthdays.map(_buildBirthdayTile),
-                        SizedBox(height: 8.h),
-                      ],
-                      if (hasRequests) ...[
-                        _buildRequestsSection(requests),
-                        SizedBox(height: 8.h),
-                      ],
-                      if (hasConnections) ...[
-                        _buildSectionHeader(switch (_filter) {
-                          _ChatFilter.chats => 'CONNECTIONS',
-                          _ChatFilter.unread => 'UNREAD',
-                          _ChatFilter.archived => 'ARCHIVED',
-                        }),
-                        ...conversations.map(_buildConnectionTile),
-                      ],
-                      if (_kManualAddVisible &&
-                          (hasContacts ||
-                              (_contactsLoading && !hasConnections))) ...[
-                        if (hasConnections) SizedBox(height: 8.h),
-                        if (_contactsLoading && !hasContacts)
-                          _buildContactsLoadingIndicator()
-                        else if (hasContacts) ...[
-                          _buildSectionHeader('SAVED CONTACTS'),
-                          ...contactsWithoutConv.map(_buildContactTile),
-                        ],
-                      ],
-                    ],
+                    children: onBirthdays
+                        ? [
+                            // Birthdays tab: only upcoming-birthday tiles (7-day window).
+                            _buildSectionHeader('UPCOMING BIRTHDAYS'),
+                            ...state.upcomingBirthdays.map(_buildBirthdayTile),
+                          ]
+                        : [
+                            if (hasRequests) ...[
+                              _buildRequestsSection(requests),
+                              SizedBox(height: 8.h),
+                            ],
+                            if (hasConnections) ...[
+                              _buildSectionHeader(switch (_filter) {
+                                _ChatFilter.chats => 'CONNECTIONS',
+                                _ChatFilter.unread => 'UNREAD',
+                                _ChatFilter.archived => 'ARCHIVED',
+                                _ChatFilter.birthdays => 'BIRTHDAYS',
+                              }),
+                              ...conversations.map(_buildConnectionTile),
+                            ],
+                            if (_kManualAddVisible &&
+                                (hasContacts ||
+                                    (_contactsLoading && !hasConnections))) ...[
+                              if (hasConnections) SizedBox(height: 8.h),
+                              if (_contactsLoading && !hasContacts)
+                                _buildContactsLoadingIndicator()
+                              else if (hasContacts) ...[
+                                _buildSectionHeader('SAVED CONTACTS'),
+                                ...contactsWithoutConv.map(_buildContactTile),
+                              ],
+                            ],
+                          ],
                   ),
           ),
           ),
@@ -500,22 +511,34 @@ class _FinancialConnectionsScreenState
 
   /// The Chats / Unread / Archived filter pills. Always visible so the user can
   /// switch even when the current filter is empty.
-  Widget _buildFilterPills({required int unread, required int archived}) {
+  Widget _buildFilterPills({
+    required int unread,
+    required int archived,
+    required int birthdays,
+  }) {
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 10.h),
-      child: Row(
-        children: [
-          _filterPill(
-              label: 'Chats', filter: _ChatFilter.chats),
-          SizedBox(width: 8.w),
-          _filterPill(
-              label: 'Unread', filter: _ChatFilter.unread, count: unread),
-          SizedBox(width: 8.w),
-          _filterPill(
-              label: 'Archived',
-              filter: _ChatFilter.archived,
-              count: archived),
-        ],
+      // Horizontally scrollable so the pills never overflow on narrow screens.
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _filterPill(label: 'Chats', filter: _ChatFilter.chats),
+            SizedBox(width: 8.w),
+            _filterPill(
+                label: 'Unread', filter: _ChatFilter.unread, count: unread),
+            SizedBox(width: 8.w),
+            _filterPill(
+                label: 'Archived',
+                filter: _ChatFilter.archived,
+                count: archived),
+            SizedBox(width: 8.w),
+            _filterPill(
+                label: 'Birthdays',
+                filter: _ChatFilter.birthdays,
+                count: birthdays),
+          ],
+        ),
       ),
     );
   }
@@ -603,6 +626,13 @@ class _FinancialConnectionsScreenState
           title: 'No connections yet',
           subtitle:
               'Send money to a Lazervault user and a financial connection is created automatically.',
+          shrink: true,
+        ),
+      _ChatFilter.birthdays => _buildEmptyState(
+          icon: Icons.cake_outlined,
+          title: 'No birthdays coming up',
+          subtitle:
+              'Birthdays of your connections appear here 7 days before the date.',
           shrink: true,
         ),
     };
