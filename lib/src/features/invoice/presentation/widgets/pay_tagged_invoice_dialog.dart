@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'invoice_fx_confirm_sheet.dart';
 
 class PayTaggedInvoiceDialog extends StatefulWidget {
   final TaggedInvoice invoice;
@@ -37,7 +38,13 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
       GetIt.I<ITransactionPinService>();
 
   String? _selectedAccountId;
+  String _selectedAccountCurrency = '';
+  double _selectedAccountBalance = 0;
   bool _isProcessing = false;
+
+  /// The confirmed conversion when the payer's account currency differs from the
+  /// invoice currency. Null for a same-currency payment.
+  InvoiceFxQuote? _fxQuote;
 
   bool get _isSplit =>
       (widget.invoice.invoice?.taggedUsers?.length ?? 0) > 1;
@@ -75,13 +82,21 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
             );
           }
           Get.back(); // Close dialog
+          final fx = _fxQuote;
           Get.toNamed(
             AppRoutes.invoicePaymentReceipt,
             arguments: {
               ...state.transaction,
               // Receipt shows the share actually paid (and the full total for a
-              // split invoice), not the backend's full-total amount field.
-              'amount': _baseAmount,
+              // split invoice), not the backend's full-total amount field. For a
+              // cross-currency payment the headline amount/currency reflect the
+              // converted value; the invoice's own currency/amount + rate ride
+              // along for the dual-currency receipt.
+              'amount': fx != null ? fx.convertedAmount : _baseAmount,
+              'currency': fx != null ? fx.toCurrency : widget.invoice.currency,
+              if (fx != null) 'invoice_currency': fx.fromCurrency,
+              if (fx != null) 'invoice_amount': fx.fromAmount,
+              if (fx != null) 'fx_rate': fx.rate,
               if (_isSplit) 'is_split': true,
               if (_isSplit) 'total_amount': widget.invoice.amount,
               'settled_full':
@@ -276,7 +291,12 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
 
                 return Column(
                   children: state.accountSummaries.map((account) {
-                    final hasSufficientBalance =
+                    final sameCurrency = account.currency.toUpperCase() ==
+                        widget.invoice.currency.toUpperCase();
+                    // Cross-currency accounts stay selectable — the payable
+                    // amount is only known after the FX quote, which also runs
+                    // the real sufficiency check.
+                    final hasSufficientBalance = !sameCurrency ||
                         account.availableBalance >= _totalAmount;
                     final isSelected = _selectedAccountId == account.id;
 
@@ -285,6 +305,9 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
                           ? () {
                               setState(() {
                                 _selectedAccountId = account.id;
+                                _selectedAccountCurrency = account.currency;
+                                _selectedAccountBalance =
+                                    account.availableBalance;
                               });
                             }
                           : null,
@@ -551,6 +574,34 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
 
     HapticFeedback.mediumImpact();
 
+    // Re-quote on every attempt — a stale FX quote must never be reused.
+    _fxQuote = null;
+
+    // Cross-currency invoice payment: confirm the live conversion BEFORE the PIN
+    // when the payer's account currency differs from the invoice currency. The
+    // backend re-resolves the rate at settlement; this quote is for consent +
+    // the dual-currency receipt.
+    final invoiceCurrency = widget.invoice.currency;
+    final payCurrency = _selectedAccountCurrency;
+    double pinAmount = _baseAmount;
+    String pinCurrency = invoiceCurrency;
+    if (payCurrency.isNotEmpty &&
+        payCurrency.toUpperCase() != invoiceCurrency.toUpperCase()) {
+      final quote = await InvoiceFxConfirmSheet.show(
+        context,
+        fromCurrency: invoiceCurrency,
+        toCurrency: payCurrency,
+        fromAmount: _baseAmount,
+        availableBalance: _selectedAccountBalance,
+      );
+      if (!mounted) return;
+      if (quote == null) return; // payer cancelled or rate unavailable
+      _fxQuote = quote;
+      pinAmount = quote.convertedAmount;
+      pinCurrency = quote.toCurrency;
+    }
+    if (!mounted) return;
+
     // Generate transaction ID and idempotency key
     final idPrefix = widget.invoice.invoiceId.length >= 8
         ? widget.invoice.invoiceId.substring(0, 8)
@@ -565,10 +616,10 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
       context: context,
       transactionId: transactionId,
       transactionType: 'invoice_item_payment',
-      amount: _totalAmount,
-      currency: widget.invoice.currency,
+      amount: pinAmount,
+      currency: pinCurrency,
       title: 'Confirm Payment',
-      message: 'Confirm invoice payment of ${widget.invoice.currency} ${_totalAmount.toStringAsFixed(2)}',
+      message: 'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },

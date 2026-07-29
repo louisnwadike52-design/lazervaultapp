@@ -37,6 +37,16 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
         transaction['is_split'] == true || transaction['is_partial'] == true;
     final settledFull = transaction['settled_full'] == true;
     final totalAmount = (transaction['total_amount'] as num?)?.toDouble();
+    // Cross-currency payment: the headline amount/currency above are already the
+    // converted value in the payer's account currency. These carry the invoice's
+    // own currency + amount and the rate used, so the receipt shows BOTH.
+    final invoiceCurrency = transaction['invoice_currency'] as String?;
+    final invoiceAmount = (transaction['invoice_amount'] as num?)?.toDouble();
+    final fxRate = (transaction['fx_rate'] as num?)?.toDouble();
+    final hasFx = invoiceCurrency != null &&
+        invoiceCurrency.isNotEmpty &&
+        fxRate != null &&
+        fxRate > 0;
     final invoiceNumber = transaction['invoice_number']?.toString();
     final fromName = transaction['from_name']?.toString();
     final toName = transaction['to_name']?.toString();
@@ -46,10 +56,21 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     if (isSplit && totalAmount != null) {
       metadata['Your Share'] =
           '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(amount)}';
+      // The invoice total is denominated in the invoice currency, which differs
+      // from the payer's account currency on a cross-currency payment.
+      final totalSymbol =
+          hasFx ? _currencySymbol(invoiceCurrency) : _currencySymbol(currency);
       metadata['Total Invoice'] =
-          '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(totalAmount)}';
+          '$totalSymbol${NumberFormat('#,##0.00').format(totalAmount)}';
       metadata['Status'] =
           settledFull ? 'Invoice fully paid' : 'Awaiting other recipients';
+    }
+
+    // Dual-currency rows: show the original invoice amount + the rate used.
+    if (hasFx) {
+      metadata['Invoice Amount'] =
+          '${_currencySymbol(invoiceCurrency)}${NumberFormat('#,##0.00').format(invoiceAmount ?? 0)}';
+      metadata['Exchange Rate'] = _formatRate(invoiceCurrency, currency, fxRate);
     }
     if (invoiceNumber != null && invoiceNumber.isNotEmpty) {
       metadata['Invoice No.'] = invoiceNumber;
@@ -93,6 +114,12 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     // Try ISO first, then the backend's space-separated UTC format.
     return DateTime.tryParse(s) ??
         DateTime.tryParse('${s.replaceFirst(' ', 'T')}Z')?.toLocal();
+  }
+
+  /// "1 FROM = R TO" — extra precision for very small rates (e.g. NGN→USD).
+  String _formatRate(String from, String to, double rate) {
+    final r = rate >= 0.01 ? rate.toStringAsFixed(4) : rate.toStringAsFixed(6);
+    return '1 ${from.toUpperCase()} = $r ${to.toUpperCase()}';
   }
 
   String _currencySymbol(String currency) {

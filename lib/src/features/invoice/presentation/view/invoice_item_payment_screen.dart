@@ -21,6 +21,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart'
     show AuthenticationSuccess;
 import 'package:lazervault/core/services/account_manager.dart';
+import '../widgets/invoice_fx_confirm_sheet.dart';
 
 class InvoiceItemPaymentScreen extends StatefulWidget {
   final Invoice invoice;
@@ -42,7 +43,13 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
       GetIt.I<ITransactionPinService>();
 
   String _selectedAccountId = '';
+  String _selectedAccountCurrency = '';
   bool _isProcessingPayment = false;
+
+  /// The confirmed conversion when the payer's account currency differs from the
+  /// invoice currency. Null for a same-currency payment. Set in [_processPayment]
+  /// and consumed by the success listener to render both currencies on the receipt.
+  InvoiceFxQuote? _fxQuote;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -150,13 +157,21 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
           setState(() => _isProcessingPayment = false);
           // Refresh dashboard balance
           _fetchAccounts();
+          final fx = _fxQuote;
           Get.offNamed(
             AppRoutes.invoicePaymentReceipt,
             arguments: {
               ...state.transaction,
               // The receipt shows the SHARE actually paid (and total for split
-              // invoices), not the backend's full-total amount field.
-              'amount': _baseAmount,
+              // invoices), not the backend's full-total amount field. For a
+              // cross-currency payment the debit happened in the payer's account
+              // currency, so the headline amount/currency reflect the converted
+              // value and the invoice's own currency/amount + rate ride along.
+              'amount': fx != null ? fx.convertedAmount : _baseAmount,
+              'currency': fx != null ? fx.toCurrency : widget.invoice.currency,
+              if (fx != null) 'invoice_currency': fx.fromCurrency,
+              if (fx != null) 'invoice_amount': fx.fromAmount,
+              if (fx != null) 'fx_rate': fx.rate,
               if (_isSplit) 'is_split': true,
               if (_isSplit) 'total_amount': widget.invoice.totalAmount,
               // Whether THIS payment settled the invoice in full — drives the
@@ -507,11 +522,21 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
             return Column(
               children: accounts.map((account) {
                 final isSelected = _selectedAccountId == account.id;
-                final hasSufficientBalance = account.availableBalance >= _totalAmount;
+                final sameCurrency = account.currency.toUpperCase() ==
+                    widget.invoice.currency.toUpperCase();
+                // Same-currency accounts can be affordability-checked up front.
+                // For a different-currency account the payable amount is only
+                // known after the FX quote, so we keep it selectable and defer
+                // the real sufficiency check to the conversion sheet + backend.
+                final hasSufficientBalance =
+                    !sameCurrency || account.availableBalance >= _totalAmount;
 
                 return GestureDetector(
                   onTap: hasSufficientBalance
-                      ? () => setState(() => _selectedAccountId = account.id)
+                      ? () => setState(() {
+                            _selectedAccountId = account.id;
+                            _selectedAccountCurrency = account.currency;
+                          })
                       : null,
                   child: Container(
                     margin: EdgeInsets.only(bottom: 10.h),
@@ -557,7 +582,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                '$_currencySymbol${account.availableBalance.toStringAsFixed(2)}',
+                                '${_getCurrencySymbol(account.currency)}${account.availableBalance.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   color: hasSufficientBalance
                                       ? const Color(0xFF10B981)
@@ -786,10 +811,55 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     );
   }
 
+  /// The currently selected account entity (for its currency + balance).
+  AccountSummaryEntity? _selectedAccount() {
+    final state = context.read<AccountCardsSummaryCubit>().state;
+    List<AccountSummaryEntity> accounts = const [];
+    if (state is AccountCardsSummaryLoaded) {
+      accounts = state.accountSummaries;
+    } else if (state is AccountBalanceUpdated) {
+      accounts = state.accountSummaries;
+    }
+    for (final a in accounts) {
+      if (a.id == _selectedAccountId) return a;
+    }
+    return null;
+  }
+
   Future<void> _processPayment() async {
     if (_selectedAccountId.isEmpty) return;
 
     HapticFeedback.mediumImpact();
+
+    // Re-quote on every attempt — a stale FX quote must never be reused.
+    _fxQuote = null;
+
+    // When the invoice currency differs from the payer's account currency,
+    // confirm the live conversion BEFORE the PIN. The payer's account is then
+    // debited (and the biller credited) the converted amount in the account's
+    // own currency; the backend independently re-resolves the rate at
+    // settlement, so this quote is for informed consent + receipt display.
+    final invoiceCurrency = widget.invoice.currency;
+    final payCurrency = _selectedAccountCurrency;
+    double pinAmount = _baseAmount;
+    String pinCurrency = invoiceCurrency;
+    if (payCurrency.isNotEmpty &&
+        payCurrency.toUpperCase() != invoiceCurrency.toUpperCase()) {
+      final account = _selectedAccount();
+      final quote = await InvoiceFxConfirmSheet.show(
+        context,
+        fromCurrency: invoiceCurrency,
+        toCurrency: payCurrency,
+        fromAmount: _baseAmount,
+        availableBalance: account?.availableBalance ?? 0,
+      );
+      if (!mounted) return;
+      if (quote == null) return; // payer cancelled or rate unavailable
+      _fxQuote = quote;
+      pinAmount = quote.convertedAmount;
+      pinCurrency = quote.toCurrency;
+    }
+    if (!mounted) return;
 
     final idPrefix = widget.invoice.id.length >= 8
         ? widget.invoice.id.substring(0, 8)
@@ -803,10 +873,10 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
       context: context,
       transactionId: transactionId,
       transactionType: 'invoice_item_payment',
-      amount: _totalAmount,
-      currency: widget.invoice.currency,
+      amount: pinAmount,
+      currency: pinCurrency,
       title: 'Confirm Payment',
-      message: 'Confirm invoice payment of ${widget.invoice.currency} ${_totalAmount.toStringAsFixed(2)}',
+      message: 'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
