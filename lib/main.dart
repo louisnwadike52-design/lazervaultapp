@@ -731,7 +731,14 @@ class _MyAppState extends State<MyApp> {
           create: (_) => serviceLocator<MultiCountryCubit>(),
         ),
       ],
-      child: ScreenUtilInit(
+      // Responsive width cap: on tablets / large windows, feed ScreenUtilInit a
+      // MediaQuery whose WIDTH is capped to [kMaxContentWidth] so the .w/.h
+      // scaling stays phone-proportioned instead of blowing up to fill a huge
+      // screen. The physical letterboxing happens in the GetMaterialApp.builder
+      // below. Phones (width <= cap) pass through untouched.
+      child: _MaxWidthMediaQuery(
+        maxWidth: kMaxContentWidth,
+        child: ScreenUtilInit(
         designSize: const Size(414, 896),
         minTextAdapt: true,
         splitScreenMode: true,
@@ -753,7 +760,15 @@ class _MyAppState extends State<MyApp> {
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
             // Startup gate: on launch/resume, show a maintenance screen if the
             // backend is down and prompt for store updates (forced/optional).
-            child: AppStartupGate(child: child ?? const SizedBox.shrink()),
+            // The app content is letterboxed to a phone-like max width on large
+            // screens (tablets, desktop windows) so it never stretches and
+            // loses proportion; the gate's own overlays stay full-screen.
+            child: AppStartupGate(
+              child: _MaxWidthShell(
+                maxWidth: kMaxContentWidth,
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
           ),
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
@@ -772,6 +787,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -780,4 +796,72 @@ void localLogWriter(String text, {bool isError = false}) {
   // pass the message to your favourite logging package here
   // please note that even if enableLog: false log messages will be pushed in this callback
   // you get check the flag if you want through GetConfig.isLogEnable
+}
+
+/// The maximum content width the app is laid out at. The UI is phone-first
+/// (designSize 414); on tablets / large desktop windows we cap the width here so
+/// content stays phone-proportioned and centered instead of stretching edge to
+/// edge and losing its dimensions. Slightly wider than the design width for a
+/// touch of breathing room on big screens.
+const double kMaxContentWidth = 560.0;
+
+/// Feeds its subtree a MediaQuery whose WIDTH is clamped to [maxWidth]. Placed
+/// ABOVE [ScreenUtilInit] so ScreenUtil computes its .w/.h scale factors against
+/// the capped width — otherwise on a tablet every `.w` would balloon to fill the
+/// full screen. On phones (real width <= maxWidth) it is a pass-through.
+class _MaxWidthMediaQuery extends StatelessWidget {
+  final double maxWidth;
+  final Widget child;
+  const _MaxWidthMediaQuery({required this.maxWidth, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    // MediaQuery.fromView establishes a LIVE MediaQuery from the root view
+    // (there is no MediaQuery ancestor this high in the tree) that also updates
+    // on rotation / window resize.
+    return MediaQuery.fromView(
+      view: View.of(context),
+      child: Builder(
+        builder: (context) {
+          final base = MediaQuery.of(context);
+          if (base.size.width <= maxWidth) return child;
+          return MediaQuery(
+            data: base.copyWith(size: Size(maxWidth, base.size.height)),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Letterboxes the app content to [maxWidth] on large screens: the content is
+/// centered in a phone-width column and the surrounding area is filled with the
+/// scaffold background. The inner MediaQuery is re-capped so widgets that read
+/// `MediaQuery.size` directly also see the constrained width (WidgetsApp resets
+/// it to the real view size below GetMaterialApp). Phones are a pass-through.
+class _MaxWidthShell extends StatelessWidget {
+  final double maxWidth;
+  final Widget child;
+  const _MaxWidthShell({required this.maxWidth, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    if (mq.size.width <= maxWidth) return child;
+    return ColoredBox(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Center(
+        child: ClipRect(
+          child: SizedBox(
+            width: maxWidth,
+            child: MediaQuery(
+              data: mq.copyWith(size: Size(maxWidth, mq.size.height)),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
