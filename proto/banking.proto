@@ -1297,6 +1297,7 @@ message ConnectWidgetConfigResponse {
     string error_message = 3;
     string public_key = 4;      // Mono public key for widget
     string app_id = 5;          // Mono app ID
+    int64 link_fee = 6;         // First-time link fee (minor units, LazerVault REVENUE); 0 = free
 }
 
 // Link Bank Account
@@ -1304,6 +1305,8 @@ message LinkBankAccountRequest {
     string user_id = 1;
     string code = 2;            // Authorization code from Mono Connect widget
     bool set_as_default = 3;    // Set this as the default linked account
+    string verification_token = 4; // txPIN token (required only when link_fee > 0)
+    string transaction_id = 5;  // Idempotency key for the link-fee charge
 }
 
 message LinkBankAccountResponse {
@@ -1312,6 +1315,7 @@ message LinkBankAccountResponse {
     string error_message = 3;
     LinkedBankAccount account = 4;
     bool is_new_account = 5;    // True if newly linked, false if reactivated
+    int64 fee_charged = 6;      // Link fee actually charged (minor units); 0 if none
 }
 
 // Get Linked Accounts

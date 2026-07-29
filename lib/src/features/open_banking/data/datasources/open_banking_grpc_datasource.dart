@@ -48,6 +48,9 @@ class OpenBankingGrpcDataSource {
       return {
         'public_key': response.publicKey,
         'app_id': response.appId,
+        // First-time link fee in minor units (0 = free). The link flow shows
+        // this + takes a txPIN before linking when > 0.
+        'link_fee': response.linkFee.toString(),
       };
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'getConnectWidgetConfig');
@@ -63,6 +66,8 @@ class OpenBankingGrpcDataSource {
     required String userId,
     required String code,
     bool setAsDefault = false,
+    String? verificationToken,
+    String? transactionId,
   }) async {
     print('[OpenBankingGrpc] linkBankAccount called - userId: $userId, code: ${code.substring(0, 10)}...');
     try {
@@ -70,6 +75,8 @@ class OpenBankingGrpcDataSource {
         userId: userId,
         code: code,
         setAsDefault: setAsDefault,
+        verificationToken: verificationToken ?? '',
+        transactionId: transactionId ?? '',
       );
       print('[OpenBankingGrpc] Request created, calling gRPC...');
 

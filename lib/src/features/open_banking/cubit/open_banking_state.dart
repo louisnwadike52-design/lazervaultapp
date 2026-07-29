@@ -208,13 +208,18 @@ class ConnectConfigLoaded extends OpenBankingState {
   final String publicKey;
   final String appId;
 
+  /// First-time link fee in minor units (kobo); 0 = free. When > 0 the link
+  /// screen shows the cost + takes a txPIN before completing the link.
+  final int linkFeeMinor;
+
   const ConnectConfigLoaded({
     required this.publicKey,
     required this.appId,
+    this.linkFeeMinor = 0,
   });
 
   @override
-  List<Object?> get props => [publicKey, appId];
+  List<Object?> get props => [publicKey, appId, linkFeeMinor];
 }
 
 /// Reauthorization token received

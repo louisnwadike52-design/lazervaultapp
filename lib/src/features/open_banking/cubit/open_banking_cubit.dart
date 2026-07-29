@@ -71,6 +71,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       emit(ConnectConfigLoaded(
         publicKey: publicKey,
         appId: appId,
+        linkFeeMinor: int.tryParse(config['link_fee'] ?? '0') ?? 0,
       ));
     } catch (e) {
       if (isClosed) return;
@@ -89,6 +90,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     String? userEmail,
     String? userName,
     String? userPhone,
+    String? verificationToken,
+    String? transactionId,
   }) async {
     if (isClosed) return;
     emit(AccountLinkingInProgress());
@@ -100,6 +103,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           userId: userId,
           code: code,
           setAsDefault: setAsDefault,
+          verificationToken: verificationToken,
+          transactionId: transactionId,
         );
       } else {
         account = await _restDataSource!.linkBankAccount(
