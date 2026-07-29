@@ -87,11 +87,25 @@ class HttpAiChatDataSource implements IAiChatDataSource {
           options.headers['X-Currency'] = currency;
         }
 
-        // Add locale header (BCP 47 format, e.g. en-NG)
-        final locale = _localeManager?.currentLocale;
-        if (locale != null && locale.isNotEmpty) {
-          options.headers['X-Locale'] = locale;
+        // Add locale header (BCP 47). This MUST equal the locale stored with the
+        // message so the locale-scoped history read matches on write. The
+        // gateway overrides an "en-NG" body locale with this X-Locale header, so
+        // if it were the device locale (e.g. en-US) it would poison English
+        // chats and the read (which filters by the chat locale) would miss them.
+        // Prefer the locale already in the /chat body (set from the chosen chat
+        // language); otherwise fall back to the persisted chat-language locale
+        // (used by the /chat/history read, which carries no body).
+        final reqData = options.data;
+        String chatLocale;
+        if (reqData is Map &&
+            reqData['locale'] is String &&
+            (reqData['locale'] as String).isNotEmpty) {
+          chatLocale = reqData['locale'] as String;
+        } else {
+          chatLocale = ChatLanguagePreference.localeFor(
+              await ChatLanguagePreference.getLanguage());
         }
+        options.headers['X-Locale'] = chatLocale;
 
         return handler.next(options);
       },
@@ -242,14 +256,17 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         'offset': offset ?? 0,
       };
 
-      // DO NOT filter history by locale. The conversation is uniquely scoped by
-      // its deterministic session_id (general_{userId}); a locale filter here
-      // WIPES the whole conversation on every open, because the READ pinned the
-      // device's active locale while each turn was WRITTEN with the chat-
-      // language-picker locale (or an X-Locale header) — the two diverge (any
-      // non-English chatbot language, or a device locale that drifts off en-NG),
-      // so `WHERE locale = $n` matched zero rows. History is DB-backed and was
-      // never deleted; dropping the filter makes it all reappear.
+      // Scope history by the CHAT-language locale — the SAME value the send path
+      // stores (ChatLanguagePreference, not the device locale) — so the chatbot
+      // keeps a per-language conversation and the read matches exactly what was
+      // written. Sourcing this from the device locale (the old behaviour) made
+      // the read locale drift off the stored one and wiped the conversation on
+      // every open.
+      final chatLocale = ChatLanguagePreference.localeFor(
+          await ChatLanguagePreference.getLanguage());
+      if (chatLocale.isNotEmpty) {
+        queryParams['locale'] = chatLocale;
+      }
 
       // Only include session_id if provided (backend treats empty as "all")
       if (effectiveSessionId.isNotEmpty) {
