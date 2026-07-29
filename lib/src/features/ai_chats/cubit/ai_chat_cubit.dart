@@ -45,6 +45,21 @@ class AIChatCubit extends Cubit<AIChatState> {
   /// The currently-selected chatbot language code.
   String get language => _language;
 
+  /// Number of messages fetched per history page (initial load + each scroll-up
+  /// "load older"). The gateway returns the newest page at offset 0 and pages
+  /// backwards from there.
+  static const int historyPageSize = 30;
+
+  /// Whether an older page of history MIGHT still exist (a full page came back
+  /// last time). Drives the scroll-up "load older" trigger.
+  bool _hasMoreHistory = true;
+  bool get hasMoreHistory => _hasMoreHistory;
+
+  /// Re-entrancy guard so a burst of scroll events fires at most one
+  /// "load older" fetch at a time.
+  bool _isLoadingOlder = false;
+  bool get isLoadingOlder => _isLoadingOlder;
+
   AIChatCubit({
     required ProcessChatUseCase processChatUseCase,
     required GetAIChatHistoryUseCase getAIChatHistoryUseCase,
@@ -87,6 +102,8 @@ class AIChatCubit extends Cubit<AIChatState> {
       accessToken: accessToken,
       sessionId: _sessionId,
       sourceContext: 'general',
+      limit: historyPageSize,
+      offset: 0,
     );
 
     if (isClosed) return;
@@ -96,7 +113,52 @@ class AIChatCubit extends Cubit<AIChatState> {
       },
       (history) {
         _currentMessages = history;
+        // A full page implies older messages may still exist behind it, so the
+        // scroll-up "load older" trigger stays armed.
+        _hasMoreHistory = history.length >= historyPageSize;
         emit(AIChatHistorySuccess(messages: _currentMessages));
+      },
+    );
+  }
+
+  /// Fetch the next OLDER page of history and PREPEND it (scroll-up reverse
+  /// pagination). The offset is the count of newest messages already loaded, so
+  /// live turns appended to the newest end are naturally accounted for and the
+  /// next page never overlaps or skips. Prior history is preserved — older
+  /// messages are prepended, never replacing what's already on screen.
+  Future<void> loadOlderHistory({required String accessToken}) async {
+    if (isClosed || _isLoadingOlder || !_hasMoreHistory) return;
+    _isLoadingOlder = true;
+
+    if (_sessionId == null && _chatSessionManager != null) {
+      _sessionId = await _chatSessionManager!.getGeneralSessionId();
+    }
+
+    final offset = _currentMessages.length;
+    final result = await _getAIChatHistoryUseCase(
+      accessToken: accessToken,
+      sessionId: _sessionId,
+      sourceContext: 'general',
+      limit: historyPageSize,
+      offset: offset,
+    );
+
+    if (isClosed) {
+      _isLoadingOlder = false;
+      return;
+    }
+    result.fold(
+      (failure) {
+        // Leave loaded history intact; the user can retry by scrolling up again.
+        _isLoadingOlder = false;
+      },
+      (older) {
+        if (older.isNotEmpty) {
+          _currentMessages = [...older, ..._currentMessages];
+        }
+        _hasMoreHistory = older.length >= historyPageSize;
+        _isLoadingOlder = false;
+        emit(AIChatHistorySuccess(messages: List.from(_currentMessages)));
       },
     );
   }
@@ -452,6 +514,8 @@ class AIChatCubit extends Cubit<AIChatState> {
   void clearChat() {
     _currentMessages = [];
     _sessionId = null;
+    _hasMoreHistory = true;
+    _isLoadingOlder = false;
     if (isClosed) return;
     emit(AIChatInitial(messages: _currentMessages, isTyping: false));
   }

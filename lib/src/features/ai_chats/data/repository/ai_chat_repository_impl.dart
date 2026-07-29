@@ -105,11 +105,15 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required String accessToken,
     String? sessionId,
     String? sourceContext,
+    int? limit,
+    int? offset,
   }) async {
     try {
       final response = await _dataSource.getChatHistory(
         sessionId: sessionId,
         sourceContext: sourceContext,
+        limit: limit,
+        offset: offset,
       );
 
       // Handle both gRPC proto response and HTTP JSON response

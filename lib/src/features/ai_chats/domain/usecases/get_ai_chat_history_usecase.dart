@@ -12,11 +12,15 @@ class GetAIChatHistoryUseCase {
     required String accessToken,
     String? sessionId,
     String? sourceContext,
+    int? limit,
+    int? offset,
   }) async {
     return await _repository.getChatHistory(
       accessToken: accessToken,
       sessionId: sessionId,
       sourceContext: sourceContext,
+      limit: limit,
+      offset: offset,
     );
   }
 } 

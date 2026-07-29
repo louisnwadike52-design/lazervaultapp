@@ -12,9 +12,12 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:intl/intl.dart';
 
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/chat_language_preference.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -205,6 +208,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   // the cubit's sendMessage call is dispatched (the cubit owns the typing
   // state from there) so the user can immediately type a follow-up.
   bool _isSubmitting = false;
+  // True while an older-history page is being fetched + prepended (scroll-up
+  // pagination). Suppresses the auto-scroll-to-bottom that a normal history
+  // emit triggers, so the viewport can be re-anchored to the same message.
+  bool _isPrependingOlder = false;
   late AnimationController _typingDotsController;
   AiChatSettings _settings = AiChatSettings();
   // Selected chatbot response language code (en/yo/ig/ha/pcm/fr/es). The AI
@@ -273,6 +280,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           (_hostRoute?.isCurrent ?? true),
     );
 
+    // Load older history when the user scrolls to the very top (reverse
+    // pagination). Prior messages are preserved and older ones are prepended.
+    _scrollController.addListener(_onScroll);
+
     // Scroll to the bottom each time the chatbot tab is opened (the page is
     // kept alive by TabBarView, so this is the only signal that it became
     // visible again after the first build).
@@ -328,6 +339,53 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     }
   }
 
+  /// Trigger "load older" once the user scrolls near the very top of the list.
+  /// The cubit + [_isPrependingOlder] guard collapse a burst of scroll events
+  /// into a single fetch.
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_isPrependingOlder) return;
+    if (_scrollController.position.pixels <= 120) {
+      _loadOlderHistory();
+    }
+  }
+
+  /// Fetch the next older page and prepend it, then re-anchor the viewport to
+  /// the message the user was looking at (advance pixels by the growth in the
+  /// scroll extent) so the list doesn't jump.
+  Future<void> _loadOlderHistory() async {
+    if (_isPrependingOlder) return;
+    final cubit = context.read<AIChatCubit>();
+    if (!cubit.hasMoreHistory || cubit.isLoadingOlder) return;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    if (!_scrollController.hasClients) return;
+
+    _isPrependingOlder = true;
+    final beforeExtent = _scrollController.position.maxScrollExtent;
+    final beforePixels = _scrollController.position.pixels;
+
+    await cubit.loadOlderHistory(
+      accessToken: authState.profile.session.accessToken,
+    );
+
+    if (!mounted) {
+      _isPrependingOlder = false;
+      return;
+    }
+    // After the prepended messages lay out, keep the same message under the
+    // viewport by advancing by however much the extent grew.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        final delta = _scrollController.position.maxScrollExtent - beforeExtent;
+        if (delta > 0) {
+          _scrollController.jumpTo(beforePixels + delta);
+        }
+      }
+      _isPrependingOlder = false;
+    });
+  }
+
   /// Auto-open the PIN bottom sheet for the latest assistant message that
   /// carries a pin_prompt, once per transaction_id. Only ever called from the
   /// AIChatMessageSuccess branch of the listener (live turn), so historical
@@ -367,6 +425,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   @override
   void dispose() {
     _releaseAutoLogout?.call();
+    _scrollController.removeListener(_onScroll);
     widget.activeTab?.removeListener(_onActiveTabChanged);
     // Leaving the chat page entirely — stop any playing voice note.
     ChatVoiceNotePlayer.instance.stop();
@@ -922,7 +981,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Text(
-                            'Preview: Your balance is NGN 45,200.00',
+                            _balancePreviewText(),
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 14.sp * _settings.fontSizeMultiplier,
@@ -1009,6 +1068,19 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         );
       },
     );
+  }
+
+  /// Live text-size preview using the dashboard's ACTIVE account balance — the
+  /// same source the dashboard shows (AccountManager.activeAccountDetails) —
+  /// formatted with that account's own currency. Falls back to a neutral line
+  /// when no account is selected yet (e.g. right after login).
+  String _balancePreviewText() {
+    final details = serviceLocator<AccountManager>().activeAccountDetails;
+    if (details == null) {
+      return 'Preview: This is how your messages will look';
+    }
+    final amount = NumberFormat('#,##0.00').format(details.balance);
+    return 'Preview: Your balance is ${details.currency} $amount';
   }
 
   Widget _settingsLabel(String text) {
@@ -2049,7 +2121,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         // Scroll to bottom: instant settle on history load (staggered so it
         // reaches the true bottom as media expands the list), animated for new messages
         if (state is AIChatHistorySuccess) {
-          _scrollChatToBottom();
+          // A prepend (scroll-up "load older") also emits AIChatHistorySuccess —
+          // don't yank the view to the bottom; _loadOlderHistory re-anchors it.
+          if (!_isPrependingOlder) _scrollChatToBottom();
         } else if (state is AIChatMessageSuccess || state is AIChatMessageLoading) {
           _scrollToBottom(isDelayed: true);
         }

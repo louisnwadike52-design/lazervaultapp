@@ -220,7 +220,12 @@ class HttpAiChatDataSource implements IAiChatDataSource {
   }
 
   @override
-  Future<dynamic> getChatHistory({String? sessionId, String? sourceContext}) async {
+  Future<dynamic> getChatHistory({
+    String? sessionId,
+    String? sourceContext,
+    int? limit,
+    int? offset,
+  }) async {
     try {
       final userId = await _secureStorageService.getUserId() ?? '';
       // Use provided sessionId — don't generate random ones (breaks persistence)
@@ -228,11 +233,14 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final token = await _secureStorageService.getAccessToken() ?? '';
 
       final activeLocale = _localeManager?.currentLocale ?? '';
+      // offset 0 = newest page; a growing offset walks backwards into older
+      // history (scroll-up "load older"). The gateway returns each page
+      // chronological ASC with the true total_count.
       final queryParams = <String, dynamic>{
         'user_id': userId,
         'access_token': token,
-        'limit': 50,
-        'offset': 0,
+        'limit': limit ?? 50,
+        'offset': offset ?? 0,
       };
 
       // Filter history by active locale
