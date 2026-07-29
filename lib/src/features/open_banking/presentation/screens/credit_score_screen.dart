@@ -214,6 +214,11 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
   }
 
   Widget _buildScoreTab(CreditScoreEntity score) {
+    // Same guard as the single-source view: don't present a neutral fabricated
+    // score for a source that has too little transaction history.
+    if (!_hasEnoughDataForScore(score)) {
+      return _buildBuildingScoreState(score);
+    }
     return RefreshIndicator(
       onRefresh: () async {
         context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
@@ -291,6 +296,15 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
     );
   }
 
+  /// A score is only meaningful once there's enough transaction history to
+  /// compute it. With little/no data the backend's factors all fall back to a
+  /// neutral 50, producing a fabricated ~575 — showing that as a real gauge
+  /// would be exactly the "guessed score" we must avoid. Gate on the real data
+  /// the backend reports (transactions analysed + its own confidence).
+  static const int _minTransactionsForScore = 5;
+  bool _hasEnoughDataForScore(CreditScoreEntity s) =>
+      s.transactionsAnalyzed >= _minTransactionsForScore && s.confidence >= 0.35;
+
   Widget _buildContent(CreditScoreEntity? score, CreditScoreHistoryEntity? history) {
     if (score != null) _lastScore = score;
     final displayScore = score ?? _lastScore;
@@ -299,6 +313,12 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
       return const Center(
         child: LazerVaultLoader.small(),
       );
+    }
+
+    // Not enough real data yet → show a "building your score" state instead of
+    // a neutral, fabricated number presented as if it were computed.
+    if (!_hasEnoughDataForScore(displayScore)) {
+      return _buildBuildingScoreState(displayScore);
     }
 
     return RefreshIndicator(
@@ -419,7 +439,8 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           ),
           SizedBox(height: 4.h),
           Text(
-            '${score.transactionsAnalyzed} transactions · ${score.monthsOfData} months of data',
+            '${score.transactionsAnalyzed} transactions · ${score.monthsOfData} months of data'
+            '${score.confidence > 0 ? ' · ${(score.confidence * 100).round()}% confidence' : ''}',
             style: TextStyle(
               color: const Color(0xFF9CA3AF),
               fontSize: 12.sp,
@@ -1139,6 +1160,89 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
             borderRadius: BorderRadius.circular(12.r),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Shown when a bank IS linked but there isn't enough transaction history to
+  /// compute a reliable score — so we never present the backend's neutral
+  /// fallback (~575) as a real result. Refreshable so it re-checks as activity
+  /// accrues.
+  Widget _buildBuildingScoreState(CreditScoreEntity score) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<OpenBankingCubit>().refreshCreditScore(
+              userId: widget.userId,
+              linkedAccountId: score.linkedAccountId,
+            );
+      },
+      color: const Color(0xFF3B82F6),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(height: 0.18.sh),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.r),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.query_stats_rounded,
+                    color: const Color(0xFF3B82F6), size: 48.r),
+                SizedBox(height: 16.h),
+                Text(
+                  'Building your credit score',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  "There isn't enough transaction history yet to calculate a "
+                  'reliable score. Keep transacting${score.bankName.isNotEmpty ? ' on ${score.bankName}' : ''} — '
+                  'your score and its breakdown appear once there’s enough activity.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  '${score.transactionsAnalyzed} transactions · ${score.monthsOfData} months of data so far',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF6B7280),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      context.read<OpenBankingCubit>().refreshCreditScore(
+                            userId: widget.userId,
+                            linkedAccountId: score.linkedAccountId,
+                          ),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Refresh'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
