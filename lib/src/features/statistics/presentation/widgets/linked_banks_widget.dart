@@ -200,6 +200,15 @@ class LinkedBanksWidget extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
 
+              // Honesty signal: bank analytics come from the last synced pull,
+              // not a live read, so the figures below may be out of date. Tell
+              // the user plainly and give a one-tap refresh (same explicit sync
+              // as the header icon) instead of silently re-pulling on load.
+              if (hasAccounts) ...[
+                _buildStaleDataAdvisory(context, isSyncing),
+                SizedBox(height: 12.h),
+              ],
+
               // Content
               if (!hasAccounts)
                 _buildEmptyState(context)
@@ -213,6 +222,58 @@ class LinkedBanksWidget extends StatelessWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     return LinkedBanksEmptyState(onLink: () => _linkNewBank(context));
+  }
+
+  /// Non-blocking advisory that the bank analytics may be stale, with a one-tap
+  /// explicit refresh. Shown whenever banks are linked — bank data is never
+  /// live-read on load, so "may be out of date" is always the honest framing.
+  Widget _buildStaleDataAdvisory(BuildContext context, bool isSyncing) {
+    return GestureDetector(
+      onTap: isSyncing ? null : () => _syncAllAccounts(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSyncing
+                  ? Icons.sync_rounded
+                  : Icons.info_outline_rounded,
+              color: const Color(0xFFFB923C),
+              size: 14.sp,
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                isSyncing
+                    ? 'Refreshing your latest bank data…'
+                    : 'Bank data may be out of date. Tap to pull your latest transactions.',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFD1D5DB),
+                  fontSize: 11.sp,
+                ),
+              ),
+            ),
+            if (!isSyncing) ...[
+              SizedBox(width: 8.w),
+              Text(
+                'Refresh',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildAccountsList(
