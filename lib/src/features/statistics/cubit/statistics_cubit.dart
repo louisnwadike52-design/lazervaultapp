@@ -151,22 +151,38 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// Change the analytics period (week/month/quarter/year) and reload.
   void changePeriod(String period) {
     _currentPeriod = period;
-    _reloadKeepingRange();
+    // The period must drive the REAL analytics window. Previously this only
+    // relabelled and reloaded the same (initial 7-day) range, so picking
+    // "Month"/"Year" showed a week of data. Compute the window from the period.
+    final range = _rangeForPeriod(period);
+    _periodDebouncer.runAsync(() async {
+      await loadStatistics(startDate: range.start, endDate: range.end);
+    });
   }
 
-  void _reloadKeepingRange({bool silent = false}) {
-    _periodDebouncer.runAsync(() async {
-      if (state is StatisticsLoaded) {
-        final currentState = state as StatisticsLoaded;
-        await loadStatistics(
-          startDate: currentState.startDate,
-          endDate: currentState.endDate,
-          silent: silent,
-        );
-      } else {
-        await loadStatistics(silent: silent);
-      }
-    });
+  /// Map a named period to its actual data window (end = now).
+  ({DateTime start, DateTime end}) _rangeForPeriod(String period) {
+    final now = DateTime.now();
+    final Duration span;
+    switch (period.toLowerCase()) {
+      case 'day':
+        span = const Duration(days: 1);
+        break;
+      case 'month':
+        span = const Duration(days: 30);
+        break;
+      case 'quarter':
+        span = const Duration(days: 90);
+        break;
+      case 'year':
+        span = const Duration(days: 365);
+        break;
+      case 'week':
+      default:
+        span = const Duration(days: 7);
+        break;
+    }
+    return (start: now.subtract(span), end: now);
   }
 
   /// Load all statistics data for the selected source + bank scope.
