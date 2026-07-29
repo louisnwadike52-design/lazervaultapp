@@ -1201,6 +1201,58 @@ class _SettingsViewState extends State<_SettingsView> {
             if (mounted) setState(() {});
           },
         ),
+        // Tunable loudness for the chat message tones (only meaningful while the
+        // sound above is on). Dragging previews the send tone at the new level.
+        if (ChatSoundSettings.instance.globalSound)
+          _FilterableTile(
+            title: 'Message sound volume',
+            subtitle: 'How loud chat message tones play',
+            keywords: const ['volume', 'loud', 'quiet', 'sound'],
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 4.h),
+              child: Row(
+                children: [
+                  Icon(Icons.graphic_eq_rounded, color: _kBrand, size: 20.w),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Message sound volume',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: _kTextPrimary,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Icon(Icons.volume_mute_rounded,
+                                size: 16.w, color: _kTextSecondary),
+                            Expanded(
+                              child: Slider(
+                                value: ChatSoundSettings.instance.globalVolume,
+                                activeColor: _kBrand,
+                                onChanged: (v) {
+                                  ChatSoundSettings.instance.setGlobalVolume(v);
+                                  if (mounted) setState(() {});
+                                },
+                                onChangeEnd: (_) => ChatSoundSettings.instance
+                                    .playSendFeedback(null),
+                              ),
+                            ),
+                            Icon(Icons.volume_up_rounded,
+                                size: 18.w, color: _kTextSecondary),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         _switchTile(
           icon: Icons.vibration_outlined,
           title: 'Chat vibration',

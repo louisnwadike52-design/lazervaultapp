@@ -23,11 +23,17 @@ class ChatSoundSettings {
 
   static const String _kGlobalSound = 'p2p_sound_global';
   static const String _kGlobalVibrate = 'p2p_vibrate_global';
+  static const String _kGlobalVolume = 'p2p_sound_volume_global';
   static const String _perChatSoundPrefix = 'p2p_sound_chat_';
   static const String _perChatVibratePrefix = 'p2p_vibrate_chat_';
 
+  /// Default message-sound loudness — deliberately gentle (55%), not full blast,
+  /// so the send/receive tones are soft by default. User-tunable in Settings.
+  static const double _kDefaultVolume = 0.55;
+
   bool _globalSound = true;
   bool _globalVibrate = true;
+  double _globalVolume = _kDefaultVolume;
   final Map<String, bool> _chatSound = {};
   final Map<String, bool> _chatVibrate = {};
   bool _ready = false;
@@ -40,6 +46,8 @@ class ChatSoundSettings {
       final prefs = await SharedPreferences.getInstance();
       _globalSound = prefs.getBool(_kGlobalSound) ?? true;
       _globalVibrate = prefs.getBool(_kGlobalVibrate) ?? true;
+      _globalVolume =
+          (prefs.getDouble(_kGlobalVolume) ?? _kDefaultVolume).clamp(0.0, 1.0);
       for (final key in prefs.getKeys()) {
         if (key.startsWith(_perChatSoundPrefix)) {
           final cid = key.substring(_perChatSoundPrefix.length);
@@ -71,6 +79,19 @@ class ChatSoundSettings {
     _globalVibrate = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kGlobalVibrate, enabled);
+  }
+
+  /// Message-sound loudness, 0.0 (silent) → 1.0 (full). Applied to every tone.
+  double get globalVolume => _globalVolume;
+
+  Future<void> setGlobalVolume(double volume) async {
+    _globalVolume = volume.clamp(0.0, 1.0);
+    // Apply immediately so a live player reflects the change on the next tone.
+    try {
+      await _player?.setVolume(_globalVolume);
+    } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kGlobalVolume, _globalVolume);
   }
 
   // ---- Per-chat overrides ----------------------------------------------
@@ -140,6 +161,9 @@ class ChatSoundSettings {
   Future<void> _playAsset(String path) async {
     try {
       await _audio.setAsset(path);
+      // Honour the user's tunable loudness (default gentle) so the tone is never
+      // a full-blast "scary" blast.
+      await _audio.setVolume(_globalVolume);
       await _audio.seek(Duration.zero);
       await _audio.play();
     } catch (_) {
