@@ -55,6 +55,19 @@ class ChatSessionManager {
     return 'svc_${userId}_$sourceContext';
   }
 
+  /// Clear the legacy general AI-chat history SERVER-SIDE — clears the Redis hot
+  /// copy and soft-deletes the Postgres rows via `DELETE /chat/sessions/{id}` —
+  /// WITHOUT touching the multi-tab session list. The bottom-nav ai_chats
+  /// chatbot uses the deterministic `general_{userId}` session and has no drawer
+  /// tab to replace (unlike [deleteSession]), so this is the correct clear path
+  /// for it. Throws on failure so the caller can surface an inline retry; a
+  /// no-op when no datasource is wired.
+  Future<void> clearGeneralHistory() async {
+    final ds = _sessionsDataSource;
+    if (ds == null) return;
+    await ds.delete(await getGeneralSessionId());
+  }
+
   // ─── Multi-tab session API ────────────────────────────────────────────
 
   /// Current active session id, or `null` if none has been resolved yet.

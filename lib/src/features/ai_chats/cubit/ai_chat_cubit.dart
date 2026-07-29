@@ -545,14 +545,65 @@ class AIChatCubit extends Cubit<AIChatState> {
     );
   }
 
-  // Clear chat history (Only resets Cubit state)
-  void clearChat() {
+  /// Clear chat history — deletes it SERVER-SIDE first (Redis hot copy +
+  /// Postgres soft-delete of the `general_{userId}` session), THEN resets local
+  /// state so the cleared history can't reappear on the next load/pagination.
+  /// Returns true on success. On failure the local messages are KEPT (never a
+  /// silent local-only clear that reappears on reload) so the UI can surface an
+  /// inline retry.
+  Future<bool> clearChat() async {
+    try {
+      await _chatSessionManager?.clearGeneralHistory();
+    } catch (_) {
+      if (!isClosed) {
+        emit(AIChatHistoryError(
+          'Could not clear chat. Please try again.',
+          messages: _currentMessages,
+        ));
+      }
+      return false;
+    }
     _currentMessages = [];
     _sessionId = null;
     _hasMoreHistory = true;
     _isLoadingOlder = false;
-    if (isClosed) return;
+    if (isClosed) return true;
     emit(AIChatInitial(messages: _currentMessages, isTyping: false));
+    return true;
+  }
+
+  /// Fetch the COMPLETE transcript (every page) for export WITHOUT mutating the
+  /// visible conversation or emitting UI states. Pages backward from the newest
+  /// window until a short page signals the end, then returns the messages in
+  /// chronological (oldest→newest) order. Best-effort — a failed page ends the
+  /// walk with whatever was collected so export never hard-fails.
+  Future<List<ChatMessageEntity>> fetchAllForExport(
+      {required String accessToken}) async {
+    final sessionId = _sessionId ??
+        (_chatSessionManager != null
+            ? await _chatSessionManager!.getGeneralSessionId()
+            : null);
+    final all = <ChatMessageEntity>[];
+    var offset = 0;
+    // Safety cap (100 pages ≈ 3000 messages) so a misbehaving backend can never
+    // spin this unbounded.
+    for (var page = 0; page < 100; page++) {
+      final res = await _getAIChatHistoryUseCase(
+        accessToken: accessToken,
+        sessionId: sessionId,
+        sourceContext: 'general',
+        limit: historyPageSize,
+        offset: offset,
+      );
+      final batch = res.fold((_) => <ChatMessageEntity>[], (h) => h);
+      if (batch.isEmpty) break;
+      // Each page is a newest-first window; prepend older pages to build the
+      // full chronological order.
+      all.insertAll(0, batch);
+      offset += batch.length;
+      if (batch.length < historyPageSize) break;
+    }
+    return all;
   }
 
   /// Notify cubit that settings changed. The actual values are persisted locally

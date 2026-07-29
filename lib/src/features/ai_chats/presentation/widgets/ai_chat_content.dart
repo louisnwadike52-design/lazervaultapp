@@ -837,11 +837,23 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             child: Text('Cancel', style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Get.back();
-              context.read<AIChatCubit>().clearChat();
-              Get.snackbar('Done', 'Chat cleared', snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF1F1F1F), colorText: Colors.white);
+              // Deletes server-side (Redis + Postgres soft-delete) THEN resets
+              // local state; only confirm on success so a failed clear isn't
+              // reported as done (it would reappear on reload).
+              final ok = await context.read<AIChatCubit>().clearChat();
+              if (ok) {
+                Get.snackbar('Done', 'Chat cleared',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: Colors.white);
+              } else {
+                Get.snackbar('Could not clear chat', 'Please try again.',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFFEF4444),
+                    colorText: Colors.white);
+              }
             },
             child: Text('Clear', style: TextStyle(color: Colors.red, fontSize: 14.sp, fontWeight: FontWeight.w600)),
           ),
@@ -851,8 +863,21 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   }
 
   Future<void> _exportChat() async {
-    final state = context.read<AIChatCubit>().state;
-    final messages = state.messages;
+    final cubit = context.read<AIChatCubit>();
+    // Export the COMPLETE transcript, not just the pages currently scrolled into
+    // view. Pull the full history from the server; fall back to the in-memory
+    // messages if the fetch yields nothing (offline / error).
+    List<ChatMessageEntity> messages = cubit.state.messages;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      try {
+        final full = await cubit.fetchAllForExport(
+            accessToken: authState.profile.session.accessToken);
+        if (full.isNotEmpty) messages = full;
+      } catch (_) {
+        // Keep the in-memory messages — export is best-effort, never blocks.
+      }
+    }
     if (messages.isEmpty) {
       Get.snackbar('Info', 'No messages to export', snackPosition: SnackPosition.BOTTOM);
       return;
