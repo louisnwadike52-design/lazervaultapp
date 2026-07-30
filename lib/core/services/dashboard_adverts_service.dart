@@ -20,6 +20,85 @@ class DashboardAdvert {
   });
 }
 
+/// Bundled seed adverts. Shown when the admin hasn't configured any
+/// (`dashboard_adverts` unset / unreachable) so the carousel launches with real
+/// imagery instead of a single painted placeholder. Admin config fully replaces
+/// these the moment it lands. Images depict our services in an African context
+/// (royalty-free, hotlink-permitted Pexels CDN); each links to a real in-app
+/// route and degrades to the painted card if the URL fails.
+const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/4560063/pexels-photo-4560063.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/bills',
+    title: 'Pay bills in seconds',
+    sort: 0,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/19518397/pexels-photo-19518397.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/send-funds',
+    title: 'Send money instantly',
+    sort: 1,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/5991144/pexels-photo-5991144.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/exchange',
+    title: 'Send money home',
+    sort: 2,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/4559676/pexels-photo-4559676.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/rmb',
+    title: 'Trade across borders',
+    sort: 3,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/6744352/pexels-photo-6744352.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/crypto',
+    title: 'Buy and sell crypto',
+    sort: 4,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/8475146/pexels-photo-8475146.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/contactless-pay',
+    title: 'Tap to pay',
+    sort: 5,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/5727909/pexels-photo-5727909.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/insurance',
+    title: 'Protect your family',
+    sort: 6,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/30220079/pexels-photo-30220079.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/lock-funds',
+    title: 'Save towards your goals',
+    sort: 7,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/33749805/pexels-photo-33749805.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/group-account',
+    title: 'Save with your group',
+    sort: 8,
+  ),
+  DashboardAdvert(
+    imageUrl:
+        'https://images.pexels.com/photos/30677594/pexels-photo-30677594.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    link: '/whatsapp-banking',
+    title: 'Bank right from chat',
+    sort: 9,
+  ),
+];
+
 /// Fetches + caches the dashboard adverts list from the admin settings endpoint
 /// (`/api/v1/internal/voice-agents/settings`, the same no-auth poll the URL
 /// registry + Help config use). Never throws — an unreachable backend or a
