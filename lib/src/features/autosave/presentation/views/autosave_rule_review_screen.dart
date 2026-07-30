@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 
 class AutoSaveRuleReviewScreen extends StatefulWidget {
   const AutoSaveRuleReviewScreen({super.key});
@@ -312,7 +314,91 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             ),
           ],
 
+          // Direct-debit fee disclosure — a bank-linked rule pulls from the bank
+          // via Direct Debit, which incurs a fee EACH time. The user must know
+          // this up front (especially for a schedule that runs automatically).
+          if (_isBankLinkedRule()) ...[
+            SizedBox(height: 16.h),
+            _buildFeeDisclosureCard(),
+          ],
+
           SizedBox(height: 120.h),
+        ],
+      ),
+    );
+  }
+
+  bool _isBankLinkedRule() {
+    final t = ruleData['triggerType'] as TriggerType?;
+    return t == TriggerType.externalInflow || t == TriggerType.scheduledExternal;
+  }
+
+  /// Discloses the recurring direct-debit fee for a bank-linked rule. For a fixed
+  /// amount it quotes the exact aggregated fee (Mono + platform) via the shared
+  /// deposit fee-quote; for a percentage-of-inflow rule it shows a general notice
+  /// (the fee depends on the inflow size).
+  Widget _buildFeeDisclosureCard() {
+    final t = ruleData['triggerType'] as TriggerType;
+    final isScheduled = t == TriggerType.scheduledExternal;
+    final amountType = ruleData['amountType'] as AmountType?;
+    final amountValue = (ruleData['amountValue'] as double?) ?? 0;
+    final headline = isScheduled
+        ? 'This runs automatically on your schedule. Each scheduled save pulls from your bank by direct debit — a fee applies every time.'
+        : 'Saving from your bank uses direct debit — a fee applies each time (you confirm every save).';
+
+    Widget feeLine;
+    if (amountType == AmountType.fixed && amountValue > 0) {
+      feeLine = FutureBuilder(
+        future: serviceLocator<OpenBankingCubit>()
+            .depositFeeQuote((amountValue * 100).round()),
+        builder: (context, snapshot) {
+          final q = snapshot.data;
+          if (q == null) {
+            return Text(
+              'The fee is deducted from the amount saved.',
+              style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+            );
+          }
+          return Text(
+            'Fee ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.fee, 'NGN')} per save — '
+            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.netAmount, 'NGN')} reaches your goal.',
+            style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white, fontWeight: FontWeight.w600),
+          );
+        },
+      );
+    } else {
+      feeLine = Text(
+        'The fee is deducted from each amount saved.',
+        style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFB923C).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.30)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: const Color(0xFFFB923C), size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Direct debit fee applies',
+                    style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white, fontWeight: FontWeight.w700)),
+                SizedBox(height: 4.h),
+                Text(headline,
+                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF), height: 1.4)),
+                SizedBox(height: 6.h),
+                feeLine,
+              ],
+            ),
+          ),
         ],
       ),
     );
