@@ -5,9 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
-import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 
 /// Screen to link a bank account using Mono Connect
 class LinkBankScreen extends StatefulWidget {
@@ -25,19 +23,12 @@ class LinkBankScreen extends StatefulWidget {
 }
 
 class _LinkBankScreenState extends State<LinkBankScreen>
-    with TransactionPinMixin {
-  @override
-  ITransactionPinService get transactionPinService =>
-      serviceLocator<ITransactionPinService>();
-
+    with BankLinkFeeMixin {
   late WebViewController _webViewController;
   bool _isLoading = true;
   String? _publicKey;
   String? _appId;
   bool _configLoaded = false;
-  // First-time link fee (minor units) resolved from the widget config; > 0 means
-  // we take a cost-confirmed txPIN before completing the link.
-  int _linkFeeMinor = 0;
 
   @override
   void initState() {
@@ -231,45 +222,19 @@ class _LinkBankScreenState extends State<LinkBankScreen>
 
   void _linkAccount(String code) {
     final cubit = context.read<OpenBankingCubit>();
-
-    // Free link (default): complete immediately.
-    if (_linkFeeMinor <= 0) {
-      cubit.linkAccount(
+    // Shared connection-fee notice (generic — no exact amount, we're on a Mono
+    // subscription), then link. Charge (default 0, split at settlement) applies
+    // server-side on a genuinely new link.
+    linkBankWithFee(
+      context: context,
+      doLink: (token, txnId) async => cubit.linkAccount(
         userId: widget.userId,
         code: code,
         accessToken: widget.accessToken,
         setAsDefault: true,
-      );
-      return;
-    }
-
-    // Paid link: show the cost + take a txPIN, then complete with the token.
-    // The backend charges only for a genuinely new account and unlinks on a
-    // failed charge, so nothing is charged for a re-link or a wrong PIN.
-    final feeNaira = _linkFeeMinor / 100.0;
-    final txnId = 'link-${widget.userId}-${DateTime.now().millisecondsSinceEpoch}';
-    validateTransactionPin(
-      context: context,
-      transactionId: txnId,
-      transactionType: 'bank_link',
-      amount: feeNaira,
-      fee: feeNaira,
-      totalAmount: feeNaira,
-      currency: 'NGN',
-      title: 'Link this bank',
-      message:
-          'Linking a bank costs ₦${feeNaira.toStringAsFixed(2)}, charged to your wallet.',
-      successMessage: 'Bank linked',
-      onPinValidated: (token) async {
-        await cubit.linkAccount(
-          userId: widget.userId,
-          code: code,
-          accessToken: widget.accessToken,
-          setAsDefault: true,
-          verificationToken: token,
-          transactionId: txnId,
-        );
-      },
+        verificationToken: token,
+        transactionId: txnId,
+      ),
     );
   }
 
@@ -293,7 +258,6 @@ class _LinkBankScreenState extends State<LinkBankScreen>
             setState(() {
               _publicKey = state.publicKey;
               _appId = state.appId;
-              _linkFeeMinor = state.linkFeeMinor;
               _configLoaded = true;
             });
             _loadMonoWidget();

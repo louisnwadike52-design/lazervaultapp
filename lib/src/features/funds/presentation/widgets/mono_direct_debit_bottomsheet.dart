@@ -7,9 +7,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
-import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
-import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -42,10 +39,7 @@ class MonoDirectDebitBottomsheet extends StatefulWidget {
 }
 
 class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
-    with TransactionPinMixin, BankLinkFeeMixin {
-  @override
-  ITransactionPinService get transactionPinService =>
-      serviceLocator<ITransactionPinService>();
+    with BankLinkFeeMixin {
 
   bool _isLinking = false;
 
@@ -509,7 +503,6 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
       final obc = widget.openBankingCubit;
       await linkBankWithFee(
         context: context,
-        cubit: obc,
         doLink: (token, txnId) async => obc.linkAccount(
           userId: userId,
           code: result.code,

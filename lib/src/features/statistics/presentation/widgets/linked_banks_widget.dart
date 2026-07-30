@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -356,12 +357,19 @@ class LinkedBanksWidget extends StatelessWidget {
     );
 
     if (result != null && context.mounted) {
-      context.read<OpenBankingCubit>().linkAccount(
-            userId: user.id,
-            code: result.code,
-            accessToken: authState.profile.session.accessToken,
-            setAsDefault: linkedAccounts.isEmpty,
-          );
+      final obc = context.read<OpenBankingCubit>();
+      // Shared connection-fee notice (generic — no exact amount), then link.
+      await linkBankWithConnectionNotice(
+        context: context,
+        doLink: (token, txnId) async => obc.linkAccount(
+          userId: user.id,
+          code: result.code,
+          accessToken: authState.profile.session.accessToken,
+          setAsDefault: linkedAccounts.isEmpty,
+          verificationToken: token,
+          transactionId: txnId,
+        ),
+      );
     }
   }
 

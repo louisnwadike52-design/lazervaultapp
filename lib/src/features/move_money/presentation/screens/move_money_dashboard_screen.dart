@@ -22,8 +22,6 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
-import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
-import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
@@ -58,10 +56,7 @@ class MoveMoneyDashboardScreen extends StatefulWidget {
 }
 
 class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
-    with SingleTickerProviderStateMixin, TransactionPinMixin, BankLinkFeeMixin {
-  @override
-  ITransactionPinService get transactionPinService =>
-      serviceLocator<ITransactionPinService>();
+    with SingleTickerProviderStateMixin, BankLinkFeeMixin {
 
   late TabController _tabController;
 
@@ -173,7 +168,6 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
       // approval); false → DirectPay (user authorises each transfer).
       await linkBankWithFee(
         context: context,
-        cubit: obc,
         doLink: (token, txnId) async => obc.linkAccount(
           userId: user.id,
           code: result.code,

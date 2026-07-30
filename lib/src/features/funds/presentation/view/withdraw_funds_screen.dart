@@ -171,7 +171,6 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final obc = serviceLocator<OpenBankingCubit>();
     await linkBankWithFee(
       context: context,
-      cubit: obc,
       doLink: (token, txnId) async => obc.linkAccount(
         userId: user.id,
         code: result.code,

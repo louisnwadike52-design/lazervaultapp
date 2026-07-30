@@ -2585,7 +2585,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       final obc = serviceLocator<OpenBankingCubit>();
       await linkBankWithFee(
         context: context,
-        cubit: obc,
         doLink: (token, txnId) async {
           // Debit setup ("Setting Up Direct Debit" / "Authorize Direct Debit").
           _progressController.show(

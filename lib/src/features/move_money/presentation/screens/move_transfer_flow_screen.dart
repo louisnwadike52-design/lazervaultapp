@@ -355,7 +355,6 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       // otherwise). Auto-mandate: passes user info so mandate is created too.
       await linkBankWithFee(
         context: context,
-        cubit: obc,
         doLink: (token, txnId) async => obc.linkAccount(
           userId: user.id,
           code: result.code,
