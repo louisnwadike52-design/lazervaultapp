@@ -65,6 +65,16 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
 
   NetworkProvider? _network;
   bool _detecting = false;
+  // True once a detection attempt has completed for the current number. Lets us
+  // distinguish "still detecting" from "couldn't detect" so we only show the
+  // manual network pills in the latter case (mirrors the legacy recipient
+  // screen's _detectionAttempted gate).
+  bool _detectionAttempted = false;
+  // Whether the user overrode the (failed) auto-detection by tapping a pill, so
+  // we render "selected" instead of "auto-detected".
+  bool _networkManual = false;
+  // Supported networks for the manual pills — loaded once alongside the cubit.
+  List<NetworkProvider> _providers = const [];
   double? _amount;
   bool _saveContact = false;
   String? _saveNickname;
@@ -92,6 +102,19 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     _phoneController.addListener(_onPhoneChanged);
     _prefillFromProfile();
     _loadSavedContacts();
+    _loadProviders();
+  }
+
+  /// Load the supported networks (for the manual pills shown when the phone
+  /// prefix can't be auto-detected). Best-effort — the pills just won't show if
+  /// this fails, and auto-detection still works via the cubit.
+  Future<void> _loadProviders() async {
+    try {
+      final list =
+          await serviceLocator<AirtimeRepository>().getNetworkProviders(_country);
+      if (!mounted) return;
+      setState(() => _providers = list.where((p) => p.isActive).toList());
+    } catch (_) {/* best-effort */}
   }
 
   /// Best-effort read of the user's saved airtime contacts so we can flag an
@@ -164,7 +187,13 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     // A valid NG mobile is 11 digits starting 0 (0803…). Detect only once the
     // number is long enough to carry a prefix; clear the badge otherwise.
     if (phone.length < 4) {
-      if (_network != null && mounted) setState(() => _network = null);
+      if (mounted) {
+        setState(() {
+          _network = null;
+          _detectionAttempted = false;
+          _networkManual = false;
+        });
+      }
       return;
     }
     if (mounted) setState(() => _detecting = true);
@@ -176,8 +205,19 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     } catch (_) {/* leave unresolved → user can still edit */}
     if (!mounted) return;
     setState(() {
+      // Auto-detection wins; only fall back to a manual pick when it's null.
       _network = found;
+      _networkManual = false;
       _detecting = false;
+      _detectionAttempted = true;
+    });
+  }
+
+  /// The user tapped a network pill because auto-detection couldn't resolve one.
+  void _selectNetworkManually(NetworkProvider p) {
+    setState(() {
+      _network = p;
+      _networkManual = true;
     });
   }
 
@@ -543,10 +583,17 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     }
     final n = _network;
     if (n == null) {
-      if (!_phoneValid && _phoneController.text.isNotEmpty) {
-        return Text('Enter a valid 11-digit number',
-            style: GoogleFonts.inter(
-                color: const Color(0xFFFB923C), fontSize: 12.sp));
+      if (!_phoneValid) {
+        return _phoneController.text.isNotEmpty
+            ? Text('Enter a valid 11-digit number',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C), fontSize: 12.sp))
+            : const SizedBox.shrink();
+      }
+      // Valid number, but the prefix couldn't be auto-detected — let the user
+      // pick a network instead of being stuck with the pay button disabled.
+      if (_detectionAttempted && _providers.isNotEmpty) {
+        return _networkPills();
       }
       return const SizedBox.shrink();
     }
@@ -580,9 +627,69 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
                 fontSize: 12.5.sp,
                 fontWeight: FontWeight.w600)),
         SizedBox(width: 6.w),
-        Text('· auto-detected',
+        Text(_networkManual ? '· selected' : '· auto-detected',
             style: GoogleFonts.inter(color: _muted, fontSize: 11.sp)),
       ]),
+    );
+  }
+
+  /// Tappable network chips shown when auto-detection can't resolve the number's
+  /// network. Reuses the auto-detected chip styling (per-network colour +
+  /// NetworkLogo), made selectable.
+  Widget _networkPills() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("We couldn't detect the network — pick one:",
+            style: GoogleFonts.inter(
+                color: const Color(0xFFFB923C), fontSize: 12.sp)),
+        SizedBox(height: 8.h),
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: _providers.map(_networkPill).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _networkPill(NetworkProvider p) {
+    Color net;
+    try {
+      net = Color(int.parse(p.primaryColor.replaceFirst('#', '0xFF')));
+    } catch (_) {
+      net = _accent;
+    }
+    final selected = _network?.operatorId == p.operatorId;
+    return GestureDetector(
+      onTap: () => _selectNetworkManually(p),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: net.withValues(alpha: selected ? 0.22 : 0.10),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+              color: net.withValues(alpha: selected ? 0.9 : 0.35),
+              width: selected ? 1.5 : 1),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          NetworkLogo(
+            networkType: p.type.name,
+            operatorId: p.operatorId,
+            shortName: p.shortName,
+            name: p.name,
+            primaryColorHex: p.primaryColor,
+            size: 20,
+            borderRadius: 6,
+          ),
+          SizedBox(width: 6.w),
+          Text(p.shortName.isNotEmpty ? p.shortName : p.name,
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600)),
+        ]),
+      ),
     );
   }
 

@@ -81,6 +81,9 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   final _phoneController = TextEditingController();
 
   String? _networkCode;
+  // True when the user picked the network from the manual pills (prefix couldn't
+  // be auto-detected) — changes the row label from "auto-detected" to "selected".
+  bool _networkManual = false;
   // Live plan-fetch state so the picker sheet updates itself as plans arrive /
   // fail, instead of freezing on the snapshot it opened with. `_fetchingPlans`
   // scopes a generic cubit error to THIS fetch (the cubit is shared with the
@@ -211,9 +214,13 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
 
   void _detectAndLoad() {
     final code = _detectNetworkCode(_phoneController.text.trim());
+    // Keep a manual pick while the prefix stays undetectable — don't yank the
+    // user's chosen network out from under them as they finish typing.
+    if (code == null && _networkManual && _networkCode != null) return;
     if (code == _networkCode) return;
     setState(() {
       _networkCode = code;
+      _networkManual = false; // auto-detection (or clear) supersedes a manual pick
       _plan = null; // network changed → drop the stale plan
     });
     if (code != null) {
@@ -224,6 +231,19 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       _fetchingPlans = false;
       _planState.value = const BillListFetchState<DataPlanEntity>.idle();
     }
+  }
+
+  /// The user tapped a network pill because the prefix couldn't be detected.
+  void _selectNetworkManually(String code) {
+    if (code == _networkCode) return;
+    setState(() {
+      _networkCode = code;
+      _networkManual = true;
+      _plan = null;
+    });
+    _fetchingPlans = true;
+    _planState.value = const BillListFetchState<DataPlanEntity>.loading();
+    context.read<DataBundlesCubit>().getDataPlans(network: code);
   }
 
   void _reloadPlans() {
@@ -567,12 +587,15 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
 
   Widget _networkRow() {
     if (_networkCode == null) {
-      if (!_phoneValid && _phoneController.text.isNotEmpty) {
-        return Text('Enter a valid 11-digit number',
-            style: GoogleFonts.inter(
-                color: const Color(0xFFFB923C), fontSize: 12.sp));
+      if (!_phoneValid) {
+        return _phoneController.text.isNotEmpty
+            ? Text('Enter a valid 11-digit number',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C), fontSize: 12.sp))
+            : const SizedBox.shrink();
       }
-      return const SizedBox.shrink();
+      // Valid number but the prefix isn't a known network → let the user pick.
+      return _networkPills();
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
@@ -597,9 +620,65 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
                 fontSize: 12.5.sp,
                 fontWeight: FontWeight.w600)),
         SizedBox(width: 6.w),
-        Text('· auto-detected',
+        Text(_networkManual ? '· selected' : '· auto-detected',
             style: GoogleFonts.inter(color: _muted, fontSize: 11.sp)),
       ]),
+    );
+  }
+
+  /// Tappable network chips shown when the phone prefix isn't a known network,
+  /// so the user is never stuck with the plan selector + pay button disabled.
+  Widget _networkPills() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("We couldn't detect the network — pick one:",
+            style: GoogleFonts.inter(
+                color: const Color(0xFFFB923C), fontSize: 12.sp)),
+        SizedBox(height: 8.h),
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: _netMeta.keys.map(_networkPill).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _networkPill(String code) {
+    final meta = _netMeta[code]!;
+    final name = meta.$1;
+    final color = Color(meta.$2);
+    final hex =
+        '#${meta.$2.toRadixString(16).padLeft(8, '0').substring(2)}';
+    final selected = _networkCode == code;
+    return GestureDetector(
+      onTap: () => _selectNetworkManually(code),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: selected ? 0.22 : 0.10),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+              color: color.withValues(alpha: selected ? 0.9 : 0.35),
+              width: selected ? 1.5 : 1),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          NetworkLogo(
+              networkType: code,
+              shortName: name,
+              name: name,
+              primaryColorHex: hex,
+              size: 20,
+              borderRadius: 6),
+          SizedBox(width: 6.w),
+          Text(name,
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600)),
+        ]),
+      ),
     );
   }
 
