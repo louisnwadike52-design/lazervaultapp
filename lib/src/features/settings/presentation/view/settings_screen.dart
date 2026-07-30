@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/theme/theme_controller.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -162,6 +163,10 @@ class _SettingsViewState extends State<_SettingsView> {
   /// Dashboard layout: true = showcase (compact services + adverts carousel),
   /// false = classic (current view). Seeded from the per-user preference.
   bool _dashboardShowcase = FeatureFlags.dashboardShowcaseLayout;
+
+  /// Adaptive quick services: reorder the grid by the user's most-used services
+  /// (default OFF, opt-in — tracking only runs while on).
+  bool _adaptiveQuickServices = FeatureFlags.adaptiveQuickServices;
 
   @override
   void initState() {
@@ -765,12 +770,45 @@ class _SettingsViewState extends State<_SettingsView> {
               : 'Classic — current view',
           onTap: _openDashboardLayoutSheet,
         );
+        final adaptiveServicesTile = _switchTile(
+          icon: Icons.auto_awesome_motion_rounded,
+          title: 'Adaptive quick services',
+          keywords: const [
+            'adaptive',
+            'quick services',
+            'reorder',
+            'most used',
+            'personalise',
+            'personalize',
+          ],
+          subtitle: 'Reorder services by the ones you use most',
+          value: _adaptiveQuickServices,
+          onChanged: (v) {
+            setState(() => _adaptiveQuickServices = v);
+            FeatureFlags.setAdaptiveQuickServices(v);
+            if (v) {
+              // Seed the local tally from the server (cross-device continuity).
+              serviceLocator<ServiceUsageService>().syncFromBackend();
+            }
+            showAppSnackbar(
+              v ? 'Adaptive quick services on' : 'Adaptive quick services off',
+              v
+                  ? 'Your most-used services will move to the front.'
+                  : 'Quick services keep the standard order.',
+              type: AppSnackbarType.success,
+            );
+          },
+        );
         // While searching, drop the group labels/spacing and filter down to the
         // matching tiles (item-level search, consistent with the other
         // sections). Non-searching keeps the grouped, spaced layout with labels.
         if (_searchQuery.trim().isNotEmpty) {
-          return _filterableColumn(
-              [sendMoneyTile, dashboardLayoutTile, loginMethodTile]);
+          return _filterableColumn([
+            sendMoneyTile,
+            dashboardLayoutTile,
+            adaptiveServicesTile,
+            loginMethodTile,
+          ]);
         }
         // The group labels need the same 16.w side inset the header and nav rows
         // use, so they don't sit flush against the accordion card's edges.
@@ -793,6 +831,8 @@ class _SettingsViewState extends State<_SettingsView> {
             ),
             SizedBox(height: 10.h),
             dashboardLayoutTile,
+            SizedBox(height: 10.h),
+            adaptiveServicesTile,
             SizedBox(height: 18.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),

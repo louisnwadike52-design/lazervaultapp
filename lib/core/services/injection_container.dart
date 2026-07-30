@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_re
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/services/app_update_service.dart';
 import 'package:lazervault/core/services/app_patch_service.dart';
@@ -825,6 +826,11 @@ Future<void> init() async {
   // Register SecureStorageService
   serviceLocator.registerLazySingleton<SecureStorageService>(
     () => SecureStorageService(serviceLocator<FlutterSecureStorage>()),
+  );
+
+  // Adaptive quick-services usage tally (local + backend sync).
+  serviceLocator.registerLazySingleton<ServiceUsageService>(
+    () => ServiceUsageService(serviceLocator<SecureStorageService>()),
   );
 
   // Register DeviceInfoPlugin for device identification

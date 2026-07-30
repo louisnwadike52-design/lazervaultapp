@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -312,7 +314,42 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       VirtualAccountType.family => _familyServices,
       _ => _personalServices,
     };
-    return raw.where((s) => !_hiddenServices.contains(s.serviceName)).toList();
+    final filtered =
+        raw.where((s) => !_hiddenServices.contains(s.serviceName)).toList();
+    // Only the crowded personal grid is re-ordered; the curated per-type lists
+    // (business/savings/investment/multi-currency/family) keep their hand-picked
+    // order. `_getServicePages` inherits whatever order we return here.
+    if (!identical(raw, _personalServices)) return filtered;
+    return _orderPersonalServices(filtered);
+  }
+
+  /// Order the personal quick-services grid: Send Funds is ALWAYS first; then
+  /// revenue-bearing services lead (by [revenuePriority]). When the user has
+  /// turned on adaptive quick services, their most-used services float ahead
+  /// (usage count desc) so a frequently-used service lands on the first slide,
+  /// with [revenuePriority] as the (unique) tiebreak. Default OFF → pure
+  /// revenue-priority order.
+  List<AppService> _orderPersonalServices(List<AppService> services) {
+    final adaptive = FeatureFlags.adaptiveQuickServices;
+    final usage = adaptive
+        ? serviceLocator<ServiceUsageService>().counts()
+        : const <AppServiceName, int>{};
+    final ordered = [...services];
+    ordered.sort((a, b) {
+      // 1) Send Funds pinned to the very front.
+      final aSend = a.serviceName == AppServiceName.sendFunds;
+      final bSend = b.serviceName == AppServiceName.sendFunds;
+      if (aSend != bSend) return aSend ? -1 : 1;
+      // 2) Adaptive: most-used first (only when the toggle is on).
+      if (adaptive) {
+        final au = usage[a.serviceName] ?? 0;
+        final bu = usage[b.serviceName] ?? 0;
+        if (au != bu) return bu.compareTo(au);
+      }
+      // 3) Revenue priority (unique per service → deterministic order).
+      return a.serviceName.revenuePriority.compareTo(b.serviceName.revenuePriority);
+    });
+    return ordered;
   }
 
   /// Default-account header — replaces the generic "Quick Services" with
@@ -364,6 +401,11 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     _accountSubscription = _accountManager.accountIdStream.listen((_) {
       _checkActiveAccountType();
     });
+    // Seed the local usage tally from the server (cross-device) when adaptive
+    // ordering is on. Best-effort; the grid re-sorts if anything changes.
+    if (FeatureFlags.adaptiveQuickServices) {
+      serviceLocator<ServiceUsageService>().syncFromBackend();
+    }
   }
 
   @override

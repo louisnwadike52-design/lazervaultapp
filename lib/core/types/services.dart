@@ -37,6 +37,32 @@ enum AppServiceName {
   betting,
 }
 
+extension AppServiceRevenuePriority on AppServiceName {
+  /// Ordering weight for the quick-services grid — LOWER shows earlier.
+  /// Revenue-bearing services (fee/markup generating) rank first so they lead
+  /// the grid; everything else falls back to enum order (offset by 100) so
+  /// every service still gets a UNIQUE, deterministic rank (no ties → stable
+  /// order without needing a stable sort). `sendFunds` is pinned to the very
+  /// front separately by the grid, so its rank here is irrelevant.
+  int get revenuePriority => switch (this) {
+        AppServiceName.crypto => 1,
+        AppServiceName.payBills => 2,
+        AppServiceName.exchange => 3,
+        AppServiceName.giftCards => 4,
+        AppServiceName.rmb => 5,
+        AppServiceName.airtime => 6,
+        AppServiceName.insurance => 7,
+        AppServiceName.invoice => 8,
+        AppServiceName.payInvoice => 8,
+        AppServiceName.invest => 9,
+        AppServiceName.stocks => 10,
+        AppServiceName.betting => 11,
+        AppServiceName.rechargeCard => 12,
+        // Non-revenue / P2P / internal + business tiles keep their enum order.
+        _ => 100 + index,
+      };
+}
+
 extension AppServiceNameExtension on AppServiceName {
   String get displayName {
     switch (this) {

@@ -345,6 +345,28 @@ class FeatureFlags {
     dashboardLayoutRevision.value++;
   }
 
+  // ── Adaptive quick services ──────────────────────────────────────────────
+  // When ON, the personal quick-services grid reorders by the user's most-used
+  // services (floating them onto the first slide) and records per-service usage
+  // (locally + synced to the backend). DEFAULT OFF — nothing is tracked until
+  // the user opts in from Settings. Send Funds stays pinned first, and revenue
+  // services still lead the default (OFF) order.
+  static const String userAdaptiveQuickServices = 'user_adaptive_quick_services';
+
+  /// `true` when the user has opted into adaptive (usage-based) quick-services
+  /// reordering. Defaults to `false`. Synchronous — call after [init].
+  static bool get adaptiveQuickServices =>
+      _prefs?.getBool(userAdaptiveQuickServices) ?? false;
+
+  /// Persist the adaptive-quick-services choice and bump the dashboard revision
+  /// so the live grid re-sorts immediately.
+  static Future<void> setAdaptiveQuickServices(bool enabled) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setBool(userAdaptiveQuickServices, enabled);
+    dashboardLayoutRevision.value++;
+  }
+
   // User-selectable transfer style: "classic" (short flow) | "standard" (long
   // flow) | "" (follow the platform default). Client-side preference, mirroring
   // the auth_mode override pattern.

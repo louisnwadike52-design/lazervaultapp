@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
@@ -18,6 +20,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
   bool isHovered = false;
 
   void _handleGotoService() {
+    // Record usage for adaptive quick-services ordering (no-op unless the user
+    // turned it on). Fire-and-forget — never blocks navigation.
+    serviceLocator<ServiceUsageService>().record(widget.appService.serviceName);
     switch (widget.appService.serviceName) {
       case AppServiceName.invoice:
         Get.toNamed(AppRoutes.invoice);
