@@ -123,8 +123,9 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
   // Bank list sort — defaults to "Most popular" (Nigerian ranking). Shared with
   // the send-funds recipient screen via [bank_sort.dart] so every picker sorts
   // identically and shares the same recently-used list.
-  BankSort _sort = BankSort.popular;
+  BankSort _sort = BankSort.mostUsed;
   List<String> _recentCodes = [];
+  List<String> _mostUsedCodes = [];
 
   @override
   void initState() {
@@ -132,6 +133,9 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
     _loadBanks();
     RecentBanks.load().then((codes) {
       if (mounted) setState(() => _recentCodes = codes);
+    });
+    MostUsedBanks.load().then((codes) {
+      if (mounted) setState(() => _mostUsedCodes = codes);
     });
   }
 
@@ -182,7 +186,8 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
     // Sorting only makes sense for the Nigerian ranking; for other countries the
     // static list is already curated, so leave the order untouched unless the
     // user picked alphabetical/recent explicitly.
-    return sortBanks(matched, _sort, _recentCodes);
+    return sortBanks(matched, _sort, _recentCodes,
+        mostUsedCodes: _mostUsedCodes);
   }
 
   /// A single sort pill. Matches the send-funds recipient screen's pills so the
@@ -305,13 +310,16 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          // Sort pills — default "Most popular" (Nigerian bank ranking).
+          // Sort pills — default "Most used" (the user's own transfer history;
+          // falls back to the Nigerian popularity ranking when there's none yet).
           SizedBox(
             height: 34,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
+                _sortPill('Most used', BankSort.mostUsed, t),
+                const SizedBox(width: 8),
                 _sortPill('Most popular', BankSort.popular, t),
                 const SizedBox(width: 8),
                 _sortPill('A–Z', BankSort.alphabetical, t),

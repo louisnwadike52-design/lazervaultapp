@@ -3,6 +3,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/core/offline/mutation_queue.dart';
+import 'package:lazervault/core/utilities/bank_sort.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
@@ -172,6 +173,12 @@ class TransferCubit extends Cubit<TransferState> {
         final isInFlight = type == 'external' && (status == 'pending' || status == 'processing');
         emit(TransferSuccess(response: _toEntity(result), isInFlight: isInFlight));
         recordOutcome('success');
+        // Tally the destination bank so it leads the "Most used" picker pill.
+        if (type == 'external' &&
+            destinationBankCode != null &&
+            destinationBankCode.isNotEmpty) {
+          MostUsedBanks.record(destinationBankCode);
+        }
       } else {
         emit(TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
         recordOutcome('failure');

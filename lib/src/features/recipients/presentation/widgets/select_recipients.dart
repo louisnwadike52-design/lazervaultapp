@@ -147,6 +147,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
   // Most-recently-used bank codes (newest first) for the picker's "Recent" sort.
   static const String _kRecentBanksKey = 'recent_bank_codes';
   List<String> _recentBankCodes = [];
+  // Most-USED bank codes (by transfer frequency) for the default "Most used"
+  // sort — shared with the other picker via [MostUsedBanks] (bank_sort.dart).
+  List<String> _mostUsedBankCodes = [];
   String? _contactSelectedBankCode;
   String? _contactSelectedBankName;
   AccountVerificationResult? _contactVerificationResult;
@@ -3492,6 +3495,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
   void _loadBanksIfNeeded() {
     if (_banksList.isNotEmpty || _isLoadingBanks) return;
     _loadRecentBanks();
+    MostUsedBanks.load().then((codes) {
+      if (mounted) setState(() => _mostUsedBankCodes = codes);
+    });
 
     // Get country from LocaleManager
     try {
@@ -3538,7 +3544,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     String searchQuery = '';
     // Bank list sort — defaults to most-popular (Nigerian ranking). Hoisted like
     // searchQuery so setSheetState mutations survive rebuilds.
-    BankSort bankSort = BankSort.popular;
+    BankSort bankSort = BankSort.mostUsed;
 
     showModalBottomSheet(
       context: context,
@@ -3678,12 +3684,17 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
                   SizedBox(height: 12.h),
 
-                  // Sort pills — default "Most popular" (Nigerian bank ranking).
+                  // Sort pills — default "Most used" (the user's own transfer
+                  // history; falls back to popularity when there's none yet).
                   SizedBox(
                     height: 34.h,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
+                        _bankSortPill('Most used', BankSort.mostUsed, bankSort,
+                            () => setSheetState(
+                                () => bankSort = BankSort.mostUsed)),
+                        SizedBox(width: 8.w),
                         _bankSortPill('Most popular', BankSort.popular, bankSort,
                             () => setSheetState(() => bankSort = BankSort.popular)),
                         SizedBox(width: 8.w),
@@ -3761,7 +3772,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                     .contains(searchQuery))
                                 .toList();
                         final filteredBanks =
-                            sortBanks(matched, bankSort, _recentBankCodes);
+                            sortBanks(matched, bankSort, _recentBankCodes,
+                                mostUsedCodes: _mostUsedBankCodes);
 
                         if (filteredBanks.isEmpty) {
                           return Center(

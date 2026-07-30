@@ -1,13 +1,15 @@
+import 'dart:convert';
+
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shared bank-picker sort model + Nigerian popularity ranking + per-user MRU
-/// store. This is the SINGLE source of truth for the "Most popular / A–Z /
-/// Recent" pills so every "choose a bank" surface (the shared [BankPickerSheet],
-/// the send-funds recipient screen, split-bills, payroll, batch transfers …)
-/// sorts identically and shares the same recently-used list.
-enum BankSort { popular, alphabetical, recent }
+/// store. This is the SINGLE source of truth for the "Most used / Most popular /
+/// A–Z / Recent" pills so every "choose a bank" surface (the shared
+/// [BankPickerSheet], the send-funds recipient screen, split-bills, payroll,
+/// batch transfers …) sorts identically and shares the same usage signals.
+enum BankSort { mostUsed, popular, alphabetical, recent }
 
 /// Curated popularity ranking for Nigerian banks (lower index = more popular).
 /// Fintech/mobile banks lead — they dominate P2P volume — followed by the big
@@ -49,10 +51,24 @@ int popularRank(String name) {
 List<Map<String, String>> sortBanks(
   List<Map<String, String>> banks,
   BankSort sort,
-  List<String> recentCodes,
-) {
+  List<String> recentCodes, {
+  List<String> mostUsedCodes = const [],
+}) {
   final list = List<Map<String, String>>.from(banks);
   switch (sort) {
+    case BankSort.mostUsed:
+      int usedIdx(Map<String, String> b) {
+        final i = mostUsedCodes.indexOf(b['code'] ?? '');
+        return i < 0 ? mostUsedCodes.length : i;
+      }
+      list.sort((a, b) {
+        final byUsed = usedIdx(a).compareTo(usedIdx(b));
+        if (byUsed != 0) return byUsed;
+        // No usage yet (or a tie) → fall back to popularity so a new user still
+        // sees a sensible list under the "Most used" pill.
+        return popularRank(a['name'] ?? '')
+            .compareTo(popularRank(b['name'] ?? ''));
+      });
     case BankSort.alphabetical:
       list.sort((a, b) => (a['name'] ?? '')
           .toLowerCase()
@@ -123,5 +139,65 @@ class RecentBanks {
       final next = [code, ...current.where((c) => c != code)].take(8).toList();
       await prefs.setStringList(key, next);
     } catch (_) {/* best-effort */}
+  }
+}
+
+/// Per-user destination-bank FREQUENCY tally powering the "Most used" pill.
+///
+/// Distinct from [RecentBanks] (which is recency/MRU): this counts how often the
+/// user actually SENDS to each bank, so their real go-to banks lead the picker.
+/// It's incremented once per successful external transfer (at the transfer
+/// success point) — the same signal the backend already records on
+/// `transfer_recipients.transfer_count`, kept locally here so the pill is
+/// instant + offline and doesn't ride the money-path proto. Per-user namespaced.
+class MostUsedBanks {
+  MostUsedBanks._();
+
+  static const String _baseKey = 'most_used_bank_codes';
+
+  static Future<String> _key() async {
+    try {
+      final userId = await serviceLocator<SecureStorageService>().getUserId();
+      if (userId != null && userId.isNotEmpty) return '${_baseKey}_$userId';
+    } catch (_) {/* fall back to the plain key */}
+    return _baseKey;
+  }
+
+  /// Bank codes ordered by usage count, DESC. Best-effort — [] on error.
+  static Future<List<String>> load() async {
+    try {
+      final counts = await _counts();
+      final entries = counts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      return entries.map((e) => e.key).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Increment the usage count for [code] after a successful transfer.
+  static Future<void> record(String? code) async {
+    if (code == null || code.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = await _key();
+      final counts = await _counts();
+      counts[code] = (counts[code] ?? 0) + 1;
+      await prefs.setString(key, jsonEncode(counts));
+    } catch (_) {/* best-effort */}
+  }
+
+  static Future<Map<String, int>> _counts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(await _key());
+    if (raw == null || raw.isEmpty) return <String, int>{};
+    final decoded = jsonDecode(raw);
+    final out = <String, int>{};
+    if (decoded is Map) {
+      decoded.forEach((k, v) {
+        if (k is String && v is int) out[k] = v;
+      });
+    }
+    return out;
   }
 }
