@@ -307,12 +307,13 @@ class FeatureFlags {
 
   // ── Dashboard layout style ───────────────────────────────────────────────
   // User-selectable dashboard layout, mirroring the transfer-style override:
-  //   "classic" (DEFAULT)  = today's layout — full-height quick-services grid
-  //     with the refer-a-friend card directly below it.
-  //   "showcase"           = compact quick-services grid + a small adverts
-  //     carousel below it, with the refer-a-friend entry moved into a compact
-  //     "view all" row that opens a modal. Purely a client-side preference.
-  // Defaults to classic so the current view is retained until the user opts in.
+  //   "showcase" (DEFAULT) = compact quick-services grid (illustrated tiles) +
+  //     a small adverts carousel, with a compact themed refer-a-friend card
+  //     directly below it.
+  //   "classic"            = the older layout — full-height quick-services grid
+  //     with the full refer-a-friend card below it.
+  // Defaults to SHOWCASE for everyone; a user who explicitly picks classic in
+  // Settings has that persisted. Purely a client-side preference.
   static const String userDashboardLayout = 'user_dashboard_layout';
   static const String dashboardLayoutClassic = 'classic';
   static const String dashboardLayoutShowcase = 'showcase';
@@ -323,19 +324,20 @@ class FeatureFlags {
   static final ValueNotifier<int> dashboardLayoutRevision =
       ValueNotifier<int>(0);
 
-  /// `true` when the user has opted into the showcase layout (compact services +
-  /// adverts carousel). Defaults to `false` (classic). Synchronous — call after
-  /// [init].
+  /// `true` unless the user has explicitly opted into the classic layout.
+  /// Showcase is the default for everyone (compact illustrated services +
+  /// adverts carousel). Synchronous — call after [init].
   static bool get dashboardShowcaseLayout =>
-      _prefs?.getString(userDashboardLayout) == dashboardLayoutShowcase;
+      _prefs?.getString(userDashboardLayout) != dashboardLayoutClassic;
 
-  /// Persist the user's dashboard-layout choice. Pass anything other than
-  /// "showcase" to fall back to the classic (default) layout.
+  /// Persist the user's dashboard-layout choice. Both "showcase" and "classic"
+  /// are stored explicitly so a returning user keeps their pick; any other
+  /// value clears the override (→ back to the showcase default).
   static Future<void> setDashboardLayout(String style) async {
     final prefs = _prefs ?? await SharedPreferences.getInstance();
     _prefs = prefs;
     final s = style.toLowerCase().trim();
-    if (s == dashboardLayoutShowcase) {
+    if (s == dashboardLayoutShowcase || s == dashboardLayoutClassic) {
       await prefs.setString(userDashboardLayout, s);
     } else {
       await prefs.remove(userDashboardLayout);

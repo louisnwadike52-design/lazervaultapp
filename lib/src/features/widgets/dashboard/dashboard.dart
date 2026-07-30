@@ -243,7 +243,15 @@ class _DashboardState extends State<Dashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  DashboardCardSummary(),
+                  // Wallet/account section. In Showcase (advert) mode it renders
+                  // a touch shorter so the adverts carousel + compact services
+                  // still sit above the fold. Rebuilds live on layout switch.
+                  ValueListenableBuilder<int>(
+                    valueListenable: FeatureFlags.dashboardLayoutRevision,
+                    builder: (context, _, __) => DashboardCardSummary(
+                      compact: FeatureFlags.dashboardShowcaseLayout,
+                    ),
+                  ),
                   _buildPendingInvitationsBanner(),
                   Container(
                     padding: EdgeInsets.all(16.0),
@@ -269,7 +277,7 @@ class _DashboardState extends State<Dashboard> {
                                 ],
                                 _buildFamilyFriendsCTA(),
                                 if (showcase)
-                                  _buildReferFriendRow(context)
+                                  const InviteFriendsCompact()
                                 else
                                   InviteFriends(),
                               ],
@@ -426,94 +434,6 @@ class _DashboardState extends State<Dashboard> {
           ),
         );
       },
-    );
-  }
-
-  /// Compact "Refer a friend" row used in the showcase layout in place of the
-  /// full [InviteFriends] card — tapping it opens a modal that surfaces the same
-  /// referral card, so the promo is one tap away without taking a full slot on
-  /// the denser showcase dashboard.
-  Widget _buildReferFriendRow(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showReferFriendModal(context),
-      child: Container(
-        margin: EdgeInsets.only(top: 4.h),
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38.w,
-              height: 38.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(Icons.card_giftcard,
-                  color: const Color(0xFF8B5CF6), size: 20.sp),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Refer a friend',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600)),
-                  SizedBox(height: 2.h),
-                  Text('Invite friends, earn together',
-                      style: TextStyle(
-                          color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-                ],
-              ),
-            ),
-            Text('View all',
-                style: TextStyle(
-                    color: const Color(0xFF3B82F6),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600)),
-            Icon(Icons.chevron_right,
-                color: const Color(0xFF9CA3AF), size: 18.sp),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Presents the full referral card ([InviteFriends]) in a bottom-sheet modal.
-  void _showReferFriendModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF0A0A0A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.only(bottom: 16.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            InviteFriends(),
-          ],
-        ),
-      ),
     );
   }
 
