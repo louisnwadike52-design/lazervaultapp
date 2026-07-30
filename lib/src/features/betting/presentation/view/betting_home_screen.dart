@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/biller_logo.dart';
 import '../cubit/betting_cubit.dart';
 import '../cubit/betting_state.dart';
 import '../widgets/betting_quick_buy.dart';
@@ -198,15 +199,8 @@ class _BettingHomeScreenState extends State<BettingHomeScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: BoxDecoration(
-                color: _primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(Icons.sports_soccer, color: _primary, size: 18.sp),
-            ),
+            BillerLogo(
+                code: r.platform, name: r.platform, size: 36, borderRadius: 10),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(

@@ -57,6 +57,7 @@ class BillListPickerSheet<T> extends StatefulWidget {
     required this.labelOf,
     required this.trailingOf,
     this.subtitleOf,
+    this.leadingOf,
     this.emptyLabel = 'Nothing available right now',
     this.onRetry,
     this.filters,
@@ -75,6 +76,10 @@ class BillListPickerSheet<T> extends StatefulWidget {
 
   /// Optional secondary line under [labelOf] (e.g. validity/duration).
   final String? Function(T item)? subtitleOf;
+
+  /// Optional leading widget for each row (e.g. a [BillerLogo] brand mark for a
+  /// disco/provider list). When null, no leading slot is rendered.
+  final Widget Function(T item)? leadingOf;
 
   final String emptyLabel;
 
@@ -105,6 +110,7 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
   String Function(T item) get labelOf => widget.labelOf;
   String Function(T item) get trailingOf => widget.trailingOf;
   String? Function(T item)? get subtitleOf => widget.subtitleOf;
+  Widget Function(T item)? get leadingOf => widget.leadingOf;
 
   Widget _filterPill(String label, int index) {
     final selected = index == _filterIndex;
@@ -229,6 +235,10 @@ class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          if (leadingOf != null) ...[
+                            leadingOf!(item),
+                            SizedBox(width: 12.w),
+                          ],
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

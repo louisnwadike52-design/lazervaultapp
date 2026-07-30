@@ -12,6 +12,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/biller_logo.dart';
 import 'package:lazervault/core/widgets/bill_auto_recharge_create_sheet.dart';
 import 'package:lazervault/core/widgets/save_beneficiary_controls.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -857,7 +858,16 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
             border: Border.all(color: _border),
           ),
           child: Row(children: [
-            Icon(Icons.bolt, color: _muted, size: 20.sp),
+            if (disco != null)
+              BillerLogo(
+                  code: disco.providerCode,
+                  name: disco.providerName,
+                  logoUrl: disco.logoUrl,
+                  brandColorHex: '#FBBF24',
+                  size: 28,
+                  borderRadius: 8)
+            else
+              Icon(Icons.bolt, color: _muted, size: 20.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(disco?.providerName ?? 'Select your disco',
@@ -957,6 +967,12 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
         listenable: _discoState,
         labelOf: (p) => p.providerName,
         trailingOf: (_) => '',
+        leadingOf: (p) => BillerLogo(
+            code: p.providerCode,
+            name: p.providerName,
+            logoUrl: p.logoUrl,
+            brandColorHex: '#FBBF24',
+            size: 34),
         emptyLabel: 'No discos available right now',
         onRetry: () {
           _fetchingProviders = true;

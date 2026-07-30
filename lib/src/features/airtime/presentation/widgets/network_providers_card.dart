@@ -7,6 +7,7 @@ import '../cubit/airtime_state.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/network_logo.dart';
 
 /// Static Nigerian network providers for instant display (no API call needed).
 /// These are the canonical providers from our database — IDs and operator IDs
@@ -268,23 +269,14 @@ class NetworkProvidersCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 44.w,
-                            height: 44.w,
-                            decoration: BoxDecoration(
-                              color: provider.type.color,
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: Center(
-                              child: Text(
-                                provider.name.isNotEmpty ? provider.name[0] : '?',
-                                style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                          NetworkLogo(
+                            networkType: provider.type.name,
+                            operatorId: provider.operatorId,
+                            shortName: provider.shortName,
+                            name: provider.name,
+                            primaryColorHex: provider.primaryColor,
+                            size: 44,
+                            borderRadius: 12,
                           ),
                           SizedBox(width: 14.w),
                           Expanded(
@@ -370,23 +362,14 @@ class NetworkProvidersCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: provider.type.color,
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Center(
-                child: Text(
-                  provider.name.isNotEmpty ? provider.name[0] : '?',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            NetworkLogo(
+              networkType: provider.type.name,
+              operatorId: provider.operatorId,
+              shortName: provider.shortName,
+              name: provider.name,
+              primaryColorHex: provider.primaryColor,
+              size: 40,
+              borderRadius: 10,
             ),
             SizedBox(height: 8.h),
             Text(

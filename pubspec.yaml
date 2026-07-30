@@ -254,6 +254,9 @@ flutter:
     - assets/images/logos/
     - assets/images/banks/
     - assets/images/networks/
+    - assets/images/discos/
+    - assets/images/cable/
+    - assets/images/billers/
     - assets/images/currencies/
     - assets/images/users/
     - assets/images/profile/

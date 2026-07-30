@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/widgets/biller_logo.dart';
 import 'package:lazervault/core/widgets/bill_auto_recharge_create_sheet.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -635,11 +636,20 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: selected ? _accent : _border),
             ),
-            child: Text(p.name,
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              BillerLogo(
+                  code: p.serviceId,
+                  name: p.name,
+                  logoUrl: p.logoUrl,
+                  size: 22,
+                  borderRadius: 6),
+              SizedBox(width: 8.w),
+              Text(p.name,
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
+            ]),
           ),
         );
       }).toList(),
