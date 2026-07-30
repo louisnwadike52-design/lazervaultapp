@@ -137,6 +137,13 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
     MostUsedBanks.load().then((codes) {
       if (mounted) setState(() => _mostUsedCodes = codes);
     });
+    // Refresh from the server's authoritative frequency (cross-device), then
+    // reload the ranking. Best-effort; the local tally already painted above.
+    MostUsedBanks.syncFromBackend().then((_) {
+      MostUsedBanks.load().then((codes) {
+        if (mounted) setState(() => _mostUsedCodes = codes);
+      });
+    });
   }
 
   @override

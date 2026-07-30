@@ -401,10 +401,15 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     _accountSubscription = _accountManager.accountIdStream.listen((_) {
       _checkActiveAccountType();
     });
-    // Seed the local usage tally from the server (cross-device) when adaptive
-    // ordering is on. Best-effort; the grid re-sorts if anything changes.
+    // Adaptive ordering: load THIS user's local tally (also re-loads after a
+    // user switch) and re-sort the grid once it's ready, then merge the
+    // server's cross-device counts. Best-effort; never blocks the dashboard.
     if (FeatureFlags.adaptiveQuickServices) {
-      serviceLocator<ServiceUsageService>().syncFromBackend();
+      final usage = serviceLocator<ServiceUsageService>();
+      usage.ensureLoaded().then((_) {
+        if (mounted) FeatureFlags.dashboardLayoutRevision.value++;
+      });
+      usage.syncFromBackend();
     }
   }
 

@@ -3498,6 +3498,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
     MostUsedBanks.load().then((codes) {
       if (mounted) setState(() => _mostUsedBankCodes = codes);
     });
+    // Server-authoritative refresh (cross-device), then reload. Best-effort.
+    MostUsedBanks.syncFromBackend().then((_) {
+      MostUsedBanks.load().then((codes) {
+        if (mounted) setState(() => _mostUsedBankCodes = codes);
+      });
+    });
 
     // Get country from LocaleManager
     try {

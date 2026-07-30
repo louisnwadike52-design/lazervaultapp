@@ -53,7 +53,8 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.airtime => 6,
         AppServiceName.insurance => 7,
         AppServiceName.invoice => 8,
-        AppServiceName.payInvoice => 8,
+        // payInvoice is consolidated into invoice; leave it on the default
+        // (unique) rank so no two services ever tie.
         AppServiceName.invest => 9,
         AppServiceName.stocks => 10,
         AppServiceName.betting => 11,

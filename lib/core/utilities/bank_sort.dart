@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -199,5 +201,45 @@ class MostUsedBanks {
       });
     }
     return out;
+  }
+
+  /// Pull the server's authoritative frequent-banks (aggregated from the user's
+  /// transfer history, cross-device) and merge into the local tally, taking the
+  /// max per bank. Best-effort — a missing/failed endpoint leaves the local
+  /// (per-device) tally in charge. GET /api/v1/payments/frequent-banks.
+  static Future<void> syncFromBackend() async {
+    try {
+      final token = await serviceLocator<SecureStorageService>().getAccessToken();
+      if (token == null || token.isEmpty) return;
+      final uri =
+          Uri.parse('${endpointRegistry.httpTransfer}/payments/frequent-banks');
+      final resp = await http.get(uri, headers: {
+        'Authorization': 'Bearer $token',
+      }).timeout(const Duration(seconds: 8));
+      if (resp.statusCode != 200) return;
+      final decoded = jsonDecode(resp.body);
+      final banks = decoded is Map ? decoded['banks'] : decoded;
+      if (banks is! List) return;
+      final counts = await _counts();
+      var changed = false;
+      for (final b in banks) {
+        if (b is! Map) continue;
+        final code = (b['bank_code'] ?? b['bankCode'])?.toString();
+        final rawCount = b['count'];
+        // int64 is JSON-encoded as a string by grpc-gateway.
+        final c = rawCount is int
+            ? rawCount
+            : int.tryParse('${rawCount ?? ''}') ?? 0;
+        if (code == null || code.isEmpty || c <= 0) continue;
+        if (c > (counts[code] ?? 0)) {
+          counts[code] = c;
+          changed = true;
+        }
+      }
+      if (changed) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(await _key(), jsonEncode(counts));
+      }
+    } catch (_) {/* best-effort */}
   }
 }
