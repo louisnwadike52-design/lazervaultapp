@@ -4,6 +4,7 @@ import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,7 +47,7 @@ class WithdrawFundsScreen extends StatefulWidget {
 }
 
 class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
-    with TransactionPinMixin {
+    with TransactionPinMixin, BankLinkFeeMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -166,11 +167,19 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     if (result == null || !mounted) return;
 
     setState(() => _linking = true);
-    serviceLocator<OpenBankingCubit>().linkAccount(
-      userId: user.id,
-      code: result.code,
-      accessToken: authState.profile.session.accessToken,
-      autoCreateMandate: false,
+    // Cost-confirmed link (fee + txPIN only when enabled; free link is unchanged).
+    final obc = serviceLocator<OpenBankingCubit>();
+    await linkBankWithFee(
+      context: context,
+      cubit: obc,
+      doLink: (token, txnId) async => obc.linkAccount(
+        userId: user.id,
+        code: result.code,
+        accessToken: authState.profile.session.accessToken,
+        autoCreateMandate: false,
+        verificationToken: token,
+        transactionId: txnId,
+      ),
     );
   }
 

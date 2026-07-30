@@ -6,6 +6,10 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -37,7 +41,12 @@ class MonoDirectDebitBottomsheet extends StatefulWidget {
   State<MonoDirectDebitBottomsheet> createState() => _MonoDirectDebitBottomsheetState();
 }
 
-class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet> {
+class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
+    with TransactionPinMixin, BankLinkFeeMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   bool _isLinking = false;
 
   @override
@@ -496,13 +505,20 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
       print('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
       print('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
-      // Link the account using the OpenBankingCubit
-      widget.openBankingCubit.linkAccount(
-        userId: userId,
-        code: result.code,
-        accessToken: accessToken,
+      // Cost-confirmed link (fee + txPIN only when enabled; free is unchanged).
+      final obc = widget.openBankingCubit;
+      await linkBankWithFee(
+        context: context,
+        cubit: obc,
+        doLink: (token, txnId) async => obc.linkAccount(
+          userId: userId,
+          code: result.code,
+          accessToken: accessToken,
+          verificationToken: token,
+          transactionId: txnId,
+        ),
       );
-
+      if (!mounted) return;
       widget.onSuccess();
     } else {
       print('[MonoConnect] User cancelled or closed');

@@ -43,6 +43,7 @@ import '../widgets/mandate_status_badge.dart';
 import '../widgets/move_fee_breakdown.dart';
 import '../widgets/reauth_required_overlay.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 
 /// Single-screen Move Money transfer flow (modelled after the Exchange Convert flow).
 ///
@@ -64,7 +65,7 @@ class MoveTransferFlowScreen extends StatefulWidget {
 }
 
 class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
-    with TransactionPinMixin {
+    with TransactionPinMixin, BankLinkFeeMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -349,19 +350,29 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     );
 
     if (result != null && mounted) {
-      // Auto-mandate: passes user info so mandate is created automatically
-      context.read<OpenBankingCubit>().linkAccount(
-            userId: user.id,
-            code: result.code,
-            accessToken: authState.profile.session.accessToken,
-            userEmail: user.email.isNotEmpty ? user.email : null,
-            userName: customerName.isNotEmpty ? customerName : null,
-            userPhone: (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
-          );
-      context.read<OpenBankingCubit>().fetchLinkedAccounts(
-            userId: authState.profile.userId,
-            accessToken: authState.profile.session.accessToken,
-          );
+      final obc = context.read<OpenBankingCubit>();
+      // Cost-confirmed link (fee + txPIN when an operator has enabled it; free
+      // otherwise). Auto-mandate: passes user info so mandate is created too.
+      await linkBankWithFee(
+        context: context,
+        cubit: obc,
+        doLink: (token, txnId) async => obc.linkAccount(
+          userId: user.id,
+          code: result.code,
+          accessToken: authState.profile.session.accessToken,
+          userEmail: user.email.isNotEmpty ? user.email : null,
+          userName: customerName.isNotEmpty ? customerName : null,
+          userPhone:
+              (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
+          verificationToken: token,
+          transactionId: txnId,
+        ),
+      );
+      if (!mounted) return;
+      obc.fetchLinkedAccounts(
+        userId: authState.profile.userId,
+        accessToken: authState.profile.session.accessToken,
+      );
     }
   }
 

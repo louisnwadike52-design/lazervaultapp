@@ -21,6 +21,9 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
@@ -55,7 +58,11 @@ class MoveMoneyDashboardScreen extends StatefulWidget {
 }
 
 class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TransactionPinMixin, BankLinkFeeMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   late TabController _tabController;
 
   // Wallet tab: From/To account selectors
@@ -160,18 +167,27 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     );
 
     if (result != null && mounted) {
+      final obc = context.read<OpenBankingCubit>();
+      // Cost-confirmed link (fee + txPIN only when enabled; free is unchanged).
       // autoCreateMandate=true → Direct Debit (Mono pulls without per-transfer
       // approval); false → DirectPay (user authorises each transfer).
-      context.read<OpenBankingCubit>().linkAccount(
-            userId: user.id,
-            code: result.code,
-            accessToken: authState.profile.session.accessToken,
-            autoCreateMandate: useDirectDebit,
-            userEmail: user.email.isNotEmpty ? user.email : null,
-            userName: customerName.isNotEmpty ? customerName : null,
-            userPhone:
-                (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
-          );
+      await linkBankWithFee(
+        context: context,
+        cubit: obc,
+        doLink: (token, txnId) async => obc.linkAccount(
+          userId: user.id,
+          code: result.code,
+          accessToken: authState.profile.session.accessToken,
+          autoCreateMandate: useDirectDebit,
+          userEmail: user.email.isNotEmpty ? user.email : null,
+          userName: customerName.isNotEmpty ? customerName : null,
+          userPhone:
+              (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
+          verificationToken: token,
+          transactionId: txnId,
+        ),
+      );
+      if (!mounted) return;
       _loadData();
     }
   }

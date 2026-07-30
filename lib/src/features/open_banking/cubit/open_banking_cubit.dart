@@ -79,6 +79,21 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     }
   }
 
+  /// Quote the first-time bank-link fee (minor units, aggregated Mono cost +
+  /// LazerVault margin); 0 = free. Lets any link entry point show the cost +
+  /// take a txPIN before linking, without emitting a state. Best-effort: any
+  /// failure resolves to 0 (free) so a quote hiccup never blocks linking — the
+  /// backend still enforces the real charge.
+  Future<int> quoteLinkFeeMinor() async {
+    try {
+      if (useGrpc && _grpcDataSource != null) {
+        final config = await _grpcDataSource!.getConnectWidgetConfig();
+        return int.tryParse(config['link_fee'] ?? '0') ?? 0;
+      }
+    } catch (_) {}
+    return 0;
+  }
+
   /// Link a bank account using Mono Connect code.
   /// Automatically creates a GSM mandate for the linked account.
   Future<void> linkAccount({

@@ -24,6 +24,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/deposit.dart';
@@ -63,7 +64,7 @@ class DepositFundsScreen extends StatefulWidget {
 }
 
 class _DepositFundsScreenState extends State<DepositFundsScreen>
-    with TransactionPinMixin {
+    with TransactionPinMixin, BankLinkFeeMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -2579,22 +2580,32 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
       // Show progress bottomsheet. Fresh-link journeys start at "Linking
       // Account"; with the recurring toggle ON the rail reads as a Direct
-      // Debit setup ("Setting Up Direct Debit" / "Authorize Direct Debit").
-      _progressController.show(
-        bankName: result.institutionName ?? 'Bank',
-        amount: amount,
-        currency: _currency,
-        flow: _useRecurringAccess
-            ? DirectPayProgressFlow.mandateSetup
-            : DirectPayProgressFlow.linkAndDeposit,
-      );
-      _showProgressBottomsheet(context);
-
-      // Link the account using the OpenBankingCubit
-      serviceLocator<OpenBankingCubit>().linkAccount(
-        userId: userId,
-        code: result.code,
-        accessToken: accessToken,
+      // Cost-confirmed link (fee + txPIN only when an operator enabled it — a
+      // free link, the default, runs doLink immediately with no extra step).
+      final obc = serviceLocator<OpenBankingCubit>();
+      await linkBankWithFee(
+        context: context,
+        cubit: obc,
+        doLink: (token, txnId) async {
+          // Debit setup ("Setting Up Direct Debit" / "Authorize Direct Debit").
+          _progressController.show(
+            bankName: result.institutionName ?? 'Bank',
+            amount: amount,
+            currency: _currency,
+            flow: _useRecurringAccess
+                ? DirectPayProgressFlow.mandateSetup
+                : DirectPayProgressFlow.linkAndDeposit,
+          );
+          if (!mounted) return;
+          _showProgressBottomsheet(context);
+          obc.linkAccount(
+            userId: userId,
+            code: result.code,
+            accessToken: accessToken,
+            verificationToken: token,
+            transactionId: txnId,
+          );
+        },
       );
     } else {
       debugPrint('[MonoConnect] User cancelled or closed');
