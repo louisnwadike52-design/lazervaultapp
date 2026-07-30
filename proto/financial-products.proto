@@ -167,9 +167,17 @@ service FinancialProductsService {
   }
 
   // Pre-construct a deterministic public URL for an insurance document
-  // BEFORE the bytes are uploaded. See backend proto for details — the
-  // Flutter cubit calls this on file stage and stamps public_url into
-  // form_data immediately.
+  // BEFORE the bytes are uploaded. Used by the Flutter purchase flow:
+  //   1. Flutter calls this on file stage, gets {upload_url, public_url}.
+  //   2. Flutter stamps public_url into form_data[identification_url]
+  //      immediately — purchase can proceed without waiting on the
+  //      upload bytes.
+  //   3. Flutter PUTs the bytes to upload_url in the background. The
+  //      public_url is deterministic from the storage key, so MyCover
+  //      (and its downstream insurer) can fetch it once the upload
+  //      completes.
+  // Local dev: returns a URL on this HTTP server's /assets/insurance.
+  // Prod: GCS V4-signed PUT + deterministic public GET URL.
   rpc GetInsuranceDocumentUploadURL(GetInsuranceDocumentUploadURLRequest) returns (GetInsuranceDocumentUploadURLResponse) {
     option (google.api.http) = {
       post: "/api/v1/products/insurance/document-upload-url"
@@ -181,6 +189,15 @@ service FinancialProductsService {
   rpc GetInsuranceAuxiliaryData(GetInsuranceAuxiliaryDataRequest) returns (GetInsuranceAuxiliaryDataResponse) {
     option (google.api.http) = {
       get: "/api/v1/products/insurance/auxiliary/{utility_id}"
+    };
+  }
+
+  // Admin: get the per-product MyCover form schema with source tags
+  // (probe vs override). Used by the admin dashboard "Product Schema"
+  // tab to diff discovered fields against the static override map.
+  rpc GetInsuranceProductSchema(GetInsuranceProductSchemaRequest) returns (GetInsuranceProductSchemaResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/marketplace/product-schema"
     };
   }
 
@@ -347,6 +364,22 @@ service FinancialProductsService {
     };
   }
 
+  // Cross-customer MyCover policies (admin only). Lists ALL policies in
+  // our distributor namespace; the per-customer variant lives in
+  // GetMyCoverCustomerPolicies. Used by the admin dashboard "All Policies"
+  // tab.
+  rpc GetMyCoverPolicies(GetMyCoverPoliciesRequest) returns (GetMyCoverPoliciesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/mycover/policies"
+    };
+  }
+
+  rpc GetMyCoverPolicyById(GetMyCoverPolicyByIdRequest) returns (GetMyCoverPolicyByIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/mycover/policy/{policy_id}"
+    };
+  }
+
   // Get specific MyCover provider claim by ID
   rpc GetMyCoverClaimById(GetMyCoverClaimByIdRequest) returns (GetMyCoverClaimByIdResponse) {
     option (google.api.http) = {
@@ -472,6 +505,33 @@ service FinancialProductsService {
   rpc GetInsurancePlatformWallets(GetInsurancePlatformWalletsRequest) returns (GetInsurancePlatformWalletsResponse) {
     option (google.api.http) = {
       get: "/api/v1/admin/insurance/wallets/platform"
+    };
+  }
+
+  // Per-category insurance fee/margin config (Slice 2 admin dashboard).
+  // GET returns the current snapshot of all categories; PUT upserts the
+  // category configs supplied in the request and invalidates the resolver
+  // cache so the next quote uses the new values.
+  rpc GetInsuranceFeeConfig(GetInsuranceFeeConfigRequest) returns (GetInsuranceFeeConfigResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/fee-config"
+    };
+  }
+
+  rpc UpdateInsuranceFeeConfig(UpdateInsuranceFeeConfigRequest) returns (UpdateInsuranceFeeConfigResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/admin/insurance/fee-config"
+      body: "*"
+    };
+  }
+
+  // Insurance rollback records (Slice 2 admin Refunds tab). Lists the
+  // 3-phase rollback records with their provider verification / refund /
+  // settlement-reversal status. Manual retry/escalate-to-manual-review
+  // actions are exposed via the existing AdminTriggerRefund RPC.
+  rpc ListInsuranceRollbacks(ListInsuranceRollbacksRequest) returns (ListInsuranceRollbacksResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/rollbacks"
     };
   }
 
@@ -1153,12 +1213,14 @@ message MarketplaceProductFormField {
   // {benefit(select), sum_insured(number)} while item_details items
   // are {name, value, quantity, image_url, description}. Empty for
   // non-array fields and for array fields where the client should use
-  // the default cargo item shape.
+  // the default cargo item shape. Lets the structured-array widget
+  // render correct inputs per product without hardcoding shapes.
   repeated MarketplaceProductFormItemField item_fields = 12;
 }
 
 // One sub-field of a structured-array item (see
-// MarketplaceProductFormField.item_fields).
+// MarketplaceProductFormField.item_fields). Mirrors the scalar field
+// contract on a smaller surface.
 message MarketplaceProductFormItemField {
   string name = 1;
   string label = 2;
@@ -1250,10 +1312,11 @@ message GetInsuranceMarketplaceCategoriesRequest {
 
 message GetInsuranceMarketplaceCategoriesResponse {
   repeated MarketplaceInsuranceCategory categories = 1;
-  // Admin-editable insurance terms & conditions link. Loaded by the
-  // Flutter app into an in-app webview bottom sheet on the Review step.
-  // Source of truth: system_settings.insurance.mycover.terms_link.
-  // Empty when not configured — Flutter renders an unavailable state.
+  // Admin-editable hosted-terms link. Source of truth lives in
+  // system_settings.insurance.mycover.terms_link; we surface it on the
+  // categories response so Flutter has it before the user reaches the
+  // Review step where the agreement checkbox is shown. Empty string
+  // when not configured — Flutter renders an unavailable state.
   string terms_link = 2;
 }
 
@@ -1310,15 +1373,28 @@ message UploadInsuranceDocumentResponse {
 
 // Pre-constructed public URL for a deferred insurance document upload.
 message GetInsuranceDocumentUploadURLRequest {
+  // "jpg", "jpeg", "png", "pdf" — used to suffix the storage key so
+  // the downstream Content-Type guess matches.
   string filename = 1;
+  // RFC 2046 content type the client will PUT (e.g. "image/jpeg").
   string content_type = 2;
+  // "id_document", "proof_of_purchase", "claim_evidence", "device_photo".
+  // Becomes part of the storage key for auditability.
   string document_type = 3;
 }
 
 message GetInsuranceDocumentUploadURLResponse {
+  // PUT bytes here. Signed and time-bounded (15 min) in prod; the
+  // local HTTP route in dev.
   string upload_url = 1;
+  // Deterministic GET URL the policy holder / MyCover / downstream
+  // insurer fetches from. Safe to stamp into form_data BEFORE the
+  // upload completes — once the PUT lands, this URL serves the file.
   string public_url = 2;
+  // Storage key. Useful for an admin to find the file later, or to
+  // delete it on rollback. Not surfaced to MyCover.
   string storage_key = 3;
+  // Unix seconds when the upload URL stops accepting writes.
   int64 expires_at = 4;
 }
 
@@ -1337,6 +1413,25 @@ message GetInsuranceAuxiliaryDataResponse {
 message InsuranceAuxiliaryItem {
   string label = 1;
   string value = 2;
+}
+
+// Admin: per-product MyCover form schema with source tags
+message GetInsuranceProductSchemaRequest {
+  string product_id = 1;
+}
+
+message GetInsuranceProductSchemaResponse {
+  string product_id = 1;
+  string product_name = 2;
+  // Merged form fields (probe + override). Same shape as
+  // MarketplaceProductFormField on the marketplace.
+  repeated MarketplaceProductFormField form_fields = 3;
+  // source[field_name] → "probe" | "override:add" | "override:rename" | "override:relabel"
+  map<string, string> field_sources = 4;
+  bool has_override = 5;
+  string override_summary = 6;          // Human-readable summary of override impact
+  bool success = 7;
+  string msg = 8;
 }
 
 // ===== CREATE CROWDFUND =====
@@ -2099,7 +2194,7 @@ message AutoSaveRule {
   string user_id = 2;
   string name = 3;
   string description = 4;
-  string trigger_type = 5;           // "on_deposit", "scheduled", "round_up"
+  string trigger_type = 5;           // "on_deposit", "scheduled", "round_up", "external_inflow"
   string amount_type = 6;            // "fixed", "percentage"
   double amount_value = 7;
   string source_account_id = 8;
@@ -2125,6 +2220,20 @@ message AutoSaveRule {
   string last_triggered_at = 20;
   int32 trigger_count = 21;
   double total_saved = 22;
+
+  // External-inflow trigger: the Mono-linked bank account that feeds this
+  // rule (banking-service pulls the save via its Direct Debit mandate).
+  // source_account_id is unused for trigger_type "external_inflow".
+  string source_linked_account_id = 23;
+  string source_bank_name = 24;       // display snapshot taken at creation
+
+  // Pending manual-save prompt for a reactive external_inflow rule: money landed
+  // in the linked bank and is ready to save, but a bank pull incurs a fee so it's
+  // never auto-executed. The app surfaces "₦X available to save — tap to save";
+  // cleared once the user manually saves. Zero/empty when nothing is pending.
+  int64 pending_inflow_kobo = 25;
+  string pending_inflow_ext_txn_id = 26;
+  string pending_inflow_at = 27;       // RFC3339, empty when none
 }
 
 // Auto-save transaction record
@@ -2140,6 +2249,9 @@ message AutoSaveTransaction {
   bool success = 9;
   string error_message = 10;
   string created_at = 11;
+  // JSON context for the trigger; external_inflow links the save to the
+  // banking deposit ({"deposit_reference", "external_txn_id", "bank_name"}).
+  string metadata = 12;
 }
 
 // Auto-save statistics
@@ -2184,6 +2296,10 @@ message CreateAutoSaveRuleRequest2 {
   double target_amount = 12;
   double minimum_balance = 13;
   double maximum_per_save = 14;
+  // Required when trigger_type is "external_inflow"; source_account_id is
+  // ignored for that trigger.
+  string source_linked_account_id = 15;
+  string source_bank_name = 16;
 }
 
 message CreateAutoSaveRuleResponse2 {
@@ -2679,6 +2795,27 @@ message GetMyCoverClaimsResponse {
   int32 total = 2;
 }
 
+// MyCover Cross-customer policies (admin)
+message GetMyCoverPoliciesRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string product_id = 3;   // optional filter
+  string status = 4;       // optional filter ("active" | "expired" | "pending")
+}
+
+message GetMyCoverPoliciesResponse {
+  repeated InsurancePolicyDetail policies = 1;
+  int32 total = 2;
+}
+
+message GetMyCoverPolicyByIdRequest {
+  string policy_id = 1;
+}
+
+message GetMyCoverPolicyByIdResponse {
+  InsurancePolicyDetail policy = 1;
+}
+
 message GetMyCoverClaimByIdRequest {
   string claim_id = 1;
 }
@@ -2973,4 +3110,90 @@ message GetInsurancePlatformWalletsResponse {
   repeated PlatformWalletBalance wallets = 1;
   bool success = 2;
   string message = 3;
+}
+
+// -----------------------------------------------------------------------
+// Slice 2: per-category insurance fee/margin config
+// -----------------------------------------------------------------------
+
+// CategoryFeeConfig is one row in the per-category fee table surfaced to
+// the admin dashboard. The resolver hydrates these from system_settings
+// keys `insurance.fee.<category>.{enabled,type,percentage,fixed_amount_kobo}`.
+message CategoryFeeConfig {
+  string category = 1;                  // "auto", "health", ... or "default"
+  bool enabled = 2;
+  string type = 3;                      // "percentage" | "fixed"
+  double percentage = 4;                // used when type == "percentage"
+  int64 fixed_amount_kobo = 5;          // used when type == "fixed"
+}
+
+message GetInsuranceFeeConfigRequest {}
+
+message GetInsuranceFeeConfigResponse {
+  repeated CategoryFeeConfig categories = 1;
+  CategoryFeeConfig default_config = 2;
+  string loaded_at = 3;                 // ISO-8601 of the snapshot
+  bool success = 4;
+  string message = 5;
+}
+
+message UpdateInsuranceFeeConfigRequest {
+  // Categories to upsert. Only categories listed are updated; missing ones
+  // keep their current values. Sending an empty list is a no-op.
+  repeated CategoryFeeConfig categories = 1;
+  CategoryFeeConfig default_config = 2; // optional
+  string updated_by = 3;                // admin user id from JWT
+  string reason = 4;                    // free-text audit note
+}
+
+message UpdateInsuranceFeeConfigResponse {
+  repeated CategoryFeeConfig categories = 1;
+  CategoryFeeConfig default_config = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+// -----------------------------------------------------------------------
+// Slice 2: insurance rollback records (admin Refunds tab)
+// -----------------------------------------------------------------------
+
+// InsuranceRollbackInfo is one row in the rollbacks ledger. Mirrors
+// internal/models/insurance_rollback.go::InsuranceRollbackRecord.
+message InsuranceRollbackInfo {
+  string id = 1;
+  string purchase_id = 2;
+  string reason = 3;
+  string status = 4;                          // pending|provider_verification|refunding|reversing_settlement|completed|failed|manual_review
+  string provider_verification_status = 5;    // not_started|verified_failed|verified_success|verification_timeout|skipped
+  int32  provider_verification_attempts = 6;
+  string internal_refund_status = 7;          // pending|hold_released|completed|failed|skipped
+  string internal_refund_reference = 8;
+  string reversal_status = 9;                 // pending|not_applicable|completed|failed
+  string reversal_reference = 10;
+  int64  total_amount = 11;                   // premium in minor units
+  int64  reversal_amount = 12;                // margin reversed in minor units
+  string currency = 13;
+  string account_id = 14;
+  string user_id = 15;
+  int32  retry_count = 16;
+  int32  max_retries = 17;
+  string next_retry_at = 18;                  // ISO-8601, may be empty
+  string error_message = 19;
+  string created_at = 20;
+  string updated_at = 21;
+}
+
+message ListInsuranceRollbacksRequest {
+  string status = 1;                          // optional filter; "" = all
+  int32 page = 2;                             // 1-based
+  int32 limit = 3;                            // default 50, max 200
+}
+
+message ListInsuranceRollbacksResponse {
+  repeated InsuranceRollbackInfo rollbacks = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  bool success = 5;
+  string message = 6;
 }
