@@ -27,6 +27,7 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
     required super.totalSaved,
     super.sourceLinkedAccountId,
     super.sourceBankName,
+    super.pendingInflowKobo,
   });
 
   factory AutoSaveRuleModel.fromProto(autosave_pb.AutoSaveRule proto) {
@@ -61,6 +62,7 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
       totalSaved: proto.totalSaved / 100, // kobo -> Naira
       sourceLinkedAccountId: proto.sourceLinkedAccountId,
       sourceBankName: proto.sourceBankName,
+      pendingInflowKobo: proto.pendingInflowKobo.toInt(),
     );
   }
 

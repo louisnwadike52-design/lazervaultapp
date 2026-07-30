@@ -49,6 +49,10 @@ class AutoSaveRuleEntity extends Equatable {
   // rule. sourceAccountId is unused for TriggerType.externalInflow.
   final String sourceLinkedAccountId;
   final String sourceBankName;
+  // For a reactive external_inflow rule: money landed in the linked bank and is
+  // ready to save. A bank pull incurs a fee so it's never auto-executed — the app
+  // surfaces "₦X available to save"; 0 when nothing is pending. Minor units (kobo).
+  final int pendingInflowKobo;
 
   // For scheduled triggers
   final ScheduleFrequency? frequency;
@@ -84,6 +88,7 @@ class AutoSaveRuleEntity extends Equatable {
     this.currency = 'NGN',
     this.sourceLinkedAccountId = '',
     this.sourceBankName = '',
+    this.pendingInflowKobo = 0,
     this.frequency,
     this.scheduleTime,
     this.scheduleDay,
@@ -113,6 +118,7 @@ class AutoSaveRuleEntity extends Equatable {
         currency,
         sourceLinkedAccountId,
         sourceBankName,
+        pendingInflowKobo,
         frequency,
         scheduleTime,
         scheduleDay,

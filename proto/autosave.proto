@@ -92,6 +92,15 @@ message AutoSaveRule {
     // source_account_id is unused for TRIGGER_EXTERNAL_INFLOW.
     string source_linked_account_id = 23;
     string source_bank_name = 24;
+
+    // Pending manual-save prompt for a reactive external_inflow rule: money
+    // landed in the linked bank and is ready to save, but a bank pull incurs a
+    // fee so it's never auto-executed. The app surfaces "₦X available to save".
+    // Types MUST match the backend proto (kobo int64 + strings) for the wire
+    // format. Zero/empty when nothing is pending.
+    int64 pending_inflow_kobo = 25;
+    string pending_inflow_ext_txn_id = 26;
+    string pending_inflow_at = 27;       // RFC3339, empty when none
 }
 
 // Create auto-save rule request

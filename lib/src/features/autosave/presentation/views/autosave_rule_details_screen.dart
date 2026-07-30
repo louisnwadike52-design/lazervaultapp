@@ -834,6 +834,11 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                         SizedBox(height: 20.h),
                         if (_isLinkedBankRule)
                           MandateHealthBanner(rule: rule, userId: _userId),
+                        if (rule.triggerType == TriggerType.externalInflow &&
+                            rule.pendingInflowKobo > 0) ...[
+                          _buildPendingInflowBanner(),
+                          SizedBox(height: 20.h),
+                        ],
                         _buildRuleInfoCard(),
                         SizedBox(height: 20.h),
                         _buildAccountsCard(),
@@ -953,6 +958,45 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// Banner shown when a reactive external_inflow rule has money waiting in the
+  /// linked bank. Tapping runs the fee-disclosed manual save (we never auto-pull
+  /// a fee-incurring inflow).
+  Widget _buildPendingInflowBanner() {
+    final amt = currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+        rule.pendingInflowKobo / 100, rule.currency);
+    final bank = rule.sourceBankName.isNotEmpty ? rule.sourceBankName : 'your linked bank';
+    return GestureDetector(
+      onTap: _isTriggeringRule ? null : _triggerManualSave,
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.savings_rounded, color: const Color(0xFF10B981), size: 20.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$amt available to save',
+                      style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white, fontWeight: FontWeight.w700)),
+                  SizedBox(height: 2.h),
+                  Text('Money arrived in $bank. Tap to save it — a direct debit fee applies.',
+                      style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF), height: 1.3)),
+                ],
+              ),
+            ),
+            Text('Save', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF10B981), fontWeight: FontWeight.w700)),
+          ],
+        ),
       ),
     );
   }
