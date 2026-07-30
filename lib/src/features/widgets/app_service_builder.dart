@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/core/utilities/service_illustration_manifest.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
 
 class AppServiceBuilder extends StatefulWidget {
@@ -172,25 +174,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Service Icon
-            Container(
-              width: 32.w,
-              height: 32.w,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                    Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
-                  ],
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: _buildServiceIcon(),
-              ),
-            ),
+            // Service illustration (bundled unDraw brand mark) or, when none is
+            // bundled for this service, the themed icon on a soft brand disc.
+            _buildServiceVisual(),
             SizedBox(height: 8.h),
 
             // Service Name
@@ -217,6 +203,47 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           ],
         ),
       ),
+    );
+  }
+
+  /// The tile's leading visual: a bundled brand illustration for the service
+  /// when one exists, otherwise the themed material icon on a soft brand disc.
+  /// Illustrations sit slightly larger (they carry their own visual weight) and
+  /// degrade to the icon disc if the SVG can't load.
+  Widget _buildServiceVisual() {
+    final illo = serviceIllustrationAsset(widget.appService.serviceName);
+    if (illo != null) {
+      return SizedBox(
+        width: 40.w,
+        height: 40.w,
+        child: SvgPicture.asset(
+          illo,
+          fit: BoxFit.contain,
+          placeholderBuilder: (_) => _iconDisc(),
+        ),
+      );
+    }
+    return _iconDisc();
+  }
+
+  /// The classic 32×32 soft-purple disc holding the themed material icon —
+  /// used for services without a bundled illustration and as the SVG fallback.
+  Widget _iconDisc() {
+    return Container(
+      width: 32.w,
+      height: 32.w,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+          ],
+        ),
+        shape: BoxShape.circle,
+      ),
+      child: Center(child: _buildServiceIcon()),
     );
   }
 
