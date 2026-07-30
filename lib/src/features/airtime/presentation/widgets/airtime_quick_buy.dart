@@ -595,6 +595,23 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
       if (_detectionAttempted && _providers.isNotEmpty) {
         return _networkPills();
       }
+      // Detection failed AND the network list never loaded (offline/first-load
+      // error) — offer a single-shot retry so the user isn't silently stuck.
+      // We reload the real list (with operatorId) rather than fake a static one.
+      if (_detectionAttempted && _providers.isEmpty) {
+        return GestureDetector(
+          onTap: _loadProviders,
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.refresh, color: const Color(0xFFFB923C), size: 15.sp),
+            SizedBox(width: 6.w),
+            Flexible(
+              child: Text("Couldn't load networks — tap to pick one",
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFFFB923C), fontSize: 12.sp)),
+            ),
+          ]),
+        );
+      }
       return const SizedBox.shrink();
     }
     Color net;
