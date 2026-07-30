@@ -80,6 +80,8 @@ class InviteFriendsCompact extends StatelessWidget {
                       children: [
                         Text(
                           'Invite friends, earn together',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 14.5.sp,

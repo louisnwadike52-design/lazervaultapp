@@ -68,13 +68,16 @@ class _DashboardAdvertsCarouselState extends State<DashboardAdvertsCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    // When nothing is configured, show a single default promo card so the
-    // section still looks intentional (not an empty gap).
-    final slides = _adverts.isEmpty
-        ? const <DashboardAdvert>[
-            DashboardAdvert(imageUrl: '', link: '/bills', title: '', sort: 0),
-          ]
-        : _adverts;
+    // When the admin hasn't configured anything, fall back to the bundled seed
+    // adverts (real imagery) so the section launches intentional, not empty. Any
+    // seed image that fails to load still degrades to the painted card.
+    // Cap the count so the (non-wrapping) page-dot row can't overflow on small
+    // screens if an admin configures a long advert list.
+    const maxSlides = 12;
+    final source = _adverts.isEmpty ? kSeedDashboardAdverts : _adverts;
+    final slides = source.length > maxSlides
+        ? source.sublist(0, maxSlides)
+        : source;
 
     final height = 132.h;
 
@@ -153,7 +156,11 @@ class _AdvertCard extends StatelessWidget {
             : CachedNetworkImage(
                 imageUrl: advert.imageUrl,
                 fit: BoxFit.cover,
+                // Fill the card box in both axes so BoxFit.cover crops to a
+                // clean, centered fill (no letterboxing / intrinsic-size gaps),
+                // matching the rounded-clipped 132.h card.
                 width: double.infinity,
+                height: double.infinity,
                 placeholder: (_, __) => _defaultCard(advert.title, dim: true),
                 errorWidget: (_, __, ___) => _defaultCard(advert.title),
               ),

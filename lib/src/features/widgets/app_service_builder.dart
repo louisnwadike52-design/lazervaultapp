@@ -212,18 +212,20 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
   /// degrade to the icon disc if the SVG can't load.
   Widget _buildServiceVisual() {
     final illo = serviceIllustrationAsset(widget.appService.serviceName);
-    if (illo != null) {
-      return SizedBox(
-        width: 40.w,
-        height: 40.w,
-        child: SvgPicture.asset(
-          illo,
-          fit: BoxFit.contain,
-          placeholderBuilder: (_) => _iconDisc(),
-        ),
-      );
-    }
-    return _iconDisc();
+    // Fixed 34px slot for BOTH branches so rows align and the 2-line service
+    // label keeps enough room in the dense compact grid (a taller visual here
+    // clips long names like "Contactless Pay" at small tile heights / large
+    // text scales). The illustration is still ~2× the old 16px glyph.
+    final Widget visual = illo != null
+        ? SvgPicture.asset(
+            illo,
+            width: 34.w,
+            height: 34.w,
+            fit: BoxFit.contain,
+            placeholderBuilder: (_) => _iconDisc(),
+          )
+        : _iconDisc();
+    return SizedBox(height: 34.w, child: Center(child: visual));
   }
 
   /// The classic 32×32 soft-purple disc holding the themed material icon —
