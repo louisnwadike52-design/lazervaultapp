@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
-import 'package:lazervault/core/utilities/service_illustration_manifest.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
 
 class AppServiceBuilder extends StatefulWidget {
@@ -174,9 +172,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Service illustration (bundled unDraw brand mark) or, when none is
-            // bundled for this service, the themed icon on a soft brand disc.
-            _buildServiceVisual(),
+            // Themed service icon on a soft brand disc.
+            _iconDisc(),
             SizedBox(height: 8.h),
 
             // Service Name
@@ -206,30 +203,7 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     );
   }
 
-  /// The tile's leading visual: a bundled brand illustration for the service
-  /// when one exists, otherwise the themed material icon on a soft brand disc.
-  /// Illustrations sit slightly larger (they carry their own visual weight) and
-  /// degrade to the icon disc if the SVG can't load.
-  Widget _buildServiceVisual() {
-    final illo = serviceIllustrationAsset(widget.appService.serviceName);
-    // Fixed 34px slot for BOTH branches so rows align and the 2-line service
-    // label keeps enough room in the dense compact grid (a taller visual here
-    // clips long names like "Contactless Pay" at small tile heights / large
-    // text scales). The illustration is still ~2× the old 16px glyph.
-    final Widget visual = illo != null
-        ? SvgPicture.asset(
-            illo,
-            width: 34.w,
-            height: 34.w,
-            fit: BoxFit.contain,
-            placeholderBuilder: (_) => _iconDisc(),
-          )
-        : _iconDisc();
-    return SizedBox(height: 34.w, child: Center(child: visual));
-  }
-
-  /// The classic 32×32 soft-purple disc holding the themed material icon —
-  /// used for services without a bundled illustration and as the SVG fallback.
+  /// The 32×32 soft-purple disc holding the themed material icon.
   Widget _iconDisc() {
     return Container(
       width: 32.w,

@@ -50,52 +50,17 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   ),
   DashboardAdvert(
     imageUrl:
-        'https://images.pexels.com/photos/4559676/pexels-photo-4559676.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    link: '/rmb',
-    title: 'Trade across borders',
-    sort: 3,
-  ),
-  DashboardAdvert(
-    imageUrl:
         'https://images.pexels.com/photos/6744352/pexels-photo-6744352.jpeg?auto=compress&cs=tinysrgb&w=1200',
     link: '/crypto',
     title: 'Buy and sell crypto',
-    sort: 4,
-  ),
-  DashboardAdvert(
-    imageUrl:
-        'https://images.pexels.com/photos/8475146/pexels-photo-8475146.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    link: '/contactless-pay',
-    title: 'Tap to pay',
-    sort: 5,
-  ),
-  DashboardAdvert(
-    imageUrl:
-        'https://images.pexels.com/photos/5727909/pexels-photo-5727909.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    link: '/insurance',
-    title: 'Protect your family',
-    sort: 6,
+    sort: 3,
   ),
   DashboardAdvert(
     imageUrl:
         'https://images.pexels.com/photos/30220079/pexels-photo-30220079.jpeg?auto=compress&cs=tinysrgb&w=1200',
     link: '/lock-funds',
     title: 'Save towards your goals',
-    sort: 7,
-  ),
-  DashboardAdvert(
-    imageUrl:
-        'https://images.pexels.com/photos/33749805/pexels-photo-33749805.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    link: '/group-account',
-    title: 'Save with your group',
-    sort: 8,
-  ),
-  DashboardAdvert(
-    imageUrl:
-        'https://images.pexels.com/photos/30677594/pexels-photo-30677594.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    link: '/whatsapp-banking',
-    title: 'Bank right from chat',
-    sort: 9,
+    sort: 4,
   ),
 ];
 
