@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/move_money/domain/entities/mandate_entit
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/mandate_health_banner.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -248,6 +249,35 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     final idPrefix = rule.id.length >= 8 ? rule.id.substring(0, 8) : rule.id;
     final transactionId = 'AUTOSAVE-$idPrefix';
 
+    // A linked-bank manual save PULLS from the bank via a Direct Debit mandate,
+    // which incurs a provider fee (aggregated Mono + LazerVault platform fee),
+    // NETTED from the pulled amount. Quote it so the confirmation shows the fee
+    // and the net that will actually land in the goal — the user knows exactly
+    // what a direct debit costs before paying (same model as the deposit flow).
+    double feeNaira = 0;
+    double netNaira = saveAmount;
+    if (_isLinkedBankRule) {
+      try {
+        final quote = await serviceLocator<OpenBankingCubit>()
+            .depositFeeQuote((saveAmount * 100).round());
+        if (quote != null) {
+          feeNaira = quote.fee;
+          netNaira = quote.netAmount;
+        }
+      } catch (_) {
+        // Quote unavailable — proceed; the backend still nets the fee and the
+        // net is recorded. Don't block the save on a transient quote failure.
+      }
+      if (!mounted) return;
+    }
+
+    final amtStr = currency_formatter.CurrencySymbols.formatAmountWithCurrency(saveAmount, rule.currency);
+    final confirmMessage = feeNaira > 0
+        ? 'Save $amtStr from your bank by direct debit. A fee of '
+            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(feeNaira, rule.currency)} applies — '
+            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(netNaira, rule.currency)} will be added to your goal.'
+        : 'Save $amtStr now';
+
     String? verificationToken;
 
     final success = await validateTransactionPin(
@@ -255,9 +285,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       transactionId: transactionId,
       transactionType: 'autosave_trigger',
       amount: saveAmount,
+      // For a linked-bank pull, surface the aggregated direct-debit fee + the
+      // amount actually leaving the bank so the PIN sheet shows the real cost.
+      fee: _isLinkedBankRule && feeNaira > 0 ? feeNaira : null,
+      totalAmount: _isLinkedBankRule ? saveAmount : null,
       currency: rule.currency,
       title: 'Confirm Manual Save',
-      message: 'Save ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(saveAmount, rule.currency)} now',
+      message: confirmMessage,
       // The actual save runs AFTER the sheet closes (via the cubit), so don't
       // let the sheet declare "Transaction Successful!" prematurely — that was
       // showing success even when the trigger then failed. Verify the PIN,
