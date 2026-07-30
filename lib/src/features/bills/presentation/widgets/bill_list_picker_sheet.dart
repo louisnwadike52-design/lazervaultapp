@@ -32,14 +32,22 @@ class BillListFetchState<T> {
         items = const [];
 }
 
+/// One filter pill for [BillListPickerSheet]: a [label] and a [test] that keeps
+/// the items belonging to that filter. The first entry is the default (usually
+/// an "All" pass-through).
+typedef BillListFilter<T> = ({String label, bool Function(T item) test});
+
 /// A styled, LIVE-updating bottom sheet that picks one option from a fetched
 /// list. Reused by every bill-pay QuickBuy flow so the loading / error / empty /
 /// list presentation (and its alignment + contrast) is consistent.
 ///
+/// Optionally shows a row of [filters] pills above the list (e.g. data-plan
+/// Daily/Weekly/Monthly) that filter the fetched items client-side.
+///
 /// Pops the picked item (of type [T]) via `Navigator.pop(context, item)`; pops
 /// null on close. Drives its body off a [ValueListenable] of
 /// [BillListFetchState] so it reflects the fetch as it completes.
-class BillListPickerSheet<T> extends StatelessWidget {
+class BillListPickerSheet<T> extends StatefulWidget {
   const BillListPickerSheet({
     super.key,
     required this.title,
@@ -51,6 +59,7 @@ class BillListPickerSheet<T> extends StatelessWidget {
     this.subtitleOf,
     this.emptyLabel = 'Nothing available right now',
     this.onRetry,
+    this.filters,
   });
 
   final String title;
@@ -72,13 +81,57 @@ class BillListPickerSheet<T> extends StatelessWidget {
   /// Shown as a "Try again" action in the error state. When null, no retry.
   final VoidCallback? onRetry;
 
+  /// Optional filter pills. When null/empty, no pill row is shown.
+  final List<BillListFilter<T>>? filters;
+
+  @override
+  State<BillListPickerSheet<T>> createState() => _BillListPickerSheetState<T>();
+}
+
+class _BillListPickerSheetState<T> extends State<BillListPickerSheet<T>> {
   static const _bg = Color(0xFF141414);
   static const _muted = Color(0xFF9CA3AF);
   static const _divider = Color(0xFF2D2D2D);
   static const _price = Color(0xFF10B981);
 
+  int _filterIndex = 0;
+
+  String get title => widget.title;
+  IconData get icon => widget.icon;
+  Color get accent => widget.accent;
+  String get emptyLabel => widget.emptyLabel;
+  VoidCallback? get onRetry => widget.onRetry;
+  ValueListenable<BillListFetchState<T>> get listenable => widget.listenable;
+  String Function(T item) get labelOf => widget.labelOf;
+  String Function(T item) get trailingOf => widget.trailingOf;
+  String? Function(T item)? get subtitleOf => widget.subtitleOf;
+
+  Widget _filterPill(String label, int index) {
+    final selected = index == _filterIndex;
+    return Padding(
+      padding: EdgeInsets.only(right: 8.w),
+      child: GestureDetector(
+        onTap: () => setState(() => _filterIndex = index),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: selected ? accent : const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: selected ? accent : _divider),
+          ),
+          child: Text(label,
+              style: GoogleFonts.inter(
+                  color: selected ? Colors.white : _muted,
+                  fontSize: 13.sp,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500)),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filters = widget.filters;
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
@@ -113,6 +166,18 @@ class BillListPickerSheet<T> extends StatelessWidget {
             ),
           ]),
         ),
+        if (filters != null && filters.isNotEmpty)
+          SizedBox(
+            height: 40.h,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              children: [
+                for (var i = 0; i < filters.length; i++)
+                  _filterPill(filters[i].label, i),
+              ],
+            ),
+          ),
         Expanded(
           child: ValueListenableBuilder<BillListFetchState<T>>(
             valueListenable: listenable,
@@ -127,11 +192,20 @@ class BillListPickerSheet<T> extends StatelessWidget {
                   onRetry: onRetry,
                 );
               }
-              if (state.items.isEmpty) {
+              // Apply the active filter pill (if any) to the fetched items.
+              final items = (filters != null &&
+                      filters.isNotEmpty &&
+                      _filterIndex < filters.length)
+                  ? state.items.where(filters[_filterIndex].test).toList()
+                  : state.items;
+              if (items.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 32.w),
-                    child: Text(emptyLabel,
+                    child: Text(
+                        state.items.isEmpty
+                            ? emptyLabel
+                            : 'No plans in this filter',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                             color: _muted, fontSize: 14.sp)),
@@ -140,11 +214,11 @@ class BillListPickerSheet<T> extends StatelessWidget {
               }
               return ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                itemCount: state.items.length,
+                itemCount: items.length,
                 separatorBuilder: (_, __) => Divider(
                     color: _divider, height: 1, indent: 4.w, endIndent: 4.w),
                 itemBuilder: (_, i) {
-                  final item = state.items[i];
+                  final item = items[i];
                   final sub = subtitleOf?.call(item);
                   return InkWell(
                     onTap: () => Navigator.of(context).pop(item),

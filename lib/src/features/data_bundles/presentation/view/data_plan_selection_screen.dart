@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/data_bundles/utils/data_plan_validity.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/data_plan_entity.dart';
@@ -20,6 +21,10 @@ class DataPlanSelectionScreen extends StatefulWidget {
 
 class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
+
+  // Active duration filter pill (All / Daily / Weekly / Monthly), parsed from
+  // each plan's name.
+  DataPlanDuration _durationFilter = DataPlanDuration.all;
 
   @override
   void initState() {
@@ -170,6 +175,18 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              SizedBox(height: 10.h),
+              // Duration filter pills (parsed from each plan's name).
+              SizedBox(
+                height: 36.h,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (final d in DataPlanDuration.values)
+                      _buildDurationPill(d, Color(networkColorValue)),
+                  ],
+                ),
+              ),
               SizedBox(height: 12.h),
 
               // Plans grid
@@ -190,8 +207,19 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                       if (state.plans.isEmpty) {
                         return _buildEmptyState();
                       }
+                      final plans = state.plans
+                          .where((p) => matchesDuration(p, _durationFilter))
+                          .toList();
+                      if (plans.isEmpty) {
+                        return Center(
+                          child: Text('No ${_durationFilter.label.toLowerCase()} plans',
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 14.sp)),
+                        );
+                      }
                       return GridView.builder(
-                        itemCount: state.plans.length,
+                        itemCount: plans.length,
                         gridDelegate:
                             SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -201,7 +229,7 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                         ),
                         itemBuilder: (context, index) {
                           return _buildPlanCard(
-                            state.plans[index],
+                            plans[index],
                             network,
                             networkName,
                             networkColorValue,
@@ -216,6 +244,31 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDurationPill(DataPlanDuration d, Color accent) {
+    final selected = d == _durationFilter;
+    return Padding(
+      padding: EdgeInsets.only(right: 8.w),
+      child: GestureDetector(
+        onTap: () => setState(() => _durationFilter = d),
+        child: Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+          decoration: BoxDecoration(
+            color: selected ? accent : const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+                color: selected ? accent : const Color(0xFF2D2D2D)),
+          ),
+          child: Text(d.label,
+              style: GoogleFonts.inter(
+                  color: selected ? Colors.white : const Color(0xFF9CA3AF),
+                  fontSize: 13.sp,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500)),
         ),
       ),
     );

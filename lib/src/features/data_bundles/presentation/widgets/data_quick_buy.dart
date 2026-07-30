@@ -24,6 +24,7 @@ import '../widgets/rollover_preference_sheet.dart'
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import '../../domain/entities/data_plan_entity.dart';
+import '../../utils/data_plan_validity.dart';
 import '../../domain/entities/data_purchase_entity.dart';
 import '../../domain/entities/data_beneficiary.dart';
 import '../../data/datasources/data_beneficiary_remote_datasource.dart';
@@ -280,6 +281,11 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         trailingOf: (p) => '₦${p.price.toStringAsFixed(0)}',
         emptyLabel: 'No plans available for $_netName',
         onRetry: _reloadPlans,
+        // Daily / Weekly / Monthly filter pills (parsed from the plan name).
+        filters: [
+          for (final d in DataPlanDuration.values)
+            (label: d.label, test: (DataPlanEntity p) => matchesDuration(p, d)),
+        ],
       ),
     );
     if (picked != null && mounted) setState(() => _plan = picked);
