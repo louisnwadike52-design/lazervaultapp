@@ -6,6 +6,7 @@ import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -174,6 +175,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // mandate — we badge the ones that do. Cached locally so the carousel
   // survives OpenBankingCubit state changes during a deposit.
   List<LinkedBankAccount> _linkedAccounts = [];
+  // One-time "how to refresh a linked-bank balance" guide is evaluated once per
+  // screen instance (persisted per-user so it's shown once, ever).
+  bool _refreshGuideChecked = false;
 
 
   /// Get currency from selected card
@@ -394,6 +398,143 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // screen (the balance tells the user whether the bank has funds to pull). A
   // live Mono read is billed, so quote the fee and, when > 0, show it + take a
   // txPIN before charging + reading. Mirrors the Linked Banks refresh flow.
+  /// One-time educational modal (only for users who already have a linked bank)
+  /// explaining that linked-bank balances are cached to save cost, and how to
+  /// pull a live figure with the explicit "Refresh balance" button.
+  Future<void> _maybeShowBalanceRefreshGuide(
+      List<LinkedBankAccount> accounts) async {
+    if (_refreshGuideChecked || accounts.isEmpty || !mounted) return;
+    _refreshGuideChecked = true;
+    try {
+      final authState = context.read<AuthenticationCubit>().state;
+      final uid =
+          authState is AuthenticationSuccess ? authState.profile.user.id : '';
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'deposit_balance_refresh_guide_seen_$uid';
+      if (prefs.getBool(key) == true) return;
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showBalanceRefreshGuideDialog();
+      });
+      await prefs.setBool(key, true);
+    } catch (_) {/* best-effort — never block the screen on the guide */}
+  }
+
+  void _showBalanceRefreshGuideDialog() {
+    const brand = Color(0xFF4E03D0);
+    const card = Color(0xFF1B1626);
+    Widget step(IconData icon, String title, String body) => Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 30.w,
+              height: 30.w,
+              decoration: BoxDecoration(
+                color: brand.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(9.r),
+              ),
+              child: Icon(icon, color: const Color(0xFFB794F6), size: 16.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(title,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5.sp,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 2.h),
+                Text(body,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.66),
+                        fontSize: 12.sp,
+                        height: 1.35)),
+              ]),
+            ),
+          ]),
+        );
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
+          decoration: BoxDecoration(
+            color: card,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: brand.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(
+                  color: brand.withValues(alpha: 0.25),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10)),
+            ],
+          ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF6D28D9), brand],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Icon(Icons.sync_rounded, color: Colors.white, size: 26.sp),
+            ),
+            SizedBox(height: 14.h),
+            Text('Keep your linked balances live',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w800)),
+            SizedBox(height: 8.h),
+            Text(
+              'To keep costs down, your linked banks show their last-known '
+              'balance. When a card reads "not live", pull the latest figure '
+              'straight from your bank.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12.5.sp,
+                  height: 1.4),
+            ),
+            SizedBox(height: 18.h),
+            step(Icons.account_balance_rounded, 'Find your bank',
+                'Open the "Deposit again" cards and pick the linked bank.'),
+            step(Icons.sync_rounded, 'Tap "Refresh balance"',
+                'The button on the card pulls a live balance from your bank.'),
+            step(Icons.check_circle_rounded, 'See the live figure',
+                'The card updates in place. A small bank fee may apply.'),
+            SizedBox(height: 6.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: brand,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 13.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                  elevation: 0,
+                ),
+                child: Text('Got it',
+                    style: TextStyle(
+                        fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
   Future<void> _refreshSourceBalance(dynamic account) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
@@ -1118,6 +1259,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             ? 'switching'
             : 'onetime';
     final accent = _cardAccentColor(mode);
+    // Live spinner while THIS account's balance refresh is in flight (the cubit
+    // emits BalanceRefreshing/BalanceRefreshed per account; build() watches it).
+    final obState = context.watch<OpenBankingCubit>().state;
+    final isRefreshing =
+        obState is BalanceRefreshing && obState.accountId == account.id;
     return InkWell(
       borderRadius: BorderRadius.circular(16.r),
       onTap: () => _openRedepositSheet(context, account),
@@ -1181,72 +1327,114 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp),
             ),
             SizedBox(height: 4.h),
-            // COST-AWARE: we no longer fire a live Mono read on load. Show the
-            // last-known (cached) balance; label it "not live" when it's stale so
-            // the user knows to refresh explicitly (a cost-confirmed action). Only
-            // show the loader while an explicit refresh is actually in flight.
+            // COST-AWARE: balances are the last-known (cached) figure — a live
+            // Mono read costs money, so it's an EXPLICIT action via the "Refresh
+            // balance" button below. A chip labels whether the figure is live.
             Builder(builder: (_) {
               final hasBalance = account.balanceUpdatedAt != null;
               final fresh = hasBalance &&
-                  DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
-              if (!hasBalance) {
-                return Text('Tap refresh to load balance',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 11.sp));
-              }
-              if (fresh) {
-                return Text('₦${account.lastKnownBalance.toStringAsFixed(2)}',
+                  DateTime.now().difference(account.balanceUpdatedAt!).inMinutes <
+                      3;
+              return Row(children: [
+                Flexible(
+                  child: Text(
+                    hasBalance
+                        ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                        : 'Balance hidden',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w700));
-              }
-              // Stale/cached — tap to pull a live (cost-confirmed) read.
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _refreshSourceBalance(account),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Flexible(
-                    child: Text('₦${account.lastKnownBalance.toStringAsFixed(2)} · not live',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 12.5.sp,
-                            fontWeight: FontWeight.w700)),
+                        fontWeight: FontWeight.w700),
                   ),
-                  SizedBox(width: 5.w),
-                  Icon(Icons.refresh, size: 13.sp, color: const Color(0xFF3B82F6)),
-                ]),
-              );
+                ),
+                SizedBox(width: 6.w),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: (fresh
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFFB923C))
+                        .withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(fresh ? 'Live' : 'Not live',
+                      style: TextStyle(
+                          color: fresh
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFB923C),
+                          fontSize: 9.5.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ]);
             }),
-            SizedBox(height: 6.h),
-            // Setting-up state gets the tappable "Setting up Direct Debit" badge
-            // in place of the deposit hint (same row → keeps the card height
-            // and the badges evenly spaced, never clustered). Other states keep
-            // the plain hint + arrow.
+            SizedBox(height: 8.h),
+            // Explicit actions: a labeled "Refresh balance" button (pulls a live
+            // figure) on the left; the deposit affordance (whole card taps to
+            // deposit) on the right. Setting-up cards keep their badge + a
+            // compact refresh so the action is never hidden.
             if (settingUp)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _settingUpDirectDebitBadge(account),
-              )
+              Row(children: [
+                Flexible(child: _settingUpDirectDebitBadge(account)),
+                SizedBox(width: 6.w),
+                _refreshBalanceButton(account, isRefreshing, compact: true),
+              ])
             else
               Row(
                 children: [
-                  Text(recurring ? 'Tap to deposit' : 'Tap to deposit (one-time)',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11.sp)),
+                  _refreshBalanceButton(account, isRefreshing),
                   const Spacer(),
-                  Icon(recurring ? Icons.refresh : Icons.chevron_right,
-                      color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
+                  Text(recurring ? 'Deposit' : 'Deposit once',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600)),
+                  Icon(Icons.chevron_right,
+                      color: Colors.white.withValues(alpha: 0.6), size: 18.sp),
                 ],
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Explicit "Refresh balance" button on a linked-bank card — pulls a live
+  /// (cost-confirmed) balance from the bank. Shows a spinner while in flight.
+  /// [compact] renders just the icon (for the tight setting-up row). Consumes
+  /// its own tap so it never fires the card's deposit action.
+  Widget _refreshBalanceButton(LinkedBankAccount account, bool isRefreshing,
+      {bool compact = false}) {
+    const blue = Color(0xFF3B82F6);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isRefreshing ? null : () => _refreshSourceBalance(account),
+      child: Container(
+        padding:
+            EdgeInsets.symmetric(horizontal: compact ? 7.w : 10.w, vertical: 5.h),
+        decoration: BoxDecoration(
+          color: blue.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(9.r),
+          border: Border.all(color: blue.withValues(alpha: 0.42)),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (isRefreshing)
+            SizedBox(
+              width: 12.w,
+              height: 12.w,
+              child: const CircularProgressIndicator(
+                  strokeWidth: 2, color: blue),
+            )
+          else
+            Icon(Icons.sync_rounded, size: 13.sp, color: blue),
+          if (!compact) ...[
+            SizedBox(width: 5.w),
+            Text(isRefreshing ? 'Refreshing…' : 'Refresh balance',
+                style: TextStyle(
+                    color: blue, fontSize: 11.sp, fontWeight: FontWeight.w700)),
+          ],
+        ]),
       ),
     );
   }
@@ -3446,6 +3634,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // Cache the user's linked banks for the "Deposit again" carousel.
       if (mounted) {
         setState(() => _linkedAccounts = state.accounts);
+      }
+      // One-time educational guide: how to see a live linked-bank balance.
+      _maybeShowBalanceRefreshGuide(state.accounts);
+    } else if (state is BalanceRefreshed) {
+      // A refresh just landed — update that card's balance in place so the
+      // explicit "Refresh" button visibly reflects the live figure.
+      if (mounted) {
+        setState(() {
+          _linkedAccounts = _linkedAccounts
+              .map((a) => a.id == state.accountId
+                  ? a.copyWith(
+                      lastKnownBalance: state.newBalance,
+                      balanceUpdatedAt: DateTime.now())
+                  : a)
+              .toList();
+        });
       }
     } else if (state is AccountUnlinked) {
       // Drop it from the carousel + refresh.
