@@ -1376,6 +1376,28 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             // right. The whole card taps to deposit, so there's no separate
             // deposit CTA — keeps the card clean and uncluttered.
             Builder(builder: (_) {
+              // Live progress while the Mono read is in flight — makes the
+              // (network-bound) refresh visible right on the card.
+              if (isRefreshing) {
+                return Row(children: [
+                  SizedBox(
+                    width: 15.w,
+                    height: 15.w,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 2, color: Color(0xFF3B82F6)),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text('Refreshing balance…',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: const Color(0xFF3B82F6),
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ]);
+              }
               final hasBalance = account.balanceUpdatedAt != null;
               final fresh = hasBalance &&
                   DateTime.now().difference(account.balanceUpdatedAt!).inMinutes <
