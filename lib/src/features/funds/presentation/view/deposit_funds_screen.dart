@@ -404,25 +404,27 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   Future<void> _maybeShowBalanceRefreshGuide(
       List<LinkedBankAccount> accounts) async {
     if (_refreshGuideChecked || accounts.isEmpty || !mounted) return;
-    _refreshGuideChecked = true;
+    _refreshGuideChecked = true; // at most once per screen visit
     try {
       final authState = context.read<AuthenticationCubit>().state;
       final uid =
           authState is AuthenticationSuccess ? authState.profile.user.id : '';
+      // Suppressed ONLY when the user ticked "Don't show this again". Otherwise
+      // the guide reappears on each deposit-screen visit (once per visit).
+      final key = 'deposit_balance_refresh_guide_dismissed_$uid';
       final prefs = await SharedPreferences.getInstance();
-      final key = 'deposit_balance_refresh_guide_seen_$uid';
       if (prefs.getBool(key) == true) return;
       if (!mounted) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _showBalanceRefreshGuideDialog();
+        if (mounted) _showBalanceRefreshGuideDialog(key);
       });
-      await prefs.setBool(key, true);
     } catch (_) {/* best-effort — never block the screen on the guide */}
   }
 
-  void _showBalanceRefreshGuideDialog() {
+  void _showBalanceRefreshGuideDialog(String suppressKey) {
     const brand = Color(0xFF4E03D0);
     const card = Color(0xFF1B1626);
+    bool dontShowAgain = false;
     Widget step(IconData icon, String title, String body) => Padding(
           padding: EdgeInsets.only(bottom: 12.h),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -459,7 +461,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       builder: (dialogCtx) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Container(
+        child: StatefulBuilder(
+          builder: (context, setDlgState) => Container(
           padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
           decoration: BoxDecoration(
             color: card,
@@ -511,11 +514,51 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 'The button on the card pulls a live balance from your bank.'),
             step(Icons.check_circle_rounded, 'See the live figure',
                 'The card updates in place. A small bank fee may apply.'),
-            SizedBox(height: 6.h),
+            SizedBox(height: 14.h),
+            // Opt-out. Unchecked by default: the guide reappears each visit
+            // UNTIL the user ticks this, which persists the suppress flag.
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setDlgState(() => dontShowAgain = !dontShowAgain),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  width: 20.w,
+                  height: 20.w,
+                  decoration: BoxDecoration(
+                    color: dontShowAgain ? brand : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6.r),
+                    border: Border.all(
+                        color: dontShowAgain
+                            ? brand
+                            : Colors.white.withValues(alpha: 0.4),
+                        width: 1.5),
+                  ),
+                  child: dontShowAgain
+                      ? Icon(Icons.check, size: 14.sp, color: Colors.white)
+                      : null,
+                ),
+                SizedBox(width: 10.w),
+                Text("Don't show this again",
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 12.5.sp)),
+              ]),
+            ),
+            SizedBox(height: 14.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(),
+                onPressed: () async {
+                  // Persist the choice ONLY when the user opted out.
+                  if (dontShowAgain) {
+                    try {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool(suppressKey, true);
+                    } catch (_) {/* best-effort */}
+                  }
+                  if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: brand,
                   foregroundColor: Colors.white,
@@ -530,6 +573,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               ),
             ),
           ]),
+          ),
         ),
       ),
     );
