@@ -1284,8 +1284,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   }
 
   Widget _buildLinkedAccountCard(BuildContext context, LinkedBankAccount account) {
-    final mandate = _mandateForAccount(account);
-    final recurring = mandate != null;
     // Deposit-access state for this card:
     //   persistent → active Direct Debit (auto-debit, no approval)
     //   pending    → Direct Debit authorized but awaiting NIBSS activation; THIS
@@ -1374,111 +1372,99 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             // COST-AWARE: balances are the last-known (cached) figure — a live
             // Mono read costs money, so it's an EXPLICIT action via the "Refresh
             // balance" button below. A chip labels whether the figure is live.
+            // Balance + freshness on the left; an explicit refresh icon on the
+            // right. The whole card taps to deposit, so there's no separate
+            // deposit CTA — keeps the card clean and uncluttered.
             Builder(builder: (_) {
               final hasBalance = account.balanceUpdatedAt != null;
               final fresh = hasBalance &&
                   DateTime.now().difference(account.balanceUpdatedAt!).inMinutes <
                       3;
               return Row(children: [
-                Flexible(
-                  child: Text(
-                    hasBalance
-                        ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
-                        : 'Balance hidden',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w700),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        hasBalance
+                            ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                            : 'Balance hidden',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700),
+                      ),
+                      SizedBox(height: 4.h),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 7.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: (fresh
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFB923C))
+                              .withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(fresh ? 'Live' : 'Not live',
+                            style: TextStyle(
+                                color: fresh
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFFB923C),
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(width: 6.w),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: (fresh
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFFB923C))
-                        .withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                  child: Text(fresh ? 'Live' : 'Not live',
-                      style: TextStyle(
-                          color: fresh
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFFFB923C),
-                          fontSize: 9.5.sp,
-                          fontWeight: FontWeight.w700)),
-                ),
+                SizedBox(width: 10.w),
+                _refreshBalanceButton(account, isRefreshing),
               ]);
             }),
-            SizedBox(height: 8.h),
-            // Explicit actions: a labeled "Refresh balance" button (pulls a live
-            // figure) on the left; the deposit affordance (whole card taps to
-            // deposit) on the right. Setting-up cards keep their badge + a
-            // compact refresh so the action is never hidden.
-            if (settingUp)
-              Row(children: [
-                Flexible(child: _settingUpDirectDebitBadge(account)),
-                SizedBox(width: 6.w),
-                _refreshBalanceButton(account, isRefreshing, compact: true),
-              ])
-            else
-              Row(
-                children: [
-                  _refreshBalanceButton(account, isRefreshing),
-                  const Spacer(),
-                  Text(recurring ? 'Deposit' : 'Deposit once',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600)),
-                  Icon(Icons.chevron_right,
-                      color: Colors.white.withValues(alpha: 0.6), size: 18.sp),
-                ],
+            // Direct Debit still activating → keep the amber badge below.
+            if (settingUp) ...[
+              SizedBox(height: 8.h),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _settingUpDirectDebitBadge(account),
               ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  /// Explicit "Refresh balance" button on a linked-bank card — pulls a live
-  /// (cost-confirmed) balance from the bank. Shows a spinner while in flight.
-  /// [compact] renders just the icon (for the tight setting-up row). Consumes
-  /// its own tap so it never fires the card's deposit action.
-  Widget _refreshBalanceButton(LinkedBankAccount account, bool isRefreshing,
-      {bool compact = false}) {
+  /// Explicit refresh-balance icon-button on a linked-bank card — pulls a live
+  /// (cost-confirmed) balance from the bank. Shows a spinner while in flight and
+  /// consumes its own tap so it never fires the card's deposit action.
+  Widget _refreshBalanceButton(LinkedBankAccount account, bool isRefreshing) {
     const blue = Color(0xFF3B82F6);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: isRefreshing ? null : () => _refreshSourceBalance(account),
-      child: Container(
-        padding:
-            EdgeInsets.symmetric(horizontal: compact ? 7.w : 10.w, vertical: 5.h),
-        decoration: BoxDecoration(
-          color: blue.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(9.r),
-          border: Border.all(color: blue.withValues(alpha: 0.42)),
+      child: Tooltip(
+        message: 'Refresh balance',
+        child: Container(
+          width: 34.w,
+          height: 34.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: blue.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(color: blue.withValues(alpha: 0.42)),
+          ),
+          child: isRefreshing
+              ? SizedBox(
+                  width: 15.w,
+                  height: 15.w,
+                  child: const CircularProgressIndicator(
+                      strokeWidth: 2, color: blue),
+                )
+              : Icon(Icons.sync_rounded, size: 17.sp, color: blue),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          if (isRefreshing)
-            SizedBox(
-              width: 12.w,
-              height: 12.w,
-              child: const CircularProgressIndicator(
-                  strokeWidth: 2, color: blue),
-            )
-          else
-            Icon(Icons.sync_rounded, size: 13.sp, color: blue),
-          if (!compact) ...[
-            SizedBox(width: 5.w),
-            Text(isRefreshing ? 'Refreshing…' : 'Refresh balance',
-                style: TextStyle(
-                    color: blue, fontSize: 11.sp, fontWeight: FontWeight.w700)),
-          ],
-        ]),
       ),
     );
   }
