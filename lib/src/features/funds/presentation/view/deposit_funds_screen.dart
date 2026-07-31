@@ -47,8 +47,6 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/linked_a
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_mode_info.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_setup_bottomsheet.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
@@ -75,11 +73,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // setState via a ValueNotifier so the async result redraws just the fee row.
   final ValueNotifier<DepositFeeCalculation?> _feePreview = ValueNotifier(null);
   Timer? _feeDebounce;
-  final FlutterTts _flutterTts = FlutterTts();
-  final stt.SpeechToText _speech = stt.SpeechToText();
   String _selectedBank = '';
-  bool _isListening = false;
-  String _recognizedText = '';
 
   // Dynamic bank list loaded from Mono supported banks
   List<Map<String, dynamic>> _banks = [];
@@ -212,7 +206,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     super.initState();
     // Telemetry: deposit screen view (currency is bounded server-side).
     AnalyticsService.instance.trackDepositScreen(_currency);
-    _initializeSpeech();
     _loadBanks();
     // Load the user's saved mandates + previously-linked bank accounts so the
     // "Deposit again" carousel can show them. Fire after the first frame.
@@ -520,37 +513,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     return colors[index];
   }
 
-  Future<void> _initializeSpeech() async {
-    await _speech.initialize();
-    await _flutterTts.setLanguage('en-GB');
-    await _flutterTts.setPitch(1.0);
-  }
-
-
-  void _processVoiceCommand(String command) {
-    command = command.toLowerCase();
-
-    // Process bank selection
-    for (var bank in _banks) {
-      if (command.contains(bank['name'].toLowerCase())) {
-        setState(() => _selectedBank = bank['name']);
-        _speakResponse('Selected ${bank['name']}');
-        break;
-      }
-    }
-
-    // Process amount
-    final amountMatch = RegExp(r'\d+').firstMatch(command);
-    if (amountMatch != null) {
-      final amount = amountMatch.group(0);
-      setState(() => _amountController.text = amount!);
-      _speakResponse('Amount set to $_currencySymbol$amount');
-    }
-  }
-
-  Future<void> _speakResponse(String text) async {
-    await _flutterTts.speak(text);
-  }
 
 
   @override
@@ -4011,8 +3973,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     _amountController.dispose();
     _feeDebounce?.cancel();
     _feePreview.dispose();
-    _flutterTts.stop();
-    _speech.cancel();
     _progressController.dispose();
     super.dispose();
   }
