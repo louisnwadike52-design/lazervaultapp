@@ -79,7 +79,9 @@ class _DashboardAdvertsCarouselState extends State<DashboardAdvertsCarousel> {
         ? source.sublist(0, maxSlides)
         : source;
 
-    final height = 132.h;
+    // Kept compact so the advert card AND its page indicators clear the fold
+    // on the showcase dashboard (they'd otherwise sit behind the bottom nav).
+    final height = 104.h;
 
     return Column(
       children: [
