@@ -25,17 +25,21 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
-  const DashboardCardSummary({super.key});
+  /// Compact (Showcase/advert) layout — trims the section height a little so the
+  /// adverts carousel + compact services fit above the fold.
+  final bool compact;
+  const DashboardCardSummary({super.key, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
-    return const _DashboardCardSummaryView();
+    return _DashboardCardSummaryView(compact: compact);
   }
 }
 
 // Internal View Widget
 class _DashboardCardSummaryView extends StatefulWidget {
-  const _DashboardCardSummaryView();
+  final bool compact;
+  const _DashboardCardSummaryView({this.compact = false});
 
   @override
   State<_DashboardCardSummaryView> createState() =>
@@ -139,10 +143,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
   }
 
   // Method to show the account actions bottom sheet widget
-  void _showCardDetailsSheet(Map<String, dynamic> accountArgs) {
-    final accountId = accountArgs['id']?.toString() ?? accountArgs['uuid']?.toString() ?? '';
-
-    Get.bottomSheet(
+  Future<void> _showCardDetailsSheet(Map<String, dynamic> accountArgs) async {
+    await Get.bottomSheet(
       BlocProvider.value(
         value: serviceLocator<AccountActionsCubit>(),
         child: AccountActionsBottomSheet(accountArgs: accountArgs),
@@ -155,6 +157,38 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
       backgroundColor:
           Colors.transparent, // Let the sheet handle its background
     );
+
+    // The sheet may have frozen/unfrozen this account (or changed its limits).
+    // Silently re-fetch the summaries so the dashboard card re-renders its new
+    // state — e.g. the frozen "ice" theme — the moment the sheet closes. This
+    // is required because the build()-time hasDataForUser guard would otherwise
+    // keep serving the stale (pre-freeze) card; a direct cubit fetch bypasses
+    // it, and `silent` avoids a loading flicker on the carousel.
+    if (!mounted) return;
+    _refreshAccountSummaries(silent: true);
+  }
+
+  // Re-fetch account summaries for the current user without a loading flicker.
+  void _refreshAccountSummaries({bool silent = false}) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final userId = authState.profile.user.id;
+    final accessToken = authState.profile.session.accessToken;
+
+    final profileState = context.read<ProfileCubit>().state;
+    String? activeCountry;
+    if (profileState is ProfileLoaded) {
+      activeCountry = profileState.preferences.activeCountry.isNotEmpty
+          ? profileState.preferences.activeCountry
+          : null;
+    }
+
+    context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: userId,
+          accessToken: accessToken,
+          country: activeCountry,
+          silent: silent,
+        );
   }
 
   @override
@@ -233,7 +267,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
         ),
       ],
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(
+            horizontal: 20.w, vertical: widget.compact ? 6.h : 8.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
@@ -257,7 +292,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
             children: [
               // Use DashboardHeader widget
               DashboardHeader(currentUser: currentUser),
-              SizedBox(height: 16.h),
+              SizedBox(height: widget.compact ? 12.h : 16.h),
               // Use AccountCarousel widget within BlocConsumer
               BlocConsumer<AccountCardsSummaryCubit, AccountCardsSummaryState>(
                 listener: (context, state) {
@@ -299,7 +334,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     // matches the carousel height so the layout doesn't
                     // collapse during load.
                     return SizedBox(
-                      height: 190.h,
+                      height: widget.compact ? 170.h : 190.h,
                       child: const Center(
                         child: LazerVaultLoader.medium(),
                       ),
@@ -348,6 +383,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     return AccountCarousel(
                       accountSummaries: accountSummaries,
                       onShowDetails: _showCardDetailsSheet,
+                      compact: widget.compact,
                     );
                   }
                   return SizedBox(

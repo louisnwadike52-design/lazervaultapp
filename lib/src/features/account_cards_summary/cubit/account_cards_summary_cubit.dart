@@ -143,6 +143,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     String? accessToken,
     String? country,
     String? period,
+    bool silent = false,
   }) async {
     if (isClosed) return;
 
@@ -159,7 +160,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     }
 
     _currentUserId = userId;
-    emit(AccountCardsSummaryLoading());
+    // A silent refresh (e.g. after the account-actions sheet closes so a
+    // freeze/unfreeze shows up) keeps the current cards on screen instead of
+    // flashing the loading state.
+    if (!silent) emit(AccountCardsSummaryLoading());
     final result = await _getAccountSummariesUseCase.call(
       userId: userId,
       accessToken: accessToken,
@@ -168,10 +172,16 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     );
     if (isClosed) return;
     result.fold(
-      (failure) => emit(AccountCardsSummaryError(
-        failure.message,
-        statusCode: failure.statusCode,
-      )),
+      (failure) {
+        // On a silent refresh don't replace live cards with an error screen —
+        // the mutation (freeze) already succeeded server-side; just keep what
+        // we have if the follow-up fetch hiccups.
+        if (silent && _currentSummaries.isNotEmpty) return;
+        emit(AccountCardsSummaryError(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
       (summaries) {
         // Sort: family accounts go last in the carousel
         final sorted = List<AccountSummaryEntity>.from(summaries)
