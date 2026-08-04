@@ -25,6 +25,9 @@ import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_l
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 
@@ -56,7 +59,14 @@ class MoveMoneyDashboardScreen extends StatefulWidget {
 }
 
 class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
-    with SingleTickerProviderStateMixin, BankLinkFeeMixin {
+    with
+        SingleTickerProviderStateMixin,
+        BankLinkFeeMixin,
+        TransactionPinMixin,
+        LinkedBalanceRefreshMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
 
   late TabController _tabController;
 
@@ -153,6 +163,13 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     final user = authState.profile.user;
     final customerName = '${user.firstName} ${user.lastName}'.trim();
 
+    // CONNECTION-FEE CONSENT FIRST — before the Mono Connect webview, not after
+    // the user has already linked. On "Not now" we abort without opening it.
+    final proceed = await showBankConnectionFeeNotice(context);
+    if (!proceed || !mounted) return;
+    // One idempotency id for this whole link attempt.
+    final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
+
     final result = await showMonoConnectBottomSheet(
       context: context,
       publicKey: MonoConfig.publicKey,
@@ -163,23 +180,19 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
 
     if (result != null && mounted) {
       final obc = context.read<OpenBankingCubit>();
-      // Cost-confirmed link (fee + txPIN only when enabled; free is unchanged).
+      // Fee already consented above — link straight through (no second notice).
       // autoCreateMandate=true → Direct Debit (Mono pulls without per-transfer
       // approval); false → DirectPay (user authorises each transfer).
-      await linkBankWithFee(
-        context: context,
-        doLink: (token, txnId) async => obc.linkAccount(
-          userId: user.id,
-          code: result.code,
-          accessToken: authState.profile.session.accessToken,
-          autoCreateMandate: useDirectDebit,
-          userEmail: user.email.isNotEmpty ? user.email : null,
-          userName: customerName.isNotEmpty ? customerName : null,
-          userPhone:
-              (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
-          verificationToken: token,
-          transactionId: txnId,
-        ),
+      await obc.linkAccount(
+        userId: user.id,
+        code: result.code,
+        accessToken: authState.profile.session.accessToken,
+        autoCreateMandate: useDirectDebit,
+        userEmail: user.email.isNotEmpty ? user.email : null,
+        userName: customerName.isNotEmpty ? customerName : null,
+        userPhone:
+            (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
+        transactionId: txnId,
       );
       if (!mounted) return;
       _loadData();
@@ -1827,7 +1840,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     // card badges correct themselves on display.
     return BlocBuilder<MandateCubit, MandateState>(
       builder: (context, _) => SizedBox(
-        height: 182.h, // fits the balance line + mandate badge with headroom
+        // Tall enough for the full card: icon + bank name + acct# + holder +
+        // balance/updated + the mandate pill (Direct Debit/One-time) AND the
+        // optional "Inactive/Reauthorize" warning row. 182.h clipped the bottom
+        // pill (overflow); 214.h leaves headroom so nothing is cut off.
+        height: 214.h,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1840,16 +1857,37 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             final account = sorted[index];
             final mandate =
                 context.read<MandateCubit>().getMandateForAccount(account.id);
+            // Per-account "refreshing" state (screen rebuilds on Balance* via the
+            // MultiBlocListener setState, so this reads fresh each build).
+            final obState = context.read<OpenBankingCubit>().state;
+            final isRefreshing = obState is BalanceRefreshing &&
+                obState.accountId == account.id;
             return MoveAccountCard(
               account: account,
               isSelected: false,
               mandate: mandate,
+              isRefreshing: isRefreshing,
+              onRefresh: () => _refreshCardBalance(account),
               onTap: () => _showAccountDetailSheet(account),
               onLongPress: () => _showMandateManagement(account, mandate),
             );
           },
         ),
       ),
+    );
+  }
+
+  /// Per-account, fee-gated live-balance refresh from a card's refresh button —
+  /// the SAME shared `refreshLinkedBalance` (tx-PIN → verification_token) that
+  /// deposit/withdrawal use. Strictly one account; never fans out to other banks.
+  Future<void> _refreshCardBalance(LinkedBankAccount account) async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    await refreshLinkedBalance(
+      context,
+      account,
+      userId: authState.profile.userId,
+      accessToken: authState.profile.session.accessToken,
     );
   }
 
@@ -2040,12 +2078,17 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                       child: OutlinedButton.icon(
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          context.read<OpenBankingCubit>().refreshBalance(
-                                accountId: account.id,
-                                userId: authState.profile.userId,
-                                accessToken:
-                                    authState.profile.session.accessToken,
-                              );
+                          // Per-account, fee-gated, tx-PIN-authorised live Mono read
+                          // via the SHARED mixin (mints the verification_token the
+                          // backend requires) — identical to deposit/withdrawal. The
+                          // raw cubit.refreshBalance() call here was missing the
+                          // token → "required field 'verification_token' is missing".
+                          refreshLinkedBalance(
+                            context,
+                            account,
+                            userId: authState.profile.userId,
+                            accessToken: authState.profile.session.accessToken,
+                          );
                         },
                         icon: Icon(Icons.refresh_rounded, size: 18.sp),
                         label: Text(

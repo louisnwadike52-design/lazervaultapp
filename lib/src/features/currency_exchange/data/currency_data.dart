@@ -66,27 +66,10 @@ class CurrencyData {
       countryName: 'Kenya',
       exchangeRate: 107.0,
     ),
-    // Klasha corridors (Flutterwave doesn't cover PH/CA). Kept in sync with
-    // FlutterwaveCountryRules + the backend exchange_corridor_support seed
-    // (migration 007, provider='klasha').
-    const Currency(
-      code: 'PHP',
-      name: 'Philippine Peso',
-      symbol: '₱',
-      flagUrl: '$_flagBaseUrl/ph.png',
-      countryCode: 'PH',
-      countryName: 'Philippines',
-      exchangeRate: 56.0,
-    ),
-    const Currency(
-      code: 'CAD',
-      name: 'Canadian Dollar',
-      symbol: 'C\$',
-      flagUrl: '$_flagBaseUrl/ca.png',
-      countryCode: 'CA',
-      countryName: 'Canada',
-      exchangeRate: 1.36,
-    ),
+    // PHP (Philippines) / CAD (Canada) removed — the Klasha account is
+    // inaccessible (login 403) and Klasha is reserved for RMB. Re-add here +
+    // in FlutterwaveCountryRules + backend supportedCurrencyCodes/
+    // getSupportedCurrencies + klashaCurrencies together if Klasha is restored.
     // ZAR / UGX / TZS / XOF removed (#131): Flutterwave's FX/Transfers API
     // doesn't reliably support them, matching FlutterwaveCountryRules and the
     // backend corridor matrix (explicit supported=false rows). Re-add here +

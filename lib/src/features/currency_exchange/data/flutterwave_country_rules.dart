@@ -210,88 +210,10 @@ class FlutterwaveCountryRules {
       purposeOfPaymentOptions: _africanPurposes,
     ),
 
-    // Klasha corridors (Flutterwave doesn't cover PH/CA). These unblock the
-    // recipient screen's corridor gate + drive account-number validation.
-    // Field layout is the generic bank builder (bank name + account number).
-    // Kept in sync with the backend Klasha payout params + migration 007.
-    'PHP': ExchangeCountryRule(
-      currency: 'PHP',
-      countryCode: 'PH',
-      countryName: 'Philippines',
-      dialCode: '63',
-      requiresBankCode: false,
-      minAmount: 100,        // ₱100
-      maxAmount: 5000000,    // ₱5m
-      fields: [
-        ExchangeFieldSpec(
-          name: 'bank_name',
-          label: 'Bank Name',
-          required: true,
-          type: 'text',
-          hint: 'Recipient bank (e.g. BDO, BPI)',
-          minLength: 2,
-        ),
-        ExchangeFieldSpec(
-          name: 'account_number',
-          label: 'Account Number',
-          required: true,
-          type: 'text',
-          hint: '10-16 digits',
-          minLength: 6,
-          maxLength: 20,
-          digitsOnly: true,
-        ),
-        ExchangeFieldSpec(
-          name: 'beneficiary_name',
-          label: 'Recipient Name',
-          required: true,
-          type: 'text',
-          hint: 'Full legal name',
-          minLength: 2,
-        ),
-      ],
-      purposeOfPaymentOptions: _internationalPurposes,
-    ),
-
-    'CAD': ExchangeCountryRule(
-      currency: 'CAD',
-      countryCode: 'CA',
-      countryName: 'Canada',
-      dialCode: '1',
-      requiresBankCode: false,
-      minAmount: 1,          // C$1
-      maxAmount: 50000,      // C$50k
-      fields: [
-        ExchangeFieldSpec(
-          name: 'bank_name',
-          label: 'Bank Name',
-          required: true,
-          type: 'text',
-          hint: 'Recipient bank (e.g. RBC, TD)',
-          minLength: 2,
-        ),
-        ExchangeFieldSpec(
-          name: 'account_number',
-          label: 'Account Number',
-          required: true,
-          type: 'text',
-          hint: '7-12 digits',
-          minLength: 5,
-          maxLength: 20,
-          digitsOnly: true,
-        ),
-        ExchangeFieldSpec(
-          name: 'beneficiary_name',
-          label: 'Recipient Name',
-          required: true,
-          type: 'text',
-          hint: 'Full legal name',
-          minLength: 2,
-        ),
-      ],
-      purposeOfPaymentOptions: _internationalPurposes,
-    ),
-
+    // PHP (Philippines) / CAD (Canada) removed — the Klasha account is
+    // inaccessible (login 403) and Klasha is reserved for RMB. Re-add here +
+    // in currency_data + the backend supportedCurrencyCodes/klashaCurrencies
+    // together if Klasha access is restored.
     // #131: ZAR/UGX/TZS/XOF entries removed — Flutterwave FX/Transfers
     // API doesn't reliably support these in our flow. Re-add when
     // Flutterwave expands coverage (mirror the same shape Worker A

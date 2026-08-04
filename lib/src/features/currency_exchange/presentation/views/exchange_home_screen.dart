@@ -73,6 +73,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     super.initState();
     final cubit = context.read<ExchangeCubit>();
     final args = Get.arguments;
+    // Was this screen opened by "Repeat Exchange" (Convert) from history? If so
+    // we prefill the pair AND amount + mode so the form is ready to convert —
+    // previously initState read only from/to and dropped amount/mode/
+    // repeatPrefill, leaving the user on an empty form with a disabled button.
+    bool isRepeatPrefill = false;
     if (args is Map) {
       final from = args['fromCurrency'] as String?;
       final to = args['toCurrency'] as String?;
@@ -82,12 +87,40 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
           to.isNotEmpty) {
         cubit.setCurrencyPair(from, to);
       }
+      // Mode (Convert vs Send Abroad); the history sheet routes Send Abroad to
+      // the recipient screen, so here we only expect 'convert'.
+      final modeArg = (args['mode'] as String?)?.toLowerCase();
+      if (modeArg == 'convert') {
+        _mode = ExchangeMode.convert;
+        cubit.setMode(ExchangeMode.convert);
+      }
+      final repeatPrefill = args['repeatPrefill'] == true;
+      final amt = (args['amount'] as num?)?.toDouble();
+      if ((repeatPrefill || modeArg == 'convert') &&
+          amt != null &&
+          amt > 0) {
+        isRepeatPrefill = true;
+        // Set the field BEFORE the listener is attached, and push the amount to
+        // the cubit directly, so the "Convert Now" button enables once the rate
+        // for this amount comes back.
+        _amountController.text = amt.toStringAsFixed(0);
+        cubit.setAmount(amt);
+      }
     }
     cubit.loadHome();
     _amountController.addListener(_onAmountChanged);
-    // Restore the last-used source currency for the active mode (best
-    // effort; ignored if SharedPreferences fails or no prior choice exists).
-    _restoreLastSourceCurrency();
+    if (isRepeatPrefill) {
+      // Fetch a rate for the prefilled amount so the form is immediately
+      // actionable. Do NOT restore the last-used source currency here — it
+      // would clobber the fromCurrency the repeat just set.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fetchRate();
+      });
+    } else {
+      // Restore the last-used source currency for the active mode (best
+      // effort; ignored if SharedPreferences fails or no prior choice exists).
+      _restoreLastSourceCurrency();
+    }
   }
 
   Future<void> _restoreLastSourceCurrency() async {
@@ -462,8 +495,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       'ZAR': 'ZA',
       'GHS': 'GH',
       'KES': 'KE',
-      'PHP': 'PH',
-      'CAD': 'CA',
+      // PHP/CAD removed — Klasha (their provider) is reserved for RMB.
     };
     final countryCode = currencyToCountry[sourceCurrency.toUpperCase()] ?? '';
     final flag = countryCode.isNotEmpty
