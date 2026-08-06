@@ -279,16 +279,52 @@ Future<dynamic> _launchCustomMonoBottomSheet(
       ),
       child: Column(
         children: [
-          // Custom themed drag handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
-              ),
-              borderRadius: BorderRadius.circular(2),
+          // Header: centered drag handle + an ALWAYS-available close (X) button.
+          // The sheet is isDismissible:false / enableDrag:false (no swipe/barrier
+          // close, to avoid accidental mid-link dismissal), so this X is the ONLY
+          // escape hatch. It is essential for the edge case where Mono errors on
+          // start — or navigates to its own website — WITHOUT firing onClose, which
+          // would otherwise strand the user in a sheet they cannot dismiss.
+          Padding(
+            padding: const EdgeInsets.only(top: 12, left: 8, right: 4),
+            child: Row(
+              children: [
+                const SizedBox(width: 44),
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    tooltip: 'Close',
+                    icon: const Icon(Icons.close,
+                        color: Color(0xFF4E03D0), size: 22),
+                    onPressed: () {
+                      // Pop ONLY this sheet route, and only while it is still
+                      // active (mirrors dismissMonoSheet's guard) so we never
+                      // remove the screen underneath. whenComplete() then
+                      // resolves the caller's future as a cancel (null).
+                      final route = ModalRoute.of(sheetContext);
+                      if (route != null && route.isActive) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           // Mono WebView takes remaining space
