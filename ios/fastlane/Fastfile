@@ -64,7 +64,15 @@ COMPRESSION_DART_ENV = {
 }
 
 def flutter(args)
-  Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
+  # Run OUTSIDE the fastlane bundler env. `flutter build ios` shells out to
+  # `pod`, but under `bundle exec` the gem-shim `pod` (NOT in this Gemfile)
+  # shadows the brew CocoaPods → "can't find executable pod for gem cocoapods"
+  # → flutter skips `pod install` → the non-SwiftPM plugins fail to build →
+  # `flutter build ios` exits 1. with_unbundled_env restores the system
+  # PATH/GEM env so the brew `pod` is used (same fix the pod-install lane uses).
+  Bundler.with_unbundled_env do
+    Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
+  end
 end
 
 def swap_firebase_plist(flavor)
@@ -357,13 +365,20 @@ platform :ios do
       groups:                               ["External"],
       changelog:                            (`git log -1 --pretty=%s`.strip),
     )
+    # The binary was ALREADY uploaded by upload_to_testflight above; do NOT
+    # re-upload it here (App Store Connect rejects a duplicate build:
+    # "bundle version must be higher than the previously uploaded version").
+    # skip_binary_upload makes this step only manage the App Store version
+    # (points at the already-uploaded build). Review submission stays MANUAL
+    # (submit_for_review:false / automatic_release:false).
     upload_to_app_store(
-      api_key:           asc_api_key,
-      ipa:               "build/ios/ipa/Runner-prod.ipa",
-      submit_for_review: false,
-      automatic_release: false,
-      skip_metadata:     true,
-      skip_screenshots:  true,
+      api_key:             asc_api_key,
+      skip_binary_upload:  true,
+      submit_for_review:   false,
+      automatic_release:   false,
+      skip_metadata:       true,
+      skip_screenshots:    true,
+      force:               true,
     )
   end
 end
