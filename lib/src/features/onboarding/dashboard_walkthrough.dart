@@ -309,22 +309,6 @@ class _CoachCard extends StatelessWidget {
     }
   }
 
-  /// Accent border thickened on the target-facing side, hairline elsewhere.
-  Border get _directionalBorder {
-    const hair = BorderSide(color: Color(0x22FFFFFF), width: 1);
-    const bold = BorderSide(color: _accent, width: 2);
-    switch (_pointDirection) {
-      case AxisDirection.up:
-        return const Border(top: bold, left: hair, right: hair, bottom: hair);
-      case AxisDirection.down:
-        return const Border(bottom: bold, left: hair, right: hair, top: hair);
-      case AxisDirection.left:
-        return const Border(left: bold, top: hair, bottom: hair, right: hair);
-      case AxisDirection.right:
-        return const Border(right: bold, top: hair, bottom: hair, left: hair);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final beak = _Beak(direction: _pointDirection, color: _accent);
@@ -352,7 +336,11 @@ class _CoachCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _card,
         borderRadius: BorderRadius.circular(16),
-        border: _directionalBorder,
+        // UNIFORM border only — Flutter forbids a borderRadius with a
+        // non-uniform (per-side colored) Border and throws during paint,
+        // which aborts painting the card's text children (blank card). The
+        // directional beak already points at the target.
+        border: Border.all(color: _accent.withValues(alpha: 0.55), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: _accent.withValues(alpha: 0.25),
