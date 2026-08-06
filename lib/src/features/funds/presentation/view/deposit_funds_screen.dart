@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
@@ -26,7 +27,10 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/open_banking/data/errors/banking_errors.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/deposit.dart';
 import 'package:lazervault/src/features/funds/data/services/mono_institutions_service.dart';
@@ -63,7 +67,7 @@ class DepositFundsScreen extends StatefulWidget {
 }
 
 class _DepositFundsScreenState extends State<DepositFundsScreen>
-    with TransactionPinMixin, BankLinkFeeMixin {
+    with TransactionPinMixin, BankLinkFeeMixin, LinkedBalanceRefreshMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -283,18 +287,31 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
 
     if (hadLinkedAccount) {
-      // The bank was already linked before the gate — resume the DEPOSIT,
-      // not the link. Re-open the progress sheet at "Preparing Deposit" and
-      // re-fire from the linked account.
-      _progressController.show(
-        bankName: _selectedBank.isNotEmpty ? _selectedBank : 'your bank',
-        amount: amount,
-        currency: _currency,
-        flow: DirectPayProgressFlow.redeposit,
-      );
-      _showProgressBottomsheet(context);
-      _progressController.updateStage(DirectPayStage.initiating);
-      _redepositFromLinkedAccountId();
+      // The bank was already linked before the gate — resume the DEPOSIT, not
+      // the link. Route through the SAME fee-disclosed, PIN-gated confirm as a
+      // normal redeposit (it shows its own progress sheet) so the resume path
+      // isn't a back-door around the fee + tx-PIN. Fall back to the id-only
+      // resume only if the full account object isn't cached (never dead-end).
+      LinkedBankAccount? resumeAccount;
+      for (final a in _linkedAccounts) {
+        if (a.id == _linkedAccountId) {
+          resumeAccount = a;
+          break;
+        }
+      }
+      if (resumeAccount != null) {
+        _confirmFeeAndDepositFromLinkedAccount(resumeAccount);
+      } else {
+        _progressController.show(
+          bankName: _selectedBank.isNotEmpty ? _selectedBank : 'your bank',
+          amount: amount,
+          currency: _currency,
+          flow: DirectPayProgressFlow.redeposit,
+        );
+        _showProgressBottomsheet(context);
+        _progressController.updateStage(DirectPayStage.initiating);
+        _redepositFromLinkedAccountId();
+      }
     } else {
       // No account linked yet — re-run the full Link & Deposit now that KYC
       // is satisfied. _launchNGNMonoBottomsheet shows the progress sheet
@@ -409,9 +426,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       final authState = context.read<AuthenticationCubit>().state;
       final uid =
           authState is AuthenticationSuccess ? authState.profile.user.id : '';
-      // Suppressed ONLY when the user ticked "Don't show this again". Otherwise
-      // the guide reappears on each deposit-screen visit (once per visit).
-      final key = 'deposit_balance_refresh_guide_dismissed_$uid';
+      // Suppressed ONLY when the user ticked "Don't show this again" (or turned
+      // the guide off in Settings). Otherwise it reappears on each deposit-screen
+      // visit (once per visit). Key is centralised in FeatureFlags so the
+      // Settings toggle and this modal stay in two-way sync.
+      final key = FeatureFlags.depositBalanceGuideKey(uid);
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool(key) == true) return;
       if (!mounted) return;
@@ -498,9 +517,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     fontWeight: FontWeight.w800)),
             SizedBox(height: 8.h),
             Text(
-              'To keep costs down, your linked banks show their last-known '
-              'balance. When a card reads "not live", pull the latest figure '
-              'straight from your bank.',
+              'To keep costs down, your linked banks show their last saved '
+              'balance with the time it was last updated. Tap refresh on a card '
+              'to pull the latest figure straight from your bank.',
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
@@ -512,8 +531,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 'Open the "Deposit again" cards and pick the linked bank.'),
             step(Icons.sync_rounded, 'Tap "Refresh balance"',
                 'The button on the card pulls a live balance from your bank.'),
-            step(Icons.check_circle_rounded, 'See the live figure',
-                'The card updates in place. A small bank fee may apply.'),
+            step(Icons.check_circle_rounded, 'See the latest figure',
+                'The card updates in place and shows a new "last updated" '
+                'time. A small bank fee may apply.'),
             SizedBox(height: 14.h),
             // Opt-out. Unchecked by default: the guide reappears each visit
             // UNTIL the user ticks this, which persists the suppress flag.
@@ -579,47 +599,108 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
   }
 
+  /// Styled modal for when the ACTIVE account can't cover the balance-refresh
+  /// fee. The backend reserves the fee BEFORE the live read, so this fires with
+  /// nothing charged and no bank call made — the user just needs funds in the
+  /// account they're depositing from. Offers a clear path to top it up.
+  void _showRefreshFeeInsufficientDialog(String message) {
+    const brand = Color(0xFF4E03D0);
+    const card = Color(0xFF1B1626);
+    const warn = Color(0xFFFB923C);
+    final text = message.trim().isNotEmpty
+        ? message.trim()
+        : "This account doesn't have enough to cover the refresh fee.";
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
+          decoration: BoxDecoration(
+            color: card,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: warn.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10)),
+            ],
+          ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: warn.withValues(alpha: 0.16),
+              ),
+              child: Icon(Icons.account_balance_wallet_rounded,
+                  color: warn, size: 26.sp),
+            ),
+            SizedBox(height: 14.h),
+            Text('Not enough to refresh',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w800)),
+            SizedBox(height: 8.h),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  fontSize: 12.5.sp,
+                  height: 1.4),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              "You weren't charged and your bank wasn't contacted. Add funds to "
+              'the account you\'re depositing from, then try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 11.5.sp,
+                  height: 1.4),
+            ),
+            SizedBox(height: 18.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: brand,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 13.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                  elevation: 0,
+                ),
+                child: Text('Got it',
+                    style: TextStyle(
+                        fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
   Future<void> _refreshSourceBalance(dynamic account) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
-    final userId = authState.profile.user.id;
-    final accessToken = authState.profile.session.accessToken;
-    final cubit = serviceLocator<OpenBankingCubit>();
-
-    final feeKobo = await cubit.quoteRefreshFee(
-      accountId: account.id, userId: userId, accessToken: accessToken,
-    );
-    if (!mounted) return;
-    if (feeKobo <= 0) {
-      cubit.refreshBalance(
-        accountId: account.id, userId: userId, accessToken: accessToken, isManual: true,
-      );
-      return;
-    }
-    final feeNaira = feeKobo / 100.0;
-    final txnId = 'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
-    await validateTransactionPin(
-      context: context,
-      transactionId: txnId,
-      transactionType: 'balance_refresh',
-      amount: feeNaira,
-      fee: feeNaira,
-      totalAmount: feeNaira,
-      currency: 'NGN',
-      title: 'Refresh balance',
-      message:
-          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}.',
-      successMessage: 'Balance refreshed',
-      onPinValidated: (token) async {
-        await cubit.refreshBalance(
-          accountId: account.id,
-          userId: userId,
-          accessToken: accessToken,
-          isManual: true,
-          verificationToken: token,
-          transactionId: txnId,
-        );
-      },
+    // ONE shared, per-account, fee-gated refresh (see LinkedBalanceRefreshMixin) —
+    // the same function the withdrawal screen calls, driving the singleton cubit so
+    // the update reflects on every linked-bank surface.
+    await refreshLinkedBalance(
+      context,
+      account as LinkedBankAccount,
+      userId: authState.profile.user.id,
+      accessToken: authState.profile.session.accessToken,
     );
   }
 
@@ -1243,7 +1324,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                       Text('Deposit again',
                           style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
                       SizedBox(height: 2.h),
-                      Text('Your linked banks — tap to deposit, swipe to browse.',
+                      Text('Your linked banks. Tap to deposit, swipe to browse.',
                           style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
                     ],
                   ),
@@ -1267,7 +1348,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 padding: EdgeInsets.symmetric(vertical: 2.h),
                 itemCount: accounts.length,
                 separatorBuilder: (_, __) => SizedBox(width: 12.w),
-                itemBuilder: (_, i) => _buildLinkedAccountCard(context, accounts[i]),
+                // Use the itemBuilder's OWN context (a descendant of the
+                // OpenBankingCubit provider) — NOT the captured outer `context`.
+                // itemBuilder runs lazily during the ListView's build, so a
+                // context.select on the outer context fires "outside the build
+                // method of a widget". The per-item context keeps the per-card
+                // rebuild-on-refresh behaviour and removes the red error box.
+                itemBuilder: (itemContext, i) =>
+                    _buildLinkedAccountCard(itemContext, accounts[i]),
               ),
             ),
             SizedBox(height: 24.h),
@@ -1301,11 +1389,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             ? 'switching'
             : 'onetime';
     final accent = _cardAccentColor(mode);
-    // Live spinner while THIS account's balance refresh is in flight (the cubit
-    // emits BalanceRefreshing/BalanceRefreshed per account; build() watches it).
-    final obState = context.watch<OpenBankingCubit>().state;
-    final isRefreshing =
-        obState is BalanceRefreshing && obState.accountId == account.id;
+    // Live spinner while THIS account's balance refresh is in flight. Use a
+    // per-account `select` (NOT `watch` on the whole cubit) so refreshing ONE
+    // bank rebuilds only ITS card — a whole-state watch rebuilt every card on
+    // every emit, which read as "all my banks are updating at once".
+    final isRefreshing = context.select<OpenBankingCubit, bool>((c) {
+      final s = c.state;
+      return s is BalanceRefreshing && s.accountId == account.id;
+    });
     return InkWell(
       borderRadius: BorderRadius.circular(16.r),
       onTap: () => _openRedepositSheet(context, account),
@@ -1402,47 +1493,70 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               final fresh = hasBalance &&
                   DateTime.now().difference(account.balanceUpdatedAt!).inMinutes <
                       3;
+              final dot =
+                  !hasBalance ? const Color(0xFF6B7280) : (fresh
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFB923C));
               return Row(children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        hasBalance
-                            ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
-                            : 'Balance hidden',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w700),
-                      ),
-                      SizedBox(height: 4.h),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 7.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: (fresh
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFFB923C))
-                              .withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(6.r),
+                  // Tapping the balance/updated area opens the full details
+                  // sheet. Consumes the tap so it never fires the card's deposit
+                  // action (the card's InkWell wraps everything else).
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _showLinkedAccountDetails(account),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          hasBalance
+                              ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                              : 'Balance hidden',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700),
                         ),
-                        child: Text(fresh ? 'Live' : 'Not live',
-                            style: TextStyle(
-                                color: fresh
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFFB923C),
-                                fontSize: 9.5.sp,
-                                fontWeight: FontWeight.w700)),
-                      ),
-                    ],
+                        SizedBox(height: 4.h),
+                        // "Last updated …" replaces the live/not-live chip: a
+                        // small, truncating line the user can tap for details.
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                          Container(
+                            width: 6.w,
+                            height: 6.w,
+                            decoration:
+                                BoxDecoration(color: dot, shape: BoxShape.circle),
+                          ),
+                          SizedBox(width: 5.w),
+                          Flexible(
+                            child: Text(
+                              _lastUpdatedLabel(account.balanceUpdatedAt),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.55),
+                                  fontSize: 9.5.sp,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          SizedBox(width: 3.w),
+                          Icon(Icons.info_outline_rounded,
+                              size: 11.sp,
+                              color: Colors.white.withValues(alpha: 0.4)),
+                        ]),
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(width: 10.w),
-                _refreshBalanceButton(account, isRefreshing),
+                // Hide refresh when the Mono session is expired — a live read would
+                // just fail at the provider; the reconnect affordance handles it
+                // (mirrors the withdrawal card).
+                if (!account.needsReauthorization)
+                  _refreshBalanceButton(account, isRefreshing),
               ]);
             }),
             // Direct Debit still activating → keep the amber badge below.
@@ -1487,6 +1601,209 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 )
               : Icon(Icons.sync_rounded, size: 17.sp, color: blue),
         ),
+      ),
+    );
+  }
+
+  static const List<String> _monthsShort = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  /// Short, truncatable "last updated" label for a linked-bank card. Relative
+  /// for recent refreshes, an absolute short date once it's older than a day.
+  String _lastUpdatedLabel(DateTime? updatedAt) {
+    if (updatedAt == null) return 'Not refreshed yet';
+    final d = DateTime.now().difference(updatedAt);
+    if (d.inSeconds < 45) return 'Updated just now';
+    if (d.inMinutes < 60) return 'Updated ${d.inMinutes}m ago';
+    if (d.inHours < 24) return 'Updated ${d.inHours}h ago';
+    if (d.inDays < 7) return 'Updated ${d.inDays}d ago';
+    return 'Updated ${updatedAt.day} ${_monthsShort[updatedAt.month - 1]}';
+  }
+
+  /// Full, human timestamp for the details sheet, e.g. "12 Jul 2026, 3:30 PM".
+  String _fullTimestamp(DateTime t) {
+    final l = t.toLocal();
+    final h24 = l.hour;
+    final ampm = h24 >= 12 ? 'PM' : 'AM';
+    final h12 = h24 % 12 == 0 ? 12 : h24 % 12;
+    final mm = l.minute.toString().padLeft(2, '0');
+    return '${l.day} ${_monthsShort[l.month - 1]} ${l.year}, $h12:$mm $ampm';
+  }
+
+  /// Full-details sheet for a linked bank: balance, freshness, account + access
+  /// mode, and an explicit refresh action. Opened by tapping the "Last updated"
+  /// line on the card.
+  void _showLinkedAccountDetails(LinkedBankAccount account) {
+    const card = Color(0xFF1B1626);
+    const brand = Color(0xFF4E03D0);
+    final hasBalance = account.balanceUpdatedAt != null;
+    final fresh = hasBalance &&
+        DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
+    final statusColor = !hasBalance
+        ? const Color(0xFF9CA3AF)
+        : (fresh ? const Color(0xFF10B981) : const Color(0xFFFB923C));
+    final statusText = !hasBalance
+        ? 'Not refreshed yet'
+        : (fresh ? 'Live balance' : 'Last-known balance');
+    final mode = _accessModeForAccount(account);
+    final modeLabel = mode == 'persistent'
+        ? 'Direct Debit (auto)'
+        : mode == 'switching'
+            ? 'Switching…'
+            : mode == 'pending'
+                ? 'Setting up Direct Debit'
+                : 'One-time';
+
+    Widget detailRow(String label, String value, {Color? valueColor}) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 7.h),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 120.w,
+                child: Text(label,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 12.sp)),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(value,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                        color: valueColor ?? Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => Container(
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+        decoration: BoxDecoration(
+          color: card,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
+          border: Border.all(color: brand.withValues(alpha: 0.3)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 40.w,
+            height: 4.h,
+            margin: EdgeInsets.only(bottom: 16.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          Row(children: [
+            _bankLogoAvatar(account.bankName,
+                bankCode: account.bankCode, size: 42),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                    account.bankName.isNotEmpty
+                        ? account.bankName
+                        : 'Linked bank',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w800)),
+                SizedBox(height: 2.h),
+                Text(account.displayAccountNumber,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        fontSize: 12.sp)),
+              ]),
+            ),
+          ]),
+          SizedBox(height: 18.h),
+          // Balance headline
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+            child: Column(children: [
+              Text(
+                  hasBalance
+                      ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                      : 'Balance hidden',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26.sp,
+                      fontWeight: FontWeight.w800)),
+              SizedBox(height: 8.h),
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  width: 7.w,
+                  height: 7.w,
+                  decoration:
+                      BoxDecoration(color: statusColor, shape: BoxShape.circle),
+                ),
+                SizedBox(width: 6.w),
+                Text(statusText,
+                    style: TextStyle(
+                        color: statusColor,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700)),
+              ]),
+            ]),
+          ),
+          SizedBox(height: 14.h),
+          detailRow(
+              'Last updated',
+              account.balanceUpdatedAt != null
+                  ? _fullTimestamp(account.balanceUpdatedAt!)
+                  : 'Never. Tap refresh below'),
+          Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+          detailRow('Deposit access', modeLabel),
+          Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+          detailRow('Account', account.displayAccountNumber),
+          SizedBox(height: 16.h),
+          Text(
+            'Balances are the last figure pulled from your bank. Refresh to get '
+            'the latest straight from the bank. A small fee may apply.',
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.45),
+                fontSize: 11.sp,
+                height: 1.4),
+          ),
+          SizedBox(height: 16.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(sheetCtx).pop();
+                _refreshSourceBalance(account);
+              },
+              icon: Icon(Icons.sync_rounded, size: 18.sp),
+              label: Text('Refresh balance',
+                  style:
+                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: brand,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 13.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }
@@ -1720,10 +2037,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                           _ensureKycThenDeposit(
                             linkedAccountId: account.id,
                             linkedBankName: account.bankName,
-                            proceed: () => _depositFromLinkedAccount(account),
+                            proceed: () =>
+                                _confirmFeeAndDepositFromLinkedAccount(account),
                           );
                         } else {
-                          _depositFromLinkedAccount(account);
+                          _confirmFeeAndDepositFromLinkedAccount(account);
                         }
                       },
                     ),
@@ -2139,7 +2457,82 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// Fire a deposit from an existing linked account. Reuses the mandate when
   /// active (useRecurringAccess: true → DebitMandate); otherwise the backend
   /// returns a DirectPay auth URL which the listener opens in-app.
-  void _depositFromLinkedAccount(LinkedBankAccount account) {
+  /// Fee-disclosed, PIN-gated redeposit from a previously-linked account.
+  /// Shows the aggregated deposit fee (Mono cost + LazerVault margin) on the
+  /// transaction-PIN sheet BEFORE we pull — for BOTH rails (Direct Debit when a
+  /// mandate is active, else one-time DirectPay). On a validated PIN it hands the
+  /// minted token to [_depositFromLinkedAccount]; the backend PreValidates it.
+  bool _confirmingRedeposit = false;
+
+  Future<void> _confirmFeeAndDepositFromLinkedAccount(
+      LinkedBankAccount account) async {
+    // Guard against a double-tap opening two redeposit confirmations → two deposits.
+    if (_confirmingRedeposit) return;
+    final amount = double.tryParse(_amountController.text.trim()) ?? 0;
+    if (amount <= 0) return;
+    _confirmingRedeposit = true;
+    try {
+      await _runConfirmFeeAndDeposit(account, amount);
+    } finally {
+      if (mounted) _confirmingRedeposit = false;
+    }
+  }
+
+  Future<void> _runConfirmFeeAndDeposit(
+      LinkedBankAccount account, double amount) async {
+    final recurring = _mandateForAccount(account) != null;
+
+    // Rail-accurate aggregated fee (connect leg is 0 on a redeposit). Null only
+    // on a backend hiccup — we still PIN-gate, just without a fee row (the amount
+    // sheet already showed the worst-case inline preview).
+    final quote = await serviceLocator<OpenBankingCubit>().fetchDepositFeeQuote(
+      amountKobo: (amount * 100).round(),
+      useRecurringAccess: recurring,
+      firstTimeLink: false,
+    );
+    if (!mounted) return;
+    double feeNaira;
+    if (quote != null && quote.grandTotal > 0) {
+      feeNaira = quote.grandTotal / 100.0;
+    } else if (quote == null && (_feePreview.value?.fee ?? 0) > 0) {
+      // Backend quote hiccup — fall back to the inline preview's (worst-case) fee so
+      // the PIN sheet never shows ₦0 while the backend still nets a real deposit fee.
+      feeNaira = _feePreview.value!.fee / 100.0;
+    } else {
+      feeNaira = 0.0;
+    }
+
+    final txnId = 'deposit-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
+    String? token;
+    final ok = await validateTransactionPin(
+      context: context,
+      transactionId: txnId,
+      transactionType: 'deposit',
+      // The bank is debited `amount`; the fee is NETTED from it (wallet credited
+      // amount − fee), never added on top — so the total pulled IS the amount.
+      amount: amount,
+      fee: feeNaira > 0 ? feeNaira : null,
+      totalAmount: amount,
+      currency: _currency,
+      title: 'Deposit from ${account.bankName}',
+      message: recurring
+          ? 'Confirm this Direct Debit deposit with your PIN.'
+          : 'Confirm this deposit with your PIN.',
+      // Keep the PIN sheet a pure confirm step: it dismisses after "PIN Verified"
+      // and the DirectPay progress sheet takes over (which also handles the
+      // one-time DirectPay bank-authorization webview). No stacked sheets.
+      showProcessingPhase: false,
+      onPinValidated: (verificationToken) async {
+        token = verificationToken;
+      },
+    );
+    if (!mounted || !ok || token == null) return;
+    _depositFromLinkedAccount(account,
+        verificationToken: token, transactionId: txnId);
+  }
+
+  void _depositFromLinkedAccount(LinkedBankAccount account,
+      {String? verificationToken, String? transactionId}) {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
     final amount = double.tryParse(_amountController.text.trim()) ?? 0;
@@ -2155,9 +2548,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     final recurring = _mandateForAccount(account) != null;
     _selectedBank = account.bankName;
     _linkedAccountId = account.id;
-    // Arm "Try Again" on the failure sheet to RE-FIRE this exact redeposit
-    // (without it the button only dismissed the sheet).
-    _retryDeposit = () => _depositFromLinkedAccount(account);
+    // Arm "Try Again" on the failure sheet to re-run the fee+PIN confirm (a fresh
+    // PIN token is minted each attempt — reusing a stale one would be rejected).
+    _retryDeposit = () => _confirmFeeAndDepositFromLinkedAccount(account);
     // Already-linked bank: the rail starts at "Preparing Deposit" — there is
     // no linking step on a redeposit.
     _progressController.show(
@@ -2177,6 +2570,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),
       useRecurringAccess: recurring,
+      verificationToken: verificationToken,
+      transactionId: transactionId,
     );
   }
 
@@ -2701,6 +3096,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   /// Launch the NGN Mono Connect SDK with DirectPay/Mandate support
   void _launchNGNMonoBottomsheet(BuildContext context) async {
+    // Bank-linking (Link & Deposit) is only offered on the PERSONAL account.
+    // On any other account type show the themed "personal account only" modal
+    // (pointing to bank transfer / card / LazerBeam) instead of opening Mono
+    // Connect. Fails open on missing metadata so a personal deposit is never
+    // wrongly blocked; the backend also caps linked-bank count separately.
+    if (!canLinkBankForAccountType(
+        widget.selectedCard['accountType']?.toString())) {
+      showPersonalAccountOnlyLinkDialog(context);
+      return;
+    }
+
     // Validate amount first
     final amountText = _amountController.text.trim();
     final amount = double.tryParse(amountText) ?? 0;
@@ -2763,11 +3169,41 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     debugPrint('[MonoConnect] Customer: $customerName ($customerEmail)');
     debugPrint('[MonoConnect] User ID: $userId');
 
+    // FEE CONSENT FIRST — before the Mono Connect webview, never after (a
+    // post-link fee is a surprise charge). Fetch the REAL, broken-down fees for
+    // this deposit — the one-time bank-connection fee plus this deposit's fee for
+    // the chosen rail (Direct Debit vs one-time) — and show the consolidated
+    // agreement sheet. Fee-aware: a zero-fee quote needs no sheet at all; if the
+    // quote can't be fetched (backend hiccup) we fall back to the generic notice
+    // so we NEVER link without some consent. On decline we abort before the webview.
+    final quote = await serviceLocator<OpenBankingCubit>().fetchDepositFeeQuote(
+      amountKobo: (amount * 100).round(),
+      useRecurringAccess: _useRecurringAccess,
+      firstTimeLink: true, // this Link & Deposit path always runs Mono Connect
+    );
+    if (!mounted) return;
+    if (quote != null && !quote.isFree) {
+      final proceed = await showDepositFeeAgreementSheet(context, quote);
+      if (!proceed || !mounted) {
+        debugPrint('[MonoConnect] User declined the fee agreement — aborting link');
+        return;
+      }
+    } else if (quote == null) {
+      final proceed = await showBankConnectionFeeNotice(context);
+      if (!proceed || !mounted) {
+        debugPrint('[MonoConnect] User declined the connection-fee notice — aborting link');
+        return;
+      }
+    }
+    // else: quote.isFree → no fees configured, proceed straight to the webview.
+    // One idempotency id for this whole link attempt.
+    final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
+
     // Remember how to re-run this exact deposit if it fails and the user
     // taps "Try Again". Uses the State's own context (valid while mounted).
     _retryDeposit = () => _launchNGNMonoBottomsheet(this.context);
 
-    // Launch Mono Connect SDK
+    // Launch Mono Connect SDK (only after the fee has been acknowledged).
     final result = await showMonoConnectBottomSheet(
       context: context,
       publicKey: MonoConfig.publicKey,
@@ -2780,33 +3216,33 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       debugPrint('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
       debugPrint('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
-      // Show progress bottomsheet. Fresh-link journeys start at "Linking
-      // Account"; with the recurring toggle ON the rail reads as a Direct
-      // Cost-confirmed link (fee + txPIN only when an operator enabled it — a
-      // free link, the default, runs doLink immediately with no extra step).
+      // Show progress bottomsheet + link. Fresh-link journeys start at "Linking
+      // Account"; with the recurring toggle ON the rail reads as Direct Debit
+      // setup. The fee was already consented to above, so link straight through.
       final obc = serviceLocator<OpenBankingCubit>();
-      await linkBankWithFee(
-        context: context,
-        doLink: (token, txnId) async {
-          // Debit setup ("Setting Up Direct Debit" / "Authorize Direct Debit").
-          _progressController.show(
-            bankName: result.institutionName ?? 'Bank',
-            amount: amount,
-            currency: _currency,
-            flow: _useRecurringAccess
-                ? DirectPayProgressFlow.mandateSetup
-                : DirectPayProgressFlow.linkAndDeposit,
-          );
-          if (!mounted) return;
-          _showProgressBottomsheet(context);
-          obc.linkAccount(
-            userId: userId,
-            code: result.code,
-            accessToken: accessToken,
-            verificationToken: token,
-            transactionId: txnId,
-          );
-        },
+      _progressController.show(
+        bankName: result.institutionName ?? 'Bank',
+        amount: amount,
+        currency: _currency,
+        flow: _useRecurringAccess
+            ? DirectPayProgressFlow.mandateSetup
+            : DirectPayProgressFlow.linkAndDeposit,
+      );
+      if (!mounted) return;
+      _showProgressBottomsheet(context);
+      obc.linkAccount(
+        userId: userId,
+        code: result.code,
+        accessToken: accessToken,
+        transactionId: txnId,
+        // Honour the Direct Debit toggle: only auto-create a mandate when the
+        // user opted into recurring access. Left to its default (true) this
+        // ALWAYS created a Mono mandate at link time — so a user who turned
+        // Direct Debit OFF (wanting one-time DirectPay) still got the "Set up
+        // Direct Debit" authorization sheet and a stuck `awaiting_authorization`
+        // mandate they never asked for. false ⇒ cubit emits AccountLinked ⇒ the
+        // listener goes straight to one-time DirectPay, no mandate created.
+        autoCreateMandate: _useRecurringAccess,
       );
     } else {
       debugPrint('[MonoConnect] User cancelled or closed');
@@ -2990,8 +3426,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     ])) {
       return const _DepositFailureInfo(
         'Re-link Your Bank',
-        "We couldn't confirm your linked bank's details for this deposit, so we didn't charge any account. Please re-link your bank and try again.",
+        "We couldn't confirm your linked bank's details for this deposit, so we didn't charge any account. Re-link your bank to continue — it takes a few seconds.",
         retryable: true,
+        retryLabel: 'Re-link bank',
       );
     }
 
@@ -3072,6 +3509,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       errorTitle: info.title,
       errorMessage: info.message,
       retryable: info.retryable,
+      retryLabel: info.retryLabel,
     );
   }
 
@@ -3544,7 +3982,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // redeposit path (rail starts at "Preparing Deposit", no linking step) so
       // a failed DEPOSIT retries the deposit — reusing the saved mandate /
       // DirectPay — instead of re-linking an already-linked account.
-      _retryDeposit = () => _depositFromLinkedAccount(state.account);
+      _retryDeposit = () => _confirmFeeAndDepositFromLinkedAccount(state.account);
 
       // Update progress to initiating stage
       _progressController.updateStage(DirectPayStage.initiating);
@@ -3577,7 +4015,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // Linked (with mandate) now — re-point "Try Again" at the redeposit path
       // so a failed deposit reuses this connection instead of re-linking. See
       // the AccountLinked branch above for the full rationale.
-      _retryDeposit = () => _depositFromLinkedAccount(state.account);
+      _retryDeposit = () => _confirmFeeAndDepositFromLinkedAccount(state.account);
 
       _progressController.updateStage(DirectPayStage.initiating);
 
@@ -3643,16 +4081,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       }
       // pending/processing → keep the sheet on "processing"; the poll
       // continues until a terminal status arrives.
-    } else if (state is ServiceUnavailable) {
-      // Backend unreachable mid-flow (a gateway is down or the network dropped).
-      // Fail FAST with a clear message instead of spinning on "Linking…" until
-      // the watchdog — _showDepositFailure flips the rail to failed AT THE
-      // CURRENT STEP (red), so progress stops where it actually broke.
-      debugPrint('[Deposit] ServiceUnavailable: ${state.message}');
+    } else if (state is ServiceUnavailable || state is OpenBankingOffline) {
+      // The banking / KYC / Mono backend is unreachable (a gateway is down → gRPC
+      // UNAVAILABLE, or the network dropped). Surface a clear TEMPORARILY-
+      // UNAVAILABLE state — never the misleading "can't reach your bank / check
+      // your connection". If the progress sheet is up, drive its styled failed
+      // rail (retryable); otherwise show the themed service-unavailable modal.
+      final msg = state is ServiceUnavailable && state.message.trim().isNotEmpty
+          ? state.message
+          : 'This service is temporarily unavailable. Please try again in a moment.';
+      debugPrint('[Deposit] backend unreachable: $state');
+      // ONLY surface this while a deposit/link is actually in flight (progress
+      // sheet up). ServiceUnavailable/Offline carry no operation, so the same
+      // state also fires for the passive background _loadLinkedAccounts on screen
+      // open — we must NOT pop a modal over the deposit form for that. The active
+      // deposit path always has the sheet; drive its styled failed rail instead.
       if (_isProgressSheetShown) {
-        _showDepositFailure(state.message.isNotEmpty
-            ? state.message
-            : "We couldn't reach your bank right now. Please check your connection and try again.");
+        _progressController.updateStage(
+          DirectPayStage.failed,
+          errorTitle: 'Temporarily unavailable',
+          errorMessage: msg,
+          retryable: true,
+          retryLabel: 'Try again',
+        );
       }
     } else if (state is OpenBankingError) {
       debugPrint('[Deposit] OpenBankingError: ${state.message}, code: ${state.errorCode}, operation: ${state.operation}');
@@ -3677,8 +4128,49 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // generic userMessage). Pass a canonical, classifier-recognizable message
       // so _classifyDepositFailure deterministically renders the re-link CTA.
       if (state.errorCode == 'BANK_DETAILS_UNVERIFIED') {
+        // The stored bank details couldn't pin the debit (masked/empty NUBAN) AND
+        // the backend's silent re-fetch couldn't repair them — so the ONLY real
+        // recovery is a fresh Mono Connect link (which fetches a clean NUBAN +
+        // bank code and reuses/repairs the existing row — no duplicate). Re-point
+        // the failure sheet's action at the RELINK launcher, not the doomed
+        // deposit; without this the "Try Again" button just re-hit the same error
+        // and never opened the Connect widget.
+        _retryDeposit = () => _launchNGNMonoBottomsheet(context);
         _showDepositFailure(
             "We couldn't confirm your bank account details. Re-link your bank to continue.");
+        return;
+      }
+      // Refresh-fee couldn't be reserved on the active account. The backend
+      // holds the fee BEFORE the live read, so this fires before any Mono
+      // call — nothing was charged. Show a clear, styled modal (not a generic
+      // deposit-failure toast) so the user knows the active account is short.
+      if (state.operation == 'refreshBalance' &&
+          state.errorCode == BankingErrorCode.insufficientFunds) {
+        _showRefreshFeeInsufficientDialog(state.message);
+        return;
+      }
+      // Linked-bank cap (per-user, admin-tunable default 3) OR provider capacity
+      // exhausted (Mono subscription can't onboard a NEW link) — surface as a
+      // styled modal with CTAs, not a toast. Nothing was charged (both are
+      // checked before any fee). Stop the progress rail first so it isn't left
+      // spinning behind the modal.
+      if (state.errorCode == kLinkLimitReachedCode ||
+          state.errorCode == kLinkingCapacityCode) {
+        if (_isProgressSheetShown) {
+          _progressController.updateStage(
+            DirectPayStage.failed,
+            errorTitle: state.errorCode == kLinkingCapacityCode
+                ? 'Linking paused'
+                : 'Limit reached',
+            errorMessage: state.message,
+            retryable: false,
+          );
+        }
+        if (state.errorCode == kLinkingCapacityCode) {
+          showLinkingCapacityDialog(context);
+        } else {
+          showLinkLimitReachedDialog(context, state.message);
+        }
         return;
       }
       _showDepositFailure(state.message);
@@ -4479,8 +4971,13 @@ class _DepositFailureInfo {
   final String title;
   final String message;
   final bool retryable;
+  // Overrides the recovery button label (default "Try Again"). Used when the
+  // recovery action isn't a plain retry — e.g. "Re-link bank" for unverified
+  // bank details, where the button actually re-runs Mono Connect.
+  final String? retryLabel;
 
-  const _DepositFailureInfo(this.title, this.message, {required this.retryable});
+  const _DepositFailureInfo(this.title, this.message,
+      {required this.retryable, this.retryLabel});
 }
 
 /// The deposit methods the picker can offer. The set shown depends on the

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 
 /// First-run coach-mark walkthrough for the dashboard.
@@ -33,7 +33,13 @@ import 'package:showcaseview/showcaseview.dart';
 class DashboardWalkthrough {
   DashboardWalkthrough._();
 
-  static const _storage = FlutterSecureStorage();
+  // Walkthrough gating uses SharedPreferences (NOT FlutterSecureStorage): the
+  // secure store is WIPED by SecureStorageService.clearAll() on logout, which
+  // erased the "seen" flag and re-showed the tour after EVERY sign-in. These
+  // seen/count flags are non-sensitive first-run UX state that must survive
+  // logout, so they live in SharedPreferences.
+  static Future<SharedPreferences> get _prefs =>
+      SharedPreferences.getInstance();
 
   // Per-account secure-storage keys. Keying "seen"/"count" by user id is what
   // makes the tour show for every new signup / first login even when another
@@ -116,9 +122,11 @@ class DashboardWalkthrough {
 
   // ---- gating + counts ------------------------------------------------------
 
-  static Future<bool> _shouldShow(String userId) async =>
-      userId.isNotEmpty &&
-      (await _storage.read(key: _seenKey(userId))) != 'true';
+  static Future<bool> _shouldShow(String userId) async {
+    if (userId.isEmpty) return false;
+    final prefs = await _prefs;
+    return prefs.getString(_seenKey(userId)) != 'true';
+  }
 
   /// Mark the tour finished/skipped for the ACTIVE account so it won't auto-show
   /// again for them. No-op if we somehow have no active account (never persist
@@ -127,24 +135,29 @@ class DashboardWalkthrough {
   static Future<void> markSeen() async {
     final uid = _activeUserId;
     if (uid == null || uid.isEmpty) return;
-    await _storage.write(key: _seenKey(uid), value: 'true');
+    final prefs = await _prefs;
+    await prefs.setString(_seenKey(uid), 'true');
   }
 
   /// Clear a specific account's seen flag so the tour replays on their next
   /// dashboard load (Settings → "Replay app tour").
   static Future<void> reset(String userId) async {
     if (userId.isEmpty) return;
-    await _storage.delete(key: _seenKey(userId));
+    final prefs = await _prefs;
+    await prefs.remove(_seenKey(userId));
   }
 
-  static Future<int> viewCount(String userId) async => userId.isEmpty
-      ? 0
-      : int.tryParse(await _storage.read(key: _countKey(userId)) ?? '0') ?? 0;
+  static Future<int> viewCount(String userId) async {
+    if (userId.isEmpty) return 0;
+    final prefs = await _prefs;
+    return prefs.getInt(_countKey(userId)) ?? 0;
+  }
 
   static Future<int> _bumpViewCount(String userId) async {
     if (userId.isEmpty) return 0;
     final next = (await viewCount(userId)) + 1;
-    await _storage.write(key: _countKey(userId), value: '$next');
+    final prefs = await _prefs;
+    await prefs.setInt(_countKey(userId), next);
     return next;
   }
 
@@ -168,7 +181,8 @@ class DashboardWalkthrough {
       // account on this device (still replayable from Settings). Only persist
       // when it truly started so a missing showcase scope doesn't burn the tour.
       if (_start()) {
-        await _storage.write(key: _seenKey(userId), value: 'true');
+        final prefs = await _prefs;
+        await prefs.setString(_seenKey(userId), 'true');
       }
     });
   }
