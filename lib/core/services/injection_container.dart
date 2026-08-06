@@ -2964,7 +2964,11 @@ Future<void> init() async {
       chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ??
           dotenv.env['CHAT_GATEWAY_URL'] ??
           dotenv.env['HTTP_API_HOST'] ??
-          'https://dev.lazervault.app',
+          // Tier-derived host (dev.lazervault.app / staging / api.lazervault.app)
+          // — NEVER a hard-coded dev host, or a prod build with no dotenv override
+          // would silently dial dev. `.origin` strips the /api/v1 path (the /scan
+          // OCR route lives at the gateway root).
+          Uri.parse(endpointRegistry.httpCore).origin,
       // Explicit core-payments REST base URL — used by
       // processBankDetailsPayment to POST /api/v1/payments/bank-details.
       // Previously this was derived by port-swapping the chat gateway

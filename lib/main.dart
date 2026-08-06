@@ -133,6 +133,28 @@ void main() {
     print("WARNING: could not load .env: $e — using compiled-in defaults.");
   }
 
+  // PROD LEAK GUARD (defense-in-depth; the enforced gate is scripts/use-env.sh).
+  // A prod build must talk ONLY to api.lazervault.app. dotenv host values OVERRIDE
+  // the compiled prod tier, so if a dev/localhost host leaked into the bundled
+  // .env, surface it. assert() catches it in debug/CI; release NEVER crashes on
+  // startup — it only logs, so a leak is visible in telemetry without an outage.
+  if (currentAppEnvironment.isProduction) {
+    const forbidden = <String>[
+      '10.0.2.2', '127.0.0.1', 'localhost',
+      'dev.lazervault.app', 'staging.lazervault.app', '.run.app',
+    ];
+    final leaks = dotenv.env.entries
+        .where((e) => forbidden.any((f) => e.value.contains(f)))
+        .map((e) => e.key)
+        .toList();
+    if (leaks.isNotEmpty) {
+      print('🚨 PROD ENV LEAK — non-prod host in .env keys: $leaks '
+          '(production must use api.lazervault.app only)');
+      assert(leaks.isEmpty,
+          'PROD build shipped dev/localhost hosts in .env keys: $leaks');
+    }
+  }
+
   // Initialise the backend URL registry BEFORE dependency injection so
   // every grpc/http/ws factory reads the already-cached URLs on first
   // construction. The call is fast (single SharedPreferences read) and
