@@ -1278,6 +1278,190 @@ class TagPayPdfService {
     }
   }
 
+  // ==========================================================================
+  // CRYPTO receipt PDF (buy / sell / swap / send / deposit)
+  // ==========================================================================
+  /// Revolut-style PDF for a crypto transaction. Reuses the shared transfer
+  /// builders (header / summary table / detail rows / QR / footer) but renders
+  /// the crypto-specific rows by iterating the UnifiedTransaction metadata
+  /// (Asset, Rate, Trading fee, Network fee, Total, To address, Network,
+  /// Blockchain txid, Note, Custody, From address …). Recipient + sender
+  /// addresses ride in that metadata, so one generator covers every crypto flow.
+  static Future<File> generateCryptoReceipt({
+    required UnifiedTransaction transaction,
+  }) async {
+    await _loadFonts();
+    final pdf = pw.Document();
+    final logo = await _loadLogo();
+    final generatedDate = _displayDateFormat.format(DateTime.now());
+
+    final metadata = transaction.metadata ?? const {};
+    final reference = transaction.transactionReference ?? transaction.id;
+    final transactionDate = _dateFormat.format(transaction.createdAt);
+    final formattedStatus =
+        _formatTransferStatus(transaction.status.displayName);
+
+    // Crypto sends carry a display override ("5 USDT"); buy/sell/swap are fiat.
+    final heroAmount = (transaction.amountDisplayOverride != null &&
+            transaction.amountDisplayOverride!.trim().isNotEmpty)
+        ? transaction.amountDisplayOverride!.trim()
+        : '${_currencySymbolFor(transaction.currency)}${transaction.amount.toStringAsFixed(2)}';
+
+    // Sender: an explicit 'From address' (send flow) or the LazerVault identity.
+    final fromLabel = _pdfSafe(metadata['From address']?.toString() ??
+            metadata['From']?.toString()) ??
+        'LazerVault Wallet';
+
+    // Every metadata entry becomes a label/value row, in insertion order.
+    final detailRows = <pw.Widget>[];
+    metadata.forEach((k, v) {
+      final val = _pdfSafe(v?.toString());
+      if (val == null || val.isEmpty) return;
+      detailRows.add(pw.Padding(
+        padding: const pw.EdgeInsets.symmetric(vertical: 3),
+        child: _buildDetailRow(_pdfSafe(k) ?? k, val),
+      ));
+    });
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              _buildInvoiceHeader(logo, generatedDate, isInvoice: false),
+              pw.SizedBox(height: 24),
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('FROM',
+                            style: _getTextStyle(
+                                fontSize: 10, color: PdfColors.grey600)),
+                        pw.SizedBox(height: 4),
+                        pw.Text(fromLabel.toUpperCase(),
+                            style: _getTextStyle(fontSize: 13, isBold: true)),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(width: 40),
+                  pw.Expanded(
+                    child: _buildSummaryTable(
+                      createdDate: transactionDate,
+                      completedDate: transactionDate,
+                      status: formattedStatus,
+                      type: transaction.title,
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 24),
+              // Hero amount card
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.all(16),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: pw.BorderRadius.circular(8),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(transaction.title,
+                        style: _getTextStyle(
+                            fontSize: 11, color: PdfColors.grey600)),
+                    pw.SizedBox(height: 4),
+                    pw.Text(heroAmount,
+                        style: _getTextStyle(fontSize: 22, isBold: true)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 16),
+              // Detail rows from metadata (Asset / Rate / fees / addresses / …)
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(horizontal: 16),
+                child: pw.Column(children: detailRows),
+              ),
+              pw.SizedBox(height: 24),
+              // Scannable QR of the reference (same id as the on-screen receipt)
+              pw.Center(
+                child: pw.Column(
+                  children: [
+                    pw.BarcodeWidget(
+                      barcode: Barcode.qrCode(),
+                      data: reference,
+                      width: 90,
+                      height: 90,
+                      drawText: false,
+                    ),
+                    pw.SizedBox(height: 6),
+                    pw.Text(reference,
+                        style:
+                            _getTextStyle(fontSize: 9, color: PdfColors.grey600)),
+                  ],
+                ),
+              ),
+              pw.Spacer(),
+              _buildFooter(transactionType: 'crypto transaction'),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final safeRef = reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final file = File('${output.path}/crypto_receipt_$safeRef.pdf');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Download the crypto PDF receipt to the device Downloads/Documents dir.
+  static Future<String> downloadCryptoReceipt({
+    required UnifiedTransaction transaction,
+  }) async {
+    final file = await generateCryptoReceipt(transaction: transaction);
+    Directory? directory;
+    if (Platform.isAndroid) {
+      directory = Directory('/storage/emulated/0/Download');
+      if (!await directory.exists()) {
+        directory = await getExternalStorageDirectory();
+      }
+    } else if (Platform.isIOS) {
+      directory = await getApplicationDocumentsDirectory();
+    } else {
+      directory = await getDownloadsDirectory();
+    }
+    if (directory == null) {
+      throw Exception('Could not access downloads directory');
+    }
+    final safeRef = (transaction.transactionReference ?? transaction.id)
+        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final savedFile = File('${directory.path}/crypto_receipt_$safeRef.pdf');
+    await file.copy(savedFile.path);
+    return savedFile.path;
+  }
+
+  /// Share the crypto PDF receipt via the system share sheet.
+  static Future<void> shareCryptoReceipt({
+    required UnifiedTransaction transaction,
+    Rect? sharePositionOrigin,
+  }) async {
+    final file = await generateCryptoReceipt(transaction: transaction);
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
+      text:
+          'LazerVault Crypto Receipt - ${transaction.title} (${transaction.transactionReference ?? transaction.id})',
+      subject: 'LazerVault Crypto Receipt',
+      sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
+    ));
+  }
+
   static String _formatTransferStatus(String status) {
     switch (status.toLowerCase()) {
       case 'completed':

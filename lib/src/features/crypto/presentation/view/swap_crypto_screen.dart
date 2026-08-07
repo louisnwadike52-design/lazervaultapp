@@ -22,6 +22,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 // the parent crypto landing only; sub-screens like the swap detail
 // inherit the session pinned by the landing's canonical button.
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_fiat_wallet_pill.dart';
 
 class SwapCryptoScreen extends StatefulWidget {
   final CryptoHolding? fromHolding;
@@ -358,6 +359,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                             if (_hasValidAmount) SizedBox(height: 24.h),
                           ],
                           _buildSwapSettings(),
+                          SizedBox(height: 16.h),
+                          const CryptoFiatWalletPill(
+                              caption: 'Your wallet balance'),
                           SizedBox(height: 24.h),
                           _buildLegalDisclaimer(),
                           SizedBox(height: 32.h),

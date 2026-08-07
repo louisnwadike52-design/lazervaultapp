@@ -562,8 +562,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     return input.replaceAll(RegExp(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]'), '');
   }
 
-  /// Check if this transaction type supports PDF receipts
-  bool get _supportsPdfReceipt => tx.serviceType == TransactionServiceType.transfer;
+  /// Check if this transaction type supports PDF receipts. Crypto (buy/sell/
+  /// swap/send/deposit) renders a dedicated crypto PDF (metadata-driven rows +
+  /// sender/recipient addresses); transfers use the fund-transfer PDF.
+  bool get _supportsPdfReceipt =>
+      tx.serviceType == TransactionServiceType.transfer ||
+      tx.serviceType == TransactionServiceType.crypto;
 
   Widget _buildActionButtons() {
     final buttons = <Widget>[];
@@ -847,9 +851,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         return;
       }
 
-      final filePath = await TagPayPdfService.downloadUnifiedTransferReceipt(
-        transaction: tx,
-      );
+      final filePath =
+          tx.serviceType == TransactionServiceType.crypto
+              ? await TagPayPdfService.downloadCryptoReceipt(transaction: tx)
+              : await TagPayPdfService.downloadUnifiedTransferReceipt(
+                  transaction: tx,
+                );
 
       _showSnackbar('PDF receipt saved to $filePath');
     } catch (e) {
@@ -864,9 +871,16 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     if (_isSharing) return;
     setState(() => _isSharing = true);
     try {
-      await TagPayPdfService.shareUnifiedTransferReceipt(
-        transaction: tx,
-      );
+      if (tx.serviceType == TransactionServiceType.crypto) {
+        await TagPayPdfService.shareCryptoReceipt(
+          transaction: tx,
+          sharePositionOrigin: _shareOrigin(),
+        );
+      } else {
+        await TagPayPdfService.shareUnifiedTransferReceipt(
+          transaction: tx,
+        );
+      }
     } catch (e) {
       _showSnackbar('Error sharing PDF receipt: $e', isError: true);
     } finally {

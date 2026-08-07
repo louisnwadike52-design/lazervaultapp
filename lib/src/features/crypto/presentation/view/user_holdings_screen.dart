@@ -22,6 +22,10 @@ class UserHoldingsScreen extends StatefulWidget {
 class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  // Owned assets always float to the top; the chips further filter by 24h market
+  // move (mirrors the all-assets page's All / Gainers / Losers).
+  String _selectedFilter = 'All';
+  static const _filters = ['All', 'Gainers', 'Losers'];
   // Last successful holdings snapshot. Kept so the list stays on screen while
   // the shared CryptoCubit is transiently in a NON-CryptosLoaded state — which
   // it is for the entire sell flow (SwapQuotePending → SwapPending/Completed).
@@ -51,6 +55,7 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
   }
 
   List<CryptoHolding> _filteredHoldings(
+    CryptosLoaded state,
     List<CryptoHolding> holdings,
     Set<String> supportedSymbols,
   ) {
@@ -73,7 +78,73 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
           .toList();
     }
 
+    // 24h market change per holding (via the resolved market Crypto) — powers
+    // the Gainers/Losers chips, same signal the all-assets page uses.
+    double change24h(CryptoHolding h) =>
+        _resolveCrypto(h, state)?.priceChangePercentage24h ?? 0.0;
+
+    switch (_selectedFilter) {
+      case 'Gainers':
+        filtered = filtered.where((h) => change24h(h) > 0).toList()
+          ..sort((a, b) => change24h(b).compareTo(change24h(a)));
+        break;
+      case 'Losers':
+        filtered = filtered.where((h) => change24h(h) < 0).toList()
+          ..sort((a, b) => change24h(a).compareTo(change24h(b)));
+        break;
+      default:
+        // All: owned (quantity > 0) assets first, then zero-balance rows, each
+        // group keeping its original (market-cap) order — a stable partition.
+        final owned = filtered.where((h) => h.quantity > 0).toList();
+        final rest = filtered.where((h) => h.quantity <= 0).toList();
+        filtered = [...owned, ...rest];
+    }
+
     return filtered;
+  }
+
+  /// All / Gainers / Losers chips — same style + behaviour as the all-assets
+  /// page, so the two listings feel consistent.
+  Widget _buildFilterTabs() {
+    return SizedBox(
+      height: 36.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        itemCount: _filters.length,
+        itemBuilder: (context, index) {
+          final filter = _filters[index];
+          final isSelected = _selectedFilter == filter;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedFilter = filter),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: EdgeInsets.only(right: 8.w),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color.fromARGB(255, 78, 3, 208)
+                    : const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(20.r),
+                border: isSelected
+                    ? null
+                    : Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              child: Text(
+                filter,
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Crypto? _resolveCrypto(CryptoHolding holding, CryptosLoaded state) {
@@ -100,6 +171,8 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
             _buildHeader(),
             _buildSearchBar(),
             SizedBox(height: 12.h),
+            _buildFilterTabs(),
+            SizedBox(height: 12.h),
             Expanded(
               child: BlocBuilder<CryptoCubit, CryptoState>(
                 builder: (context, rawState) {
@@ -117,7 +190,7 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
                       .map((a) => a.symbol.toLowerCase())
                       .toSet();
                   final holdings =
-                      _filteredHoldings(state.holdings, supportedSymbols);
+                      _filteredHoldings(state, state.holdings, supportedSymbols);
 
                   if (holdings.isEmpty) {
                     return _buildEmptyState();

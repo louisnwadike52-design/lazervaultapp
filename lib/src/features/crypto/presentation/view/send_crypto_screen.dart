@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,6 +20,7 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_state.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_asset_avatar.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_fiat_wallet_pill.dart';
 import 'package:lazervault/src/features/crypto/presentation/utils/crypto_address_validator.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_address_scanner_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
@@ -451,11 +453,24 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 if (_isInternal && !_advancedOnNetwork)
                   _reviewRow('Transfer', 'Instant Lazervault transfer'),
                 if (note.isNotEmpty) _reviewRow('Note', note),
-                const SizedBox(height: 8),
-                const Text(
-                  'A network fee is deducted by the provider and shown on your receipt.',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                // Transaction fee — labeled like the Buy/Sell/Swap sheets so the
+                // user always sees whether a fee applies BEFORE authorizing.
+                // Internal Lazervault transfers are free; an external on-network
+                // send incurs a network fee the provider sets at send time.
+                _reviewRow(
+                  'Transaction fee',
+                  (_isInternal && !_advancedOnNetwork)
+                      ? 'Free'
+                      : 'Network fee applies',
                 ),
+                if (!_isInternal || _advancedOnNetwork) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'The network fee is set by the network/provider at send time and '
+                    'deducted from the amount; the exact figure appears on your receipt.',
+                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -591,6 +606,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                     ),
                   ],
                   SizedBox(height: 12.h),
+                  const CryptoFiatWalletPill(caption: 'Your wallet balance'),
+                  SizedBox(height: 12.h),
                   _buildRecipientToggle(),
                   SizedBox(height: 12.h),
                   if (!_isInternal) _buildNetworkSelector(),
@@ -670,7 +687,14 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     }
     _receiptShown = true;
 
-    Get.to(() => SendCryptoReceiptScreen(
+    // Push the receipt and REMOVE the send screen (+ any intermediate routes)
+    // down to the named crypto landing, so ONE Back from the receipt returns to
+    // the crypto landing (not the send form), and a second Back to the dashboard
+    // (carousel state preserved). The receipt is self-contained (polls via a
+    // GetIt gRPC client), so removing the send screen's cubit is safe.
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => SendCryptoReceiptScreen(
           transactionId: transactionId,
           reference: reference,
           amount: sent.amount,
@@ -682,7 +706,10 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           createdAt: DateTime.now(),
           initialStatus: status,
           initialTxid: txid,
-        ));
+        ),
+      ),
+      (route) => route.settings.name == AppRoutes.crypto || route.isFirst,
+    );
   }
 
   /// Empty-state render when the user has zero spendable holdings.

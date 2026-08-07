@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_fiat_wallet_pill.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_config_cubit.dart';
@@ -266,6 +267,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                 SizedBox(height: 16.h),
                 if (h != null && _amountController.text.isNotEmpty && _hasValidAmount)
                   _buildOrderSummary(),
+                SizedBox(height: 12.h),
+                const CryptoFiatWalletPill(caption: 'Proceeds land here'),
                 SizedBox(height: 20.h),
                 _buildSellButton(h),
                 SizedBox(height: 8.h),
