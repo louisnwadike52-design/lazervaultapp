@@ -21,6 +21,7 @@ import '../../../stocks/presentation/widgets/professional_candlestick_painter.da
 import '../../../stocks/presentation/widgets/technical_indicators_bottom_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 
 // Available indicators surfaced in the bottom-sheet picker. Order matters —
 // it's the visual order on the bottom-sheet list, kept consistent across
@@ -1130,6 +1131,46 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     );
   }
 
+  /// Opens a reliable external chart for this asset in a themed in-app web view
+  /// — the fallback when our OHLCV chart can't load. Uses the CoinGecko id.
+  void _openExternalChart() {
+    final id = widget.crypto.id.trim();
+    final url = id.isNotEmpty
+        ? 'https://www.coingecko.com/en/coins/$id'
+        : 'https://www.coingecko.com/en/search?query=${Uri.encodeComponent(widget.crypto.symbol)}';
+    showWebViewBottomSheet(
+      context,
+      url: url,
+      title: '${widget.crypto.name} chart',
+    );
+  }
+
+  /// A themed "View on CoinGecko" chip reused by the chart error + empty states.
+  Widget _viewOnCoinGeckoChip() {
+    return GestureDetector(
+      onTap: _openExternalChart,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: _getCryptoColor(),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.open_in_new_rounded, size: 15.sp, color: Colors.white),
+            SizedBox(width: 6.w),
+            Text('View on CoinGecko',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Error state for the chart CANVAS only — same control-bar
   /// preservation contract as the loading canvas.
   Widget _buildChartCanvasError(String message) {
@@ -1179,6 +1220,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                     borderRadius: BorderRadius.circular(10.r)),
               ),
             ),
+            SizedBox(height: 10.h),
+            _viewOnCoinGeckoChip(),
           ],
         ),
       ),
@@ -1209,12 +1252,15 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Please try a different timeframe',
+              'Try a different timeframe, or view it on a reliable source.',
+              textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: Colors.grey[700],
                 fontSize: 12.sp,
               ),
             ),
+            SizedBox(height: 16.h),
+            _viewOnCoinGeckoChip(),
           ],
         ),
       ),

@@ -15,6 +15,7 @@ import 'buy_crypto_sheet.dart';
 import 'sell_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
 
 /// Controls which action buttons appear on the detail screen.
 enum CryptoDetailEntryMode { full, buyOnly, sellOnly }
@@ -564,6 +565,22 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
+  /// Opens a reliable external price chart for this asset in a themed in-app web
+  /// view — the fallback when our own OHLCV chart can't load. Uses the asset's
+  /// CoinGecko id (our price source) so the link resolves to the right coin;
+  /// falls back to a symbol search when the id is missing.
+  void _openExternalChart() {
+    final id = widget.crypto.id.trim();
+    final url = id.isNotEmpty
+        ? 'https://www.coingecko.com/en/coins/$id'
+        : 'https://www.coingecko.com/en/search?query=${Uri.encodeComponent(widget.crypto.symbol)}';
+    showWebViewBottomSheet(
+      context,
+      url: url,
+      title: '${widget.crypto.name} chart',
+    );
+  }
+
   Widget _buildAdvancedChart(
     List<PricePoint> priceHistory, {
     bool isLoading = false,
@@ -603,61 +620,96 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                     fontSize: 14.sp,
                   ),
                 ),
-              ] else if (isError) ...[
+              ] else ...[
+                // Chart unavailable (fetch error OR no OHLCV yet). Instead of a
+                // dead-end "couldn't load", offer Retry (on error) AND a CTA that
+                // opens a reliable external chart for this exact asset in a themed
+                // in-app web view — the user can always see a live chart.
                 Icon(
-                  Icons.error_outline,
+                  Icons.insights_rounded,
                   size: 48.sp,
-                  color: const Color(0xFFFB923C),
+                  color: Colors.grey[500],
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  "Couldn't load chart",
+                  'Price chart unavailable',
                   style: GoogleFonts.inter(
-                    color: Colors.grey[300],
-                    fontSize: 14.sp,
+                    color: Colors.grey[200],
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 8.h),
-                GestureDetector(
-                  onTap: _loadCryptoDetails,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 12.w, vertical: 6.h),
-                    decoration: BoxDecoration(
-                      color: _getCryptoColor().withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6.r),
+                SizedBox(height: 6.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 32.w),
+                  child: Text(
+                    isError
+                        ? "We couldn't load the chart right now — view it on a reliable source instead."
+                        : 'No recent chart data for this asset yet — you can view it on a reliable source.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[500],
+                      fontSize: 12.sp,
+                      height: 1.4,
                     ),
-                    child: Text(
-                      'Retry',
-                      style: GoogleFonts.inter(
-                        color: _getCryptoColor(),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isError) ...[
+                      GestureDetector(
+                        onTap: _loadCryptoDetails,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.12)),
+                          ),
+                          child: Text(
+                            'Retry',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                    ],
+                    GestureDetector(
+                      onTap: _openExternalChart,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: _getCryptoColor(),
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.open_in_new_rounded,
+                                size: 15.sp, color: Colors.white),
+                            SizedBox(width: 6.w),
+                            Text(
+                              'View on CoinGecko',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ] else ...[
-                Icon(
-                  Icons.show_chart,
-                  size: 48.sp,
-                  color: Colors.grey[600],
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  'No price history yet',
-                  style: GoogleFonts.inter(
-                    color: Colors.grey[400],
-                    fontSize: 14.sp,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'This asset has no recent OHLCV from Quidax',
-                  style: GoogleFonts.inter(
-                    color: Colors.grey[600],
-                    fontSize: 11.sp,
-                  ),
+                  ],
                 ),
               ],
             ],
