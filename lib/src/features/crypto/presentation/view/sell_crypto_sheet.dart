@@ -716,9 +716,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
           Navigator.of(context).pop();
         }
       },
-      requestPin: () async {
-        String? token;
-        await validateTransactionPin(
+      requestPin: (onValidated) async {
+        return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'sell',
@@ -729,12 +728,10 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
               'Confirm sale of ${quantity.toStringAsFixed(6)} ${h.cryptoSymbol.toUpperCase()}',
           fee: fee,
           totalAmount: netProceeds,
-          showProcessingPhase: false,
-          onPinValidated: (verificationToken) async {
-            token = verificationToken;
-          },
+          showProcessingPhase: true,
+          successMessage: 'Order Placed',
+          onPinValidated: (verificationToken) => onValidated(verificationToken),
         );
-        return token;
       },
     );
 

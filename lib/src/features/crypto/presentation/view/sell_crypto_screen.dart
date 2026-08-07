@@ -1408,9 +1408,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       description:
           'Sell ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
       clientIntentId: intentId,
-      requestPin: () async {
-        String? token;
-        await validateTransactionPin(
+      requestPin: (onValidated) async {
+        return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'sell',
@@ -1421,12 +1420,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               'Confirm sale of ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
           fee: fee,
           totalAmount: netProceeds,
-          showProcessingPhase: false,
-          onPinValidated: (verificationToken) async {
-            token = verificationToken;
-          },
+          showProcessingPhase: true,
+          successMessage: 'Order Placed',
+          onPinValidated: (verificationToken) => onValidated(verificationToken),
         );
-        return token;
       },
     );
 

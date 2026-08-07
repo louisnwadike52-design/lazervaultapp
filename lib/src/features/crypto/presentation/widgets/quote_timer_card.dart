@@ -17,19 +17,20 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// SwapPending / SwapCompleted / SwapFailed.
 class QuoteTimerCard extends StatefulWidget {
   final double refreshGraceSeconds;
-  final VoidCallback? onCommitted;
   final VoidCallback? onCancelled;
 
   /// Called when the user taps Confirm. When provided, the trade is NOT
-  /// committed directly here — instead this runs (e.g. to show the PIN sheet)
-  /// and is responsible for calling CryptoCubit.confirmSwapQuote once the PIN
-  /// is entered. When null, Confirm commits directly (legacy behaviour).
+  /// committed directly here — instead this runs the tx-PIN sheet (whose own
+  /// processing phase runs confirmSwapQuote) and, when it returns, the parent
+  /// [showQuoteTimerSheet] pops this sheet. When null, Confirm commits directly
+  /// (legacy behaviour). We deliberately do NOT auto-pop on the swap state
+  /// transition: the PIN sheet stacks above this one during confirm and a
+  /// state-driven pop would close the PIN sheet mid-processing.
   final Future<void> Function()? onConfirm;
 
   const QuoteTimerCard({
     super.key,
     this.refreshGraceSeconds = 2.0,
-    this.onCommitted,
     this.onCancelled,
     this.onConfirm,
   });
@@ -41,6 +42,7 @@ class QuoteTimerCard extends StatefulWidget {
 class _QuoteTimerCardState extends State<QuoteTimerCard> {
   Timer? _ticker;
   bool _refreshFired = false;
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -72,16 +74,7 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CryptoCubit, CryptoState>(
-      listenWhen: (a, b) =>
-          b is SwapPending || b is SwapCompleted || b is SwapFailed,
-      listener: (context, state) {
-        if (state is SwapPending || state is SwapCompleted) {
-          widget.onCommitted?.call();
-        } else if (state is SwapFailed) {
-          widget.onCancelled?.call();
-        }
-      },
+    return BlocBuilder<CryptoCubit, CryptoState>(
       buildWhen: (a, b) => b is SwapQuotePending || a is SwapQuotePending,
       builder: (context, state) {
         if (state is! SwapQuotePending) {
@@ -136,11 +129,19 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                 _buildSummaryRow('You receive',
                     '${state.toAmount} ${state.toCurrency.toUpperCase()}'),
                 _buildSummaryRow('Rate', state.quotedPrice),
-                if (state.spreadBps > 0)
-                  _buildSummaryRow(
-                    'Platform fee',
-                    '${(state.spreadBps / 100).toStringAsFixed(2)}%',
-                  ),
+                // Transaction fee — the ONE aggregated fee the user pays. Quidax's
+                // own trading fee is baked into the quoted rate (already reflected
+                // in "You receive"), so the only added, user-facing charge is our
+                // platform fee (the spread). Show it as a concrete AMOUNT in the
+                // pay currency + the %, so the user sees exactly what they're
+                // charged before confirming — never a silent fee.
+                _buildSummaryRow(
+                  'Transaction fee',
+                  state.spreadBps > 0
+                      ? '${_feeAmountStr(state)} ${state.fromCurrency.toUpperCase()}'
+                          ' (${(state.spreadBps / 100).toStringAsFixed(2)}%)'
+                      : 'Free',
+                ),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -156,12 +157,16 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: secondsLeft <= 0
+                        onPressed: (secondsLeft <= 0 || _submitting)
                             ? null
                             : () {
                                 if (widget.onConfirm != null) {
-                                  // Quote-first flow: run the PIN step, which
-                                  // finalizes via confirmSwapQuote(token).
+                                  // Quote-first flow: run the tx-PIN step, whose
+                                  // processing phase finalizes via
+                                  // confirmSwapQuote(token). Guard against a
+                                  // double-tap; showQuoteTimerSheet pops this
+                                  // sheet when onConfirm returns.
+                                  setState(() => _submitting = true);
                                   widget.onConfirm!();
                                 } else {
                                   context.read<CryptoCubit>().confirmSwapQuote();
@@ -211,6 +216,16 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
     );
   }
 
+  /// Platform fee as a concrete amount in the FROM (pay) currency, derived from
+  /// the authoritative spread bps against the pay amount so it stays consistent
+  /// with the % shown. 2dp when >= 1 (fiat buys); more precision for a small
+  /// crypto pay leg so a tiny fee never reads as 0.00.
+  String _feeAmountStr(SwapQuotePending state) {
+    final from = double.tryParse(state.fromAmount) ?? 0;
+    final fee = from * state.spreadBps / 10000.0;
+    return fee >= 1 ? fee.toStringAsFixed(2) : fee.toStringAsFixed(6);
+  }
+
   Widget _buildSummaryRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -238,6 +253,9 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
 /// screen. Pops the sheet when the trade transitions out of SwapQuotePending.
 Future<void> showQuoteTimerSheet(
   BuildContext context, {
+  // The DEDICATED swap cubit (not the shared asset-list one) — the quote card +
+  // its state transitions must live on the isolated instance the dispatcher owns.
+  required CryptoCubit cubit,
   Future<void> Function()? onConfirm,
 }) async {
   await showModalBottomSheet<void>(
@@ -246,12 +264,20 @@ Future<void> showQuoteTimerSheet(
     backgroundColor: Colors.transparent,
     builder: (sheetCtx) {
       return BlocProvider.value(
-        value: context.read<CryptoCubit>(),
+        value: cubit,
         child: QuoteTimerCard(
-          onConfirm: onConfirm,
-          onCommitted: () {
-            if (Navigator.canPop(sheetCtx)) Navigator.of(sheetCtx).pop();
-          },
+          // Confirm runs the tx-PIN + trade confirmation (the PIN sheet's own
+          // processing phase), THEN we pop this quote sheet so the caller
+          // navigates to the receipt on a clean stack. No state-driven auto-pop
+          // (would close the PIN sheet stacked above this one mid-processing).
+          onConfirm: onConfirm == null
+              ? null
+              : () async {
+                  await onConfirm();
+                  if (sheetCtx.mounted && Navigator.canPop(sheetCtx)) {
+                    Navigator.of(sheetCtx).pop();
+                  }
+                },
           onCancelled: () {
             if (Navigator.canPop(sheetCtx)) Navigator.of(sheetCtx).pop();
           },

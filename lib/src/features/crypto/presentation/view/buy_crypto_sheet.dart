@@ -884,10 +884,14 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
 
     setState(() => _isTransacting = true);
 
-    // Same quote-first pipeline as the buy screen; runSwapFlow handles the
-    // async→live-receipt routing. Dismiss this sheet before it navigates so the
-    // receipt lands on a clean stack (Get.off can't replace a route under a
-    // modal).
+    // Same quote-first pipeline as the buy screen. runSwapFlow pushes the
+    // receipt/processing screen with Get.to. It must NOT push over an open modal
+    // (the receipt never mounts → BLANK screen — the Buy-CTA-after-PIN bug). So we
+    // dismiss THIS bottom sheet via onBeforeProcessing the instant the trade
+    // confirms, exactly like sell_crypto_sheet does, so the receipt lands on a
+    // clean stack. (The earlier "let the receipt land ON TOP of the sheet"
+    // approach is what left the blank screen; the sell sheet proves popping in
+    // onBeforeProcessing is the correct, race-free pattern.)
     final result = await runSwapFlow(
       context: context,
       side: 'buy',
@@ -898,11 +902,14 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           'Buy ${quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
       clientIntentId: intentId,
       onBeforeProcessing: () {
-        if (mounted && Navigator.of(context).canPop()) Navigator.of(context).pop();
+        if (mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
       },
-      requestPin: () async {
-        String? token;
-        await validateTransactionPin(
+      requestPin: (onValidated) async {
+        // The PIN sheet's processing phase runs the trade confirmation, then the
+        // flow goes straight to the receipt — no intermediate buy-sheet spinner.
+        return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'buy',
@@ -912,17 +919,16 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           message:
               'Confirm purchase of ${quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
           totalAmount: fiat,
-          showProcessingPhase: false,
-          onPinValidated: (verificationToken) async {
-            token = verificationToken;
-          },
+          showProcessingPhase: true,
+          successMessage: 'Order Placed',
+          onPinValidated: (verificationToken) => onValidated(verificationToken),
         );
-        return token;
       },
     );
 
-    // On success the sheet was dismissed by onBeforeProcessing; only the
-    // pre-confirm error path leaves it open.
+    // On success the sheet was already dismissed by onBeforeProcessing (so the
+    // receipt could render on a clean stack); only the pre-confirm error path
+    // leaves it open. Refresh holdings on the captured cubit regardless.
     try {
       cubit.refreshHoldingsLive();
     } catch (_) {}

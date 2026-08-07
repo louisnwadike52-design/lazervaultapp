@@ -1757,9 +1757,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       description: 'Convert ${fromAmount.toStringAsFixed(6)} '
           '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
       clientIntentId: intentId,
-      requestPin: () async {
-        String? token;
-        await validateTransactionPin(
+      requestPin: (onValidated) async {
+        return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'swap',
@@ -1768,12 +1767,10 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           title: 'Confirm Convert',
           message: 'Convert ${fromAmount.toStringAsFixed(6)} '
               '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
-          showProcessingPhase: false,
-          onPinValidated: (verificationToken) async {
-            token = verificationToken;
-          },
+          showProcessingPhase: true,
+          successMessage: 'Convert Submitted',
+          onPinValidated: (verificationToken) => onValidated(verificationToken),
         );
-        return token;
       },
     );
 

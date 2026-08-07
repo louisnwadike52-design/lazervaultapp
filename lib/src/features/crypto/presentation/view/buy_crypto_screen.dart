@@ -1872,9 +1872,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       description:
           'Buy ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
       clientIntentId: intentId,
-      requestPin: () async {
-        String? token;
-        await validateTransactionPin(
+      requestPin: (onValidated) async {
+        return await validateTransactionPin(
           context: context,
           transactionId: intentId,
           transactionType: 'buy',
@@ -1885,12 +1884,10 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               'Confirm purchase of ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
           fee: fee,
           totalAmount: total,
-          showProcessingPhase: false,
-          onPinValidated: (verificationToken) async {
-            token = verificationToken;
-          },
+          showProcessingPhase: true,
+          successMessage: 'Order Placed',
+          onPinValidated: (verificationToken) => onValidated(verificationToken),
         );
-        return token;
       },
     );
 
