@@ -225,11 +225,13 @@ Future<SwapFlowResult> runSwapFlow({
   // triggers the PIN sheet; entering the PIN finalizes the trade via
   // confirmSwapQuote(token). Cancelling the PIN keeps the quote sheet open.
   if (!context.mounted) return const SwapFlowResult.initiated();
+  var confirmAttempted = false;
   await showQuoteTimerSheet(
     context,
     onConfirm: () async {
       final token = (await requestPin?.call()) ?? '';
       if (token.isEmpty) return; // PIN cancelled — leave the quote sheet up
+      confirmAttempted = true;
       await cubit.confirmSwapQuote(transactionPin: token);
     },
   );
@@ -240,7 +242,27 @@ Future<SwapFlowResult> runSwapFlow({
   // build the details payload here (the screen + receipt need it for
   // display) and navigate to the processing screen which polls until
   // terminal, then forwards to the crypto_receipt_screen.
-  final terminal = cubit.state;
+  var terminal = cubit.state;
+  // The quote sheet pops on the terminal transition (SwapPending/Completed/
+  // Failed), but that pop and the cubit emit can race THIS read — a premature
+  // read leaves `terminal` on the pre-confirm quote state, and the receipt /
+  // processing screen is then wrongly skipped (user lands back on the asset
+  // list with no confirmation). When a PIN was actually confirmed, wait
+  // (bounded) for the terminal state before deciding. Guarded on
+  // confirmAttempted so a cancelled/dismissed PIN never blocks here.
+  if (confirmAttempted &&
+      terminal is! SwapCompleted &&
+      terminal is! SwapPending &&
+      terminal is! SwapFailed) {
+    try {
+      terminal = await cubit.stream
+          .firstWhere((s) =>
+              s is SwapCompleted || s is SwapPending || s is SwapFailed)
+          .timeout(const Duration(seconds: 12));
+    } catch (_) {
+      terminal = cubit.state;
+    }
+  }
   // CANCELLED: the user dismissed the quote sheet or tapped Cancel on the PIN
   // before confirming, so confirmSwapQuote never ran and the state is still the
   // pre-confirm quote state (SwapQuotePending). Abort quietly — do NOT push the

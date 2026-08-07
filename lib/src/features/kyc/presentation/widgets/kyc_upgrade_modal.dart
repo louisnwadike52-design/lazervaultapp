@@ -12,15 +12,24 @@ class KYCUpgradeModal extends StatelessWidget {
   final int requiredTier;
   final String operationName;
 
+  /// Canonical KYC status (auth-service `users.kyc_status`). When
+  /// `pending_review` the user has already submitted and is awaiting approval,
+  /// so we show a "under review" acknowledgement instead of routing them to
+  /// re-submit. Defaults to '' for callers that only know the tier (the
+  /// reactive `kyc_error_handler` path).
+  final String kycStatus;
+
   const KYCUpgradeModal({
     super.key,
     required this.currentTier,
     required this.requiredTier,
     required this.operationName,
+    this.kycStatus = '',
   });
 
   @override
   Widget build(BuildContext context) {
+    final inReview = kycStatus == 'pending_review';
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
@@ -59,7 +68,7 @@ class KYCUpgradeModal extends StatelessWidget {
 
           // Title
           Text(
-            'Upgrade Required',
+            inReview ? 'Verification in review' : 'Verify to continue',
             style: GoogleFonts.inter(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
@@ -70,8 +79,10 @@ class KYCUpgradeModal extends StatelessWidget {
 
           // Description
           Text(
-            'Your Tier $currentTier account has reached its transaction limit. '
-            'Upgrade to Tier $requiredTier to $operationName with higher limits.',
+            inReview
+                ? "Your identity verification is being reviewed. We'll unlock the ability to $operationName as soon as it's approved."
+                : 'You need Tier $requiredTier verification to $operationName. '
+                    "You're currently Tier $currentTier — verify your identity to unlock it.",
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
@@ -82,55 +93,86 @@ class KYCUpgradeModal extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
 
-          // Tier comparison
-          _buildTierComparison(),
-          SizedBox(height: 24.h),
+          // Tier comparison — hidden while a submission is under review: the user
+          // already provided their details, so limits would only distract.
+          if (!inReview) ...[
+            _buildTierComparison(),
+            SizedBox(height: 24.h),
+          ] else
+            SizedBox(height: 16.h),
 
-          // Upgrade button
-          SizedBox(
-            width: double.infinity,
-            height: 52.h,
-            child: ElevatedButton(
-              onPressed: () async {
-                Get.back();
-                await Future.delayed(const Duration(milliseconds: 150));
-                Get.toNamed(AppRoutes.kycBVNVerification);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+          if (inReview)
+            // Under review: a single acknowledge CTA. Routing to re-verify would
+            // make the user resubmit an in-flight verification.
+            SizedBox(
+              width: double.infinity,
+              height: 52.h,
+              child: ElevatedButton(
+                onPressed: () => Get.back(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
+                child: Text(
+                  'Got it',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-              child: Text(
-                'Upgrade Now',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+            )
+          else ...[
+            // Verify button — routes to the identity-verification flow.
+            SizedBox(
+              width: double.infinity,
+              height: 52.h,
+              child: ElevatedButton(
+                onPressed: () async {
+                  Get.back();
+                  await Future.delayed(const Duration(milliseconds: 150));
+                  Get.toNamed(AppRoutes.kycBVNVerification);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Verify Now',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 12.h),
+            SizedBox(height: 12.h),
 
-          // Maybe later button
-          SizedBox(
-            width: double.infinity,
-            height: 48.h,
-            child: TextButton(
-              onPressed: () => Get.back(),
-              child: Text(
-                'Maybe Later',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF9CA3AF),
+            // Maybe later button
+            SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: TextButton(
+                onPressed: () => Get.back(),
+                child: Text(
+                  'Maybe Later',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF9CA3AF),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

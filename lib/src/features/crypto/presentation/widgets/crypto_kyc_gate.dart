@@ -35,6 +35,7 @@ Future<bool> ensureCryptoTradeAllowed(
         currentTier: el.currentTier <= 0 ? 1 : el.currentTier,
         requiredTier: el.requiredTier <= 0 ? 2 : el.requiredTier,
         operationName: operation,
+        kycStatus: el.kycStatus,
       ),
     );
     return false;
@@ -59,6 +60,7 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
   bool _loaded = false;
   int _currentTier = 1;
   int _requiredTier = 2;
+  String _kycStatus = '';
 
   @override
   void initState() {
@@ -74,6 +76,7 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
         _blocked = !el.canTrade;
         _currentTier = el.currentTier <= 0 ? 1 : el.currentTier;
         _requiredTier = el.requiredTier <= 0 ? 2 : el.requiredTier;
+        _kycStatus = el.kycStatus;
         _loaded = true;
       });
     } catch (_) {
@@ -91,6 +94,7 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
   @override
   Widget build(BuildContext context) {
     if (!_loaded || !_blocked) return const SizedBox.shrink();
+    final inReview = _kycStatus == 'pending_review';
     const accent = Color(0xFFFB923C);
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
@@ -119,7 +123,9 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Verify your identity to trade crypto',
+                  inReview
+                      ? 'Identity verification under review'
+                      : 'Verify your identity to trade crypto',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,
@@ -128,7 +134,9 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  'You can browse freely. To buy, sell, swap or send, complete tier $_requiredTier verification (you are tier $_currentTier).',
+                  inReview
+                      ? "We'll unlock buy, sell, swap and send once your verification is approved."
+                      : 'You can browse freely. To buy, sell, swap or send, complete tier $_requiredTier verification (you are tier $_currentTier).',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 11.sp,
@@ -139,25 +147,51 @@ class _CryptoVerifyBannerState extends State<CryptoVerifyBanner> {
             ),
           ),
           SizedBox(width: 10.w),
-          Material(
-            color: accent,
-            borderRadius: BorderRadius.circular(10.r),
-            child: InkWell(
-              onTap: _verify,
+          if (inReview)
+            // Awaiting approval — a non-interactive status pill (routing to
+            // re-verify would make the user resubmit an in-flight verification).
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.hourglass_top, color: accent, size: 13.sp),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'In review',
+                    style: GoogleFonts.inter(
+                      color: accent,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Material(
+              color: accent,
               borderRadius: BorderRadius.circular(10.r),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                child: Text(
-                  'Verify',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
+              child: InkWell(
+                onTap: _verify,
+                borderRadius: BorderRadius.circular(10.r),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  child: Text(
+                    'Verify',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

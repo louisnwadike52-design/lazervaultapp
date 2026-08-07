@@ -88,13 +88,13 @@ class _CryptoScreenState extends State<CryptoScreen> {
         child: Column(
           children: [
                   _buildTopBar(),
-                  // Non-blocking identity-verification banner: shows only when the
-                  // user's KYC tier is too low to trade (self-hides once verified).
-                  const CryptoVerifyBanner(),
                   if (state is CryptosLoaded) ...[
                     _buildPortfolioOverview(state),
                     _buildQuickActions(),
-                    _buildWarningMessage(),
+                    // Identity-verification prompt sits directly below the
+                    // Buy/Sell/Send/Swap actions (per design): shows only when the
+                    // user's KYC tier is too low to trade, self-hides once verified.
+                    const CryptoVerifyBanner(),
                     _buildSupportedAssetsSection(state),
                     _buildMarketOverview(state),
                     _buildWatchlistSection(state),
@@ -312,10 +312,6 @@ class _CryptoScreenState extends State<CryptoScreen> {
 
   Widget _buildPortfolioOverview(CryptosLoaded state) {
     final totalValue = state.holdings.fold(0.0, (sum, holding) => sum + holding.totalValue);
-    final p24 = _portfolio24h(state);
-    final change24h = p24.gainFiat;
-    final change24hPct = p24.pct;
-    final isPositive = change24h >= 0;
     // Lazy-loading: when ANY held asset is still awaiting its fiat rate,
     // the running total is a partial sum. The UI renders a subtle
     // "loading" hint next to the value so users don't mistake a half-
@@ -355,83 +351,50 @@ class _CryptoScreenState extends State<CryptoScreen> {
             ),
           ),
           SizedBox(height: 8.h),
-          Row(
-            children: [
-              // The amount takes the row width; the 24h % badge is gone (its
-              // percentage is now consolidated into the "24h Change" stat
-              // below), freeing the top-right for the Deposit pill.
-              if (hasPriceLoading) ...[
-                CryptoSkeleton(
-                    width: 170.w, height: 34.h, radius: 8.r, onGradient: true),
-                const Spacer(),
-              ] else
-                // The value is never clipped: FittedBox.scaleDown shrinks it
-                // to fit the available width instead of cutting it off with an
-                // ellipsis. Expanded (not Flexible+Spacer) gives it the whole
-                // row minus the pill, so it renders as large as it can while
-                // still showing every digit. Tapping opens a sheet with the
-                // full, comma-grouped figure so even a shrunk value is readable.
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _showPortfolioValueSheet(state, totalValue),
-                    behavior: HitTestBehavior.opaque,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _fmtPortfolioMoney(totalValue),
-                        maxLines: 1,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26.sp,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                    ),
+          // The amount now takes the FULL card width — the Deposit CTA moved to
+          // its own prominent button below, so a large value has the whole row.
+          // Never clipped: FittedBox.scaleDown shrinks it to fit; tapping opens a
+          // sheet with the full comma-grouped figure so even a shrunk value is
+          // readable.
+          if (hasPriceLoading)
+            CryptoSkeleton(
+                width: 200.w, height: 34.h, radius: 8.r, onGradient: true)
+          else
+            GestureDetector(
+              onTap: () => _showPortfolioValueSheet(state, totalValue),
+              behavior: HitTestBehavior.opaque,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _fmtPortfolioMoney(totalValue),
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -1,
                   ),
                 ),
-              SizedBox(width: 10.w),
-              // Deposit (receive crypto) — always shown, since it's most useful
-              // precisely when the portfolio is empty. Opens the all-assets page
-              // in receive mode: pick an asset → deposit-address sheet.
-              _buildDepositPill(),
-            ],
-          ),
-          SizedBox(height: 24.h),
+              ),
+            ),
+          SizedBox(height: 20.h),
+          // Header action row: "My assets" (left, tappable → holdings sheet) with
+          // the Deposit action as a circular button on the RIGHT — horizontal,
+          // beside My assets. The deposit button is themed (amber accent on the
+          // purple card, not plain white) for clear contrast, and spaced so it
+          // never crowds the My-assets stat.
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // "My assets" replaces the old plain "Assets" count — tappable,
-              // opens the holdings sheet, with the held count beside it.
-              Expanded(child: _buildMyAssetsStat(state)),
-              SizedBox(width: 12.w),
-              // 24h Change now carries BOTH the fiat amount AND the percentage
-              // (consolidated from the old top-right % badge) with the up/down
-              // arrow + green/red tint.
               Expanded(
-                child: _buildPortfolioStat(
-                  '24h Change',
-                  p24.hasData
-                      ? '${isPositive ? '+' : '-'}${CurrencySymbols.currentSymbol}${change24h.abs().toStringAsFixed(2)} (${change24hPct.abs().toStringAsFixed(2)}%)'
-                      : '-',
-                  valueColor: p24.hasData
-                      ? (isPositive ? const Color(0xFF34D399) : const Color(0xFFF87171))
-                      : null,
-                  icon: p24.hasData
-                      ? (isPositive
-                          ? Icons.arrow_upward_rounded
-                          : Icons.arrow_downward_rounded)
-                      : null,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _buildMyAssetsStat(state),
                 ),
               ),
               SizedBox(width: 12.w),
-              Expanded(
-                child: _buildPortfolioStat(
-                    'Best Asset',
-                    p24.hasData && p24.bestSymbol.isNotEmpty
-                        ? '${p24.bestSymbol.toUpperCase()} ${p24.bestPct >= 0 ? '+' : ''}${p24.bestPct.toStringAsFixed(1)}%'
-                        : 'None'),
-              ),
+              _buildDepositCircle(),
             ],
           ),
         ],
@@ -541,11 +504,18 @@ class _CryptoScreenState extends State<CryptoScreen> {
   Widget _buildMyAssetsStat(CryptosLoaded state) {
     const amber = Color(0xFFFBBF24);
     final count = state.holdings.where((h) => h.quantity > 0).length;
+    final p24 = _portfolio24h(state);
     return InkWell(
       onTap: () => showMyAssetsSheet(
         context,
         holdings: state.holdings,
         assets: [...state.supportedAssets, ...state.cryptos],
+        // 24h change + best asset moved OFF the header card into this sheet.
+        change24hFiat: p24.gainFiat,
+        change24hPct: p24.pct,
+        bestSymbol: p24.bestSymbol,
+        bestPct: p24.bestPct,
+        has24hData: p24.hasData,
       ),
       borderRadius: BorderRadius.circular(8.r),
       child: Column(
@@ -721,110 +691,53 @@ class _CryptoScreenState extends State<CryptoScreen> {
     );
   }
 
-  Widget _buildWarningMessage() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Text(
-        "Don't invest unless you're prepared to lose all the money you invest. This is a high-risk investment and you should not expect to be protected if something goes wrong. Take 2 mins to learn more",
-        style: TextStyle(
-          color: Colors.grey[400],
-          fontSize: 12.sp,
-          height: 1.5,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  /// A single stat in the portfolio card's stats row. Optionally carries a
-  /// colored value + a leading arrow (used by "24h Change" to show the
-  /// consolidated ₦ amount + %). The value is FittedBox-scaled and single-line
-  /// so a large figure never overflows its (Expanded) third of the row.
-  Widget _buildPortfolioStat(
-    String label,
-    String value, {
-    Color? valueColor,
-    IconData? icon,
-  }) {
+  /// Deposit (receive crypto) — a CIRCULAR, themed action that sits horizontally
+  /// beside "My assets" on the portfolio card. Filled amber (the crypto screen's
+  /// interactive accent) with a dark-purple icon gives strong contrast BOTH ways
+  /// against the purple card background (unlike the old plain-white bar), while
+  /// visually distinct from the amber "My assets" TEXT so the two never merge.
+  /// A small caption keeps the affordance legible. Opens the all-assets page in
+  /// receive mode (pick asset → deposit-address sheet).
+  Widget _buildDepositCircle() {
+    const accent = Color.fromARGB(255, 78, 3, 208); // purple card background
+    const amber = Color(0xFFFBBF24);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 12.sp,
+        Material(
+          color: amber,
+          shape: const CircleBorder(),
+          elevation: 3,
+          shadowColor: Colors.black.withValues(alpha: 0.35),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              final cubit = context.read<CryptoCubit>();
+              Get.to(() => BlocProvider.value(
+                    value: cubit,
+                    child: const AllAssetsScreen(mode: AssetSelectionMode.receive),
+                  ));
+            },
+            child: Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Icon(
+                Icons.call_received_rounded,
+                color: accent,
+                size: 22.sp,
+              ),
+            ),
           ),
         ),
-        SizedBox(height: 4.h),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, color: valueColor ?? Colors.white, size: 13.sp),
-                SizedBox(width: 2.w),
-              ],
-              Text(
-                value,
-                maxLines: 1,
-                style: TextStyle(
-                  color: valueColor ?? Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+        SizedBox(height: 5.h),
+        Text(
+          'Deposit',
+          style: GoogleFonts.inter(
+            color: amber,
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
-    );
-  }
-
-  /// Deposit (receive crypto) pill — sits at the top-right of the portfolio
-  /// card where the old 24h % badge was. White-translucent so it reads as
-  /// tappable on the purple gradient. Opens the all-assets page in receive
-  /// mode (pick asset → deposit-address sheet).
-  Widget _buildDepositPill() {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(20.r),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20.r),
-        onTap: () {
-          final cubit = context.read<CryptoCubit>();
-          Get.to(() => BlocProvider.value(
-                value: cubit,
-                child: const AllAssetsScreen(mode: AssetSelectionMode.receive),
-              ));
-        },
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.call_received_rounded, color: Colors.white, size: 15.sp),
-              SizedBox(width: 5.w),
-              Text(
-                'Deposit',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
