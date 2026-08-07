@@ -108,7 +108,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     if (min > 0 && _fiatAmount < min) {
       return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}';
     }
-    if (_fiatAmount > available) {
+    // The backend charges the platform fee ON TOP of the subtotal (holds
+    // subtotal + fee), so the wallet must cover the TOTAL, not just the subtotal.
+    if (_fiatAmount + _resolveFee() > available) {
       return 'Exceeds your wallet balance';
     }
     return null;
@@ -467,7 +469,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
         final personal = _personal(acctState);
         final available = personal?.availableBalance ?? 0.0;
         final sym = CurrencySymbols.currentSymbol;
-        final canCover = personal != null && available >= _fiatAmount && _fiatAmount > 0;
+        // Wallet must cover the TOTAL (subtotal + our fee) — the backend holds
+        // subtotal + fee, so a subtotal-only check would let the hold fail.
+        final totalCost = _fiatAmount + _resolveFee();
+        final canCover = personal != null && available >= totalCost && _fiatAmount > 0;
         final min = _minFiat();
         final meetsMin = min <= 0 || _fiatAmount >= min;
         final enabled = canCover && meetsMin && !_isTransacting;
@@ -839,7 +844,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
         ),
         if (_fiatAmount > 0)
           Text(
-            canCover ? 'Enough' : 'Short by $sym${_formatMoney(_fiatAmount - available)}',
+            canCover
+                ? 'Enough'
+                : 'Short by $sym${_formatMoney((_fiatAmount + _resolveFee()) - available)}',
             style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,

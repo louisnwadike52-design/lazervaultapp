@@ -1208,8 +1208,12 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               final hasFunds =
                   personal != null && personal.availableBalance > 0;
               final available = personal?.availableBalance ?? 0.0;
-              final canCover =
-                  personal != null && available >= _fiatAmount && _fiatAmount > 0;
+              // Wallet must cover the TOTAL (subtotal + our platform fee) — the
+              // backend holds subtotal + fee, so a subtotal-only check would let
+              // the on-server hold fail after the user taps Buy.
+              final canCover = personal != null &&
+                  available >= (_fiatAmount + _resolveFee()) &&
+                  _fiatAmount > 0;
               return Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
@@ -1292,7 +1296,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                             Text(
                               canCover
                                   ? 'Enough to cover this purchase'
-                                  : 'Short by ${CurrencySymbols.currentSymbol}${_formatMoney(_fiatAmount - available)}',
+                                  : 'Short by ${CurrencySymbols.currentSymbol}${_formatMoney((_fiatAmount + _resolveFee()) - available)}',
                               style: GoogleFonts.inter(
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
