@@ -18,7 +18,6 @@ import '../../cubit/crypto_state.dart';
 import '../models/crypto_transaction_models.dart';
 import '../widgets/crypto_kyc_gate.dart';
 import '../widgets/quote_timer_card.dart';
-import 'crypto_swap_processing_screen.dart';
 import 'crypto_receipt_screen.dart';
 
 // ============================================================================
@@ -335,9 +334,6 @@ Future<SwapFlowResult> runSwapFlow({
   final transactionId = (terminal is SwapCompleted)
       ? terminal.transactionId
       : (terminal is SwapPending ? terminal.transactionId : '');
-  final quidaxSwapId = (terminal is SwapCompleted)
-      ? terminal.quidaxSwapId
-      : (terminal is SwapPending ? terminal.quidaxSwapId : '');
 
   // Inject the DEDICATED swap cubit into the pushed route (Get.to pushes OUTSIDE
   // the crypto screen's subtree, so the CryptoCubit the receipt/processing screen
@@ -359,50 +355,31 @@ Future<SwapFlowResult> runSwapFlow({
   // doesn't race the closing sheet. A short beat settles the stack.
   await Future<void>.delayed(const Duration(milliseconds: 320));
 
-  // ASYNC (the default) or an already-completed trade: skip the blocking
-  // processing screen and go STRAIGHT to a LIVE receipt. It shows a pending
-  // badge and polls ITSELF to completed — refreshing the wallet/holdings — when
-  // settlement lands, so the user never waits on a spinner. Only a SYNC pending
-  // trade (admin toggled sync off) keeps the wait-on-processing screen.
-  final isAsyncPending = terminal is SwapPending && terminal.isAsync;
-  if (terminal is SwapCompleted || isAsyncPending) {
-    final receipt = CryptoTransactionReceipt(
-      transactionId: transactionId,
-      transactionDetails: details,
-      timestamp: DateTime.now(),
-      status: terminal is SwapCompleted
-          ? CryptoTransactionStatus.completed
-          : CryptoTransactionStatus.pending,
-    );
-    // Push the receipt and REMOVE the intermediate picker routes (AllAssetsScreen
-    // / UserHoldingsScreen / SwapCryptoScreen — all anonymous) up to the named
-    // crypto landing, so ONE Back from the receipt returns to the crypto landing
-    // (not the asset picker), and a second Back returns to the dashboard (whose
-    // carousel state is preserved on the stack).
-    await rootNav.pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider<CryptoCubit>.value(
-          value: cryptoCubit,
-          child: CryptoReceiptScreen(receipt: receipt),
-        ),
-      ),
-      (route) => route.settings.name == AppRoutes.crypto || route.isFirst,
-    );
-    return const SwapFlowResult.initiated();
-  }
-
-  // SYNC pending: keep the processing screen. It polls and replaces itself with
-  // the receipt on terminal (or after its safety timeout).
+  // Processing already ran INSIDE the tx-PIN sheet's own phase, so EVERY
+  // confirmed outcome — completed or pending, async OR sync — goes STRAIGHT to a
+  // LIVE receipt. There is no separate processing/loading screen anymore: the
+  // receipt shows a pending badge and polls ITSELF to completed (refreshing the
+  // wallet/holdings) when settlement lands. This removes the old
+  // CryptoSwapProcessingScreen and its "View in History" → history-screen path
+  // (which lost the CryptoCubit scope and surfaced a cubit error).
+  final receipt = CryptoTransactionReceipt(
+    transactionId: transactionId,
+    transactionDetails: details,
+    timestamp: DateTime.now(),
+    status: terminal is SwapCompleted
+        ? CryptoTransactionStatus.completed
+        : CryptoTransactionStatus.pending,
+  );
+  // Push the receipt and REMOVE the intermediate picker routes (AllAssetsScreen /
+  // UserHoldingsScreen / SwapCryptoScreen — all anonymous) up to the named crypto
+  // landing, so ONE Back from the receipt returns to the crypto landing (not the
+  // asset picker), and a second Back returns to the dashboard (whose carousel
+  // state is preserved on the stack).
   await rootNav.pushAndRemoveUntil(
     MaterialPageRoute(
       builder: (_) => BlocProvider<CryptoCubit>.value(
         value: cryptoCubit,
-        child: CryptoSwapProcessingScreen(
-          details: details,
-          transactionId: transactionId,
-          initialStatus: 'submitting',
-          quidaxSwapId: quidaxSwapId,
-        ),
+        child: CryptoReceiptScreen(receipt: receipt),
       ),
     ),
     (route) => route.settings.name == AppRoutes.crypto || route.isFirst,
@@ -574,7 +551,7 @@ void _kickAccountSummariesRefresh(BuildContext context) {
 
 // (dart:async provides `unawaited` — no local shim needed.)
 
-// _toast and _backgroundPoll were removed when the post-modal flow moved
-// to CryptoSwapProcessingScreen. The processing screen owns the polling
-// loop now (3s ticks, 90s safety timeout) and renders the live status
-// directly instead of relying on snackbar feedback.
+// _toast and _backgroundPoll were removed when the post-modal flow moved to a
+// LIVE receipt. The receipt (crypto_receipt_screen) owns the polling loop now
+// (4s ticks, 5-min window) and renders the live status directly — there is no
+// intermediate processing screen; processing runs inside the tx-PIN sheet.
