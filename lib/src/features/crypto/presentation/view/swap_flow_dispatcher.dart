@@ -340,28 +340,19 @@ Future<SwapFlowResult> runSwapFlow({
   // reads via BlocProvider isn't otherwise in scope). It stays alive while the
   // receipt polls and is closed in the finally once the receipt is dismissed.
   final cryptoCubit = cubit;
-  // Capture the ROOT navigator BEFORE dismissing the caller's sheet. Once
-  // onBeforeProcessing unmounts that sheet's context, Get.to (which resolves the
-  // navigator lazily) fails to actually push — the receipt is "pushed" and
-  // instantly returned without ever mounting (initState never runs). The root
-  // NavigatorState persists across the sheet dismissal, so we push the receipt on
-  // it explicitly below.
+  // The ROOT navigator persists across the sheet teardown; the buy/sell sheet and
+  // the asset-picker route (AllAssetsScreen / UserHoldingsScreen / SwapCryptoScreen)
+  // all live on it (showModalBottomSheet uses the nearest = root navigator; the
+  // pickers are Get-pushed on root).
   final rootNav = Navigator.of(context, rootNavigator: true);
-  // Dismiss the caller's modal (buy/sell bottom sheet) now that the cubit +
-  // navigator are captured — the receipt/processing screen must not push over an
-  // open modal.
-  onBeforeProcessing?.call();
-  // Let the sheet's pop animation FINISH before pushing the receipt so the push
-  // doesn't race the closing sheet. A short beat settles the stack.
-  await Future<void>.delayed(const Duration(milliseconds: 320));
 
-  // Processing already ran INSIDE the tx-PIN sheet's own phase, so EVERY
-  // confirmed outcome — completed or pending, async OR sync — goes STRAIGHT to a
-  // LIVE receipt. There is no separate processing/loading screen anymore: the
-  // receipt shows a pending badge and polls ITSELF to completed (refreshing the
-  // wallet/holdings) when settlement lands. This removes the old
-  // CryptoSwapProcessingScreen and its "View in History" → history-screen path
-  // (which lost the CryptoCubit scope and surfaced a cubit error).
+  // Processing already ran INSIDE the tx-PIN sheet's own phase, so EVERY confirmed
+  // outcome — completed or pending, async OR sync — goes STRAIGHT to a LIVE
+  // receipt. There is no separate processing/loading screen anymore: the receipt
+  // shows a pending badge and polls ITSELF to completed (refreshing the wallet/
+  // holdings) when settlement lands. This removes the old CryptoSwapProcessingScreen
+  // and its "View in History" → history-screen path (which lost the CryptoCubit
+  // scope and surfaced a cubit error).
   final receipt = CryptoTransactionReceipt(
     transactionId: transactionId,
     transactionDetails: details,
@@ -370,11 +361,15 @@ Future<SwapFlowResult> runSwapFlow({
         ? CryptoTransactionStatus.completed
         : CryptoTransactionStatus.pending,
   );
-  // Push the receipt and REMOVE the intermediate picker routes (AllAssetsScreen /
-  // UserHoldingsScreen / SwapCryptoScreen — all anonymous) up to the named crypto
-  // landing, so ONE Back from the receipt returns to the crypto landing (not the
-  // asset picker), and a second Back returns to the dashboard (whose carousel
-  // state is preserved on the stack).
+  // Push the receipt AND tear down the still-open buy/sell sheet + the asset-picker
+  // routes up to the named crypto landing in ONE atomic pushAndRemoveUntil. This is
+  // deliberately done BEFORE dismissing the caller's sheet and with NO settle delay:
+  // the previous "pop the sheet, wait 320ms, then push" sequence briefly REVEALED
+  // the asset picker (AllAssetsScreen) between the PIN sheet closing and the receipt
+  // appearing — the flash the user saw. Removing everything up to /crypto in the
+  // same frame the receipt is pushed means the picker is never shown. It also keeps
+  // the Back chain correct: ONE Back from the receipt returns to the crypto landing,
+  // a second Back returns to the dashboard (carousel state preserved).
   await rootNav.pushAndRemoveUntil(
     MaterialPageRoute(
       builder: (_) => BlocProvider<CryptoCubit>.value(
@@ -384,6 +379,10 @@ Future<SwapFlowResult> runSwapFlow({
     ),
     (route) => route.settings.name == AppRoutes.crypto || route.isFirst,
   );
+  // Best-effort: if a caller's sheet somehow lived on a different navigator and
+  // survived the removeUntil, let it clean up. No-op when already torn down
+  // (its context is unmounted → canPop guard fails).
+  onBeforeProcessing?.call();
   return const SwapFlowResult.initiated();
   } finally {
     // Close the dedicated swap cubit now that the receipt / processing screen has
