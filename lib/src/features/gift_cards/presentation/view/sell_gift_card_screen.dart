@@ -537,53 +537,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     );
   }
 
+  // Country selector is hidden: Prestmit (our sole sell provider) only sells
+  // US-issued gift cards, so a multi-country filter is dead UX. Country is pinned
+  // to 'US' (the _selectedCountry default) and the only filter shown is the
+  // data-driven category selector. If Prestmit ever adds other card countries,
+  // re-enable this by rendering chips for the distinct countries present in the
+  // loaded catalogue (data-driven), not a hardcoded list.
   Widget _buildCountrySelector() {
-    return Container(
-      height: 44.h,
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _sellCountries.length,
-        itemBuilder: (context, index) {
-          final country = _sellCountries[index];
-          final isSelected = _selectedCountry == country['code'];
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedCountry = country['code']!);
-              context.read<GiftCardCubit>().loadSellableCards(countryCode: country['code']!);
-            },
-            child: Container(
-              margin: EdgeInsets.only(right: 8.w),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
-                    : const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(
-                  color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(country['flag']!, style: TextStyle(fontSize: 16.sp)),
-                  SizedBox(width: 6.w),
-                  Text(
-                    country['code']!,
-                    style: GoogleFonts.inter(
-                      color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
-                      fontSize: 13.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildCategorySelector(List<SellableCard> cards) {
