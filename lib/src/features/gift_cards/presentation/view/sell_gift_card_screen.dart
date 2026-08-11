@@ -19,6 +19,9 @@ import '../../domain/validation/gift_card_validation.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
+// Imported for the top-level friendlyGiftCardError() helper used by the
+// error snackbars below (the GiftCardErrorWidget class itself is no
+// longer rendered here after the step-0 browse code was retired).
 import 'widgets/gift_card_error_widget.dart';
 import 'widgets/sell_rejection_reasons_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -75,9 +78,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   int? _activePickerSlotIndex;
   // Tracks an in-flight AI extraction call (OCRExtracting → OCRExtracted/OCRFailed).
   bool _isExtractingDetails = false;
-  String _selectedCountry = 'US';
+  // Pinned to US: Prestmit (sole sell provider) lists only US-issued
+  // cards, and the country-switcher UI that reassigned this was retired
+  // with the step-0 browse code — so it's now effectively const.
+  final String _selectedCountry = 'US';
   String _selectedFormat = 'ecode'; // "ecode" or "physical"
-  String _selectedCategory = '';
   String? _cardNumberError;
   String? _cardPinError;
 
@@ -102,27 +107,6 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // is the audit signal that they did. Backend rejects with
   // FailedPrecondition when false; the Continue button gates on it too.
   bool _balanceAttested = false;
-
-  static const _sellCategories = [
-    {'slug': '', 'label': 'All'},
-    {'slug': 'gaming', 'label': 'Gaming'},
-    {'slug': 'shopping', 'label': 'Shopping'},
-    {'slug': 'entertainment', 'label': 'Entertainment'},
-    {'slug': 'fashion', 'label': 'Fashion'},
-    {'slug': 'electronics', 'label': 'Electronics'},
-    {'slug': 'food', 'label': 'Food & Drink'},
-    {'slug': 'transport', 'label': 'Transport'},
-    {'slug': 'finance', 'label': 'Finance'},
-  ];
-
-  static const _sellCountries = [
-    {'code': 'US', 'name': 'United States', 'flag': '🇺🇸'},
-    {'code': 'GB', 'name': 'United Kingdom', 'flag': '🇬🇧'},
-    {'code': 'NG', 'name': 'Nigeria', 'flag': '🇳🇬'},
-    {'code': 'GH', 'name': 'Ghana', 'flag': '🇬🇭'},
-    {'code': 'KE', 'name': 'Kenya', 'flag': '🇰🇪'},
-    {'code': 'ZA', 'name': 'South Africa', 'flag': '🇿🇦'},
-  ];
 
   final _imagePicker = ImagePicker();
 
@@ -157,10 +141,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     final fixed = _selectedCard?.denominations ?? const <double>[];
     if (fixed.isNotEmpty) {
       _selectedDenomination = fixed.first;
-    } else if ((_selectedCard?.minDenomination ?? 0) > 0) {
-      _selectedDenomination = _selectedCard!.minDenomination;
-      _denominationController.text =
-          _selectedCard!.minDenomination.toStringAsFixed(0);
+    } else {
+      // Free-entry (Prestmit): prefill the integer minimum so the
+      // Get-Rate CTA is reachable in one tap. Floor to 1 when the
+      // catalogue omits a minimum (min<=0) so we never seed 0.
+      final rawMin = _selectedCard?.minDenomination ?? 0;
+      final floor = rawMin > 0 ? rawMin : 1.0;
+      _selectedDenomination = floor;
+      _denominationController.text = floor.toStringAsFixed(0);
     }
   }
 
@@ -350,11 +338,33 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         }
         if (state.denomination > 0) {
           _ocrDenomination = state.denomination;
-          if (_selectedCard != null) {
-            final match = _selectedCard!.denominations
-                .where((d) => d == state.denomination)
-                .firstOrNull;
-            _selectedDenomination = match ?? state.denomination;
+          final card = _selectedCard;
+          if (card != null) {
+            if (card.denominations.isNotEmpty) {
+              // Fixed pill set: accept the OCR value only when it
+              // exactly matches a listed denomination. An off-list
+              // scan must NOT auto-select — leave the current pick so
+              // we never submit an amount Prestmit would reject.
+              final match = card.denominations
+                  .where((d) => d == state.denomination)
+                  .firstOrNull;
+              if (match != null) _selectedDenomination = match;
+            } else {
+              // Free-entry: accept the scan only when it lands inside
+              // [min, max] and is a whole number; otherwise ignore it
+              // (keep the field empty so the user types a valid
+              // amount) rather than seeding an out-of-bounds value.
+              final min = card.minDenomination > 0 ? card.minDenomination : 1.0;
+              final max = card.maxDenomination;
+              final v = state.denomination;
+              final inBounds =
+                  v >= min && (max <= 0 || v <= max) && v == v.roundToDouble();
+              if (inBounds) {
+                _selectedDenomination = v;
+                _denominationController.text = v.toStringAsFixed(0);
+                _denominationError = null;
+              }
+            }
           }
         }
         // Stay on step 1 — fields are now populated, user verifies
@@ -502,292 +512,6 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       default:
         return const SizedBox();
     }
-  }
-
-  // ============================================
-  // STEP 0: Select Card Brand
-  // ============================================
-
-  Widget _buildStep0CardSelection(GiftCardState state) {
-    // Stale-while-revalidate: keep the grid rendered if the cubit has
-    // cached cards, even when the current state is Loading or unrelated.
-    // The cubit re-emits SellableCardsLoaded once revalidation completes.
-    final cached = context.read<GiftCardCubit>().cachedSellableCards;
-
-    if (state is SellableCardsEmpty) {
-      // Empty result has two flavours: (a) the user picked a country
-      // that has no entries in Prestmit's catalogue (e.g. Nigeria,
-      // which has zero rows in the sandbox); (b) the upstream catalog
-      // is genuinely unavailable. We can tell the difference because
-      // the user only sees this state AFTER selecting a filter — so
-      // rendering a country-aware "no cards in {country}" message
-      // with a CTA to switch country is the right call.
-      return _buildEmptyForCountry(_selectedCountry);
-    }
-    if (state is SellableCardsLoaded) {
-      return _buildCardGridWithFilter(state.cards);
-    }
-    if (cached.isNotEmpty) {
-      return _buildCardGridWithFilter(cached);
-    }
-    if (state is GiftCardNetworkError) {
-      return _buildErrorState(state.message);
-    }
-    return const Center(
-      child: LazerVaultLoader.small(),
-    );
-  }
-
-  // Country selector is hidden: Prestmit (our sole sell provider) only sells
-  // US-issued gift cards, so a multi-country filter is dead UX. Country is pinned
-  // to 'US' (the _selectedCountry default) and the only filter shown is the
-  // data-driven category selector. If Prestmit ever adds other card countries,
-  // re-enable this by rendering chips for the distinct countries present in the
-  // loaded catalogue (data-driven), not a hardcoded list.
-  Widget _buildCountrySelector() {
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildCategorySelector(List<SellableCard> cards) {
-    // Categories are derived from the LIVE catalogue, not from a
-    // hardcoded slug list. Prestmit's catalogue surfaces real names
-    // like "iTunes Gift Card v2" / "Amazon v2" — those are what each
-    // card's `category` field holds, so the chip values must equal
-    // them verbatim for the filter (`c.category == _selectedCategory`)
-    // to match. The previous static slug list ("gaming", "shopping",
-    // etc.) never matched anything → category filter was always empty.
-    final unique = <String>{};
-    for (final c in cards) {
-      final raw = c.category.trim();
-      if (raw.isNotEmpty) unique.add(raw);
-    }
-    final categories = unique.toList()..sort();
-    // Prepend the "All" chip (slug "") so the user can always reset.
-    final entries = [
-      const MapEntry('', 'All'),
-      ...categories.map((c) => MapEntry(c, c)),
-    ];
-    return Container(
-      height: 40.h,
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: entries.length,
-        itemBuilder: (context, index) {
-          final entry = entries[index];
-          final isSelected = _selectedCategory == entry.key;
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedCategory = entry.key);
-            },
-            child: Container(
-              margin: EdgeInsets.only(right: 8.w),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
-                    : const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                entry.value,
-                style: GoogleFonts.inter(
-                  color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF9CA3AF),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  fontSize: 13.sp,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildCardGridWithFilter(List<SellableCard> cards) {
-    final filteredCards = _selectedCategory.isEmpty
-        ? cards
-        : cards.where((c) => c.category == _selectedCategory).toList();
-
-    return Column(
-      children: [
-        SizedBox(height: 8.h),
-        _buildCountrySelector(),
-        SizedBox(height: 8.h),
-        // Pass the loaded `cards` so the chip set reflects what's
-        // actually in the catalogue for this country, not a stale
-        // hardcoded slug list.
-        _buildCategorySelector(cards),
-        SizedBox(height: 8.h),
-        Expanded(
-          child: filteredCards.isEmpty
-              ? _buildEmptyForCategory(_selectedCategory, cards.length)
-              : _buildCardGrid(filteredCards),
-        ),
-      ],
-    );
-  }
-
-  // _buildEmptyForCategory renders inline (with country + category
-  // selectors still visible above) when the catalog has cards but
-  // none match the active category filter. Distinct from
-  // _buildEmptyForCountry: the user has cards available — they just
-  // narrowed too far. The CTA clears the category to put them back
-  // on the full grid in one tap.
-  Widget _buildEmptyForCategory(String categorySlug, int totalCards) {
-    // Categories are now driven directly off the live catalogue —
-    // `_selectedCategory` IS the display label, no slug lookup needed.
-    final categoryLabel = categorySlug;
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.10),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.search_off_rounded,
-                size: 28.sp,
-                color: InvoiceThemeColors.primaryPurple,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'No cards in $categoryLabel',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              '$totalCards other cards are available — clear the category to see them all.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 13.sp,
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            TextButton.icon(
-              onPressed: () => setState(() => _selectedCategory = ''),
-              icon: const Icon(Icons.clear, size: 16),
-              label: const Text('Clear filter'),
-              style: TextButton.styleFrom(
-                foregroundColor: InvoiceThemeColors.primaryPurple,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardGrid(List<SellableCard> cards) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<GiftCardCubit>().loadSellableCards(countryCode: _selectedCountry);
-      },
-      color: InvoiceThemeColors.primaryPurple,
-      backgroundColor: const Color(0xFF1F1F1F),
-      child: GridView.builder(
-        padding: EdgeInsets.all(16.w),
-        physics: const AlwaysScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12.w,
-          mainAxisSpacing: 12.h,
-          childAspectRatio: 0.95,
-        ),
-        itemCount: cards.length,
-        itemBuilder: (context, index) {
-          final card = cards[index];
-          return GestureDetector(
-            onTap: () => setState(() {
-              _selectedCard = card;
-              _selectedDenomination = null;
-              _currentRate = null;
-              _currentStep = 1;
-            }),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: const Color(0xFF2D2D2D)),
-              ),
-              padding: EdgeInsets.all(14.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 48.h,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: CachedNetworkImage(
-                        imageUrl: card.logoUrl,
-                        fit: BoxFit.contain,
-                        placeholder: (context, url) => Icon(
-                          Icons.image_rounded,
-                          color: Colors.grey.shade400,
-                          size: 24.sp,
-                        ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.card_giftcard_rounded,
-                          color: Colors.grey.shade400,
-                          size: 24.sp,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    card.displayName,
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    card.currencies.join(', '),
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${card.currencies.isNotEmpty ? card.currencies.first : "USD"} ${card.minDenomination.toStringAsFixed(0)} - ${card.maxDenomination.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: InvoiceThemeColors.primaryPurple,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 
   // ============================================
@@ -1462,20 +1186,6 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     return true;
   }
 
-  // Required image count for the slot UI. Physical needs 2 (front +
-  // back), e-code needs 0 (optional screenshot). Other format
-  // strings fall back to 1 for back-compat with legacy rows.
-  int get _requiredImageCount {
-    switch (_selectedFormat) {
-      case 'physical':
-        return 2;
-      case 'ecode':
-        return 0;
-      default:
-        return 1;
-    }
-  }
-
   // Validation rules — mirror what the backend's SellGiftCard handler
   // checks at the boundary, plus a few client-side niceties so the
   // user sees specific errors before round-tripping to the server.
@@ -1533,7 +1243,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // Get-Rate CTA only while it's disabled, so the user always knows
   // what to address next without the button itself yelling nag copy.
   String _firstBlocker() {
-    if (_selectedDenomination == null) return 'Pick a denomination';
+    if (_selectedDenomination == null) {
+      // Free-entry cards show a typed amount field; fixed cards show
+      // pill chips — name the right action so the hint matches the UI.
+      return (_selectedCard?.denominations.isEmpty ?? true)
+          ? 'Enter an amount'
+          : 'Pick a denomination';
+    }
     if (_cardNumberController.text.trim().isEmpty) return 'Enter the card number';
     if (_validateCardNumberValue(_cardNumberController.text) != null) {
       return 'Card number looks invalid';
@@ -1934,7 +1650,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               ),
               child: Text(
                 _currentRate != null
-                    ? 'Sell for ${_formatCurrency(_currentRate!.payoutAmount)}'
+                    ? 'Sell for ${_formatCurrency(_currentRate!.payoutAmount, _payoutCurrencyCode)}'
                     : 'Sell Gift Card',
                 style: GoogleFonts.inter(
                   color: (_currentRate != null && _disclaimerAccepted)
@@ -2336,7 +2052,15 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     // the user had nothing to tap and the Get-Rate CTA stayed
     // disabled forever.
     if (denominations.isEmpty) {
-      final min = _selectedCard!.minDenomination;
+      // Prestmit sell amounts are free-entry INTEGERS: at least the
+      // card's minimum, at most the band max (the backend parses the
+      // band max off the card name into maxDenomination). Prestmit
+      // ships denominations[] empty and rejects fractional amounts, so
+      // the field is digits-only and bounded by [min, max].
+      final rawMin = _selectedCard!.minDenomination;
+      // Enforce a lower bound even when the catalogue omits a minimum:
+      // fall back to a sane floor of 1 so we never submit 0/negatives.
+      final min = rawMin > 0 ? rawMin : 1.0;
       final max = _selectedCard!.maxDenomination;
       final hint = max > 0
           ? 'Min $ccy ${min.toStringAsFixed(0)} · Max $ccy ${max.toStringAsFixed(0)}'
@@ -2348,22 +2072,22 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             fieldKey: const Key('sell_denomination_field'),
             controller: _denominationController,
             hintText: hint,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: false),
             errorText: _denominationError,
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              FilteringTextInputFormatter.digitsOnly,
             ],
             onChanged: (value) {
-              final parsed = double.tryParse(value.trim());
+              final trimmed = value.trim();
+              final parsed = int.tryParse(trimmed);
               setState(() {
                 if (parsed == null) {
-                  _denominationError = value.trim().isEmpty
-                      ? null
-                      : 'Enter a valid number';
+                  _denominationError =
+                      trimmed.isEmpty ? null : 'Enter a whole number';
                   _selectedDenomination = null;
                   return;
                 }
-                if (min > 0 && parsed < min) {
+                if (parsed < min) {
                   _denominationError = 'Minimum is $ccy ${min.toStringAsFixed(0)}';
                   _selectedDenomination = null;
                   return;
@@ -2374,7 +2098,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   return;
                 }
                 _denominationError = null;
-                _selectedDenomination = parsed;
+                _selectedDenomination = parsed.toDouble();
               });
             },
           ),
@@ -2486,7 +2210,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                       ),
                     ),
                     Text(
-                      '$symbol 1 = ${_formatCurrency(fxPerUnit)}',
+                      '$symbol 1 = ${_formatCurrency(fxPerUnit, _payoutCurrencyCode)}',
                       key: const Key('sell_fx_rate'),
                       style: GoogleFonts.inter(
                         color: Colors.white,
@@ -2550,7 +2274,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 // RenderFlex (an overflow is treated as an error in tests).
                 Flexible(
                   child: Text(
-                    '${_formatCurrency(_currentRate!.payoutLowerBound)} – ${_formatCurrency(_currentRate!.payoutUpperBound)}',
+                    '${_formatCurrency(_currentRate!.payoutLowerBound, _payoutCurrencyCode)} – ${_formatCurrency(_currentRate!.payoutUpperBound, _payoutCurrencyCode)}',
                     key: const Key('sell_payout_range'),
                     textAlign: TextAlign.end,
                     style: GoogleFonts.inter(
@@ -2582,7 +2306,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   ),
                 ),
                 Text(
-                  _formatCurrency(_currentRate!.payoutAmount),
+                  _formatCurrency(_currentRate!.payoutAmount, _payoutCurrencyCode),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 18.sp,
@@ -2685,161 +2409,6 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 72.w,
-              height: 72.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFB923C).withValues(alpha: 0.10),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.cloud_off_rounded,
-                size: 36.sp,
-                color: const Color(0xFFFB923C),
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              'Sell catalog temporarily unavailable',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 17.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              "We couldn't load the list of cards available for sale. This usually clears in a few minutes.",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton.icon(
-              onPressed: () => context
-                  .read<GiftCardCubit>()
-                  .loadSellableCards(countryCode: _selectedCountry),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Try again'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // _buildEmptyForCountry renders when the catalogue API succeeds but
-  // returns zero rows for the selected country (Prestmit doesn't list
-  // any cards under that ISO, e.g. Nigeria in the current sandbox).
-  // Distinct from _buildEmptyState (network/upstream failure) so the
-  // user understands the filter is the cause and isn't pushed to keep
-  // hitting "Try again" on a fundamentally empty result.
-  Widget _buildEmptyForCountry(String countryCode) {
-    final country = _sellCountries.firstWhere(
-      (c) => c['code'] == countryCode,
-      orElse: () => {'code': countryCode, 'name': countryCode, 'flag': '🌍'},
-    );
-    final flag = country['flag'] ?? '🌍';
-    final name = country['name'] ?? countryCode;
-
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 72.w,
-              height: 72.w,
-              decoration: BoxDecoration(
-                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(flag, style: TextStyle(fontSize: 32.sp)),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              'No cards available for $name',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 17.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              "We don't currently buy gift cards from this region. Try a different country, or check back later as our partners onboard new card types.",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            // Most cards in Prestmit's catalogue are USA-issued, so
-            // making "Switch to United States" the primary CTA gets
-            // the user back to a populated grid in one tap. The
-            // country selector at the top of the screen still lets
-            // them pick anything else.
-            if (countryCode != 'US')
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() => _selectedCountry = 'US');
-                  context.read<GiftCardCubit>().loadSellableCards(countryCode: 'US');
-                },
-                icon: const Text('🇺🇸', style: TextStyle(fontSize: 18)),
-                label: const Text('Switch to United States'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: InvoiceThemeColors.primaryPurple,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                ),
-              )
-            else
-              OutlinedButton.icon(
-                onPressed: () => context
-                    .read<GiftCardCubit>()
-                    .loadSellableCards(countryCode: countryCode),
-                icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Try again'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFF2D2D2D)),
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(String message) {
-    return GiftCardErrorWidget.fromRaw(
-      rawMessage: message,
-      onRetry: () => context.read<GiftCardCubit>().loadSellableCards(countryCode: _selectedCountry),
     );
   }
 
@@ -2954,14 +2523,26 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     );
   }
 
-  String _formatCurrency(double amount) {
+  // Payout currency code for the live rate. Reads rate.currency (NGN
+  // today, but a future non-NGN payout rail must render its own code)
+  // and falls back to NGN only when the server omitted it.
+  String get _payoutCurrencyCode =>
+      (_currentRate?.currency.trim().isNotEmpty ?? false)
+          ? _currentRate!.currency.trim().toUpperCase()
+          : 'NGN';
+
+  // Formats a payout/FX/range figure in the given currency code. The
+  // code is caller-supplied (from rate.currency via _payoutCurrencyCode)
+  // rather than hardcoded, so a non-NGN payout rail renders correctly.
+  String _formatCurrency(double amount, String currency) {
+    final code = currency.trim().isEmpty ? 'NGN' : currency.trim().toUpperCase();
     if (amount >= 1000) {
-      return 'NGN ${amount.toStringAsFixed(0).replaceAllMapped(
+      return '$code ${amount.toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
         (match) => '${match[1]},',
       )}';
     }
-    return 'NGN ${amount.toStringAsFixed(2)}';
+    return '$code ${amount.toStringAsFixed(2)}';
   }
 
   // ============================================
