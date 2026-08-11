@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lazervault/core/utils/image_compressor.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
@@ -1313,10 +1314,27 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         _isUploadingImage = true;
       });
 
+      // Compress before upload: downscale the longest edge toward ~1600px and
+      // re-encode JPEG@80 (PNG stays lossless). This cuts upload bandwidth and
+      // guarantees the payload lands well under Prestmit's 5MB/attachment cap.
+      // Compression NEVER blocks: on any failure it returns the original bytes.
+      final inputCt = filename.toLowerCase().endsWith('.png')
+          ? 'image/png'
+          : 'image/jpeg';
+      final compressed = await ImageCompressor.compressForUpload(
+        bytes,
+        contentType: inputCt,
+        maxEdge: 1600,
+        jpegQuality: 80,
+      );
+      final uploadBytes = compressed.bytes;
+      final uploadFilename =
+          ImageCompressor.alignedFilename(filename, compressed.contentType);
+
       if (!mounted) return;
       context.read<GiftCardCubit>().uploadSellImage(
-        imageBytes: bytes,
-        filename: filename,
+        imageBytes: uploadBytes,
+        filename: uploadFilename,
       );
     } catch (e) {
       if (mounted) {
