@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
@@ -104,7 +105,12 @@ class _DashboardHeaderState extends State<DashboardHeader>
             // actions (view full screen / change photo / account / settings)
             // live on the avatar INSIDE the drawer. Renders brand-purple
             // initials when no picture is set.
-            GestureDetector(
+            DashboardWalkthrough.step(
+              key: DashboardWalkthrough.avatarKey,
+              title: 'Your profile',
+              body:
+                  'Tap your photo to open your profile — update your picture, reach settings and support.',
+              child: GestureDetector(
               onTap: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -131,6 +137,7 @@ class _DashboardHeaderState extends State<DashboardHeader>
                 ),
               ),
             ),
+            ),
             Spacer(),
             // Country Selector (the locale dropdown — single source for the
             // active region/currency; the separate currency badge that sat here
@@ -138,11 +145,22 @@ class _DashboardHeaderState extends State<DashboardHeader>
             _buildCountrySelector(context),
             SizedBox(width: 8.w),
             // Action Icons
-            _buildIconButton(Icons.notifications_outlined, context),
-            SizedBox(width: 8.w),
-            _buildIconButton(Icons.mic_rounded, context),
-            SizedBox(width: 8.w),
-            _buildIconButton(Icons.settings_outlined, context),
+            DashboardWalkthrough.step(
+              key: DashboardWalkthrough.topIconsKey,
+              title: 'Quick access',
+              body:
+                  'Your voice assistant, notifications and settings all live up here.',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildIconButton(Icons.notifications_outlined, context),
+                  SizedBox(width: 8.w),
+                  _buildIconButton(Icons.mic_rounded, context),
+                  SizedBox(width: 8.w),
+                  _buildIconButton(Icons.settings_outlined, context),
+                ],
+              ),
+            ),
           ],
         );
       },
@@ -480,18 +498,31 @@ class _DashboardHeaderState extends State<DashboardHeader>
     if (authState is! AuthenticationSuccess) return;
     final userId = authState.profile.userId;
 
-    // Check enrollment status
-    final isEnrolled = await activationManager.isVoiceEnrolled(userId);
+    // Classify the enrollment check. An outage / timeout / 5xx must NEVER fall
+    // through to the "set up voice" prompt for an already-enrolled user — that
+    // shows the shared temporarily-unavailable modal instead (with Retry).
+    while (true) {
+      final outcome = await activationManager.checkEnrollmentOutcome(userId);
+      if (!context.mounted) return;
 
-    if (!context.mounted) return;
+      if (outcome == VoiceEnrollmentCheck.unavailable) {
+        final retry =
+            await VoiceActivationManager.showVoiceUnavailableModal(context);
+        if (retry && context.mounted) {
+          continue; // re-check (unavailable was never cached)
+        }
+        return;
+      }
 
-    if (!isEnrolled) {
-      // Show enrollment prompt dialog FIRST (not inside a bottom sheet)
-      final activated = await activationManager.activateVoice(
-        context,
-        userId,
-      );
-      if (!activated || !context.mounted) return;
+      if (outcome == VoiceEnrollmentCheck.notEnrolled) {
+        // DEFINITIVE not-enrolled → the enrollment prompt is correct here.
+        final activated = await activationManager.activateVoice(
+          context,
+          userId,
+        );
+        if (!activated || !context.mounted) return;
+      }
+      break; // enrolled, or enrollment just completed
     }
 
     // Only open the bottom sheet after enrollment is confirmed.

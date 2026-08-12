@@ -11,7 +11,32 @@ import 'package:google_fonts/google_fonts.dart';
 class MaintenanceModal extends StatefulWidget {
   final Future<void> Function() onRetry;
 
-  const MaintenanceModal({super.key, required this.onRetry});
+  /// Optional overrides so the SAME styled modal can be reused for other
+  /// "temporarily unavailable" surfaces (e.g. the voice assistant) without
+  /// forking the component. All default to the backend-maintenance copy.
+  final IconData icon;
+  final String title;
+  final String message;
+  final String retryLabel;
+
+  /// When provided, a secondary dismiss ("Later") button is shown and this is
+  /// invoked on tap. The gate's full-app barrier leaves this null (you cannot
+  /// dismiss a real backend outage); optional/non-blocking surfaces pass it so
+  /// the user can close and carry on.
+  final VoidCallback? onClose;
+
+  const MaintenanceModal({
+    super.key,
+    required this.onRetry,
+    this.icon = Icons.construction_rounded,
+    this.title = 'Under maintenance',
+    this.message =
+        'Our servers are being worked on right now. Your money and '
+        'data are safe. Please hold on a moment while we get things '
+        'back up.',
+    this.retryLabel = 'Try again',
+    this.onClose,
+  });
 
   @override
   State<MaintenanceModal> createState() => _MaintenanceModalState();
@@ -63,14 +88,14 @@ class _MaintenanceModalState extends State<MaintenanceModal> {
                       ),
                     ),
                     child: Icon(
-                      Icons.construction_rounded,
+                      widget.icon,
                       color: const Color(0xFF3B82F6),
                       size: 38.sp,
                     ),
                   ),
                   SizedBox(height: 22.h),
                   Text(
-                    'Under maintenance',
+                    widget.title,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: Colors.white,
@@ -80,9 +105,7 @@ class _MaintenanceModalState extends State<MaintenanceModal> {
                   ),
                   SizedBox(height: 10.h),
                   Text(
-                    'Our servers are being worked on right now. Your money and '
-                    'data are safe. Please hold on a moment while we get things '
-                    'back up.',
+                    widget.message,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF),
@@ -115,7 +138,7 @@ class _MaintenanceModalState extends State<MaintenanceModal> {
                               ),
                             )
                           : Text(
-                              'Try again',
+                              widget.retryLabel,
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 15.sp,
@@ -124,6 +147,26 @@ class _MaintenanceModalState extends State<MaintenanceModal> {
                             ),
                     ),
                   ),
+                  if (widget.onClose != null) ...[
+                    SizedBox(height: 8.h),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: _retrying ? null : widget.onClose,
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                        ),
+                        child: Text(
+                          'Later',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

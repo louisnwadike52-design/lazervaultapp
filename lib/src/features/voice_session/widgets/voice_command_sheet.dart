@@ -252,44 +252,51 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       return;
     }
 
-    try {
-      final activated = await _voiceActivationManager.activateVoice(
-        context,
-        userId,
-        onSuccess: () {
-          if (mounted) {
-            setState(() => _isCheckingEnrollment = false);
-            _proceedAfterEnrollment();
-          }
-        },
-      );
+    // Classify the enrollment check. A connection / server / timeout failure
+    // (or an ambiguous status) must NEVER fall through to the "set up voice"
+    // prompt for an already-enrolled user — it shows the shared
+    // temporarily-unavailable modal (Retry re-checks, Later closes the sheet).
+    final outcome = await _voiceActivationManager.checkEnrollmentOutcome(userId);
+    if (!mounted) return;
 
-      if (!activated && mounted) {
-        // User cancelled enrollment or dismissed prompt - close the sheet
-        print('VoiceCommandSheet: Activation not completed, closing sheet');
+    if (outcome == VoiceEnrollmentCheck.unavailable) {
+      print('VoiceCommandSheet: Enrollment check unavailable — showing modal');
+      final retry =
+          await VoiceActivationManager.showVoiceUnavailableModal(context);
+      if (!mounted) return;
+      if (retry) {
+        _checkVoiceActivation(); // re-check (unavailable was never cached)
+      } else {
         setState(() => _isCheckingEnrollment = false);
         Navigator.of(context).pop();
       }
-    } catch (e) {
-      // Show error to user if enrollment check fails
-      print('VoiceCommandSheet: Error during activation check: $e');
-      if (mounted) {
-        setState(() => _isCheckingEnrollment = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Voice activation error: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'Close',
-              textColor: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        );
-      }
+      return;
+    }
+
+    if (outcome == VoiceEnrollmentCheck.enrolled) {
+      // Already enrolled → straight into the session.
+      setState(() => _isCheckingEnrollment = false);
+      _proceedAfterEnrollment();
+      return;
+    }
+
+    // DEFINITIVE not-enrolled → the enrollment prompt is correct here.
+    final activated = await _voiceActivationManager.activateVoice(
+      context,
+      userId,
+      onSuccess: () {
+        if (mounted) {
+          setState(() => _isCheckingEnrollment = false);
+          _proceedAfterEnrollment();
+        }
+      },
+    );
+
+    if (!activated && mounted) {
+      // User cancelled enrollment or dismissed prompt - close the sheet
+      print('VoiceCommandSheet: Activation not completed, closing sheet');
+      setState(() => _isCheckingEnrollment = false);
+      Navigator.of(context).pop();
     }
   }
 
@@ -801,15 +808,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               backgroundColor: const Color(0xFFEF4444),
             ),
           );
-        } else if (state is VoiceSessionClosedByAgent) {
-          // The agent ended the call (user said "goodbye"/"end the call", idle timeout,
-          // etc.) and asked us to CLOSE the screen — pop the bottom sheet entirely.
+        } else if (state is VoiceSessionEnded) {
+          // The call ended — manual OR agent-initiated (the agent's
+          // voice_session_ended now routes through the SAME endSession path, so
+          // both show the call-ended / rating view built below). Make the two
+          // identical at the UI layer: dismiss any open dialog (PIN pad,
+          // transfer summary, user search) and clear mic-mute before the rating
+          // view renders. Idempotent — the manual _endCall already did this, so
+          // running again is harmless.
           _dismissActiveDialog();
           _resetMuteState();
-          if (!_isClosing && mounted) {
-            _isClosing = true;
-            Navigator.of(context, rootNavigator: true).pop();
-          }
         } else if (state is VoiceSessionDisconnected) {
           // Dismiss any open dialogs when room disconnects
           _dismissActiveDialog();
@@ -3833,8 +3841,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// path uses (tap → full-screen receipt with download/share), instead of just
   /// a snackbar. Mirrors general_chat_content: prefer the structured
   /// `receipt_card` (ChatReceiptCardV2 → native receipt screen via deeplink),
-  /// else the legacy `receipt_data` shape (ChatReceiptCard → FullScreenReceiptView
-  /// with built-in PDF download + share). Failures keep the error snackbar.
+  /// else the legacy `receipt_data` shape (ChatReceiptCard → the shared
+  /// UnifiedTransactionReceipt with logo, QR/barcode + bottom Share/Download).
+  /// Failures keep the error snackbar.
   void _showReceiptSheet(Map<String, dynamic> result) {
     if (!mounted) return;
     final success = result['success'] as bool? ?? true;

@@ -154,13 +154,29 @@ class ServiceVoiceButton extends StatelessWidget {
     if (userId == null || userId.isEmpty) return;
     if (!context.mounted) return;
 
-    final isEnrolled = await activationManager.isVoiceEnrolled(userId);
-    if (!context.mounted) return;
+    // SAME tri-state classification the dashboard mic runs. A connection /
+    // server / LiveKit / timeout failure (or an ambiguous status) shows the
+    // shared temporarily-unavailable modal — NOT the enrollment prompt — so an
+    // already-enrolled user is never wrongly told to re-enroll during an outage.
+    while (true) {
+      final outcome = await activationManager.checkEnrollmentOutcome(userId);
+      if (!context.mounted) return;
 
-    if (!isEnrolled) {
-      // The SAME enrollment prompt the dashboard mic shows.
-      final activated = await activationManager.activateVoice(context, userId);
-      if (!activated || !context.mounted) return;
+      if (outcome == VoiceEnrollmentCheck.unavailable) {
+        final retry =
+            await VoiceActivationManager.showVoiceUnavailableModal(context);
+        if (retry && context.mounted) {
+          continue; // re-check (unavailable was never cached)
+        }
+        return;
+      }
+
+      if (outcome == VoiceEnrollmentCheck.notEnrolled) {
+        // The SAME enrollment prompt the dashboard mic shows.
+        final activated = await activationManager.activateVoice(context, userId);
+        if (!activated || !context.mounted) return;
+      }
+      break; // enrolled, or enrollment just completed
     }
 
     // Activation confirmed above, so the sheet skips its own re-check —

@@ -6,8 +6,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/src/features/app_status/widgets/maintenance_screen.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
+
+/// Classified result of an enrollment-status check. The mic entry points MUST
+/// branch on this instead of a bare bool, because "not enrolled" and "we could
+/// not find out" are completely different outcomes:
+///   - [enrolled]     → a DEFINITIVE backend 200/404 says a voiceprint exists.
+///   - [notEnrolled]  → a DEFINITIVE backend 200/404 says no voiceprint exists.
+///                      ONLY this shows the "set up / re-enroll voice" prompt.
+///   - [unavailable]  → ANY transport error (offline/timeout/DNS), 5xx, gRPC
+///                      Unavailable, or an otherwise ambiguous/unknown response.
+///                      Shows "Voice is temporarily unavailable" — NEVER the
+///                      enrollment prompt (an enrolled user must never be told
+///                      to re-enroll because of an outage).
+enum VoiceEnrollmentCheck { enrolled, notEnrolled, unavailable }
 
 /// Voice Activation Manager
 /// Orchestrates voice enrollment flow.
@@ -66,24 +80,71 @@ class VoiceActivationManager {
       return false;
     }
   }
-  /// Check if user has enrolled voice
-  Future<bool> isVoiceEnrolled(String userId) async {
+  /// DEFINITIVE tri-state enrollment check. This is the SINGLE classification
+  /// point the mic entry points use so an outage is never mistaken for
+  /// "not enrolled".
+  ///
+  /// Only a real backend answer ([VoiceBiometricsService.checkEnrollmentStatus]
+  /// resolves — which happens ONLY for a 200 or a 404) becomes
+  /// [VoiceEnrollmentCheck.enrolled]/[notEnrolled] and is cached. Every failure
+  /// mode the service throws — [VoiceBiometricsNetworkException] (offline /
+  /// timeout / gRPC Unavailable / connection reset), [VoiceBiometricsServerException]
+  /// (5xx), or a bare [VoiceBiometricsException] (unexpected 4xx / malformed /
+  /// empty body) — and any unforeseen error map to [unavailable] and are NEVER
+  /// cached (transient).
+  Future<VoiceEnrollmentCheck> checkEnrollmentOutcome(String userId) async {
     final cached = _enrollmentCache[userId];
     if (cached != null && !cached.isExpired) {
-      return cached.isEnrolled;
+      return cached.isEnrolled
+          ? VoiceEnrollmentCheck.enrolled
+          : VoiceEnrollmentCheck.notEnrolled;
     }
     try {
       final status = await _voiceService.checkEnrollmentStatus(userId);
       print('VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
       _enrollmentCache[userId] = _EnrollmentCacheEntry(status.isEnrolled);
-      return status.isEnrolled;
+      return status.isEnrolled
+          ? VoiceEnrollmentCheck.enrolled
+          : VoiceEnrollmentCheck.notEnrolled;
     } catch (e) {
-      // Log the error for debugging
-      print('VoiceActivationManager: Error checking enrollment status: $e');
-      // On error, assume not enrolled to be safe. Do NOT cache this — it is a
-      // transient failure, not a confirmed "not enrolled" answer.
-      return false;
+      // Transport error / 5xx / ambiguous — NOT a confirmed "not enrolled".
+      // Report as temporarily unavailable and DO NOT cache.
+      print('VoiceActivationManager: Enrollment check unavailable (transient): $e');
+      return VoiceEnrollmentCheck.unavailable;
     }
+  }
+
+  /// Check if user has enrolled voice. Kept for existing callers that only need
+  /// a bool; it now delegates to [checkEnrollmentOutcome] so behaviour stays
+  /// identical (an [unavailable] outcome still reads as `false` for these older
+  /// call sites). New mic entry points use [checkEnrollmentOutcome] directly so
+  /// they can distinguish an outage from a genuine not-enrolled answer.
+  Future<bool> isVoiceEnrolled(String userId) async {
+    final outcome = await checkEnrollmentOutcome(userId);
+    return outcome == VoiceEnrollmentCheck.enrolled;
+  }
+
+  /// Show the shared "temporarily unavailable" modal for the voice assistant,
+  /// reusing the backend-maintenance [MaintenanceModal] component + styling for
+  /// visual consistency. Returns `true` if the user tapped Try again (the
+  /// caller should re-run the flow), `false` if they dismissed it.
+  static Future<bool> showVoiceUnavailableModal(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.transparent, // the modal draws its own scrim
+      builder: (dialogContext) => MaintenanceModal(
+        icon: Icons.mic_off_rounded,
+        title: 'Voice is temporarily unavailable',
+        message:
+            'We couldn\'t reach the voice assistant just now. Your account and '
+            'money are safe — please try again in a moment.',
+        retryLabel: 'Try again',
+        onRetry: () async => Navigator.of(dialogContext).pop(true),
+        onClose: () => Navigator.of(dialogContext).pop(false),
+      ),
+    );
+    return result ?? false;
   }
 
   /// Activate voice features - check enrollment and prompt if needed.
