@@ -4609,6 +4609,202 @@ class GetDataPlansResponse extends $pb.GeneratedMessage {
   void clearTotal() => $_clearField(2);
 }
 
+// ===== BILL SERVICE CATALOGUE =====
+// Hand-added (mirrors the microservice utility-payments.proto GetBillServices
+// RPC) so the app can data-drive the Bills hub and hide admin-disabled or
+// unfulfillable bill types. See utility-payments.pbgrpc.dart for the RPC.
+
+class GetBillServicesRequest extends $pb.GeneratedMessage {
+  factory GetBillServicesRequest() => create();
+
+  GetBillServicesRequest._();
+
+  factory GetBillServicesRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetBillServicesRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetBillServicesRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetBillServicesRequest clone() =>
+      GetBillServicesRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetBillServicesRequest copyWith(
+          void Function(GetBillServicesRequest) updates) =>
+      super.copyWith((message) => updates(message as GetBillServicesRequest))
+          as GetBillServicesRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetBillServicesRequest create() => GetBillServicesRequest._();
+  @$core.override
+  GetBillServicesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetBillServicesRequest> createRepeated() =>
+      $pb.PbList<GetBillServicesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetBillServicesRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetBillServicesRequest>(create);
+  static GetBillServicesRequest? _defaultInstance;
+}
+
+/// BillService is one bill-payment type's effective-enabled state.
+class BillService extends $pb.GeneratedMessage {
+  factory BillService({
+    $core.String? type,
+    $core.String? label,
+    $core.bool? enabled,
+    $core.String? disabledReason,
+  }) {
+    final result = create();
+    if (type != null) result.type = type;
+    if (label != null) result.label = label;
+    if (enabled != null) result.enabled = enabled;
+    if (disabledReason != null) result.disabledReason = disabledReason;
+    return result;
+  }
+
+  BillService._();
+
+  factory BillService.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory BillService.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BillService',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'type')
+    ..aOS(2, _omitFieldNames ? '' : 'label')
+    ..aOB(3, _omitFieldNames ? '' : 'enabled')
+    ..aOS(4, _omitFieldNames ? '' : 'disabledReason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BillService clone() => BillService()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BillService copyWith(void Function(BillService) updates) =>
+      super.copyWith((message) => updates(message as BillService))
+          as BillService;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BillService create() => BillService._();
+  @$core.override
+  BillService createEmptyInstance() => create();
+  static $pb.PbList<BillService> createRepeated() =>
+      $pb.PbList<BillService>();
+  @$core.pragma('dart2js:noInline')
+  static BillService getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BillService>(create);
+  static BillService? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get type => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set type($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearType() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get label => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set label($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLabel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLabel() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get enabled => $_getBF(2);
+  @$pb.TagNumber(3)
+  set enabled($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasEnabled() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEnabled() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get disabledReason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set disabledReason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDisabledReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDisabledReason() => $_clearField(4);
+}
+
+class GetBillServicesResponse extends $pb.GeneratedMessage {
+  factory GetBillServicesResponse({
+    $core.Iterable<BillService>? services,
+  }) {
+    final result = create();
+    if (services != null) result.services.addAll(services);
+    return result;
+  }
+
+  GetBillServicesResponse._();
+
+  factory GetBillServicesResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetBillServicesResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetBillServicesResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'),
+      createEmptyInstance: create)
+    ..pc<BillService>(1, _omitFieldNames ? '' : 'services', $pb.PbFieldType.PM,
+        subBuilder: BillService.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetBillServicesResponse clone() =>
+      GetBillServicesResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetBillServicesResponse copyWith(
+          void Function(GetBillServicesResponse) updates) =>
+      super.copyWith((message) => updates(message as GetBillServicesResponse))
+          as GetBillServicesResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetBillServicesResponse create() => GetBillServicesResponse._();
+  @$core.override
+  GetBillServicesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetBillServicesResponse> createRepeated() =>
+      $pb.PbList<GetBillServicesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetBillServicesResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetBillServicesResponse>(create);
+  static GetBillServicesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<BillService> get services => $_getList(0);
+}
+
 /// NOTE: user_id extracted from JWT token, not from request
 class BuyDataRequest extends $pb.GeneratedMessage {
   factory BuyDataRequest({

@@ -62,6 +62,16 @@ service UtilityPaymentsService {
     };
   }
 
+  // Get the bill-service catalogue with each type's effective-enabled state.
+  // enabled = admin flag (service_<type>_enabled, default true) AND the type
+  // has at least one active provider/mapping. The app consumes this single
+  // endpoint to hide services that are admin-disabled or unfulfillable.
+  rpc GetBillServices(GetBillServicesRequest) returns (GetBillServicesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/services"
+    };
+  }
+
   // === SMART PAYMENT FEATURES ===
 
   // Pay by scanning barcode (barcodeQuickPay from AppServiceName)
@@ -1493,6 +1503,22 @@ message GetDataPlansRequest {
 message GetDataPlansResponse {
   repeated DataPlan plans = 1;
   int32 total = 2;
+}
+
+// ===== BILL SERVICE CATALOGUE =====
+
+message GetBillServicesRequest {}
+
+// BillService is one bill-payment type's effective-enabled state.
+message BillService {
+  string type = 1;            // "electricity", "airtime", "data", "cable_tv", "internet", "water", "education"
+  string label = 2;          // Display label, e.g. "Cable TV"
+  bool enabled = 3;          // admin flag AND has at least one active provider/mapping
+  string disabled_reason = 4; // "admin_disabled" | "no_active_provider" | "" when enabled
+}
+
+message GetBillServicesResponse {
+  repeated BillService services = 1;
 }
 
 // NOTE: user_id extracted from JWT token, not from request

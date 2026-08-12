@@ -1,75 +1,163 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
 
-class BillsHubScreen extends StatelessWidget {
+class BillsHubScreen extends StatefulWidget {
   const BillsHubScreen({super.key});
 
   @override
+  State<BillsHubScreen> createState() => _BillsHubScreenState();
+}
+
+class _BillsHubScreenState extends State<BillsHubScreen> {
+  // Static tile registry — the type→(icon, route, copy) map is a client
+  // concern and never comes from the backend. `type` matches the bill-service
+  // catalogue's type string (see GetBillServices); `defaultVisible` is the
+  // tile's visibility when the catalogue can't be consulted (fetch error /
+  // timeout) or when the catalogue doesn't govern this type at all.
+  //
+  // The catalogue only governs: electricity, airtime, data, cable_tv,
+  // internet, water, education. ePIN and betting are NOT in the catalogue, so
+  // they are always shown (defaultVisible = true) regardless of the response.
+  // Water defaults to hidden so a fetch failure never re-surfaces it (it only
+  // appears when the catalogue explicitly reports it enabled).
+  static const List<_BillType> _allTiles = [
+    _BillType(
+      type: 'airtime',
+      icon: Icons.phone_android,
+      title: 'Airtime',
+      description: 'Top up any network',
+      route: AppRoutes.airtime,
+    ),
+    _BillType(
+      type: 'data',
+      icon: Icons.wifi,
+      title: 'Data Bundles',
+      description: 'MTN, Airtel, Glo, 9mobile',
+      route: AppRoutes.dataBundlesHome,
+    ),
+    _BillType(
+      type: 'electricity',
+      icon: Icons.electric_bolt,
+      title: 'Electricity',
+      description: 'Prepaid & postpaid bills',
+      route: AppRoutes.electricityBillHome,
+    ),
+    _BillType(
+      type: 'cable_tv',
+      icon: Icons.tv,
+      title: 'Cable TV',
+      description: 'DStv, GOtv, Startimes',
+      route: AppRoutes.cableTVHome,
+    ),
+    _BillType(
+      type: 'internet',
+      icon: Icons.router,
+      title: 'Internet',
+      description: 'Smile, Spectranet & more',
+      route: AppRoutes.internetBillHome,
+    ),
+    _BillType(
+      type: 'water',
+      icon: Icons.water_drop,
+      title: 'Water Bill',
+      description: 'Water corporation bills',
+      route: AppRoutes.waterBillHome,
+      defaultVisible: false,
+    ),
+    _BillType(
+      type: 'education',
+      icon: Icons.school,
+      title: 'Education PINs',
+      description: 'WAEC, NECO & JAMB PINs',
+      route: AppRoutes.educationHome,
+    ),
+    _BillType(
+      type: 'epin',
+      icon: Icons.confirmation_number,
+      title: 'Recharge card printing',
+      description: 'Generate airtime PINs',
+      route: AppRoutes.epinHome,
+    ),
+    _BillType(
+      type: 'betting',
+      icon: Icons.sports_soccer,
+      title: 'Fund betting account',
+      description: 'Top up your betting wallet',
+      route: AppRoutes.bettingHome,
+    ),
+  ];
+
+  bool _loading = true;
+  // Effective-enabled state keyed by bill type, populated from GetBillServices.
+  // Empty + `_hasCatalogue == false` means we could not reach the service and
+  // must fall back to each tile's defaultVisible.
+  Map<String, bool> _enabledByType = const {};
+  bool _hasCatalogue = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServices();
+  }
+
+  Future<void> _loadServices() async {
+    try {
+      // Utility payments rides the commerce gRPC client (same instance the
+      // data-bundle / betting datasources use for GetDataPlans etc.).
+      final client =
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient');
+      final options = await client.callOptions;
+      final resp = await client.utilityPaymentsClient
+          .getBillServices(pb.GetBillServicesRequest(), options: options)
+          .timeout(const Duration(seconds: 8));
+
+      final map = <String, bool>{
+        for (final s in resp.services) s.type: s.enabled,
+      };
+      if (!mounted) return;
+      setState(() {
+        _enabledByType = map;
+        _hasCatalogue = true;
+        _loading = false;
+      });
+    } catch (_) {
+      // Never blank the hub: on any error/timeout, fall back to the default
+      // tile set (every tile's defaultVisible).
+      if (!mounted) return;
+      setState(() {
+        _enabledByType = const {};
+        _hasCatalogue = false;
+        _loading = false;
+      });
+    }
+  }
+
+  // A tile is visible when the catalogue reports its type enabled. Types the
+  // catalogue doesn't govern (ePIN, betting) — and the whole grid when the
+  // catalogue is unavailable — fall back to defaultVisible.
+  bool _isVisible(_BillType b) {
+    if (_hasCatalogue) {
+      final enabled = _enabledByType[b.type];
+      if (enabled != null) return enabled;
+    }
+    return b.defaultVisible;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bills = <_BillType>[
-      _BillType(
-        icon: Icons.phone_android,
-        title: 'Airtime',
-        description: 'Top up any network',
-        route: AppRoutes.airtime,
-      ),
-      _BillType(
-        icon: Icons.wifi,
-        title: 'Data Bundles',
-        description: 'MTN, Airtel, Glo, 9mobile',
-        route: AppRoutes.dataBundlesHome,
-      ),
-      _BillType(
-        icon: Icons.electric_bolt,
-        title: 'Electricity',
-        description: 'Prepaid & postpaid bills',
-        route: AppRoutes.electricityBillHome,
-      ),
-      _BillType(
-        icon: Icons.tv,
-        title: 'Cable TV',
-        description: 'DStv, GOtv, Startimes',
-        route: AppRoutes.cableTVHome,
-      ),
-      _BillType(
-        icon: Icons.router,
-        title: 'Internet',
-        description: 'Smile, Spectranet & more',
-        route: AppRoutes.internetBillHome,
-      ),
-      // Water Bill hidden from the Bills Hub for now (re-enable by uncommenting).
-      // _BillType(
-      //   icon: Icons.water_drop,
-      //   title: 'Water Bill',
-      //   description: 'Water corporation bills',
-      //   route: AppRoutes.waterBillHome,
-      // ),
-      _BillType(
-        icon: Icons.school,
-        title: 'Education PINs',
-        description: 'WAEC, NECO & JAMB PINs',
-        route: AppRoutes.educationHome,
-      ),
-      _BillType(
-        icon: Icons.confirmation_number,
-        title: 'Recharge card printing',
-        description: 'Generate airtime PINs',
-        route: AppRoutes.epinHome,
-      ),
-      _BillType(
-        icon: Icons.sports_soccer,
-        title: 'Fund betting account',
-        description: 'Top up your betting wallet',
-        route: AppRoutes.bettingHome,
-      ),
-    ];
+    final bills = _allTiles.where(_isVisible).toList();
 
     return PopScope(
       // OS/Android back button routes to the dashboard, matching the
@@ -143,27 +231,40 @@ class BillsHubScreen extends StatelessWidget {
             children: [
               _buildHeaderCard(),
               SizedBox(height: 16.h),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12.w,
-                  mainAxisSpacing: 12.h,
-                  // Compact tiles so all 8 bill types fit on screen at a glance.
-                  childAspectRatio: 1.18,
+              if (_loading)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 48.h),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        InvoiceThemeColors.primaryPurple,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12.w,
+                    mainAxisSpacing: 12.h,
+                    // Compact tiles so bill types fit on screen at a glance.
+                    childAspectRatio: 1.18,
+                  ),
+                  itemCount: bills.length,
+                  itemBuilder: (context, index) {
+                    final b = bills[index];
+                    return _BillTile(
+                      icon: b.icon,
+                      title: b.title,
+                      description: b.description,
+                      onTap: () => Get.toNamed(b.route),
+                    );
+                  },
                 ),
-                itemCount: bills.length,
-                itemBuilder: (context, index) {
-                  final b = bills[index];
-                  return _BillTile(
-                    icon: b.icon,
-                    title: b.title,
-                    description: b.description,
-                    onTap: () => Get.toNamed(b.route),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -241,16 +342,24 @@ class BillsHubScreen extends StatelessWidget {
 }
 
 class _BillType {
+  /// Bill-service catalogue type string (matches GetBillServices `type`).
+  final String type;
   final IconData icon;
   final String title;
   final String description;
   final String route;
 
+  /// Visibility when the catalogue can't be consulted (fetch error/timeout)
+  /// or doesn't govern this type. Water defaults hidden; everything else shown.
+  final bool defaultVisible;
+
   const _BillType({
+    required this.type,
     required this.icon,
     required this.title,
     required this.description,
     required this.route,
+    this.defaultVisible = true,
   });
 }
 
