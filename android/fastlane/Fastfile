@@ -8,6 +8,42 @@ end
 
 # --- Durable env-file strategy + Shorebird release --------------------------
 require "fileutils"
+require "shellwords"
+require "tmpdir"
+
+# Locate an NDK `llvm-readelf` (any installed NDK / host works — we only read
+# section headers). Used to PROVE an AAB's native libs are stripped.
+def ndk_readelf
+  sdk = ENV["ANDROID_HOME"] || ENV["ANDROID_SDK_ROOT"] ||
+        File.join(Dir.home, "Library/Android/sdk")
+  Dir.glob(File.join(sdk, "ndk/*/toolchains/llvm/prebuilt/*/bin/llvm-readelf")).sort.last
+end
+
+# True IFF the built AAB exists AND every base/lib/<abi>/libapp.so it contains
+# carries NO DWARF debug sections (i.e. gradle already stripped them).
+#
+# Why this exists: on this toolchain (Android build-tools 37 / cmdline-tools
+# emitting "SDK XML v4"), `flutter build appbundle` PRODUCES a correct,
+# fully-stripped, R8-shrunk AAB and THEN a spurious post-build check prints
+# "Release app bundle failed to strip debug symbols from native libraries" and
+# exits non-zero — aborting the deploy before upload. This lets the lane
+# distinguish that false alarm (AAB present + verifiably stripped → proceed)
+# from a genuine build failure (AAB absent or libs still carry DWARF → re-raise).
+def aab_native_libs_stripped?(flavor)
+  aab = aab_for(flavor)
+  return false unless File.exist?(aab)
+  readelf = ndk_readelf
+  return false unless readelf && File.exist?(readelf)
+  Dir.mktmpdir do |dir|
+    system("unzip", "-qo", aab, "base/lib/*/libapp.so", "-d", dir)
+    libs = Dir.glob(File.join(dir, "base/lib/*/libapp.so"))
+    return false if libs.empty?
+    libs.all? do |lib|
+      out = `#{readelf.shellescape} --section-headers #{lib.shellescape} 2>/dev/null`
+      !out.match?(/\.debug_|\.dwarf/)
+    end
+  end
+end
 
 # `.env` is a bundled Flutter asset (pubspec assets: - .env), so the backend
 # config is baked in at BUILD time. Rule (per ops): every STORE build
@@ -54,7 +90,19 @@ def build_release_aab(flavor, use_shorebird)
     UI.message("build: Shorebird release (patch-capable) for #{flavor}")
     shorebird_release_aab(flavor)
   else
-    flutter("build appbundle --flavor #{flavor} --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{COMPRESSION_FLAGS}")
+    begin
+      flutter("build appbundle --flavor #{flavor} --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{COMPRESSION_FLAGS}")
+    rescue => e
+      # `flutter build` can exit non-zero on a SPURIOUS post-build native-strip
+      # check even after gradle produced a correct, fully-stripped AAB (see
+      # aab_native_libs_stripped?). Swallow that false alarm ONLY when the AAB is
+      # present and its native libs are verifiably DWARF-free; otherwise the
+      # failure is real → re-raise so the deploy aborts.
+      raise e unless aab_native_libs_stripped?(flavor)
+      UI.important("flutter build exited non-zero on the post-build strip check, " \
+                   "but the AAB is present and its native libs are verified " \
+                   "stripped (0 DWARF sections) — treating as success.")
+    end
   end
 end
 
