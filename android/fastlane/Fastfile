@@ -68,7 +68,7 @@ SHOREBIRD_FLUTTER_ARGS = "--tree-shake-icons --obfuscate --split-debug-info=#{FL
 SHOREBIRD_FLUTTER_VERSION = "3.44.2".freeze
 def shorebird_release_aab(flavor)
   Dir.chdir(FLUTTER_DIR) do
-    sh("shorebird release android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --artifact aab --no-confirm " \
+    sh("shorebird release android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --artifact aab " \
        "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
   end
 end
@@ -77,7 +77,7 @@ end
 # release. No AAB, no store upload — live on devices in minutes.
 def shorebird_patch_android(flavor)
   Dir.chdir(FLUTTER_DIR) do
-    sh("shorebird patch android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --no-confirm " \
+    sh("shorebird patch android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
        "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
   end
 end

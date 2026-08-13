@@ -93,10 +93,17 @@ SHOREBIRD_FLUTTER_VERSION = "3.44.2".freeze
 def shorebird_release_ios(flavor, ver_name, ver_build)
   Bundler.with_unbundled_env do
     Dir.chdir(FLUTTER_DIR) do
-      sh("shorebird release ios --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --no-confirm " \
-         "-- --build-name=#{ver_name} --build-number=#{ver_build} " \
+      # --export-method app-store → emits a TestFlight/App-Store-ready signed IPA
+      # (without it Shorebird can't produce a distributable archive). All flags
+      # here are Shorebird's own (parsed before `--`); only --tree-shake-icons
+      # (not a Shorebird flag) is forwarded to `flutter build` after `--`.
+      # Shorebird runs non-interactively under fastlane's sh (no TTY), so no
+      # confirm flag is needed (Shorebird has none — it just proceeds).
+      sh("shorebird release ios --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
+         "--export-method app-store --build-name=#{ver_name} --build-number=#{ver_build} " \
          "--dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} " \
-         "--obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/ios-#{flavor}")
+         "--obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/ios-#{flavor} " \
+         "-- --tree-shake-icons")
     end
   end
 end
@@ -106,8 +113,12 @@ end
 def shorebird_patch_ios(flavor)
   Bundler.with_unbundled_env do
     Dir.chdir(FLUTTER_DIR) do
-      sh("shorebird patch ios --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --no-confirm " \
-         "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor}")
+      # --release-version=latest targets the most recently shipped Shorebird
+      # release for this flavor (the one testers are on). --dart-define is a
+      # Shorebird patch flag (parsed before `--`).
+      sh("shorebird patch ios --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
+         "--release-version=latest " \
+         "--dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor}")
     end
   end
 end
