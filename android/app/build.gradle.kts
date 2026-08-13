@@ -84,6 +84,15 @@ android {
             // that minified code no longer references. Run AFTER minify so
             // R8's reachability info drives the prune.
             isShrinkResources = true
+            // Native debug symbols: do NOT bundle them into the AAB. AGP was
+            // packaging FULL native symbols for every .so (Flutter engine, libapp,
+            // ML Kit, WebRTC) into BUNDLE-METADATA/…debugsymbols — ~191 MB of pure
+            // UPLOAD bloat that never ships to a device. "none" strips it entirely.
+            // (For production native-crash symbolication, switch to "symbol_table"
+            // — still ~10× smaller than "full".)
+            ndk {
+                debugSymbolLevel = "none"
+            }
             // Crunch PNGs at packaging time. WebP conversion is configured
             // separately in androidResources below.
             proguardFiles(

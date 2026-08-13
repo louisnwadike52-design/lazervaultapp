@@ -6,6 +6,54 @@ def flutter(args)
   Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
 end
 
+# --- Durable env-file strategy + Shorebird release --------------------------
+require "fileutils"
+
+# `.env` is a bundled Flutter asset (pubspec assets: - .env), so the backend
+# config is baked in at BUILD time. Rule (per ops): every STORE build
+# (internal/alpha/prod tracks) ships .env.prod; only the emulator uses .env.dev
+# (see scripts/run_app_emulator.sh). Call this at the top of every store lane.
+def use_env(name)
+  src = File.join(FLUTTER_DIR, ".env.#{name}")
+  UI.user_error!("env source missing: #{src}") unless File.exist?(src)
+  FileUtils.cp(src, File.join(FLUTTER_DIR, ".env"))
+  UI.message("env: .env <- .env.#{name} (build will bundle #{name} backend config)")
+end
+
+# Build a PATCH-CAPABLE release AAB via Shorebird (drop-in for
+# `flutter build appbundle`). Shorebird runs the Flutter build AND registers the
+# release so future Dart-only changes ship OTA via `shorebird patch` — no store
+# review. The AAB lands in the same gradle path, so aab_for()/upload lanes are
+# unchanged. Uses the per-flavor app_id from shorebird.yaml.
+SHOREBIRD_FLUTTER_ARGS = "--tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android".freeze
+def shorebird_release_aab(flavor)
+  Dir.chdir(FLUTTER_DIR) do
+    sh("shorebird release android --flavor #{flavor} --artifact aab --no-confirm " \
+       "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
+  end
+end
+
+# OTA code-push: pushes a Dart-only diff to an already-shipped Shorebird
+# release. No AAB, no store upload — live on devices in minutes.
+def shorebird_patch_android(flavor)
+  Dir.chdir(FLUTTER_DIR) do
+    sh("shorebird patch android --flavor #{flavor} --no-confirm " \
+       "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
+  end
+end
+
+# Build the release AAB. Shorebird (patch-capable, consumes the Shorebird plan)
+# ONLY when opted in via --shorebird (options[:shorebird]); otherwise a plain
+# flutter build so normal CI/deploys never touch Shorebird.
+def build_release_aab(flavor, use_shorebird)
+  if use_shorebird
+    UI.message("build: Shorebird release (patch-capable) for #{flavor}")
+    shorebird_release_aab(flavor)
+  else
+    flutter("build appbundle --flavor #{flavor} --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{COMPRESSION_FLAGS}")
+  end
+end
+
 # Flutter compression flags applied to every release build:
 #
 # --release                  Standard release mode (AOT compile, no debug
@@ -91,9 +139,15 @@ platform :android do
   #                                    Console UI when ready — keeps a final
   #                                    human gate before public release)
   desc "Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)"
-  lane :dev do
+  lane :dev do |options|
+    use_env("prod") # internal track tests against the PROD backend
+    if options[:patch]
+      shorebird_patch_android("dev")
+      UI.success("Shorebird OTA patch pushed (dev → internal) — no store upload")
+      next
+    end
     purge_stale_aab("dev")
-    flutter("build appbundle --flavor dev --dart-define=FLAVOR=dev --dart-define=FLUTTER_FLAVOR=dev #{COMPRESSION_FLAGS}")
+    build_release_aab("dev", options[:shorebird])
     UI.success("Built fresh AAB: #{aab_for('dev')} (#{File.size(aab_for('dev'))} bytes)")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
@@ -110,9 +164,15 @@ platform :android do
   end
 
   desc "Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)"
-  lane :staging do
+  lane :staging do |options|
+    use_env("prod") # alpha track tests against the PROD backend
+    if options[:patch]
+      shorebird_patch_android("staging")
+      UI.success("Shorebird OTA patch pushed (staging → alpha) — no store upload")
+      next
+    end
     purge_stale_aab("staging")
-    flutter("build appbundle --flavor staging --dart-define=FLAVOR=staging --dart-define=FLUTTER_FLAVOR=staging #{COMPRESSION_FLAGS}")
+    build_release_aab("staging", options[:shorebird])
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "alpha",
@@ -128,9 +188,15 @@ platform :android do
   end
 
   desc "Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)"
-  lane :production do
+  lane :production do |options|
+    use_env("prod")
+    if options[:patch]
+      shorebird_patch_android("prod")
+      UI.success("Shorebird OTA patch pushed (prod → production) — no store upload")
+      next
+    end
     purge_stale_aab("prod")
-    flutter("build appbundle --flavor prod --dart-define=FLAVOR=prod --dart-define=FLUTTER_FLAVOR=prod #{COMPRESSION_FLAGS}")
+    build_release_aab("prod", options[:shorebird])
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "production",
