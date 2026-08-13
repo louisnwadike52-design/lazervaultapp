@@ -99,7 +99,11 @@ def shorebird_release_ios(flavor, ver_name, ver_build)
       # (not a Shorebird flag) is forwarded to `flutter build` after `--`.
       # Shorebird runs non-interactively under fastlane's sh (no TTY), so no
       # confirm flag is needed (Shorebird has none — it just proceeds).
-      sh("shorebird release ios --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
+      # NO --flavor: iOS has a single "Runner" scheme (no Xcode flavor schemes),
+      # so the tier is set entirely via --dart-define=FLUTTER_FLAVOR; passing
+      # --flavor here would reference a nonexistent scheme. Shorebird uses the
+      # top-level app_id from shorebird.yaml for iOS.
+      sh("shorebird release ios --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
          "--export-method app-store --build-name=#{ver_name} --build-number=#{ver_build} " \
          "--dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} " \
          "--obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/ios-#{flavor} " \
@@ -114,9 +118,9 @@ def shorebird_patch_ios(flavor)
   Bundler.with_unbundled_env do
     Dir.chdir(FLUTTER_DIR) do
       # --release-version=latest targets the most recently shipped Shorebird
-      # release for this flavor (the one testers are on). --dart-define is a
-      # Shorebird patch flag (parsed before `--`).
-      sh("shorebird patch ios --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
+      # release (the one testers are on). No --flavor: iOS has no flavor schemes
+      # (see shorebird_release_ios). --dart-define is a Shorebird patch flag.
+      sh("shorebird patch ios --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
          "--release-version=latest " \
          "--dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor}")
     end
@@ -297,15 +301,16 @@ platform :ios do
     sh("open https://console.firebase.google.com/project/lazervault-dev/settings/cloudmessaging")
   end
 
-  desc "Dev → TestFlight (internal group) — dev flavor, cloudflared tunnel backend"
-  # Builds the dev flavor (points at the cloudflared dev backend) but ships it
-  # to TestFlight Internal instead of Firebase App Distribution, so testers run
-  # real on-device builds via the same install path as staging/prod. Distribution
-  # signing (match app-store) is required — TestFlight rejects development-signed
-  # IPAs — which is why this mirrors the staging lane's build path rather than the
-  # old `--no-codesign` + development-export Firebase flow.
+  desc "Dev → TestFlight internal track (PROD build: prod backend/Firebase)"
+  # Ships the PROD tier (FLUTTER_FLAVOR=prod → api.lazervault.app, compiled in;
+  # prod GoogleService-Info.plist) to the TestFlight INTERNAL track. The lane name
+  # selects the TRACK, not the backend — internal testers exercise the REAL prod
+  # backend + Firebase, same as external/production. (Was previously FLAVOR=dev +
+  # dev plist, which silently pointed internal TestFlight at the dev backend — a
+  # dev user could sign in.) iOS has no Xcode flavor schemes, so the tier is set
+  # purely via DART_DEFINES + this plist swap; SCHEME stays "Runner".
   lane :dev do |options|
-    swap_firebase_plist("dev")
+    swap_firebase_plist("prod")
     setup_ci if ENV["CI"]
     match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
     # Refresh ios/Flutter/Generated.xcconfig from pubspec (build number/name) so
@@ -333,12 +338,12 @@ platform :ios do
     )
     ver_name, ver_build = pubspec_version
     if options[:patch]
-      shorebird_patch_ios("dev")
-      UI.success("Shorebird OTA patch pushed (dev → TestFlight internal) — no store upload")
+      shorebird_patch_ios("prod")
+      UI.success("Shorebird OTA patch pushed (prod build → TestFlight internal) — no store upload")
       next
     end
     if options[:shorebird]
-      shorebird_release_ios("dev", ver_name, ver_build)
+      shorebird_release_ios("prod", ver_name, ver_build)
       ipa_path = resolve_ipa("build/ios/ipa/Runner-dev.ipa")
     else
       build_app(
@@ -348,7 +353,7 @@ platform :ios do
         export_method:    "app-store",
         output_directory: "build/ios/ipa",
         output_name:      "Runner-dev.ipa",
-        xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=dev', 'FLUTTER_FLAVOR=dev')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-dev",
+        xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
       )
       ipa_path = "build/ios/ipa/Runner-dev.ipa"
     end
@@ -364,9 +369,12 @@ platform :ios do
     )
   end
 
-  desc "Staging → TestFlight (internal group)"
+  desc "Staging → TestFlight internal track (PROD build: prod backend/Firebase)"
+  # Same as the dev lane but a distinct entrypoint for the alpha/staging cadence:
+  # ships the PROD tier (prod backend + Firebase) to TestFlight internal. iOS has
+  # no flavor schemes, so tier = DART_DEFINES + plist swap; SCHEME stays "Runner".
   lane :staging do |options|
-    swap_firebase_plist("staging")
+    swap_firebase_plist("prod")
     setup_ci if ENV["CI"]
     match(type: "appstore", readonly: true, api_key: asc_api_key) if ENV["MATCH_GIT_URL"]
     # Refresh ios/Flutter/Generated.xcconfig from pubspec (FLUTTER_BUILD_NUMBER,
@@ -392,12 +400,12 @@ platform :ios do
     )
     ver_name, ver_build = pubspec_version
     if options[:patch]
-      shorebird_patch_ios("staging")
-      UI.success("Shorebird OTA patch pushed (staging → TestFlight internal) — no store upload")
+      shorebird_patch_ios("prod")
+      UI.success("Shorebird OTA patch pushed (prod build → TestFlight internal) — no store upload")
       next
     end
     if options[:shorebird]
-      shorebird_release_ios("staging", ver_name, ver_build)
+      shorebird_release_ios("prod", ver_name, ver_build)
       ipa_path = resolve_ipa("build/ios/ipa/Runner-staging.ipa")
     else
       build_app(
@@ -407,7 +415,7 @@ platform :ios do
         export_method:    "app-store",
         output_directory: "build/ios/ipa",
         output_name:      "Runner-staging.ipa",
-        xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=staging', 'FLUTTER_FLAVOR=staging')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-staging",
+        xcargs:           "FLUTTER_BUILD_NAME=#{ver_name} FLUTTER_BUILD_NUMBER=#{ver_build} DART_DEFINES=#{dart_defines_base64('FLAVOR=prod', 'FLUTTER_FLAVOR=prod')} #{COMPRESSION_XCARGS} FLUTTER_BUILD_MODE=release TREE_SHAKE_ICONS=true OBFUSCATE=true SPLIT_DEBUG_INFO=#{FLUTTER_DIR}/build/symbols/ios-prod",
       )
       ipa_path = "build/ios/ipa/Runner-staging.ipa"
     end

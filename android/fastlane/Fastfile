@@ -190,21 +190,30 @@ platform :android do
   #                                    "Start rollout to production" in Play
   #                                    Console UI when ready — keeps a final
   #                                    human gate before public release)
-  desc "Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)"
+  # STORE_FLAVOR: every Play track (internal/alpha/production) ships the PROD
+  # product flavor — FLUTTER_FLAVOR=prod (→ api.lazervault.app gateways, compiled
+  # in, see app_environment.dart) + the prod google-services.json. The lane name
+  # picks the TRACK, not the backend: internal & alpha testers exercise the REAL
+  # prod backend + Firebase, same as production. The dev/staging flavors are
+  # emulator-only (scripts/run_app_emulator.sh). Was previously flavor=dev/staging
+  # here, which silently shipped the DEV backend to internal/alpha.
+  STORE_FLAVOR = "prod".freeze
+
+  desc "Dev → Play Console internal track (PROD build: prod backend/Firebase, auto-rolls to internal testers)"
   lane :dev do |options|
     use_env("prod") # internal track tests against the PROD backend
     if options[:patch]
-      shorebird_patch_android("dev")
-      UI.success("Shorebird OTA patch pushed (dev → internal) — no store upload")
+      shorebird_patch_android(STORE_FLAVOR)
+      UI.success("Shorebird OTA patch pushed (prod build → internal track) — no store upload")
       next
     end
-    purge_stale_aab("dev")
-    build_release_aab("dev", options[:shorebird])
-    UI.success("Built fresh AAB: #{aab_for('dev')} (#{File.size(aab_for('dev'))} bytes)")
+    purge_stale_aab(STORE_FLAVOR)
+    build_release_aab(STORE_FLAVOR, options[:shorebird])
+    UI.success("Built fresh AAB: #{aab_for(STORE_FLAVOR)} (#{File.size(aab_for(STORE_FLAVOR))} bytes)")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "internal",
-      aab:                        aab_for("dev"),
+      aab:                        aab_for(STORE_FLAVOR),
       json_key:                   play_store_json_key_path,
       skip_upload_apk:            true,
       skip_upload_metadata:       true,
@@ -215,20 +224,20 @@ platform :android do
     )
   end
 
-  desc "Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)"
+  desc "Staging → Play Console closed (alpha) track (PROD build: prod backend/Firebase, auto-rolls to alpha testers)"
   lane :staging do |options|
     use_env("prod") # alpha track tests against the PROD backend
     if options[:patch]
-      shorebird_patch_android("staging")
-      UI.success("Shorebird OTA patch pushed (staging → alpha) — no store upload")
+      shorebird_patch_android(STORE_FLAVOR)
+      UI.success("Shorebird OTA patch pushed (prod build → alpha track) — no store upload")
       next
     end
-    purge_stale_aab("staging")
-    build_release_aab("staging", options[:shorebird])
+    purge_stale_aab(STORE_FLAVOR)
+    build_release_aab(STORE_FLAVOR, options[:shorebird])
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "alpha",
-      aab:                        aab_for("staging"),
+      aab:                        aab_for(STORE_FLAVOR),
       json_key:                   play_store_json_key_path,
       skip_upload_apk:            true,
       skip_upload_metadata:       true,
