@@ -26,9 +26,13 @@ end
 # review. The AAB lands in the same gradle path, so aab_for()/upload lanes are
 # unchanged. Uses the per-flavor app_id from shorebird.yaml.
 SHOREBIRD_FLUTTER_ARGS = "--tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android".freeze
+# Pin Shorebird to the app's own Flutter version — Shorebird's bundled Flutter
+# (a newer patch) failed the native-lib debug-symbol strip during the release
+# build; the app is validated on this version. Keep in sync with pubspec/CI.
+SHOREBIRD_FLUTTER_VERSION = "3.44.2".freeze
 def shorebird_release_aab(flavor)
   Dir.chdir(FLUTTER_DIR) do
-    sh("shorebird release android --flavor #{flavor} --artifact aab --no-confirm " \
+    sh("shorebird release android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --artifact aab --no-confirm " \
        "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
   end
 end
@@ -37,7 +41,7 @@ end
 # release. No AAB, no store upload — live on devices in minutes.
 def shorebird_patch_android(flavor)
   Dir.chdir(FLUTTER_DIR) do
-    sh("shorebird patch android --flavor #{flavor} --no-confirm " \
+    sh("shorebird patch android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --no-confirm " \
        "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
   end
 end
