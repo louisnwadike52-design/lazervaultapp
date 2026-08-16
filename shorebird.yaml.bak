@@ -1,0 +1,16 @@
+# Shorebird code-push configuration.
+#
+# This file is committed so every build is patch-capable, but the `app_id`
+# below is a PLACEHOLDER. Run `shorebird init` ONCE in this directory (with the
+# team's Shorebird account) to generate the real app_id and replace it. Until
+# then, Shorebird-built releases won't resolve patches (the app still runs fine;
+# AppPatchService just reports "unavailable").
+#
+# Docs / runbook: docs/SHOREBIRD.md
+app_id: REPLACE_VIA_shorebird_init
+
+# Automatically check for and download patches on launch (default behavior).
+# Patches download on a background thread and apply on the NEXT app restart, so
+# launch is never blocked. AppPatchService surfaces a gentle "restart to apply"
+# nudge when a patch is staged.
+auto_update: true
