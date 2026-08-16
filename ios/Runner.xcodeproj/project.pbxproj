@@ -210,6 +210,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				1941DC50C8844CD422236EE4 /* [CP] Embed Pods Frameworks */,
 				0029654806FED9EA34DBDDEA /* [CP] Copy Pods Resources */,
+				8D79A767C26238F0558CA4B8 /* Select Firebase config by flavor */,
 			);
 			buildRules = (
 			);
@@ -337,6 +338,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+		};
+		8D79A767C26238F0558CA4B8 /* Select Firebase config by flavor */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Select Firebase config by flavor";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Overwrite the bundled GoogleService-Info.plist with the one matching the\n# build FLAVOR so dev/staging builds never ship the PROD Firebase project.\n# Fail-closed to prod if the configuration doesn't encode a known flavor.\nFLAVOR=$(printf '%s' \"$CONFIGURATION\" | sed -E 's/.*[-_ ]([Dd]ev|[Ss]taging|[Pp]rod)$/\\1/' | tr '[:upper:]' '[:lower:]')\ncase \"$FLAVOR\" in dev|staging|prod) ;; *) FLAVOR=prod ;; esac\nSRC=\"${SRCROOT}/config/${FLAVOR}/GoogleService-Info.plist\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\nif [ -f \"$SRC\" ]; then\n  echo \"Firebase: bundling $FLAVOR GoogleService-Info.plist\"\n  cp \"$SRC\" \"$DEST\"\nelse\n  echo \"warning: Firebase config for flavor '$FLAVOR' not found at $SRC\"\nfi\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;

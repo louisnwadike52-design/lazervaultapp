@@ -7,8 +7,8 @@
 // ```dart
 // import 'package:lazervault/src/core/config/config.dart';
 //
-// // Check environment
-// if (AppConfig.isProduction) {
+// // Check environment (compile-time tier, fail-closed to prod in release)
+// if (currentAppEnvironment.isProduction) {
 //   // Production-specific logic
 // }
 //
