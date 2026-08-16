@@ -774,8 +774,8 @@ Future<void> init() async {
     () => AppUpdateCubit(serviceLocator<AppUpdateService>()),
   );
 
-  // Register App Patch Service (Shorebird OTA observer). Read-only; no-ops on
-  // non-Shorebird builds. Used to nudge a restart once a Dart patch downloads.
+  // Register App Patch Service (OTA code-push OTA observer). Read-only; no-ops on
+  // non-OTA code-push builds. Used to nudge a restart once a Dart patch downloads.
   serviceLocator.registerLazySingleton<AppPatchService>(
     () => AppPatchService(),
   );

@@ -197,7 +197,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                   textColor: Colors.white,
                 ),
               ),
-              if (!isMaxTier) ...[
+              if (!isMaxTier && _allowSkip) ...[
                 SizedBox(height: 16.h),
                 Center(
                   child: TextButton(
@@ -679,7 +679,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
           Get.back();
           Get.toNamed(AppRoutes.myAccount);
         },
-        showSkip: _fromSignup,
+        showSkip: _fromSignup && _allowSkip,
       );
       return;
     }
@@ -804,9 +804,14 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
+      // Non-API failures here are almost always the verification service being
+      // unreachable (banking-service down / network drop) — show a clear
+      // temporarily-unavailable message, not a "check your connection" that
+      // wrongly blames the user.
       _handleFailure(
-        'We couldn\'t verify your identity',
-        'Something went wrong. Please check your connection and try again.',
+        'Temporarily unavailable',
+        'Identity verification is temporarily unavailable right now. Please '
+            'try again in a moment.',
       );
     }
   }
@@ -884,6 +889,12 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// than `Get.back` (which would strand the user on a dead-end screen).
   bool get _isOnboardingRoot =>
       _fromSignup || !(Navigator.of(context).canPop());
+
+  /// KYC is MANDATORY during onboarding — a new user cannot reach a funded /
+  /// dashboard state without a verified BVN. Skip controls are only offered
+  /// OUTSIDE onboarding (e.g. when the user opened KYC voluntarily from the
+  /// deposit "Verify Now" CTA, where backing out just returns to that screen).
+  bool get _allowSkip => !_isOnboardingRoot;
 
   /// Finish a successful/complete verification: clear the onboarding flag and
   /// route to the right place (dashboard when at the onboarding root, otherwise
@@ -988,6 +999,20 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// `has_skipped_kyc` flag prevents a loop, and the tier reconciles on the next
   /// authenticated KYC status read).
   Future<void> _skipForNow() async {
+    // KYC is MANDATORY during onboarding — there is no skip. This is the
+    // authority guard: even if a skip control is ever surfaced in the onboarding
+    // context, it cannot bypass verification (never clears the pending flag,
+    // never routes to the dashboard).
+    if (_isOnboardingRoot) {
+      if (mounted) {
+        Get.snackbar(
+          'Verification required',
+          'Please complete your identity verification to activate your account.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+      return;
+    }
     // Read the user id synchronously (before any await) so we don't touch the
     // BuildContext across an async gap.
     final userId = context.read<AuthenticationCubit>().userId ?? '';
@@ -1023,7 +1048,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// Failure handler. Always offers Cancel + Try Again; during signup it also
   /// offers "Skip for now" so a stuck user can continue onboarding.
   void _handleFailure(String title, String message) {
-    _showErrorDialog(title, message, showSkip: _fromSignup);
+    _showErrorDialog(title, message, showSkip: _fromSignup && _allowSkip);
   }
 
   void _toast(String message, {required Color color}) {
@@ -1083,7 +1108,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
               SizedBox(height: 22.h),
               Row(
                 children: [
-                  if (_fromSignup)
+                  if (_fromSignup && _allowSkip)
                     Expanded(
                       child: TextButton(
                         onPressed: () {
@@ -1103,7 +1128,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
                                 color: Colors.white, fontSize: 14.sp)),
                       ),
                     ),
-                  if (_fromSignup) SizedBox(width: 12.w),
+                  if (_fromSignup && _allowSkip) SizedBox(width: 12.w),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {

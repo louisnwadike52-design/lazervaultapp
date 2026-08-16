@@ -6,17 +6,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/linked_bank_account.dart';
 import '../helpers/account_reauth_helper.dart';
+import '../mixins/linked_balance_refresh_mixin.dart'
+    show linkedBalanceRefreshFailureMessage;
 import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
 import 'link_bank_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 
 /// Screen to manage linked bank accounts
 class LinkedAccountsScreen extends StatefulWidget {
@@ -193,6 +195,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
       message:
           'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Do this once in a while — your last-known balance is shown otherwise.',
       successMessage: 'Balance refreshed',
+      // Honest failure: a failed live read shows the sheet's unsuccessful state
+      // with category copy, never a false "balance refreshed".
+      failureMessageBuilder: linkedBalanceRefreshFailureMessage,
       onPinValidated: (token) async {
         await cubit.refreshBalance(
           accountId: account.id,
@@ -201,6 +206,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
           isManual: true,
           verificationToken: token,
           transactionId: txnId,
+          rethrowOnError: true,
         );
       },
     );
@@ -298,6 +304,13 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
               ),
             );
             _fetchAccounts();
+          } else if (state is AccountLinked ||
+              state is AccountLinkedWithMandate) {
+            // A reconnect (Reconnect button → startAccountReauthorization →
+            // linkAccount) lands here. Re-fetch from the server so the card's
+            // "needs reconnecting" banner clears authoritatively rather than
+            // relying on the in-place dedup carrying a cleared reauth flag.
+            _fetchAccounts();
           } else if (state is BalanceRefreshed && state.isManual) {
             // Only show the snackbar when the user explicitly tapped
             // Refresh. The auto-sweep fires BalanceRefreshed for every
@@ -320,14 +333,18 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
           }
         },
         builder: (context, state) {
-          if (state is OpenBankingLoading) {
-            return const Center(child: LazerVaultLoader.small());
-          }
-
           final accounts = context.read<OpenBankingCubit>().linkedAccounts;
           final refreshingAccountId = state is BalanceRefreshing
               ? state.accountId
               : null;
+
+          // Full-screen loader ONLY on the initial load (no accounts yet). During
+          // a pull-to-refresh with accounts already on screen, keep the list
+          // mounted so the RefreshIndicator's own spinner shows instead of the
+          // whole list flashing away and snapping back.
+          if (state is OpenBankingLoading && accounts.isEmpty) {
+            return const Center(child: LazerVaultLoader.small());
+          }
 
           if (accounts.isEmpty) {
             return _buildEmptyState();
@@ -335,26 +352,35 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
 
           return Column(
             children: [
+              _buildSummaryHeader(accounts),
               Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: accounts.length,
-                  itemBuilder: (context, index) {
-                    final account = accounts[index];
-                    final isRefreshing = refreshingAccountId == account.id;
-                    return GestureDetector(
-                      onTap: () => _showAccountDetailSheet(account),
-                      child: LinkedAccountCard(
-                        account: account,
-                        isRefreshing: isRefreshing,
-                        onUnlink: () => _onUnlink(account),
-                        onSetDefault: () => _onSetDefault(account),
-                        onRefreshBalance: isRefreshing
-                            ? null
-                            : () => _onRefreshBalance(account),
-                      ),
-                    );
-                  },
+                child: RefreshIndicator(
+                  onRefresh: _fetchAccounts,
+                  color: InvoiceThemeColors.primaryPurple,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 16.h),
+                    itemCount: accounts.length,
+                    itemBuilder: (context, index) {
+                      final account = accounts[index];
+                      final isRefreshing = refreshingAccountId == account.id;
+                      return GestureDetector(
+                        onTap: () => _showAccountDetailSheet(account),
+                        child: LinkedAccountCard(
+                          account: account,
+                          isRefreshing: isRefreshing,
+                          onUnlink: () => _onUnlink(account),
+                          onSetDefault: () => _onSetDefault(account),
+                          onReconnect: () =>
+                              startAccountReauthorization(context, account),
+                          onRefreshBalance: isRefreshing
+                              ? null
+                              : () => _onRefreshBalance(account),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               // Add new bank button
@@ -368,6 +394,66 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
             ],
           );
         },
+      ),
+    );
+  }
+
+  /// Compact summary strip above the list: how many banks are linked and how
+  /// many need reconnecting, plus a hint that a pull refreshes and a tap opens
+  /// details. Orients the user without fabricating an aggregate balance (some
+  /// banks may have stale/unavailable figures, which we must never sum as real).
+  Widget _buildSummaryHeader(List<LinkedBankAccount> accounts) {
+    final total = accounts.length;
+    final needReauth = accounts.where((a) => a.needsReauthorization).length;
+    return Container(
+      margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38.w,
+            height: 38.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(Icons.account_balance_rounded,
+                color: InvoiceThemeColors.primaryPurple, size: 18.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$total ${total == 1 ? 'bank' : 'banks'} linked',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  needReauth > 0
+                      ? '$needReauth ${needReauth == 1 ? 'bank needs' : 'banks need'} reconnecting · pull to refresh'
+                      : 'Tap a bank for details · pull to refresh',
+                  style: GoogleFonts.inter(
+                      color: needReauth > 0
+                          ? const Color(0xFFFB923C)
+                          : const Color(0xFF9CA3AF),
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

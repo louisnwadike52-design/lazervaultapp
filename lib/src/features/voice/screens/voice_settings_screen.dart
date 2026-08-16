@@ -420,7 +420,9 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           ),
         ),
         SizedBox(height: 12.h),
-        const VoiceTxPinSection(),
+        // Central voice settings screen stays dark — render the PIN section in
+        // its dark palette (the settings-hub accordion uses the light default).
+        const VoiceTxPinSection(dark: true),
       ],
     );
   }
@@ -587,8 +589,14 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   }
 
   /// Open voice enrolment, then reconcile state on return (see [_refreshVoiceState]).
+  /// Launched from Settings → pass openVoiceSheetOnComplete:false so completion
+  /// POPS BACK here (and this refresh runs to show the new enrolled status)
+  /// instead of clearing to the dashboard + opening the voice sheet.
   Future<void> _openEnrollmentThenRefresh() async {
-    await Get.toNamed(AppRoutes.voiceEnrollment);
+    await Get.toNamed(
+      AppRoutes.voiceEnrollment,
+      arguments: {'openVoiceSheetOnComplete': false},
+    );
     await _refreshVoiceState();
   }
 
@@ -892,7 +900,10 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                   await prefs.remove('voice_enrollment_step');
                   await prefs.remove('voice_enrollment_samples');
                 }
-                await Get.toNamed(AppRoutes.voiceEnrollment);
+                await Get.toNamed(
+                  AppRoutes.voiceEnrollment,
+                  arguments: {'openVoiceSheetOnComplete': false},
+                );
                 // Re-check enrolment + clone status from backend when returning.
                 await _refreshVoiceState();
               },

@@ -8,6 +8,8 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../data/services/sales_service.dart';
 import '../../domain/entities/sale_entity.dart';
 
@@ -127,6 +129,24 @@ class _SalesListScreenState extends State<SalesListScreen>
         title: Text('Sales',
             style: GoogleFonts.inter(
                 color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+        actions: [
+          // Sales voice + chat, pinned to the business agent
+          // (DIRECT_ROUTES['sales'] → chat-business-service) so the assistant
+          // answers revenue/receivables questions with sales tools.
+          ServiceVoiceButton(
+            serviceName: 'sales',
+            iconColor: _accent,
+            backgroundColor: _accent,
+          ),
+          SizedBox(width: 4.w),
+          MicroserviceChatIcon(
+            serviceName: 'Sales',
+            sourceContext: 'sales',
+            icon: Icons.chat_bubble_outline,
+            iconColor: _accent,
+          ),
+          SizedBox(width: 8.w),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openRecord,

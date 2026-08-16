@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+168
+version: 1.0.1+183
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -139,11 +139,17 @@ dependencies:
   # (build-number change) and refresh the endpoint cache so stale cross-version /
   # cross-env URLs never stick.
   package_info_plus: ^8.0.0
-  # Shorebird over-the-air (OTA) code push — read-only patch status API used by
-  # AppPatchService to nudge the user to restart once a Dart-only patch has been
-  # downloaded in the background. No-ops safely when the app isn't built with the
-  # Shorebird CLI (e.g. `flutter run`). See docs/SHOREBIRD.md.
-  shorebird_code_push: ^2.0.4
+  # Shorebird OTA code-push (RE-ADDED, flag-gated + additive). Plain store builds
+  # stay the default and ship full self-contained binaries — Shorebird is only
+  # engaged by the --shorebird / --patch deploy flags (see scripts/deploy_mobile.sh).
+  # At runtime AppPatchService guards every call: on a non-Shorebird build the
+  # updater reports unavailable and every method degrades to a safe no-op. Patch
+  # application is check-on-resume / apply-on-next-restart (shorebird.yaml has
+  # auto_update: false) so code is NEVER swapped mid-session. The prior root cause
+  # (a dev-flavored patch overriding a prod store build) is fixed at source: the
+  # per-flavor app_ids in shorebird.yaml keep a patch on its own tier, and
+  # app_environment.dart resolves the tier fail-closed to prod in release.
+  shorebird_code_push: ^2.0.7
   path_provider: ^2.1.5
   country_flags: ^3.3.0
   intl_phone_field: ^3.2.0
@@ -166,8 +172,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  integration_test:
-    sdk: flutter
+  # integration_test intentionally disabled for STORE builds: a `flutter run`
+  # regenerates GeneratedPluginRegistrant.java with the dev-only
+  # IntegrationTestPlugin, which then fails the release compile
+  # ("package dev.flutter.plugins.integration_test does not exist"). Store
+  # builds never run integration tests — re-enable locally to run them.
+  # integration_test:
+  #   sdk: flutter
   build_runner: ^2.4.7
   injectable_generator: ^2.4.1
   mocktail: ^1.0.0
@@ -251,6 +262,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
+    # Shorebird OTA config (per-flavor app_ids + auto_update:false). Bundled so the
+    # runtime updater can resolve the correct app; harmless on plain builds.
+    - shorebird.yaml
     - assets/
     - assets/images/
     - assets/images/logos/
@@ -270,7 +284,6 @@ flutter:
     - assets/sounds/panic/
     - assets/sounds/chat/
     - assets/animations/sprayme/
-    - shorebird.yaml
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

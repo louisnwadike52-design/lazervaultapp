@@ -49,6 +49,32 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
   String _money(double v) =>
       '${CurrencySymbols.currentSymbol}${v.toStringAsFixed(2)}';
 
+  /// ASCII-safe currency label for the SHARED PDF. The default PDF font
+  /// (Helvetica) has no glyph for '₦', so a naira symbol renders as tofu/□ in
+  /// the exported statement. Use the ISO code prefix (e.g. "NGN ") instead —
+  /// mirrors group_contribution_pdf_service._currencySymbolFor. On-screen widgets
+  /// keep the real symbol (Flutter fonts render it fine).
+  static String _pdfCurrencyLabel(String code) {
+    switch (code.toUpperCase()) {
+      case 'NGN':
+        return 'NGN ';
+      case 'GBP':
+        return 'GBP ';
+      case 'EUR':
+        return 'EUR ';
+      case 'USD':
+        return 'USD ';
+      case 'ZAR':
+        return 'ZAR ';
+      case 'GHS':
+        return 'GHS ';
+      case 'KES':
+        return 'KES ';
+      default:
+        return '$code ';
+    }
+  }
+
   Future<void> _share(List<FamilyTransaction> txns) async {
     final bytes = await _buildPdf(txns);
     await Printing.sharePdf(
@@ -60,7 +86,9 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
   Future<Uint8List> _buildPdf(List<FamilyTransaction> txns) async {
     final a = widget.account;
     final doc = pw.Document();
-    final sym = CurrencySymbols.currentSymbol;
+    // ASCII-safe currency label so the naira symbol doesn't render as tofu in the
+    // exported PDF (default Helvetica has no '₦' glyph).
+    final sym = _pdfCurrencyLabel(CurrencySymbols.currentCurrency);
     final df = DateFormat('d MMM y, HH:mm');
     String m(double v) => '$sym${v.toStringAsFixed(2)}';
 

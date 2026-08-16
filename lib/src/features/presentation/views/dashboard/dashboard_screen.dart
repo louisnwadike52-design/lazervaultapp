@@ -30,6 +30,7 @@ import 'package:lazervault/src/features/app_update/cubit/app_update_cubit.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_banner.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_modal.dart';
 import 'package:lazervault/src/features/app_update/widgets/forced_update_screen.dart';
+import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -138,14 +139,32 @@ class _DashboardScreenState extends State<DashboardScreen>
         TabController(length: DashboardScreen.tabItems.length, vsync: this);
     _tabController.addListener(_onTabChanged);
 
-    // Panic Balance trigger: a phone shake toggles the decoy (the other trigger
-    // is a long-press on the balance). Gated on the user's shake-trigger switch;
-    // toggle() also no-ops until the feature is set up, so a stray shake never
-    // surprises anyone.
+    // Panic Balance trigger: shaking the phone twice toggles the decoy (the
+    // other trigger is a long-press on the balance). Requiring two shakes avoids
+    // accidental toggles from a single jolt. Gated on the user's shake-trigger
+    // switch; toggle() also no-ops until the feature is set up, so a stray shake
+    // never surprises anyone. See the fields above for why we count ourselves.
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: (_) {
         final panic = serviceLocator<PanicBalanceService>();
-        if (panic.shakeTriggerEnabled) panic.toggle();
+        if (!panic.shakeTriggerEnabled) {
+          _panicShakeCount = 0; // don't carry a stale first shake across disable
+          return;
+        }
+        final now = DateTime.now().millisecondsSinceEpoch;
+        // Start (or restart) the sequence on the first shake, or if the window
+        // since the first shake has elapsed.
+        if (_panicShakeCount == 0 ||
+            now - _firstPanicShakeMs > _kPanicShakeWindowMs) {
+          _panicShakeCount = 1;
+          _firstPanicShakeMs = now;
+          return;
+        }
+        // Second qualifying shake within the window → toggle once, then reset so
+        // the next toggle requires two fresh shakes again.
+        _panicShakeCount = 0;
+        _firstPanicShakeMs = 0;
+        panic.toggle();
       },
     );
 
@@ -175,10 +194,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Shorebird OTA: if a Dart-only patch was downloaded in the background,
       // gently nudge a restart to apply it. No-op on non-Shorebird builds.
       _maybeNudgePatchRestart();
+      // Kick off a background check+download so a newer patch is staged for the
+      // NEXT restart (auto_update:false → never applied mid-session). Fire-and-
+      // forget; safe no-op on plain store builds.
+      serviceLocator<AppPatchService>().checkAndDownloadUpdate();
     });
   }
 
-  /// Show a non-blocking snackbar when a downloaded Shorebird patch is staged
+  /// Show a non-blocking snackbar when a downloaded OTA code-push patch is staged
   /// for the next restart. Best-effort; silent when nothing is pending.
   Future<void> _maybeNudgePatchRestart() async {
     final ready =
@@ -204,10 +227,25 @@ class _DashboardScreenState extends State<DashboardScreen>
     // backgrounded) surfaces without requiring a cold start.
     if (state == AppLifecycleState.resumed) {
       _updateCubit.checkNow();
+      // Check-on-resume: stage any newer OTA patch for the next restart. Safe
+      // no-op on non-Shorebird builds; never swaps code in the current session.
+      serviceLocator<AppPatchService>().checkAndDownloadUpdate();
     }
   }
 
   ShakeDetector? _shakeDetector;
+
+  // Panic Balance shake trigger: two deliberate shakes toggle the decoy. We do
+  // the counting ourselves (the `shake` package is left at minimumShakeCount:1
+  // so it reports every individual shake) because the package never resets its
+  // own counter after firing — that would let a single stray jolt flip the
+  // decoy back moments after a genuine double-shake, revealing the real balance
+  // in exactly the unsafe moment this feature exists to guard against. We reset
+  // our count on every toggle, so each toggle needs two fresh shakes and a lone
+  // bump never triggers one.
+  int _panicShakeCount = 0;
+  int _firstPanicShakeMs = 0;
+  static const int _kPanicShakeWindowMs = 1500;
 
   /// Check if voice setup is needed and show modal prompt
   Future<void> _checkAndShowVoiceSetup() async {
@@ -402,7 +440,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   onDismiss: _updateCubit.dismissOptional,
                 )
               : null;
-          return DefaultTabController(
+          return DashboardWalkthrough.wrapShowcase(
+            builder: (context) => DefaultTabController(
             initialIndex: _currentIndex,
             length: DashboardScreen.tabItems.length,
             child: Scaffold(
@@ -413,7 +452,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                   isDrawerOpen = isOpened;
                 });
               },
-              bottomNavigationBar: _buildAdaptiveBottomNav(),
+              // The bottom nav is toured item-by-item for the high-value items.
+              // Rather than reach into the adaptive nav bar for per-item keys,
+              // overlay five equal transparent slots across it — only the toured
+              // ones carry a coach-mark (IgnorePointer, so real taps still reach
+              // the nav once the tour is done).
+              bottomNavigationBar: Stack(
+                children: [
+                  _buildAdaptiveBottomNav(),
+                  DashboardWalkthrough.bottomNavTourTargets(),
+                ],
+              ),
               body: Column(
                 children: [
                   if (updateBanner != null) updateBanner,
@@ -465,7 +514,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               extendBody: _currentIndex >= 2,
             ),
-          );
+          ));
         },
       ),
       ),

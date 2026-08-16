@@ -53,6 +53,11 @@ extension FamilyAccountProtoExtension on FamilyAccountProto {
       fundDistributionMode: FundDistributionModeExtension.fromString(fundDistributionMode),
       setupCompleted: setupCompleted,
       spendingVisibilityEnabled: spendingVisibilityEnabled,
+      fundingPolicy: fundingPolicy,
+      accountNumber: accountNumber,
+      bankName: bankName,
+      virtualAccountStatus: virtualAccountStatus,
+      summary: summary,
     );
   }
 }

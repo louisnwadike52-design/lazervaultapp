@@ -6,8 +6,13 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
@@ -42,6 +47,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   late TabController _tabController;
   FamilyTransactionType? _transactionFilter;
   String? _memberFilter; // memberId to filter by
+  DateTimeRange? _dateFilter; // time-range filter (null = all time)
   bool _activityLoaded = false;
   // Last successfully-loaded account. Kept so a transient ACTION failure
   // (member removal, allocation, etc. — all emit the shared FamilyAccountError
@@ -50,6 +56,10 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   // Card issuance is disabled until a card provider is wired (no provider in
   // this environment) — flip to true to re-enable the "Issue Card" action.
   static const bool _cardIssuanceEnabled = false;
+  // One-shot: if we land here before auth resolves (deep-link edge), the
+  // admin-gated UI (Allocate, freeze, delete, invite) reads a null user id and
+  // hides. Rebuild once auth becomes available so those gates re-evaluate.
+  StreamSubscription<AuthenticationState>? _authSub;
 
   @override
   void initState() {
@@ -57,10 +67,20 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadFamilyAccount();
+    if (_currentUserId == null) {
+      _authSub = context.read<AuthenticationCubit>().stream.listen((state) {
+        if (state is AuthenticationSuccess && mounted) {
+          setState(() {});
+          _authSub?.cancel();
+          _authSub = null;
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -82,11 +102,30 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       familyId: widget.familyId,
       memberId: _memberFilter,
       type: _transactionFilter,
+      startDate: _dateFilter?.start,
+      endDate: _dateFilter?.end,
     );
   }
 
   void _loadFamilyAccount() {
     _cubit.loadFamilyAccount(widget.familyId);
+  }
+
+  /// Force-refresh the dashboard account carousel so the family card's balance /
+  /// status reflects a money or status change made here (fund, allocate, remove,
+  /// freeze) WITHOUT a manual pull-to-refresh. The dashboard's FamilyAccountCubit
+  /// is a separate factory instance, so it can't react to these states on its
+  /// own; the shared AccountCardsSummaryCubit (provided high in the tree) is the
+  /// bridge — the same one the create carousel refreshes on completion.
+  void _refreshDashboardSummaries() {
+    try {
+      final accountsCubit = context.read<AccountCardsSummaryCubit>();
+      if (accountsCubit.currentUserId != null) {
+        accountsCubit.fetchAccountSummaries(userId: accountsCubit.currentUserId!);
+      }
+    } catch (_) {
+      // Non-fatal: the dashboard refreshes on its own pull-to-refresh regardless.
+    }
   }
 
   /// Pulls the currently-authenticated user ID from AuthenticationCubit.
@@ -650,7 +689,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                                     decoration: InputDecoration(
                                       hintText: '0.00',
                                       hintStyle:
-                                          TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                                          TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                                       prefixText: '$symbol ',
                                       prefixStyle: TextStyle(
                                           color: Colors.grey[400], fontSize: 14.sp),
@@ -686,14 +725,51 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                               fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 12.h),
+                  // Explain WHY the button is disabled instead of a silent
+                  // greyed-out CTA (the #1 "allocate does nothing" report).
+                  if (account.totalPoolBalance <= 0)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 10.h),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              color: const Color(0xFFFB923C), size: 15.sp),
+                          SizedBox(width: 6.w),
+                          Expanded(
+                            child: Text(
+                              'Your pool is empty. Close this and tap "Top up pool" to add funds before allocating.',
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFFFB923C), fontSize: 12.sp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (over)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 10.h),
+                      child: Text(
+                        'You\'re allocating more than the pool holds. Reduce the amounts.',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444), fontSize: 12.sp),
+                      ),
+                    ),
                   SizedBox(
                     width: double.infinity,
                     height: 50.h,
                     child: ElevatedButton(
-                      onPressed: (submitting || allocated <= 0 || over)
+                      // Keep the button live when over-allocated so tapping it
+                      // surfaces an explanatory modal instead of dead-ending on
+                      // a silent greyed-out CTA.
+                      onPressed: (submitting || allocated <= 0)
                           ? null
                           : () async {
+                              if (over) {
+                                _showFamilyErrorDialog(
+                                    'You\'re allocating more than the pool holds. Reduce the amounts so the total fits within the available pool balance.');
+                                return;
+                              }
                               setSheetState(() => submitting = true);
                               final entries = <MapEntry<String, double>>[];
                               controllers.forEach((id, c) {
@@ -739,48 +815,76 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     final allocCubit = serviceLocator<FamilyAccountCubit>();
     int ok = 0;
     final failed = <String>[];
-    for (final e in entries) {
-      final completer = Completer<FamilyAccountState>();
-      late final StreamSubscription<FamilyAccountState> sub;
-      sub = allocCubit.stream
-          .where((s) => s is FundsAllocated || s is FamilyAccountError)
-          .listen((s) {
-        if (!completer.isCompleted) completer.complete(s);
-        sub.cancel();
-      });
-      allocCubit.allocateFundsToMember(
-        familyId: widget.familyId,
-        memberId: e.key,
-        amount: e.value,
-      );
-      final res = await completer.future.timeout(
-        const Duration(seconds: 20),
-        onTimeout: () {
+    String? firstError;
+    try {
+      for (final e in entries) {
+        final completer = Completer<FamilyAccountState>();
+        late final StreamSubscription<FamilyAccountState> sub;
+        sub = allocCubit.stream
+            .where((s) => s is FundsAllocated || s is FamilyAccountError)
+            .listen((s) {
+          if (!completer.isCompleted) completer.complete(s);
           sub.cancel();
-          return const FamilyAccountError('timeout');
-        },
-      );
-      if (res is FundsAllocated) {
-        ok++;
-      } else {
-        failed.add(e.key);
+        });
+        allocCubit.allocateFundsToMember(
+          familyId: widget.familyId,
+          memberId: e.key,
+          amount: e.value,
+        );
+        final res = await completer.future.timeout(
+          const Duration(seconds: 20),
+          onTimeout: () {
+            sub.cancel();
+            // Empty message → falls through to the friendly fallback in the
+            // dialog below (never shows the raw sentinel "timeout" to the user).
+            return const FamilyAccountError('');
+          },
+        );
+        if (res is FundsAllocated) {
+          ok++;
+        } else {
+          failed.add(e.key);
+          // Capture the REAL backend reason (e.g. "only admins can allocate",
+          // "insufficient pool balance", "funding policy: …"). The multi-allocate
+          // runs on a throwaway cubit that bypasses the screen's FamilyAccountError
+          // listener, so without this the reason is lost and the CTA "does nothing".
+          if (res is FamilyAccountError &&
+              firstError == null &&
+              res.message.trim().isNotEmpty) {
+            firstError = res.message;
+          }
+        }
       }
+    } finally {
+      // Factory instance — dispose it so the per-allocate stream doesn't leak.
+      await allocCubit.close();
     }
 
     if (!mounted) return;
     _loadFamilyAccount();
+    _refreshDashboardSummaries();
     final symbol = CurrencySymbols.currentSymbol;
-    final total = entries.fold<double>(0, (s, e) => s + e.value);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          failed.isEmpty
-              ? 'Allocated $symbol${total.toStringAsFixed(2)} to $ok member${ok == 1 ? '' : 's'}'
-              : 'Allocated to $ok member${ok == 1 ? '' : 's'}; ${failed.length} failed',
+    if (ok > 0) {
+      final total = entries
+          .where((e) => !failed.contains(e.key))
+          .fold<double>(0, (s, e) => s + e.value);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            failed.isEmpty
+                ? 'Allocated $symbol${total.toStringAsFixed(2)} to $ok member${ok == 1 ? '' : 's'}'
+                : 'Allocated to $ok member${ok == 1 ? '' : 's'}; ${failed.length} failed',
+          ),
+          backgroundColor: failed.isEmpty ? const Color(0xFF10B981) : const Color(0xFFFB923C),
         ),
-        backgroundColor: failed.isEmpty ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-      ),
-    );
+      );
+    }
+    // Surface the first real error in a dialog so the user knows WHY it failed
+    // (not just a silent "N failed").
+    if (failed.isNotEmpty) {
+      _showFamilyErrorDialog(firstError ??
+          'The allocation couldn\'t be completed. Please try again.');
+    }
   }
 
   void _showMemberDetailSheet(FamilyAccount account, FamilyMember member) {
@@ -1276,6 +1380,62 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
+  /// Presents a family-flow error as a modal dialog (never a snackbar). The
+  /// backend prefixes funding-permission rejections with "funding policy:" so we
+  /// can render a clear, friendly "who can fund" explanation with the right title.
+  void _showFamilyErrorDialog(String rawMessage) {
+    if (!mounted) return;
+    final msg = rawMessage.toLowerCase();
+    String title = 'Something went wrong';
+    String body = rawMessage;
+    if (msg.contains('funding policy') ||
+        msg.contains('only the creator') ||
+        msg.contains('only selected members') ||
+        msg.contains('contributions are not allowed')) {
+      title = 'You can\'t add money here';
+      if (msg.contains('only the creator')) {
+        body =
+            'Only the account creator can add money to this pool. Ask them to fund it, or switch to a pool you can contribute to.';
+      } else if (msg.contains('only selected members')) {
+        body =
+            'Only selected members can add money to this pool. Ask an admin to enable funding for you.';
+      } else {
+        body =
+            'Member contributions are turned off for this family account. An admin can enable them in the account settings.';
+      }
+    } else if (msg.contains('does not belong') || msg.contains('permission')) {
+      title = 'Not allowed';
+      body =
+          'This action isn\'t available on this account. If you think that\'s a mistake, contact the account owner.';
+    } else if (msg.contains('exceed') || msg.contains('insufficient')) {
+      title = 'Allocation exceeds balance';
+    }
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(title,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600)),
+        content: Text(body,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75), fontSize: 14.sp)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: TextButton.styleFrom(foregroundColor: _kFamilyPurple),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showContributeDialog(FamilyAccount account) {
     final amountController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -1332,7 +1492,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 6.h),
                     child: Icon(Icons.arrow_downward,
-                        size: 16.sp, color: Colors.grey[600]),
+                        size: 16.sp, color: const Color(0xFF9CA3AF)),
                   ),
                   _buildContributeFlowRow(
                     Icons.family_restroom,
@@ -1391,29 +1551,42 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           ElevatedButton(
             onPressed: () {
               final amount = double.tryParse(amountController.text.trim()) ?? 0;
-              // Validation: positive amount.
+              // Validation: positive amount (modal dialog, not a snackbar).
               if (amount <= 0) {
-                Get.snackbar(
-                  'Enter an amount',
-                  'Please enter a valid amount greater than zero.',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFFEF4444),
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(12.w),
+                showDialog<void>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    title: Text('Enter an amount',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600)),
+                    content: Text(
+                        'Please enter a valid amount greater than zero.',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontSize: 14.sp)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        style: TextButton.styleFrom(
+                            foregroundColor: _kFamilyPurple),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
                 );
                 return;
               }
               // Validation: caller must be a member (money leaves THEIR wallet).
               if (myMemberId == null || myMemberId.isEmpty) {
                 Get.back();
-                Get.snackbar(
-                  'Not a member',
-                  'Only family members can contribute to the pool.',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFFEF4444),
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(12.w),
-                );
+                _showFamilyErrorDialog(
+                    'Only family members can contribute to the pool.');
                 return;
               }
               Get.back();
@@ -1483,6 +1656,101 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
+  /// Account-details card for the settings sheet: the pool's real bank name +
+  /// NUBAN once provisioned (a "Setting up…" note while processing), plus the
+  /// funding policy so members know who can add money.
+  Widget _buildAccountDetailsCard(FamilyAccount account) {
+    final processing = account.isVirtualAccountProcessing;
+    final hasNuban = (account.accountNumber?.isNotEmpty ?? false);
+    String policyLine;
+    switch (account.fundingPolicy) {
+      case 'creator_only':
+        policyLine = 'Only the creator can add money';
+        break;
+      case 'specific_members':
+        policyLine = 'Only selected members can add money';
+        break;
+      default:
+        policyLine = 'Any member can add money';
+    }
+
+    Widget row(IconData icon, String label, String value) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: Row(
+            children: [
+              Icon(icon, size: 16.sp, color: Colors.white.withValues(alpha: 0.5)),
+              SizedBox(width: 10.w),
+              Text(label,
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 12.sp)),
+              const Spacer(),
+              Flexible(
+                child: Text(value,
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        );
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Account details',
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600)),
+          SizedBox(height: 6.h),
+          if (processing)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 6.h),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 13.w,
+                    height: 13.w,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(_kFamilyPurple)),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'Setting up your account — your deposit account number will appear here once ready.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12.sp),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (hasNuban) ...[
+            row(Icons.account_balance_outlined, 'Bank',
+                account.bankName?.isNotEmpty == true ? account.bankName! : '—'),
+            row(Icons.numbers, 'Account number', account.accountNumber!),
+          ],
+          row(Icons.group_outlined, 'Funding', policyLine),
+        ],
+      ),
+    );
+  }
+
   void _showAccountSettings(FamilyAccount account) {
     // Resolved once at sheet-open time so we don't re-read the auth
     // cubit per option render. If the user signs out while the sheet is
@@ -1521,7 +1789,10 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
+
+            _buildAccountDetailsCard(account),
+            SizedBox(height: 12.h),
 
             // Account statement — available to every member (read-only export).
             _buildOption(
@@ -1581,7 +1852,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   if (account.status == FamilyAccountStatus.active) {
                     _confirmFreezeAccount(account);
                   } else {
-                    _cubit.unfreezeAccount(widget.familyId);
+                    _confirmUnfreezeAccount(account);
                   }
                 },
               ),
@@ -1841,6 +2112,54 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
+  void _confirmUnfreezeAccount(FamilyAccount account) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF0A0A0A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'Unfreeze ${account.name}?',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'This will reactivate the account and allow spending again.',
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              _cubit.unfreezeAccount(widget.familyId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            child: Text(
+              'Unfreeze',
+              style: TextStyle(color: Colors.white, fontSize: 14.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _confirmLeaveFamily(FamilyAccount account) {
     Get.dialog(
       AlertDialog(
@@ -1905,7 +2224,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               controller: confirmationController,
               style: TextStyle(color: Colors.white, fontSize: 14.sp),
               decoration: InputDecoration(
-                hintText: 'Type "DELETE" to confirm',
+                // The backend requires the confirmation code to match the family
+                // account NAME (case-insensitive), so prompt for exactly that.
+                hintText: 'Type "${account.name}" to confirm',
                 hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
@@ -1926,11 +2247,16 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              if (confirmationController.text.trim() == 'DELETE') {
+              // Match the account NAME (case-insensitive) and send the typed
+              // value AS the confirmation code — the backend validates
+              // confirmation_code == family account name (EqualFold). Sending a
+              // literal like 'USER_CONFIRMED' always failed InvalidArgument.
+              final typed = confirmationController.text.trim();
+              if (typed.toLowerCase() == account.name.trim().toLowerCase()) {
                 Get.back();
                 _cubit.deleteAccount(
                   familyId: widget.familyId,
-                  confirmationCode: 'USER_CONFIRMED',
+                  confirmationCode: typed,
                 );
               }
             },
@@ -1963,12 +2289,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             if (state is FamilyAccountLoaded) {
               _loadedAccount = state.familyAccount;
             } else if (state is FamilyAccountError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              // Money/action errors surface as a modal dialog (not a primitive
+              // snackbar) — with a tailored message for the funding-policy block.
+              _showFamilyErrorDialog(state.message);
             } else if (state is FamilyMemberAdded) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1985,6 +2308,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+              _refreshDashboardSummaries();
             } else if (state is FundsAllocated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1993,6 +2317,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+              _refreshDashboardSummaries();
             } else if (state is MemberCardGenerated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2010,6 +2335,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+              _refreshDashboardSummaries();
             } else if (state is FamilyAccountUnfrozen) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2018,6 +2344,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+              _refreshDashboardSummaries();
             } else if (state is MemberContributionProcessed) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2026,6 +2353,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+              _refreshDashboardSummaries();
             } else if (state is FundDistributionModeUpdated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2034,6 +2362,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+              _refreshDashboardSummaries();
             } else if (state is FamilyAccountDeleted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2419,6 +2748,151 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
+  /// Funding + spending breakdown for the Overview tab: monthly stat tiles, a
+  /// "Contributors" list (who funded the pool + how much), and a "Top spenders"
+  /// list. Backed by account.summary (GetFamilyAccount). Renders nothing until
+  /// the summary is available. Spenders respect the spending-visibility gate;
+  /// funders (contributions) are shown to every member.
+  Widget _buildFamilyStatsSection(FamilyAccount account) {
+    final s = account.summary;
+    if (s == null) return const SizedBox.shrink();
+    final symbol = CurrencySymbols.currentSymbol;
+    final canSeeSpenders = _canSeeAllSpending(account);
+    String money(double v) => '$symbol${v.toStringAsFixed(2)}';
+
+    Widget statTile(String label, String value, IconData icon, Color color) {
+      return Expanded(
+        child: Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 16.sp),
+              SizedBox(height: 8.h),
+              Text(value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 2.h),
+              Text(label,
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('This month',
+            style: TextStyle(
+                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold)),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            statTile('Funded', money(s.totalContributed),
+                Icons.volunteer_activism, const Color(0xFF10B981)),
+            // Spent + transaction-count are spending-derived; the backend already
+            // zeroes them for members who can't see spending, and we hide the tiles
+            // so a non-admin never sees even the family-wide spend count.
+            if (canSeeSpenders) ...[
+              SizedBox(width: 10.w),
+              statTile('Spent', money(s.totalSpentThisMonth),
+                  Icons.shopping_cart_outlined, const Color(0xFFEF4444)),
+              SizedBox(width: 10.w),
+              statTile('Transactions', '${s.transactionCountThisMonth}',
+                  Icons.receipt_long_outlined, _kFamilyPurple),
+            ],
+          ],
+        ),
+        if (s.topFunders.isNotEmpty) ...[
+          SizedBox(height: 20.h),
+          _breakdownHeader('Contributors', 'Who funded the pool this month'),
+          SizedBox(height: 10.h),
+          ...s.topFunders.map((m) => _buildBreakdownRow(m, money, isFunder: true)),
+        ],
+        if (canSeeSpenders && s.topSpenders.isNotEmpty) ...[
+          SizedBox(height: 20.h),
+          _breakdownHeader('Top spenders', 'Who spent from the pool this month'),
+          SizedBox(height: 10.h),
+          ...s.topSpenders.map((m) => _buildBreakdownRow(m, money, isFunder: false)),
+        ],
+        SizedBox(height: 20.h),
+      ],
+    );
+  }
+
+  Widget _breakdownHeader(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: TextStyle(
+                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold)),
+        SizedBox(height: 2.h),
+        Text(subtitle,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5), fontSize: 11.sp)),
+      ],
+    );
+  }
+
+  Widget _buildBreakdownRow(
+      FamilyMemberSpending m, String Function(double) money,
+      {required bool isFunder}) {
+    final accent = isFunder ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final name = m.memberName.isNotEmpty ? m.memberName : 'Member';
+    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 16.r,
+            backgroundColor: accent.withValues(alpha: 0.18),
+            backgroundImage: (m.memberAvatar != null && m.memberAvatar!.isNotEmpty)
+                ? NetworkImage(m.memberAvatar!)
+                : null,
+            child: (m.memberAvatar == null || m.memberAvatar!.isEmpty)
+                ? Text(initial,
+                    style: TextStyle(
+                        color: accent, fontSize: 13.sp, fontWeight: FontWeight.w700))
+                : null,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white, fontSize: 13.sp)),
+                Text(
+                    '${m.transactionCount} ${isFunder ? (m.transactionCount == 1 ? 'contribution' : 'contributions') : (m.transactionCount == 1 ? 'transaction' : 'transactions')}',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.45), fontSize: 10.sp)),
+              ],
+            ),
+          ),
+          Text('${isFunder ? '+' : '-'}${money(m.amountSpent)}',
+              style: GoogleFonts.inter(
+                  color: accent, fontSize: 13.sp, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildOverviewTab(FamilyAccount account) {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -2462,6 +2936,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             );
           }),
           SizedBox(height: 20.h),
+
+          // Funding + spending breakdown (who funded, top spenders, monthly stats).
+          _buildFamilyStatsSection(account),
 
           // Settings Info
           Text(
@@ -2636,39 +3113,29 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ],
             ),
           ),
-        // Member filter — only when the viewer can see all members' spending.
-        if (activeMembers.isNotEmpty && canSeeAll)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            child: Row(
-              children: [
-                _buildMemberChip('All Members', null),
-                ...activeMembers.map((m) => Padding(
-                      padding: EdgeInsets.only(left: 8.w),
-                      child: _buildMemberChip(
-                        m.fullName.isNotEmpty ? m.fullName : (m.username ?? 'Member'),
-                        m.id,
-                      ),
-                    )),
-              ],
-            ),
-          ),
-        // Type filter chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+        // Two clean dropdown controls — one at the left (members), one at the
+        // right (type + time) — instead of scrolling pill rows. Each opens a
+        // bottom sheet the user picks from, keeping the header uncluttered.
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
           child: Row(
             children: [
-              _buildFilterChip('All', null),
-              SizedBox(width: 8.w),
-              _buildFilterChip('Allocation', FamilyTransactionType.allocation),
-              SizedBox(width: 8.w),
-              _buildFilterChip('Spending', FamilyTransactionType.spending),
-              SizedBox(width: 8.w),
-              _buildFilterChip('Refund', FamilyTransactionType.refund),
-              SizedBox(width: 8.w),
-              _buildFilterChip('Contribution', FamilyTransactionType.contribution),
+              if (canSeeAll)
+                Expanded(
+                  child: _buildFilterDropdown(
+                    icon: Icons.people_alt_outlined,
+                    label: _memberFilterLabel(activeMembers),
+                    onTap: () => _openMemberFilterSheet(activeMembers),
+                  ),
+                ),
+              if (canSeeAll) SizedBox(width: 10.w),
+              Expanded(
+                child: _buildFilterDropdown(
+                  icon: Icons.tune,
+                  label: _typeTimeFilterLabel(),
+                  onTap: _openTypeTimeFilterSheet,
+                ),
+              ),
             ],
           ),
         ),
@@ -2728,86 +3195,293 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
-  Widget _buildFilterChip(String label, FamilyTransactionType? type) {
-    final isSelected = _transactionFilter == type;
+  // ── Activity filters: two dropdown controls → bottom sheets ──────────────
+
+  /// A single dropdown-style control (icon + label + chevron). Active when a
+  /// non-default filter is applied (purple accent), neutral otherwise.
+  Widget _buildFilterDropdown({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _transactionFilter = type;
-        });
-        _loadTransactions();
-      },
+      onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
         decoration: BoxDecoration(
-          color: isSelected
-              ? _kFamilyPurple.withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected
-                ? _kFamilyPurple
-                : Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? _kFamilyPurple : Colors.white.withValues(alpha: 0.6),
-            fontSize: 12.sp,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          ),
+        child: Row(
+          children: [
+            Icon(icon, size: 15.sp, color: Colors.white.withValues(alpha: 0.6)),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down,
+                size: 18.sp, color: Colors.white.withValues(alpha: 0.5)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildMemberChip(String label, String? memberId) {
-    final isSelected = _memberFilter == memberId;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _memberFilter = memberId;
-        });
-        _loadTransactions();
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF10B981).withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF10B981)
-                : Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
+  String _memberFilterLabel(List<FamilyMember> members) {
+    if (_memberFilter == null) return 'All members';
+    for (final m in members) {
+      if (m.id == _memberFilter) {
+        return m.fullName.isNotEmpty ? m.fullName : (m.username ?? 'Member');
+      }
+    }
+    return 'Member';
+  }
+
+  String _typeTimeFilterLabel() {
+    final parts = <String>[];
+    if (_transactionFilter != null) {
+      parts.add(_transactionTypeLabel(_transactionFilter!));
+    }
+    if (_dateFilter != null) parts.add(_dateRangeLabel(_dateFilter!));
+    return parts.isEmpty ? 'All activity' : parts.join(' · ');
+  }
+
+  String _transactionTypeLabel(FamilyTransactionType t) {
+    switch (t) {
+      case FamilyTransactionType.allocation:
+        return 'Allocations';
+      case FamilyTransactionType.spending:
+        return 'Spending';
+      case FamilyTransactionType.refund:
+        return 'Refunds';
+      case FamilyTransactionType.contribution:
+        return 'Contributions';
+      case FamilyTransactionType.adjustment:
+        return 'Adjustments';
+      case FamilyTransactionType.removal:
+        return 'Removals';
+    }
+  }
+
+  String _dateRangeLabel(DateTimeRange r) {
+    final f = DateFormat('d MMM');
+    return '${f.format(r.start)}–${f.format(r.end)}';
+  }
+
+  void _openMemberFilterSheet(List<FamilyMember> members) {
+    _showFilterBottomSheet(
+      title: 'Filter by member',
+      children: [
+        _filterSheetTile(
+          label: 'All members',
+          selected: _memberFilter == null,
+          onTap: () {
+            setState(() => _memberFilter = null);
+            _loadTransactions();
+          },
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (memberId != null) ...[
-              Icon(
-                Icons.person,
-                size: 14.sp,
-                color: isSelected ? const Color(0xFF10B981) : Colors.white.withValues(alpha: 0.6),
-              ),
-              SizedBox(width: 4.w),
-            ],
-            Text(
-              label,
+        ...members.map((m) => _filterSheetTile(
+              label: m.fullName.isNotEmpty ? m.fullName : (m.username ?? 'Member'),
+              icon: Icons.person,
+              selected: _memberFilter == m.id,
+              onTap: () {
+                setState(() => _memberFilter = m.id);
+                _loadTransactions();
+              },
+            )),
+      ],
+    );
+  }
+
+  void _openTypeTimeFilterSheet() {
+    const types = <FamilyTransactionType?>[
+      null,
+      FamilyTransactionType.allocation,
+      FamilyTransactionType.spending,
+      FamilyTransactionType.refund,
+      FamilyTransactionType.contribution,
+    ];
+    _showFilterBottomSheet(
+      title: 'Filter activity',
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 20.w, top: 4.h, bottom: 4.h),
+          child: Text('Type',
               style: TextStyle(
-                color: isSelected ? const Color(0xFF10B981) : Colors.white.withValues(alpha: 0.6),
-                fontSize: 12.sp,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 11.sp)),
+        ),
+        ...types.map((t) => _filterSheetTile(
+              label: t == null ? 'All types' : _transactionTypeLabel(t),
+              selected: _transactionFilter == t,
+              onTap: () {
+                setState(() => _transactionFilter = t);
+                _loadTransactions();
+              },
+            )),
+        Divider(color: Colors.white.withValues(alpha: 0.08), height: 20.h),
+        Padding(
+          padding: EdgeInsets.only(left: 20.w, bottom: 4.h),
+          child: Text('Time',
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 11.sp)),
+        ),
+        _filterSheetTile(
+          label: 'All time',
+          selected: _dateFilter == null,
+          onTap: () {
+            setState(() => _dateFilter = null);
+            _loadTransactions();
+          },
+        ),
+        _filterSheetTile(
+          label: 'Last 7 days',
+          selected: _isPresetRange(7),
+          onTap: () => _applyPresetRange(7),
+        ),
+        _filterSheetTile(
+          label: 'Last 30 days',
+          selected: _isPresetRange(30),
+          onTap: () => _applyPresetRange(30),
+        ),
+        _filterSheetTile(
+          label: 'Custom range…',
+          icon: Icons.calendar_today_outlined,
+          selected: false,
+          onTap: _pickCustomDateRange,
+        ),
+      ],
+    );
+  }
+
+  bool _isPresetRange(int days) {
+    final r = _dateFilter;
+    if (r == null) return false;
+    final now = DateTime.now();
+    return r.end.difference(now).inDays.abs() <= 1 &&
+        r.start.difference(now.subtract(Duration(days: days))).inDays.abs() <= 1;
+  }
+
+  void _applyPresetRange(int days) {
+    final now = DateTime.now();
+    setState(() {
+      _dateFilter = DateTimeRange(
+        start: now.subtract(Duration(days: days)),
+        end: now,
+      );
+    });
+    _loadTransactions();
+  }
+
+  Future<void> _pickCustomDateRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 3),
+      lastDate: now,
+      initialDateRange: _dateFilter,
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.dark(primary: _kFamilyPurple),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      // showDateRangePicker returns dates at midnight; extend the end to the end
+      // of that day so transactions later on the last day aren't excluded by the
+      // backend's `created_at <= end` filter.
+      final normalized = DateTimeRange(
+        start: picked.start,
+        end: DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59),
+      );
+      setState(() => _dateFilter = normalized);
+      _loadTransactions();
+    }
+  }
+
+  void _showFilterBottomSheet({
+    required String title,
+    required List<Widget> children,
+  }) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 12.h),
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
               ),
             ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+              child: Text(
+                title,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(children: children),
+              ),
+            ),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _filterSheetTile({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+    IconData? icon,
+  }) {
+    return ListTile(
+      dense: true,
+      leading: icon != null
+          ? Icon(icon, size: 18.sp, color: Colors.white.withValues(alpha: 0.6))
+          : null,
+      title: Text(
+        label,
+        style: TextStyle(
+          color: selected ? _kFamilyPurple : Colors.white.withValues(alpha: 0.85),
+          fontSize: 14.sp,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      trailing: selected
+          ? Icon(Icons.check, size: 18.sp, color: _kFamilyPurple)
+          : null,
+      onTap: () {
+        Navigator.of(context).pop();
+        onTap();
+      },
     );
   }
 
@@ -3066,12 +3740,157 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             if ((transaction.merchantName?.isNotEmpty ?? false) &&
                 transaction.type == FamilyTransactionType.spending)
               _buildTxnDetailRow('Recipient', transaction.merchantName!),
+            if ((transaction.merchantCategory?.isNotEmpty ?? false) &&
+                transaction.merchantCategory!.toLowerCase() != 'general' &&
+                transaction.type == FamilyTransactionType.spending)
+              _buildTxnDetailRow('Category', transaction.merchantCategory!),
             _buildTxnDetailRow('Date', dateStr),
             _buildTxnDetailRow('Reference', reference),
+            SizedBox(height: 20.h),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _shareTransactionReceipt(
+                  transaction,
+                  familyName: familyName,
+                  memberName: memberName,
+                  reference: reference,
+                  dateStr: dateStr,
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _kFamilyPurple,
+                  side: BorderSide(color: _kFamilyPurple.withValues(alpha: 0.6)),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                icon: Icon(Icons.ios_share, size: 16.sp),
+                label: Text('Share receipt',
+                    style: TextStyle(
+                        fontSize: 14.sp, fontWeight: FontWeight.w600)),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  /// ASCII-safe currency label for a shared PDF (default Helvetica has no '₦'
+  /// glyph → tofu). Mirrors the family statement's PDF label.
+  static String _pdfCurrency(String code) {
+    switch (code.toUpperCase()) {
+      case 'NGN':
+        return 'NGN ';
+      case 'GBP':
+        return 'GBP ';
+      case 'EUR':
+        return 'EUR ';
+      case 'USD':
+        return 'USD ';
+      case 'ZAR':
+        return 'ZAR ';
+      case 'GHS':
+        return 'GHS ';
+      case 'KES':
+        return 'KES ';
+      default:
+        return '$code ';
+    }
+  }
+
+  /// Renders a single Family & Friends transaction to a shareable one-page PDF
+  /// receipt. Reuses the same ASCII-safe currency handling as the full statement.
+  Future<void> _shareTransactionReceipt(
+    FamilyTransaction transaction, {
+    required String familyName,
+    required String memberName,
+    required String reference,
+    required String dateStr,
+  }) async {
+    try {
+      final cur = _pdfCurrency(CurrencySymbols.currentCurrency);
+      final isCredit = transaction.type == FamilyTransactionType.allocation ||
+          transaction.type == FamilyTransactionType.refund ||
+          transaction.type == FamilyTransactionType.contribution;
+      final amountStr =
+          '${isCredit ? '+' : '-'}$cur${transaction.amount.abs().toStringAsFixed(2)}';
+
+      final doc = pw.Document();
+      pw.Widget row(String k, String v) => pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(vertical: 4),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(k, style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700)),
+                pw.Text(v, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+              ],
+            ),
+          );
+
+      doc.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a5,
+          build: (ctx) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Family & Friends Receipt',
+                  style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 4),
+              if (familyName.isNotEmpty)
+                pw.Text(familyName, style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+              pw.SizedBox(height: 16),
+              pw.Center(
+                child: pw.Text(amountStr,
+                    style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.SizedBox(height: 16),
+              pw.Divider(),
+              row('Type', transaction.type.displayName),
+              row('By', memberName),
+              if ((transaction.merchantName?.isNotEmpty ?? false) &&
+                  transaction.type == FamilyTransactionType.spending)
+                row('Recipient', transaction.merchantName!),
+              if ((transaction.merchantCategory?.isNotEmpty ?? false) &&
+                  transaction.merchantCategory!.toLowerCase() != 'general' &&
+                  transaction.type == FamilyTransactionType.spending)
+                row('Category', transaction.merchantCategory!),
+              row('Date', dateStr),
+              row('Reference', reference),
+              pw.SizedBox(height: 24),
+              pw.Text('Generated by Lazervault',
+                  style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+            ],
+          ),
+        ),
+      );
+
+      final bytes = await doc.save();
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: 'family-receipt-${reference.replaceAll(RegExp(r'[^A-Za-z0-9]'), '')}.pdf',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // Surface as a dialog (not a snackbar) per the family-flow UX rules.
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          title: const Text('Could not create receipt',
+              style: TextStyle(color: Colors.white)),
+          content: Text('Please try again.\n\n$e',
+              style: const TextStyle(color: Colors.white70)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildTxnDetailRow(String label, String value) {

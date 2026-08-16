@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:lazervault/core/services/remote_log_sink.dart';
 
 /// Simple logger for the LazerVault app.
@@ -76,6 +77,9 @@ class AppLogger {
   }
 
   static void debug(String message, {Object? error, StackTrace? stackTrace}) {
+    // PROD hygiene: debug is console-only (never Loki), so drop it entirely in
+    // release builds — no debug noise on store devices. info/warn/error remain.
+    if (kReleaseMode) return;
     developer.log(
       message,
       name: _tag,

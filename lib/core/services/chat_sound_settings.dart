@@ -31,7 +31,11 @@ class ChatSoundSettings {
   /// so the send/receive tones are soft by default. User-tunable in Settings.
   static const double _kDefaultVolume = 0.55;
 
-  bool _globalSound = true;
+  // Message sounds are OFF by default — a fresh install / never-toggled user
+  // gets silent send/receive tones; they opt IN via Settings › Chat message
+  // sound. (Vibration stays on by default.) Users who already set the toggle
+  // keep their stored choice — only the unset default changed.
+  bool _globalSound = false;
   bool _globalVibrate = true;
   double _globalVolume = _kDefaultVolume;
   final Map<String, bool> _chatSound = {};
@@ -44,7 +48,7 @@ class ChatSoundSettings {
     if (_ready) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      _globalSound = prefs.getBool(_kGlobalSound) ?? true;
+      _globalSound = prefs.getBool(_kGlobalSound) ?? false; // sound OFF by default
       _globalVibrate = prefs.getBool(_kGlobalVibrate) ?? true;
       _globalVolume =
           (prefs.getDouble(_kGlobalVolume) ?? _kDefaultVolume).clamp(0.0, 1.0);
@@ -60,7 +64,7 @@ class ChatSoundSettings {
         }
       }
     } catch (_) {
-      // Fall back to the safe defaults (both on) if prefs are unavailable.
+      // Fall back to the safe defaults (sound off, vibrate on) if prefs unavailable.
     }
     _ready = true;
   }

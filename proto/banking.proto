@@ -402,6 +402,16 @@ service BankingService {
         };
     }
 
+    // Consolidated fee quote for the deposit-link flow: one-time connect fee
+    // (first-time link only) + per-deposit fee for the chosen rail, each broken
+    // down into Mono cost + LazerVault margin. Powers the fee-disclosure modal.
+    rpc GetDepositFeeQuote(DepositFeeQuoteRequest) returns (DepositFeeQuoteResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/deposits/fee-quote"
+            body: "*"
+        };
+    }
+
 
     // Get available deposit methods for a country
     rpc GetDepositMethods(GetDepositMethodsRequest) returns (GetDepositMethodsResponse) {
@@ -1677,6 +1687,34 @@ message CalculateDepositFeeResponse {
     int64 fee = 5;                    // Fee in minor units
     int64 net_amount = 6;             // Amount after fee deduction
     string currency = 7;
+}
+
+// Consolidated fee quote for the deposit-link flow.
+message DepositFeeQuoteRequest {
+    int64 amount = 1;                 // Deposit amount in minor units (kobo)
+    bool use_recurring_access = 2;    // true = Direct Debit rail, false = one-time DirectPay
+    bool first_time_link = 3;         // include the one-time connect fee (bank not yet linked)
+}
+
+// One fee split into the Mono provider cost (MONO_COST) and the LazerVault
+// margin (REVENUE). total = mono_cost + lazervault_fee.
+message FeeLegBreakdown {
+    int64 mono_cost = 1;
+    int64 lazervault_fee = 2;
+    int64 total = 3;
+}
+
+message DepositFeeQuoteResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 amount = 4;                 // Original deposit amount
+    string currency = 5;
+    FeeLegBreakdown connect_fee = 6;  // One-time bank-link fee (all zero unless first_time_link)
+    FeeLegBreakdown deposit_fee = 7;  // Per-deposit fee for the chosen rail
+    int64 grand_total = 8;            // connect_fee.total + deposit_fee.total
+    int64 net_amount = 9;             // amount - deposit_fee.total (what lands in the wallet)
+    string rail = 10;                 // "direct_debit" | "direct_pay"
 }
 
 // Get Deposit Methods for a Country

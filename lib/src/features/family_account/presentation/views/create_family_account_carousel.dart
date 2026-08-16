@@ -71,6 +71,11 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
 
   // Step 3
   FundDistributionMode _mode = FundDistributionMode.sharedPool;
+  // Who may fund the pool: any_member (default) | creator_only | specific_members.
+  String _fundingPolicy = 'any_member';
+  // Draft members (by username) allowed to fund when policy == specific_members.
+  // Mapped to real member ids after the add-member loop at submit time.
+  final Set<String> _specificContributorUsernames = {};
 
   bool _isSubmitting = false;
 
@@ -123,11 +128,62 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
         return;
       }
     }
+    // On the members/allocation step, block advancing while the total
+    // allocation exceeds the funded pool — surface a modal rather than a
+    // silent inline hint (the user asked for an explicit acknowledgement).
+    if (_currentPage == 1 && _funding > 0 && _totalAllocated > _funding) {
+      _showAllocationErrorDialog(
+          'The total allocated to members (${CurrencySymbols.currentSymbol}${_totalAllocated.toStringAsFixed(2)}) exceeds the pool funding (${CurrencySymbols.currentSymbol}${_funding.toStringAsFixed(2)}). Top up the funding or lower the allocations before continuing.');
+      return;
+    }
     if (_currentPage < _totalPages - 1) {
       _goToPage(_currentPage + 1);
     } else {
       _submit();
     }
+  }
+
+  /// Modal shown when member allocations exceed the funded pool. Preferred
+  /// over the inline hint alone so the user must acknowledge before retrying.
+  void _showAllocationErrorDialog(String message) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'Allocation exceeds balance',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(
+            color: const Color(0xFFB0B7C3),
+            fontSize: 14.sp,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: _muted,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onBack() {
@@ -211,7 +267,10 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
 
     // 2) Invite each queued member (invite-only; no money moves now — the
     //    per-member allocation is stored on the invite and applied on accept).
+    //    Capture the created member id per username so specific_members funding
+    //    can be mapped to real ids at setup.
     final failed = <String>[];
+    final addedMemberIdByUsername = <String, String>{};
     for (final m in _draftMembers) {
       final res = await _awaitNext(
         (s) => s is FamilyMemberAdded || s is FamilyAccountError,
@@ -229,13 +288,23 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
         ),
         timeout: const Duration(seconds: 20),
       );
-      if (res is! FamilyMemberAdded) {
+      if (res is FamilyMemberAdded) {
+        addedMemberIdByUsername[m.user.username] = res.member.id;
+      } else {
         failed.add(m.user.username);
       }
     }
 
-    // 3) Activate the account with the chosen distribution mode. Allocations
-    //    only apply to active members (just the creator now), so pass none.
+    // 3) Activate the account with the chosen distribution mode + funding policy.
+    //    Allocations only apply to active members (just the creator now), so pass
+    //    none. For specific_members, map the selected usernames to the real member
+    //    ids just created (skips any that failed to invite).
+    final specificMemberIds = _fundingPolicy == 'specific_members'
+        ? _specificContributorUsernames
+            .map((u) => addedMemberIdByUsername[u])
+            .whereType<String>()
+            .toList()
+        : const <String>[];
     await _awaitNext(
       (s) => s is FamilyAccountSetupCompleted || s is FamilyAccountError,
       () => _cubit.setupAccount(
@@ -243,6 +312,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
         fundDistributionMode: _mode.value,
         spendingVisibilityEnabled: true,
         allocations: const [],
+        fundingPolicy: _fundingPolicy,
+        specificMemberIds: specificMemberIds,
       ),
     );
 
@@ -888,6 +959,20 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
           _sectionTitle('Distribution', 'How should the pool be shared among members?'),
           SizedBox(height: 16.h),
           ...FundDistributionMode.values.map(_modeCard),
+          // Who-can-fund selector. Only meaningful when member contributions are
+          // allowed — otherwise only the creator can fund regardless of policy.
+          if (_allowMemberContributions) ...[
+            SizedBox(height: 24.h),
+            _sectionTitle('Who can fund the pool', 'Choose who is allowed to add money.'),
+            SizedBox(height: 16.h),
+            _fundingPolicyCard('any_member', 'Any member',
+                'Every member can add money to the pool.', Icons.groups),
+            _fundingPolicyCard('creator_only', 'Only me',
+                'Only you (the creator) can add money to the pool.', Icons.person),
+            _fundingPolicyCard('specific_members', 'Specific members',
+                'Only members you pick can add money.', Icons.checklist),
+            if (_fundingPolicy == 'specific_members') _specificContributorsPicker(),
+          ],
           SizedBox(height: 24.h),
           _sectionTitle('Review', 'Confirm and create your account.'),
           SizedBox(height: 16.h),
@@ -914,6 +999,10 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                 SizedBox(height: 10.h),
                 _summaryRow('Member contributions',
                     _allowMemberContributions ? 'Allowed' : 'Off'),
+                if (_allowMemberContributions) ...[
+                  SizedBox(height: 10.h),
+                  _summaryRow('Who can fund', _fundingPolicyLabel()),
+                ],
               ],
             ),
           ),
@@ -967,6 +1056,133 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
               ),
             ),
             if (selected) Icon(Icons.check_circle, color: _blue, size: 22.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _fundingPolicyLabel() {
+    switch (_fundingPolicy) {
+      case 'creator_only':
+        return 'Only me';
+      case 'specific_members':
+        final n = _specificContributorUsernames.length;
+        return 'Specific members ($n)';
+      default:
+        return 'Any member';
+    }
+  }
+
+  Widget _fundingPolicyCard(
+      String value, String title, String desc, IconData icon) {
+    final selected = _fundingPolicy == value;
+    return GestureDetector(
+      onTap: () => setState(() => _fundingPolicy = value),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: selected ? _blue : _border, width: selected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: selected ? _blue.withValues(alpha: 0.2) : _border,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: selected ? _blue : _muted, size: 22.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 3.h),
+                  Text(desc,
+                      style: TextStyle(color: _muted, fontSize: 11.sp, height: 1.3)),
+                ],
+              ),
+            ),
+            if (selected) Icon(Icons.check_circle, color: _blue, size: 22.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Checklist of invited members that may fund the pool (specific_members).
+  /// The creator can always fund, so they're not listed. Invited members are
+  /// pending until they accept — the permission applies once they do.
+  Widget _specificContributorsPicker() {
+    if (_draftMembers.isEmpty) {
+      return Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: _border),
+        ),
+        child: Text(
+          'Add members on the previous step to choose who can fund. Until then, only you can fund the pool.',
+          style: TextStyle(color: _muted, fontSize: 12.sp, height: 1.4),
+        ),
+      );
+    }
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        children: [
+          for (final m in _draftMembers)
+            _contributorCheckTile(m),
+        ],
+      ),
+    );
+  }
+
+  Widget _contributorCheckTile(_DraftMember m) {
+    final username = m.user.username;
+    final checked = _specificContributorUsernames.contains(username);
+    final name = m.user.fullName.trim().isEmpty ? '@$username' : m.user.fullName.trim();
+    return InkWell(
+      onTap: () => setState(() {
+        if (checked) {
+          _specificContributorUsernames.remove(username);
+        } else {
+          _specificContributorUsernames.add(username);
+        }
+      }),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        child: Row(
+          children: [
+            Icon(
+              checked ? Icons.check_box : Icons.check_box_outline_blank,
+              color: checked ? _blue : _muted,
+              size: 20.sp,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(name,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+            ),
           ],
         ),
       ),

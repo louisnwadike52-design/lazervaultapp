@@ -88,6 +88,12 @@ class _FinancialConnectionsScreenState
   }
 
   /// Load saved internal recipients from the backend.
+  /// Stable value-signature of a saved-contacts list (id + name + avatar), used
+  /// to skip a redundant rebuild when a refresh returns the same contacts.
+  String _contactsSignature(List<RecipientModel> xs) => xs
+      .map((r) => '${r.internalUserId}|${r.name}|${r.profileImageUrl ?? ''}')
+      .join(',');
+
   Future<void> _loadSavedContacts() async {
     if (!mounted) return;
     // Only show the inline loading row on a true cold load (no cache yet).
@@ -157,6 +163,14 @@ class _FinancialConnectionsScreenState
           // Refresh the process-lifetime cache so the next entry is instant.
           p2pSavedContactsCache = deduped;
           p2pSavedContactsCacheLoaded = true;
+          // Skip the rebuild entirely when nothing changed (the common case on a
+          // warm re-entry from a chat/image viewer). A no-op setState would
+          // rebuild the whole screen and re-fade the "pill" avatars — the
+          // flicker. Only setState when the contact set or the loading flag
+          // actually changed.
+          final unchanged = !_contactsLoading &&
+              _contactsSignature(deduped) == _contactsSignature(_savedContacts);
+          if (unchanged) return;
           setState(() {
             _savedContacts = deduped;
             _contactsLoading = false;

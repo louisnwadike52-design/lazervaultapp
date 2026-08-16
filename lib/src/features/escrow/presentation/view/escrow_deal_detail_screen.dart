@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,17 +5,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
-import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import '../../data/services/escrow_image_upload_service.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_replay_player.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
+import '../widgets/escrow_attachment_picker.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
@@ -72,35 +71,33 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   Future<void> _markDelivered(EscrowDealEntity deal) async {
     final cubit = context.read<EscrowCubit>();
-    // One sheet captures an optional note AND an optional proof-of-delivery
-    // photo (the seller's side of the two-way image flow).
+    // One sheet captures an optional note AND optional proof-of-delivery media
+    // (photos and one short video, the seller's side of the evidence flow).
     final result = await _deliverySheet();
     if (result == null) return; // dismissed
-    String proofUrl = '';
-    final file = result.image;
-    if (file != null) {
-      try {
-        final uploader = EscrowImageUploadService(
-          endpoints: endpointRegistry,
-        );
-        proofUrl = (await uploader.uploadFromFile(file)).publicUrl;
-      } catch (_) {
-        // Non-fatal — mark delivered without the proof image.
-      }
+    // Attach the proof first so the post-mark reload shows it right away.
+    if (result.media.isNotEmpty) {
+      await attachEscrowMedia(
+        cubit: cubit,
+        dealId: deal.id,
+        purpose: 'delivery_proof',
+        items: result.media,
+      );
     }
+    // Keep the legacy single-image field in step for older receipts/back-compat.
+    final firstImage = result.media.where((m) => !m.isVideo);
     await cubit.markDelivered(
       dealId: deal.id,
       deliveryNote: result.note,
-      sellerProofImageUrl: proofUrl,
+      sellerProofImageUrl: firstImage.isEmpty ? '' : firstImage.first.publicUrl,
     );
   }
 
   /// Bottom sheet for the seller to mark delivery: optional note + optional
-  /// proof-of-delivery photo. Returns null if dismissed.
+  /// proof-of-delivery media. Returns null if dismissed.
   Future<_DeliveryResult?> _deliverySheet() async {
     final noteCtrl = TextEditingController();
-    File? picked;
-    final picker = ImagePicker();
+    List<EscrowMediaUploadResult> media = const [];
     return showModalBottomSheet<_DeliveryResult>(
       context: context,
       isScrollControlled: true,
@@ -108,112 +105,77 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheet) => Padding(
-            padding: EdgeInsets.only(
-              left: 20.w,
-              right: 20.w,
-              top: 20.h,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20.h,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  Icon(Icons.local_shipping_outlined,
-                      color: EscrowTheme.primary, size: 22.sp),
-                  SizedBox(width: 10.w),
-                  Text('Mark as delivered',
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20.w,
+            right: 20.w,
+            top: 20.h,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20.h,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.local_shipping_outlined,
+                    color: EscrowTheme.primary, size: 22.sp),
+                SizedBox(width: 10.w),
+                Text('Mark as delivered',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700)),
+              ]),
+              SizedBox(height: 6.h),
+              Text('Show what you delivered so the buyer can confirm.',
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
+              SizedBox(height: 16.h),
+              EscrowAttachmentPicker(
+                onChanged: (m) => media = m,
+                onError: (msg) => showAppSnackbar('Escrow Pay', msg,
+                    type: AppSnackbarType.error),
+              ),
+              SizedBox(height: 14.h),
+              TextField(
+                controller: noteCtrl,
+                maxLines: 2,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'Add a note (optional)',
+                  hintStyle: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 13.sp),
+                  filled: true,
+                  fillColor: EscrowTheme.bg,
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: EscrowTheme.border)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: EscrowTheme.primary)),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(
+                      ctx,
+                      _DeliveryResult(note: noteCtrl.text.trim(), media: media)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: EscrowTheme.primary,
+                    padding: EdgeInsets.symmetric(vertical: 15.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text('Mark delivered',
                       style: GoogleFonts.inter(
                           color: Colors.white,
-                          fontSize: 16.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w700)),
-                ]),
-                SizedBox(height: 6.h),
-                Text('Add a photo of what you delivered so the buyer can confirm.',
-                    style: GoogleFonts.inter(
-                        color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
-                SizedBox(height: 16.h),
-                GestureDetector(
-                  onTap: () async {
-                    final XFile? x = await picker.pickImage(
-                        source: ImageSource.gallery,
-                        maxWidth: 1600,
-                        imageQuality: 85);
-                    if (x != null) setSheet(() => picked = File(x.path));
-                  },
-                  child: Container(
-                    height: picked != null ? 170.h : 92.h,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: EscrowTheme.bg,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: EscrowTheme.border),
-                      image: picked != null
-                          ? DecorationImage(
-                              image: FileImage(picked!), fit: BoxFit.cover)
-                          : null,
-                    ),
-                    child: picked != null
-                        ? null
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_a_photo_outlined,
-                                  color: EscrowTheme.primary, size: 22.sp),
-                              SizedBox(height: 6.h),
-                              Text('Add proof photo (optional)',
-                                  style: GoogleFonts.inter(
-                                      color: EscrowTheme.textSecondary,
-                                      fontSize: 12.sp)),
-                            ],
-                          ),
-                  ),
                 ),
-                SizedBox(height: 14.h),
-                TextField(
-                  controller: noteCtrl,
-                  maxLines: 2,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-                  decoration: InputDecoration(
-                    hintText: 'Add a note (optional)',
-                    hintStyle: GoogleFonts.inter(
-                        color: EscrowTheme.textSecondary, fontSize: 13.sp),
-                    filled: true,
-                    fillColor: EscrowTheme.bg,
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: EscrowTheme.border)),
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide:
-                            const BorderSide(color: EscrowTheme.primary)),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(
-                        ctx,
-                        _DeliveryResult(
-                            note: noteCtrl.text.trim(), image: picked)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: EscrowTheme.primary,
-                      padding: EdgeInsets.symmetric(vertical: 15.h),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r)),
-                    ),
-                    child: Text('Mark delivered',
-                        style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -239,11 +201,59 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final cubit = context.read<EscrowCubit>();
     final result = await _disputeSheet();
     if (result == null) return;
+    // Attach evidence media first so the reload after opening shows it.
+    if (result.media.isNotEmpty) {
+      await attachEscrowMedia(
+        cubit: cubit,
+        dealId: deal.id,
+        purpose: 'dispute_evidence',
+        items: result.media,
+      );
+    }
     await cubit.openDispute(
       dealId: deal.id,
       reason: result.reason,
       evidenceUrl: result.evidence,
     );
+  }
+
+  /// Buyer asks for a refund after delivery: a required reason plus optional
+  /// evidence media, then requestRefund.
+  Future<void> _requestRefund(EscrowDealEntity deal) async {
+    final cubit = context.read<EscrowCubit>();
+    final result = await _refundRequestSheet();
+    if (result == null) return;
+    if (result.media.isNotEmpty) {
+      await attachEscrowMedia(
+        cubit: cubit,
+        dealId: deal.id,
+        purpose: 'refund_evidence',
+        items: result.media,
+      );
+    }
+    await cubit.requestRefund(dealId: deal.id, reason: result.reason);
+  }
+
+  Future<void> _acceptRefund(EscrowDealEntity deal) async {
+    final cubit = context.read<EscrowCubit>();
+    HapticFeedback.mediumImpact();
+    await cubit.respondRefund(dealId: deal.id, accept: true);
+  }
+
+  Future<void> _declineRefund(EscrowDealEntity deal) async {
+    final cubit = context.read<EscrowCubit>();
+    final note = await _promptSheet(
+      title: 'Decline the refund',
+      subtitle:
+          'Tell us why. We send this to our team to review and decide fairly.',
+      hint: 'Why are you declining? (optional)',
+      confirmLabel: 'Send to review',
+      icon: Icons.flag_outlined,
+      accent: EscrowTheme.warning,
+      required: false,
+    );
+    if (note == null) return;
+    await cubit.respondRefund(dealId: deal.id, accept: false, note: note);
   }
 
   /// Shared drag-handle bottom sheet collecting a single optional/required note.
@@ -288,12 +298,15 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     );
   }
 
-  /// Dispute sheet: a required problem description plus an optional evidence
-  /// link/description that is forwarded to the backend.
-  Future<({String reason, String evidence})?> _disputeSheet() async {
+  /// Dispute sheet: a required problem description, an optional evidence
+  /// link/description, and optional evidence media (photos and a short video).
+  Future<({String reason, String evidence, List<EscrowMediaUploadResult> media})?>
+      _disputeSheet() async {
     final reasonCtrl = TextEditingController();
     final evidenceCtrl = TextEditingController();
-    return showModalBottomSheet<({String reason, String evidence})>(
+    List<EscrowMediaUploadResult> media = const [];
+    return showModalBottomSheet<
+        ({String reason, String evidence, List<EscrowMediaUploadResult> media})>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -308,14 +321,21 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               title: 'Open a dispute',
               subtitle: 'Tell us what went wrong. Our team reviews every dispute.',
               children: [
-                _sheetLabel('What\'s the problem?'),
+                _sheetLabel('What is the problem?'),
                 _sheetField(reasonCtrl, 'Describe the issue',
                     onChanged: (_) => setSheetState(() {})),
                 SizedBox(height: 14.h),
                 _sheetLabel('Evidence link or details (optional)'),
                 _sheetField(evidenceCtrl,
-                    'Paste a link to a photo/chat, or describe your proof',
+                    'Paste a link to a photo or chat, or describe your proof',
                     maxLines: 2),
+                SizedBox(height: 14.h),
+                _sheetLabel('Add photos or a short video (optional)'),
+                EscrowAttachmentPicker(
+                  onChanged: (m) => media = m,
+                  onError: (msg) => showAppSnackbar('Escrow Pay', msg,
+                      type: AppSnackbarType.error),
+                ),
                 SizedBox(height: 18.h),
                 AppLoadingButton(
                   text: 'Submit dispute',
@@ -324,6 +344,59 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                       ? () => Navigator.pop(ctx, (
                             reason: reasonCtrl.text.trim(),
                             evidence: evidenceCtrl.text.trim(),
+                            media: media,
+                          ))
+                      : null,
+                ),
+              ],
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  /// Refund-request sheet (buyer, after delivery): a required reason plus
+  /// optional evidence media.
+  Future<({String reason, List<EscrowMediaUploadResult> media})?>
+      _refundRequestSheet() async {
+    final reasonCtrl = TextEditingController();
+    List<EscrowMediaUploadResult> media = const [];
+    return showModalBottomSheet<
+        ({String reason, List<EscrowMediaUploadResult> media})>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setSheetState) {
+          final canSubmit = reasonCtrl.text.trim().isNotEmpty;
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: _sheetShell(
+              icon: Icons.reply_rounded,
+              accent: EscrowTheme.amber,
+              title: 'Request a refund',
+              subtitle:
+                  'Tell the seller why. They can accept it, or it goes to our team.',
+              children: [
+                _sheetLabel('Why do you want a refund?'),
+                _sheetField(reasonCtrl, 'Describe what went wrong',
+                    onChanged: (_) => setSheetState(() {})),
+                SizedBox(height: 14.h),
+                _sheetLabel('Add photos or a short video (optional)'),
+                EscrowAttachmentPicker(
+                  onChanged: (m) => media = m,
+                  onError: (msg) => showAppSnackbar('Escrow Pay', msg,
+                      type: AppSnackbarType.error),
+                ),
+                SizedBox(height: 18.h),
+                AppLoadingButton(
+                  text: 'Request refund',
+                  backgroundColor: EscrowTheme.amber,
+                  onPressed: canSubmit
+                      ? () => Navigator.pop(ctx, (
+                            reason: reasonCtrl.text.trim(),
+                            media: media,
                           ))
                       : null,
                 ),
@@ -447,7 +520,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       body: BlocConsumer<EscrowCubit, EscrowState>(
         listener: (context, state) {
           if (state is EscrowError) {
-            showAppSnackbar('Escrow', state.message, type: AppSnackbarType.error);
+            showAppSnackbar('Escrow Pay', state.message, type: AppSnackbarType.error);
           }
           if (state is EscrowActionSuccess) {
             final d = state.deal;
@@ -460,7 +533,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               Get.offNamed(AppRoutes.escrowReceipt,
                   arguments: {'deal': d, 'kind': 'refunded'});
             } else {
-              showAppSnackbar('Escrow', state.message,
+              showAppSnackbar('Escrow Pay', state.message,
                   type: AppSnackbarType.success);
               context.read<EscrowCubit>().loadDeal(_dealId);
             }
@@ -520,14 +593,11 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               SizedBox(height: 16.h),
               _section('Terms', deal.description),
             ],
-            if (deal.buyerItemImageUrl.isNotEmpty) ...[
+            if (deal.isRefundRequested && deal.refundRequest != null) ...[
               SizedBox(height: 16.h),
-              _imageSection('What the buyer wants', deal.buyerItemImageUrl),
+              _refundRequestCard(deal.refundRequest!, isBuyer),
             ],
-            if (deal.sellerProofImageUrl.isNotEmpty) ...[
-              SizedBox(height: 16.h),
-              _imageSection('Delivery proof', deal.sellerProofImageUrl),
-            ],
+            ..._evidenceGallerySlivers(deal),
             SizedBox(height: 16.h),
             _parties(deal, isBuyer),
             SizedBox(height: 16.h),
@@ -631,46 +701,216 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         ],
       );
 
-  /// An image section (buyer's item / seller's proof) — tap to view full-screen.
-  Widget _imageSection(String title, String url) => Column(
+  /// Buyer's post-delivery refund request: the reason, the response window, and
+  /// (once answered) the seller's note.
+  Widget _refundRequestCard(EscrowRefundRequestEntity r, bool isBuyer) {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: EscrowTheme.amber.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: EscrowTheme.amber.withValues(alpha: 0.4)),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: GoogleFonts.inter(
-                  color: EscrowTheme.textSecondary,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600)),
-          SizedBox(height: 8.h),
-          GestureDetector(
-            onTap: () => _openImageViewer(url),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: Image.network(
-                url,
-                height: 180.h,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                loadingBuilder: (c, child, progress) => progress == null
-                    ? child
-                    : Container(
-                        height: 180.h,
-                        color: EscrowTheme.card,
-                        alignment: Alignment.center,
-                        child: const CircularProgressIndicator(
-                            color: EscrowTheme.primary, strokeWidth: 2),
-                      ),
-                errorBuilder: (c, e, s) => Container(
-                  height: 180.h,
+          Row(children: [
+            Icon(Icons.reply_rounded, color: EscrowTheme.amber, size: 18.sp),
+            SizedBox(width: 8.w),
+            Text(isBuyer ? 'Your refund request' : 'Refund requested',
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.amber,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700)),
+          ]),
+          if (r.reason.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            Text(r.reason,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+          ],
+          if (r.responseDeadlineAt != null) ...[
+            SizedBox(height: 8.h),
+            Text(_deadlineWords(r.responseDeadlineAt!, isBuyer),
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Human wording for a refund response deadline, e.g. "The seller has about
+  /// 2 days to respond." Never uses a dash as a connector.
+  String _deadlineWords(DateTime deadline, bool isBuyer) {
+    final now = DateTime.now();
+    final who = isBuyer ? 'The seller' : 'You';
+    if (deadline.isBefore(now)) {
+      return isBuyer
+          ? 'The response window has passed. Our team will step in.'
+          : 'The response window has passed. Our team will step in.';
+    }
+    final diff = deadline.difference(now);
+    String span;
+    if (diff.inHours >= 48) {
+      span = 'about ${(diff.inHours / 24).round()} days';
+    } else if (diff.inHours >= 1) {
+      span = 'about ${diff.inHours} hours';
+    } else {
+      span = 'less than an hour';
+    }
+    return '$who has $span to respond.';
+  }
+
+  /// Builds the evidence gallery sections (with leading spacers) grouped by
+  /// purpose. Falls back to the legacy single-image fields for older deals that
+  /// predate rich attachments.
+  List<Widget> _evidenceGallerySlivers(EscrowDealEntity deal) {
+    final groups = <String, List<EscrowAttachmentEntity>>{};
+    for (final a in deal.attachments) {
+      (groups[a.purpose] ??= []).add(a);
+    }
+    if (!groups.containsKey('deal_item') && deal.buyerItemImageUrl.isNotEmpty) {
+      groups['deal_item'] = [
+        EscrowAttachmentEntity(
+            id: 'legacy-item',
+            purpose: 'deal_item',
+            mediaKind: 'image',
+            url: deal.buyerItemImageUrl),
+      ];
+    }
+    if (!groups.containsKey('delivery_proof') &&
+        deal.sellerProofImageUrl.isNotEmpty) {
+      groups['delivery_proof'] = [
+        EscrowAttachmentEntity(
+            id: 'legacy-proof',
+            purpose: 'delivery_proof',
+            mediaKind: 'image',
+            url: deal.sellerProofImageUrl),
+      ];
+    }
+    if (groups.isEmpty) return const [];
+
+    const order = [
+      'deal_item',
+      'delivery_proof',
+      'dispute_evidence',
+      'refund_evidence',
+    ];
+    final out = <Widget>[];
+    for (final purpose in order) {
+      final items = groups[purpose];
+      if (items == null || items.isEmpty) continue;
+      out.add(SizedBox(height: 16.h));
+      out.add(_evidenceSection(_purposeLabel(purpose), items));
+    }
+    return out;
+  }
+
+  String _purposeLabel(String purpose) {
+    switch (purpose) {
+      case 'deal_item':
+        return 'What the buyer wants';
+      case 'delivery_proof':
+        return 'Delivery proof';
+      case 'dispute_evidence':
+        return 'Dispute evidence';
+      case 'refund_evidence':
+        return 'Refund evidence';
+      default:
+        return 'Attachments';
+    }
+  }
+
+  Widget _evidenceSection(String title, List<EscrowAttachmentEntity> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: GoogleFonts.inter(
+                color: EscrowTheme.textSecondary,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600)),
+        SizedBox(height: 8.h),
+        Wrap(
+          spacing: 10.w,
+          runSpacing: 10.h,
+          children: [for (final a in items) _evidenceThumb(a)],
+        ),
+      ],
+    );
+  }
+
+  Widget _evidenceThumb(EscrowAttachmentEntity a) {
+    final box = 104.w;
+    if (a.isVideo) {
+      return GestureDetector(
+        onTap: () => SprayReplayPlayer.open(context,
+            url: a.url, title: 'Evidence video'),
+        child: Container(
+          width: box,
+          height: box,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: EscrowTheme.border),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(Icons.play_circle_fill,
+                  color: Colors.white.withValues(alpha: 0.9), size: 32.sp),
+              if (a.durationSeconds > 0)
+                Positioned(
+                  bottom: 6.h,
+                  right: 6.w,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text('${a.durationSeconds}s',
+                        style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 9.5.sp)),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: () => _openImageViewer(a.url),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: Image.network(
+          a.url,
+          width: box,
+          height: box,
+          fit: BoxFit.cover,
+          loadingBuilder: (c, child, progress) => progress == null
+              ? child
+              : Container(
+                  width: box,
+                  height: box,
                   color: EscrowTheme.card,
                   alignment: Alignment.center,
-                  child: Icon(Icons.broken_image_outlined,
-                      color: EscrowTheme.textSecondary, size: 28.sp),
+                  child: const CircularProgressIndicator(
+                      color: EscrowTheme.primary, strokeWidth: 2),
                 ),
-              ),
-            ),
+          errorBuilder: (c, e, s) => Container(
+            width: box,
+            height: box,
+            color: EscrowTheme.card,
+            alignment: Alignment.center,
+            child: Icon(Icons.broken_image_outlined,
+                color: EscrowTheme.textSecondary, size: 24.sp),
           ),
-        ],
-      );
+        ),
+      ),
+    );
+  }
 
   void _openImageViewer(String url) {
     Navigator.of(context).push(
@@ -775,6 +1015,13 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         return 'Cancelled & refunded';
       case 'disputed':
         return 'Dispute opened';
+      case 'refund_requested':
+        return 'Refund requested';
+      case 'refund_accepted':
+      case 'refunded':
+        return 'Refund sent to buyer';
+      case 'refund_declined':
+        return 'Refund declined, sent to review';
       default:
         return t;
     }
@@ -787,6 +1034,15 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     }
     if (deal.canRelease(uid)) {
       widgets.add(_primaryBtn('Confirm delivery & release funds', () => _release(deal)));
+    }
+    // Seller responds to a pending refund request.
+    if (deal.canRespondRefund(uid)) {
+      widgets.add(_primaryBtn('Accept and refund', () => _acceptRefund(deal)));
+      widgets.add(_secondaryBtn('Decline', EscrowTheme.warning, () => _declineRefund(deal)));
+    }
+    // Buyer asks for a refund after delivery.
+    if (deal.canRequestRefund(uid)) {
+      widgets.add(_secondaryBtn('Request a refund', EscrowTheme.amber, () => _requestRefund(deal)));
     }
     if (deal.canDispute(uid)) {
       widgets.add(_secondaryBtn('Open a dispute', EscrowTheme.warning, () => _dispute(deal)));
@@ -876,9 +1132,9 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 }
 
 /// Result of the seller's mark-delivered sheet: an optional note + optional
-/// proof-of-delivery image file (uploaded to storage before markDelivered).
+/// proof-of-delivery media (already uploaded to storage by the picker).
 class _DeliveryResult {
   final String note;
-  final File? image;
-  const _DeliveryResult({required this.note, this.image});
+  final List<EscrowMediaUploadResult> media;
+  const _DeliveryResult({required this.note, this.media = const []});
 }

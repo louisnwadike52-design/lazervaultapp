@@ -8,19 +8,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
-import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/schedule_repeat_sheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 
 /// Result of the short-flow amount sheet: the amount plus the optional
-/// scheduling / recurring / category the user attached (parity with the long
-/// flow). Replaces the old bare `int` return.
+/// note / scheduling / recurring / category the user attached (parity with the
+/// long flow). Replaces the old bare `int` return.
 class SendFundsAmountResult {
   final int amountMinor;
+  final String? note;
   final DateTime? scheduledAt;
   final ServiceCategory? category;
   final RecurringTransferConfig? recurring;
   const SendFundsAmountResult({
     required this.amountMinor,
+    this.note,
     this.scheduledAt,
     this.category,
     this.recurring,
@@ -42,9 +44,10 @@ class SendFundsAmountSheet extends StatefulWidget {
   final String? destinationBankCode;
   final double availableBalanceMajor;
 
-  /// Human label for the source account being debited (the dashboard's active
-  /// swiped account) — e.g. "Main • ••••7890". Shown so the user sees which
-  /// account + balance the payment uses.
+  /// Short label for the source account being debited (the dashboard's active
+  /// swiped account) — just the account name/type, e.g. "Personal" (no number
+  /// or mask). Shown compactly beside the recipient in the header, with the
+  /// balance beneath it.
   final String sourceAccountLabel;
 
   /// The screen's TransferCubit (provided above the sheet). Reused for the
@@ -82,6 +85,7 @@ class SendFundsAmountSheet extends StatefulWidget {
 
 class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _narrationController = TextEditingController();
   final FocusNode _amountFocus = FocusNode();
   Timer? _feeDebounce;
   String? _error;
@@ -111,6 +115,10 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
   RecurringTransferConfig? _recurring;
 
   Future<void> _pickCategory() async {
+    // Release the autofocused amount field BEFORE opening the child sheet — the
+    // lingering keyboard otherwise sat on top of the category sheet so it read as
+    // a black overlay with "nothing happening". (Same fix as _pickScheduleRepeat.)
+    FocusScope.of(context).unfocus();
     final picked = await CategorySelectionBottomSheet.show(
       context,
       serviceName: 'transfer',
@@ -120,49 +128,30 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
     if (picked != null && mounted) setState(() => _category = picked);
   }
 
-  Future<void> _pickSchedule() async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _scheduledAt ?? now.add(const Duration(days: 1)),
-      firstDate: now.add(const Duration(days: 1)),
-      lastDate: now.add(const Duration(days: 90)),
-      helpText: 'Schedule transfer date',
+  /// One entry point for BOTH one-off scheduling and recurring — opens the
+  /// combined [ScheduleRepeatSheet]. Keeps the amount sheet uncluttered (a single
+  /// CTA row instead of two separate controls) and enforces mutual exclusivity.
+  Future<void> _pickScheduleRepeat() async {
+    // Release the autofocused amount field BEFORE opening the child sheet, so its
+    // keyboard doesn't linger and cover the schedule sheet's Done button.
+    FocusScope.of(context).unfocus();
+    final result = await ScheduleRepeatSheet.show(
+      context,
+      scheduledAt: _scheduledAt,
+      recurring: _recurring,
     );
-    if (date == null || !mounted) return;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_scheduledAt ?? now),
-      helpText: 'Schedule transfer time',
-    );
-    if (time == null || !mounted) return;
+    if (result == null || !mounted) return; // dismissed → keep current
     setState(() {
-      _scheduledAt =
-          DateTime(date.year, date.month, date.day, time.hour, time.minute);
-      _recurring = null; // mutual exclusivity
+      _scheduledAt = result.scheduledAt;
+      _recurring = result.recurring;
     });
   }
 
-  Future<void> _toggleRecurring(bool on) async {
-    if (!on) {
-      setState(() => _recurring = null);
-      return;
-    }
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => RecurringTransferModal(
-        initialConfig: _recurring,
-        onConfigured: (config) {
-          if (!mounted) return;
-          setState(() {
-            _recurring = config;
-            _scheduledAt = null; // mutual exclusivity
-          });
-        },
-      ),
-    );
+  /// Summary shown on the schedule/repeat CTA.
+  String get _scheduleRepeatValue {
+    if (_recurring != null) return _recurring!.summary;
+    if (_scheduledAt != null) return _formatSchedule(_scheduledAt!);
+    return 'Send now';
   }
 
   static const List<int> _quickAmounts = [1000, 2000, 5000, 10000];
@@ -303,8 +292,10 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
           : 'Amount exceeds your available balance');
       return;
     }
+    final note = _narrationController.text.trim();
     Navigator.of(context).pop(SendFundsAmountResult(
       amountMinor: minor,
+      note: note.isEmpty ? null : note,
       scheduledAt: _scheduledAt,
       category: _category,
       recurring: _recurring,
@@ -315,6 +306,7 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
   void dispose() {
     _feeDebounce?.cancel();
     _controller.dispose();
+    _narrationController.dispose();
     _amountFocus.dispose();
     super.dispose();
   }
@@ -333,17 +325,29 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
       padding: EdgeInsets.only(bottom: bottomInset),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxSheetHeight),
-        child: Container(
+        // Tap any empty area of the sheet to dismiss the keyboard so the pinned
+        // Continue footer is reachable (sheet is isDismissible:false + the amount
+        // field autofocuses, so this is the only way to drop the keyboard).
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Container(
           decoration: const BoxDecoration(
             color: SendFundsAmountSheet._bg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Fixed header — always visible; never scrolls off the top so the
+              // recipient/source stays pinned regardless of the keyboard.
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 // Drag handle centered, with a close (X) at the top-right. The
                 // sheet is non-dismissible by tapping outside, so the X is the
                 // explicit way out (e.g. on an insufficient-balance state).
@@ -374,8 +378,12 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                   ],
                 ),
                 SizedBox(height: 16.h),
-                // Recipient header — avatar + name + bank.
+                // Header — recipient (avatar + name + bank) on the left, source
+                // account ("From <name>" + balance) compactly on the right. The
+                // source no longer has its own card/number/mask — just the type
+                // and balance, so the sheet stays uncluttered.
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CircleAvatar(
                       radius: 22.r,
@@ -420,67 +428,57 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                         ],
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 16.h),
-                // Source account (the dashboard's active swiped account) + balance.
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: SendFundsAmountSheet._card,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.account_balance_wallet_outlined,
-                          color: SendFundsAmountSheet._purple, size: 20.sp),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('From',
-                                style: GoogleFonts.inter(
-                                    color: SendFundsAmountSheet._textSecondary,
-                                    fontSize: 11.sp)),
-                            SizedBox(height: 1.h),
-                            Text(
-                              widget.sourceAccountLabel,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                color: SendFundsAmountSheet._textPrimary,
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text('Balance',
-                              style: GoogleFonts.inter(
-                                  color: SendFundsAmountSheet._textSecondary,
-                                  fontSize: 11.sp)),
-                          SizedBox(height: 1.h),
-                          Text(
-                            '$_symbol${widget.availableBalanceMajor.toStringAsFixed(2)}',
+                    SizedBox(width: 10.w),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('From',
+                            style: GoogleFonts.inter(
+                                color: SendFundsAmountSheet._textSecondary,
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w500)),
+                        SizedBox(height: 1.h),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 120.w),
+                          child: Text(
+                            widget.sourceAccountLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
                             style: GoogleFonts.inter(
                               color: SendFundsAmountSheet._textPrimary,
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                        SizedBox(height: 1.h),
+                        Text(
+                          '$_symbol${widget.availableBalanceMajor.toStringAsFixed(2)}',
+                          style: GoogleFonts.inter(
+                            color: SendFundsAmountSheet._textSecondary,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                SizedBox(height: 16.h),
+                  ],
+                ),
+              ),
+              // Scrollable middle — amount, quick pills, note, fee, category and
+              // the schedule CTA. Scrolls only if the keyboard makes it tight;
+              // the header above and Continue below stay pinned.
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                 Text('Amount',
                     style: GoogleFonts.inter(
                         color: SendFundsAmountSheet._textSecondary,
@@ -495,7 +493,7 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                   child: Container(
                     width: double.infinity,
                     padding:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color:
                           SendFundsAmountSheet._purple.withValues(alpha: 0.04),
@@ -523,7 +521,7 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                               _symbol,
                               style: GoogleFonts.inter(
                                 color: SendFundsAmountSheet._textSecondary,
-                                fontSize: 30.sp,
+                                fontSize: 26.sp,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -545,7 +543,7 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                               ],
                               style: GoogleFonts.inter(
                                 color: SendFundsAmountSheet._textPrimary,
-                                fontSize: 36.sp,
+                                fontSize: 32.sp,
                                 fontWeight: FontWeight.w800,
                                 height: 1.0,
                               ),
@@ -556,7 +554,7 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                                 hintText: '0',
                                 hintStyle: GoogleFonts.inter(
                                   color: Colors.grey.shade300,
-                                  fontSize: 36.sp,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.w800,
                                   height: 1.0,
                                 ),
@@ -608,7 +606,44 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                     );
                   }).toList(),
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 14.h),
+                // Narration / note (optional) — below the amount, before category.
+                TextField(
+                  controller: _narrationController,
+                  textInputAction: TextInputAction.done,
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLength: 100,
+                  style: GoogleFonts.inter(
+                    color: SendFundsAmountSheet._textPrimary,
+                    fontSize: 13.sp,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    counterText: '',
+                    hintText: "What's this for? (optional)",
+                    hintStyle: GoogleFonts.inter(
+                        color: SendFundsAmountSheet._textSecondary,
+                        fontSize: 13.sp),
+                    prefixIcon: Icon(Icons.notes_rounded,
+                        size: 18.sp,
+                        color: SendFundsAmountSheet._textSecondary),
+                    filled: true,
+                    fillColor: SendFundsAmountSheet._card,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: SendFundsAmountSheet._purple
+                              .withValues(alpha: 0.4)),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
                 // Live fee — internal is free; external quotes via the cubit.
                 BlocBuilder<TransferCubit, TransferState>(
                   bloc: widget.transferCubit,
@@ -642,54 +677,26 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                   value: _category?.displayName ?? 'Optional',
                   onTap: _pickCategory,
                 ),
-                if (_recurring == null)
-                  _optionTile(
-                    icon: Icons.schedule,
-                    label: 'Schedule',
-                    value: _scheduledAt == null
-                        ? 'Send now'
-                        : _formatSchedule(_scheduledAt!),
-                    onTap: _pickSchedule,
+                // One CTA for BOTH scheduling and recurring — opens the combined
+                // ScheduleRepeatSheet. Replaces the old inline Schedule tile +
+                // Repeat switch so the sheet stays clean.
+                _optionTile(
+                  icon: _recurring != null
+                      ? Icons.repeat_rounded
+                      : Icons.schedule_rounded,
+                  label: 'Schedule / repeat',
+                  value: _scheduleRepeatValue,
+                  onTap: _pickScheduleRepeat,
+                ),
+                    ],
                   ),
-                if (_scheduledAt == null)
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 6.h),
-                    child: Row(
-                      children: [
-                        Icon(Icons.repeat,
-                            size: 18.sp, color: SendFundsAmountSheet._purple),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Repeat',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color:
-                                          SendFundsAmountSheet._textPrimary)),
-                              if (_recurring != null)
-                                Text(_recurring!.summary,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 11.sp,
-                                        color: SendFundsAmountSheet
-                                            ._textSecondary)),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: _recurring != null,
-                          onChanged: _toggleRecurring,
-                          activeThumbColor: SendFundsAmountSheet._purple,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ],
-                    ),
-                  ),
-                SizedBox(height: 18.h),
-                SizedBox(
+                ),
+              ),
+              // Fixed footer — Continue is always visible and reachable, even
+              // with the keyboard up and a tall middle.
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
+                child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _continue,
@@ -709,9 +716,10 @@ class _SendFundsAmountSheetState extends State<SendFundsAmountSheet> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
         ),
       ),
     );

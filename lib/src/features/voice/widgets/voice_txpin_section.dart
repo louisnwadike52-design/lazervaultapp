@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/src/features/settings/presentation/theme/settings_theme.dart';
 import '../services/voice_settings_service.dart';
 
 /// Per-user voice transaction-PIN controls, reusable on the voice settings screen
@@ -11,17 +12,29 @@ import '../services/voice_settings_service.dart';
 /// [VoiceSettingsService] (voice gateway → auth-service). When the PIN is turned
 /// off here, voice money moves complete without any on-screen PIN.
 class VoiceTxPinSection extends StatefulWidget {
-  const VoiceTxPinSection({super.key});
+  /// When true, render with the dark palette used by the central voice settings
+  /// screen (which stays dark). Default is the light settings-page palette used
+  /// inside the settings hub accordion.
+  final bool dark;
+  const VoiceTxPinSection({super.key, this.dark = false});
 
   @override
   State<VoiceTxPinSection> createState() => _VoiceTxPinSectionState();
 }
 
 class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
-  static const Color _card = Color(0xFF1F1F1F);
-  static const Color _divider = Color(0xFF2D2D2D);
-  static const Color _primary = Color(0xFF3B82F6);
-  static const Color _textSecondary = Color(0xFF9CA3AF);
+  // Palette resolves per host: light (settings-page accordion, default) so it
+  // matches the surrounding settings sections, or dark when embedded in the
+  // central voice settings screen (which stays dark).
+  Color get _card => widget.dark ? const Color(0xFF1F1F1F) : SettingsTheme.card;
+  Color get _divider =>
+      widget.dark ? const Color(0xFF2D2D2D) : SettingsTheme.divider;
+  Color get _primary =>
+      widget.dark ? const Color(0xFF3B82F6) : SettingsTheme.brand;
+  Color get _textPrimary =>
+      widget.dark ? Colors.white : SettingsTheme.textPrimary;
+  Color get _textSecondary =>
+      widget.dark ? const Color(0xFF9CA3AF) : SettingsTheme.textSecondary;
 
   final VoiceSettingsService _service = VoiceSettingsService();
   final TextEditingController _thresholdController = TextEditingController();
@@ -70,12 +83,14 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
     required bool? requirePin,
     required int? thresholdKobo,
     String? entryMode,
+    String? interactionMode,
   }) async {
     setState(() => _saving = true);
     final ok = await _service.updateTxPinSettings(
       requirePin: requirePin,
       thresholdKobo: thresholdKobo,
       entryMode: entryMode,
+      interactionMode: interactionMode,
     );
     if (!mounted) return;
     if (ok) {
@@ -89,12 +104,17 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
           adminRequirePin: _settings?.adminRequirePin ?? false,
           adminThresholdKobo: _settings?.adminThresholdKobo ?? 0,
           adminEntryMode: _settings?.adminEntryMode ?? 'sheet',
+          interactionMode:
+              interactionMode ?? (_settings?.interactionMode ?? ''),
+          adminInteractionMode: _settings?.adminInteractionMode ?? 'continuous',
         );
         _thresholdDirty = false;
       });
       // Observability: confirm from real devices that the per-user voice-PIN
-      // override persisted (it feeds voice-agent-gateway's _voice_txpin_policy,
-      // which skips the PIN for amounts <= threshold_kobo).
+      // override persisted. It is enforced by auth-service /voice/txpin/mint-skip
+      // (MintSkip), which the chat-agent-gateway calls per voice money-move — it
+      // reads this saved override (require_pin/threshold) fresh each time and
+      // skips the PIN only when not required or amount <= threshold_kobo (NGN).
       AppLogger.event('voice_txpin_settings', 'saved', fields: {
         'require_pin': requirePin,
         'threshold_kobo': thresholdKobo,
@@ -140,10 +160,24 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
           style: GoogleFonts.inter(
             fontSize: 12.sp,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            color: selected ? Colors.white : _textSecondary,
+            color: selected ? _primary : _textSecondary,
           ),
         ),
       ),
+    );
+  }
+
+  Widget _interactionChip(VoiceTxPinSettings s, String mode, String label) {
+    return _entryModeChip(
+      label: label,
+      selected: s.effectiveInteractionMode == mode,
+      onTap: _saving
+          ? null
+          : () => _save(
+                requirePin: s.requirePin,
+                thresholdKobo: s.thresholdKobo,
+                interactionMode: mode,
+              ),
     );
   }
 
@@ -160,7 +194,7 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
         child: SizedBox(
           height: 20.w,
           width: 20.w,
-          child: const CircularProgressIndicator(strokeWidth: 2, color: _primary),
+          child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
         ),
       );
     }
@@ -178,9 +212,50 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
       ),
       child: Column(
         children: [
+          // Interaction mode — how the user talks to the assistant. A pure UX
+          // preference (independent of the PIN); per-user override wins over the
+          // admin default. 'continuous' = hands-free VAD; the rest are push-to-talk.
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 2.h),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'How you talk to the assistant',
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _textPrimary),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Continuous listens hands-free. Hold / Tap / Double-tap are push-to-talk.',
+                style: GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+            child: Row(
+              children: [
+                Expanded(child: _interactionChip(s, 'continuous', 'Continuous')),
+                SizedBox(width: 8.w),
+                Expanded(child: _interactionChip(s, 'hold', 'Hold')),
+                SizedBox(width: 8.w),
+                Expanded(child: _interactionChip(s, 'tap', 'Tap')),
+                SizedBox(width: 8.w),
+                Expanded(child: _interactionChip(s, 'double_tap', '2×-tap')),
+              ],
+            ),
+          ),
+          Divider(color: _divider, height: 1),
           SwitchListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-            activeColor: _primary,
+            activeThumbColor: _primary,
             value: requirePin,
             onChanged: _saving
                 ? null
@@ -193,7 +268,7 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: _textPrimary,
               ),
             ),
             subtitle: Text(
@@ -221,7 +296,7 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
                           style: GoogleFonts.inter(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: _textPrimary,
                           ),
                         ),
                         SizedBox(height: 2.h),
@@ -239,7 +314,7 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
                       controller: _thresholdController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                      style: GoogleFonts.inter(color: _textPrimary, fontSize: 14.sp),
                       decoration: InputDecoration(
                         prefixText: '₦ ',
                         prefixStyle: GoogleFonts.inter(color: _textSecondary, fontSize: 14.sp),
@@ -247,11 +322,11 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
                         contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.r),
-                          borderSide: const BorderSide(color: _divider),
+                          borderSide: BorderSide(color: _divider),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.r),
-                          borderSide: const BorderSide(color: _primary),
+                          borderSide: BorderSide(color: _primary),
                         ),
                       ),
                       // Never persist on keystroke or keyboard-done — just mark
@@ -320,7 +395,7 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: _textPrimary,
                     ),
                   ),
                   SizedBox(height: 2.h),

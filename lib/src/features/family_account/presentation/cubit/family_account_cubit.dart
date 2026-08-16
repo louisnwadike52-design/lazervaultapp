@@ -440,6 +440,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required String fundDistributionMode,
     required bool spendingVisibilityEnabled,
     List<MemberAllocationEntry> allocations = const [],
+    String fundingPolicy = 'any_member',
+    List<String> specificMemberIds = const [],
   }) async {
     emit(const FamilyAccountSettingUp());
     final result = await setupFamilyAccount(SetupFamilyAccountParams(
@@ -447,6 +449,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       fundDistributionMode: fundDistributionMode,
       spendingVisibilityEnabled: spendingVisibilityEnabled,
       allocations: allocations,
+      fundingPolicy: fundingPolicy,
+      specificMemberIds: specificMemberIds,
     ));
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),

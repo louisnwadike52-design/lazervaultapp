@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/transaction_pin/utils/transaction_service_label.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 
 /// Phases the PIN modal transitions through
 enum PinModalPhase { pinEntry, verifying, processing, success, failed }
@@ -32,6 +34,22 @@ class TransactionPinModal extends StatefulWidget {
   /// null so existing callers render unchanged.
   final Widget? headerAction;
 
+  /// Optional recipient identity for chat-driven money moves — when present the
+  /// sheet shows the recipient's avatar + name so the user confirms WHO they're
+  /// paying while entering the PIN. Backward-compatible: null → default header.
+  final String? recipientImageUrl;
+  final String? recipientName;
+  // Optional per-phase subtitle overrides so a non-transfer flow (e.g. a balance
+  // refresh) doesn't read as "Your transfer is being processed". Null → defaults.
+  final String? processingSubtitle;
+  final String? successSubtitle;
+
+  // The flow's transaction type (e.g. 'airtime_purchase', 'cable_tv_purchase').
+  // Drives a service-appropriate processing/success subtitle via
+  // [transactionServiceNoun] when no explicit [processingSubtitle] /
+  // [successSubtitle] is supplied. Null → sheet keeps its transfer default.
+  final String? transactionType;
+
   const TransactionPinModal({
     super.key,
     this.title,
@@ -49,6 +67,11 @@ class TransactionPinModal extends StatefulWidget {
     this.errorMessage,
     this.isLoading = false,
     this.headerAction,
+    this.recipientImageUrl,
+    this.recipientName,
+    this.processingSubtitle,
+    this.successSubtitle,
+    this.transactionType,
   });
 
   @override
@@ -99,6 +122,18 @@ class TransactionPinModalState extends State<TransactionPinModal>
     _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
     );
+
+    // Standard OTP backspace behaviour: intercept Backspace at each box's focus
+    // node so that pressing delete on an ALREADY-EMPTY box steps back to the
+    // previous box and clears it. onChanged (see [_onPinChanged]) can't do this
+    // because an empty box fires no text-change event, which is why users
+    // previously had to tap into a box to delete. Applies to every caller of
+    // this shared modal.
+    for (var i = 0; i < _pinFocusNodes.length; i++) {
+      final index = i;
+      _pinFocusNodes[i].onKeyEvent = (node, event) =>
+          _handlePinBackspace(index, event);
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_pinFocusNodes.isNotEmpty) {
@@ -205,6 +240,37 @@ class TransactionPinModalState extends State<TransactionPinModal>
     }
   }
 
+  /// Standard OTP Backspace handling. [_onPinChanged] can only react when the
+  /// box's text actually changes, so a Backspace on an ALREADY-EMPTY box fires
+  /// nothing and the caret appears stuck — the user had to tap into a filled box
+  /// to delete. This intercepts Backspace at the focus-node level: on an empty
+  /// box it steps back to the previous box, clears it, and places the caret
+  /// there — matching every standard PIN/OTP field.
+  KeyEventResult _handlePinBackspace(int index, KeyEvent event) {
+    final isDown = event is KeyDownEvent || event is KeyRepeatEvent;
+    if (!isDown || event.logicalKey != LogicalKeyboardKey.backspace) {
+      return KeyEventResult.ignored;
+    }
+    // Non-empty box: let the TextField delete its own character (which then
+    // routes through _onPinChanged and moves focus back).
+    if (_pinControllers[index].text.isNotEmpty) {
+      return KeyEventResult.ignored;
+    }
+    // Empty box + Backspace → step back and clear the previous box.
+    if (index > 0) {
+      final prev = index - 1;
+      _pinControllers[prev].value = const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+      _pinFocusNodes[prev].requestFocus();
+      _pin = _pinControllers.map((c) => c.text).join();
+      if (mounted) setState(() {});
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   void _submitPin() {
     if (_pin.length == 4) {
       widget.onPinSubmitted(_pin);
@@ -301,6 +367,39 @@ class TransactionPinModalState extends State<TransactionPinModal>
               textAlign: TextAlign.center,
             ),
 
+          // Recipient identity (chat-driven money moves) — shows WHO the user is
+          // paying while they enter the PIN. Reviewing this IS the confirmation.
+          if ((widget.recipientName?.trim().isNotEmpty ?? false) ||
+              (widget.recipientImageUrl?.trim().isNotEmpty ?? false)) ...[
+            SizedBox(height: 12.h),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                UserAvatar(
+                  size: 32.r,
+                  imageUrl: widget.recipientImageUrl,
+                  firstName: (widget.recipientName ?? '').split(' ').first,
+                  lastName: (widget.recipientName ?? '').split(' ').length > 1
+                      ? (widget.recipientName ?? '').split(' ').sublist(1).join(' ')
+                      : null,
+                ),
+                SizedBox(width: 8.w),
+                Flexible(
+                  child: Text(
+                    widget.recipientName ?? '',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
           // Optional caller-supplied action (e.g. voice "Custom Voice" pill)
           if (widget.headerAction != null) ...[
             SizedBox(height: 12.h),
@@ -318,36 +417,49 @@ class TransactionPinModalState extends State<TransactionPinModal>
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(color: Colors.grey.shade200),
               ),
-              child: Column(
-                children: [
-                  Text(
-                    widget.fee != null && widget.fee! > 0 ? 'Total Amount' : 'Amount',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    '$_displaySymbol${(widget.totalAmount ?? (widget.amount! + (widget.fee ?? 0))).toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF4E03D0),
-                    ),
-                  ),
-                  if (widget.fee != null && widget.fee! > 0) ...[
-                    SizedBox(height: 4.h),
+              child: Builder(builder: (_) {
+                final base = widget.amount ?? 0;
+                final fee = widget.fee ?? 0;
+                final total = widget.totalAmount ?? (base + fee);
+                // A "base + fee" split only makes sense when there's a genuine
+                // base distinct from the fee. A fee-only charge (e.g. a balance
+                // refresh) has no base — the total IS the fee, so don't render a
+                // phantom "0.00 + …" (or a doubled "100 + 100") breakdown.
+                final hasBase = base > 0;
+                final feeOnly = fee > 0 && !hasBase;
+                return Column(
+                  children: [
                     Text(
-                      '${widget.amount!.toStringAsFixed(2)} + ${widget.fee!.toStringAsFixed(2)} fee',
+                      feeOnly
+                          ? 'Fee'
+                          : (fee > 0 ? 'Total Amount' : 'Amount'),
                       style: GoogleFonts.inter(
-                        fontSize: 11.sp,
+                        fontSize: 12.sp,
                         color: Colors.grey.shade500,
                       ),
                     ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      '$_displaySymbol${total.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF4E03D0),
+                      ),
+                    ),
+                    if (hasBase && fee > 0) ...[
+                      SizedBox(height: 4.h),
+                      Text(
+                        '${base.toStringAsFixed(2)} + ${fee.toStringAsFixed(2)} fee',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                );
+              }),
             ),
           ],
 
@@ -615,74 +727,85 @@ class TransactionPinModalState extends State<TransactionPinModal>
                       : Colors.grey.shade200,
                 ),
               ),
-              child: Column(
-                children: [
-                  // Main amount
-                  Text(
-                    '$_displaySymbol${widget.amount!.toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.w700,
-                      color: _phase == PinModalPhase.success
-                          ? const Color(0xFF16A34A)
-                          : const Color(0xFF4E03D0),
+              child: Builder(builder: (_) {
+                // Mirror the PIN-entry view's amount logic so the headline never
+                // flips to 0.00 on the processing beat. A fee-only charge (e.g. a
+                // balance refresh passes amount:0) has NO base — the headline IS
+                // the fee/total; only a genuine base+fee shows the breakdown rows.
+                final base = widget.amount ?? 0;
+                final fee = widget.fee ?? 0;
+                final total = widget.totalAmount ?? (base + fee);
+                final hasBase = base > 0;
+                return Column(
+                  children: [
+                    // Main amount (the total charged — the fee for a fee-only charge)
+                    Text(
+                      '$_displaySymbol${total.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w700,
+                        color: _phase == PinModalPhase.success
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFF4E03D0),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  // Fee + Total breakdown (only if fee > 0)
-                  if (widget.fee != null && widget.fee! > 0) ...[
-                    SizedBox(height: 8.h),
-                    Divider(color: Colors.grey.shade200, height: 1),
-                    SizedBox(height: 8.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Fee',
-                          style: GoogleFonts.inter(
-                            fontSize: 12.sp,
-                            color: Colors.grey.shade500,
+                    // Fee + Total breakdown ONLY when there's a genuine base
+                    // distinct from the fee (never a phantom "0.00 + fee").
+                    if (hasBase && fee > 0) ...[
+                      SizedBox(height: 8.h),
+                      Divider(color: Colors.grey.shade200, height: 1),
+                      SizedBox(height: 8.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Fee',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '$_displaySymbol${widget.fee!.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade700,
+                          Text(
+                            '$_displaySymbol${fee.toStringAsFixed(2)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                            color: _phase == PinModalPhase.success
-                                ? const Color(0xFF16A34A)
-                                : Colors.black87,
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                              color: _phase == PinModalPhase.success
+                                  ? const Color(0xFF16A34A)
+                                  : Colors.black87,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '$_displaySymbol${(widget.totalAmount ?? (widget.amount! + widget.fee!)).toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w700,
-                            color: _phase == PinModalPhase.success
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFF4E03D0),
+                          Text(
+                            '$_displaySymbol${total.toStringAsFixed(2)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700,
+                              color: _phase == PinModalPhase.success
+                                  ? const Color(0xFF16A34A)
+                                  : const Color(0xFF4E03D0),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                );
+              }),
             ),
           ],
 
@@ -816,14 +939,46 @@ class TransactionPinModalState extends State<TransactionPinModal>
       case PinModalPhase.verifying:
         return 'Securely verifying your transaction PIN';
       case PinModalPhase.processing:
-        return 'Your transfer is being processed';
+        // Precedence: explicit caller override → service-specific copy derived
+        // from transactionType → the original transfer default (unchanged for
+        // the transfer family / deposit / withdrawal / etc.).
+        return widget.processingSubtitle ??
+            _serviceSubtitle(
+              specific: (noun) => 'Your $noun is being processed',
+              generic: 'Your $kGenericServiceNoun is being processed',
+              transferDefault: 'Your transfer is being processed',
+            );
       case PinModalPhase.success:
-        return 'Your transfer has been completed';
+        return widget.successSubtitle ??
+            _serviceSubtitle(
+              specific: (noun) => 'Your $noun was successful',
+              generic: 'Your $kGenericServiceNoun was successful',
+              transferDefault: 'Your transfer has been completed',
+            );
       case PinModalPhase.failed:
         return 'Something went wrong';
       default:
         return '';
     }
+  }
+
+  /// Resolve a phase subtitle from [transactionType]:
+  /// - a recognised bill/service type → [specific] with its friendly noun,
+  /// - a transfer-family type (and null/unset) → [transferDefault] (unchanged),
+  /// - any other recognised-but-unmapped non-transfer type → [generic]
+  ///   ("payment") so it never mislabels itself a transfer.
+  String _serviceSubtitle({
+    required String Function(String noun) specific,
+    required String generic,
+    required String transferDefault,
+  }) {
+    final type = widget.transactionType;
+    final noun = transactionServiceNoun(type);
+    if (noun != null) return specific(noun);
+    if (type == null || type.trim().isEmpty || isTransferFamilyType(type)) {
+      return transferDefault;
+    }
+    return generic;
   }
 
   Widget _buildProgressSteps() {

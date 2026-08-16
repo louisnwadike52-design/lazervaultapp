@@ -58,6 +58,14 @@ class FamilyAccount extends Equatable {
   final bool spendingVisibilityEnabled;
   final DateTime createdAt;
   final DateTime updatedAt;
+  // Funding policy + pool virtual-account details (from the backend).
+  final String fundingPolicy; // any_member | creator_only | specific_members
+  final String? accountNumber; // pool NUBAN (only once provisioned/active)
+  final String? bankName; // pool bank name (only once provisioned/active)
+  final String? virtualAccountStatus; // processing | active | frozen
+  /// Aggregated stats (funders + spenders breakdown + monthly totals) attached
+  /// to GetFamilyAccount. Null on list responses.
+  final FamilyAccountSummary? summary;
 
   const FamilyAccount({
     required this.id,
@@ -78,7 +86,16 @@ class FamilyAccount extends Equatable {
     this.spendingVisibilityEnabled = true,
     required this.createdAt,
     required this.updatedAt,
+    this.fundingPolicy = 'any_member',
+    this.accountNumber,
+    this.bankName,
+    this.virtualAccountStatus,
+    this.summary,
   });
+
+  /// Whether the pool's virtual account is still being provisioned (no spendable
+  /// NUBAN yet). Drives the "Setting up" state on the detail screen.
+  bool get isVirtualAccountProcessing => virtualAccountStatus == 'processing';
 
   @override
   List<Object?> get props => [
@@ -100,6 +117,11 @@ class FamilyAccount extends Equatable {
         spendingVisibilityEnabled,
         createdAt,
         updatedAt,
+        fundingPolicy,
+        accountNumber,
+        bankName,
+        virtualAccountStatus,
+        summary,
       ];
 
   FamilyAccount copyWith({
@@ -121,6 +143,11 @@ class FamilyAccount extends Equatable {
     bool? spendingVisibilityEnabled,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? fundingPolicy,
+    String? accountNumber,
+    String? bankName,
+    String? virtualAccountStatus,
+    FamilyAccountSummary? summary,
   }) {
     return FamilyAccount(
       id: id ?? this.id,
@@ -141,6 +168,11 @@ class FamilyAccount extends Equatable {
       spendingVisibilityEnabled: spendingVisibilityEnabled ?? this.spendingVisibilityEnabled,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      fundingPolicy: fundingPolicy ?? this.fundingPolicy,
+      accountNumber: accountNumber ?? this.accountNumber,
+      bankName: bankName ?? this.bankName,
+      virtualAccountStatus: virtualAccountStatus ?? this.virtualAccountStatus,
+      summary: summary ?? this.summary,
     );
   }
 
@@ -573,6 +605,10 @@ class FamilyAccountSummary extends Equatable {
   final double totalSpentToday;
   final int transactionCountThisMonth;
   final List<FamilyMemberSpending> topSpenders;
+  // Funders breakdown — who contributed to the pool this month. (amountSpent =
+  // amount contributed; transactionCount = number of contributions.)
+  final double totalContributed;
+  final List<FamilyMemberSpending> topFunders;
 
   const FamilyAccountSummary({
     required this.totalAllocated,
@@ -580,6 +616,8 @@ class FamilyAccountSummary extends Equatable {
     required this.totalSpentToday,
     required this.transactionCountThisMonth,
     required this.topSpenders,
+    this.totalContributed = 0,
+    this.topFunders = const [],
   });
 
   @override
@@ -589,6 +627,8 @@ class FamilyAccountSummary extends Equatable {
         totalSpentToday,
         transactionCountThisMonth,
         topSpenders,
+        totalContributed,
+        topFunders,
       ];
 }
 

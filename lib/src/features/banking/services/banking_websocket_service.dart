@@ -132,15 +132,22 @@ class BankingWebSocketService {
 
   /// Connect using WebSocket protocol
   Future<void> _connectWebSocket(String userId, String accessToken) async {
-    final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final wsPort = int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? '8082') ?? 8082;
+    final ep = endpointRegistry.resolveServiceHostPort(
+      overrideHost: dotenv.env['BANKING_WS_HOST'] ??
+          dotenv.env['BANKING_GATEWAY_GRPC_HOST'],
+      overridePort: int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? ''),
+      devPort: 8082,
+    );
+    final wsHost = ep.host;
+    final wsPort = ep.port;
     // Port 443 == tunnel termination expects TLS (wss). Other ports = loopback dev.
     final tlsTunnel = wsPort == 443;
 
     final wsUrl = Uri(
       scheme: tlsTunnel ? 'wss' : 'ws',
       host: wsHost,
-      port: wsPort,
+      // Omit ':443' for the tunnel (default) — some edges reject an explicit port.
+      port: tlsTunnel ? null : wsPort,
       path: '/ws/banking',
       queryParameters: {
         'user_id': userId,
@@ -180,14 +187,20 @@ class BankingWebSocketService {
 
   /// Connect using Server-Sent Events (SSE) - fallback
   Future<void> _connectSSE(String userId, String accessToken) async {
-    final wsHost = dotenv.env['BANKING_WS_HOST'] ?? dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final wsPort = int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? '8082') ?? 8082;
+    final ep = endpointRegistry.resolveServiceHostPort(
+      overrideHost: dotenv.env['BANKING_WS_HOST'] ??
+          dotenv.env['BANKING_GATEWAY_GRPC_HOST'],
+      overridePort: int.tryParse(dotenv.env['BANKING_WS_PORT'] ?? ''),
+      devPort: 8082,
+    );
+    final wsHost = ep.host;
+    final wsPort = ep.port;
     final tlsTunnel = wsPort == 443;
 
     final sseUrl = Uri(
       scheme: tlsTunnel ? 'https' : 'http',
       host: wsHost,
-      port: wsPort,
+      port: tlsTunnel ? null : wsPort,
       path: '/ws/banking',
       queryParameters: {
         'user_id': userId,

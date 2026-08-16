@@ -77,8 +77,14 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
       _bumpBadge(m.conversationId);
     });
     // A newly accepted/created connection should refresh the requests badge.
-    _acceptSub =
-        ws.connectionAcceptedStream.listen((_) => loadConversations(silent: true));
+    _acceptSub = ws.connectionAcceptedStream.listen((_) {
+      // Don't kick a nested load during the cold load — loadConversations()
+      // reconnects the WS via _syncSession, which re-fires this stream; a nested
+      // reload would bump _loadSeq and make the in-flight cold load drop itself
+      // (seq check) WITHOUT ever emitting Loaded → the list spins forever.
+      if (state is P2PConversationsLoading) return;
+      loadConversations(silent: true);
+    });
     // Peer typing → show "typing…" on that conversation's row in the list.
     _typingSub = ws.typingStream.listen((t) {
       if (t.userId == _currentUserId) return; // ignore my own typing echo
@@ -133,7 +139,11 @@ class P2PConversationsCubit extends Cubit<P2PConversationsState> {
   void _bumpBadge(String conversationId) {
     final s = state;
     if (s is! P2PConversationsLoaded) {
-      loadConversations(); // not populated yet — fetch the real numbers
+      // Already cold-loading → the in-flight load will produce the real numbers;
+      // a nested load here would just churn _loadSeq and stall the spinner.
+      if (s is! P2PConversationsLoading) {
+        loadConversations(); // not populated yet — fetch the real numbers
+      }
       return;
     }
     final idx = s.conversations.indexWhere((c) => c.id == conversationId);

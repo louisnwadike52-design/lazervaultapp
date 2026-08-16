@@ -85,10 +85,23 @@ Future<void> startAccountReauthorization(
     userName: customerName.isNotEmpty ? customerName : null,
   );
 
-  // 4. Fresh live balance for the reconnected account
-  await cubit.refreshBalance(
+  // 4. Fresh live balance for the reconnected account — ONLY when it's free.
+  // A live Mono read is fee-gated (backend requires a txPIN verification_token
+  // when a refresh fee is configured). Calling it token-less here would fail
+  // and surface a spurious "balance refresh failed" right after an otherwise
+  // successful reconnect. The re-link (step 3) already carries a link-time
+  // balance, so we skip the paid read; the user can cost-confirm a live refresh
+  // from the card afterwards. When the fee is 0 the read is free — do it.
+  final feeKobo = await cubit.quoteRefreshFee(
     accountId: account.id,
     userId: user.id,
     accessToken: accessToken,
   );
+  if (feeKobo <= 0) {
+    await cubit.refreshBalance(
+      accountId: account.id,
+      userId: user.id,
+      accessToken: accessToken,
+    );
+  }
 }

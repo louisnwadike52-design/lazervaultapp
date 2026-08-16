@@ -463,6 +463,8 @@ class SetupFamilyAccountUseCase extends UseCase<FamilyAccount, SetupFamilyAccoun
       fundDistributionMode: params.fundDistributionMode,
       spendingVisibilityEnabled: params.spendingVisibilityEnabled,
       allocations: params.allocations,
+      fundingPolicy: params.fundingPolicy,
+      specificMemberIds: params.specificMemberIds,
     );
   }
 }
@@ -472,12 +474,18 @@ class SetupFamilyAccountParams {
   final String fundDistributionMode;
   final bool spendingVisibilityEnabled;
   final List<MemberAllocationEntry> allocations;
+  // Who may fund the pool: any_member (default) | creator_only | specific_members.
+  final String fundingPolicy;
+  // Member ids allowed to fund when fundingPolicy == specific_members.
+  final List<String> specificMemberIds;
 
   SetupFamilyAccountParams({
     required this.familyId,
     required this.fundDistributionMode,
     required this.spendingVisibilityEnabled,
     this.allocations = const [],
+    this.fundingPolicy = 'any_member',
+    this.specificMemberIds = const [],
   });
 }
 

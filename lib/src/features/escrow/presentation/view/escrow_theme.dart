@@ -12,6 +12,7 @@ class EscrowTheme {
   static const Color primaryDark = Color(0xFF4E03D0);
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFFB923C);
+  static const Color amber = Color(0xFFF59E0B); // refund-requested attention tone
   static const Color error = Color(0xFFEF4444);
 
   /// Human-friendly label + colour for a deal status.
@@ -19,9 +20,11 @@ class EscrowTheme {
     switch (status) {
       case 'FUNDED':
       case 'IN_PROGRESS':
-        return ('In escrow', warning);
+        return ('In Escrow', warning);
       case 'DELIVERED':
         return ('Delivered', primary);
+      case 'REFUND_REQUESTED':
+        return ('Refund requested', amber);
       case 'RELEASED':
       case 'RESOLVED_RELEASED':
         return ('Released', success);

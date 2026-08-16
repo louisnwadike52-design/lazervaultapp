@@ -1,18 +1,24 @@
-# This file is used to configure the Shorebird updater used by your app.
-# Learn more at https://docs.shorebird.dev
-# This file does not contain any sensitive information and should be checked into version control.
-
-# Your app_id is the unique identifier assigned to your app.
-# It is used to identify your app when requesting patches from Shorebird's servers.
-# It is not a secret and can be shared publicly.
+# Shorebird OTA code-push configuration.
+#
+# Per-flavor app_ids recovered from the Shorebird account
+# (lazervault.sync@gmail.com, account 53396). `flavors` maps the Flutter
+# product flavor (dev/staging/prod) to its Shorebird app so a patch built for one
+# tier can NEVER land on another — the failure mode that made us rip Shorebird out
+# (a dev-flavored patch overriding a prod store build). That root cause is now also
+# fixed at the source (app_environment.dart resolves the tier fail-closed to prod
+# in release), so OTA is safe to re-enable behind the deploy flags.
+#
+# Usage (see scripts/deploy_mobile.sh):
+#   deploy_mobile.sh both production --shorebird   # patch-capable RELEASE to stores
+#   deploy_mobile.sh both production --patch       # OTA patch (Dart-only), no store, no bump
 app_id: 0c90bc99-2edd-487f-b6f2-8a6b5aeae7c6
 flavors:
   dev: 2e3c21ee-0477-4d59-9b82-f2bc0da3b8e8
-  prod: 283d0a16-b373-4a0a-9ea2-07ecb33dd374
   staging: 1178fb14-e7c8-4843-ae24-3e131fe1a57f
+  prod: 283d0a16-b373-4a0a-9ea2-07ecb33dd374
 
-# auto_update controls if Shorebird should automatically update in the background on launch.
-# If auto_update: false, you will need to use package:shorebird_code_push to trigger updates.
-# https://pub.dev/packages/shorebird_code_push
-# Uncomment the following line to disable automatic updates.
-# auto_update: false
+# Do NOT auto-download+apply a patch silently on launch. The app controls patch
+# application explicitly via AppPatchService (checks on resume, applies on next
+# restart) so a patch can't swap code mid-session. Flip to true only if you want
+# Shorebird's default auto-update behavior.
+auto_update: false

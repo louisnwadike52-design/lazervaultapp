@@ -283,6 +283,8 @@ class OpenBankingRemoteDataSource {
     String? narration,
     required String idempotencyKey,
     required String accessToken,
+    String? verificationToken, // tx-PIN token (fee-gated redeposit)
+    String? transactionId, // PIN-bound id the backend PreValidates against
   }) async {
     // For financial transactions, use conservative retry
     // Idempotency key prevents duplicate debits on retry
@@ -296,6 +298,10 @@ class OpenBankingRemoteDataSource {
         'amount': amountInKobo,
         'narration': narration ?? 'Deposit to Lazervault',
         'idempotency_key': idempotencyKey,
+        if (verificationToken != null && verificationToken.isNotEmpty)
+          'verification_token': verificationToken,
+        if (transactionId != null && transactionId.isNotEmpty)
+          'transaction_id': transactionId,
       }),
       retryConfig: const RetryConfig(
         maxRetries: 2,

@@ -612,6 +612,7 @@ const GetGlobalMarketDataResponse$json = {
       '10': 'updatedAt'
     },
     {'1': 'disclosure_url', '3': 8, '4': 1, '5': 9, '10': 'disclosureUrl'},
+    {'1': 'learn_more_url', '3': 9, '4': 1, '5': 9, '10': 'learnMoreUrl'},
   ],
 };
 

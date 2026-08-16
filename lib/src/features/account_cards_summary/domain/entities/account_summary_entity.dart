@@ -83,6 +83,13 @@ class AccountSummaryEntity extends Equatable {
           ? virtualAccountId!
           : id;
 
+  /// True when this is a family account whose real-money pool virtual account
+  /// hasn't been provisioned yet (still processing). In that state
+  /// [spendingAccountId] falls back to the non-spendable group [id], so a debit
+  /// would fail server-side — callers must block spending until it clears.
+  bool get isFamilyWalletProvisioning =>
+      isFamilyAccount && !(virtualAccountId?.isNotEmpty ?? false);
+
   /// Estimated clearing time for pending deposits (e.g., "Available in 2h").
   /// Null when no clearing estimate is available from the backend.
   /// Will be populated when backend adds per-deposit clearing time fields.
@@ -181,6 +188,12 @@ class AccountSummaryEntity extends Equatable {
   // Factory constructor for family accounts
   /// Whether this family account needs setup (pending_setup status)
   bool get isFamilyPendingSetup => familyStatus == 'pending_setup';
+
+  /// Whether the family pool's virtual account is still being provisioned (a real
+  /// NUBAN is being minted). While "processing" the account is NOT yet spendable —
+  /// the card shows a "Setting up" state instead of balances/actions.
+  bool get isFamilyProcessing =>
+      isFamilyAccount && status.toLowerCase() == 'processing';
 
   factory AccountSummaryEntity.familyAccount({
     required String id,

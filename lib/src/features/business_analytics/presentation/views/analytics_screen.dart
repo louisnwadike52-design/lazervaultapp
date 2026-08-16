@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../cubit/business_analytics_cubit.dart';
 import '../cubit/business_analytics_state.dart';
 import '../widgets/analytics_period_selector.dart';
@@ -34,7 +36,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
     final accountManager = serviceLocator<AccountManager>();
     final cubit = context.read<BusinessAnalyticsCubit>();
-    final accountId = accountManager.activeAccountId;
+    // Prefer the business account handed in by the dashboard so analytics is
+    // scoped to THAT business's wallet ledger, not the user's global active
+    // account (which may be personal, or null → the screen would otherwise sit
+    // on the "select a business account" state). Falls back to the active
+    // account when opened without an argument (e.g. a deep link), preserving the
+    // previous behaviour.
+    final args = Get.arguments;
+    final accountId = args is AccountSummaryEntity
+        ? args.id
+        : (args is String && args.isNotEmpty
+            ? args
+            : accountManager.activeAccountId);
     if (accountId != null) {
       cubit.setAccountId(accountId);
       cubit.loadAnalytics();

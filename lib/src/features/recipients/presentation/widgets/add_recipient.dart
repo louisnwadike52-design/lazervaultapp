@@ -255,7 +255,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
               backgroundColor: Colors.red.withValues(alpha: 0.8),
               colorText: Colors.white,
             );
-          } else if (state is RecipientSuccess) {
+          } else if (state is RecipientSuccess && !state.silent) {
             Get.snackbar(
               'Success',
               state.message,

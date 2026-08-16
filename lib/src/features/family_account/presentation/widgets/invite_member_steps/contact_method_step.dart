@@ -200,7 +200,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
       decoration: InputDecoration(
         hintText: 'Search username, name, email, or phone...',
         hintStyle: TextStyle(
-          color: const Color(0xFF6B7280),
+          color: const Color(0xFF9CA3AF),
           fontSize: 14.sp,
         ),
         prefixIcon: Icon(
@@ -329,7 +329,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
                     Text(
                       user.email,
                       style: TextStyle(
-                        color: const Color(0xFF6B7280),
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 11.sp,
                       ),
                     ),
@@ -457,7 +457,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
             Text(
               'Try a different name, username, email, or phone',
               style: TextStyle(
-                color: const Color(0xFF6B7280),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
               ),
             ),

@@ -1,4 +1,10 @@
-class P2PConversationEntity {
+import 'package:equatable/equatable.dart';
+
+/// Equatable so the conversations-list state can be value-compared: a silent
+/// refresh that returns identical data emits an EQUAL [P2PConversationsLoaded],
+/// which Bloc then skips — no rebuild, no avatar re-fade flicker when the user
+/// returns to the list (e.g. from a chat / image viewer).
+class P2PConversationEntity extends Equatable {
   final String id;
   final String participant1Id;
   final String participant2Id;
@@ -76,4 +82,24 @@ class P2PConversationEntity {
       isArchived: isArchived ?? this.isArchived,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        participant1Id,
+        participant2Id,
+        lastMessagePreview,
+        lastMessageAt,
+        createdAt,
+        unreadCount,
+        otherUserId,
+        otherUserName,
+        otherUserAvatar,
+        connectionStatus,
+        initiatedBy,
+        safetyWarning,
+        safetyWarningLevel,
+        safetyWarningReason,
+        isArchived,
+      ];
 }

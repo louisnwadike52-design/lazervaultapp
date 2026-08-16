@@ -33,6 +33,11 @@ class EscrowDealEntity {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final List<EscrowDealEventEntity> events;
+  // Rich media evidence attached across the deal's life (buyer's item photos,
+  // delivery proof, dispute evidence, refund evidence). Empty on older deals.
+  final List<EscrowAttachmentEntity> attachments;
+  // Present only when the buyer has asked for a refund after delivery.
+  final EscrowRefundRequestEntity? refundRequest;
 
   const EscrowDealEntity({
     required this.id,
@@ -64,6 +69,8 @@ class EscrowDealEntity {
     this.createdAt,
     this.updatedAt,
     this.events = const [],
+    this.attachments = const [],
+    this.refundRequest,
   });
 
   /// True if [userId] is the buyer in this deal.
@@ -77,8 +84,9 @@ class EscrowDealEntity {
   bool get isReleased => status == 'RELEASED' || status == 'RESOLVED_RELEASED';
   bool get isRefunded =>
       status == 'CANCELLED' || status == 'REFUNDED' || status == 'RESOLVED_REFUNDED';
+  bool get isRefundRequested => status == 'REFUND_REQUESTED';
   bool get isDisputed => status == 'DISPUTED';
-  bool get isActive => isFunded || isDelivered || isDisputed;
+  bool get isActive => isFunded || isDelivered || isDisputed || isRefundRequested;
 
   /// Seller can mark delivered while funded/in-progress.
   bool canMarkDelivered(String userId) => isSeller(userId) && isFunded;
@@ -97,6 +105,13 @@ class EscrowDealEntity {
   bool canDispute(String userId) =>
       (isBuyer(userId) || isSeller(userId)) && (isFunded || isDelivered);
 
+  /// The buyer can ask for a refund once the seller has marked delivery (before
+  /// releasing). Mirrors the server rule so we only show it when it will stick.
+  bool canRequestRefund(String userId) => isBuyer(userId) && isDelivered;
+
+  /// The seller responds to a pending refund request.
+  bool canRespondRefund(String userId) => isSeller(userId) && isRefundRequested;
+
   String get _sellerLabel => sellerName.trim().isEmpty ? 'the seller' : sellerName;
   String get _buyerLabel => buyerName.trim().isEmpty ? 'the buyer' : buyerName;
 
@@ -111,7 +126,7 @@ class EscrowDealEntity {
 
     if (requiresAdminReview && (isFunded || isDelivered)) {
       return (
-        text: 'Funds held. Under review for your protection — release is paused.',
+        text: 'Funds held. Under review for your protection. Release is paused for now.',
         yourTurn: false,
       );
     }
@@ -126,8 +141,12 @@ class EscrowDealEntity {
         return buyer
             ? (text: '$_sellerLabel marked delivered. Review and release when satisfied.', yourTurn: true)
             : (text: 'Delivered. Waiting for $_buyerLabel to confirm & release.', yourTurn: false);
+      case 'REFUND_REQUESTED':
+        return buyer
+            ? (text: 'You asked for a refund. Waiting for $_sellerLabel to respond.', yourTurn: false)
+            : (text: '$_buyerLabel asked for a refund. Please accept it or decline.', yourTurn: true);
       case 'DISPUTED':
-        return (text: 'Disputed — our team is reviewing it.', yourTurn: false);
+        return (text: 'Disputed. Our team is reviewing it.', yourTurn: false);
       case 'RELEASED':
       case 'RESOLVED_RELEASED':
         return buyer
@@ -138,7 +157,7 @@ class EscrowDealEntity {
       case 'RESOLVED_REFUNDED':
         return buyer
             ? (text: 'Cancelled. You were refunded.', yourTurn: false)
-            : (text: 'Cancelled — no funds changed hands.', yourTurn: false);
+            : (text: 'Cancelled. No funds changed hands.', yourTurn: false);
       case 'EXPIRED':
         return (text: 'Expired. The held funds were returned to $_buyerLabel.', yourTurn: false);
       default:
@@ -162,6 +181,67 @@ class EscrowDealEventEntity {
     required this.actor,
     required this.detail,
     this.createdAt,
+  });
+}
+
+/// A single piece of media evidence on a deal. `purpose` is one of
+/// `deal_item` | `delivery_proof` | `dispute_evidence` | `refund_evidence`;
+/// `mediaKind` is `image` | `video`.
+class EscrowAttachmentEntity {
+  final String id;
+  final String purpose;
+  final String mediaKind;
+  final String url;
+  final String contentType;
+  final int sizeBytes;
+  final int durationSeconds;
+  final String uploadedBy;
+  final String actorRole;
+  final DateTime? createdAt;
+
+  const EscrowAttachmentEntity({
+    required this.id,
+    required this.purpose,
+    required this.mediaKind,
+    required this.url,
+    this.contentType = '',
+    this.sizeBytes = 0,
+    this.durationSeconds = 0,
+    this.uploadedBy = '',
+    this.actorRole = '',
+    this.createdAt,
+  });
+
+  bool get isVideo => mediaKind == 'video';
+  bool get isImage => !isVideo;
+}
+
+/// The buyer's post-delivery refund request and the seller's response.
+class EscrowRefundRequestEntity {
+  final String id;
+  final String dealId;
+  final String requestedBy;
+  final String reason;
+  final String status;
+  final DateTime? responseDeadlineAt;
+  final String respondedBy;
+  final String responseNote;
+  final DateTime? respondedAt;
+  final DateTime? createdAt;
+  final List<EscrowAttachmentEntity> attachments;
+
+  const EscrowRefundRequestEntity({
+    required this.id,
+    required this.dealId,
+    required this.requestedBy,
+    required this.reason,
+    this.status = '',
+    this.responseDeadlineAt,
+    this.respondedBy = '',
+    this.responseNote = '',
+    this.respondedAt,
+    this.createdAt,
+    this.attachments = const [],
   });
 }
 

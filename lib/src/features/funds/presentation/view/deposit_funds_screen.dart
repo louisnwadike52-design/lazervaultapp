@@ -509,7 +509,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               child: Icon(Icons.sync_rounded, color: Colors.white, size: 26.sp),
             ),
             SizedBox(height: 14.h),
-            Text('Keep your linked balances live',
+            Text('Your linked bank balances',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: Colors.white,
@@ -517,9 +517,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     fontWeight: FontWeight.w800)),
             SizedBox(height: 8.h),
             Text(
-              'To keep costs down, your linked banks show their last saved '
-              'balance with the time it was last updated. Tap refresh on a card '
-              'to pull the latest figure straight from your bank.',
+              'Each linked bank shows its last saved balance and the time it '
+              'was updated. To keep your data costs low, we do not refresh it '
+              'automatically. Refresh any card when you want the current figure '
+              'from your bank.',
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
@@ -527,13 +528,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                   height: 1.4),
             ),
             SizedBox(height: 18.h),
-            step(Icons.account_balance_rounded, 'Find your bank',
-                'Open the "Deposit again" cards and pick the linked bank.'),
+            step(Icons.account_balance_rounded, 'Choose a linked bank',
+                'Open a card under "Deposit again" and select the bank you want.'),
             step(Icons.sync_rounded, 'Tap "Refresh balance"',
-                'The button on the card pulls a live balance from your bank.'),
-            step(Icons.check_circle_rounded, 'See the latest figure',
-                'The card updates in place and shows a new "last updated" '
-                'time. A small bank fee may apply.'),
+                'The refresh control on the card fetches a live balance '
+                'securely from your bank.'),
+            step(Icons.check_circle_rounded, 'See the updated balance',
+                'The card updates in place with a new timestamp. A small bank '
+                'fee may apply per refresh.'),
             SizedBox(height: 14.h),
             // Opt-out. Unchecked by default: the guide reappears each visit
             // UNTIL the user ticks this, which persists the suppress flag.
@@ -2929,6 +2931,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     final authState = context.read<AuthenticationCubit>().state;
     final userId =
         authState is AuthenticationSuccess ? authState.profile.user.id : null;
+
+    // No REAL NUBAN provisioned yet (backend sends an empty account_number until
+    // a Flutterwave NUBAN is minted, which requires a KYC-verified BVN). Never
+    // show an empty/synthetic number as a deposit target — route the user into
+    // verification instead. Once KYC completes and the BVN-retry worker mints the
+    // real NUBAN, accounts-service starts sending it and this card hydrates the
+    // real bank/number/holder on the next dashboard refresh (no re-login needed).
+    if (accountNumber.trim().isEmpty) {
+      return _buildActivateAccountState();
+    }
+
     return PayByTransferCard(
       accountNumber: accountNumber,
       accountName: accountName,
@@ -2939,6 +2952,67 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       userId: userId,
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),
+    );
+  }
+
+  /// Shown on the Bank Transfer tab when the wallet has no real NUBAN yet.
+  /// Presents a clear "Complete verification to activate your account" state
+  /// (never a mock or an empty number) that routes into the BVN/KYC flow and
+  /// resumes the deposit on return via [_saveAndGoToKyc].
+  Widget _buildActivateAccountState() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.r),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified_user_outlined,
+                  color: const Color(0xFF2962FF), size: 22.r),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'Complete verification to activate your account',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            'Your deposit account number is created after a quick BVN identity '
+            'check. Verify once and your bank account details appear here '
+            'automatically — no need to sign in again.',
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75), fontSize: 13.sp),
+          ),
+          SizedBox(height: 16.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2962FF),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              onPressed: _saveAndGoToKyc,
+              child: const Text('Verify Now'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

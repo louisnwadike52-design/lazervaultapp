@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -795,7 +797,15 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   Widget _buildWebView() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(0),
-      child: WebViewWidget(controller: _controller),
+      child: WebViewWidget(
+        controller: _controller,
+        // Vertical-drag recognizer so the page scrolls to its end inside the
+        // sheet instead of the sheet swallowing the gesture.
+        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+          Factory<VerticalDragGestureRecognizer>(
+              () => VerticalDragGestureRecognizer()),
+        },
+      ),
     );
   }
 

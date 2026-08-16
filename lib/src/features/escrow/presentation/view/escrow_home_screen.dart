@@ -27,11 +27,13 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   // Status-group filter key. The backend `status` filter matches a single exact
   // status, so the multi-status groups below are applied client-side over the
   // loaded list (the server call passes role only).
-  String _status = ''; // '', 'active', 'disputed', 'completed', 'refunded'
+  String _status = '';
 
   static const List<(String key, String label)> _statusFilters = [
     ('', 'All'),
-    ('active', 'Active'),
+    ('in_escrow', 'In Escrow'),
+    ('delivered', 'Delivered'),
+    ('refund_requested', 'Refund requested'),
     ('disputed', 'Disputed'),
     ('completed', 'Completed'),
     ('refunded', 'Refunded'),
@@ -55,8 +57,12 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   /// Client-side status-group filter over the already-loaded list.
   List<EscrowDealEntity> _applyStatusFilter(List<EscrowDealEntity> deals) {
     switch (_status) {
-      case 'active':
-        return deals.where((d) => d.isFunded || d.isDelivered).toList();
+      case 'in_escrow':
+        return deals.where((d) => d.isFunded).toList();
+      case 'delivered':
+        return deals.where((d) => d.isDelivered).toList();
+      case 'refund_requested':
+        return deals.where((d) => d.isRefundRequested).toList();
       case 'disputed':
         return deals.where((d) => d.isDisputed).toList();
       case 'completed':
@@ -85,7 +91,7 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
             child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
           ),
         ),
-        title: Text('Escrow',
+        title: Text('Escrow Pay',
             style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700)),
         centerTitle: true,
         actions: [
@@ -98,7 +104,7 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
-            serviceName: 'Escrow',
+            serviceName: 'Escrow Pay',
             sourceContext: 'escrow',
             iconColor: EscrowTheme.primary,
             size: 34,
@@ -128,7 +134,7 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
               child: BlocConsumer<EscrowCubit, EscrowState>(
                 listener: (context, state) {
                   if (state is EscrowError) {
-                    showAppSnackbar('Escrow', state.message,
+                    showAppSnackbar('Escrow Pay', state.message,
                         type: AppSnackbarType.error);
                   }
                 },

@@ -78,6 +78,8 @@ PODS:
   - PromisesObjC (2.4.1)
   - sign_in_with_apple (0.0.1):
     - Flutter
+  - video_compress (0.3.0):
+    - Flutter
   - WebRTC-SDK (125.6422.07)
 
 DEPENDENCIES:
@@ -93,6 +95,7 @@ DEPENDENCIES:
   - open_filex (from `.symlinks/plugins/open_filex/ios`)
   - printing (from `.symlinks/plugins/printing/ios`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
+  - video_compress (from `.symlinks/plugins/video_compress/ios`)
 
 SPEC REPOS:
   trunk:
@@ -135,6 +138,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/printing/ios"
   sign_in_with_apple:
     :path: ".symlinks/plugins/sign_in_with_apple/ios"
+  video_compress:
+    :path: ".symlinks/plugins/video_compress/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
@@ -161,6 +166,7 @@ SPEC CHECKSUMS:
   printing: 54ff03f28fe9ba3aa93358afb80a8595a071dd07
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
+  video_compress: f2133a07762889d67f0711ac831faa26f956980e
   WebRTC-SDK: dff00a3892bc570b6014e046297782084071657e
 
 PODFILE CHECKSUM: 1ffa4984cf306a767dbf15b14fa131609b72fc4e

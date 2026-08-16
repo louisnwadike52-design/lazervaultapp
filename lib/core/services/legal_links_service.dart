@@ -4,12 +4,14 @@ import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
-/// Resolves the Terms of Service / Privacy Policy URLs shown across the app
-/// (e.g. the BVN verification screen). The URLs are admin-configurable: the
-/// backend stores them in system_settings (banking config) and exposes them at
-/// GET /api/v1/legal/links. This service fetches + caches them so the app uses
-/// the admin-set values rather than hardcoded ones. The built-in defaults are
-/// only a fallback used when the backend is unreachable, so the links always open.
+/// Resolves the Terms of Service / Privacy Policy / Gift-card T&C URLs shown
+/// across the app. The URLs are admin-configurable and now come from a single
+/// source of truth: the unified admin settings endpoint
+/// (`/api/v1/internal/voice-agents/settings`), which returns fully-resolved
+/// `*_url` values (base domain + per-link path concatenated server-side). The
+/// legacy banking `GET /api/v1/legal/links` endpoint is kept only as a
+/// resilience fallback for older backends. Built-in defaults are the last
+/// fallback used when everything is unreachable, so the links always open.
 class LegalLinksService {
   LegalLinksService._();
   static final LegalLinksService instance = LegalLinksService._();
@@ -20,7 +22,8 @@ class LegalLinksService {
   // Defaults to the generic terms so the link always resolves; admins can
   // repoint it (banking Configuration → legal_giftcard_terms_url) to a
   // dedicated gift-card page once published.
-  static const String _defaultGiftcardTerms = _defaultTerms;
+  static const String _defaultGiftcardTerms =
+      'https://lazervault.app/legal/giftcards';
 
   // Endpoint the app fetches the admin-configured legal links from. A non-empty
   // TEST_BACKEND_HOST (compile-time) pins the legacy host:port shape (:8073 =
@@ -59,13 +62,53 @@ class LegalLinksService {
     }
   }
 
-  /// Fetches the latest admin-configured URLs from system_settings (cached for
-  /// [_ttl]). Safe to call on screen entry; never throws — falls back to the last
-  /// good / default URLs so the legal links always open.
+  /// Fetches the latest admin-configured URLs (cached for [_ttl]). Safe to call
+  /// on screen entry; never throws — falls back to the last good / default URLs
+  /// so the legal links always open. Tries the unified settings endpoint first
+  /// (single source of truth, server-resolved base+path), then the legacy
+  /// banking endpoint.
   Future<void> refresh() async {
     if (_fetchedAt != null && DateTime.now().difference(_fetchedAt!) < _ttl) {
       return;
     }
+    if (await _refreshFromUnified()) {
+      _fetchedAt = DateTime.now();
+      return;
+    }
+    await _refreshFromBanking();
+  }
+
+  /// Primary source: the unified admin settings list. Reads the fully-resolved
+  /// `help_terms_url` / `help_privacy_url` / `giftcard_terms_url` values.
+  Future<bool> _refreshFromUnified() async {
+    try {
+      final res = await http
+          .get(Uri.parse(endpointRegistry.adminSettingsEndpoint))
+          .timeout(const Duration(seconds: 6));
+      if (res.statusCode != 200) return false;
+      final body = jsonDecode(res.body);
+      final list = body is Map<String, dynamic> ? body['settings'] : null;
+      if (list is! List) return false;
+      final m = <String, String>{};
+      for (final raw in list) {
+        if (raw is Map && raw['key'] is String && raw['value'] is String) {
+          m[raw['key'] as String] = raw['value'] as String;
+        }
+      }
+      setUrls(
+        terms: m['help_terms_url'],
+        privacy: m['help_privacy_url'],
+        giftcardTerms: m['giftcard_terms_url'],
+      );
+      // Consider it a hit only if the unified list actually carried a legal link.
+      return m.containsKey('giftcard_terms_url') || m.containsKey('help_terms_url');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Fallback source: the legacy banking `/legal/links` endpoint.
+  Future<void> _refreshFromBanking() async {
     try {
       final res =
           await http.get(Uri.parse(_legalUrl)).timeout(const Duration(seconds: 6));

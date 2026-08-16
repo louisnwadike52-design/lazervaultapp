@@ -20,9 +20,12 @@ import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
+import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/voice_login_sheet.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
@@ -31,13 +34,20 @@ class EmailSignInScreen extends StatefulWidget {
   State<EmailSignInScreen> createState() => _EmailSignInScreenState();
 }
 
-class _EmailSignInScreenState extends State<EmailSignInScreen> {
+class _EmailSignInScreenState extends State<EmailSignInScreen>
+    with SessionLoginCompleter {
+  static const Color _accent = Color(0xFF4834D4);
   late ResponsiveController _responsiveController;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _storage = serviceLocator<FlutterSecureStorage>();
   bool _hasPasscodeSetup = false;
+  // Guards the Voice-login flow against re-entrancy. (Fingerprint/Face ID are
+  // deliberately NOT offered here — they're a LOCAL gate over a cached session,
+  // which only exists for a returning user, i.e. the passcode LOCK screen. The
+  // fresh email login uses email+password or server-verified Voice.)
+  bool _altAuthInProgress = false;
   // The identifier field accepts an email OR a phone number. We detect which as
   // the user types: when a phone is detected we reveal a selectable country-code
   // pill beside the field and validate/format per that country (default Nigeria).
@@ -47,6 +57,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   // (success snackbar + getUserProfile re-entrancy), which navigated to the
   // dashboard twice (the "double swipe"). Navigate exactly once.
   bool _navigated = false;
+
+  // Google/Apple sign-in are not wired to a real backend yet (the repository's
+  // signInWithGoogle/Apple are stubs), so hide the buttons for store review —
+  // shipping non-functional auth buttons is a common review rejection. Flip this
+  // to true once the OAuth integration lands; nothing else needs to change (the
+  // buttons + handlers stay in place, just not rendered).
+  static const bool _socialSignInEnabled = false;
 
   @override
   void initState() {
@@ -93,6 +110,136 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   void _switchToPasscodeLogin() {
     Get.offAllNamed(AppRoutes.passcodeLogin);
+  }
+
+  /// Voice sign-in keyed off the EMAIL: check the account (entered email, else
+  /// the stored one) is configured for voice, then record + server-verify the
+  /// voiceprint and mint a session (persisted → hydrated by the shared completer).
+  Future<void> _onVoiceLogin() async {
+    if (_altAuthInProgress) return;
+    _altAuthInProgress = true;
+    try {
+      var email = _emailController.text.trim();
+      if (!email.contains('@')) {
+        email = (await _storage.read(key: 'stored_email')) ?? '';
+      }
+      if (!mounted) return;
+      if (email.isEmpty || !email.contains('@')) {
+        _altSnack('Voice Login', 'Enter your email first, then use Voice login.');
+        return;
+      }
+
+      final voice = serviceLocator<VoiceBiometricsService>();
+      VoiceEnrollmentStatus status;
+      try {
+        status = await voice.checkEnrollmentByEmail(email);
+      } on VoiceBiometricsNetworkException {
+        if (mounted) {
+          _altSnack('Voice Login',
+              'Network problem — check your connection and try again.');
+        }
+        return;
+      } catch (_) {
+        if (mounted) {
+          _altSnack('Voice Login', 'Voice login is unavailable right now.');
+        }
+        return;
+      }
+      if (!mounted) return;
+      if (!status.isEnrolled) {
+        _altSnack('Voice Login',
+            'This account hasn\'t set up Voice login. Sign in, then enroll it in Settings → Security → Biometric Login.');
+        return;
+      }
+
+      final result = await VoiceLoginSheet.showForEmail(context, email: email);
+      if (result == null || !result.hasSession || !mounted) return;
+
+      // Persist the freshly-minted tokens, THEN finish login using them.
+      await _storage.write(key: 'access_token', value: result.accessToken!);
+      await _storage.write(key: 'refresh_token', value: result.refreshToken!);
+      if (result.userId != null && result.userId!.isNotEmpty) {
+        await _storage.write(key: 'user_id', value: result.userId!);
+      }
+      if (!mounted) return;
+      final outcome = await completeSessionLogin(flow: 'voice_login');
+      if (!mounted) return;
+      if (outcome == SessionLoginOutcome.network) {
+        _altSnack('Connection problem',
+            'Signed in, but couldn\'t load your profile. Check your connection.');
+      }
+      // success → BlocConsumer navigates.
+    } finally {
+      _altAuthInProgress = false;
+    }
+  }
+
+  void _altSnack(String title, String message) {
+    if (!mounted || Get.isSnackbarOpen) return;
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: Colors.black87,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      margin: EdgeInsets.all(15.w),
+      borderRadius: 10.r,
+    );
+  }
+
+  /// "Or sign in with" — Voice only. Voice is server-verified (works for a fresh
+  /// email login with no cached session); it's offered to everyone and gated on
+  /// tap by whether the account actually enrolled a voiceprint. Fingerprint/Face
+  /// ID are intentionally NOT here — they live on the passcode LOCK screen, the
+  /// only place a cached session exists for a local OS gate to unlock.
+  Widget _buildAlternateAuthRow() {
+    return Padding(
+      padding: EdgeInsets.only(top: 20.h),
+      child: Column(
+        children: [
+          Text('Or sign in with',
+              style: TextStyle(fontSize: 13.sp, color: Colors.black45)),
+          SizedBox(height: 14.h),
+          _altAuthButton(
+            icon: Icons.mic_none_rounded,
+            label: 'Voice',
+            onTap: _onVoiceLogin,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _altAuthButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: _altAuthInProgress ? null : onTap,
+          borderRadius: BorderRadius.circular(30.r),
+          child: Container(
+            width: 58.w,
+            height: 58.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _accent.withValues(alpha: 0.08),
+              border: Border.all(color: _accent.withValues(alpha: 0.4), width: 1.4),
+            ),
+            child: Icon(icon, color: _accent, size: 26.w),
+          ),
+        ),
+        SizedBox(height: 6.h),
+        Text(label,
+            style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.black54,
+                fontWeight: FontWeight.w500)),
+      ],
+    );
   }
 
   @override
@@ -195,6 +342,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   profile.user.signupStatus,
                   email: profile.user.email,
                   phone: profile.user.phoneNumber,
+                  hasPasscode: profile.user.hasPasscode,
                   hasTransactionPin: profile.user.hasTransactionPin,
                 );
                 if (resumeRoute != null) {
@@ -343,6 +491,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                                 ),
                               ),
                             ),
+                      if (!isLoading) _buildAlternateAuthRow(),
                       SizedBox(height: 12.0.h),
                       if (_hasPasscodeSetup && !isLoading)
                         Center(
@@ -359,22 +508,28 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                             ),
                           ),
                         ),
-                      SizedBox(height: 12.0.h),
-                      UniversalImageLoader(imagePath: AppData.orDivider),
-                      SizedBox(height: 24.0.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _socialLoginButton(context, AppData.googleLogo, () {
+                      // Social sign-in (Google/Apple) is hidden until wired — see
+                      // _socialSignInEnabled. When hidden, keep balanced spacing so
+                      // the sign-up link isn't cramped against the field above.
+                      if (_socialSignInEnabled) ...[
+                        SizedBox(height: 12.0.h),
+                        UniversalImageLoader(imagePath: AppData.orDivider),
+                        SizedBox(height: 24.0.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _socialLoginButton(context, AppData.googleLogo, () {
                               context.read<AuthenticationCubit>().signInWithGoogle();
-                          }),
-                          SizedBox(width: 10.w),
-                          _socialLoginButton(context, AppData.appleLogo, () {
+                            }),
+                            SizedBox(width: 10.w),
+                            _socialLoginButton(context, AppData.appleLogo, () {
                               context.read<AuthenticationCubit>().signInWithApple();
-                          }),
-                        ],
-                      ),
-                      SizedBox(height: 56.h),
+                            }),
+                          ],
+                        ),
+                        SizedBox(height: 56.h),
+                      ] else
+                        SizedBox(height: 32.h),
                       _buildSignUpLink(context),
                       SizedBox(height: 16.h),
                     ],

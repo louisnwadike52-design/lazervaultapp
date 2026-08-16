@@ -16,6 +16,17 @@ class Reminder {
   final DateTime createdAt;
   final DateTime? lastTriggeredAt;
 
+  // Event-reminder fields (backend migration 009). eventTime is the real-world
+  // moment the user is reminded ABOUT (birthday, bill, event); the backend
+  // derives the 1-day-before / 1-hour-before fires from it. When allDay is true
+  // the client sends local midnight as eventTime (so "no time set" birthdays
+  // fire at 12:00 AM). channels null => fall back to the user's profile prefs.
+  final DateTime? eventTime;
+  final bool allDay;
+  final List<String> leadOffsets; // subset of ['day_before','hour_before']
+  final List<String>? channels; // subset of ['push','email','sms']
+  final String category; // custom | birthday | bill | event | task
+
   const Reminder({
     required this.id,
     required this.userId,
@@ -30,6 +41,11 @@ class Reminder {
     this.relatedEventId,
     required this.createdAt,
     this.lastTriggeredAt,
+    this.eventTime,
+    this.allDay = false,
+    this.leadOffsets = const ['day_before', 'hour_before'],
+    this.channels,
+    this.category = 'custom',
   });
 
   Reminder copyWith({
@@ -46,6 +62,11 @@ class Reminder {
     String? relatedEventId,
     DateTime? createdAt,
     DateTime? lastTriggeredAt,
+    DateTime? eventTime,
+    bool? allDay,
+    List<String>? leadOffsets,
+    List<String>? channels,
+    String? category,
   }) {
     return Reminder(
       id: id ?? this.id,
@@ -61,6 +82,11 @@ class Reminder {
       relatedEventId: relatedEventId ?? this.relatedEventId,
       createdAt: createdAt ?? this.createdAt,
       lastTriggeredAt: lastTriggeredAt ?? this.lastTriggeredAt,
+      eventTime: eventTime ?? this.eventTime,
+      allDay: allDay ?? this.allDay,
+      leadOffsets: leadOffsets ?? this.leadOffsets,
+      channels: channels ?? this.channels,
+      category: category ?? this.category,
     );
   }
 
@@ -88,6 +114,15 @@ class Reminder {
         : (repeatType == 'once'
             ? (minutesBefore != null && minutesBefore > 0 ? 'relative' : 'absolute')
             : 'recurring');
+    List<String> csv(dynamic v) {
+      if (v is String && v.trim().isNotEmpty) {
+        return v.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      }
+      return const [];
+    }
+
+    final offsets = csv(json['lead_offsets']);
+    final chans = csv(json['channels']);
     return Reminder(
       id: json['id'] as String? ?? '',
       userId: json['user_id'] as String? ?? '',
@@ -98,6 +133,13 @@ class Reminder {
       repeatPattern: repeatType == 'once' ? null : repeatType,
       isActive: json['enabled'] as bool? ?? true,
       createdAt: ts(json['created_at']),
+      eventTime: json['event_time'] != null ? ts(json['event_time']) : null,
+      allDay: json['all_day'] as bool? ?? false,
+      leadOffsets: offsets.isEmpty ? const ['day_before', 'hour_before'] : offsets,
+      channels: chans.isEmpty ? null : chans,
+      category: (json['category'] as String?)?.trim().isNotEmpty == true
+          ? json['category'] as String
+          : 'custom',
     );
   }
 
@@ -112,6 +154,15 @@ class Reminder {
       // scheduling worker keys off repeat_type only, so repeat_rule is free here.
       'repeat_rule': reminderType,
       'enabled': isActive,
+      // Event-reminder fields. event_time is the target the backend derives fires
+      // from (defaults to remindAt). For all-day, the caller sets eventTime to
+      // local midnight so the reminder fires at 12:00 AM.
+      'event_time': (eventTime ?? remindAt).toUtc().toIso8601String(),
+      'all_day': allDay,
+      'lead_offsets': leadOffsets.join(','),
+      // Empty string => backend falls back to the user's profile channel prefs.
+      'channels': channels == null ? '' : channels!.join(','),
+      'category': category,
     };
   }
 

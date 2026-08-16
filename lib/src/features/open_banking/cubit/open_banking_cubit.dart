@@ -398,6 +398,15 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   /// button so the UI surfaces a snackbar. When a refresh fee applies, pass the
   /// txPIN `verificationToken` + `transactionId` (from the cost-confirm modal)
   /// so the backend charges the fee before the live Mono read.
+  ///
+  /// [rethrowOnError]: normally a failed refresh is swallowed here and surfaced
+  /// only as an emitted error state (background sweeps and free refreshes want
+  /// this — an unhandled async throw would crash the fire-and-forget path). The
+  /// FEE-GATED tx-PIN sheet, however, `await`s this from its `onPinValidated`
+  /// callback and needs the failure to PROPAGATE so the sheet shows an
+  /// unsuccessful state instead of a false "balance refreshed". Those callers
+  /// pass `rethrowOnError: true`; the error state is still emitted first (so any
+  /// listening card also reflects the failure), then the error is rethrown.
   Future<void> refreshBalance({
     required String accountId,
     required String userId,
@@ -405,6 +414,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     bool isManual = false,
     String? verificationToken,
     String? transactionId,
+    bool rethrowOnError = false,
   }) async {
     if (isClosed) return;
     emit(BalanceRefreshing(accountId: accountId));
@@ -456,7 +466,10 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         }
       }
       if (isClosed) return;
-      _emitError(e, operation: 'refreshBalance');
+      _emitError(e, operation: 'refreshBalance', accountId: accountId);
+      // Fee-gated tx-PIN callers await this and must see the failure so the
+      // sheet flips to its unsuccessful state (never a false "balance refreshed").
+      if (rethrowOnError) rethrow;
     }
   }
 
@@ -497,6 +510,12 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate (recurring)
     String? currency, // destination wallet currency (e.g. NGN)
     String? countryCode, // derived country (e.g. NG) — routes NGN to Mono
+    // Transaction-PIN gate for interactive bank-rail (redeposit) pulls: the
+    // fee-disclosed tx-PIN sheet mints a verificationToken bound to transactionId;
+    // the backend PreValidates it before creating the debit. Null for paths that
+    // aren't PIN-gated (first-time link-and-deposit is bank-auth gated instead).
+    String? verificationToken,
+    String? transactionId,
   }) async {
     if (isClosed) return;
     emit(OpenBankingLoading());
@@ -518,6 +537,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           useRecurringAccess: useRecurringAccess,
           currency: currency,
           countryCode: countryCode,
+          verificationToken: verificationToken,
+          transactionId: transactionId,
         );
       } else {
         // Fallback to REST
@@ -529,6 +550,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           narration: narration,
           idempotencyKey: idempotencyKey,
           accessToken: accessToken,
+          verificationToken: verificationToken,
+          transactionId: transactionId,
         );
       }
 
@@ -663,6 +686,27 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         return await _grpcDataSource!.calculateDepositFee(amountInKobo: amountKobo);
       }
     } catch (_) {/* hide preview on error */}
+    return null;
+  }
+
+  /// Consolidated fee quote (connect + deposit, broken down per rail) for the
+  /// pre-link fee-disclosure modal. Returns null on error so the caller can
+  /// proceed with a generic notice rather than blocking the deposit.
+  Future<DepositFeeQuote?> fetchDepositFeeQuote({
+    required int amountKobo,
+    required bool useRecurringAccess,
+    required bool firstTimeLink,
+  }) async {
+    if (amountKobo <= 0) return null;
+    try {
+      if (useGrpc && _grpcDataSource != null) {
+        return await _grpcDataSource!.getDepositFeeQuote(
+          amountInKobo: amountKobo,
+          useRecurringAccess: useRecurringAccess,
+          firstTimeLink: firstTimeLink,
+        );
+      }
+    } catch (_) {/* fall back to generic notice on error */}
     return null;
   }
 
@@ -1014,50 +1058,10 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   // EXTERNAL TRANSACTION SYNC OPERATIONS
   // =====================================================
 
-  /// Sync transactions for all linked accounts
-  Future<void> syncAllAccountTransactions({
-    required String userId,
-    String syncType = 'incremental',
-  }) async {
-    if (isClosed) return;
-    if (!useGrpc || _grpcDataSource == null) {
-      emit(const OpenBankingError(
-        message: 'Transaction sync is only available via gRPC',
-        errorType: BankingErrorType.general,
-      ));
-      return;
-    }
-
-    emit(AllAccountsSyncing());
-
-    try {
-      final result = await _grpcDataSource!.syncAllAccountTransactions(
-        userId: userId,
-        syncType: syncType,
-      );
-
-      if (isClosed) return;
-      if (result.success) {
-        // Refresh linked accounts to get updated sync status
-        await fetchLinkedAccounts(
-          userId: userId,
-          accessToken: '', // Not used for gRPC
-        );
-        emit(AllAccountsSynced(
-          accountsSynced: result.totalAccountsSynced,
-          transactionsSynced: result.totalTransactionsSynced,
-        ));
-      } else {
-        emit(OpenBankingError(
-          message: 'Sync completed with some errors',
-          operation: 'syncAllAccountTransactions',
-        ));
-      }
-    } catch (e) {
-      if (isClosed) return;
-      _emitError(e, operation: 'syncAllAccountTransactions');
-    }
-  }
+  // syncAllAccountTransactions REMOVED: refreshing every linked bank at once
+  // fanned out cost-incurring live Mono reads with no user fee. Sync a single
+  // account explicitly (syncAccountTransactions) or rely on the event-driven
+  // mono.events.account_updated webhook + each card's fee-gated balance refresh.
 
   /// Sync transactions for a specific account
   Future<void> syncAccountTransactions({
@@ -1201,7 +1205,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   void resetCircuitBreaker() => _restDataSource?.resetCircuitBreaker();
 
   /// Emit appropriate error state based on exception type
-  void _emitError(Object error, {String? operation}) {
+  void _emitError(Object error, {String? operation, String? accountId}) {
     if (error is BankingException) {
       // Check for specific states that need special handling
       if (error is NetworkException) {
@@ -1218,13 +1222,15 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         return;
       }
 
-      // Emit detailed error state
-      emit(OpenBankingError.fromException(error, operation: operation));
+      // Emit detailed error state (carries account_id when a per-account op).
+      emit(OpenBankingError.fromException(error,
+          operation: operation, accountId: accountId));
     } else {
       // Unknown error - wrap as generic
       emit(OpenBankingError(
         message: error.toString(),
         operation: operation,
+        details: accountId != null ? {'account_id': accountId} : null,
       ));
     }
   }

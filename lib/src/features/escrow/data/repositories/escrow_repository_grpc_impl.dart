@@ -1,3 +1,4 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/src/generated/escrow.pb.dart' as pb;
@@ -150,7 +151,91 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
     return _dealFromProto(resp.deal);
   }
 
+  @override
+  Future<void> addAttachment({
+    required String dealId,
+    required String purpose,
+    required String mediaKind,
+    required String url,
+    String contentType = '',
+    int sizeBytes = 0,
+    int durationSeconds = 0,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.AddAttachmentRequest()
+        ..dealId = dealId
+        ..purpose = purpose
+        ..mediaKind = mediaKind
+        ..url = url
+        ..contentType = contentType
+        ..sizeBytes = Int64(sizeBytes)
+        ..durationSeconds = durationSeconds;
+      final options = await grpcClient.callOptions;
+      await grpcClient.escrowClient.addAttachment(req, options: options);
+    });
+  }
+
+  @override
+  Future<EscrowDealEntity> requestRefund({
+    required String dealId,
+    required String reason,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.RequestRefundRequest()
+        ..dealId = dealId
+        ..reason = reason;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.requestRefund(req, options: options);
+      return _dealFromProto(resp.deal);
+    });
+  }
+
+  @override
+  Future<EscrowDealEntity> respondRefund({
+    required String dealId,
+    required bool accept,
+    String note = '',
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.RespondRefundRequest()
+        ..dealId = dealId
+        ..accept = accept
+        ..note = note;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.respondRefund(req, options: options);
+      return _dealFromProto(resp.deal);
+    });
+  }
+
   // ---- proto → entity mapping ----
+
+  EscrowAttachmentEntity _attachmentFromProto(pb.Attachment a) => EscrowAttachmentEntity(
+        id: a.id,
+        purpose: a.purpose,
+        mediaKind: a.mediaKind,
+        url: a.url,
+        contentType: a.contentType,
+        sizeBytes: a.sizeBytes.toInt(),
+        durationSeconds: a.durationSeconds,
+        uploadedBy: a.uploadedBy,
+        actorRole: a.actorRole,
+        createdAt: a.hasCreatedAt() ? _toDate(a.createdAt) : null,
+      );
+
+  EscrowRefundRequestEntity _refundFromProto(pb.RefundRequest r) => EscrowRefundRequestEntity(
+        id: r.id,
+        dealId: r.dealId,
+        requestedBy: r.requestedBy,
+        reason: r.reason,
+        status: r.status,
+        responseDeadlineAt:
+            r.hasResponseDeadlineAt() ? _toDate(r.responseDeadlineAt) : null,
+        respondedBy: r.respondedBy,
+        responseNote: r.responseNote,
+        respondedAt: r.hasRespondedAt() ? _toDate(r.respondedAt) : null,
+        createdAt: r.hasCreatedAt() ? _toDate(r.createdAt) : null,
+        attachments: r.attachments.map(_attachmentFromProto).toList(),
+      );
 
   EscrowDealEntity _dealFromProto(pb.Deal d) {
     return EscrowDealEntity(
@@ -192,6 +277,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
                 createdAt: e.hasCreatedAt() ? _toDate(e.createdAt) : null,
               ))
           .toList(),
+      attachments: d.attachments.map(_attachmentFromProto).toList(),
+      refundRequest: d.hasRefundRequest() ? _refundFromProto(d.refundRequest) : null,
     );
   }
 

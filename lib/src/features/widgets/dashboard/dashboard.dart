@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:showcaseview/showcaseview.dart' show TooltipPosition;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
+import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
 import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/view/dashboard_card_summary.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -71,6 +73,13 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     _familyInviteCubit = serviceLocator<FamilyAccountCubit>();
     _familyInviteCubit.loadPendingInvitations();
+    // First-run coach-mark tour — gated PER ACCOUNT so every new signup / first
+    // login gets it even if another account already toured this device. Resolve
+    // the current user id here (the dashboard is post-auth, so the profile is
+    // present); a blank id no-ops. Starts after first frame.
+    final walkthroughUserId =
+        context.read<AuthenticationCubit>().currentProfile?.user.id ?? '';
+    DashboardWalkthrough.maybeStart(context, userId: walkthroughUserId);
   }
 
   @override
@@ -246,10 +255,16 @@ class _DashboardState extends State<Dashboard> {
                   // Wallet/account section. In Showcase (advert) mode it renders
                   // a touch shorter so the adverts carousel + compact services
                   // still sit above the fold. Rebuilds live on layout switch.
-                  ValueListenableBuilder<int>(
-                    valueListenable: FeatureFlags.dashboardLayoutRevision,
-                    builder: (context, _, __) => DashboardCardSummary(
-                      compact: FeatureFlags.dashboardShowcaseLayout,
+                  DashboardWalkthrough.step(
+                    key: DashboardWalkthrough.accountsKey,
+                    title: 'Your accounts',
+                    body:
+                        'Personal, family, family & friends and business — swipe to switch. Pull down anytime to refresh.',
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: FeatureFlags.dashboardLayoutRevision,
+                      builder: (context, _, __) => DashboardCardSummary(
+                        compact: FeatureFlags.dashboardShowcaseLayout,
+                      ),
                     ),
                   ),
                   _buildPendingInvitationsBanner(),
@@ -269,23 +284,33 @@ class _DashboardState extends State<Dashboard> {
                                 FeatureFlags.dashboardShowcaseLayout;
                             return Column(
                               children: [
-                                AppServicesBuilder(compact: showcase),
+                                DashboardWalkthrough.step(
+                                  key: DashboardWalkthrough.servicesKey,
+                                  title: 'Your services',
+                                  body:
+                                      'These reorder by how often you use them (toggle in Settings). Tap “View all” to see everything and rearrange.',
+                                  child: AppServicesBuilder(compact: showcase),
+                                ),
                                 SizedBox(height: 16.0.h),
-                                if (showcase) ...[
-                                  const DashboardAdvertsCarousel(),
-                                  SizedBox(height: 16.0.h),
-                                ],
-                                _buildFamilyFriendsCTA(),
-                                if (showcase)
-                                  const InviteFriendsCompact()
-                                else
-                                  InviteFriends(),
+                                // Adverts carousel + refer-a-friend are hidden when
+                                // a Family & Friends card is active so that screen
+                                // stays clean — only the (self-gating) create-another
+                                // family CTA shows there.
+                                _familyAwareBottomExtras(showcase),
                               ],
                             );
                           },
                         ),
                         SizedBox(height: 16.0.h),
-                        RecentHistory(),
+                        DashboardWalkthrough.step(
+                          key: DashboardWalkthrough.historyKey,
+                          title: 'Recent activity',
+                          body:
+                              'Your latest transactions at a glance — tap any to see its receipt.',
+                          // Lower on the page → tooltip sits ABOVE, pointing down.
+                          position: TooltipPosition.top,
+                          child: RecentHistory(),
+                        ),
                         SizedBox(height: 16.0.h),
                         BlocProvider(
                           create: (_) => serviceLocator<LeaderboardCubit>(),
@@ -441,6 +466,43 @@ class _DashboardState extends State<Dashboard> {
   /// Only visible when a Family & Friends card is the active card in the top
   /// carousel (swipe to a family card to reveal it) and the user has fewer than
   /// 3 family accounts. Tapping "+" opens the consolidated create flow.
+  /// Bottom-of-dashboard extras (adverts carousel + refer-a-friend), gated by the
+  /// ACTIVE account type. On a Family & Friends card we render ONLY the
+  /// create-another family CTA (which self-hides when not applicable) so the
+  /// family screen stays clean — no adverts, no invite block.
+  Widget _familyAwareBottomExtras(bool showcase) {
+    final accountManager = serviceLocator<AccountManager>();
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        final summaries = _accountSummariesFromState(state);
+        return StreamBuilder<String?>(
+          stream: accountManager.accountIdStream,
+          initialData: accountManager.activeAccountId,
+          builder: (context, snapshot) {
+            final isFamilyActive = summaries != null &&
+                _activeCarouselAccountIsFamily(summaries, snapshot.data);
+            if (isFamilyActive) {
+              return _buildFamilyFriendsCTA();
+            }
+            return Column(
+              children: [
+                if (showcase) ...[
+                  const DashboardAdvertsCarousel(),
+                  SizedBox(height: 16.0.h),
+                ],
+                _buildFamilyFriendsCTA(),
+                if (showcase)
+                  const InviteFriendsCompact()
+                else
+                  InviteFriends(),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildFamilyFriendsCTA() {
     final accountManager = serviceLocator<AccountManager>();
 

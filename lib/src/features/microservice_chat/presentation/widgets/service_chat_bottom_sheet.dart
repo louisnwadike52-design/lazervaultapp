@@ -24,6 +24,7 @@ import '../../domain/usecases/load_microservice_chat_history_usecase.dart';
 import '../../domain/usecases/load_direct_chat_history_usecase.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
+import 'chat_reply_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Shows a scoped chat bottom sheet for a specific service.
@@ -105,6 +106,11 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   String? _userAvatarUrl;
   bool _isExpanded = false;
 
+  // Swipe-to-reply: the message the user swiped to reply to (staged in the
+  // preview bar above the input, and prepended as AI context on send).
+  String? _replyToText;
+  bool _replyToIsUser = false;
+
   // Media state
   final ImagePicker _imagePicker = ImagePicker();
   final AudioRecorder _audioRecorder = AudioRecorder();
@@ -177,9 +183,45 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
-      context.read<MicroserviceChatCubit>().sendMessage(text);
+      context.read<MicroserviceChatCubit>().sendMessage(
+            text,
+            replyToText: _replyToText,
+            replyToIsUser: _replyToIsUser,
+          );
       _messageController.clear();
+      if (_replyToText != null) {
+        setState(() {
+          _replyToText = null;
+          _replyToIsUser = false;
+        });
+      }
     }
+  }
+
+  /// A short snippet of a message to quote in the reply preview / quote block.
+  String _snippetOf(MicroserviceChatMessageEntity m) {
+    final t = m.text.trim();
+    if (t.isNotEmpty) return t;
+    if (m.mediaType == 'image') return '📷 Photo';
+    if (m.mediaType == 'voice') return '🎤 Voice note';
+    return '';
+  }
+
+  /// Stage [message] as the reply target (from a left-swipe on its bubble).
+  void _startReply(MicroserviceChatMessageEntity message) {
+    final snippet = _snippetOf(message);
+    if (snippet.isEmpty) return;
+    setState(() {
+      _replyToText = snippet;
+      _replyToIsUser = message.isUser;
+    });
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyToText = null;
+      _replyToIsUser = false;
+    });
   }
 
   Future<void> _pickImage() async {
@@ -344,6 +386,12 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
               children: [
                 _buildHeader(),
                 Expanded(child: _buildMessageList()),
+                if (_replyToText != null)
+                  ChatReplyPreviewBar(
+                    author: _replyToIsUser ? 'yourself' : 'the assistant',
+                    snippet: _replyToText!,
+                    onCancel: _cancelReply,
+                  ),
                 _buildInputArea(),
               ],
             ),
@@ -516,7 +564,15 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
               if (index == messages.length && isTyping) {
                 return _buildTypingIndicator();
               }
-              return _buildMessageBubble(messages[index]);
+              // Left-swipe any bubble to reply to it (grounds the AI's next
+              // reply) — same gesture as the general + full-screen chat.
+              // _startReply no-ops on empty snippets, so welcome/empty bubbles
+              // can't become a reply target.
+              final message = messages[index];
+              return ChatSwipeToReply(
+                onReply: () => _startReply(message),
+                child: _buildMessageBubble(message),
+              );
             },
           ),
         );
@@ -652,6 +708,16 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Quoted "replied message" block above a sent reply —
+                      // same pattern the P2P bubble + general chat use.
+                      if (message.replyToText != null &&
+                          message.replyToText!.isNotEmpty)
+                        ChatReplyQuoteBlock(
+                          author: (message.replyToIsUser ?? false)
+                              ? 'You'
+                              : 'Lazer',
+                          quotedText: message.replyToText!,
+                        ),
                       if (message.mediaType != null) ...[
                         ChatMediaBubble(
                           mediaType: message.mediaType,

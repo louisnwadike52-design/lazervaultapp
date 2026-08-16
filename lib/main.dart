@@ -3,7 +3,8 @@
 // via `--flavor`, so those checks are gone — see `currentAppEnvironment`.
 
 import 'dart:ui' show PlatformDispatcher;
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart'
+    show kDebugMode, kReleaseMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +13,9 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
+// FreshInstallGuard intentionally disabled (see call site below); re-enable the
+// import + the clearIfBuildChanged() call together if a stale-state regression returns.
+// import 'package:lazervault/core/services/fresh_install_guard.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -25,7 +29,8 @@ import 'core/services/inactivity_watcher.dart';
 import 'core/services/remote_log_sink.dart';
 import 'src/core/services/analytics_service.dart';
 import 'src/features/admin_alerts/admin_alerts_screen.dart';
-import 'src/core/config/app_environment.dart' show currentAppEnvironment;
+import 'src/core/config/app_environment.dart'
+    show currentAppEnvironment, resolvedFlavor;
 import 'core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
@@ -78,6 +83,25 @@ void main() {
   // app_runtime_errors_total → Grafana). Best-effort: telemetry never blocks.
   runZonedGuarded(() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // FRESH-INSTALL GUARD — DISABLED. This wiped ALL local storage on every build
+  // change to purge a leftover DEV session/endpoint. The real cause (a mis-baked
+  // FLUTTER_FLAVOR silently defaulting to dev) is now fixed at the source
+  // (app_environment.dart resolves fail-closed to prod in release), so the
+  // blanket wipe is no longer needed — and it forced users to re-login and lose
+  // cached state on every app update. Left in place (no-op) so it can be
+  // re-enabled quickly if a stale-state regression ever reappears.
+  // await FreshInstallGuard.clearIfBuildChanged();
+
+  // PROD hygiene: silence ALL raw debugPrint output in release builds so debug
+  // logs never leak to logcat / the Xcode console on store devices. This
+  // no-ops every debugPrint() call app-wide in one place — safer than deleting
+  // ~286 scattered (often multi-line) debug statements. Structured logging is
+  // unaffected: AppLogger.info/warn/error still ship to Loki for observability,
+  // and errors ALWAYS do (RemoteLogSink bypasses the enable gate for errors).
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
 
   // Framework (build/layout/paint) errors → telemetry, after the default handler
   // (which still prints to the console / red screen in debug).
@@ -166,7 +190,46 @@ void main() {
   // cached — it reads the client-logs endpoint + gating from there. This makes
   // AppLogger + the crash handlers above start shipping to Loki. Fast (a
   // SharedPreferences read + package info); never blocks on the network.
-  await RemoteLogSink.instance.init();
+  // Telemetry is FULLY non-blocking: init runs fire-and-forget (its identity
+  // reads happen off the startup critical path), log() is a synchronous in-memory
+  // enqueue, and network shipping is a background Timer with timeouts. Nothing
+  // here can stall or break the Flutter main thread / UI.
+  unawaited(RemoteLogSink.instance.init());
+
+  // STARTUP TRACE → Loki: record the COMPILED tier and the exact backend host this
+  // build will dial, so we can confirm SERVER-SIDE whether an installed build is
+  // genuinely prod or dev (diagnosing "new build still points to dev"). Uses
+  // level:error because RemoteLogSink always ships errors (bypasses the enable
+  // gate + release-mode debugPrint silencing). Also printed for `adb logcat`.
+  try {
+    // Raw compile-time define — empty when the --dart-define failed to bake
+    // (the historical "prod build still hit dev" mode). `resolvedFlavor` shows
+    // what the fail-closed logic settled on; comparing the two + kReleaseMode
+    // pinpoints a mis-bake directly from `adb logcat` / Console.app.
+    const flavorDefine = String.fromEnvironment('FLUTTER_FLAVOR');
+    final startupTrace = 'tier=${currentAppEnvironment.tierName} '
+        'flavorDefine=${flavorDefine.isEmpty ? '(empty)' : flavorDefine} '
+        'resolvedFlavor=$resolvedFlavor '
+        'releaseMode=$kReleaseMode '
+        'grpc_base=${endpointRegistry.grpcBase} '
+        'grpc_host=${endpointRegistry.grpcHost} '
+        'environment=${dotenv.env['ENVIRONMENT'] ?? '?'}';
+    print('🔎 STARTUP TRACE: $startupTrace');
+    RemoteLogSink.instance.log(
+      level: 'error',
+      flow: 'startup_trace',
+      message: startupTrace,
+      fields: {
+        'tier': currentAppEnvironment.tierName,
+        'flavor_define': flavorDefine,
+        'resolved_flavor': resolvedFlavor,
+        'release_mode': kReleaseMode,
+        'grpc_base': endpointRegistry.grpcBase,
+        'grpc_host': endpointRegistry.grpcHost,
+        'environment': dotenv.env['ENVIRONMENT'] ?? '',
+      },
+    );
+  } catch (_) {/* diagnostics must never block startup */}
 
   // Hydrate the feature-flag cache from SharedPreferences before any widget
   // reads a synchronous flag (e.g. dashboard's `FeatureFlags.dashboardCardsVisible`).

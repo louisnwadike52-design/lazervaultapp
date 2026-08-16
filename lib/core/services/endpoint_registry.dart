@@ -514,6 +514,30 @@ class EndpointRegistry {
   String get wsBalance       => _get('url_ws_balance',          '${_tierBase('wss')}/ws/balance');
   String get wsContactless   => _get('url_ws_contactless',      '${_tierBase('wss')}/ws/contactless');
 
+  /// Resolve a realtime WS/HTTP endpoint's (host, port), honouring an OPTIONAL
+  /// dev host override. With NO usable override we follow the tunnel host AND its
+  /// port TOGETHER (443 → TLS).
+  ///
+  /// This closes a systemic prod bug: several services kept the tunnel host
+  /// (`api.lazervault.app`) but defaulted the PORT to a loopback dev port
+  /// (8082/8083/8084/8086/8088…), so on prod they dialed
+  /// `api.lazervault.app:<devPort>` — a port the Cloudflare edge never serves —
+  /// and the socket/request hung or failed (features silently degraded to
+  /// SSE/polling, or just broke, e.g. the Financial Connections spinner). On prod
+  /// there is no `*_HOST`/`*_PORT` in the bundled `.env`, so the override is
+  /// absent and we correctly follow the 443 tunnel; local dev keeps its explicit
+  /// loopback host:port override untouched.
+  ({String host, int port}) resolveServiceHostPort({
+    String? overrideHost,
+    int? overridePort,
+    required int devPort,
+  }) {
+    if (overrideHost != null && overrideHost.trim().isNotEmpty) {
+      return (host: overrideHost.trim(), port: overridePort ?? devPort);
+    }
+    return (host: grpcHost, port: grpcPort);
+  }
+
   /// App-wide screen-inactivity auto-logout threshold, in seconds. Admin-tunable
   /// via the `session_inactivity_logout_seconds` system setting (single source of
   /// truth — fetched from the admin dashboard). Defaults to **60 (1m) = ENABLED**;

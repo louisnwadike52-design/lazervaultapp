@@ -13,9 +13,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/authentication/presentation/views/login_otp_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
-import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
-import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
-import 'package:lazervault/src/features/authentication/domain/entities/session_entity.dart';
 import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -26,6 +23,7 @@ import 'package:lazervault/src/features/voice/managers/voice_activation_manager.
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/biometric_service.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/biometric/biometric_setup_dialog.dart';
 import 'package:lazervault/core/widgets/shake_widget.dart';
 import 'package:lazervault/core/widgets/passcode_dots.dart';
@@ -43,7 +41,7 @@ class PasscodeSignIn extends StatefulWidget {
 }
 
 class _PasscodeSignInState extends State<PasscodeSignIn>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, SessionLoginCompleter {
   final int _passcodeLength = 6;
 
   // Revolut-style "wrong passcode" shake: the dots row shakes + a heavy haptic
@@ -57,6 +55,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   final BiometricService _bio = BiometricService();
 
   bool _biometricFlowInProgress = false; // guards against re-entrant taps
+  bool _autoPromptAttempted = false; // auto-logon fires the OS prompt once only
   bool _canCheckBiometrics = false; // device supports + has an enrolled biometric
   bool _canEnrollBiometric = false; // sensor present but nothing enrolled yet
   bool _biometricEnabled = false; // opted-in for the device's biometric in Settings
@@ -90,7 +89,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _checkBiometricCapabilities();
+    // Detect capability first, then (once) auto-fire the OS biometric prompt for
+    // opted-in returning users — the admin-toggleable "auto logon". Chained off
+    // the detection future so the readiness flags are populated before we decide.
+    _checkBiometricCapabilities().then((_) => _maybeAutoLogon());
     _loadStoredUserData();
     _refreshAuthMode();
 
@@ -242,6 +244,44 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
 
   void _onBackspacePressed() {
     context.read<AuthenticationCubit>().passcodeLoginBackspace();
+  }
+
+  /// Auto-logon: the instant the lock screen mounts, fire the native OS biometric
+  /// prompt ONCE for a returning user who already opted into biometric login and
+  /// has an enrolled sensor. This is a convenience trigger only — it reuses the
+  /// exact same [_onBiometricPressed] path a manual tap would, so it can never
+  /// bypass the OS secure-enclave check. It silently no-ops (leaving the passcode
+  /// keypad) when biometric isn't ready, when the admin flag is off, or when a
+  /// login is already under way. Only ever called from initState (never on
+  /// lifecycle resume) so dismissing the OS sheet — which fires a resume — can't
+  /// loop it, and [_autoPromptAttempted] guards a second attempt within the session.
+  Future<void> _maybeAutoLogon() async {
+    if (_autoPromptAttempted || !mounted) return;
+    if (!FeatureFlags.autoBiometricLoginOnLaunch) return;
+    // Only proceed to the native prompt when fully READY: enrolled sensor AND
+    // opted-in for Lazervault. Never auto-open the OS-setup / enable-in-app
+    // guidance dialogs — those must be user-initiated so launch never nags.
+    if (!_biometricEnabled ||
+        !_canCheckBiometrics ||
+        _availableBiometricType == null) {
+      return;
+    }
+    // Biometric unlock is only a LOCAL gate over the cached session — it rotates
+    // the stored `refresh_token`. If the user is genuinely LOGGED OUT (no cached
+    // session), auto-prompting would pop Face ID and then dead-end on "Sign in
+    // required". So only auto-logon when there's a session to unlock; otherwise
+    // leave the passcode keypad for a real re-auth.
+    final refresh = await _secureStorage.read(key: 'refresh_token');
+    if (!mounted || refresh == null || refresh.isEmpty) return;
+    // Don't hijack a self-lock countdown or an in-flight authentication.
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is PasscodeLoginInProgress && authState.isAuthenticating) {
+      return;
+    }
+    _autoPromptAttempted = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onBiometricPressed();
+    });
   }
 
   void _onBiometricPressed() async {
@@ -436,91 +476,22 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   /// gates, then navigates) — so biometric login lands as the REAL user and
   /// takes the same post-login path.
   Future<void> _completeBiometricLogin() async {
-    try {
-      // Load the cached account's FULL profile from the user-service. This is
-      // the ONLY source that returns the real name + avatar — the auth
-      // refresh/validate endpoints deliberately don't (refresh returns tokens
-      // only; validate returns id/email without the name). Without this the app
-      // opened on a valid session but with an empty profile → a nameless
-      // "guest" greeting. The call also serves as the session gate: if the
-      // cached session is revoked/expired-past-refresh it fails → fall back to
-      // the passcode. An access token that merely EXPIRED is transparently
-      // rotated: getUserProfile() is wrapped in executeWithTokenRotation
-      // (profile_repository.dart), which on `unauthenticated` refreshes the
-      // single `refresh_token` once and retries — so a routine expiry never
-      // dead-ends biometric unlock.
-      final profileCubit = context.read<ProfileCubit>();
-      await profileCubit.getUserProfile();
-      if (!mounted) return;
-
-      final pState = profileCubit.state;
-      if (pState is! ProfileLoaded) {
-        // Classify the failure instead of blanket "Session expired" (which
-        // misdiagnoses a network blip as a dead session and dead-ends the user).
-        final code = pState is ProfileError ? pState.statusCode : null;
-        // gRPC: unauthenticated=16, permissionDenied=7. executeWithTokenRotation
-        // has ALREADY refreshed + retried once by the time we see these, so they
-        // mean the session is genuinely revoked/expired-past-refresh.
-        final revoked = code == 16 || code == 7;
-        AppLogger.event('biometric_login', 'profile_load_failed',
-            level: revoked ? 'warn' : 'error',
-            screen: 'passcode_lock',
-            fields: {
-              'status_code': code,
-              'classification': revoked ? 'revoked' : 'network',
-              'message': pState is ProfileError ? pState.message : '',
-            });
-        if (revoked) {
-          // Clear the dead local tokens so a re-tap can't replay them; keep the
-          // greeting identity. Passcode login mints a fresh session.
-          await _secureStorage.delete(key: 'access_token');
-          await _secureStorage.delete(key: 'refresh_token');
-          if (!mounted) return;
-          _showErrorSnackbar(
-              'Sign in required', 'Please sign in with your passcode.');
-        } else {
-          // Transient network/backend failure — DON'T wipe the session. The
-          // fingerprint stays usable; a single re-tap retries (no auto-loop).
-          _showErrorSnackbar('Connection problem',
-              'Couldn\'t reach Lazervault. Check your connection and try again.');
-        }
-        return;
-      }
-
-      // Pair the freshly-loaded user with the cached session tokens and hydrate
-      // the app-wide AuthenticationCubit — the greeting/avatar/KYC gates all
-      // read `currentProfile`. `hydrateProfile` emits AuthenticationSuccess,
-      // which this screen's BlocConsumer listener handles exactly like a
-      // passcode login (runs the resume/verification/PIN gates, then navigates).
-      final at = await _secureStorage.read(key: 'access_token') ?? '';
-      final rt = await _secureStorage.read(key: 'refresh_token') ?? '';
-      if (!mounted) return;
-
-      final now = DateTime.now();
-      final profile = ProfileEntity(
-        user: pState.user,
-        session: SessionEntity(
-          id: pState.user.id,
-          userId: pState.user.id,
-          accessToken: at,
-          refreshToken: rt,
-          accessTokenExpiresAt: now.add(const Duration(hours: 1)),
-          refreshTokenExpiresAt: now.add(const Duration(days: 30)),
-        ),
-      );
-      if (!mounted) return;
-      AppLogger.event('biometric_login', 'login_success',
-          screen: 'passcode_lock', fields: {'user_id': profile.user.id});
-      context.read<AuthenticationCubit>().hydrateProfile(profile);
-    } catch (e, st) {
-      if (!mounted) return;
-      // Capture the REAL error (previously swallowed by `catch (_)`), so a store
-      // device's failure is readable in Loki. Treat an unexpected exception as
-      // transient — do NOT wipe the session; point the user at a retry.
-      AppLogger.error('biometric unlock threw',
-          error: e, stackTrace: st, flow: 'biometric_login');
-      _showErrorSnackbar('Connection problem',
-          'Couldn\'t sign you in just now. Check your connection and try again.');
+    // The whole "load profile via the cached session → hydrate → BlocConsumer
+    // navigates" tail (+ network-vs-revoked classification) lives in the shared
+    // SessionLoginCompleter mixin, reused by the email sign-in screen too.
+    final outcome = await completeSessionLogin(flow: 'biometric_login');
+    if (!mounted) return;
+    switch (outcome) {
+      case SessionLoginOutcome.success:
+        break; // AuthenticationSuccess → BlocConsumer runs gates + navigates.
+      case SessionLoginOutcome.revoked:
+        _showErrorSnackbar(
+            'Sign in required', 'Please sign in with your passcode.');
+        break;
+      case SessionLoginOutcome.network:
+        _showErrorSnackbar('Connection problem',
+            'Couldn\'t reach Lazervault. Check your connection and try again.');
+        break;
     }
   }
 
@@ -655,6 +626,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
             user.signupStatus,
             email: user.email,
             phone: user.phoneNumber,
+            hasPasscode: user.hasPasscode,
             hasTransactionPin: user.hasTransactionPin,
           );
           if (resume != null) {

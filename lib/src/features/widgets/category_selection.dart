@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Service Category Model
@@ -89,10 +90,12 @@ class ServiceCategory {
     required String defaultNarration,
   }) {
     final trimmedNote = (note ?? '').trim();
-    if (category != null) {
+    final label = category?.analyticsLabel.trim() ?? '';
+    if (category != null && label.isNotEmpty) {
       final detail = trimmedNote.isNotEmpty ? trimmedNote : 'Transfer';
-      return '${category.analyticsLabel}: $detail';
+      return '$label: $detail';
     }
+    // No category (or a category with a blank label) → note, else the default.
     return trimmedNote.isNotEmpty ? trimmedNote : defaultNarration;
   }
 
@@ -332,11 +335,18 @@ class CategorySelectionBottomSheet extends StatefulWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => CategorySelectionBottomSheet(
-        serviceName: serviceName,
-        categories: categories,
-        selectedCategory: selectedCategory,
-        onSelected: (category) => Navigator.pop(context, category),
+      // A modal builder does NOT inherit BlocProviders from below the Navigator,
+      // so provide the app-wide BudgetCubit (a GetIt singleton) explicitly —
+      // otherwise "Create custom category" hits ProviderNotFound and can only
+      // ever fall back to a local-only, non-persisted category.
+      builder: (context) => BlocProvider<BudgetCubit>.value(
+        value: serviceLocator<BudgetCubit>(),
+        child: CategorySelectionBottomSheet(
+          serviceName: serviceName,
+          categories: categories,
+          selectedCategory: selectedCategory,
+          onSelected: (category) => Navigator.pop(context, category),
+        ),
       ),
     );
   }

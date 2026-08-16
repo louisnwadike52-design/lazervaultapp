@@ -2,6 +2,8 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/core/errors/grpc_exceptions.dart';
 import '../../../../../core/services/grpc_call_options_helper.dart';
 import '../../../../generated/family_accounts.pbgrpc.dart' as family_pb;
+import '../../domain/entities/family_account_entities.dart'
+    show FamilyAccountSummary, FamilyMemberSpending;
 import '../models/family_account_proto.dart';
 import 'family_account_remote_data_source.dart';
 
@@ -41,10 +43,36 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getFamilyAccount(request, options: callOptions);
 
-      return _mapFamilyAccountFromProto(response.familyAccount);
+      final dto = _mapFamilyAccountFromProto(response.familyAccount);
+      // Attach the funders/spenders breakdown + monthly stats (only present on
+      // the single-account response, not on list responses).
+      if (response.hasSummary()) {
+        dto.summary = _mapFamilyAccountSummary(response.summary);
+      }
+      return dto;
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
     }
+  }
+
+  FamilyAccountSummary _mapFamilyAccountSummary(family_pb.FamilyAccountSummary s) {
+    FamilyMemberSpending mapSpend(family_pb.FamilyMemberSpending m) =>
+        FamilyMemberSpending(
+          memberId: m.memberId,
+          memberName: m.memberName,
+          memberAvatar: m.memberAvatar.isNotEmpty ? m.memberAvatar : null,
+          amountSpent: m.amountSpent,
+          transactionCount: m.transactionCount,
+        );
+    return FamilyAccountSummary(
+      totalAllocated: s.totalAllocated,
+      totalSpentThisMonth: s.totalSpentThisMonth,
+      totalSpentToday: s.totalSpentToday,
+      transactionCountThisMonth: s.transactionCountThisMonth,
+      topSpenders: s.topSpenders.map(mapSpend).toList(),
+      totalContributed: s.totalContributed,
+      topFunders: s.topFunders.map(mapSpend).toList(),
+    );
   }
 
   @override
@@ -359,6 +387,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     required String fundDistributionMode,
     required bool spendingVisibilityEnabled,
     List<MemberAllocationProto> allocations = const [],
+    String fundingPolicy = 'any_member',
+    List<String> specificMemberIds = const [],
   }) async {
     try {
       final protoAllocations = allocations.map((a) => family_pb.MemberAllocation(
@@ -373,6 +403,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         fundDistributionMode: protoMode,
         spendingVisibilityEnabled: spendingVisibilityEnabled,
         allocations: protoAllocations,
+        fundingPolicy: fundingPolicy,
+        specificMemberIds: specificMemberIds,
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
@@ -459,6 +491,11 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       fundDistributionMode: _mapDistributionModeToString(proto.fundDistributionMode),
       setupCompleted: proto.setupCompleted,
       spendingVisibilityEnabled: proto.spendingVisibilityEnabled,
+      fundingPolicy: proto.fundingPolicy.isNotEmpty ? proto.fundingPolicy : 'any_member',
+      accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
+      bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
+      virtualAccountStatus:
+          proto.virtualAccountStatus.isNotEmpty ? proto.virtualAccountStatus : null,
     );
   }
 

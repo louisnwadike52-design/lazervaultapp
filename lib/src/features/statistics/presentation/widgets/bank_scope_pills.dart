@@ -166,152 +166,171 @@ class BankScopePills extends StatelessWidget {
 
   /// Bottom-sheet checklist of EVERY linked bank. Edits a local working copy so
   /// toggling several banks doesn't re-scope the page on every tap; commits the
-  /// whole selection on "Apply".
+  /// whole selection on "Apply". Delegates to the shared [showBankFilterSheet]
+  /// so the consolidated top filter bar opens the SAME multi-select sheet.
   Future<void> _openMoreSheet(BuildContext context) async {
-    final working = Set<String>.from(selectedIds);
-    final result = await showModalBottomSheet<Set<String>>(
-      context: context,
-      backgroundColor: const Color(0xFF141414),
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            return SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 16.h),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.account_balance_rounded,
-                            size: 16.sp, color: _accent),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Filter by bank',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (working.isNotEmpty)
-                          GestureDetector(
-                            onTap: () => setSheetState(working.clear),
-                            child: Text(
-                              'Clear',
-                              style: GoogleFonts.inter(
-                                color: _muted,
-                                fontSize: 12.5.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      working.isEmpty
-                          ? 'Showing all linked banks'
-                          : '${working.length} selected',
-                      style: GoogleFonts.inter(
-                          color: _muted, fontSize: 12.sp),
-                    ),
-                    SizedBox(height: 12.h),
-                    Flexible(
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: banks.length,
-                        separatorBuilder: (_, __) => Divider(
-                            height: 1, color: _border.withValues(alpha: 0.6)),
-                        itemBuilder: (_, i) {
-                          final b = banks[i];
-                          final checked = working.contains(b.id);
-                          return InkWell(
-                            onTap: () => setSheetState(() {
-                              if (!working.add(b.id)) working.remove(b.id);
-                            }),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12.h),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.account_balance_rounded,
-                                      size: 18.sp,
-                                      color: checked ? _accent : _muted),
-                                  SizedBox(width: 12.w),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          b.bankName,
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white,
-                                            fontSize: 13.5.sp,
-                                            fontWeight: checked
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                          ),
-                                        ),
-                                        if (b.accountNumber.isNotEmpty)
-                                          Text(
-                                            b.accountNumber,
-                                            style: GoogleFonts.inter(
-                                                color: _muted,
-                                                fontSize: 11.sp),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(
-                                    checked
-                                        ? Icons.check_circle_rounded
-                                        : Icons.circle_outlined,
-                                    size: 20.sp,
-                                    color: checked ? _accent : _border,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 14.h),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _accent,
-                          padding: EdgeInsets.symmetric(vertical: 13.h),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r)),
-                        ),
-                        onPressed: () => Navigator.of(ctx).pop(working),
-                        child: Text(
-                          working.isEmpty ? 'Show all banks' : 'Apply',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+    final result = await showBankFilterSheet(
+      context,
+      banks: banks,
+      selectedIds: selectedIds,
     );
     if (result != null) onChanged(result);
   }
+}
+
+/// Shared multi-select bank-filter bottom sheet. Used by both the inline
+/// [BankScopePills] "More" chip and the consolidated top filter bar's Banks
+/// chip so there is exactly ONE bank-picker sheet. Edits a local working copy
+/// (so toggling several banks doesn't re-scope on every tap) and returns the
+/// committed selection on "Apply" (or null if dismissed).
+Future<Set<String>?> showBankFilterSheet(
+  BuildContext context, {
+  required List<LinkedBankAccount> banks,
+  required Set<String> selectedIds,
+}) {
+  const accent = Color(0xFFFB923C);
+  const border = Color(0xFF2D2D2D);
+  const muted = Color(0xFF9CA3AF);
+  final working = Set<String>.from(selectedIds);
+  return showModalBottomSheet<Set<String>>(
+    context: context,
+    backgroundColor: const Color(0xFF141414),
+    isScrollControlled: true,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+    ),
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 16.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_balance_rounded,
+                          size: 16.sp, color: accent),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Filter by bank',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (working.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setSheetState(working.clear),
+                          child: Text(
+                            'Clear',
+                            style: GoogleFonts.inter(
+                              color: muted,
+                              fontSize: 12.5.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    working.isEmpty
+                        ? 'Showing all linked banks'
+                        : '${working.length} selected',
+                    style: GoogleFonts.inter(color: muted, fontSize: 12.sp),
+                  ),
+                  SizedBox(height: 12.h),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: banks.length,
+                      separatorBuilder: (_, __) => Divider(
+                          height: 1, color: border.withValues(alpha: 0.6)),
+                      itemBuilder: (_, i) {
+                        final b = banks[i];
+                        final checked = working.contains(b.id);
+                        return InkWell(
+                          onTap: () => setSheetState(() {
+                            if (!working.add(b.id)) working.remove(b.id);
+                          }),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            child: Row(
+                              children: [
+                                Icon(Icons.account_balance_rounded,
+                                    size: 18.sp,
+                                    color: checked ? accent : muted),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        b.bankName,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 13.5.sp,
+                                          fontWeight: checked
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                        ),
+                                      ),
+                                      if (b.accountNumber.isNotEmpty)
+                                        Text(
+                                          b.accountNumber,
+                                          style: GoogleFonts.inter(
+                                              color: muted, fontSize: 11.sp),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  checked
+                                      ? Icons.check_circle_rounded
+                                      : Icons.circle_outlined,
+                                  size: 20.sp,
+                                  color: checked ? accent : border,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        padding: EdgeInsets.symmetric(vertical: 13.h),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(working),
+                      child: Text(
+                        working.isEmpty ? 'Show all banks' : 'Apply',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }

@@ -65,7 +65,7 @@ class QuickActionsService {
       _quickActions.setShortcutItems([
         const ShortcutItem(
           type: QuickActionTypes.sendMoney,
-          localizedTitle: 'Send Money',
+          localizedTitle: 'Send Funds',
           icon: 'ic_send_money',
         ),
         const ShortcutItem(

@@ -623,7 +623,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   Widget _buildSavedRecipientsTab(ScrollController scrollController) {
     return BlocConsumer<RecipientCubit, RecipientState>(
       listener: (context, state) {
-        if (state is RecipientSuccess) {
+        if (state is RecipientSuccess && !state.silent) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),

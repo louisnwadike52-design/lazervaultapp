@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../data/services/business_overview_service.dart';
 import '../../domain/entities/business_overview_entity.dart';
 import '../cubit/business_dashboard_cubit.dart';
@@ -48,10 +50,28 @@ class BusinessDashboardScreen extends StatelessWidget {
               style: GoogleFonts.inter(
                   color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
           actions: [
+            // Per-service voice + chat, pinned to the business hub agent
+            // (DIRECT_ROUTES['business'] → chat-business-service). Same
+            // pattern as the tax/crowdfund/etc. dashboards.
+            ServiceVoiceButton(
+              serviceName: 'business',
+              iconColor: _accent,
+              backgroundColor: _accent,
+            ),
+            SizedBox(width: 4.w),
+            MicroserviceChatIcon(
+              serviceName: 'Business',
+              sourceContext: 'business',
+              icon: Icons.chat_bubble_outline,
+              iconColor: _accent,
+            ),
             IconButton(
               icon: const Icon(Icons.bar_chart_rounded, color: Colors.white),
               tooltip: 'Analytics',
-              onPressed: () => Get.toNamed(AppRoutes.businessAnalytics),
+              // Scope analytics to THIS business account (falls back to the
+              // active account when opened without it).
+              onPressed: () => Get.toNamed(AppRoutes.businessAnalytics,
+                  arguments: account),
             ),
           ],
         ),
@@ -89,7 +109,7 @@ class BusinessDashboardScreen extends StatelessWidget {
                   SizedBox(height: 20.h),
                   _sectionTitle('Quick actions'),
                   SizedBox(height: 10.h),
-                  _quickActions(context),
+                  _quickActions(context, account),
                 ],
               ),
             );
@@ -226,12 +246,17 @@ class BusinessDashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Real Money-In vs Money-Out: inflow (revenue) against total outflow
+  /// (payroll + expenses + tax). The "Where money goes" pie below breaks the
+  /// outflow down by category. (Was a mislabeled 4-value card that mixed one
+  /// inflow with three outflows.)
   Widget _barChartCard(BusinessOverviewEntity o) {
+    final c = o.currency;
+    final moneyIn = o.revenueMajor;
+    final moneyOut = o.payrollMajor + o.expensesMajor + o.taxMajor;
     final bars = <_Bar>[
-      _Bar('Revenue', o.revenueMajor, const Color(0xFF10B981)),
-      _Bar('Payroll', o.payrollMajor, _accent),
-      _Bar('Expenses', o.expensesMajor, const Color(0xFFFB923C)),
-      _Bar('Tax', o.taxMajor, const Color(0xFFEF4444)),
+      _Bar('Money in', moneyIn, const Color(0xFF10B981)),
+      _Bar('Money out', moneyOut, const Color(0xFFEF4444)),
     ];
     final maxV = bars.map((b) => b.value).fold<double>(0, (a, b) => b > a ? b : a);
     return Container(
@@ -244,6 +269,16 @@ class BusinessDashboardScreen extends StatelessWidget {
           maxY: maxV <= 0 ? 1 : maxV * 1.25,
           borderData: FlBorderData(show: false),
           gridData: const FlGridData(show: false),
+          alignment: BarChartAlignment.spaceAround,
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => _border,
+              getTooltipItem: (group, gi, rod, ri) => BarTooltipItem(
+                '${bars[group.x.toInt()].label}\n${_money(bars[group.x.toInt()].value, c)}',
+                GoogleFonts.inter(color: Colors.white, fontSize: 11.sp),
+              ),
+            ),
+          ),
           titlesData: FlTitlesData(
             leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -251,14 +286,26 @@ class BusinessDashboardScreen extends StatelessWidget {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                reservedSize: 40.h,
                 getTitlesWidget: (v, meta) {
                   final i = v.toInt();
                   if (i < 0 || i >= bars.length) return const SizedBox.shrink();
                   return Padding(
                     padding: EdgeInsets.only(top: 6.h),
-                    child: Text(bars[i].label,
-                        style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF), fontSize: 10.sp)),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(bars[i].label,
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF), fontSize: 10.sp)),
+                        SizedBox(height: 2.h),
+                        Text(_compactMoney(bars[i].value, c),
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -270,7 +317,7 @@ class BusinessDashboardScreen extends StatelessWidget {
                 BarChartRodData(
                   toY: bars[i].value,
                   color: bars[i].color,
-                  width: 22.w,
+                  width: 40.w,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(6.r)),
                 ),
               ]),
@@ -279,6 +326,10 @@ class BusinessDashboardScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// Compact money (e.g. ₦1.2M) for chart labels that can't fit a full amount.
+  String _compactMoney(double v, String currency) =>
+      '${_symbol(currency)}${NumberFormat.compact().format(v)}';
 
   Widget _pieCard(BusinessOverviewEntity o) {
     final segments = <_Bar>[
@@ -384,7 +435,7 @@ class BusinessDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _quickActions(BuildContext context) {
+  Widget _quickActions(BuildContext context, AccountSummaryEntity? account) {
     final actions = <_Action>[
       _Action('Record sale', Icons.point_of_sale_rounded, AppRoutes.recordSale),
       _Action('Sales', Icons.sell_rounded, AppRoutes.sales),
@@ -407,7 +458,13 @@ class BusinessDashboardScreen extends StatelessWidget {
       children: actions.map((a) {
         return GestureDetector(
           onTap: () async {
-            await Get.toNamed(a.route);
+            // Analytics needs THIS business account to scope its ledger charts;
+            // other actions take no argument.
+            await Get.toNamed(
+              a.route,
+              arguments:
+                  a.route == AppRoutes.businessAnalytics ? account : null,
+            );
             // Returning from ANY business service may have changed KPIs
             // (a sale, expense, pay run, new customer/item…), so refresh the
             // overview on return rather than only when a screen signals `true`.

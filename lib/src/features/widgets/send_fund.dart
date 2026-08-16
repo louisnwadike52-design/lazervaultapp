@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
@@ -484,8 +484,28 @@ class _SendFundState extends State<SendFund> {
                         )),
                     ElevatedButton(
                         onPressed: () {
-                          Get.toNamed(AppRoutes.initiateSendFunds,
-                              arguments: widget.recipient);
+                          // Route through the single launcher so this honours the
+                          // user's short/long flow setting and the clean-stack
+                          // rules (was a raw long-flow push). The peer is a
+                          // LazerVault user → an internal C2C transfer resolved by
+                          // internalUserId; accountNumber carries the id purely to
+                          // satisfy both flows' non-empty validation (never shown).
+                          final name = "${widget.recipient.firstName} "
+                                  "${widget.recipient.lastName}"
+                              .trim();
+                          final r = RecipientModel(
+                            id: widget.recipient.id,
+                            name: name.isNotEmpty ? name : 'Lazervault User',
+                            accountNumber: widget.recipient.id,
+                            bankName: 'LazerVault',
+                            sortCode: '',
+                            isFavorite: false,
+                            isSaved: false,
+                            internalUserId: widget.recipient.id,
+                            type: 'internal',
+                          );
+                          SendFundsLauncher.open(
+                              recipient: r, autoContinue: true);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor:

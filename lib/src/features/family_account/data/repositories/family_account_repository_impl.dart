@@ -417,6 +417,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     required String fundDistributionMode,
     required bool spendingVisibilityEnabled,
     List<MemberAllocationEntry> allocations = const [],
+    String fundingPolicy = 'any_member',
+    List<String> specificMemberIds = const [],
   }) async {
     try {
       final protoAllocations = allocations.map((a) => MemberAllocationProto(
@@ -429,6 +431,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
         fundDistributionMode: fundDistributionMode,
         spendingVisibilityEnabled: spendingVisibilityEnabled,
         allocations: protoAllocations,
+        fundingPolicy: fundingPolicy,
+        specificMemberIds: specificMemberIds,
       );
       return Right(account.toDomain());
     } on ServerException catch (e) {

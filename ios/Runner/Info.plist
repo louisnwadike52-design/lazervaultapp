@@ -123,7 +123,7 @@
 				<key>UIApplicationShortcutItemType</key>
 				<string>send_money</string>
 				<key>UIApplicationShortcutItemTitle</key>
-				<string>Send Money</string>
+				<string>Send Funds</string>
 				<key>UIApplicationShortcutItemSubtitle</key>
 				<string>Transfer funds instantly</string>
 				<key>UIApplicationShortcutItemIconType</key>

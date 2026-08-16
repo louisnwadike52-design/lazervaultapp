@@ -18,6 +18,14 @@ class MoveAccountCard extends StatelessWidget {
   final VoidCallback? onLongPress;
   final MandateEntity? mandate;
 
+  /// Per-account, fee-gated live-balance refresh (wired by the parent to the
+  /// shared `refreshLinkedBalance` mixin). When provided, a compact refresh
+  /// button shows on the card — hidden when the bank needs reauthorization.
+  final VoidCallback? onRefresh;
+
+  /// True while THIS account's balance is being refreshed (shows a spinner).
+  final bool isRefreshing;
+
   const MoveAccountCard({
     super.key,
     required this.account,
@@ -25,6 +33,8 @@ class MoveAccountCard extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.mandate,
+    this.onRefresh,
+    this.isRefreshing = false,
   });
 
   @override
@@ -122,12 +132,11 @@ class MoveAccountCard extends StatelessWidget {
             ),
             SizedBox(height: 2.h),
 
-            // Live bank balance (Mono-read; auto/manual refresh keeps it
-            // current). Edge states: unreadable/never-read balances show a
-            // neutral placeholder instead of a misleading ₦0.00.
-            // COST-AWARE display: we no longer auto-read Mono on load, so show
-            // the last-known (cached) balance and label it "not live" when stale;
-            // the user refreshes explicitly (cost-confirmed) to get a live figure.
+            // Live bank balance + "Last updated …" + a per-account refresh button
+            // — mirrors the deposit card. We never auto-read Mono (billed per
+            // account), so this shows the LAST-KNOWN figure with an honest
+            // "Updated Xm ago" (or "Not refreshed yet" when never read) and a
+            // cost-confirmed refresh. No misleading "not live"/faked timestamp.
             Builder(builder: (_) {
               final hasBalance = account.balanceUpdatedAt != null;
               final fresh = hasBalance &&
@@ -135,22 +144,64 @@ class MoveAccountCard extends StatelessWidget {
                           .difference(account.balanceUpdatedAt!)
                           .inMinutes <
                       3;
-              if (!hasBalance) {
-                return Text(
-                  'Tap refresh to load balance',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
-                    fontSize: 11.sp,
+              final dot = !hasBalance
+                  ? const Color(0xFF6B7280)
+                  : (fresh
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFB923C));
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          hasBalance
+                              ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                              : 'Tap to load balance',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: hasBalance
+                                ? Colors.white
+                                : const Color(0xFF3B82F6),
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      // Refresh hidden when the Mono session needs reauth — a
+                      // live read would just fail at the provider.
+                      if (onRefresh != null && !account.needsReauthorization) ...[
+                        SizedBox(width: 6.w),
+                        _refreshButton(),
+                      ],
+                    ],
                   ),
-                );
-              }
-              return Text(
-                '₦${account.lastKnownBalance.toStringAsFixed(2)}${fresh ? '' : ' · not live'}',
-                style: GoogleFonts.inter(
-                  color: fresh ? Colors.white : Colors.white.withValues(alpha: 0.6),
-                  fontSize: 12.5.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+                  SizedBox(height: 4.h),
+                  Row(mainAxisSize: MainAxisSize.min, children: [
+                    Container(
+                      width: 6.w,
+                      height: 6.w,
+                      decoration:
+                          BoxDecoration(color: dot, shape: BoxShape.circle),
+                    ),
+                    SizedBox(width: 5.w),
+                    Flexible(
+                      child: Text(
+                        _lastUpdatedLabel(account.balanceUpdatedAt),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.55),
+                          fontSize: 9.5.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ]),
+                ],
               );
             }),
             SizedBox(height: 2.h),
@@ -186,6 +237,52 @@ class MoveAccountCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Compact per-account refresh button (spinner while in flight). Consumes its
+  /// own tap so it never fires the card's onTap (which opens the details sheet).
+  Widget _refreshButton() {
+    const blue = Color(0xFF3B82F6);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isRefreshing ? null : onRefresh,
+      child: Container(
+        width: 28.w,
+        height: 28.w,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: blue.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: blue.withValues(alpha: 0.42)),
+        ),
+        child: isRefreshing
+            ? SizedBox(
+                width: 12.w,
+                height: 12.w,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: blue),
+              )
+            : Icon(Icons.sync_rounded, size: 14.sp, color: blue),
+      ),
+    );
+  }
+
+  static const List<String> _monthsShort = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  /// Short "last updated" label — relative for recent refreshes, short date once
+  /// older than a week. "Not refreshed yet" when the balance was never read
+  /// (honest — never a faked default timestamp).
+  String _lastUpdatedLabel(DateTime? updatedAt) {
+    if (updatedAt == null) return 'Not refreshed yet';
+    final d = DateTime.now().difference(updatedAt);
+    if (d.inSeconds < 45) return 'Updated just now';
+    if (d.inMinutes < 60) return 'Updated ${d.inMinutes}m ago';
+    if (d.inHours < 24) return 'Updated ${d.inHours}h ago';
+    if (d.inDays < 7) return 'Updated ${d.inDays}d ago';
+    return 'Updated ${updatedAt.day} ${_monthsShort[updatedAt.month - 1]}';
   }
 
   Color _getBankColor(String bankName) {

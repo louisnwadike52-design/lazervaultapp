@@ -2,13 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 
 /// Structured receipt data from a successful transfer.
 class TransferReceiptData {
@@ -55,6 +52,154 @@ class TransferReceiptData {
     this.description = '',
     this.details = const {},
   });
+
+  /// Map to the shared [UnifiedTransaction] so the chat/voice receipt reuses the
+  /// canonical send-funds receipt (`UnifiedTransactionReceipt` — Lazervault logo
+  /// top-right, barcode/QR, working share + download at the bottom) instead of a
+  /// bespoke full-screen view with duplicated top-right actions.
+  UnifiedTransaction toUnifiedTransaction() {
+    // Prefer the authoritative preformatted display string for the figure so a
+    // minor/major-unit mismatch can never mis-render the amount. Fall back to
+    // the integer (assumed minor units) only if the display is unparseable.
+    final major =
+        double.tryParse(amountDisplay.replaceAll(RegExp(r'[^0-9.]'), '')) ??
+            (amount / 100.0);
+    return UnifiedTransaction(
+      id: reference.isNotEmpty ? reference : receiptId,
+      serviceType: TransactionServiceType.fromString(_unifiedServiceSlug()),
+      title: recipientName.isNotEmpty ? recipientName : transferTypeDisplay,
+      description: description.isNotEmpty ? description : null,
+      amount: major,
+      amountDisplayOverride:
+          amountDisplay.isNotEmpty ? '$currencySymbol$amountDisplay' : null,
+      currency: currency,
+      createdAt: timestamp,
+      status: UnifiedTransactionStatus.fromString(_normalizedStatus()),
+      flow: _unifiedFlow(),
+      transactionReference: reference.isNotEmpty ? reference : null,
+      counterpartyName: recipientName.isNotEmpty ? recipientName : null,
+      counterpartyAccount:
+          recipientAccount.isNotEmpty ? recipientAccount : null,
+      metadata: <String, dynamic>{
+        if (feeDisplay.isNotEmpty && feeDisplay != '0.00')
+          'fee': '$currencySymbol$feeDisplay',
+        if (recipientBank.isNotEmpty) 'bank': recipientBank,
+        'status': status,
+        ...details,
+      },
+    );
+  }
+
+  /// Map the receipt `type` to a [TransactionServiceType] enum name. Unknown
+  /// values pass through and degrade gracefully to `unknown` via fromString.
+  String _unifiedServiceSlug() {
+    switch (type) {
+      case 'transfer':
+      case 'internal_transfer':
+      case 'external_transfer':
+      case 'transfer_intl':
+        return 'transfer';
+      case 'batch_transfer':
+        return 'batchTransfer';
+      case 'tagpay':
+      case 'tag_pay':
+        return 'tagPay';
+      case 'qr_payment':
+        return 'qrPayment';
+      case 'id_pay':
+        return 'idPay';
+      case 'invoice_payment':
+        return 'invoice';
+      case 'split_bill_pay':
+        return 'splitBill';
+      case 'stock_trade':
+        return 'stocks';
+      case 'crypto_trade':
+      case 'crypto_buy':
+      case 'crypto_sell':
+      case 'crypto_swap':
+      case 'crypto_send':
+        return 'crypto';
+      case 'currency_exchange':
+      case 'exchange_convert':
+        return 'exchange';
+      case 'insurance_purchase':
+      case 'insurance_buy':
+        return 'insurance';
+      case 'payroll_disbursement':
+        return 'payroll';
+      case 'group_contribution':
+        return 'groupFunds';
+      case 'giftcard_buy':
+      case 'giftcard_sell':
+        return 'giftCard';
+      case 'bill_payment':
+        // Prefer the specific bill type when the backend included it.
+        final bt = details['bill_type']?.toString() ?? '';
+        return bt.isNotEmpty ? bt : 'unknown';
+      default:
+        return type;
+    }
+  }
+
+  /// Normalise backend status strings to a [UnifiedTransactionStatus] enum
+  /// name. The chat/voice receipt commonly uses 'success'/'successful' for a
+  /// completed money move, which fromString has no case for and would otherwise
+  /// fall back to 'pending' — making a SUCCESSFUL transfer read as "Pending".
+  String _normalizedStatus() {
+    switch (status.toLowerCase().trim()) {
+      case 'success':
+      case 'successful':
+      case 'complete':
+      case 'completed':
+      case 'settled':
+      case 'delivered':
+      case 'paid':
+      case 'approved':
+        return 'completed';
+      case 'processing':
+      case 'in_progress':
+      case 'in-progress':
+      case 'pending_settlement':
+      case 'submitted':
+        return 'processing';
+      case 'failed':
+      case 'failure':
+      case 'declined':
+      case 'rejected':
+      case 'error':
+        return 'failed';
+      case 'cancelled':
+      case 'canceled':
+        return 'cancelled';
+      case 'refunded':
+      case 'reversed':
+      case 'reversal':
+        return 'refunded';
+      case 'expired':
+        return 'expired';
+      case 'scheduled':
+        return 'scheduled';
+      default:
+        // Known enum names (pending, etc.) pass through; unknowns fall back to
+        // 'pending' via fromString.
+        return status;
+    }
+  }
+
+  /// Money the user RECEIVES reads as incoming; everything else is outgoing.
+  TransactionFlow _unifiedFlow() {
+    switch (type) {
+      case 'deposit':
+      case 'refund':
+      case 'crypto_sell':
+      case 'currency_exchange':
+      case 'exchange_convert':
+        return TransactionFlow.incoming;
+      default:
+        return TransactionFlow.outgoing;
+    }
+  }
 
   /// Parse an int from a value that may be num, String, or null.
   static int _parseIntSafe(dynamic value) {
@@ -597,712 +742,19 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
   }
 
   void _openFullScreenReceipt(BuildContext context) {
+    // Reuse the ONE canonical receipt every service already uses
+    // (UnifiedTransactionReceipt — Lazervault logo top-right, barcode/QR, working
+    // Share + Download at the BOTTOM only), built from this card's payload —
+    // instead of the bespoke FullScreenReceiptView (which duplicated Share/
+    // Download in the app bar and whose URL-based share/download often failed).
+    // fromHistory:true makes its close button pop back to the chat/voice sheet.
+    final r = _loadedReceipt ?? widget.receipt;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => FullScreenReceiptView(receipt: _loadedReceipt ?? widget.receipt),
-      ),
-    );
-  }
-}
-
-/// Full-screen receipt view with download functionality.
-class FullScreenReceiptView extends StatefulWidget {
-  final TransferReceiptData receipt;
-
-  const FullScreenReceiptView({super.key, required this.receipt});
-
-  @override
-  State<FullScreenReceiptView> createState() => _FullScreenReceiptViewState();
-}
-
-class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
-  bool _isDownloading = false;
-  bool _isSharing = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final r = widget.receipt;
-    final dateFormat = DateFormat('MMM dd, yyyy');
-    final timeFormat = DateFormat('hh:mm a');
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close, color: Colors.white),
+        builder: (_) => UnifiedTransactionReceipt(
+          transaction: r.toUnifiedTransaction(),
+          fromHistory: true,
         ),
-        title: const Text(
-          'Receipt',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: _isDownloading ? null : _downloadReceipt,
-            icon: _isDownloading
-                ? LazerVaultLoader.small()
-                : const Icon(Icons.download, color: Colors.white),
-            tooltip: 'Download PDF',
-          ),
-          IconButton(
-            onPressed: _isSharing ? null : _shareReceipt,
-            icon: _isSharing
-                ? LazerVaultLoader.small()
-                : const Icon(Icons.share, color: Colors.white),
-            tooltip: 'Share',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              // Main receipt card
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    // Status header
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 28),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: r.isSuccess
-                              ? [
-                                  const Color(0xFF10B981).withValues(alpha: 0.15),
-                                  const Color(0xFF059669).withValues(alpha: 0.05),
-                                ]
-                              : [
-                                  const Color(0xFFEF4444).withValues(alpha: 0.15),
-                                  const Color(0xFFDC2626).withValues(alpha: 0.05),
-                                ],
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: r.isSuccess
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                                  : const Color(0xFFEF4444).withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              r.isSuccess ? Icons.check_rounded : Icons.close_rounded,
-                              color: r.isSuccess
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFEF4444),
-                              size: 32,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            r.isSuccess ? 'Transfer Successful' : 'Transfer ${r.status}',
-                            style: TextStyle(
-                              color: r.isSuccess
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFEF4444),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            r.transferTypeDisplay,
-                            style: const TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Amount section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Column(
-                        children: [
-                          Text(
-                            '${r.currencySymbol} ${r.amountDisplay}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -1,
-                            ),
-                          ),
-                          if (r.fee > 0) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              'Fee: ${r.currencySymbol} ${r.feeDisplay}',
-                              style: const TextStyle(
-                                color: Color(0xFF9CA3AF),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ] else ...[
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: const Text(
-                                'FREE',
-                                style: TextStyle(
-                                  color: Color(0xFF10B981),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    // Divider
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Divider(color: Color(0xFF2D2D2D), height: 1),
-                    ),
-
-                    // Details section
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          if (r.description.isNotEmpty)
-                            _buildDetailRow('Description', r.description),
-                          if (r.recipientName.isNotEmpty)
-                            _buildDetailRow('To', r.recipientName),
-                          if (r.recipientBank.isNotEmpty)
-                            _buildDetailRow('Bank', r.recipientBank),
-                          if (r.recipientAccount.isNotEmpty)
-                            _buildDetailRow('Account', _maskAccount(r.recipientAccount)),
-                          _buildDetailRow('Reference', r.reference),
-                          _buildDetailRow('Date', dateFormat.format(r.timestamp.toLocal())),
-                          _buildDetailRow('Time', timeFormat.format(r.timestamp.toLocal())),
-                          _buildDetailRow('Status', r.status.toUpperCase(),
-                              valueColor: r.isSuccess
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFEF4444)),
-                          if (r.newBalance > 0)
-                            _buildDetailRow(
-                              'New Balance',
-                              '${r.currencySymbol} ${r.newBalanceDisplay}',
-                            ),
-                          // Render operation-specific details (bill PINs, trade info, etc.)
-                          ..._buildDetailsEntries(r.details),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Bottom actions
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.download,
-                      label: 'Download',
-                      onTap: _isDownloading ? null : _downloadReceipt,
-                      isLoading: _isDownloading,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.share,
-                      label: 'Share',
-                      onTap: _isSharing ? null : _shareReceipt,
-                      isLoading: _isSharing,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 14,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: valueColor ?? Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Renders entries from the `details` map as detail rows.
-  /// Handles special keys like "pins" (list of token/PIN strings for bill payments).
-  List<Widget> _buildDetailsEntries(Map<String, dynamic> details) {
-    if (details.isEmpty) return [];
-    final widgets = <Widget>[];
-
-    // Show divider before extra details
-    widgets.add(
-      const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: Divider(color: Color(0xFF2D2D2D), height: 1),
-      ),
-    );
-
-    for (final entry in details.entries) {
-      final key = entry.key;
-      final value = entry.value;
-
-      // Skip internal/private keys
-      if (key.startsWith('_')) continue;
-
-      // Humanize key: "bill_type" -> "Bill Type"
-      final label = key
-          .replaceAll('_', ' ')
-          .split(' ')
-          .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-          .join(' ');
-
-      if (key == 'pins' && value is List) {
-        // Bill payment PINs / tokens
-        for (var i = 0; i < value.length; i++) {
-          widgets.add(_buildDetailRow(
-            value.length == 1 ? 'Token/PIN' : 'Token ${i + 1}',
-            value[i].toString(),
-          ));
-        }
-      } else if (value is Map) {
-        // Nested map — show each sub-entry
-        for (final sub in (value as Map<String, dynamic>).entries) {
-          if (sub.value != null && sub.value.toString().isNotEmpty) {
-            final subLabel = sub.key
-                .replaceAll('_', ' ')
-                .split(' ')
-                .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-                .join(' ');
-            widgets.add(_buildDetailRow(subLabel, sub.value.toString()));
-          }
-        }
-      } else if (value is List) {
-        widgets.add(_buildDetailRow(label, value.join(', ')));
-      } else if (value != null && value.toString().isNotEmpty) {
-        widgets.add(_buildDetailRow(label, value.toString()));
-      }
-    }
-
-    return widgets;
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback? onTap,
-    bool isLoading = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading)
-              LazerVaultLoader(size: 18)
-            else
-              Icon(icon, color: const Color(0xFF3B82F6), size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF3B82F6),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _maskAccount(String account) {
-    if (account.length <= 4) return account;
-    return '****${account.substring(account.length - 4)}';
-  }
-
-  Future<void> _downloadReceipt() async {
-    if (_isDownloading) return;
-    setState(() => _isDownloading = true);
-    try {
-      final directory = await getTemporaryDirectory();
-      final fileName =
-          'transfer_receipt_${widget.receipt.reference.replaceAll(RegExp(r'[^a-zA-Z0-9-]'), '_')}.pdf';
-      final file = File('${directory.path}/$fileName');
-
-      // Try to download from backend URL first
-      if (widget.receipt.receiptUrl != null && widget.receipt.receiptUrl!.isNotEmpty) {
-        try {
-          final response = await http.get(Uri.parse(widget.receipt.receiptUrl!));
-          if (response.statusCode == 200) {
-            await file.writeAsBytes(response.bodyBytes);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Receipt saved: $fileName'),
-                  backgroundColor: const Color(0xFF10B981),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-            return;
-          }
-        } catch (e) {
-          // Fall back to client-side generation if download fails
-          debugPrint('Failed to download receipt from URL: $e');
-        }
-      }
-
-      // Fallback: Generate PDF client-side
-      final pdfBytes = await _generateReceiptPdf();
-      await file.writeAsBytes(pdfBytes);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Receipt saved: $fileName'),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not download receipt. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isDownloading = false);
-    }
-  }
-
-  Future<void> _shareReceipt() async {
-    if (_isSharing) return;
-    setState(() => _isSharing = true);
-    try {
-      final directory = await getTemporaryDirectory();
-      final fileName = 'Lazervault_Receipt_${widget.receipt.reference.replaceAll(RegExp(r'[^a-zA-Z0-9-]'), '_')}.pdf';
-      final file = File('${directory.path}/$fileName');
-
-      // Try to download from backend URL first
-      if (widget.receipt.receiptUrl != null && widget.receipt.receiptUrl!.isNotEmpty) {
-        try {
-          final response = await http.get(Uri.parse(widget.receipt.receiptUrl!));
-          if (response.statusCode == 200) {
-            await file.writeAsBytes(response.bodyBytes);
-            // ignore: deprecated_member_use
-            await Share.shareXFiles(
-              [XFile(file.path)],
-              subject: 'Lazervault Transfer Receipt - ${widget.receipt.reference}',
-            );
-            return;
-          }
-        } catch (e) {
-          debugPrint('Failed to download receipt from URL: $e');
-        }
-      }
-
-      // Fallback: Generate PDF client-side
-      final pdfBytes = await _generateReceiptPdf();
-      await file.writeAsBytes(pdfBytes);
-      // ignore: deprecated_member_use
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Lazervault Transfer Receipt - ${widget.receipt.reference}',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not share receipt. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSharing = false);
-    }
-  }
-
-  // ---- PDF Generation ----
-
-  static pw.Font? _regularFont;
-  static pw.Font? _boldFont;
-
-  static Future<void> _loadFonts() async {
-    if (_regularFont != null && _boldFont != null) return;
-    try {
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-      if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (_) {}
-  }
-
-  static pw.TextStyle _ts({
-    double fontSize = 12,
-    bool isBold = false,
-    PdfColor? color,
-  }) {
-    return pw.TextStyle(
-      font: isBold ? _boldFont : _regularFont,
-      fontBold: _boldFont,
-      fontSize: fontSize,
-      fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
-      color: color,
-    );
-  }
-
-  Future<List<int>> _generateReceiptPdf() async {
-    await _loadFonts();
-    final r = widget.receipt;
-    final pdf = pw.Document();
-    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
-    final statusColor = r.isSuccess ? PdfColors.green600 : PdfColors.red600;
-
-    pw.MemoryImage? logo;
-    try {
-      final data = await rootBundle.load('assets/images/logo.png');
-      logo = pw.MemoryImage(data.buffer.asUint8List());
-    } catch (_) {}
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Header
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  if (logo != null)
-                    pw.Image(logo, width: 120)
-                  else
-                    pw.Text('Lazervault',
-                        style: _ts(fontSize: 28, isBold: true)
-                            .copyWith(color: PdfColors.blue800)),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text('Transfer Receipt',
-                          style: _ts(fontSize: 18, isBold: true)
-                              .copyWith(color: PdfColors.grey800)),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        'Generated ${dateFormat.format(DateTime.now())}',
-                        style: _ts(fontSize: 10, color: PdfColors.grey600),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 24),
-
-              // Status + Amount
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(r.transferTypeDisplay,
-                            style: _ts(fontSize: 20, isBold: true)
-                                .copyWith(color: PdfColors.grey800)),
-                        pw.SizedBox(height: 4),
-                        pw.Text(r.isSuccess ? 'Completed' : r.status,
-                            style: _ts(fontSize: 14, isBold: true, color: statusColor)),
-                        if (r.fee == 0) ...[
-                          pw.SizedBox(height: 8),
-                          pw.Container(
-                            padding: const pw.EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 3),
-                            decoration: pw.BoxDecoration(
-                              color: PdfColors.green50,
-                              borderRadius: pw.BorderRadius.circular(10),
-                              border: pw.Border.all(color: PdfColors.green200),
-                            ),
-                            child: pw.Text('FREE TRANSFER',
-                                style: _ts(
-                                    fontSize: 9,
-                                    isBold: true,
-                                    color: PdfColors.green700)),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        pw.Text('${r.currency} ${r.amountDisplay}',
-                            style: _ts(fontSize: 28, isBold: true)),
-                        if (r.newBalance > 0) ...[
-                          pw.SizedBox(height: 4),
-                          pw.Text(
-                              'New Balance: ${r.currency} ${r.newBalanceDisplay}',
-                              style: _ts(fontSize: 11, color: PdfColors.grey600)),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 32),
-
-              // Details
-              pw.Text('Transaction Details',
-                  style: _ts(fontSize: 16, isBold: true)),
-              pw.SizedBox(height: 12),
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  color: PdfColors.grey50,
-                  borderRadius: pw.BorderRadius.circular(8),
-                  border: pw.Border.all(color: PdfColors.grey200),
-                ),
-                child: pw.Column(
-                  children: [
-                    _pdfRow('Recipient', r.recipientName),
-                    if (r.recipientBank.isNotEmpty)
-                      _pdfRow('Bank', r.recipientBank),
-                    if (r.recipientAccount.isNotEmpty)
-                      _pdfRow('Account', r.recipientAccount),
-                    _pdfRow('Amount', '${r.currency} ${r.amountDisplay}'),
-                    _pdfRow('Fee', r.fee > 0
-                        ? '${r.currency} ${r.feeDisplay}'
-                        : '${r.currency} 0.00'),
-                    pw.Divider(color: PdfColors.grey300),
-                    _pdfRow('Total', '${r.currency} ${r.amountDisplay}',
-                        isBold: true),
-                    pw.SizedBox(height: 8),
-                    _pdfRow('Reference', r.reference),
-                    _pdfRow('Date', dateFormat.format(r.timestamp.toLocal())),
-                    _pdfRow('Status', r.isSuccess ? 'Completed' : r.status),
-                  ],
-                ),
-              ),
-
-              pw.Spacer(),
-
-              // Footer
-              pw.Divider(color: PdfColors.grey300),
-              pw.SizedBox(height: 12),
-              pw.Center(
-                child: pw.Text('Generated by Lazervault',
-                    style: _ts(fontSize: 10, color: PdfColors.grey600)),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Center(
-                child: pw.Text(
-                    'This is an automatically generated receipt.',
-                    style: _ts(fontSize: 9, color: PdfColors.grey500)),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-
-    return pdf.save();
-  }
-
-  static pw.Widget _pdfRow(String label, String value, {bool isBold = false}) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(label, style: _ts(fontSize: 11, color: PdfColors.grey700)),
-          pw.Text(value, style: _ts(fontSize: 11, isBold: isBold)),
-        ],
       ),
     );
   }

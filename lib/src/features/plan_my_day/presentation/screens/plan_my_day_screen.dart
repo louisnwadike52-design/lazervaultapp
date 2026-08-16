@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,6 +39,8 @@ import 'package:lazervault/src/features/plan_my_day/contacts/presentation/cubit/
 import 'package:lazervault/src/features/plan_my_day/contacts/presentation/screens/contacts_list_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/notes/presentation/notes_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/habits/presentation/habits_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/widgets/upcoming_reminders_card.dart';
 
 class PlanMyDayScreen extends StatefulWidget {
   const PlanMyDayScreen({super.key});
@@ -369,7 +372,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
           );
         }
         if (state is PlanMyDayError) {
-          return _buildInlineError(state.message);
+          return _buildPlanError(state);
         }
         return const SizedBox.shrink();
       },
@@ -509,28 +512,114 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
     );
   }
 
-  Widget _buildInlineError(String message) {
+  /// Inline load-failure state for Plan My Day. Crucially this is the ONLY thing
+  /// a backend outage shows here — the pre-login "under maintenance" modal is
+  /// gated to auth screens (see AppStartupGate), so it can never overlay this
+  /// screen. We differentiate the two connectivity failure modes:
+  ///   • the USER is offline (device has no network) → "you're offline", and
+  ///   • the SERVER is unreachable/erroring while the device IS online →
+  ///     "can't reach our servers".
+  /// For a transport error (`network_error`) we can't tell which from the failed
+  /// request alone, so we run a live connectivity check; a 5xx (`server_error`)
+  /// is unambiguously the server, so we skip the check.
+  Widget _buildPlanError(PlanMyDayError state) {
+    // Non-connectivity errors (validation, not-found, generic): show the
+    // message as-is, no connectivity probing.
+    if (!state.isConnectivityError) {
+      return _errorBody(
+        icon: Icons.error_outline,
+        title: null,
+        message: state.message,
+      );
+    }
+
+    // A confirmed server-side (5xx) failure — the device reached the edge, so it
+    // is not a connectivity problem on the user's end.
+    if (state.isServerError) {
+      return _errorBody(
+        icon: Icons.cloud_off_rounded,
+        title: 'Can’t reach Plan My Day',
+        message:
+            'We’re having trouble reaching our servers. Please try again shortly.',
+      );
+    }
+
+    // Transport error: resolve offline (user) vs server-unreachable via a live
+    // connectivity check. Defaults to the server variant while the check runs /
+    // if it fails, since an online device is the common case.
+    return FutureBuilder<bool>(
+      future: _deviceOnline(),
+      builder: (context, snap) {
+        final online = snap.data ?? true;
+        return online
+            ? _errorBody(
+                icon: Icons.cloud_off_rounded,
+                title: 'Can’t reach Plan My Day',
+                message:
+                    'We’re having trouble reaching our servers. Please try again shortly.',
+              )
+            : _errorBody(
+                icon: Icons.wifi_off_rounded,
+                title: 'You’re offline',
+                message:
+                    'Check your internet connection and try again.',
+              );
+      },
+    );
+  }
+
+  /// True when the device itself has a network path (wifi/cellular/etc.).
+  /// Unknown → assume online, so a genuine server outage still reads as one.
+  Future<bool> _deviceOnline() async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      return results.any((r) => r != ConnectivityResult.none);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Widget _errorBody({
+    required IconData icon,
+    required String? title,
+    required String message,
+  }) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, color: Colors.grey[600], size: 48),
-          SizedBox(height: 16.h),
-          Text(
-            message,
-            style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton(
-            onPressed: () =>
-                context.read<PlanMyDayCubit>().loadDayData(_selectedDate),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.grey[600], size: 48),
+            SizedBox(height: 16.h),
+            if (title != null) ...[
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 6.h),
+            ],
+            Text(
+              message,
+              style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+              textAlign: TextAlign.center,
             ),
-            child: const Text('Retry'),
-          ),
-        ],
+            SizedBox(height: 16.h),
+            ElevatedButton(
+              onPressed: () =>
+                  context.read<PlanMyDayCubit>().loadDayData(_selectedDate),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -593,6 +682,10 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
                   _emailEntryCard(),
                   SizedBox(height: 14.h),
                   _dayUtilities(),
+                  SizedBox(height: 14.h),
+                  // Upcoming reminders — own scoped cubit so its ReminderList
+                  // state never bleeds into the Day/Board views.
+                  const UpcomingRemindersCard(),
                   SizedBox(height: 22.h),
                   // Only the data-backed sections swap for a shimmer while the
                   // newly-selected day is fetched.
@@ -637,37 +730,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
         }
 
         if (state is PlanMyDayError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  color: Colors.grey[600],
-                  size: 48,
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  state.message,
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 16.sp,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16.h),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<PlanMyDayCubit>().loadDayData(_selectedDate);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                  ),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          );
+          return _buildPlanError(state);
         }
 
         return const SizedBox.shrink();
@@ -967,8 +1030,10 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
               Navigator.push(context, HabitsScreen.route());
             }),
             SizedBox(width: 8.w),
-            // Keep the 3-column grid alignment.
-            const Expanded(child: SizedBox.shrink()),
+            _dayUtilityChip(Icons.notifications_active_outlined, 'Reminders',
+                const Color(0xFF4E03D0), () {
+              Navigator.push(context, ReminderManagementScreen.route());
+            }),
           ],
         ),
       ],

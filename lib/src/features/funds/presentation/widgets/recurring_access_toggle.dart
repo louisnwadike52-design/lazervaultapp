@@ -102,10 +102,13 @@ class RecurringAccessToggle extends StatelessWidget {
               Switch(
                 value: isRecurringEnabled,
                 onChanged: onToggle,
-                activeThumbColor: const Color.fromARGB(255, 78, 3, 208),
-                activeTrackColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                inactiveThumbColor: Colors.white.withValues(alpha: 0.6),
-                inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+                // On: bright white thumb on a SOLID lighter-violet track — the
+                // old deep purple (#4E03D0) blended into the dark sheet and read
+                // as "off". White-on-violet gives a clearly-visible enabled state.
+                activeThumbColor: Colors.white,
+                activeTrackColor: const Color(0xFF8B5CF6),
+                inactiveThumbColor: Colors.white.withValues(alpha: 0.7),
+                inactiveTrackColor: Colors.white.withValues(alpha: 0.22),
               ),
             ],
           ),

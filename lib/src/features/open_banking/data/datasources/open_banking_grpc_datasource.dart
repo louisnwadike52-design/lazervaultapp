@@ -278,6 +278,24 @@ class OpenBankingGrpcDataSource {
         return ServiceUnavailableException(
           message: 'Open banking is not available at this time.',
         );
+      // Fee reservation failed on the active account BEFORE the live read
+      // (hold-first): surface as insufficient-funds so the UI shows its modal.
+      case 'INSUFFICIENT_FUNDS':
+        return InsufficientFundsException(
+          message: errorMessage.isNotEmpty
+              ? errorMessage
+              : 'This account doesn\'t have enough to cover the refresh fee.',
+        );
+      // Couldn't resolve a wallet to charge — NOT a balance problem, so don't
+      // show the insufficient-funds modal; surface a plain retryable error.
+      case 'WALLET_UNAVAILABLE':
+        return GenericBankingException(
+          code: errorCode,
+          message: errorMessage.isNotEmpty
+              ? errorMessage
+              : 'We couldn\'t reach your wallet to charge the refresh fee. Please try again.',
+          isRetryable: true,
+        );
       case 'PROVIDER_ERROR':
         return GenericBankingException(
           code: errorCode,
@@ -313,6 +331,8 @@ class OpenBankingGrpcDataSource {
     bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate
     String? currency, // destination wallet currency
     String? countryCode, // derived country — routes NGN to Mono
+    String? verificationToken, // tx-PIN token (fee-gated redeposit)
+    String? transactionId, // PIN-bound id the backend PreValidates against
   }) async {
     return await RetryPolicy.critical.execute(
       () async {
@@ -326,6 +346,8 @@ class OpenBankingGrpcDataSource {
           useRecurringAccess: useRecurringAccess,
           countryCode: countryCode ?? '',
           currency: currency ?? '',
+          verificationToken: verificationToken ?? '',
+          transactionId: transactionId ?? '',
         );
 
         try {
@@ -486,6 +508,49 @@ class OpenBankingGrpcDataSource {
       );
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'calculateDepositFee');
+    }
+  }
+
+  /// Consolidated fee quote: connect fee (first-time link only) + per-deposit
+  /// fee for the chosen rail, each broken down into Mono cost + LazerVault
+  /// margin. Amounts returned in MINOR units (kobo).
+  Future<DepositFeeQuote> getDepositFeeQuote({
+    required int amountInKobo,
+    required bool useRecurringAccess,
+    required bool firstTimeLink,
+  }) async {
+    try {
+      final request = banking_pb.DepositFeeQuoteRequest(
+        amount: Int64(amountInKobo),
+        useRecurringAccess: useRecurringAccess,
+        firstTimeLink: firstTimeLink,
+      );
+
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.getDepositFeeQuote(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 10)),
+        ),
+      );
+
+      FeeLeg leg(banking_pb.FeeLegBreakdown? b) => FeeLeg(
+            monoCost: b?.monoCost.toInt() ?? 0,
+            lazervaultFee: b?.lazervaultFee.toInt() ?? 0,
+            total: b?.total.toInt() ?? 0,
+          );
+
+      return DepositFeeQuote(
+        amount: response.amount.toInt(),
+        connectFee: leg(response.hasConnectFee() ? response.connectFee : null),
+        depositFee: leg(response.hasDepositFee() ? response.depositFee : null),
+        grandTotal: response.grandTotal.toInt(),
+        netAmount: response.netAmount.toInt(),
+        rail: response.rail,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getDepositFeeQuote');
     }
   }
 
@@ -1139,43 +1204,9 @@ class OpenBankingGrpcDataSource {
   // EXTERNAL TRANSACTION SYNC
   // =====================================================
 
-  /// Sync transactions for all linked accounts
-  Future<SyncAllAccountsResult> syncAllAccountTransactions({
-    required String userId,
-    String syncType = 'incremental',
-  }) async {
-    try {
-      final request = banking_pb.SyncAllAccountTransactionsRequest(
-        userId: userId,
-        syncType: syncType,
-      );
-      final callOptions = await _callOptionsHelper.withAuth();
-
-      final response = await _client.syncAllAccountTransactions(
-        request,
-        options: callOptions.mergedWith(
-          CallOptions(timeout: const Duration(seconds: 60)),
-        ),
-      );
-
-      final accountResults = response.accounts.map((a) => AccountSyncResult(
-            accountId: a.accountId,
-            bankName: a.bankName,
-            transactionsSynced: a.transactionsSynced,
-            success: a.success,
-            error: a.error.isNotEmpty ? a.error : null,
-          )).toList();
-
-      return SyncAllAccountsResult(
-        success: response.success,
-        totalAccountsSynced: response.totalAccountsSynced,
-        totalTransactionsSynced: response.totalTransactionsSynced,
-        accounts: accountResults,
-      );
-    } on GrpcError catch (e) {
-      throw _mapGrpcError(e, 'syncAllAccountTransactions');
-    }
-  }
+  // syncAllAccountTransactions REMOVED: the bulk RPC that read every linked bank
+  // from Mono in one unattended call (cost-incurring, no user fee) was deleted
+  // server-side. Only per-account sync remains.
 
   /// Sync transactions for a specific account
   Future<SyncTransactionsResult> syncAccountTransactions({

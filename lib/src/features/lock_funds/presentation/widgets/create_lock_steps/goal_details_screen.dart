@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 
-/// Goal details screen - Step 3 of 5
+/// Goal details — top half of wizard step 2 (Details & Payment).
 ///
 /// Allows user to enter goal name and description (only for goal-based locks)
 /// Can be skipped if lock type is not goal-based
@@ -46,7 +46,7 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
         final cubit = context.read<CreateLockCubit>();
         final isGoalBased = cubit.lockType == LockType.goalBased;
 
-        return SingleChildScrollView(
+        return Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

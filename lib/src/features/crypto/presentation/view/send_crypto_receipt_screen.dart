@@ -63,6 +63,10 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
   late UnifiedTransactionStatus _status;
   late String _txid;
   String _failReason = '';
+  // LazerVault crypto %-fee + total (amount+fee), crypto-denominated, from the
+  // withdrawal status endpoint. Empty until the first status fetch returns.
+  String _feeDecimal = '';
+  String _totalDecimal = '';
 
   Timer? _timer;
   int _attempt = 0;
@@ -82,6 +86,11 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
     _txid = widget.initialTxid;
     if (_status == UnifiedTransactionStatus.processing) {
       _scheduleNextPoll(const Duration(seconds: 3));
+    } else {
+      // Already terminal (e.g. an instant internal sub→sub send): still do ONE
+      // status fetch so the receipt can show the LazerVault fee + total. _poll
+      // returns without rescheduling once the status is terminal.
+      _scheduleNextPoll(const Duration(milliseconds: 100));
     }
   }
 
@@ -101,6 +110,16 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
     _attempt++;
     try {
       final resp = await _client.getCryptoWithdrawalStatus(widget.transactionId);
+      // Capture the LazerVault fee + total as soon as the status endpoint carries
+      // them (independent of terminal state, so instant internal sends get it too).
+      if (mounted &&
+          (resp.feeDecimal != _feeDecimal ||
+              resp.totalDecimal != _totalDecimal)) {
+        setState(() {
+          _feeDecimal = resp.feeDecimal;
+          _totalDecimal = resp.totalDecimal;
+        });
+      }
       final norm = _normalize(resp.status);
       if (norm == 'done') {
         if (!mounted) return;
@@ -161,6 +180,18 @@ class _SendCryptoReceiptScreenState extends State<SendCryptoReceiptScreen> {
     if (_txid.isNotEmpty) metadata['Blockchain txid'] = _txid;
     if (_status == UnifiedTransactionStatus.failed && _failReason.isNotEmpty) {
       metadata['Reason'] = _failReason;
+    }
+    // LazerVault crypto %-fee (when configured/charged) + the total debited,
+    // both in the sent asset. Shown only when there's a real fee — a 0-fee send
+    // stays clean. (The fixed FIAT send fee, when set, shows in the user's fiat
+    // transaction history as its own wallet debit.)
+    final feeVal = double.tryParse(_feeDecimal) ?? 0;
+    if (feeVal > 0) {
+      metadata['LazerVault fee'] = '${_fmtCrypto(feeVal)} $sym';
+      final totalVal = double.tryParse(_totalDecimal) ?? 0;
+      if (totalVal > 0) {
+        metadata['Total sent'] = '${_fmtCrypto(totalVal)} $sym';
+      }
     }
     metadata['Network fee'] = 'Deducted by the network';
     metadata['Custody'] = 'Managed by licensed partner';

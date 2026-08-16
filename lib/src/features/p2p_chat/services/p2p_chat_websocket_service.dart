@@ -163,16 +163,26 @@ class P2PChatWebSocketService {
     _manualDisconnect = false;
     _accessToken = accessToken;
 
-    final host = dotenv.env['P2P_CHAT_HOST'] ?? endpointRegistry.grpcHost;
-    final port = int.tryParse(dotenv.env['P2P_CHAT_PORT'] ?? '8018') ?? 8018;
-    // Port 443 == the env points at the public tunnel which terminates
-    // TLS, so we must speak wss. Loopback dev (port 8018) stays on ws.
+    // With a dev/local P2P_CHAT_HOST override use its P2P_CHAT_PORT (loopback ws);
+    // otherwise follow the tunnel host AND port TOGETHER (443 → wss). The old code
+    // kept the tunnel host but defaulted the port to 8018, so prod dialed
+    // ws://api.lazervault.app:8018/ws/chat which the edge never serves → the
+    // realtime socket never connected (and, combined with the REST bug, the
+    // Financial Connections list span forever).
+    final overrideHost = dotenv.env['P2P_CHAT_HOST'];
+    final bool hasOverride =
+        overrideHost != null && overrideHost.trim().isNotEmpty;
+    final host = hasOverride ? overrideHost : endpointRegistry.grpcHost;
+    final port = hasOverride
+        ? (int.tryParse(dotenv.env['P2P_CHAT_PORT'] ?? '') ?? 8018)
+        : endpointRegistry.grpcPort;
     final tlsTunnel = port == 443;
 
     final wsUrl = Uri(
       scheme: tlsTunnel ? 'wss' : 'ws',
       host: host,
-      port: port,
+      // Omit the port for the 443 tunnel (default) so no ':443' is appended.
+      port: tlsTunnel ? null : port,
       path: '/ws/chat',
     );
 

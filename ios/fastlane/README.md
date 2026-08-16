@@ -61,7 +61,7 @@ Open Firebase Console pages for the APNs .p8 + VAPID upload (one-time setup)
 [bundle exec] fastlane ios dev
 ```
 
-Dev → TestFlight (internal group) — dev flavor, cloudflared tunnel backend
+Dev → TestFlight internal track (PROD build: prod backend/Firebase)
 
 ### ios staging
 
@@ -69,7 +69,7 @@ Dev → TestFlight (internal group) — dev flavor, cloudflared tunnel backend
 [bundle exec] fastlane ios staging
 ```
 
-Staging → TestFlight (internal group)
+Staging → TestFlight internal track (PROD build: prod backend/Firebase)
 
 ### ios production
 
@@ -78,6 +78,22 @@ Staging → TestFlight (internal group)
 ```
 
 Production → TestFlight (external) + App Store (no auto-submit)
+
+### ios shorebird_release
+
+```sh
+[bundle exec] fastlane ios shorebird_release
+```
+
+Shorebird patch-capable RELEASE (IPA) → TestFlight internal
+
+### ios shorebird_patch
+
+```sh
+[bundle exec] fastlane ios shorebird_patch
+```
+
+Shorebird OTA PATCH (Dart-only) → already-shipped iOS release (no store, no bump)
 
 ----
 

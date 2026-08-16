@@ -38,6 +38,9 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
     final prefillAmount = args is Map && args['prefillAmount'] is int
         ? args['prefillAmount'] as int
         : null;
+    // Transparent quick-send host (opaque:false route): the amount sheet opens
+    // directly over the caller with no opaque intermediate screen.
+    final transparentHost = args is Map && args['transparentHost'] == true;
     // The purple header sits behind the status bar (no AppBar), so force light
     // (white) status-bar icons for contrast against it.
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -47,6 +50,9 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
         statusBarBrightness: Brightness.dark, // iOS
       ),
       child: Scaffold(
+      // Transparent in the quick-send host so the caller (chat/QR) shows through
+      // and the amount sheet appears to open directly over it.
+      backgroundColor: transparentHost ? Colors.transparent : null,
       // NOTE: the entrance animation lives INSIDE SelectRecipients, wrapping
       // only the white content sheet (Scan-QR strip down) so the purple header
       // + search bar stay static. Don't re-wrap the whole widget here.
@@ -55,6 +61,7 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
         preselectedRecipient: preselected,
         autoContinue: autoContinue,
         prefillAmountMinor: prefillAmount,
+        transparentHost: transparentHost,
       ),
       // Floating Action Button for adding recipients — long flow only.
       floatingActionButton: shortFlow

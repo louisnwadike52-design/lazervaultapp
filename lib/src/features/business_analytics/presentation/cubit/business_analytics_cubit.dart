@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -93,7 +94,13 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
             months: _getMonthsForPeriod(period),
             locale: locale,
           ),
-          options: options,
+          // Granularity + range via metadata (no proto change) so the chart
+          // shows day/week buckets for short periods instead of always monthly.
+          options: options.mergedWith(CallOptions(metadata: {
+            'x-trend-granularity': _granularityForPeriod(period),
+            'x-trend-start': dateRange.$1,
+            'x-trend-end': dateRange.$2,
+          })),
         ),
         accountsClient.getExpenseTimeSeries(
           accounts_pb.GetExpenseTimeSeriesRequest(
@@ -182,6 +189,22 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
         return 12;
       default:
         return 6;
+    }
+  }
+
+  /// Bucket granularity for the trends chart so it responds meaningfully to the
+  /// filter: short periods → finer buckets (day/week), long periods → monthly.
+  String _granularityForPeriod(String period) {
+    switch (period) {
+      case 'today':
+      case 'week':
+        return 'daily';
+      case 'month':
+        return 'weekly';
+      case 'quarter':
+        return 'monthly';
+      default:
+        return 'monthly';
     }
   }
 

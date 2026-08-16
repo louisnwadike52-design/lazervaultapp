@@ -11,6 +11,11 @@ class LinkedAccountCard extends StatelessWidget {
   final VoidCallback? onSetDefault;
   final VoidCallback? onRefreshBalance;
 
+  /// Starts the Mono reauthorization flow for this bank. Wired by the parent to
+  /// `startAccountReauthorization` — without it the "Reconnect" affordance would
+  /// be a dead button (it previously carried a no-op `// TODO`).
+  final VoidCallback? onReconnect;
+
   const LinkedAccountCard({
     super.key,
     required this.account,
@@ -18,6 +23,7 @@ class LinkedAccountCard extends StatelessWidget {
     this.onUnlink,
     this.onSetDefault,
     this.onRefreshBalance,
+    this.onReconnect,
   });
 
   @override
@@ -150,9 +156,7 @@ class LinkedAccountCard extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      // TODO: Navigate to reauthorization
-                    },
+                    onPressed: onReconnect,
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.orange[700],
                       padding: EdgeInsets.symmetric(horizontal: 8.w),

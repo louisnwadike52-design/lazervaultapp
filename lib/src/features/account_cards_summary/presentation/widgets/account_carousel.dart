@@ -26,11 +26,17 @@ typedef OnShowDetailsCallback = void Function(Map<String, dynamic> accountArgs);
 class AccountCarousel extends StatefulWidget {
   final List<AccountSummaryEntity> accountSummaries;
   final OnShowDetailsCallback onShowDetails; // Callback to show bottom sheet
+  /// Compact (Showcase/advert) layout — trims the card + indicator gap a little
+  /// so the adverts carousel below stays above the fold. The card content sits
+  /// between two Spacers, so the shorter height only tightens the slack; no
+  /// distortion or overflow of the label/balance/action rows.
+  final bool compact;
 
   const AccountCarousel({
     super.key,
     required this.accountSummaries,
     required this.onShowDetails,
+    this.compact = false,
   });
 
   @override
@@ -201,6 +207,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
     if (_currentIndex >= _totalItemCount && _totalItemCount > 0) {
       _currentIndex = _totalItemCount - 1;
     }
+    // Summaries refreshed (e.g. a freeze/unfreeze from the details sheet) — keep
+    // the global active-frozen flag current so service tiles gate correctly.
+    _syncActiveFrozenFlag();
   }
 
   /// Reads cubit tracking maps for unconsumed WebSocket updates and plays
@@ -258,6 +267,22 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // card resolves to its real-money virtual account).
       _accountManager.setActiveAccount(widget.accountSummaries.first.spendingAccountId);
     }
+    _syncActiveFrozenFlag();
+  }
+
+  /// Mirror the CURRENTLY-VISIBLE (active) account's freeze state onto the
+  /// global AccountManager flag so money-moving service tiles can pre-empt a
+  /// frozen account anywhere (grid + "View all" sheet). Called on init, on
+  /// swipe, and when summaries refresh (so a freeze/unfreeze reflects live).
+  void _syncActiveFrozenFlag() {
+    if (widget.accountSummaries.isEmpty) {
+      _accountManager.setActiveAccountFrozen(false);
+      return;
+    }
+    final idx = _currentIndex >= 0 && _currentIndex < widget.accountSummaries.length
+        ? _currentIndex
+        : 0;
+    _accountManager.setActiveAccountFrozen(widget.accountSummaries[idx].isFrozen);
   }
 
   /// Called when user swipes the carousel - automatically sets active account
@@ -272,6 +297,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
     if (widget.accountSummaries.isNotEmpty && index < widget.accountSummaries.length) {
       final newAccountId = widget.accountSummaries[index].spendingAccountId;
       _accountManager.setActiveAccount(newAccountId);
+      // Keep the global frozen flag aligned with the newly-active account.
+      _accountManager.setActiveAccountFrozen(widget.accountSummaries[index].isFrozen);
     }
   }
 
@@ -364,8 +391,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
               // peeks above the fold (without exposing the body copy
               // below it). With the balance still wrapped between two
               // Spacers, the amount stays vertically centered in the
-              // shorter card — no top-heavy lean.
-              height: 190.h,
+              // shorter card — no top-heavy lean. Showcase (advert) mode
+              // trims a touch more to make room for the adverts carousel.
+              height: widget.compact ? 170.h : 190.h,
               viewportFraction: 0.95, // Wider cards
               enlargeCenterPage: true,
               initialPage: _currentIndex, // Start at active account position
@@ -376,7 +404,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
               return _buildAccountCard(context, account);
             },
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: widget.compact ? 12.h : 20.h),
           _buildCarouselIndicators(_totalItemCount),
         ],
       ),
@@ -571,10 +599,22 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'balance': currentBalance,
       'availableBalance': availableBalance,
       'reservedBalance': account.reservedBalance,
-      'accountNumber': account.accountNumber ?? '•••• ${account.accountNumberLast4}', // Full NUBAN for deposits
+      // Real NUBAN ONLY. When no real Flutterwave NUBAN is provisioned yet
+      // (backend sends an empty account_number → accountNumber == null), pass an
+      // EMPTY string — NEVER the masked last4 masquerading as a copyable deposit
+      // number. The Deposit screen renders a "being set up / complete
+      // verification" state for empty, matching the bank/holder empty handling
+      // below. (Prior bug: the masked '•••• ????' string was passed here and
+      // shown as if it were a real account number.)
+      'accountNumber': account.accountNumber ?? '', // Full NUBAN for deposits (empty until provisioned)
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',
-      'bankName': account.bankName ?? 'Wema Bank', // Partner bank name
-      'accountName': account.accountName ?? 'Lazervault Account', // Account holder name
+      // Real provider values ONLY. When the backend hasn't populated the
+      // partner bank / NUBAN holder name yet (account still being set up),
+      // pass an EMPTY string so the Deposit / details screens render a handled
+      // empty state — never a mock ("Wema Bank" / "Lazervault Account") and
+      // never the account TYPE masquerading as the holder name.
+      'bankName': account.bankName ?? '', // Partner bank name (real or empty)
+      'accountName': account.accountName ?? '', // NUBAN holder name (real or empty)
       'trend': '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,
     };
@@ -585,22 +625,27 @@ class _AccountCarouselState extends State<AccountCarousel> {
       initialData: _accountManager.activeAccountId,
       builder: (context, snapshot) {
         final currencySymbol = _getCurrencySymbol(account.currency);
+        // A frozen account is rendered ICED-OVER: a cold blue gradient + a frost
+        // overlay (icicles + frosted sides), and its money actions are paused.
+        final bool frozen = account.isFrozen;
 
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color.fromARGB(255, 78, 3, 208),
-                Color(0xFF4834D4),
-              ],
+              colors: frozen
+                  ? const [Color(0xFF2B5876), Color(0xFF4E7A9B)]
+                  : const [Color.fromARGB(255, 78, 3, 208), Color(0xFF4834D4)],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                color: (frozen
+                        ? const Color(0xFF2B5876)
+                        : const Color.fromARGB(255, 78, 3, 208))
+                    .withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -635,6 +680,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     ),
                   ),
                 ),
+                // Frost treatment for a frozen account (icicles + frosted sides).
+                if (frozen) const _FrozenFrostOverlay(),
                 // Main content
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -864,17 +911,25 @@ class _AccountCarouselState extends State<AccountCarousel> {
                             _buildActionButton(
                               "Deposit",
                               Icons.add_rounded,
-                              onTap: () {
-                                Get.toNamed(AppRoutes.depositFunds,
-                                    arguments: {'selectedCard': cardArguments});
-                              },
+                              dimmed: frozen,
+                              onTap: frozen
+                                  ? _showFrozenActionBlocked
+                                  : () {
+                                      Get.toNamed(AppRoutes.depositFunds,
+                                          arguments: {
+                                            'selectedCard': cardArguments
+                                          });
+                                    },
                             ),
                             SizedBox(width: 12.w),
                             _buildActionButton(
                               "Withdraw",
                               Icons.remove_rounded,
-                              onTap: () => Get.toNamed(AppRoutes.withdrawFunds,
-                                  arguments: {'selectedCard': cardArguments}),
+                              dimmed: frozen,
+                              onTap: frozen
+                                  ? _showFrozenActionBlocked
+                                  : () => Get.toNamed(AppRoutes.withdrawFunds,
+                                      arguments: {'selectedCard': cardArguments}),
                             ),
                           ],
                         ),
@@ -891,45 +946,66 @@ class _AccountCarouselState extends State<AccountCarousel> {
     );
   }
 
+  /// A frozen account blocks EVERY money op server-side (deposit/withdraw/
+  /// transfer). Surface that on the card: the money actions become a single
+  /// "unfreeze first" nudge that points the user at Details (the only way to
+  /// unfreeze), instead of walking them into a flow the backend will reject.
+  void _showFrozenActionBlocked() {
+    Get.snackbar(
+      'Account frozen',
+      'Unfreeze this account from Details before you can deposit, withdraw or use other services.',
+      backgroundColor: const Color(0xFF1E3A5F).withValues(alpha: 0.95),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      margin: EdgeInsets.all(12.w),
+      icon: const Icon(Icons.ac_unit_rounded, color: Colors.white),
+      duration: const Duration(seconds: 4),
+    );
+  }
+
   Widget _buildActionButton(String label, IconData icon,
-      {required VoidCallback onTap}) {
+      {required VoidCallback onTap, bool dimmed = false}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 16.sp,
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
+        child: Opacity(
+          opacity: dimmed ? 0.55 : 1.0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  // When dimmed (frozen), the leading glyph becomes a small
+                  // snowflake so the "paused" state reads even without color.
+                  dimmed ? Icons.ac_unit_rounded : icon,
+                  color: Colors.white,
+                  size: 16.sp,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -962,26 +1038,49 @@ class _AccountCarouselState extends State<AccountCarousel> {
     // If it's a proper family entity, check its status. If it's a generic family
     // account (from regular accounts, isFamilyAccount==false), treat as pending setup.
     final isPendingSetup = account.isFamilyPendingSetup || !account.isFamilyAccount;
+    // Frozen family/pool account → iced-over theme (the freeze rides familyStatus).
+    final bool frozen = account.isFrozen;
 
     return StreamBuilder<String?>(
       stream: _accountManager.accountIdStream,
       initialData: _accountManager.activeAccountId,
       builder: (context, snapshot) {
-        return Container(
+        // The WHOLE card is tappable → family details (active) or the setup flow
+        // (pending). Inner buttons ("Get Started" / "Details") still win the tap
+        // via the gesture arena, so this only fires when tapping elsewhere on the
+        // card. opaque so transparent regions of the card are hittable too.
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (isPendingSetup) {
+              if (account.familyAccountId == null) {
+                _resolveFamilyIdAndNavigate(account);
+              } else {
+                final familyId = account.familyAccountId ?? account.id;
+                Get.toNamed(AppRoutes.familyActivationSetup,
+                    arguments: {'familyId': familyId});
+              }
+            } else {
+              final familyId = account.familyAccountId ?? account.id;
+              Get.toNamed(AppRoutes.familyDetails,
+                  arguments: {'familyId': familyId});
+            }
+          },
+          child: Container(
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1A1A3E),
-                Color(0xFF2D2B6B),
-              ],
+              colors: frozen
+                  ? const [Color(0xFF2B5876), Color(0xFF4E7A9B)]
+                  : const [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1A1A3E).withValues(alpha: 0.3),
+                color: (frozen ? const Color(0xFF2B5876) : const Color(0xFF1A1A3E))
+                    .withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1016,6 +1115,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     ),
                   ),
                 ),
+                // Frost treatment for a frozen family/pool account.
+                if (frozen) const _FrozenFrostOverlay(),
                 // Main content
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -1158,7 +1259,39 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           ),
                       ],
                       const Spacer(),
-                      if (isPendingSetup)
+                      if (account.isFamilyProcessing)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 12.w,
+                                height: 12.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                'Setting up your account…',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (isPendingSetup)
                         GestureDetector(
                           onTap: _isResolvingFamilyId
                               ? null
@@ -1228,6 +1361,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
               ],
             ),
           ),
+        ),
         );
       },
     );
@@ -1249,32 +1383,40 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'accountNumber':
           account.accountNumber ?? '•••• ${account.accountNumberLast4}',
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',
-      'bankName': account.bankName ?? 'Wema Bank',
-      'accountName': account.accountName ?? 'Lazervault Business',
+      // Real provider values ONLY — empty (handled) state when not yet set up,
+      // never a mock ("Wema Bank" / "Lazervault Business").
+      'bankName': account.bankName ?? '',
+      'accountName': account.accountName ?? '',
     };
 
     return StreamBuilder<String?>(
       stream: _accountManager.accountIdStream,
       initialData: _accountManager.activeAccountId,
       builder: (context, snapshot) {
+        // Frozen business account: iced-over cold gradient + frost overlay, money
+        // actions paused (Manage stays open so the owner can unfreeze).
+        final bool frozen = account.isFrozen;
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
             // Business identity uses a violet/purple gradient (like the referral
             // bonus card) — on-brand, distinct from the personal card, not blue
-            // and not orange.
-            gradient: const LinearGradient(
+            // and not orange. Frozen swaps it for the cold ice palette.
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF6D28D9), // violet-700
-                Color(0xFF3B0764), // violet-950 (near-black)
-              ],
+              colors: frozen
+                  ? const [Color(0xFF2B5876), Color(0xFF4E7A9B)]
+                  : const [
+                      Color(0xFF6D28D9), // violet-700
+                      Color(0xFF3B0764), // violet-950 (near-black)
+                    ],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6D28D9).withValues(alpha: 0.3),
+                color: (frozen ? const Color(0xFF2B5876) : const Color(0xFF6D28D9))
+                    .withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1309,6 +1451,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     ),
                   ),
                 ),
+                // Frost treatment for a frozen business account.
+                if (frozen) const _FrozenFrostOverlay(),
                 // Main content
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -1423,15 +1567,21 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           _buildActionButton(
                             "Deposit",
                             Icons.add_rounded,
-                            onTap: () => Get.toNamed(AppRoutes.depositFunds,
-                                arguments: {'selectedCard': businessCard}),
+                            dimmed: frozen,
+                            onTap: frozen
+                                ? _showFrozenActionBlocked
+                                : () => Get.toNamed(AppRoutes.depositFunds,
+                                    arguments: {'selectedCard': businessCard}),
                           ),
                           SizedBox(width: 8.w),
                           _buildActionButton(
                             "Withdraw",
                             Icons.remove_rounded,
-                            onTap: () => Get.toNamed(AppRoutes.withdrawFunds,
-                                arguments: {'selectedCard': businessCard}),
+                            dimmed: frozen,
+                            onTap: frozen
+                                ? _showFrozenActionBlocked
+                                : () => Get.toNamed(AppRoutes.withdrawFunds,
+                                    arguments: {'selectedCard': businessCard}),
                           ),
                         ],
                       ),
@@ -1577,4 +1727,133 @@ enum _TrendPeriod {
 
   static _TrendPeriod fromApi(String api) => _TrendPeriod.values
       .firstWhere((p) => p.api == api, orElse: () => _TrendPeriod.month);
+}
+
+/// Frost treatment painted over a FROZEN account card: a cold white sheen, a
+/// row of icicles hanging from the top edge, and a light frost down both sides —
+/// so a frozen card reads unmistakably as "iced over" at a glance. Purely
+/// decorative and non-interactive (IgnorePointer), sits above the card art but
+/// below the content so text/badges stay legible.
+class _FrozenFrostOverlay extends StatelessWidget {
+  const _FrozenFrostOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.r),
+          child: Stack(
+            children: [
+              // Cold white diagonal sheen so the whole card looks frosted.
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.16),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.white.withValues(alpha: 0.12),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              // Frost down the LEFT edge.
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: SizedBox(
+                  width: 26.w,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.35),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Frost down the RIGHT edge.
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: SizedBox(
+                  width: 26.w,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerRight,
+                        end: Alignment.centerLeft,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.35),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Icicles hanging from the top edge.
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SizedBox(
+                  height: 22.h,
+                  child: CustomPaint(painter: _IciclePainter()),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Draws a row of translucent-white icicles of varying length hanging from the
+/// top edge, giving a frozen card its "iced-over" fringe.
+class _IciclePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withValues(alpha: 0.55),
+          Colors.white.withValues(alpha: 0.12),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // Deterministic varied lengths (no RNG — keeps rebuilds stable).
+    const pattern = <double>[1.0, 0.55, 0.8, 0.4, 0.9, 0.5, 0.7, 0.45, 0.85, 0.6];
+    final count = pattern.length;
+    final slot = size.width / count;
+    final halfBase = slot * 0.42;
+    for (int i = 0; i < count; i++) {
+      final cx = slot * i + slot / 2;
+      final len = size.height * pattern[i];
+      final path = Path()
+        ..moveTo(cx - halfBase, 0)
+        ..lineTo(cx + halfBase, 0)
+        ..lineTo(cx, len)
+        ..close();
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _IciclePainter oldDelegate) => false;
 }

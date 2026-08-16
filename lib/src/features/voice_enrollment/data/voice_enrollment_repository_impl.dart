@@ -193,13 +193,19 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   @override
   Future<String> getCurrentUserId() async {
     try {
-      // First try reading the stored user ID directly (set during login)
-      final storedUserId = await _secureStorage.getUserId();
-      if (storedUserId != null && storedUserId.isNotEmpty) {
-        return storedUserId;
-      }
-
-      // Fallback: extract from JWT token payload
+      // Derive the id from the CURRENT access token FIRST. The access token is
+      // written fresh on every login and deleted on logout, so its `sub` claim
+      // always reflects the user who is signed in RIGHT NOW.
+      //
+      // The stored `user_id` key is NOT a reliable source of "current user":
+      // it is written by the email/passcode login paths but not by every path
+      // (e.g. biometric/Face-ID login writes `biometric_user_id`, not this key),
+      // and some logout paths don't clear it. So after logging out of account A
+      // and back into account B via a path that doesn't rewrite it, the stale
+      // account-A id lingered here — which made voice enrollment/status run
+      // against the WRONG account (the classic "it says enroll again even though
+      // I already enrolled" symptom). Prefer the token; fall back to the stored
+      // key only when there is no usable token.
       final token = await _secureStorage.getAccessToken();
       if (token != null && token.isNotEmpty) {
         final userId = _extractUserIdFromToken(token);
@@ -208,7 +214,12 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
         }
       }
 
-      throw Exception('User ID not found in storage or token');
+      final storedUserId = await _secureStorage.getUserId();
+      if (storedUserId != null && storedUserId.isNotEmpty) {
+        return storedUserId;
+      }
+
+      throw Exception('User ID not found in token or storage');
     } catch (e) {
       throw Exception('Failed to get current user ID: $e');
     }

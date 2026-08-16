@@ -479,6 +479,13 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
     print('[MonoConnect] Customer: $customerName ($customerEmail)');
     print('[MonoConnect] User ID: $userId');
 
+    // CONNECTION-FEE CONSENT FIRST — before the Mono Connect webview, not after
+    // the user has already linked. On "Not now" we abort without opening it.
+    final proceed = await showBankConnectionFeeNotice(context);
+    if (!proceed || !mounted) return;
+    // One idempotency id for this whole link attempt.
+    final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
+
     // Close our custom info bottomsheet first
     Navigator.pop(context);
 
@@ -499,17 +506,13 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
       print('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
       print('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
-      // Cost-confirmed link (fee + txPIN only when enabled; free is unchanged).
+      // Fee already consented above — link straight through (no second notice).
       final obc = widget.openBankingCubit;
-      await linkBankWithFee(
-        context: context,
-        doLink: (token, txnId) async => obc.linkAccount(
-          userId: userId,
-          code: result.code,
-          accessToken: accessToken,
-          verificationToken: token,
-          transactionId: txnId,
-        ),
+      await obc.linkAccount(
+        userId: userId,
+        code: result.code,
+        accessToken: accessToken,
+        transactionId: txnId,
       );
       if (!mounted) return;
       widget.onSuccess();

@@ -7,7 +7,7 @@ import UIKit
 /// "Send money with LazerVault"
 @available(iOS 16.0, *)
 struct SendMoneyIntent: AppIntent {
-    static var title: LocalizedStringResource = "Send Money"
+    static var title: LocalizedStringResource = "Send Funds"
     static var description = IntentDescription("Open LazerVault to send money")
     static var openAppWhenRun: Bool = true
 
@@ -69,7 +69,7 @@ struct LazerVaultShortcutsProvider: AppShortcutsProvider {
                 "Transfer funds with \(.applicationName)",
                 "Pay someone on \(.applicationName)"
             ],
-            shortTitle: "Send Money",
+            shortTitle: "Send Funds",
             systemImageName: "arrow.up.right"
         )
         AppShortcut(

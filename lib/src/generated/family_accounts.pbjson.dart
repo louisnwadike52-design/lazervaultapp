@@ -420,6 +420,14 @@ const CreateFamilyAccountRequest$json = {
       '5': 8,
       '10': 'allowMemberContributions'
     },
+    {'1': 'funding_policy', '3': 6, '4': 1, '5': 9, '10': 'fundingPolicy'},
+    {
+      '1': 'specific_member_ids',
+      '3': 7,
+      '4': 3,
+      '5': 9,
+      '10': 'specificMemberIds'
+    },
   ],
 };
 
@@ -429,7 +437,8 @@ final $typed_data.Uint8List createFamilyAccountRequestDescriptor = $convert.base
     'NyaXB0aW9uGAIgASgJUgtkZXNjcmlwdGlvbhIpChBpbml0aWFsX2N1cnJlbmN5GAMgASgJUg9p'
     'bml0aWFsQ3VycmVuY3kSJwoPaW5pdGlhbF9mdW5kaW5nGAQgASgBUg5pbml0aWFsRnVuZGluZx'
     'I8ChphbGxvd19tZW1iZXJfY29udHJpYnV0aW9ucxgFIAEoCFIYYWxsb3dNZW1iZXJDb250cmli'
-    'dXRpb25z');
+    'dXRpb25zEiUKDmZ1bmRpbmdfcG9saWN5GAYgASgJUg1mdW5kaW5nUG9saWN5Ei4KE3NwZWNpZm'
+    'ljX21lbWJlcl9pZHMYByADKAlSEXNwZWNpZmljTWVtYmVySWRz');
 
 @$core.Deprecated('Use createFamilyAccountResponseDescriptor instead')
 const CreateFamilyAccountResponse$json = {
@@ -1446,6 +1455,14 @@ const SetupFamilyAccountRequest$json = {
       '6': '.accounts.v1.MemberAllocation',
       '10': 'allocations'
     },
+    {'1': 'funding_policy', '3': 5, '4': 1, '5': 9, '10': 'fundingPolicy'},
+    {
+      '1': 'specific_member_ids',
+      '3': 6,
+      '4': 3,
+      '5': 9,
+      '10': 'specificMemberIds'
+    },
   ],
 };
 
@@ -1455,7 +1472,9 @@ final $typed_data.Uint8List setupFamilyAccountRequestDescriptor = $convert.base6
     'QSVwoWZnVuZF9kaXN0cmlidXRpb25fbW9kZRgCIAEoDjIhLmFjY291bnRzLnYxLkZ1bmREaXN0'
     'cmlidXRpb25Nb2RlUhRmdW5kRGlzdHJpYnV0aW9uTW9kZRI+ChtzcGVuZGluZ192aXNpYmlsaX'
     'R5X2VuYWJsZWQYAyABKAhSGXNwZW5kaW5nVmlzaWJpbGl0eUVuYWJsZWQSPwoLYWxsb2NhdGlv'
-    'bnMYBCADKAsyHS5hY2NvdW50cy52MS5NZW1iZXJBbGxvY2F0aW9uUgthbGxvY2F0aW9ucw==');
+    'bnMYBCADKAsyHS5hY2NvdW50cy52MS5NZW1iZXJBbGxvY2F0aW9uUgthbGxvY2F0aW9ucxIlCg'
+    '5mdW5kaW5nX3BvbGljeRgFIAEoCVINZnVuZGluZ1BvbGljeRIuChNzcGVjaWZpY19tZW1iZXJf'
+    'aWRzGAYgAygJUhFzcGVjaWZpY01lbWJlcklkcw==');
 
 @$core.Deprecated('Use memberAllocationDescriptor instead')
 const MemberAllocation$json = {
@@ -1623,6 +1642,16 @@ const FamilyAccount$json = {
       '5': 9,
       '10': 'virtualAccountId'
     },
+    {'1': 'funding_policy', '3': 21, '4': 1, '5': 9, '10': 'fundingPolicy'},
+    {'1': 'account_number', '3': 22, '4': 1, '5': 9, '10': 'accountNumber'},
+    {'1': 'bank_name', '3': 23, '4': 1, '5': 9, '10': 'bankName'},
+    {
+      '1': 'virtual_account_status',
+      '3': 24,
+      '4': 1,
+      '5': 9,
+      '10': 'virtualAccountStatus'
+    },
   ],
 };
 
@@ -1643,7 +1672,10 @@ final $typed_data.Uint8List familyAccountDescriptor = $convert.base64Decode(
     'D3NldHVwX2NvbXBsZXRlZBgRIAEoCFIOc2V0dXBDb21wbGV0ZWQSPgobc3BlbmRpbmdfdmlzaW'
     'JpbGl0eV9lbmFibGVkGBIgASgIUhlzcGVuZGluZ1Zpc2liaWxpdHlFbmFibGVkEhoKCGN1cnJl'
     'bmN5GBMgASgJUghjdXJyZW5jeRIsChJ2aXJ0dWFsX2FjY291bnRfaWQYFCABKAlSEHZpcnR1YW'
-    'xBY2NvdW50SWQ=');
+    'xBY2NvdW50SWQSJQoOZnVuZGluZ19wb2xpY3kYFSABKAlSDWZ1bmRpbmdQb2xpY3kSJQoOYWNj'
+    'b3VudF9udW1iZXIYFiABKAlSDWFjY291bnROdW1iZXISGwoJYmFua19uYW1lGBcgASgJUghiYW'
+    '5rTmFtZRI0ChZ2aXJ0dWFsX2FjY291bnRfc3RhdHVzGBggASgJUhR2aXJ0dWFsQWNjb3VudFN0'
+    'YXR1cw==');
 
 @$core.Deprecated('Use familyMemberDescriptor instead')
 const FamilyMember$json = {
@@ -1722,6 +1754,7 @@ const FamilyMember$json = {
       '5': 1,
       '10': 'remainingBalance'
     },
+    {'1': 'can_contribute', '3': 26, '4': 1, '5': 8, '10': 'canContribute'},
   ],
 };
 
@@ -1743,7 +1776,8 @@ final $typed_data.Uint8List familyMemberDescriptor = $convert.base64Decode(
     'VkQXQSHQoKdXBkYXRlZF9hdBgWIAEoCVIJdXBkYXRlZEF0EjIKFXBlcl90cmFuc2FjdGlvbl9s'
     'aW1pdBgXIAEoAVITcGVyVHJhbnNhY3Rpb25MaW1pdBI6ChlhbGxvY2F0aW9uX3BlcmNlbnRhZ2'
     'VfY2FwGBggASgBUhdhbGxvY2F0aW9uUGVyY2VudGFnZUNhcBIrChFyZW1haW5pbmdfYmFsYW5j'
-    'ZRgZIAEoAVIQcmVtYWluaW5nQmFsYW5jZQ==');
+    'ZRgZIAEoAVIQcmVtYWluaW5nQmFsYW5jZRIlCg5jYW5fY29udHJpYnV0ZRgaIAEoCFINY2FuQ2'
+    '9udHJpYnV0ZQ==');
 
 @$core.Deprecated('Use familyTransactionDescriptor instead')
 const FamilyTransaction$json = {
@@ -1865,6 +1899,21 @@ const FamilyAccountSummary$json = {
       '6': '.accounts.v1.FamilyMemberSpending',
       '10': 'topSpenders'
     },
+    {
+      '1': 'total_contributed',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '10': 'totalContributed'
+    },
+    {
+      '1': 'top_funders',
+      '3': 7,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.v1.FamilyMemberSpending',
+      '10': 'topFunders'
+    },
   ],
 };
 
@@ -1875,7 +1924,9 @@ final $typed_data.Uint8List familyAccountSummaryDescriptor = $convert.base64Deco
     'TW9udGgSKgoRdG90YWxfc3BlbnRfdG9kYXkYAyABKAFSD3RvdGFsU3BlbnRUb2RheRI/Chx0cm'
     'Fuc2FjdGlvbl9jb3VudF90aGlzX21vbnRoGAQgASgFUhl0cmFuc2FjdGlvbkNvdW50VGhpc01v'
     'bnRoEkQKDHRvcF9zcGVuZGVycxgFIAMoCzIhLmFjY291bnRzLnYxLkZhbWlseU1lbWJlclNwZW'
-    '5kaW5nUgt0b3BTcGVuZGVycw==');
+    '5kaW5nUgt0b3BTcGVuZGVycxIrChF0b3RhbF9jb250cmlidXRlZBgGIAEoAVIQdG90YWxDb250'
+    'cmlidXRlZBJCCgt0b3BfZnVuZGVycxgHIAMoCzIhLmFjY291bnRzLnYxLkZhbWlseU1lbWJlcl'
+    'NwZW5kaW5nUgp0b3BGdW5kZXJz');
 
 @$core.Deprecated('Use familyMemberSpendingDescriptor instead')
 const FamilyMemberSpending$json = {

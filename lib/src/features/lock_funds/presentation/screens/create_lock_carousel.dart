@@ -19,11 +19,23 @@ import '../widgets/create_lock_steps/amount_duration_selector.dart';
 import '../widgets/create_lock_steps/goal_details_screen.dart';
 import '../widgets/create_lock_steps/review_screen.dart';
 import '../widgets/create_lock_steps/payment_method_selector.dart';
+import '../../data/lock_funds_error.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 /// Main carousel controller for lock fund creation
 ///
-/// Manages 5-screen flow with PageView, progress indicators, and validation
+/// Manages a consolidated 3-step flow with PageView, progress
+/// indicators, and validation:
+///   1. Plan & Amount   — lock type + amount/duration/auto-renew
+///   2. Details & Payment — name/description + funding account
+///   3. Review & Confirm — final summary, then Create Lock
+///
+/// The five underlying step widgets are grouped two-per-page (Review
+/// alone) inside a single scroll view; no captured field is dropped.
 class CreateLockCarousel extends StatefulWidget {
   const CreateLockCarousel({super.key});
 
@@ -39,14 +51,12 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
 
   late PageController _pageController;
   int _currentPage = 0;
-  final int _totalPages = 5;
+  final int _totalPages = 3;
 
   final List<String> _pageNames = [
-    'Lock Type',
-    'Amount & Duration',
-    'Goal Details',
-    'Review & Calculate',
-    'Payment Method',
+    'Plan & Amount',
+    'Details & Payment',
+    'Review & Confirm',
   ];
 
   @override
@@ -64,23 +74,21 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
   Future<void> _goToNextPage() async {
     final cubit = context.read<CreateLockCubit>();
 
-    // Validate current page
+    // Validate current page. Each page now bundles two of the
+    // original five sub-steps (Review stands alone), so the page
+    // validators are composed of the underlying step validators.
+    // `&&` short-circuits, so the cubit's emitted validation error
+    // always reflects the first failing sub-step on the page.
     bool isValid = false;
     switch (_currentPage) {
-      case 0:
-        isValid = cubit.validateStep1();
+      case 0: // Plan & Amount = lock type + amount/duration
+        isValid = cubit.validateStep1() && cubit.validateStep2();
         break;
-      case 1:
-        isValid = cubit.validateStep2();
+      case 1: // Details & Payment = name/description + funding account
+        isValid = cubit.validateStep3() && cubit.validateStep5();
         break;
-      case 2:
-        isValid = cubit.validateStep3();
-        break;
-      case 3:
+      case 2: // Review — re-check the captured fields before create
         isValid = cubit.validateStep4();
-        break;
-      case 4:
-        isValid = cubit.validateStep5();
         break;
     }
 
@@ -136,6 +144,33 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
       return;
     }
 
+    // Pre-flight balance guard. Read the funding account's available
+    // balance from the already-loaded AccountCardsSummaryCubit and, if
+    // the lock amount exceeds it, block with a clear modal here rather
+    // than letting the backend reject the debit with a generic error.
+    // Only guards when the account row is loaded and matches the
+    // selection — otherwise we defer to the backend's own check (no
+    // change to money math or the create call).
+    final lockAmount = createCubit.amount ?? 0;
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    if (accountState is AccountCardsSummaryLoaded) {
+      AccountSummaryEntity? source;
+      for (final a in accountState.accountSummaries) {
+        if (a.id == selectedAccountId) {
+          source = a;
+          break;
+        }
+      }
+      if (source != null && source.availableBalance < lockAmount) {
+        await _showInsufficientBalanceDialog(
+          currency: source.currency,
+          available: source.availableBalance,
+          requiredAmount: lockAmount,
+        );
+        return;
+      }
+    }
+
     HapticFeedback.mediumImpact();
 
     // Snapshot wizard state. The bottom sheet stays open across the
@@ -181,6 +216,12 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
       currency: currency,
       title: 'Confirm Piggyvault',
       message: 'Locking ${amount.toStringAsFixed(2)} $currency',
+      // Surface the lock-funds-specific friendly copy on the PIN
+      // sheet's FAILED beat (e.g. "minimum amount is 5000",
+      // "Year Lock does not support auto-renewal") instead of the
+      // generic transfer failure line, so a create rejection is
+      // diagnosable.
+      failureMessageBuilder: friendlyLockError,
       onPinValidated: (verificationToken) async {
         if (!mounted) return;
 
@@ -241,6 +282,64 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     );
   }
 
+  /// Dark-theme modal shown when the funding account can't cover the
+  /// lock amount. Names the shortfall explicitly so the user knows
+  /// how much to add (or by how much to lower the amount).
+  Future<void> _showInsufficientBalanceDialog({
+    required String currency,
+    required double available,
+    required double requiredAmount,
+  }) async {
+    final shortfall = requiredAmount - available;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          side: BorderSide(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+            width: 1,
+          ),
+        ),
+        title: Text(
+          'Insufficient balance',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'Your funding account has '
+          '${CurrencySymbols.formatAmountWithCurrency(available, currency)} '
+          'available, but this lock needs '
+          '${CurrencySymbols.formatAmountWithCurrency(requiredAmount, currency)}. '
+          'Add ${CurrencySymbols.formatAmountWithCurrency(shortfall, currency)} '
+          'to that account, or lower the lock amount.',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 14.sp,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: Text(
+              'OK',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF8B5CF6),
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -285,11 +384,20 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
                 setState(() => _currentPage = page);
               },
               children: const [
-                LockTypeSelector(),
-                AmountDurationSelector(),
-                GoalDetailsScreen(),
-                ReviewScreen(),
-                PaymentMethodSelector(),
+                // Step 1 — Plan & Amount
+                _WizardPage(children: [
+                  LockTypeSelector(),
+                  AmountDurationSelector(),
+                ]),
+                // Step 2 — Details & Payment
+                _WizardPage(children: [
+                  GoalDetailsScreen(),
+                  PaymentMethodSelector(),
+                ]),
+                // Step 3 — Review & Confirm
+                _WizardPage(children: [
+                  ReviewScreen(),
+                ]),
               ],
             ),
           ),
@@ -489,6 +597,27 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A single wizard page: hosts one or more of the step widgets inside
+/// a shared scroll view. The step widgets themselves are non-scrolling
+/// (they return a padded Column), so grouping two per page here is what
+/// collapses the original five slides into three without dropping any
+/// captured field or nesting scroll views.
+class _WizardPage extends StatelessWidget {
+  final List<Widget> children;
+
+  const _WizardPage({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
       ),
     );
   }

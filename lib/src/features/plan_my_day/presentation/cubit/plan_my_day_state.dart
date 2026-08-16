@@ -167,8 +167,15 @@ class PlanMyDayError extends PlanMyDayState {
   PlanMyDayError(this.message, {this.errorCode, this.errorData});
 
   bool get isNetworkError => errorCode == 'network_error';
+  bool get isServerError => errorCode == 'server_error';
   bool get isAuthError => errorCode == 'auth_error';
   bool get isValidationError => errorCode == 'validation_error';
+
+  /// A transport/backend-reachability failure (as opposed to a validation or
+  /// auth error). The inline error UI uses this to decide whether to run a
+  /// connectivity check and show a "you're offline" vs "can't reach our servers"
+  /// variant.
+  bool get isConnectivityError => isNetworkError || isServerError;
 }
 
 class TaskCreated extends PlanMyDayState {

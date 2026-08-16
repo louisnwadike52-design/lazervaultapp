@@ -291,6 +291,19 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     AppRoutes.reviewFundsTransfer,
     AppRoutes.transferProcessing,
     AppRoutes.sendFundReceipt,
+    // The transparent short-flow host (amount sheet over this screen).
+    AppRoutes.quickSend,
+    // The standalone PIN screen: input_pin_screen pushes the receipt via a
+    // plain `toNamed`, so it — and the long-flow ACCOUNT (initiate) screen it
+    // sits on — survive BENEATH the receipt. Without it here, `_handleReceiptBack`
+    // read `prev == /input-pin` (not a known send route) and did `Get.back()`,
+    // popping the receipt to REVEAL the PIN → account screen: the reported
+    // "long-flow account screen keeps showing after the receipt" bug.
+    AppRoutes.inputPin,
+    // Move-money / wallet transfer flow screens (their completion also lands on
+    // this shared receipt) — never fall back onto the amount/transfer screen.
+    AppRoutes.moveMoneyTransfer,
+    AppRoutes.walletTransfer,
   };
 
   /// Origin-aware, flow-safe back:
@@ -331,18 +344,22 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            // Smart, origin-aware back:
-            //  • Explicit backRoute (e.g. Beam → its landing) always wins.
-            //  • Otherwise, if this receipt was PUSHED on top of an existing
-            //    screen (e.g. opened from a P2P chat's transaction), just pop
-            //    back to exactly where we came from — NOT the dashboard.
-            //  • Only when there's nothing below (reached via offAllNamed at the
-            //    end of a send flow) do we reset to the dashboard.
-            onPressed: _handleReceiptBack,
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          // Smart, origin-aware back (see _handleReceiptBack). A circular filled
+          // background gives a generous ~44px tap target instead of the bare
+          // icon's tiny hit area.
+          Material(
+            color: const Color(0xFF1F1F1F),
+            shape: const CircleBorder(
+                side: BorderSide(color: Color(0xFF2D2D2D))),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: _handleReceiptBack,
+              child: Padding(
+                padding: EdgeInsets.all(10.w),
+                child:
+                    Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+              ),
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,

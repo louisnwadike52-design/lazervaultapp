@@ -160,7 +160,16 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     );
   }
 
-  Future<void> sendMessage(String text) async {
+  /// Send a chat message. [replyToText] / [replyToIsUser] carry the
+  /// swipe-to-reply context: the earlier message the user swiped to reply to.
+  /// When present (and the input isn't a PIN) the quoted text is prepended to
+  /// the message the AI sees so its reply is grounded in that specific message,
+  /// and it's stored on the user bubble so the quote persists in history.
+  Future<void> sendMessage(
+    String text, {
+    String? replyToText,
+    bool? replyToIsUser,
+  }) async {
     if (text.trim().isEmpty || _isSending) return;
     _isSending = true;
     // Active chatting is engagement — don't let inactivity auto-logout fire
@@ -177,12 +186,24 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         return;
       }
 
+      // Swipe-to-reply: never fold a quote into a PIN turn.
+      final isReply = replyToText != null &&
+          replyToText.trim().isNotEmpty &&
+          !isPinText(text.trim());
+      // What the AI sees — quoted context prepended so the reply is grounded in
+      // the referenced message. The stored bubble keeps only the typed text.
+      final messageForAI = isReply
+          ? _withReplyContext(text, replyToText, replyToIsUser ?? false)
+          : text;
+
       // Add user message immediately — mask PIN-like input for display security
       final displayText = maskIfPin(text);
       final userMessage = MicroserviceChatMessageEntity(
         text: displayText,
         isUser: true,
         timestamp: DateTime.now(),
+        replyToText: isReply ? replyToText.trim() : null,
+        replyToIsUser: isReply ? (replyToIsUser ?? false) : null,
       );
       _currentMessages.add(userMessage);
 
@@ -225,7 +246,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         };
 
         final result = await directMessageUseCase!(
-          message: text,
+          message: messageForAI,
           sessionId: _sessionId,
           userId: authState.profile.user.id,
           accessToken: '',
@@ -314,7 +335,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
       _entities = {};
 
       final result = await sendMessageUseCase(
-        message: text,
+        message: messageForAI,
         sessionId: _sessionId,
         userId: authState.profile.user.id,
         accessToken: '',
@@ -691,6 +712,19 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     } catch (_) {
       // Cache manager may not be registered; non-blocking
     }
+  }
+
+  /// Prepend the swipe-to-reply quote as an explicit context preamble so the
+  /// AI's reply is grounded in the referenced message. The send paths carry a
+  /// single `message` string end-to-end, so the quote rides along there — no
+  /// proto/API change needed. The quote is capped so a long referenced message
+  /// can't blow up the prompt.
+  String _withReplyContext(String userText, String replyToText, bool fromUser) {
+    final quoted = replyToText.trim();
+    if (quoted.isEmpty) return userText;
+    final capped = quoted.length > 600 ? '${quoted.substring(0, 600)}…' : quoted;
+    final author = fromUser ? 'the user' : 'the assistant';
+    return 'Replying to $author\'s earlier message: "$capped"\n\n$userText';
   }
 
   void clearChat() {

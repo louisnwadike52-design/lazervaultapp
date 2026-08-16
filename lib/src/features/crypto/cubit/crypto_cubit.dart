@@ -1234,7 +1234,6 @@ class CryptoCubit extends Cubit<CryptoState> {
         case 'failed':
         case 'reversed':
         case 'refunded':
-        case 'manual_review':
           emit(SwapFailed(
             transactionId: receipt.transactionId,
             reason: receipt.status,
@@ -1243,8 +1242,12 @@ class CryptoCubit extends Cubit<CryptoState> {
                 : 'Swap did not complete (${receipt.status})',
           ));
           break;
+        // NOTE: 'manual_review' is NOT a failure — the trade executed and the
+        // funds are held for a manual/AML settlement step, so it must not show as
+        // "Failed". It falls through to `default` and stays pending ("Processing")
+        // so the receipt keeps polling until ops flips it to completed.
         default:
-          // still pending; keep polling
+          // still pending (incl. manual_review); keep polling
           break;
       }
     } catch (_) {

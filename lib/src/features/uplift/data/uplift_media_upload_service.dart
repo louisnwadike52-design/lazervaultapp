@@ -28,10 +28,20 @@ class UpliftMediaUploadService {
         return '${uri.scheme}://${uri.host}$port';
       }
     }
-    final host = (dotenv.env['PRODUCTS_HTTP_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'] ?? endpointRegistry.grpcHost).trim();
-    final port = (dotenv.env['PRODUCTS_HTTP_PORT'] ?? dotenv.env['PRODUCTS_WS_PORT'] ?? '8083').trim();
-    final scheme = _isLoopback(host) ? 'http' : 'https';
-    return '$scheme://$host:$port';
+    // With NO dev override (prod) follow the tunnel host+port together (443 →
+    // https, no explicit port). The old code kept the tunnel host but forced port
+    // 8083, so prod hit https://api.lazervault.app:8083 which the edge never
+    // serves → uploads failed.
+    final ep = endpointRegistry.resolveServiceHostPort(
+      overrideHost:
+          dotenv.env['PRODUCTS_HTTP_HOST'] ?? dotenv.env['PRODUCTS_GRPC_HOST'],
+      overridePort: int.tryParse(
+          dotenv.env['PRODUCTS_HTTP_PORT'] ?? dotenv.env['PRODUCTS_WS_PORT'] ?? ''),
+      devPort: 8083,
+    );
+    if (ep.port == 443) return 'https://${ep.host}';
+    final scheme = _isLoopback(ep.host) ? 'http' : 'https';
+    return '$scheme://${ep.host}:${ep.port}';
   }
 
   static bool _isLoopback(String host) =>

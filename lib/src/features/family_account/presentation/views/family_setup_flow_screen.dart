@@ -529,7 +529,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
               decoration: InputDecoration(
                 hintText: 'e.g., "Smith Family" or "Vacation Fund"',
                 hintStyle: TextStyle(
-                  color: const Color(0xFF6B7280),
+                  color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
                 ),
                 filled: true,
@@ -603,7 +603,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
               decoration: InputDecoration(
                 hintText: 'What is this account for?',
                 hintStyle: TextStyle(
-                  color: const Color(0xFF6B7280),
+                  color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
                 ),
                 filled: true,
@@ -660,7 +660,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 ),
                 hintText: '0.00',
                 hintStyle: TextStyle(
-                  color: const Color(0xFF6B7280),
+                  color: const Color(0xFF9CA3AF),
                   fontSize: 20.sp,
                 ),
                 filled: true,

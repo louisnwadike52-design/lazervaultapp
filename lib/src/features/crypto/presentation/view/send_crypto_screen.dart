@@ -230,10 +230,28 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     }
   }
 
+  /// Releases the send re-entrancy claim taken synchronously at the top of
+  /// _onSend + refreshes the CTA busy state. Called on every early-return
+  /// validation path so a rejected send never leaves the button frozen.
+  void _releaseSend() {
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+    } else {
+      _isSubmitting = false;
+    }
+  }
+
   Future<void> _onSend() async {
     if (_selected == null || _isSubmitting) return;
+    // Claim SYNCHRONOUSLY to close the double-tap window: _isSubmitting was
+    // previously only set (line ~304) AFTER the KYC gate + validation awaits, so
+    // two fast taps both passed the guard above and drove two independent
+    // withdrawals (the send cubit mints a fresh intentId per call). Every early
+    // return below releases it via _releaseSend().
+    _isSubmitting = true;
     // Preventive KYC gate — sending crypto out is a regulated money movement.
     if (!await ensureCryptoTradeAllowed(context, operation: 'send crypto')) {
+      _releaseSend();
       return;
     }
     if (!mounted) return;
@@ -242,28 +260,60 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     final amount = _cryptoAmount;
     if (amount <= 0) {
       _toast('Enter a valid amount');
+      _releaseSend();
       return;
     }
     if (amount > _selected!.quantity) {
       _toast('Amount exceeds your ${_selected!.cryptoSymbol.toUpperCase()} balance');
+      _releaseSend();
       return;
     }
+    // Quidax minimum: the crypto amount must clear Quidax's floor (from
+    // GetCryptoConfig — Quidax /markets minimum_order_size + the ~$1 notional).
+    // Validated BEFORE the confirm/tx-PIN sheet, mirroring buy/sell/swap, so a
+    // sub-min send never reaches Quidax (which would debit the sub then reject).
+    try {
+      final cfg = GetIt.I<CryptoConfigCubit>().config;
+      final sym = _selected!.cryptoSymbol.toLowerCase();
+      final minMinor = cfg.minOrderFor(sym);
+      if (minMinor != null && minMinor > 0) {
+        final minCrypto = minMinor / math.pow(10, cfg.decimalsFor(sym));
+        if (amount < minCrypto) {
+          _toast('Minimum is $minCrypto ${sym.toUpperCase()}');
+          _releaseSend();
+          return;
+        }
+      }
+    } catch (_) {}
     // Validate the recipient (display string used in review/receipt).
     final String recipient;
     if (_isInternal) {
       if ((_recipientUserId ?? '').isEmpty) {
         _toast('Select a Lazervault recipient');
+        _releaseSend();
         return;
       }
       recipient = _recipientDisplay ?? _recipientUsername ?? 'Lazervault user';
       if (_advancedOnNetwork && _networkValue().isEmpty) {
         _toast('Pick a network to send on');
+        _releaseSend();
         return;
       }
     } else {
       recipient = _addressController.text.trim();
       if (recipient.isEmpty) {
         _toast('Enter a destination address');
+        _releaseSend();
+        return;
+      }
+      // An EXTERNAL (coin_address) send MUST carry a network. When the asset has
+      // no configured networks the picker falls back to a free-text field; if it
+      // is left blank validateCryptoAddress(network:'') fails OPEN (returns null),
+      // silently disabling the wrong-chain guard and letting the send go to
+      // Quidax's default chain — an irreversible mis-send. Require a network.
+      if (_networkValue().isEmpty) {
+        _toast('Select the network to send on');
+        _releaseSend();
         return;
       }
       // Client-side address validation (mirrors the server) — catches the
@@ -275,6 +325,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       if (addrErr != null) {
         setState(() => _addressError = addrErr);
         _toast(addrErr);
+        _releaseSend();
         return;
       }
     }
@@ -282,6 +333,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     final accountId = _resolveAccountId();
     if (accountId == null) {
       _toast('No active account. Add one to continue.');
+      _releaseSend();
       return;
     }
 
@@ -1028,10 +1080,18 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                           color: Colors.white.withValues(alpha: 0.7))),
                   if (h != null)
                     GestureDetector(
+                      // FLOOR both units so Max never parses back ABOVE the
+                      // holding: fiat rounds UP → implied crypto (fiat/price)
+                      // exceeds balance → "Amount exceeds your balance"; crypto
+                      // _trimNum rounds at 8dp → same over-balance tick. Flooring
+                      // leaves only dust unsent (money-safe, never an over-send).
                       onTap: () => setState(() => _amountController.text =
                           _amountInFiat
-                              ? (h.quantity * _priceOf).toStringAsFixed(2)
-                              : _trimNum(h.quantity)),
+                              ? ((h.quantity * _priceOf * 100).floorToDouble() /
+                                      100)
+                                  .toStringAsFixed(2)
+                              : _trimNum((h.quantity * 1e8).floorToDouble() /
+                                  1e8)),
                       child: Container(
                         padding:
                             EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),

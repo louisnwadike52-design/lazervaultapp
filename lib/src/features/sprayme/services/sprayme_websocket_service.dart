@@ -106,12 +106,15 @@ class SprayMeWebSocketService {
       // keep an explicit non-standard port for local dev.
       port = u.hasPort ? u.port : (tlsTunnel ? null : 8088);
     } else {
-      host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??
-          dotenv.env['PAYMENT_GRPC_HOST'] ??
-          endpointRegistry.grpcHost;
-      final p = int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088') ?? 8088;
-      tlsTunnel = p == 443;
-      port = tlsTunnel ? null : p;
+      final ep = endpointRegistry.resolveServiceHostPort(
+        overrideHost: dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??
+            dotenv.env['PAYMENT_GRPC_HOST'],
+        overridePort: int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? ''),
+        devPort: 8088,
+      );
+      host = ep.host;
+      tlsTunnel = ep.port == 443;
+      port = tlsTunnel ? null : ep.port;
     }
 
     final wsUrl = Uri(

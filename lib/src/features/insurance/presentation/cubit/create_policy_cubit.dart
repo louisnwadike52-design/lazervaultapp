@@ -64,16 +64,24 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   // has not configured a link (UI shows "unavailable").
   String? _cachedTermsLink;
 
+  /// Published default so the insurance Terms & Conditions are always reachable
+  /// (App Store / Play compliance) even before ops configures a provider link.
+  static const String _defaultInsuranceTermsUrl =
+      'https://lazervault.app/legal/insurance';
+
   /// Lazily fetch the admin-set hosted Terms & Conditions link. Used by
-  /// the in-app webview bottom sheet. Returns `null` when no link is
-  /// configured so the sheet can render an "unavailable" state.
+  /// the in-app webview bottom sheet. Falls back to the published Lazervault
+  /// insurance terms page when no provider link is configured, so the sheet
+  /// always has something to load.
   Future<String?> resolveTermsLink() async {
     if (_cachedTermsLink != null) {
-      return _cachedTermsLink!.isEmpty ? null : _cachedTermsLink;
+      return _cachedTermsLink!.isEmpty
+          ? _defaultInsuranceTermsUrl
+          : _cachedTermsLink;
     }
     final link = await _repository.getInsuranceTermsLink(locale: _locale);
     _cachedTermsLink = link;
-    return link.isEmpty ? null : link;
+    return link.isEmpty ? _defaultInsuranceTermsUrl : link;
   }
 
   /// Deferred file uploads — populated when the user picks a document

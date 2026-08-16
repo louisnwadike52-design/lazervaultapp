@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane android dev
 ```
 
-Dev → Play Console internal track (release-signed AAB, auto-rolls to internal testers)
+Dev → Play Console internal track (PROD build: prod backend/Firebase, auto-rolls to internal testers)
 
 ### android staging
 
@@ -29,7 +29,7 @@ Dev → Play Console internal track (release-signed AAB, auto-rolls to internal 
 [bundle exec] fastlane android staging
 ```
 
-Staging → Play Console closed (alpha) track (release-signed AAB, auto-rolls to alpha testers)
+Staging → Play Console closed (alpha) track (PROD build: prod backend/Firebase, auto-rolls to alpha testers)
 
 ### android production
 
@@ -62,6 +62,22 @@ Dev fallback → Firebase App Distribution (debug-signed APK, no keystore needed
 ```
 
 Staging fallback → Firebase App Distribution (debug-signed APK)
+
+### android shorebird_release
+
+```sh
+[bundle exec] fastlane android shorebird_release
+```
+
+Shorebird patch-capable RELEASE (AAB) → Play Console internal track
+
+### android shorebird_patch
+
+```sh
+[bundle exec] fastlane android shorebird_patch
+```
+
+Shorebird OTA PATCH (Dart-only) → already-shipped release (no store, no bump)
 
 ----
 

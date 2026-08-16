@@ -64,6 +64,48 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
     super.dispose();
   }
 
+  /// Modal shown when an allocation exceeds the available pool balance.
+  void _showAllocationErrorDialog(BuildContext context, String message) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'Allocation exceeds balance',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(
+            color: const Color(0xFFB0B7C3),
+            fontSize: 14.sp,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final typedName = _displayNameController.text.trim();
@@ -122,13 +164,18 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
             );
             Get.back(result: true);
           } else if (state is FamilyAccountError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
-            );
+            final msg = state.message.toLowerCase();
+            if (msg.contains('exceed') || msg.contains('insufficient')) {
+              _showAllocationErrorDialog(context, state.message);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
           }
         },
         child: Form(

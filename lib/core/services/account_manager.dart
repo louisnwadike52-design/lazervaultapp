@@ -33,6 +33,17 @@ class AccountManager {
   /// Check if there's an active account selected
   bool get hasActiveAccount => _accountIdController.value != null;
 
+  // Whether the CURRENTLY ACTIVE account is frozen/suspended. Kept in sync by
+  // the account carousel (the authoritative place the active account is set,
+  // where each account entity's freeze state is known). A plain flag (not a
+  // stream) so any surface — including routes without the summaries cubit in
+  // scope, e.g. the "View all services" sheet — can gate money-moving services
+  // via `serviceLocator<AccountManager>()`. Backend still blocks every debit on
+  // a frozen account; this is the pre-emptive UX guard.
+  bool _activeAccountFrozen = false;
+  bool get isActiveAccountFrozen => _activeAccountFrozen;
+  void setActiveAccountFrozen(bool frozen) => _activeAccountFrozen = frozen;
+
   /// Set the active account by ID
   ///
   /// This should be called when the user selects an account from the account summary.
@@ -56,6 +67,7 @@ class AccountManager {
   void clearActiveAccount() {
     _accountIdController.add(null);
     _accountDetailsController.add(null);
+    _activeAccountFrozen = false;
   }
 
   /// Update account details without changing the active account ID

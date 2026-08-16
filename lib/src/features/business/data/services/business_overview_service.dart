@@ -63,7 +63,46 @@ class BusinessOverviewService {
     if (decoded is! Map<String, dynamic>) {
       throw const BusinessOverviewException('Unexpected response from the server.');
     }
+    // The /business/overview aggregate leaves revenue/receivables at 0 — the
+    // revenue engine is the SALES ledger, served by the wired /sales/summary.
+    // Overlay the REAL figures so the dashboard Revenue KPI + Money-in bar and
+    // the analytics Revenue header reflect recorded sales instead of ₦0.
+    // Best-effort: any failure keeps whatever the overview returned.
+    try {
+      final sales = await _fetchSalesRevenue(token, periodStart, periodEnd);
+      if (sales != null) {
+        decoded['revenue'] = sales.$1;
+        decoded['receivables'] = sales.$2;
+      }
+    } catch (_) {
+      // Non-fatal — the rest of the overview still renders.
+    }
     return BusinessOverviewEntity.fromJson(decoded);
+  }
+
+  /// Real (revenue, receivables) in minor units from the wired /sales/summary
+  /// endpoint, scoped to the same period. Returns null on any non-2xx / shape
+  /// mismatch so the caller falls back to the overview's own values.
+  Future<(int, int)?> _fetchSalesRevenue(
+      String token, String? periodStart, String? periodEnd) async {
+    final params = <String, String>{};
+    if (periodStart != null && periodStart.isNotEmpty) {
+      params['start_date'] = periodStart;
+    }
+    if (periodEnd != null && periodEnd.isNotEmpty) {
+      params['end_date'] = periodEnd;
+    }
+    final uri = Uri.parse('${_endpoints.httpBusiness}/sales/summary')
+        .replace(queryParameters: params.isEmpty ? null : params);
+    final resp = await _httpClient.get(
+      uri,
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    ).timeout(_timeout);
+    if (resp.statusCode < 200 || resp.statusCode >= 300) return null;
+    final body = jsonDecode(resp.body);
+    if (body is! Map<String, dynamic>) return null;
+    int i(dynamic v) => v is num ? v.toInt() : int.tryParse('${v ?? 0}') ?? 0;
+    return (i(body['total_revenue']), i(body['total_receivables']));
   }
 }
 

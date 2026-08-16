@@ -3,8 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -46,11 +48,34 @@ class _VoiceEnrollmentCarouselScreenState
   late AnimationController _pulseController;
   late AnimationController _waveController;
 
+  // Pause the live AI voice call (if one is active) for the whole enrollment so
+  // the agent's mic doesn't fight the recorder and it doesn't treat the
+  // enrollment audio as a command — the SAME mechanism voice cloning and the
+  // multi-step VoiceEnrollmentScreen already use. The agent speaks a one-time
+  // "I'll wait while you set up your voice" notice and auto-resumes when we send
+  // the finished signal (with a server-side safety-net timeout if it's lost).
+  // Safe no-op when no voice session is active (notify* early-returns). The
+  // `_sessionPaused` flag guarantees exactly one started/finished pair across
+  // every exit path (done / poor-quality / error / skip / back / background).
+  VoiceSessionCubit? _voiceSession;
+  bool _sessionPaused = false;
+  // Whether enrollment actually registered a voiceprint (success or accepted
+  // poor-quality). Drives what the agent says on resume: a real confirmation on
+  // success vs a neutral "okay, I'm back" on cancel/failure — so it never claims
+  // "I'm using your voice now" after a cancelled/failed enrollment.
+  bool _enrollmentSucceeded = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _pageController = PageController();
+
+    // Pause the live voice agent for the duration of enrollment (if a call is live).
+    if (GetIt.I.isRegistered<VoiceSessionCubit>()) {
+      _voiceSession = GetIt.I<VoiceSessionCubit>();
+    }
+    _pauseSessionForSetup();
 
     _pulseController = AnimationController(
       vsync: this,
@@ -68,10 +93,30 @@ class _VoiceEnrollmentCarouselScreenState
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Resume the live voice agent now enrollment is finished/left (any exit).
+    _resumeSessionIfPaused();
     _pageController.dispose();
     _pulseController.dispose();
     _waveController.dispose();
     super.dispose();
+  }
+
+  /// Tell the live voice agent to PAUSE (stop listening/responding) while the
+  /// user enrolls/re-enrolls. No-op when no voice session is active.
+  void _pauseSessionForSetup() {
+    if (_sessionPaused) return;
+    final session = _voiceSession;
+    if (session == null || !session.hasActiveVoiceSession) return;
+    _sessionPaused = true;
+    session.notifyCustomVoiceSetupStarted();
+  }
+
+  /// Tell the live voice agent to RESUME after enrollment finishes / is left.
+  /// Idempotent — only fires the finished signal if we actually paused.
+  void _resumeSessionIfPaused() {
+    if (!_sessionPaused) return;
+    _sessionPaused = false;
+    _voiceSession?.notifyCustomVoiceSetupFinished(succeeded: _enrollmentSucceeded);
   }
 
   /// Handle app lifecycle changes — stop recording if user backgrounds the app
@@ -111,8 +156,10 @@ class _VoiceEnrollmentCarouselScreenState
         child: BlocConsumer<VoiceEnrollmentCubit, VoiceEnrollmentState>(
           listener: (context, state) {
             if (state is VoiceEnrollmentSuccess) {
+              _enrollmentSucceeded = true; // a voiceprint is now registered
               _showSuccessSheet(context, state);
             } else if (state is VoiceEnrollmentPoorQuality) {
+              _enrollmentSucceeded = true; // registered (low quality, still usable)
               _showPoorQualitySheet(context, state);
             } else if (state is VoiceEnrollmentSkipped) {
               // SKIP is NOT completion. Firing onEnrollmentComplete here would
@@ -1460,7 +1507,12 @@ class _VoiceEnrollmentCarouselScreenState
                       elevation: 0,
                     ),
                     child: Text(
-                      'Start Conversation',
+                      // From onboarding we drop into a live voice chat ("Start
+                      // Conversation"); from Settings/a transaction we just return
+                      // to where the user came from ("Done").
+                      widget.openVoiceSheetOnComplete
+                          ? 'Start Conversation'
+                          : 'Done',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,

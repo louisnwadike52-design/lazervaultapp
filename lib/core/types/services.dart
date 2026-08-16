@@ -74,7 +74,7 @@ extension AppServiceNameExtension on AppServiceName {
       case AppServiceName.tagPay:
         return 'Tag Pay';
       case AppServiceName.escrow:
-        return 'Escrow';
+        return 'Escrow Pay';
       case AppServiceName.invoice:
         return 'Invoices';
       case AppServiceName.payInvoice:

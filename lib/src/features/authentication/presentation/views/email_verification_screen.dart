@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/core/config/app_environment.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/verification_decorations.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
@@ -495,9 +496,15 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                       ),
 
                       // Skip CTA — onboarding only. From Settings there's nothing
-                      // to skip to, so it's hidden.
-                      if (!widget.fromSettings) SizedBox(height: 12.h),
-                      if (!widget.fromSettings) Center(
+                      // to skip to, so it's hidden. Also hidden on PROD builds:
+                      // email verification is mandatory in production, so the
+                      // "Skip for now" escape hatch is dev/staging only.
+                      if (!widget.fromSettings &&
+                          !currentAppEnvironment.isProduction)
+                        SizedBox(height: 12.h),
+                      if (!widget.fromSettings &&
+                          !currentAppEnvironment.isProduction)
+                        Center(
                         child: TextButton(
                           onPressed: _skipVerification,
                           style: TextButton.styleFrom(

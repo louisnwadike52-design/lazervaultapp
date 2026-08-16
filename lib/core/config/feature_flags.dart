@@ -110,6 +110,17 @@ class FeatureFlags {
   static const String emailVerificationRequired = 'email_verification_required';
   static const String phoneVerificationRequired = 'phone_verification_required';
 
+  // ── Auto-logon (admin-toggled) ────────────────────────────────────────────
+  // When ON (DEFAULT), a returning user who has OPTED INTO biometric login and
+  // has an enrolled sensor is auto-prompted with the OS Face ID / fingerprint
+  // sheet the instant the passcode lock screen appears — a one-tap "auto logon".
+  // This NEVER bypasses authentication: it only fires the native OS prompt for
+  // users who already enabled it, and it silently no-ops (falls back to the
+  // passcode keypad) when biometric isn't ready. Admins can turn it OFF
+  // platform-wide from the admin dashboard with no redeploy. Mirrored from
+  // system_settings via the same internal endpoint the app already polls.
+  static const String autoBiometricLoginEnabled = 'auto_biometric_login_enabled';
+
   // ── Insurance hosted-webview entry points (admin-toggled) ─────────────────
   // When ON, the in-app "Buy" and "Manage Plan" insurance entry points open
   // MyCover's universal hosted webview (insuranceHostedLink) in a themed
@@ -139,9 +150,9 @@ class FeatureFlags {
   // mirrored from system_settings via the same internal endpoint the app polls.
   // AppUpdateService compares the running PackageInfo build number against these:
   //   build < latest → optional banner/modal; build < min → blocking gate.
-  // Build numbers are monotonic integers stored as strings. Shorebird handles
-  // Dart-only OTA patches separately (see docs/SHOREBIRD.md); these keys cover
-  // native/store updates Shorebird can't deliver.
+  // Build numbers are monotonic integers stored as strings. OTA code-push handles
+  // Dart-only OTA patches separately; these keys cover
+  // native/store updates OTA code-push can't deliver.
   static const String appUpdateEnabledKey = 'app_update_enabled';
   static const String appLatestVersionIos = 'app_latest_version_ios';
   static const String appLatestBuildIos = 'app_latest_build_ios';
@@ -219,6 +230,7 @@ class FeatureFlags {
       voiceAfricanLanguagesEnabled,
       emailVerificationRequired,
       phoneVerificationRequired,
+      autoBiometricLoginEnabled,
       appUpdateEnabledKey,
     ]) {
       final v = remote[key];
@@ -278,11 +290,14 @@ class FeatureFlags {
   }
 
   // ── Voice & Chat Assistant section visibility ────────────────────────────
-  /// `false` by default so the "Voice & Chat Assistant" settings accordion
-  /// stays hidden until an admin enables it. Synchronous read — call after
-  /// [init].
+  /// `true` by default so the full "Voice & Chat Assistant" settings accordion
+  /// (voice enrollment/re-enroll, cloned/assistant voice, language, voice-PIN,
+  /// per-service voice) — the SAME `VoiceSettingsScreen` the in-call settings
+  /// gear opens — is available from general Settings out of the box. An admin
+  /// can still explicitly hide it by pushing the key as `false`. Synchronous
+  /// read — call after [init].
   static bool get voiceChatAssistantVisible {
-    return _prefs?.getBool(voiceChatAssistantSectionVisible) ?? false;
+    return _prefs?.getBool(voiceChatAssistantSectionVisible) ?? true;
   }
 
   // ── Quick-service landing entrance animation ─────────────────────────────
@@ -365,6 +380,33 @@ class FeatureFlags {
     _prefs = prefs;
     await prefs.setBool(userAdaptiveQuickServices, enabled);
     dashboardLayoutRevision.value++;
+  }
+
+  // ── Deposit "keep your balance live" guide ───────────────────────────────
+  // The one-time educational modal on the deposit screen is suppressed per-user
+  // once they tick "Don't show this again". This is the SAME uid-scoped key the
+  // deposit screen reads/writes, centralised here so the Settings toggle and the
+  // in-modal checkbox stay in perfect two-way sync: re-enabling from Settings
+  // clears the flag (guide shows again); ticking "don't show again" in the modal
+  // sets it (Settings then reads OFF).
+  // NOTE: the `_v2` suffix versions the dismissal. Bumping it (done when the
+  // guide's copy was refreshed) makes the updated guide re-appear ONCE even for
+  // users who previously ticked "Don't show again", then respects their choice.
+  static String depositBalanceGuideKey(String uid) =>
+      'deposit_balance_refresh_guide_dismissed_v2_$uid';
+
+  /// `true` when the deposit balance-refresh guide is ENABLED (not yet dismissed)
+  /// for [uid]. Synchronous — call after [init].
+  static bool depositBalanceGuideEnabled(String uid) =>
+      !(_prefs?.getBool(depositBalanceGuideKey(uid)) ?? false);
+
+  /// Enable/disable the deposit balance-refresh guide for [uid]. Enabling clears
+  /// the "dismissed" flag so the guide reappears; disabling sets it.
+  static Future<void> setDepositBalanceGuideEnabled(
+      String uid, bool enabled) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setBool(depositBalanceGuideKey(uid), !enabled);
   }
 
   // User-selectable transfer style: "classic" (short flow) | "standard" (long
@@ -627,6 +669,15 @@ class FeatureFlags {
   /// Whether onboarding phone verification is required (admin toggle).
   static bool get isPhoneVerificationRequired {
     return _prefs?.getBool(phoneVerificationRequired) ?? false;
+  }
+
+  /// Whether to auto-fire the biometric OS prompt on the passcode lock screen for
+  /// opted-in returning users (admin toggle). Defaults to true so the "auto
+  /// logon" is on until an admin turns it off. Synchronous — call after [init].
+  /// The passcode screen still requires the biometric to be enrolled AND opted
+  /// into, so this is a convenience trigger, never an auth bypass.
+  static bool get autoBiometricLoginOnLaunch {
+    return _prefs?.getBool(autoBiometricLoginEnabled) ?? true;
   }
 
   /// Overwrite the cached verification-required flags (used by the startup

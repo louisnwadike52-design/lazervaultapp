@@ -41,7 +41,10 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
       maxChildSize: 0.85,
       minChildSize: 0.5,
       builder: (context, scrollController) {
-        return Container(
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Container(
           decoration: const BoxDecoration(
             color: Color(0xFF0A0A0A),
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -181,6 +184,7 @@ class _RecurringTransferModalState extends State<RecurringTransferModal> {
               ),
             ],
           ),
+        ),
         );
       },
     );

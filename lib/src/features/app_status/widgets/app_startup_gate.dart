@@ -11,6 +11,8 @@ import 'package:lazervault/core/services/app_update_service.dart';
 import 'package:lazervault/src/features/app_update/widgets/forced_update_screen.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_modal.dart';
 import 'package:lazervault/src/features/app_status/widgets/maintenance_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 /// App-wide startup gate wrapping every route (mounted inside GetMaterialApp so
 /// it has Navigator/Overlay/theme). Both of its checks run entirely in the
@@ -81,13 +83,34 @@ class _AppStartupGateState extends State<AppStartupGate>
     if (state == AppLifecycleState.resumed) _run();
   }
 
+  // True once the user has an authenticated session. The maintenance overlay is
+  // meaningless post-login, so this is the primary guard — read from the SAME
+  // AuthenticationCubit the rest of the app uses (mirrors InactivityWatcher /
+  // PendingChatNavigation). It is authoritative regardless of the route name.
+  bool _isAuthenticated() {
+    try {
+      final s = serviceLocator<AuthenticationCubit>().state;
+      return s is AuthenticationSuccess || s is AuthenticationAuthenticated;
+    } catch (_) {
+      return false; // DI/cubit not ready yet → treat as not-yet-authenticated
+    }
+  }
+
   // The maintenance overlay is ONLY meaningful pre-login: it explains you can't
-  // sign in because the backend edge is down. Auth/onboarding routes live under
-  // `/auth/*` or `/onboarding` (plus the transient boot route). Once past login,
-  // the app runs on cached data and per-request failures surface as snackbars —
-  // a global "server under maintenance" overlay there is wrong AND fires on the
-  // user's own flaky network, which is the reported over-popping.
+  // sign in because the backend edge is down. Once the user is authenticated the
+  // app runs on cached data and per-request failures surface inline/as snackbars
+  // — a global "server under maintenance" overlay there is wrong AND fires on the
+  // user's own flaky network.
+  //
+  // Auth state is checked FIRST (and wins) because the route heuristic alone is
+  // unreliable: screens pushed via a bare `Navigator.push`/`MaterialPageRoute`
+  // (e.g. Plan My Day off the Lifestyle tab) have no GetX route name, so
+  // `Get.currentRoute` is empty — which the `r.isEmpty` clause below would else
+  // misread as the transient boot route and pop maintenance over a logged-in
+  // screen. The route clauses only matter while NOT authenticated (real
+  // auth/onboarding/boot).
   bool _isPreLoginScreen() {
+    if (_isAuthenticated()) return false;
     final r = Get.currentRoute;
     return r.isEmpty ||
         r == '/' ||

@@ -334,12 +334,21 @@ class _MyAccountViewState extends State<_MyAccountView> {
     buffer.write('\nOpen Lazervault → Send → search this to pay me instantly.');
 
     try {
+      // iPad presents the share sheet as a popover anchored to a rect — omitting
+      // sharePositionOrigin throws there and the button silently does nothing.
+      // Anchor it to this widget's box (a non-null rect satisfies iOS; iPhone
+      // ignores it).
+      final box = context.findRenderObject() as RenderBox?;
+      final origin = (box != null && box.hasSize)
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
       await SharePlus.instance.share(
         ShareParams(
           text: buffer.toString(),
           subject: name.isEmpty
               ? 'Pay me on Lazervault'
               : 'Pay $name on Lazervault',
+          sharePositionOrigin: origin,
         ),
       );
     } catch (_) {
@@ -404,6 +413,64 @@ class _MyAccountViewState extends State<_MyAccountView> {
     // No number on file → send them to add + verify one in a single flow
     // (ChangePhoneScreen applies phone + phone_verified on success).
     if (phone == null || phone.isEmpty) {
+      final added = await Get.to(() => const ChangePhoneScreen());
+      if (added is String && added.isNotEmpty && context.mounted) {
+        context.read<ProfileCubit>().getUserProfile();
+      }
+      return;
+    }
+    // A number is on file but unverified: offer BOTH verifying it and switching
+    // to a different one (someone who mistyped their number at signup must be
+    // able to change it — auth-service RequestPhoneChange allows it regardless of
+    // the current number's verified state).
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 12.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Update phone number',
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            ListTile(
+              leading:
+                  const Icon(Icons.verified_outlined, color: Color(0xFF10B981)),
+              title: Text('Verify this number',
+                  style:
+                      GoogleFonts.inter(fontSize: 14.sp, color: Colors.white)),
+              subtitle: Text(phone,
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
+              onTap: () => Navigator.of(ctx).pop('verify'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined, color: Color(0xFF4E03D0)),
+              title: Text('Use a different number',
+                  style:
+                      GoogleFonts.inter(fontSize: 14.sp, color: Colors.white)),
+              onTap: () => Navigator.of(ctx).pop('change'),
+            ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+    if (choice == 'change') {
       final added = await Get.to(() => const ChangePhoneScreen());
       if (added is String && added.isNotEmpty && context.mounted) {
         context.read<ProfileCubit>().getUserProfile();

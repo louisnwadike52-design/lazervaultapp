@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io' show File;
+import 'dart:io' show File, Platform;
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart' as get_pkg;
@@ -169,6 +169,21 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // server-STT path (publish mic, server captions) verbatim.
   bool _onDeviceMode = true;
 
+  /// How the user talks to the agent (UX preference; on-device mode only):
+  ///   'continuous'  — always-listening VAD (default; auto re-arms hands-free);
+  ///   'hold'        — press-and-hold the talk button, release to send;
+  ///   'tap'         — tap to start, tap again to stop/send;
+  ///   'double_tap'  — double-tap to toggle a capture window.
+  /// In any push-to-talk mode the recognizer opens ONLY while a gesture holds a
+  /// capture window open ([_pttActive]) — the greeting/agent-end/re-arm auto-listen
+  /// paths are all gated off via [_listeningPermitted]. Resolved from the user's
+  /// voice settings (admin default → per-user override) and set by the sheet.
+  String _interactionMode = 'continuous';
+
+  /// True while a push-to-talk gesture is holding a capture window open. Only
+  /// meaningful when [isPushToTalk]; [_listeningPermitted] requires it in PTT modes.
+  bool _pttActive = false;
+
   /// On-device recognizer (Apple Speech / Android SpeechRecognizer).
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _sttInitialized = false;
@@ -261,7 +276,89 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Timer? _turnSilenceTimer;
   String _lastPartialText = '';
   bool _turnDispatched = false;
-  static const Duration _turnSilenceWindow = Duration(milliseconds: 2500);
+
+  // iOS-vs-Android endpointing. iOS SFSpeechRecognizer endpoints more
+  // aggressively (fires finalResult after a SHORTER pause) AND has higher
+  // recognizer-restart latency than Android's SpeechRecognizer. With the
+  // Android-tuned windows, an iOS user pausing mid-sentence gets cut off (turn
+  // dispatched during the pause) or loses the continuation captured during the
+  // slower iOS re-arm. So iOS gets MORE generous endpointing windows + a faster
+  // re-arm; Android keeps the snappier values it already worked well with.
+  static final bool _isIOS = Platform.isIOS;
+
+  // Client-side silence timer (reset on every partial). Longer on iOS to tolerate
+  // natural pauses before we finalise a turn ourselves.
+  static final Duration _turnSilenceWindow =
+      Duration(milliseconds: _isIOS ? 3200 : 2500);
+
+  // ── Long-turn coalescing (don't split a long sentence) ──
+  // Platform recognizers (notably Android) fire finalResult MID-thought after a
+  // brief pause, so a long utterance gets chopped into several native-final
+  // segments — and dispatching each one made the agent reply to half a sentence
+  // (the "truncating / splitting / unnatural" symptom). Instead of dispatching a
+  // native-final immediately, we FOLD it into [_turnAccumulator] and start a
+  // short grace timer; the recognizer auto-restarts (onStatus 'done' →
+  // _reArmListeningSoon) so a continuation is captured, and a partial there
+  // cancels the grace. We only dispatch the WHOLE accumulated turn once the user
+  // has been genuinely silent for [_endOfTurnGraceWindow].
+  String _turnAccumulator = '';
+  Timer? _endOfTurnTimer;
+  // Grace after a native finalResult to absorb a continuation. iOS needs a
+  // longer grace: its recognizer restart is slower, so a mid-sentence pause +
+  // the re-arm dead window can otherwise exceed the Android grace and dispatch
+  // half a sentence.
+  static final Duration _endOfTurnGraceWindow =
+      Duration(milliseconds: _isIOS ? 2200 : 1400);
+
+  // ── Adaptive (semantic) endpointing — stop splitting speeches ──
+  // A big cause of "split speeches" on BOTH platforms is a fixed timeout firing
+  // while the user is mid-thought (e.g. they say "send five thousand to…" then
+  // pause to recall the name). When the utterance ENDS in a continuation word
+  // (conjunction/preposition/article/filler), the user almost certainly isn't
+  // done, so we wait noticeably longer before finalising. Short, complete
+  // commands ("yes", "check balance") don't end in these, so they stay snappy —
+  // this only ever EXTENDS the wait, never shortens it, so it can't cut anyone off.
+  static const Set<String> _incompleteTrailers = {
+    'and', 'or', 'but', 'so', 'because', 'if', 'then', 'to', 'too', 'for',
+    'with', 'of', 'the', 'a', 'an', 'my', 'your', 'our', 'their', 'his', 'her',
+    'at', 'on', 'in', 'into', 'from', 'by', 'as', 'plus', 'minus', 'about',
+    'um', 'uh', 'er', 'erm', 'hmm', 'like', 'send', 'pay', 'transfer',
+  };
+  static const Duration _incompleteExtraWait = Duration(milliseconds: 1600);
+  static final Duration _endOfTurnGraceWindowLong =
+      _endOfTurnGraceWindow + _incompleteExtraWait;
+  static final Duration _turnSilenceWindowLong =
+      _turnSilenceWindow + _incompleteExtraWait;
+
+  /// True when [text] most likely isn't a finished thought — it ends in a
+  /// continuation word (see [_incompleteTrailers]) or a dangling short digit run
+  /// like "send 5000 <pause>". Used to pick the LONGER endpointing window.
+  bool _looksIncomplete(String text) {
+    final t = text.trim().toLowerCase();
+    if (t.isEmpty) return false;
+    final words = t.split(RegExp(r'\s+'));
+    final last = words.last.replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (last.isEmpty) return false;
+    if (_incompleteTrailers.contains(last)) return true;
+    // A trailing bare number often means an amount mid-dictation ("...five oh…")
+    // or "send 5000" before the recipient — give it the longer window too.
+    if (RegExp(r'^\d+$').hasMatch(last)) return true;
+    return false;
+  }
+
+  /// Join already-accumulated turn segments with the current session text,
+  /// collapsing whitespace, so a split long utterance reaches the agent as ONE
+  /// turn. Safe on empty parts, and idempotent against a recognizer re-emitting
+  /// the SAME cumulative segment (some engines fire finalResult more than once):
+  /// if the accumulator already ends with [b], we don't append it twice.
+  String _joinTurn(String a, String b) {
+    final at = a.trim();
+    final bt = b.trim();
+    if (bt.isEmpty) return at;
+    if (at.isEmpty) return bt;
+    if (at.toLowerCase().endsWith(bt.toLowerCase())) return at;
+    return '$at $bt'.replaceAll(RegExp(r'\s+'), ' ');
+  }
 
   /// Whether the general voice agent is running in on-device speech mode.
   bool get isOnDeviceMode => _onDeviceMode;
@@ -866,7 +963,25 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       await _disposeRoomResources();
     }
 
-    _room = Room();
+    // Noise cancellation from the Flutter/device side: make the WebRTC audio
+    // processing the DEFAULT for every mic publish on this room (the mute
+    // toggle, the livekit-mode capture, and the hybrid barge-in track) instead
+    // of relying on SDK defaults / passing options at only one call site.
+    //  • echoCancellation strips the agent's own TTS out of the mic,
+    //  • noiseSuppression strips background sound (the #1 recognition-accuracy
+    //    win on a phone in a noisy place), and
+    //  • autoGainControl keeps a soft/low voice audible.
+    // Server-side LiveKit Krisp BVC (background-voice cancellation) layers on
+    // top of this whenever audio flows to server STT (livekit input mode).
+    _room = Room(
+      roomOptions: const RoomOptions(
+        defaultAudioCaptureOptions: AudioCaptureOptions(
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        ),
+      ),
+    );
 
     // Setup LiveKit listeners
     _roomEventsListener = _room!.createListener()
@@ -1030,8 +1145,68 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       return false;
     }
     if (_bioInProgress) return false; // verification capture owns the mic
+    // Push-to-talk: the mic opens ONLY inside a gesture-held capture window. This
+    // single gate turns every auto-listen path (greeting, re-arm, agent-end,
+    // barge-in) into a no-op unless the user is actively pressing/holding to talk.
+    if (isPushToTalk && !_pttActive) return false;
     if (_agentSpeaking) return _bargeInEnabled;
     return !_awaitingAgentReply;
+  }
+
+  /// Whether the current interaction mode is a push-to-talk style (not continuous).
+  bool get isPushToTalk =>
+      _interactionMode == 'hold' ||
+      _interactionMode == 'tap' ||
+      _interactionMode == 'double_tap';
+
+  /// The resolved interaction mode ('continuous'|'hold'|'tap'|'double_tap').
+  String get interactionMode => _interactionMode;
+
+  /// True while a PTT capture window is open (for the talk button's active visual).
+  bool get isPttCapturing => _pttActive;
+
+  /// Set the interaction mode (from the user's resolved voice settings, or a live
+  /// in-sheet toggle). Switching INTO a PTT mode stops any in-flight continuous
+  /// capture and cancels the auto-re-arm so the mic falls silent until a gesture;
+  /// switching back to continuous re-arms hands-free listening.
+  void setInteractionMode(String mode) {
+    final m = mode.trim().toLowerCase();
+    const valid = {'continuous', 'hold', 'tap', 'double_tap'};
+    final next = valid.contains(m) ? m : 'continuous';
+    if (next == _interactionMode) return;
+    final wasPtt = isPushToTalk;
+    _interactionMode = next;
+    if (isPushToTalk) {
+      // Entering PTT: close the mic; it reopens only on a gesture.
+      _pttActive = false;
+      unawaited(stopLocalListening());
+    } else if (wasPtt) {
+      // Back to continuous: resume hands-free listening if it's the user's turn.
+      _pttActive = false;
+      _reArmListeningSoon();
+    }
+  }
+
+  /// Begin a push-to-talk capture window (hold-down / tap-to-start / double-tap).
+  /// Opens the recognizer; the turn is sent when [pttEnd] is called.
+  Future<void> pttBegin() async {
+    if (!isPushToTalk) return;
+    _pttActive = true;
+    _awaitingAgentReply = false; // a fresh user turn overrides any pending wait
+    await startLocalListening();
+  }
+
+  /// End a push-to-talk capture window (release / tap-to-stop). Force-finalises the
+  /// accumulated turn immediately (PTT never waits for trailing silence), then
+  /// closes the mic until the next gesture.
+  Future<void> pttEnd() async {
+    if (!isPushToTalk) return;
+    _pttActive = false;
+    // Dispatch whatever we have NOW (accumulated finals + the live partial), the
+    // same join the silence-timer/native-final paths use. _dispatchUserTurn dedups
+    // and drops an empty turn, so a no-speech press is a clean no-op.
+    _dispatchUserTurn(_joinTurn(_turnAccumulator, _lastPartialText));
+    await stopLocalListening();
   }
 
   Future<void> startLocalListening() async {
@@ -1058,8 +1233,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           listenMode: stt.ListenMode.dictation,
           listenFor: const Duration(seconds: 60),
           // Trailing-silence window that finalises a turn — long enough to tolerate
-          // a mid-sentence breath, short enough to feel responsive.
-          pauseFor: const Duration(milliseconds: 2500),
+          // a mid-sentence breath, short enough to feel responsive. iOS endpoints
+          // more eagerly, so give it a longer native pause window to reduce
+          // mid-sentence finals (the client silence timer above is the backstop).
+          pauseFor: Duration(milliseconds: _isIOS ? 3200 : 2500),
           localeId: await _resolveSttLocaleId(),
         ),
       );
@@ -1105,7 +1282,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Debounced re-arm so a 'done' status that fires immediately after stop()
   /// doesn't recurse; also lets a pending agent reply land first.
   void _reArmListeningSoon() {
-    Future.delayed(const Duration(milliseconds: 350), () {
+    // Push-to-talk never auto-re-arms — the mic reopens only on the next gesture.
+    if (isPushToTalk) return;
+    // iOS recognizer restart is slower; re-arm sooner there to shrink the dead
+    // window where a user's continuation after a mid-sentence pause would be
+    // dropped. Android already re-arms fast enough at 350ms (kept to avoid a
+    // 'done'-status recursion right after stop()).
+    Future.delayed(Duration(milliseconds: _isIOS ? 200 : 350), () {
       if (_listeningPermitted() && !_speech.isListening && !_isLocalListening) {
         startLocalListening();
       }
@@ -1135,29 +1318,69 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
 
     if (result.finalResult) {
-      // Native end-of-turn — dispatch (deduped against the silence timer).
+      // NATIVE END-OF-SEGMENT — but NOT necessarily end-of-TURN. Platform STT
+      // (esp. Android) finalises mid-sentence after a short pause, so dispatching
+      // here would split a long utterance. Instead: fold this segment into the
+      // running turn, keep the caption showing the whole thing, and start a grace
+      // timer. The recognizer auto-restarts (onStatus 'done' → _reArmListeningSoon)
+      // so a continuation is captured as a fresh partial (which cancels this
+      // grace). Only if the user stays silent through the grace do we dispatch.
+      _turnAccumulator = _joinTurn(_turnAccumulator, words);
+      _lastPartialText = '';
+      if (_turnAccumulator.isNotEmpty) {
+        _currentUserCaption = _turnAccumulator;
+        _setUserSpeaking();
+        _emitCaptionUpdate();
+      }
       _turnSilenceTimer?.cancel();
-      _dispatchUserTurn(words);
+      _endOfTurnTimer?.cancel();
+      // Wait longer when the coalesced turn clearly isn't finished (ends in a
+      // continuation word) so a mid-thought pause doesn't split the speech.
+      final graceWindow = _looksIncomplete(_turnAccumulator)
+          ? _endOfTurnGraceWindowLong
+          : _endOfTurnGraceWindow;
+      _endOfTurnTimer = Timer(graceWindow, () {
+        // Dispatch the whole coalesced turn once the user is genuinely done.
+        // Guards: not already sent, not mid-agent-reply (barge-in resets that
+        // flag first, so an interruption still dispatches), and the session is
+        // still live + unmuted so we never emit on a closed cubit or push stale
+        // speech the user muted away.
+        if (_onDeviceMode &&
+            !isClosed &&
+            !_isMuted &&
+            !_turnDispatched &&
+            !_awaitingAgentReply) {
+          _dispatchUserTurn(_joinTurn(_turnAccumulator, _lastPartialText));
+        }
+      });
       return;
     }
 
-    // PARTIAL: live preview (flicker-guard mirrors the server interim path).
+    // PARTIAL: the user is (still) talking → this is NOT the end of the turn, so
+    // cancel any end-of-turn grace armed by a prior native-final segment.
+    _endOfTurnTimer?.cancel();
     _lastPartialText = words;
+    final display = _joinTurn(_turnAccumulator, words);
     const minInterimChars = 3;
     final hasPreview = _currentUserCaption != null && _currentUserCaption!.isNotEmpty;
-    if (words.length >= minInterimChars || hasPreview) {
-      _currentUserCaption = words.isNotEmpty ? words : _currentUserCaption;
+    if (display.length >= minInterimChars || hasPreview) {
+      _currentUserCaption = display.isNotEmpty ? display : _currentUserCaption;
       _setUserSpeaking(); // reflect "you're talking" in the UI
       _emitCaptionUpdate();
     }
     // CLIENT-SIDE TURN DETECTION: reset the silence timer on every partial. If it
     // elapses (no new speech for the window) we finalise the turn ourselves — this
     // is what makes end-of-turn detection reliable even when the platform STT never
-    // emits a finalResult after the pause.
+    // emits a finalResult after the pause. Dispatch the WHOLE accumulated turn.
     _turnSilenceTimer?.cancel();
-    _turnSilenceTimer = Timer(_turnSilenceWindow, () {
+    // Same adaptive rule for the pure-silence path: an unfinished-sounding turn
+    // gets the longer window so a natural pause doesn't finalise it early.
+    final silenceWindow = _looksIncomplete(display)
+        ? _turnSilenceWindowLong
+        : _turnSilenceWindow;
+    _turnSilenceTimer = Timer(silenceWindow, () {
       if (_onDeviceMode && !_turnDispatched && _isLocalListening) {
-        _dispatchUserTurn(_lastPartialText);
+        _dispatchUserTurn(_joinTurn(_turnAccumulator, _lastPartialText));
       }
     });
   }
@@ -1231,6 +1454,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   void _dispatchUserTurn(String words) {
     if (_turnDispatched) return; // already sent this turn
     _turnSilenceTimer?.cancel();
+    _endOfTurnTimer?.cancel();
+    // The turn is being consumed — clear the coalescing accumulator so the NEXT
+    // turn starts clean (dispatch is the single point that ends a coalesced turn).
+    _turnAccumulator = '';
     final text = _sanitizeCaptionText(words);
     if (text.isEmpty) {
       // Nothing recognised — drop the empty turn and allow a fresh one.
@@ -1969,17 +2196,20 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           }
           break;
         case 'voice_session_ended':
-          // The AGENT ended the call (user said goodbye, idle timeout, etc.) and asked
-          // the app to CLOSE the voice screen. Tear down + emit a close state the sheet
-          // listens for to pop itself.
+          // The AGENT ended the call (user said "end the call"/"goodbye", idle
+          // timeout, etc.). Make this IDENTICAL to the user ending the call
+          // manually: run the SAME full teardown (WS + LiveKit room disposal via
+          // endSession → _disposeRoomResources) and surface the call-ended /
+          // rating screen (VoiceSessionEnded), instead of silently popping the
+          // sheet. The mini-bubble also auto-hides on VoiceSessionEnded.
           final reason = eventData['reason'] as String? ?? 'ended';
-          print('VoiceSessionCubit: agent ended session (reason=$reason) — closing screen');
+          print('VoiceSessionCubit: agent ended session (reason=$reason) — ending like a manual end (show rating)');
           _setVisualFeedbackActive(false);
           _clearCaptions();
-          // Backend already disconnected the LiveKit room; clean up locally (stop
-          // recording / WS) fire-and-forget, then emit the close state for the sheet.
-          unawaited(disconnectFromLiveKitRoom(fullCleanup: true));
-          if (!isClosed) emit(VoiceSessionClosedByAgent(reason));
+          // Fire-and-forget to avoid reentrancy on the active WS-message stack;
+          // endSession disposes the LiveKit room (closes all connections for this
+          // session) and emits VoiceSessionEnded.
+          unawaited(endSession(endReason: reason));
           break;
         case 'error':
           _setVisualFeedbackActive(false);
@@ -2423,11 +2653,20 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     await sendToVoiceAgent('custom_voice_setup_started', {});
   }
 
-  /// The user finished, cancelled or left the voice-cloning setup flow. Tell the
-  /// agent to RESUME the paused call. Safe to call unconditionally — it pairs
-  /// with [notifyCustomVoiceSetupStarted] and no-ops when no session is active.
-  Future<void> notifyCustomVoiceSetupFinished() async {
-    await sendToVoiceAgent('custom_voice_setup_finished', {});
+  /// The user finished, cancelled or left the voice-cloning/enrollment setup
+  /// flow. Tell the agent to RESUME the paused call. Safe to call unconditionally
+  /// — it pairs with [notifyCustomVoiceSetupStarted] and no-ops when no session
+  /// is active.
+  ///
+  /// [succeeded] tells the agent whether the setup actually produced/updated a
+  /// voice (true) or was cancelled/failed (false). On false the agent resumes
+  /// with a neutral line instead of falsely announcing "I'm using your voice
+  /// now". Defaults to true to preserve the existing voice-cloning callers.
+  Future<void> notifyCustomVoiceSetupFinished({bool succeeded = true}) async {
+    await sendToVoiceAgent(
+      'custom_voice_setup_finished',
+      {'succeeded': succeeded},
+    );
   }
 
   Future<void> disconnectFromLiveKitRoom({bool fullCleanup = false}) async {
@@ -2552,8 +2791,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _bioPending = false;
     _turnDispatched = false;
     _lastPartialText = '';
+    _turnAccumulator = '';
     _turnSilenceTimer?.cancel();
     _turnSilenceTimer = null;
+    _endOfTurnTimer?.cancel();
+    _endOfTurnTimer = null;
     try {
       if (_speech.isListening) await _speech.cancel();
     } catch (_) {}

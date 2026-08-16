@@ -1501,6 +1501,8 @@ class CreateFamilyAccountRequest extends $pb.GeneratedMessage {
     $core.String? initialCurrency,
     $core.double? initialFunding,
     $core.bool? allowMemberContributions,
+    $core.String? fundingPolicy,
+    $core.Iterable<$core.String>? specificMemberIds,
   }) {
     final result = create();
     if (name != null) result.name = name;
@@ -1509,6 +1511,9 @@ class CreateFamilyAccountRequest extends $pb.GeneratedMessage {
     if (initialFunding != null) result.initialFunding = initialFunding;
     if (allowMemberContributions != null)
       result.allowMemberContributions = allowMemberContributions;
+    if (fundingPolicy != null) result.fundingPolicy = fundingPolicy;
+    if (specificMemberIds != null)
+      result.specificMemberIds.addAll(specificMemberIds);
     return result;
   }
 
@@ -1531,6 +1536,8 @@ class CreateFamilyAccountRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(
         4, _omitFieldNames ? '' : 'initialFunding', $pb.PbFieldType.OD)
     ..aOB(5, _omitFieldNames ? '' : 'allowMemberContributions')
+    ..aOS(6, _omitFieldNames ? '' : 'fundingPolicy')
+    ..pPS(7, _omitFieldNames ? '' : 'specificMemberIds')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1601,6 +1608,18 @@ class CreateFamilyAccountRequest extends $pb.GeneratedMessage {
   $core.bool hasAllowMemberContributions() => $_has(4);
   @$pb.TagNumber(5)
   void clearAllowMemberContributions() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get fundingPolicy => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set fundingPolicy($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasFundingPolicy() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFundingPolicy() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $pb.PbList<$core.String> get specificMemberIds => $_getList(6);
 }
 
 class CreateFamilyAccountResponse extends $pb.GeneratedMessage {
@@ -5315,6 +5334,8 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
     FundDistributionMode? fundDistributionMode,
     $core.bool? spendingVisibilityEnabled,
     $core.Iterable<MemberAllocation>? allocations,
+    $core.String? fundingPolicy,
+    $core.Iterable<$core.String>? specificMemberIds,
   }) {
     final result = create();
     if (familyId != null) result.familyId = familyId;
@@ -5323,6 +5344,9 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
     if (spendingVisibilityEnabled != null)
       result.spendingVisibilityEnabled = spendingVisibilityEnabled;
     if (allocations != null) result.allocations.addAll(allocations);
+    if (fundingPolicy != null) result.fundingPolicy = fundingPolicy;
+    if (specificMemberIds != null)
+      result.specificMemberIds.addAll(specificMemberIds);
     return result;
   }
 
@@ -5349,6 +5373,8 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
     ..pc<MemberAllocation>(
         4, _omitFieldNames ? '' : 'allocations', $pb.PbFieldType.PM,
         subBuilder: MemberAllocation.create)
+    ..aOS(5, _omitFieldNames ? '' : 'fundingPolicy')
+    ..pPS(6, _omitFieldNames ? '' : 'specificMemberIds')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5403,6 +5429,18 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(4)
   $pb.PbList<MemberAllocation> get allocations => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.String get fundingPolicy => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set fundingPolicy($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFundingPolicy() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFundingPolicy() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $pb.PbList<$core.String> get specificMemberIds => $_getList(5);
 }
 
 class MemberAllocation extends $pb.GeneratedMessage {
@@ -5735,6 +5773,10 @@ class FamilyAccount extends $pb.GeneratedMessage {
     $core.bool? spendingVisibilityEnabled,
     $core.String? currency,
     $core.String? virtualAccountId,
+    $core.String? fundingPolicy,
+    $core.String? accountNumber,
+    $core.String? bankName,
+    $core.String? virtualAccountStatus,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -5761,6 +5803,11 @@ class FamilyAccount extends $pb.GeneratedMessage {
       result.spendingVisibilityEnabled = spendingVisibilityEnabled;
     if (currency != null) result.currency = currency;
     if (virtualAccountId != null) result.virtualAccountId = virtualAccountId;
+    if (fundingPolicy != null) result.fundingPolicy = fundingPolicy;
+    if (accountNumber != null) result.accountNumber = accountNumber;
+    if (bankName != null) result.bankName = bankName;
+    if (virtualAccountStatus != null)
+      result.virtualAccountStatus = virtualAccountStatus;
     return result;
   }
 
@@ -5806,6 +5853,10 @@ class FamilyAccount extends $pb.GeneratedMessage {
     ..aOB(18, _omitFieldNames ? '' : 'spendingVisibilityEnabled')
     ..aOS(19, _omitFieldNames ? '' : 'currency')
     ..aOS(20, _omitFieldNames ? '' : 'virtualAccountId')
+    ..aOS(21, _omitFieldNames ? '' : 'fundingPolicy')
+    ..aOS(22, _omitFieldNames ? '' : 'accountNumber')
+    ..aOS(23, _omitFieldNames ? '' : 'bankName')
+    ..aOS(24, _omitFieldNames ? '' : 'virtualAccountStatus')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6002,6 +6053,42 @@ class FamilyAccount extends $pb.GeneratedMessage {
   $core.bool hasVirtualAccountId() => $_has(19);
   @$pb.TagNumber(20)
   void clearVirtualAccountId() => $_clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get fundingPolicy => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set fundingPolicy($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasFundingPolicy() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearFundingPolicy() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get accountNumber => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set accountNumber($core.String value) => $_setString(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasAccountNumber() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearAccountNumber() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get bankName => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set bankName($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasBankName() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearBankName() => $_clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get virtualAccountStatus => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set virtualAccountStatus($core.String value) => $_setString(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasVirtualAccountStatus() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearVirtualAccountStatus() => $_clearField(24);
 }
 
 /// Family Member
@@ -6032,6 +6119,7 @@ class FamilyMember extends $pb.GeneratedMessage {
     $core.double? perTransactionLimit,
     $core.double? allocationPercentageCap,
     $core.double? remainingBalance,
+    $core.bool? canContribute,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -6064,6 +6152,7 @@ class FamilyMember extends $pb.GeneratedMessage {
     if (allocationPercentageCap != null)
       result.allocationPercentageCap = allocationPercentageCap;
     if (remainingBalance != null) result.remainingBalance = remainingBalance;
+    if (canContribute != null) result.canContribute = canContribute;
     return result;
   }
 
@@ -6113,6 +6202,7 @@ class FamilyMember extends $pb.GeneratedMessage {
         $pb.PbFieldType.OD)
     ..a<$core.double>(
         25, _omitFieldNames ? '' : 'remainingBalance', $pb.PbFieldType.OD)
+    ..aOB(26, _omitFieldNames ? '' : 'canContribute')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6360,6 +6450,15 @@ class FamilyMember extends $pb.GeneratedMessage {
   $core.bool hasRemainingBalance() => $_has(24);
   @$pb.TagNumber(25)
   void clearRemainingBalance() => $_clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.bool get canContribute => $_getBF(25);
+  @$pb.TagNumber(26)
+  set canContribute($core.bool value) => $_setBool(25, value);
+  @$pb.TagNumber(26)
+  $core.bool hasCanContribute() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearCanContribute() => $_clearField(26);
 }
 
 /// Family Transaction
@@ -6749,6 +6848,8 @@ class FamilyAccountSummary extends $pb.GeneratedMessage {
     $core.double? totalSpentToday,
     $core.int? transactionCountThisMonth,
     $core.Iterable<FamilyMemberSpending>? topSpenders,
+    $core.double? totalContributed,
+    $core.Iterable<FamilyMemberSpending>? topFunders,
   }) {
     final result = create();
     if (totalAllocated != null) result.totalAllocated = totalAllocated;
@@ -6758,6 +6859,8 @@ class FamilyAccountSummary extends $pb.GeneratedMessage {
     if (transactionCountThisMonth != null)
       result.transactionCountThisMonth = transactionCountThisMonth;
     if (topSpenders != null) result.topSpenders.addAll(topSpenders);
+    if (totalContributed != null) result.totalContributed = totalContributed;
+    if (topFunders != null) result.topFunders.addAll(topFunders);
     return result;
   }
 
@@ -6784,6 +6887,11 @@ class FamilyAccountSummary extends $pb.GeneratedMessage {
         $pb.PbFieldType.O3)
     ..pc<FamilyMemberSpending>(
         5, _omitFieldNames ? '' : 'topSpenders', $pb.PbFieldType.PM,
+        subBuilder: FamilyMemberSpending.create)
+    ..a<$core.double>(
+        6, _omitFieldNames ? '' : 'totalContributed', $pb.PbFieldType.OD)
+    ..pc<FamilyMemberSpending>(
+        7, _omitFieldNames ? '' : 'topFunders', $pb.PbFieldType.PM,
         subBuilder: FamilyMemberSpending.create)
     ..hasRequiredFields = false;
 
@@ -6847,6 +6955,18 @@ class FamilyAccountSummary extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(5)
   $pb.PbList<FamilyMemberSpending> get topSpenders => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $core.double get totalContributed => $_getN(5);
+  @$pb.TagNumber(6)
+  set totalContributed($core.double value) => $_setDouble(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasTotalContributed() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTotalContributed() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $pb.PbList<FamilyMemberSpending> get topFunders => $_getList(6);
 }
 
 /// Family Member Spending Stats

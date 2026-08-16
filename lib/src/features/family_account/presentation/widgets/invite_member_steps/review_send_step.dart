@@ -271,7 +271,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
               hintText:
                   'Hey! I\'d love to have you join our family account...',
               hintStyle: TextStyle(
-                color: const Color(0xFF6B7280),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
               filled: true,

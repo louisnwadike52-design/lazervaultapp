@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -100,13 +102,27 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   /// minimum_order_size) with the flat currency floor as fallback. 0 = unknown
   /// (the backend still enforces Quidax's real floor on the quote).
   double _minFiat() {
-    int? minor;
     try {
       final cfg = GetIt.I<CryptoConfigCubit>().config;
-      minor = cfg.minOrderFor(widget.crypto.symbol) ??
-          cfg.minOrderFor(CurrencySymbols.currentCurrency);
-    } catch (_) {}
-    return (minor ?? 0) / 100.0;
+      final sym = widget.crypto.symbol.toLowerCase();
+      // Quidax's real min is on the CRYPTO leg (the crypto sold must clear the
+      // swap floor). Convert to fiat via the live price so this fiat-input sell
+      // sheet can validate it. minOrderFor(sym) is in the crypto's LEDGER minor
+      // units → scale by decimalsFor(sym), NOT a flat /100.
+      double minFromCrypto = 0;
+      final cryptoMinMinor = cfg.minOrderFor(sym);
+      final price = _price(); // fiat per 1 unit of crypto
+      if (cryptoMinMinor != null && cryptoMinMinor > 0 && price > 0) {
+        final cryptoMin = cryptoMinMinor / math.pow(10, cfg.decimalsFor(sym));
+        minFromCrypto = cryptoMin * price;
+      }
+      // Flat fiat notional floor (~$1 in the user's currency) as a backstop.
+      final fiatFloor =
+          (cfg.minOrderFor(CurrencySymbols.currentCurrency) ?? 0) / 100.0;
+      return math.max(minFromCrypto, fiatFloor);
+    } catch (_) {
+      return 0;
+    }
   }
 
   Future<void> _loadHolding() async {
@@ -363,9 +379,20 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
 
   void _fillMax(CryptoHolding h) {
     setState(() {
-      _amountController.text = _isAmountInCrypto
-          ? _trimNum(h.quantity)
-          : (h.quantity * _price()).toStringAsFixed(2);
+      if (_isAmountInCrypto) {
+        // FLOOR to the field's 6-dp precision. _trimNum rounds, so a holding
+        // like 1.0000005 → "1.000001" would parse back ABOVE h.quantity and
+        // trip the over-hold guard — blocking the user from selling all of it.
+        final floored = (h.quantity * 1e6).floorToDouble() / 1e6;
+        _amountController.text = _trimNum(floored);
+      } else {
+        // FLOOR the fiat to 2 dp. Rounding UP makes implied crypto (fiat/price)
+        // exceed the holding, which fails validation on Max — the one tap that
+        // must always yield a sellable amount. Flooring leaves at most sub-kobo
+        // dust unsold (money-safe: never an over-sell).
+        final maxFiat = (h.quantity * _price() * 100).floorToDouble() / 100;
+        _amountController.text = maxFiat.toStringAsFixed(2);
+      }
     });
   }
 
@@ -739,12 +766,18 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     );
 
     // On success the sheet was already dismissed by onBeforeProcessing (so the
-    // receipt could show); only the pre-confirm error path leaves it open.
+    // receipt could show) — `mounted` is false here. If we're STILL mounted, the
+    // flow was cancelled (quote/PIN), declined (KYC), or errored; in ALL those
+    // cases release the frozen Sell button, and surface the message when there is
+    // one. (Previously the reset only ran for a non-empty error message, so
+    // cancelling the quote/PIN froze the button forever.)
     cubit.refreshHoldingsLive();
-    if (!result.initiated && (result.message ?? '').isNotEmpty) {
-      Get.snackbar('Trade failed', result.message!,
-          snackPosition: SnackPosition.BOTTOM);
-      if (mounted) setState(() => _isTransacting = false);
+    if (mounted) {
+      if (!result.initiated && (result.message ?? '').isNotEmpty) {
+        Get.snackbar('Trade failed', result.message!,
+            snackPosition: SnackPosition.BOTTOM);
+      }
+      setState(() => _isTransacting = false);
     }
   }
 }

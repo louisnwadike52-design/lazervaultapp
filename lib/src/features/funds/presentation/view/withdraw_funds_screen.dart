@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/linked_a
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:async';
 import 'package:fixnum/fixnum.dart';
 import 'package:get/get.dart';
 import 'package:grpc/grpc.dart';
@@ -25,10 +26,12 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.da
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal_receipt_screen.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Withdraw funds to one of the user's linked bank accounts.
 ///
@@ -47,7 +50,7 @@ class WithdrawFundsScreen extends StatefulWidget {
 }
 
 class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
-    with TransactionPinMixin, BankLinkFeeMixin {
+    with TransactionPinMixin, BankLinkFeeMixin, LinkedBalanceRefreshMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -85,6 +88,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   bool _loadingAccounts = true;
   bool _linking = false;
 
+  // Backend-authoritative fee quote (aggregated platform margin + Flutterwave payout
+  // cost). Falls back to the local NIP-tier estimate until the quote lands, so the
+  // fee is never blank and the user is never surprised by a different charge.
+  int? _quotedFeeKobo;
+  int? _quotedPlatformFeeKobo;
+  int? _quotedProviderCostKobo;
+  Timer? _feeQuoteDebounce;
+
   String get _sourceAccountId =>
       (widget.selectedCard['id'] ?? widget.selectedCard['accountId'] ?? '')
           .toString();
@@ -104,6 +115,25 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     return double.tryParse(v.toString()) ?? 0;
   }
 
+  /// Identity of the ACTIVE Lazervault account being debited (the "Available to
+  /// withdraw" figure is THIS account's wallet balance, not a linked-bank balance).
+  String get _activeAccountLabel {
+    final c = widget.selectedCard;
+    final name = (c['name'] ??
+            c['accountName'] ??
+            c['account_name'] ??
+            c['title'] ??
+            '')
+        .toString()
+        .trim();
+    final type =
+        (c['accountType'] ?? c['account_type'] ?? c['type'] ?? '').toString().trim();
+    if (name.isNotEmpty && type.isNotEmpty) return '$name · $type';
+    if (name.isNotEmpty) return name;
+    if (type.isNotEmpty) return type;
+    return 'Your Lazervault account';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -118,6 +148,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
 
   @override
   void dispose() {
+    _feeQuoteDebounce?.cancel();
     _amountController.dispose();
     _amountFocus.dispose();
     _bankCarouselController.dispose();
@@ -157,6 +188,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final user = authState.profile.user;
     final name = '${user.firstName} ${user.lastName}'.trim();
 
+    // CONNECTION-FEE CONSENT FIRST — before the Mono Connect webview, not after
+    // the user has already linked. On "Not now" we abort without opening it.
+    final proceed = await showBankConnectionFeeNotice(context);
+    if (!proceed || !mounted) return;
+    // One idempotency id for this whole link attempt.
+    final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
+
     final result = await showMonoConnectBottomSheet(
       context: context,
       publicKey: MonoConfig.publicKey,
@@ -167,18 +205,15 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     if (result == null || !mounted) return;
 
     setState(() => _linking = true);
-    // Cost-confirmed link (fee + txPIN only when enabled; free link is unchanged).
+    // Fee already consented above — link straight through (no second notice).
+    // autoCreateMandate is false — a payout destination needs no debit mandate.
     final obc = serviceLocator<OpenBankingCubit>();
-    await linkBankWithFee(
-      context: context,
-      doLink: (token, txnId) async => obc.linkAccount(
-        userId: user.id,
-        code: result.code,
-        accessToken: authState.profile.session.accessToken,
-        autoCreateMandate: false,
-        verificationToken: token,
-        transactionId: txnId,
-      ),
+    await obc.linkAccount(
+      userId: user.id,
+      code: result.code,
+      accessToken: authState.profile.session.accessToken,
+      autoCreateMandate: false,
+      transactionId: txnId,
     );
   }
 
@@ -233,17 +268,74 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     });
   }
 
-  // ===== Fee (mirrors banking-service CalculateWithdrawalFee NIP tiers) =====
-  double _feeFor(double amount) {
+  // ===== Fee =====
+  // Local AGGREGATED estimate — placeholder shown until the backend quote lands.
+  // Mirrors the backend default (platform NIP tier + Flutterwave payout cost
+  // ₦10.75/21.50/26.88) so it NEVER under-shows the real charge: worst case the
+  // user sees a hair more, never a surprise higher charge. Never the final amount.
+  double _localFeeEstimate(double amount) {
     final kobo = (amount * 100).round();
-    if (kobo <= 500000) return 10; // <= NGN 5,000
-    if (kobo <= 5000000) return 25; // <= NGN 50,000
-    return 50;
+    if (kobo <= 500000) return 20.75; // ₦10 platform + ₦10.75 payout
+    if (kobo <= 5000000) return 46.50; // ₦25 + ₦21.50
+    return 76.88; // ₦50 + ₦26.88
   }
 
   double get _enteredAmount => double.tryParse(_amountController.text.trim()) ?? 0;
-  double get _fee => _enteredAmount > 0 ? _feeFor(_enteredAmount) : 0;
+
+  /// The fee shown + charged: the backend's AGGREGATED quote (platform margin +
+  /// Flutterwave payout cost) when available, else the local estimate.
+  double get _fee {
+    if (_quotedFeeKobo != null) return _quotedFeeKobo! / 100.0;
+    return _enteredAmount > 0 ? _localFeeEstimate(_enteredAmount) : 0;
+  }
+
   double get _totalDebit => _enteredAmount + _fee;
+
+  /// Debounced backend fee quote on every amount change (money-visibility: the fee
+  /// shown must be the fee charged, admin-tunable, incl. the FW payout cost).
+  void _scheduleFeeQuote() {
+    _feeQuoteDebounce?.cancel();
+    // Drop any prior quote IMMEDIATELY on every amount change so a stale quote for a
+    // DIFFERENT amount can never be shown/charged — the getter falls back to the
+    // local estimate until the fresh quote lands (and _runWithdrawFlow force-fetches
+    // when it's still null at submit time).
+    if (_quotedFeeKobo != null ||
+        _quotedPlatformFeeKobo != null ||
+        _quotedProviderCostKobo != null) {
+      setState(() {
+        _quotedFeeKobo = null;
+        _quotedPlatformFeeKobo = null;
+        _quotedProviderCostKobo = null;
+      });
+    }
+    if (_enteredAmount <= 0) return;
+    _feeQuoteDebounce =
+        Timer(const Duration(milliseconds: 400), _fetchWithdrawalFeeQuote);
+  }
+
+  Future<void> _fetchWithdrawalFeeQuote() async {
+    final amount = _enteredAmount;
+    if (amount <= 0) return;
+    final amountKobo = (amount * 100).round();
+    try {
+      final req = banking_pb.CalculateWithdrawalFeeRequest()
+        ..amount = Int64(amountKobo);
+      final callOptions =
+          await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final client = serviceLocator<banking_grpc.BankingServiceClient>();
+      final resp = await client.calculateWithdrawalFee(req, options: callOptions);
+      if (!mounted || !resp.success) return;
+      // Drop a stale response if the amount changed while it was in flight.
+      if ((_enteredAmount * 100).round() != resp.amount.toInt()) return;
+      setState(() {
+        _quotedFeeKobo = resp.fee.toInt();
+        _quotedPlatformFeeKobo = resp.platformFee.toInt();
+        _quotedProviderCostKobo = resp.providerCost.toInt();
+      });
+    } catch (_) {
+      // Keep the local estimate on any error — never block the withdrawal flow.
+    }
+  }
 
   String _money(double v) =>
       '$_currencySymbol${v.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},')}';
@@ -291,7 +383,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   // txbottomsheet: the real gRPC call runs inside onPinValidated so the sheet's
   // result reflects the actual outcome. On success we land on the receipt; on
   // failure the error is shown inside the sheet (no navigation).
+  bool _submitting = false;
+
   Future<void> _onWithdraw() async {
+    // Guard against a double-tap firing two withdrawals with different idem keys.
+    if (_submitting) return;
     final err = _validate();
     if (err != null) {
       _snack(err, _error);
@@ -304,9 +400,38 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       _snack('Reconnect ${_selected!.bankName} from its card to withdraw to it.', _error);
       return;
     }
+    _submitting = true;
+    try {
+      await _runWithdrawFlow();
+    } finally {
+      if (mounted) _submitting = false;
+    }
+  }
+
+  Future<void> _runWithdrawFlow() async {
     FocusScope.of(context).unfocus();
     final account = _selected!;
     final amount = _enteredAmount;
+    // Ensure the tx-PIN sheet + the balance check use the AUTHORITATIVE aggregated
+    // fee (platform + Flutterwave payout cost), not the local estimate — force the
+    // quote if the debounced fetch hasn't landed yet, so the shown fee = the charge.
+    if (_quotedFeeKobo == null) {
+      await _fetchWithdrawalFeeQuote();
+      if (!mounted) return;
+      // If the quote service is down, do NOT proceed on the local estimate — the
+      // admin-tunable fees may have drifted, so it could under-show the real charge.
+      // Ask the user to retry so the shown fee is always the authoritative one.
+      if (_quotedFeeKobo == null) {
+        _snack("We couldn't confirm the withdrawal fee. Please try again.", _error);
+        return;
+      }
+      // Re-check affordability now that the real (higher) fee is known.
+      final err2 = _validate();
+      if (err2 != null) {
+        _snack(err2, _error);
+        return;
+      }
+    }
     final transactionId = const Uuid().v4();
     final destName =
         account.accountName.isNotEmpty ? account.accountName : account.bankName;
@@ -349,11 +474,16 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     if (!ok || resp == null || !resp!.success) return;
     if (!mounted) return;
 
-    final fee = _feeFor(amount);
+    // Use the backend's AUTHORITATIVE fee/total from the withdrawal record (never a
+    // client recompute) so the receipt matches exactly what was charged.
+    final feeKobo = resp!.withdrawal.fee.toInt();
+    final totalKobo = resp!.withdrawal.totalAmount.toInt();
+    final fee = feeKobo > 0 ? feeKobo / 100.0 : _fee;
+    final totalDebited = totalKobo > 0 ? totalKobo / 100.0 : amount + fee;
     Get.off(() => WithdrawalReceiptScreen(
           amount: amount,
           fee: fee,
-          totalDebited: amount + fee,
+          totalDebited: totalDebited,
           bankName: account.bankName.isNotEmpty ? account.bankName : 'Bank',
           accountNumber: account.displayAccountNumber,
           reference: resp!.withdrawal.reference,
@@ -428,12 +558,41 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             _onAccountLinked(state.account);
           } else if (state is AccountLinkedWithMandate) {
             _onAccountLinked(state.account);
+          } else if (state is BalanceRefreshed) {
+            // A per-account refresh landed (possibly triggered from the DEPOSIT
+            // screen — same singleton cubit) → update THIS card's balance in place
+            // so the "last updated" + figure reflect it everywhere.
+            if (mounted) {
+              setState(() {
+                _linkedAccounts = _linkedAccounts
+                    .map((a) => a.id == state.accountId
+                        ? a.copyWith(
+                            lastKnownBalance: state.newBalance,
+                            balanceUpdatedAt: DateTime.now())
+                        : a)
+                    .toList();
+                if (_selected?.id == state.accountId) {
+                  _selected = _linkedAccounts.firstWhere(
+                      (a) => a.id == state.accountId,
+                      orElse: () => _selected!);
+                }
+              });
+            }
           } else if (state is OpenBankingError) {
             if (state.operation == 'fetchLinkedAccounts') {
               setState(() => _loadingAccounts = false);
             } else if (state.operation == 'linkAccount') {
               setState(() => _linking = false);
-              _snack('Could not link the bank. Please try again.', _error);
+              // Linked-bank cap (admin-tunable default 3) / provider capacity
+              // exhausted — surface as a styled modal with a "Manage banks" CTA,
+              // never a toast. Nothing was charged (checked before any fee).
+              if (state.errorCode == kLinkLimitReachedCode) {
+                showLinkLimitReachedDialog(context, state.message);
+              } else if (state.errorCode == kLinkingCapacityCode) {
+                showLinkingCapacityDialog(context);
+              } else {
+                _snack('Could not link the bank. Please try again.', _error);
+              }
             }
           }
         },
@@ -563,8 +722,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           SizedBox(height: 16.h),
           Text(_money(_availableBalance),
               style: _inter(size: 30.sp, weight: FontWeight.w800, color: Colors.white)),
-          SizedBox(height: 6.h),
-          Text('Sent to your linked bank instantly over NIP',
+          SizedBox(height: 4.h),
+          Text('From $_activeAccountLabel',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _inter(size: 11.5.sp, weight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.92))),
+          SizedBox(height: 4.h),
+          Text('Debited from this account · sent to your linked bank over NIP',
               style: _inter(size: 11.5.sp, weight: FontWeight.w400, color: Colors.white.withValues(alpha: 0.78))),
         ],
       ),
@@ -599,7 +763,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   focusNode: _amountFocus,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) {
+                    setState(() {});
+                    _scheduleFeeQuote();
+                  },
                   style: _inter(size: 22.sp, weight: FontWeight.w700, color: Colors.white),
                   decoration: InputDecoration(
                     hintText: '0.00',
@@ -618,10 +785,22 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             children: [
               Text('Fee ${_money(_fee)}', style: _inter(size: 12.sp, color: _textSecondary)),
               const Spacer(),
-              Text('You send ${_money(_totalDebit)}',
+              Text('Total ${_money(_totalDebit)}',
                   style: _inter(size: 12.sp, weight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.8))),
             ],
           ),
+          // Transparency: the aggregated fee = our platform margin + the bank payout
+          // cost we pay Flutterwave. Shown once the backend quote lands.
+          if ((_quotedProviderCostKobo ?? 0) > 0) ...[
+            SizedBox(height: 3.h),
+            Text(
+                'incl. ${_money((_quotedProviderCostKobo ?? 0) / 100.0)} bank payout · '
+                '${_money((_quotedPlatformFeeKobo ?? 0) / 100.0)} service fee',
+                style: _inter(size: 10.5.sp, color: _textSecondary)),
+          ],
+          SizedBox(height: 3.h),
+          Text('You receive ${_money(_enteredAmount)} at your bank',
+              style: _inter(size: 11.sp, weight: FontWeight.w500, color: _accent)),
         ],
       ],
     );
@@ -768,31 +947,92 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             Text(a.displayAccountNumber,
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5.sp, letterSpacing: 0.3)),
             SizedBox(height: 3.h),
-            // LIVE-ONLY: figure only when this session's Mono read landed.
+            // Cached balance from our DB record + when it was last refreshed. A live
+            // Mono balance read is BILLED PER ACCOUNT, so we NEVER auto-fetch — the
+            // user taps refresh (fee-gated) to pull a live figure for THIS bank only.
+            // A refresh here or on the deposit screen reflects on both (shared cubit).
             Builder(builder: (_) {
-              final fresh = a.balanceUpdatedAt != null &&
-                  DateTime.now().difference(a.balanceUpdatedAt!).inMinutes < 3;
-              if (fresh) {
-                return Text('₦${a.lastKnownBalance.toStringAsFixed(2)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w700));
-              }
-              return Row(mainAxisSize: MainAxisSize.min, children: [
-                LazerVaultLoader(size: 9),
-                SizedBox(width: 5.w),
-                Text('Fetching balance…',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 11.sp)),
-              ]);
+              final isRefreshing = cardCtx.select<OpenBankingCubit, bool>((c) {
+                final s = c.state;
+                return s is BalanceRefreshing && s.accountId == a.id;
+              });
+              return Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('₦${a.lastKnownBalance.toStringAsFixed(2)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.5.sp,
+                                fontWeight: FontWeight.w700)),
+                        SizedBox(height: 1.h),
+                        Text(
+                            needsReauth
+                                ? 'Reconnect to refresh'
+                                : linkedBalanceLastUpdatedLabel(a.balanceUpdatedAt),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.45),
+                                fontSize: 9.5.sp)),
+                      ],
+                    ),
+                  ),
+                  if (!needsReauth) _cardRefreshButton(a, isRefreshing),
+                ],
+              );
             }),
           ],
         ),
       ),
+    );
+  }
+
+  /// Per-account refresh button on a payout card — pulls a LIVE balance for THIS
+  /// bank only (fee-gated tx-PIN sheet), via the shared LinkedBalanceRefreshMixin.
+  Widget _cardRefreshButton(LinkedBankAccount a, bool isRefreshing) {
+    const accent = Color(0xFF3B82F6);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isRefreshing ? null : () => _refreshCardBalance(a),
+      child: Tooltip(
+        message: 'Refresh balance',
+        child: Container(
+          width: 30.w,
+          height: 30.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(9.r),
+            border: Border.all(color: accent.withValues(alpha: 0.42)),
+          ),
+          child: isRefreshing
+              ? SizedBox(
+                  width: 13.w,
+                  height: 13.w,
+                  child: const CircularProgressIndicator(
+                      strokeWidth: 2, color: accent),
+                )
+              : Icon(Icons.sync_rounded, size: 15.sp, color: accent),
+        ),
+      ),
+    );
+  }
+
+  void _refreshCardBalance(LinkedBankAccount a) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    // Same shared, per-account, fee-gated refresh the deposit screen uses.
+    refreshLinkedBalance(
+      context,
+      a,
+      userId: authState.profile.user.id,
+      accessToken: authState.profile.session.accessToken,
     );
   }
 

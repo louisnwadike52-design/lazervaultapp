@@ -10,7 +10,7 @@ import '../../cubit/create_lock_cubit.dart';
 import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
 
-/// Review slide — step 4 of 5.
+/// Review slide — wizard step 3 (Review & Confirm).
 ///
 /// Slimmed down from the previous version: the heavy "Lock Details"
 /// card has been folded into a compact hero strip and the per-row
@@ -35,7 +35,7 @@ class ReviewScreen extends StatelessWidget {
         final goalDescription = cubit.goalDescription;
         final maturity = DateTime.now().add(Duration(days: durationDays));
 
-        return SingleChildScrollView(
+        return Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

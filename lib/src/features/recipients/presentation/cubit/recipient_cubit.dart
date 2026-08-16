@@ -224,6 +224,9 @@ class RecipientCubit extends Cubit<RecipientState> {
   Future<void> addRecipient({
     required RecipientModel recipient,
     required String accessToken,
+    // Send-funds auto-save passes true so no "Recipient added" snackbar fires
+    // on top of the transfer receipt.
+    bool silent = false,
   }) async {
     if (isClosed) return;
     emit(RecipientLoading());
@@ -238,7 +241,8 @@ class RecipientCubit extends Cubit<RecipientState> {
         (newRecipient) {
           // Invalidate cache to ensure fresh data on next fetch
           _cacheManager?.invalidatePattern('recipients:');
-          emit(RecipientSuccess('Recipient added successfully', recipient: newRecipient));
+          emit(RecipientSuccess('Recipient added successfully',
+              recipient: newRecipient, silent: silent));
           getRecipients(accessToken: accessToken, forceRefresh: true);
         },
       );

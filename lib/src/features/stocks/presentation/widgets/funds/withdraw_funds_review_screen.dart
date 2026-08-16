@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
 
 /// Step 3: Review withdrawal details
 class WithdrawFundsReviewScreen extends StatelessWidget {
@@ -254,11 +255,24 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(
-                    'By withdrawing funds, you agree to our Terms of Service and Withdrawal Policy.',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: Colors.grey[400],
+                  child: Builder(
+                    builder: (context) => GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PartnerWebViewScreen(
+                            url: 'https://lazervault.app/legal/investments',
+                            title: 'Investment Terms',
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'By withdrawing funds, you agree to our Terms of Service and Withdrawal Policy.',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.grey[400],
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
                   ),
                 ),

@@ -15,6 +15,7 @@ import '../../domain/entities/provider_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/account_manager.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -311,10 +312,18 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         .where((a) => a.currency.toUpperCase() == 'NGN')
         .toList();
     if (ngnAccounts.isNotEmpty) {
-      // Prefer primary account, else first NGN account
+      // Prefer the currently ACTIVE account (so a family pool the user is viewing
+      // is the default bill source — matched by spendingAccountId, which for a
+      // family card is the pool VA), then primary, then first NGN account.
+      final activeId = GetIt.I<AccountManager>().activeAccountId;
+      final active = activeId == null
+          ? null
+          : ngnAccounts
+              .where((a) => a.spendingAccountId == activeId || a.id == activeId)
+              .firstOrNull;
       final primary = ngnAccounts.where((a) => a.isPrimary).firstOrNull;
       setState(() {
-        _selectedAccount = primary ?? ngnAccounts.first;
+        _selectedAccount = active ?? primary ?? ngnAccounts.first;
       });
     }
   }
@@ -571,6 +580,15 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     // C3: Generate unique transaction ID with UUID
     final transactionId = const Uuid().v4();
 
+    // Align the ACTIVE account with the account the user is paying from BEFORE
+    // verifying the PIN: the PIN token binds to the header account (activeAccountId)
+    // while the debit uses the body sourceAccountId (spendingAccountId). Setting
+    // the active account to the selected one keeps the token, the header and the
+    // debit all bound to the same account (critical for a family pool source).
+    if (_selectedAccount != null) {
+      GetIt.I<AccountManager>().setActiveAccount(_selectedAccount!.spendingAccountId);
+    }
+
     // Validate PIN before processing payment
     String? verificationToken;
 
@@ -657,7 +675,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         'meterType': meterType,
         'providerCode': provider.providerCode,
         'currency': _selectedAccountCurrency,
-        'accountId': _selectedAccount!.id,
+        // spendingAccountId (not id): for a family card this is the pool VA, so
+        // the debit + the PIN token both bind to the pool the header already used.
+        'accountId': _selectedAccount!.spendingAccountId,
         'phoneNumber': phoneNumber,
         'transactionId': transactionId,
         'verificationToken': verificationToken,

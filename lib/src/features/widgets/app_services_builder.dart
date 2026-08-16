@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/core/config/app_environment.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -50,6 +51,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   StreamSubscription<String?>? _accountSubscription;
   VirtualAccountType? _activeAccountType;
   bool _isFamilyPendingSetup = false;
+  bool _isFamilyProcessing = false;
   String? _activeFamilyAccountId;
   bool _isResolvingFamilyId = false;
 
@@ -256,12 +258,15 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.tagPay),
   ];
 
-  // Family account services — active, setup complete (8 services — 1 page)
-  // Family accounts can only move money via the family-gated transfer path
-  // (core-payments SendFunds enforces per-member limits + records the spend).
-  // Non-transfer flows (bills, airtime, insurance, exchange, auto-save) are
-  // blocked server-side for a family virtual account, so only surface the
-  // transfer services that actually work from a family account.
+  // Family account services — a household-spending pool. Only surfaces the
+  // flows that are ALSO permitted server-side for a family virtual account:
+  //   - Transfers (Send funds, TagPay) via core-payments' family-gated spend path
+  //     (AuthorizeFamilySpend → RecordFamilySpend enforces per-member limits).
+  //   - Household bills (Utilities hub → utility-payments-service), which now route
+  //     through the same family reserve→capture gate.
+  // Wealth/speculative flows (crypto, investments, exchange, gift cards, loans,
+  // auto-save, insurance) stay OFF here AND are rejected server-side by
+  // accounts-service's family spend gate — so hiding them isn't just cosmetic.
   static const List<AppService> _familyServices = [
     AppService(
         serviceName: AppServiceName.sendFunds,
@@ -269,6 +274,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.tagPay,
         serviceImg: AppServiceImg.tagPay),
+    AppService(
+        serviceName: AppServiceName.payBills,
+        serviceImg: AppServiceImg.payBills),
   ];
 
   // Service entries to HIDE from rendering. The list constants above
@@ -282,6 +290,16 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // Services tile is duplicate surface area.
     AppServiceName.airtime,
   };
+
+  /// Hidden set for the CURRENT environment. Stocks (DriveWealth US equities) is
+  /// not yet cleared for production, so it's hidden on prod builds only — most
+  /// visibly on the Investment-account swipe grid — while staying available in
+  /// dev/staging for testing. The route/handler stays registered so deep links
+  /// and analytics keep resolving.
+  static Set<AppServiceName> get _effectiveHiddenServices =>
+      currentAppEnvironment.isProduction
+          ? {..._hiddenServices, AppServiceName.stocks}
+          : _hiddenServices;
 
   /// Every service across all account types, deduped by name — the corpus the
   /// dashboard swipe-down search filters over so the user can find ANY platform
@@ -297,6 +315,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       ..._multiCurrencyServices,
       ..._familyServices,
     ]) {
+      // Keep the search corpus consistent with the grid: don't surface stocks
+      // in the All-Services search on prod.
+      if (currentAppEnvironment.isProduction &&
+          s.serviceName == AppServiceName.stocks) {
+        continue;
+      }
       if (seen.add(s.serviceName)) out.add(s);
     }
     return out;
@@ -314,8 +338,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       VirtualAccountType.family => _familyServices,
       _ => _personalServices,
     };
+    final hidden = _effectiveHiddenServices;
     final filtered =
-        raw.where((s) => !_hiddenServices.contains(s.serviceName)).toList();
+        raw.where((s) => !hidden.contains(s.serviceName)).toList();
     // Only the crowded personal grid is re-ordered; the curated per-type lists
     // (business/savings/investment/multi-currency/family) keep their hand-picked
     // order. `_getServicePages` inherits whatever order we return here.
@@ -464,10 +489,13 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         final isFamily = accountType == VirtualAccountType.family;
         final isFamilyPending = isFamily &&
             (activeAccount.isFamilyPendingSetup || !activeAccount.isFamilyAccount);
+        // Pool VA still minting its NUBAN → spend tiles must not be offered.
+        final isFamilyProcessing = isFamily && activeAccount.isFamilyProcessing;
         final familyId = isFamily ? activeAccount.familyAccountId : null;
 
         if (accountType != _activeAccountType ||
-            isFamilyPending != _isFamilyPendingSetup) {
+            isFamilyPending != _isFamilyPendingSetup ||
+            isFamilyProcessing != _isFamilyProcessing) {
           // Reset the services carousel to the first page ONLY on a real
           // account-type SWITCH (one known type → a different one). On the
           // INITIAL resolution (_activeAccountType == null — e.g. this widget
@@ -479,6 +507,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
           setState(() {
             _activeAccountType = accountType;
             _isFamilyPendingSetup = isFamilyPending;
+            _isFamilyProcessing = isFamilyProcessing;
             _activeFamilyAccountId = familyId;
             if (!isInitialResolution) {
               _currentIndex = 0; // Reset carousel position on account type switch
@@ -532,6 +561,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // Show family setup CTA when active account is a pending family account
     if (_activeAccountType == VirtualAccountType.family && _isFamilyPendingSetup) {
       return _buildFamilySetupCTA();
+    }
+
+    // Pool VA still provisioning its NUBAN → don't offer spend tiles (the debit is
+    // blocked server-side until active). Show a clear "setting up" notice instead.
+    if (_activeAccountType == VirtualAccountType.family && _isFamilyProcessing) {
+      return _buildFamilyProcessingNotice();
     }
 
     final servicePages = _getServicePages();
@@ -671,7 +706,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             },
           ),
 
-          // Carousel Indicators (only show if more than 1 page)
+          // Carousel Indicators (only show if more than 1 page).
           if (servicePages.length > 1) ...[
             SizedBox(height: 3.h),
             Row(
@@ -693,6 +728,53 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFamilyProcessingNotice() {
+    const accent = Color(0xFF2D2B6B);
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 22.w,
+            height: 22.w,
+            child: const CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(accent),
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Setting up your account',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'We\'re creating your account details. You\'ll be able to send money and pay bills once it\'s ready.',
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

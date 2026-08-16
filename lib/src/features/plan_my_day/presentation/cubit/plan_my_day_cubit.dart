@@ -7,6 +7,14 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dar
 import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summary.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/data/repositories/plan_my_day_repository_impl.dart'
+    show
+        PlanMyDayException,
+        PlanMyDayNetworkException,
+        PlanMyDayAuthException,
+        PlanMyDayValidationException,
+        PlanMyDayNotFoundException,
+        PlanMyDayApiException;
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
 import 'package:lazervault/src/features/plan_my_day/contacts/data/contact_repository.dart';
 import 'package:lazervault/src/features/plan_my_day/contacts/domain/entities/contact.dart';
@@ -682,30 +690,65 @@ class PlanMyDayCubit extends Cubit<PlanMyDayState> {
   // ==================== PRIVATE HELPERS ====================
 
   PlanMyDayError _parseError(dynamic error, String defaultMessage) {
-    String message = defaultMessage;
-    String? errorCode;
-
-    if (error is Exception) {
-      final errorStr = error.toString();
-      if (errorStr.contains('Exception: ')) {
-        message = errorStr.substring(11);
-      } else {
-        message = errorStr;
-      }
-
-      // Detect error types
-      if (message.contains('network') || message.contains('connection')) {
-        errorCode = 'network_error';
-      } else if (message.contains('401') ||
-          message.contains('unauthorized') ||
-          message.contains('auth')) {
-        errorCode = 'auth_error';
-      } else if (message.contains('400') || message.contains('validation')) {
-        errorCode = 'validation_error';
-      }
+    // Classify by exception TYPE (the repository throws typed exceptions), not by
+    // fragile substring matching — the old checks were case-sensitive and missed
+    // 'Network error…' / 'Request timed out'. The errorCode drives the inline
+    // error UI, which distinguishes the user's own connectivity from a backend
+    // outage. Neither ever raises the pre-login maintenance modal (that overlay
+    // is auth-screens-only — see AppStartupGate).
+    if (error is PlanMyDayAuthException) {
+      return PlanMyDayError(
+        'Your session has expired. Please sign in again.',
+        errorCode: 'auth_error',
+      );
     }
+    if (error is PlanMyDayValidationException) {
+      return PlanMyDayError(
+        _cleanMessage(error.message, defaultMessage),
+        errorCode: 'validation_error',
+        errorData: error.details,
+      );
+    }
+    if (error is PlanMyDayNetworkException) {
+      // Transport-level: no HTTP response reached us (socket error / timeout).
+      // This is EITHER the user's own network OR the backend being unreachable —
+      // the inline error widget resolves which via a live connectivity check.
+      return PlanMyDayError(
+        "We couldn't reach Plan My Day. Check your connection and try again.",
+        errorCode: 'network_error',
+      );
+    }
+    if (error is PlanMyDayApiException) {
+      // A 5xx means the edge answered but the backend erred — a SERVER problem,
+      // not the user's network. Kept inline (never the maintenance modal).
+      final serverDown = const {500, 502, 503, 504}.contains(error.statusCode);
+      return PlanMyDayError(
+        serverDown
+            ? 'Plan My Day is having trouble right now. Please try again shortly.'
+            : _cleanMessage(error.message, defaultMessage),
+        errorCode: serverDown ? 'server_error' : null,
+      );
+    }
+    if (error is PlanMyDayNotFoundException) {
+      return PlanMyDayError(defaultMessage, errorCode: 'not_found');
+    }
+    if (error is PlanMyDayException) {
+      return PlanMyDayError(_cleanMessage(error.message, defaultMessage));
+    }
+    return PlanMyDayError(defaultMessage);
+  }
 
-    return PlanMyDayError(message, errorCode: errorCode);
+  // Show the exception's own sentence when it's a genuine user-facing message;
+  // otherwise fall back to the caller's context line. Never leak raw
+  // 'Unexpected error: …' / parse-failure text to the user.
+  String _cleanMessage(String raw, String fallback) {
+    final m = raw.trim();
+    if (m.isEmpty ||
+        m.startsWith('Unexpected error') ||
+        m.startsWith('Failed to parse')) {
+      return fallback;
+    }
+    return m;
   }
 
   void _emitAndRestore(PlanMyDayState errorState) {

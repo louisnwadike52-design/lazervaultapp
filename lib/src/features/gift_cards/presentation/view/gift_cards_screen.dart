@@ -895,6 +895,75 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     return category[0].toUpperCase() + category.substring(1);
   }
 
+  // True when a sellable card's Prestmit country tag denotes the USA.
+  // Prestmit tags US cards as "USA" (backfilled server-side from the
+  // "USA <Brand> …" name prefix); the ISO-2 "US" alias is accepted
+  // defensively. Empty/other tags are treated as non-USA and dropped —
+  // SELL is USA-only per the 2026-08 product directive.
+  bool _isUsaSellCard(String country) {
+    final c = country.trim().toUpperCase();
+    return c == 'USA' || c == 'US';
+  }
+
+  // Real brand logo for a sellable card. Prestmit's sell catalogue does
+  // NOT ship a logo URL (the backend leaves SellableCard.logoUrl empty),
+  // so the grid used to fall through to a placeholder icon. Derive a real
+  // brand logo from the card name via Clearbit — the same source the
+  // gift-card mock catalogue already uses (logo.clearbit.com/<domain>).
+  // Unknown brands fall back to the card's own logoUrl (usually empty),
+  // and CachedNetworkImage's errorWidget still degrades to the gift-card
+  // icon, so this never regresses the current behaviour.
+  String _sellCardLogoUrl(SellableCard card) {
+    if (card.logoUrl.isNotEmpty) return card.logoUrl;
+    final domain = _brandDomainFor('${card.displayName} ${card.cardType}');
+    return domain.isEmpty ? card.logoUrl : 'https://logo.clearbit.com/$domain';
+  }
+
+  // Maps a messy Prestmit card name (e.g. "USA Amazon Cash Receipt
+  // (50 - 100)", "USA Steam Ecode") to a brand domain for Clearbit.
+  // Matched by substring against the common US gift-card brands; returns
+  // '' when nothing matches so the caller can fall back gracefully.
+  static const Map<String, String> _brandDomains = {
+    'amazon': 'amazon.com',
+    'itunes': 'apple.com',
+    'apple': 'apple.com',
+    'google play': 'play.google.com',
+    'googleplay': 'play.google.com',
+    'steam': 'steampowered.com',
+    'walmart': 'walmart.com',
+    'ebay': 'ebay.com',
+    'sephora': 'sephora.com',
+    'nordstrom': 'nordstrom.com',
+    'macy': 'macys.com',
+    'nike': 'nike.com',
+    'xbox': 'xbox.com',
+    'playstation': 'playstation.com',
+    'razer': 'razer.com',
+    'vanilla': 'onevanilla.com',
+    'netflix': 'netflix.com',
+    'spotify': 'spotify.com',
+    'uber': 'uber.com',
+    'target': 'target.com',
+    'best buy': 'bestbuy.com',
+    'bestbuy': 'bestbuy.com',
+    'gamestop': 'gamestop.com',
+    'nintendo': 'nintendo.com',
+    'american express': 'americanexpress.com',
+    'amex': 'americanexpress.com',
+    'visa': 'visa.com',
+    'mastercard': 'mastercard.com',
+    'footlocker': 'footlocker.com',
+    'foot locker': 'footlocker.com',
+  };
+
+  String _brandDomainFor(String rawName) {
+    final name = rawName.toLowerCase();
+    for (final entry in _brandDomains.entries) {
+      if (name.contains(entry.key)) return entry.value;
+    }
+    return '';
+  }
+
   Widget _buildBuySellToggle() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -999,10 +1068,18 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   }
 
   Widget _buildSellableCardsGrid(List<SellableCard> cards) {
+    // SELL is USA-only (product directive 2026-08). Prestmit — the sole
+    // sell provider — lists multi-country variants (USA/UK/CA/EU/…), but
+    // Lazervault only trades USA-issued cards. The GetSellableCards RPC is
+    // fetched without a countryCode (so switching tabs stays instant), so
+    // the server-side filterCardsByCountry never runs — restrict to USA
+    // here so the user never picks a non-USA card the sell flow can't price.
+    var filteredCards = cards.where((c) => _isUsaSellCard(c.country)).toList();
     // Apply category and search filters client-side for sell cards
-    var filteredCards = _selectedCategory == null
-        ? cards
-        : cards.where((c) => c.category == _selectedCategory).toList();
+    if (_selectedCategory != null) {
+      filteredCards =
+          filteredCards.where((c) => c.category == _selectedCategory).toList();
+    }
     if (_sellSearchQuery.isNotEmpty) {
       filteredCards = filteredCards
           .where((c) =>
@@ -1065,7 +1142,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
                   child: CachedNetworkImage(
-                    imageUrl: card.logoUrl,
+                    imageUrl: _sellCardLogoUrl(card),
                     fit: BoxFit.contain,
                     placeholder: (context, url) => Icon(
                       Icons.image_rounded,

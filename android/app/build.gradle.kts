@@ -125,11 +125,10 @@ android {
             versionNameSuffix = "-dev"
             buildConfigField("String", "FLUTTER_FLAVOR", "\"dev\"")
             manifestPlaceholders["flavor"] = "dev"
-            // Flutter's task `assembleDevDebug` reads -Pdart-defines from
-            // the Gradle command line. For a `flutter run --flavor dev`
-            // invocation Flutter emits these automatically; pinning them
-            // here keeps a raw `gradle assembleDevDebug` honest too.
-            extra["dart-defines"] = "FLUTTER_FLAVOR=dev"
+            // NOTE: the Dart-visible FLUTTER_FLAVOR comes ONLY from the CLI
+            // `--dart-define=FLUTTER_FLAVOR=<tier>` (→ Flutter's -Pdart-defines).
+            // A gradle `extra["dart-defines"]` here is NOT consumed by the
+            // Flutter plugin — it was dead config and is intentionally omitted.
         }
         create("staging") {
             dimension = "env"
@@ -139,7 +138,6 @@ android {
             versionNameSuffix = "-staging"
             buildConfigField("String", "FLUTTER_FLAVOR", "\"staging\"")
             manifestPlaceholders["flavor"] = "staging"
-            extra["dart-defines"] = "FLUTTER_FLAVOR=staging"
         }
         create("prod") {
             dimension = "env"
@@ -147,7 +145,6 @@ android {
             // that ships to the Play Store.
             buildConfigField("String", "FLUTTER_FLAVOR", "\"prod\"")
             manifestPlaceholders["flavor"] = "prod"
-            extra["dart-defines"] = "FLUTTER_FLAVOR=prod"
         }
     }
 

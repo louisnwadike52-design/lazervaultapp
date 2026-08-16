@@ -41,6 +41,10 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
   // when no voice session is active (sendToVoiceAgent early-returns).
   VoiceSessionCubit? _voiceSession;
   bool _sessionPaused = false;
+  // Whether enrollment actually registered a voiceprint — so the agent confirms
+  // on success but resumes neutrally (no false "using your voice now") on
+  // cancel/failure. See the carousel screen for the same pattern.
+  bool _enrollmentSucceeded = false;
 
   @override
   void initState() {
@@ -109,7 +113,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
   void _resumeSessionIfPaused() {
     if (!_sessionPaused) return;
     _sessionPaused = false;
-    _voiceSession?.notifyCustomVoiceSetupFinished();
+    _voiceSession?.notifyCustomVoiceSetupFinished(succeeded: _enrollmentSucceeded);
   }
 
   /// Handle app lifecycle changes — stop recording if user backgrounds the app
@@ -133,8 +137,10 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
         child: BlocConsumer<VoiceEnrollmentCubit, VoiceEnrollmentState>(
           listener: (context, state) {
             if (state is VoiceEnrollmentSuccess) {
+              _enrollmentSucceeded = true;
               _showSuccessDialog(context, state);
             } else if (state is VoiceEnrollmentPoorQuality) {
+              _enrollmentSucceeded = true;
               _showPoorQualityDialog(context, state);
             } else if (state is VoiceEnrollmentSkipped) {
               widget.onEnrollmentComplete?.call();

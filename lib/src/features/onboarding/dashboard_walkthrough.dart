@@ -19,10 +19,12 @@ import 'package:showcaseview/showcaseview.dart';
 /// target (above / below / left / right), driven by the [TooltipPosition] passed
 /// to [step] — so the card visibly "points" at what it's describing.
 ///
-/// The bottom navigation is toured item-by-item (all 5): rather than reaching
-/// into the adaptive nav bar (MotionTabBar vs CurvedNavigationBar) for per-item
-/// keys, [bottomNavTourTargets] overlays five equal, transparent showcase
-/// targets across the bar so each item highlights on its own step.
+/// The bottom navigation is toured item-by-item for the high-value items only
+/// (see [_navTour]): rather than reaching into the adaptive nav bar (MotionTabBar
+/// vs CurvedNavigationBar) for per-item keys, [bottomNavTourTargets] overlays
+/// five equal, transparent slots across the bar and highlights each toured item
+/// on its own step; the un-toured slots are invisible spacers that keep the
+/// toured targets aligned over the right nav items.
 ///
 /// Persistence note (UI ↔ backend): "seen" is intentionally DEVICE-LOCAL
 /// (secure storage), not a synced backend field — a walkthrough is a first-run
@@ -61,33 +63,23 @@ class DashboardWalkthrough {
   static final avatarKey = GlobalKey();
   static final accountsKey = GlobalKey();
   static final servicesKey = GlobalKey();
-  static final servicesSliderKey = GlobalKey();
   static final historyKey = GlobalKey();
-  static final moreKey = GlobalKey();
 
-  // One key per bottom-nav item (5), toured individually at the end.
-  static final navKeys = List<GlobalKey>.generate(5, (_) => GlobalKey());
+  // One key per TOURED bottom-nav item (see [_navTour]). The bar always has 5
+  // items, but only the high-value ones are toured — the rest are laid out as
+  // transparent spacers so the toured targets still align over the right slots.
+  static final navKeys =
+      List<GlobalKey>.generate(_navTour.length, (_) => GlobalKey());
 
-  // The quick-services carousel only shows its page indicators (and thus its
-  // "swipe for more" coach-mark) when there's more than one page. The services
-  // builder sets this each build so the slider step is included in the tour ONLY
-  // when it actually exists — avoiding a showcase target that isn't mounted.
-  static bool _servicesSliderAvailable = false;
-  static void setServicesSliderAvailable(bool v) =>
-      _servicesSliderAvailable = v;
-
-  /// Ordered list driving the tour sequence (top → down the body → each nav
-  /// item left-to-right). The services-slider step is conditional; step numbers
-  /// ("n / total") are DERIVED from this list, so adding/removing a step never
-  /// requires renumbering call sites.
+  /// Ordered list driving the tour sequence (top → down the body → each toured
+  /// nav item left-to-right). Step numbers ("n / total") are DERIVED from this
+  /// list, so adding/removing a step never requires renumbering call sites.
   static List<GlobalKey> get _orderedKeys => [
         topIconsKey,
         avatarKey,
         accountsKey,
         servicesKey,
-        if (_servicesSliderAvailable) servicesSliderKey,
         historyKey,
-        moreKey,
         ...navKeys,
       ];
 
@@ -96,29 +88,25 @@ class DashboardWalkthrough {
   /// 1-based position of [key] in the tour (0 if not currently in the tour).
   static int stepIndexOf(GlobalKey key) => _orderedKeys.indexOf(key) + 1;
 
-  // Per-nav-item coach-card copy, in tab order.
-  static const List<({String title, String body})> _navCopy = [
+  // The bottom-nav items worth touring for a first-run user, each tagged with
+  // the 0-based tab slot (of 5) it sits over so its transparent showcase target
+  // lands on the right item. Home (you're already on it), AI Analytics and
+  // Lifestyle are intentionally left un-toured to keep the tour focused.
+  static const List<({int slot, String title, String body})> _navTour = [
     (
-      title: 'Home',
-      body: 'Your accounts, services and recent activity — all in one place.',
-    ),
-    (
-      title: 'AI Analytics',
-      body: 'Smart insights and budgeting across your wallet and linked banks.',
-    ),
-    (
+      slot: 2,
       title: 'AI Chat',
       body: 'Ask me to move money, pay bills or check balances — just type.',
     ),
     (
+      slot: 3,
       title: 'Move Money',
       body: 'Beam money to your own linked banks and other accounts.',
     ),
-    (
-      title: 'Lifestyle',
-      body: 'Lazerspray, crowdfunds, public groups and more — explore here.',
-    ),
   ];
+
+  // Total number of bottom-nav slots the bar lays out (toured or not).
+  static const int _navSlotCount = 5;
 
   // ---- gating + counts ------------------------------------------------------
 
@@ -253,9 +241,11 @@ class DashboardWalkthrough {
     );
   }
 
-  /// Five equal, transparent showcase targets laid across the bottom nav so it
-  /// can be toured item-by-item without reaching into the adaptive nav bar's
-  /// internals. Drop into the `bottomNavigationBar`'s Stack as a Positioned.fill
+  /// Five equal, transparent slots laid across the bottom nav so toured items
+  /// can be highlighted without reaching into the adaptive nav bar's internals.
+  /// Only the slots named in [_navTour] carry a showcase target; the rest are
+  /// invisible spacers that keep the toured targets aligned over the right nav
+  /// items. Drop into the `bottomNavigationBar`'s Stack as a Positioned.fill
   /// sibling ABOVE the real nav; IgnorePointer keeps real taps flowing to the
   /// nav once the tour is done.
   static Widget bottomNavTourTargets() {
@@ -263,21 +253,27 @@ class DashboardWalkthrough {
       child: IgnorePointer(
         child: Row(
           children: [
-            for (int i = 0; i < navKeys.length; i++)
-              Expanded(
-                child: step(
-                  key: navKeys[i],
-                  title: _navCopy[i].title,
-                  body: _navCopy[i].body,
-                  // Tooltip sits ABOVE the nav, beak pointing DOWN at the item.
-                  position: TooltipPosition.top,
-                  targetPadding: const EdgeInsets.symmetric(vertical: 4),
-                  child: const SizedBox.expand(),
-                ),
-              ),
+            for (int slot = 0; slot < _navSlotCount; slot++)
+              Expanded(child: _navSlot(slot)),
           ],
         ),
       ),
+    );
+  }
+
+  /// A single bottom-nav slot: a showcase target if [slot] is toured, else a
+  /// transparent spacer that just holds its share of the row width.
+  static Widget _navSlot(int slot) {
+    final i = _navTour.indexWhere((t) => t.slot == slot);
+    if (i < 0) return const SizedBox.expand();
+    return step(
+      key: navKeys[i],
+      title: _navTour[i].title,
+      body: _navTour[i].body,
+      // Tooltip sits ABOVE the nav, beak pointing DOWN at the item.
+      position: TooltipPosition.top,
+      targetPadding: const EdgeInsets.symmetric(vertical: 4),
+      child: const SizedBox.expand(),
     );
   }
 }

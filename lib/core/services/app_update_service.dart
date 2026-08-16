@@ -63,8 +63,8 @@ class AppUpdateInfo {
 ///
 /// This is a pure, local, non-blocking check — it reads already-cached config
 /// plus the local [PackageInfo]; it never makes a network call on the hot path.
-/// Shorebird handles Dart-only OTA patches separately (see docs/SHOREBIRD.md);
-/// this service covers native/store updates Shorebird can't deliver.
+/// OTA code-push handles Dart-only OTA patches separately;
+/// this service covers native/store updates OTA code-push can't deliver.
 class AppUpdateService {
   AppUpdateService();
 

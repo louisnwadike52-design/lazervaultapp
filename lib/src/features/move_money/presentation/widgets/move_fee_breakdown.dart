@@ -42,11 +42,20 @@ class MoveFeeBreakdown extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
 
-          // Consolidated transfer fee — the user sees ONE fee. The itemized
-          // breakdown (Mono debit pull, Flutterwave payout, CBN levy, stamp
-          // duty) is recorded on the backend and shown on the admin
-          // transaction-detail page, not surfaced to the user here.
-          _buildRow('Transfer fee', feeCalculation.totalFeeNaira, isBold: true),
+          // Itemized fee legs so the user knows exactly what they're paying, then
+          // ONE aggregated Total fee. Each leg is admin-tunable + split at settlement
+          // (Mono debit → MONO_COST, Flutterwave payout → FLUTTERWAVE_COST, stamp duty
+          // → STAMP_DUTY remittance, service fee → REVENUE).
+          if (feeCalculation.debitFee > 0)
+            _buildRow('Bank debit (Mono)', feeCalculation.debitFee / 100.0),
+          if (feeCalculation.transferFee > 0)
+            _buildRow('Payout (Flutterwave)', feeCalculation.transferFee / 100.0),
+          if (feeCalculation.stampDuty > 0)
+            _buildRow('Stamp duty (EMTL)', feeCalculation.stampDuty / 100.0),
+          if (feeCalculation.serviceFee > 0)
+            _buildRow('Service fee', feeCalculation.serviceFee / 100.0),
+          SizedBox(height: 6.h),
+          _buildRow('Total fee', feeCalculation.totalFeeNaira, isBold: true),
           SizedBox(height: 10.h),
 
           // Divider between fee and total

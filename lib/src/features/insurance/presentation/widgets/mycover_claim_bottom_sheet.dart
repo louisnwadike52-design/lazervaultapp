@@ -15,6 +15,8 @@
 // The bottom sheet keeps our own chrome (drag handle, close button,
 // product/policy header) so it doesn't look like a browser pop-up.
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -582,7 +584,15 @@ class _MyCoverClaimBottomSheetState extends State<MyCoverClaimBottomSheet> {
               Expanded(
                 child: _loadFailed
                     ? _buildErrorOverlay()
-                    : WebViewWidget(controller: _controller),
+                    : WebViewWidget(
+                        controller: _controller,
+                        // Vertical-drag recognizer so the claim page scrolls to
+                        // its end inside the sheet (footer/actions reachable).
+                        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                          Factory<VerticalDragGestureRecognizer>(
+                              () => VerticalDragGestureRecognizer()),
+                        },
+                      ),
               ),
               // Footer disclaimer — anchored at the bottom so users know
               // what's happening when the upstream form does its thing.

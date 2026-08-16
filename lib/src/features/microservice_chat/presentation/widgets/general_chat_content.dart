@@ -20,6 +20,7 @@ import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
+import 'chat_reply_widgets.dart';
 import 'chat_sessions_drawer.dart';
 import 'quick_action_chips.dart';
 
@@ -37,6 +38,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
   late AnimationController _typingDotsController;
   String? _userAvatarUrl;
   bool _isPinMode = false;
+
+  // Swipe-to-reply: the message the user swiped to reply to (staged in the
+  // preview bar above the input, and prepended as AI context on send).
+  String? _replyToText;
+  bool _replyToIsUser = false;
 
   // Media state
   final ImagePicker _imagePicker = ImagePicker();
@@ -88,6 +94,51 @@ class _GeneralChatContentState extends State<GeneralChatContent>
             curve: Curves.easeOut,
           );
         }
+      });
+    }
+  }
+
+  /// A short snippet of a message to quote in the reply preview / quote block.
+  String _snippetOf(GeneralChatMessageEntity m) {
+    final t = m.text.trim();
+    if (t.isNotEmpty) return t;
+    if (m.mediaType == 'image') return '📷 Photo';
+    if (m.mediaType == 'voice') return '🎤 Voice note';
+    return '';
+  }
+
+  /// Stage [message] as the reply target (from a left-swipe on its bubble).
+  /// System / welcome messages aren't replyable.
+  void _startReply(GeneralChatMessageEntity message) {
+    if (message.metadata?['isSystemMessage'] == true) return;
+    final snippet = _snippetOf(message);
+    if (snippet.isEmpty) return;
+    setState(() {
+      _replyToText = snippet;
+      _replyToIsUser = message.isUser;
+    });
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyToText = null;
+      _replyToIsUser = false;
+    });
+  }
+
+  /// Send [text] with any staged reply context, then clear the input + reply.
+  void _sendText(String text) {
+    context.read<GeneralChatCubit>().sendMessage(
+          text,
+          replyToText: _replyToText,
+          replyToIsUser: _replyToIsUser,
+        );
+    _textController.clear();
+    if (_replyToText != null || _isPinMode) {
+      setState(() {
+        _replyToText = null;
+        _replyToIsUser = false;
+        _isPinMode = false;
       });
     }
   }
@@ -237,6 +288,12 @@ class _GeneralChatContentState extends State<GeneralChatContent>
               Expanded(
                 child: _buildMessagesList(state.messages, state is GeneralChatLoading),
               ),
+              if (_replyToText != null)
+                ChatReplyPreviewBar(
+                  author: _replyToIsUser ? 'yourself' : 'the assistant',
+                  snippet: _replyToText!,
+                  onCancel: _cancelReply,
+                ),
               _buildInputArea(state),
             ],
           );
@@ -418,7 +475,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           }
 
           final message = messages[index];
-          return _buildMessageBubble(message);
+          // Left-swipe any bubble to reply to it (grounds the AI's next reply).
+          return ChatSwipeToReply(
+            onReply: () => _startReply(message),
+            child: _buildMessageBubble(message),
+          );
         },
       ),
     );
@@ -813,6 +874,16 @@ class _GeneralChatContentState extends State<GeneralChatContent>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Quoted "replied message" block above a sent reply — same
+                  // pattern the P2P bubble uses for a reply quote.
+                  if (message.replyToText != null &&
+                      message.replyToText!.isNotEmpty)
+                    ChatReplyQuoteBlock(
+                      author: (message.replyToIsUser ?? false)
+                          ? 'You'
+                          : 'Lazer',
+                      quotedText: message.replyToText!,
+                    ),
                   if (message.mediaType != null) ...[
                     ChatMediaBubble(
                       mediaType: message.mediaType,
@@ -1094,9 +1165,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                       },
                       onSubmitted: (text) {
                         if (text.trim().isNotEmpty && !isLoading) {
-                          context.read<GeneralChatCubit>().sendMessage(text);
-                          _textController.clear();
-                          if (_isPinMode) setState(() => _isPinMode = false);
+                          _sendText(text);
                         }
                       },
                     ),
@@ -1106,10 +1175,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
               GestureDetector(
                 onTap: () {
                   if (_textController.text.trim().isNotEmpty && !isLoading) {
-                    context
-                        .read<GeneralChatCubit>()
-                        .sendMessage(_textController.text);
-                    _textController.clear();
+                    _sendText(_textController.text);
                   }
                 },
                 child: Container(

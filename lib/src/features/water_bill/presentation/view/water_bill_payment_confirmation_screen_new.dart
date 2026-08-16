@@ -11,6 +11,7 @@ import '../../domain/entities/water_auto_recharge.dart';
 import '../../domain/entities/water_beneficiary.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
 
 /// Water Bill payment confirmation.
 ///
@@ -621,11 +622,24 @@ class _WaterBillPaymentConfirmationScreenNewState
         ),
         SizedBox(width: 12.w),
         Expanded(
-          child: Text(
-            'I confirm this payment is authorized and I agree to the terms and conditions',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 12.sp,
+          child: Builder(
+            builder: (context) => GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PartnerWebViewScreen(
+                    url: 'https://lazervault.app/legal/terms',
+                    title: 'Terms & Conditions',
+                  ),
+                ),
+              ),
+              child: Text(
+                'I confirm this payment is authorized and I agree to the terms and conditions',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
           ),
         ),

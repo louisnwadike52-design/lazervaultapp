@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/domain/qr_payload_parser.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -215,11 +216,11 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
       type: 'internal',
       internalUserId: recipientId,
     );
-    // NOTE: the initiateSendFunds route builds its screen from `recipient`
-    // only; it has no amount-prefill hook, so a legacy amount token just seeds
-    // the recipient and the payer enters the amount (server amount QRs take the
-    // confirmation path above instead).
-    Get.offNamed(AppRoutes.initiateSendFunds, arguments: {'recipient': recipient});
+    // Route through the single launcher so a scan honours the user's short/long
+    // flow setting (previously this always forced the long flow) and unwinds any
+    // stale send-flow route. autoContinue jumps straight into the send tail with
+    // the scanned peer; the payer enters the amount.
+    SendFundsLauncher.open(recipient: recipient, autoContinue: true);
   }
 
   void _rejectInvalid({String? message}) {

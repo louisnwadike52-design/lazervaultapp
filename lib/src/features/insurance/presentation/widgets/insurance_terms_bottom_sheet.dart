@@ -19,6 +19,8 @@
 // 80% screen height per the design spec. Themed to the app's dark
 // palette so it doesn't look like a popup.
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -331,7 +333,15 @@ class _InsuranceTermsBottomSheetState extends State<InsuranceTermsBottomSheet> {
             : null,
       );
     }
-    return WebViewWidget(controller: _controller);
+    return WebViewWidget(
+      controller: _controller,
+      // Vertical-drag recognizer so the terms page scrolls to its end inside the
+      // sheet instead of the sheet swallowing the gesture.
+      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+        Factory<VerticalDragGestureRecognizer>(
+            () => VerticalDragGestureRecognizer()),
+      },
+    );
   }
 
   Widget _centered(Widget icon, {required String title, String? subtitle}) {

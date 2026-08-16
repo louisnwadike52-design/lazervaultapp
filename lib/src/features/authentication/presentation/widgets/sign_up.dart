@@ -357,6 +357,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
        initialPickerDate = currentState.selectedDate ?? initialPickerDate;
     }
 
+    // Age gate: users must be at least 18. Cap the selectable DOB to exactly 18
+    // years ago so a sub-18 date can't be picked (store + regulatory requirement).
+    final maxDob = DateTime(
+        DateTime.now().year - 18, DateTime.now().month, DateTime.now().day);
+    if (initialPickerDate.isAfter(maxDob)) initialPickerDate = maxDob;
+
     DateTime? pickedDate;
 
     // Use platform-specific date picker
@@ -392,7 +398,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                     mode: CupertinoDatePickerMode.date,
                     initialDateTime: initialPickerDate,
                     minimumDate: DateTime(1900),
-                    maximumDate: DateTime.now(),
+                    maximumDate: maxDob,
                     onDateTimeChanged: (DateTime newDate) {
                       tempPickedDate = newDate;
                     },
@@ -409,7 +415,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         context: currentContext,
         initialDate: initialPickerDate,
         firstDate: DateTime(1900),
-        lastDate: DateTime.now(),
+        lastDate: maxDob,
       );
     }
 

@@ -45,6 +45,7 @@ import '../widgets/move_status_badge.dart';
 import '../../services/move_transfer_pdf_service.dart';
 import '../../services/wallet_transfer_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Dashboard screen for the Move Money feature.
 ///
@@ -437,7 +438,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 curr is BalanceRefreshing ||
                 curr is BalanceRefreshed ||
                 (curr is OpenBankingError &&
-                    curr.operation == 'refreshBalance'),
+                    (curr.operation == 'refreshBalance' ||
+                        curr.operation == 'linkAccount')),
             listener: (context, state) async {
               if (state is BalanceRefreshing) {
                 // No snackbar — the account card shows an inline
@@ -449,6 +451,19 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               if (state is BalanceRefreshed) {
                 // No snackbar — the card flips to the live figure inline.
                 if (mounted) setState(() {});
+                return;
+              }
+              if (state is OpenBankingError &&
+                  state.operation == 'linkAccount') {
+                // Linked-bank cap (admin-tunable default 3) / provider capacity
+                // exhausted — styled modal with a "Manage banks" CTA, not the
+                // generic error state. Nothing was charged (checked pre-fee).
+                Get.closeAllSnackbars();
+                if (state.errorCode == kLinkLimitReachedCode) {
+                  showLinkLimitReachedDialog(context, state.message);
+                } else if (state.errorCode == kLinkingCapacityCode) {
+                  showLinkingCapacityDialog(context);
+                }
                 return;
               }
               if (state is OpenBankingError &&

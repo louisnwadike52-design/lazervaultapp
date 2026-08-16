@@ -185,6 +185,22 @@ class VoiceSuggestions {
       'Show expense report',
     ],
 
+    'business': [
+      'Show my business overview',
+      'How much revenue did I make this month?',
+      'What are my outstanding receivables?',
+      'Show money in versus money out',
+      'How much tax do I owe?',
+    ],
+
+    'sales': [
+      'Record a new sale',
+      'Show my recent sales',
+      'What is my total revenue this month?',
+      'How much are customers owing me?',
+      'Show my best selling products',
+    ],
+
     // CATEGORY 4: FINANCIAL PRODUCTS & SAVINGS
     'autosave': [
       'Set up automatic savings',
@@ -344,6 +360,11 @@ class VoiceSuggestions {
         'loans',
         'referrals',
         'giftcards',
+      ],
+      'Business Management': [
+        'business',
+        'sales',
+        'expenses',
       ],
       'User Services & AI': [
         'support',

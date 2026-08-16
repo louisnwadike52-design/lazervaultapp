@@ -208,7 +208,10 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   }
 
   Future<void> _toggleVoice(bool turnOn) async {
-    final userId = (await _store.getUserId()) ?? '';
+    // Resolve from the CURRENT session (access-token sub), never the possibly
+    // stale cached user_id key — so enabling voice login always binds to the
+    // account signed in right now, not a previously-signed-in one.
+    final userId = (await _store.getCurrentUserId()) ?? '';
     if (!turnOn) {
       _voiceOn = false;
       // Turning the login preference off does NOT delete the server voiceprint

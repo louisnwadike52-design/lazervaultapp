@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 
-/// Lock type selection screen - Step 1 of 5
+/// Lock type selection — top half of wizard step 1 (Plan & Amount).
 ///
 /// Displays rates dynamically from backend PiggyVault configs.
 /// Falls back to hardcoded enum values when backend is unavailable.
@@ -41,7 +41,7 @@ class LockTypeSelector extends StatelessWidget {
         // renders something.
         final plans = cubit.activePlans;
 
-        return SingleChildScrollView(
+        return Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

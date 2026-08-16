@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,13 +95,27 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   /// Quidax minimum order value for this token, in fiat major units (per-token
   /// from GET /markets minimum_order_size, currency floor fallback). 0=unknown.
   double _minFiat() {
-    int? minor;
     try {
       final cfg = GetIt.I<CryptoConfigCubit>().config;
-      minor = cfg.minOrderFor(widget.crypto.symbol) ??
-          cfg.minOrderFor(CurrencySymbols.currentCurrency);
-    } catch (_) {}
-    return (minor ?? 0) / 100.0;
+      final sym = widget.crypto.symbol.toLowerCase();
+      // Quidax's real min is on the CRYPTO leg (the received crypto must clear
+      // the swap floor). Convert it to fiat via the live rate so a fiat-input
+      // buy sheet can validate it. minOrderFor(sym) is now in the crypto's
+      // LEDGER minor units, so scale by decimalsFor(sym) (NOT a flat /100).
+      double minFromCrypto = 0;
+      final cryptoMinMinor = cfg.minOrderFor(sym);
+      final rate = _rate(); // fiat per 1 unit of crypto
+      if (cryptoMinMinor != null && cryptoMinMinor > 0 && rate > 0) {
+        final cryptoMin = cryptoMinMinor / math.pow(10, cfg.decimalsFor(sym));
+        minFromCrypto = cryptoMin * rate;
+      }
+      // Flat fiat notional floor (~$1 in the user's currency) as a backstop.
+      final fiatFloor =
+          (cfg.minOrderFor(CurrencySymbols.currentCurrency) ?? 0) / 100.0;
+      return math.max(minFromCrypto, fiatFloor);
+    } catch (_) {
+      return 0;
+    }
   }
 
   String? _amountError(double available) {
@@ -608,11 +624,27 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                           color: Colors.white.withValues(alpha: 0.7))),
                   Row(children: [
                     _unitToggleChip(altLabel),
-                    // Max: spend the full spendable fiat balance.
+                    // Max: spend the full spendable fiat balance MINUS the
+                    // platform fee — the wallet must cover subtotal+fee, so
+                    // setting the subtotal to the full balance made total>balance
+                    // and permanently disabled the Buy button ("Exceeds wallet").
                     if (available > 0 && !_isAmountInCrypto) ...[
                       SizedBox(width: 8.w),
-                      _maxChip(() => setState(() =>
-                          _amountController.text = available.toStringAsFixed(2))),
+                      _maxChip(() => setState(() {
+                        double feeAtFull;
+                        try {
+                          feeAtFull = context
+                              .read<CryptoConfigCubit>()
+                              .config
+                              .feeForOp('buy', available,
+                                  CurrencySymbols.currentCurrency);
+                        } catch (_) {
+                          feeAtFull = available * _feeDisplayRate();
+                        }
+                        final maxSpend =
+                            (available - feeAtFull).clamp(0.0, available);
+                        _amountController.text = maxSpend.toStringAsFixed(2);
+                      })),
                     ],
                   ]),
                 ],
@@ -939,9 +971,17 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     try {
       cubit.refreshHoldingsLive();
     } catch (_) {}
-    if (!result.initiated && (result.message ?? '').isNotEmpty) {
-      Get.snackbar('Trade failed', result.message!, snackPosition: SnackPosition.BOTTOM);
-      if (mounted) setState(() => _isTransacting = false);
+    // The confirmed-success path already dismissed this sheet (onBeforeProcessing)
+    // so the receipt renders on a clean stack — `mounted` is false here. If we're
+    // STILL mounted, the flow was cancelled (quote/PIN) or declined (KYC) or
+    // errored; in ALL those cases release the frozen Buy button, and surface the
+    // message when there is one. (Previously the reset only ran for a non-empty
+    // error message, so cancelling the quote/PIN froze the button forever.)
+    if (mounted) {
+      if (!result.initiated && (result.message ?? '').isNotEmpty) {
+        Get.snackbar('Trade failed', result.message!, snackPosition: SnackPosition.BOTTOM);
+      }
+      setState(() => _isTransacting = false);
     }
   }
 }

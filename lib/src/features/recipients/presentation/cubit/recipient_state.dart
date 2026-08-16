@@ -67,11 +67,16 @@ class RecipientError extends RecipientState {
 class RecipientSuccess extends RecipientState {
   final String message;
   final RecipientModel? recipient;
+  // When true, listeners must NOT show a user-facing snackbar — used for the
+  // send-funds flow's silent auto-save of a new recipient (the user already sees
+  // the transfer receipt; a "Recipient added" toast on top is noise).
+  final bool silent;
 
-  const RecipientSuccess(this.message, {this.recipient});
+  const RecipientSuccess(this.message, {this.recipient, this.silent = false});
 
   @override
-  List<Object> get props => [message, if (recipient != null) recipient!];
+  List<Object> get props =>
+      [message, silent, if (recipient != null) recipient!];
 }
 
 class RecipientLoadingMore extends RecipientState {

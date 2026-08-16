@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import 'package:lazervault/core/config/feature_flags.dart';
@@ -26,6 +27,43 @@ class SendFundsLauncher {
   ///
   /// [checkRecurring] only applies to the long flow's initiate screen (it offers
   /// to set up a recurring transfer); the short flow ignores it.
+  /// Named page routes that belong to EITHER send-funds flow. When a new
+  /// journey starts we unwind any of these still on the stack so a short flow is
+  /// never launched on top of a long-flow screen (or vice-versa). Leaving one
+  /// behind is the root cause of the "long-flow amount page flashes before the
+  /// receipt" bug: the terminal `Get.offAllNamed(transferProof)` tears the stale
+  /// route down on-screen. Receipts are included so "send again" from a receipt
+  /// starts clean too.
+  static const Set<String> _sendFlowRoutes = {
+    AppRoutes.selectRecipient,
+    AppRoutes.quickSend,
+    AppRoutes.sendFunds,
+    AppRoutes.initiateSendFunds,
+    AppRoutes.reviewFundsTransfer,
+    AppRoutes.transferProcessing,
+    AppRoutes.transferProof,
+    AppRoutes.sendFundReceipt,
+  };
+
+  /// Stop predicate for [Get.offNamedUntil]: keep unwinding until we reach the
+  /// first STABLE base — a named, non-send page (e.g. dashboard, a chat screen)
+  /// or the root. Everything above it (a previous flow's send routes + any
+  /// transient anonymous bottom sheets like the "Repeat" history sheet the user
+  /// launched from) is removed, so the fresh flow always sits on a clean base.
+  static bool _isCleanBase(Route<dynamic> route) =>
+      isCleanBaseRoute(route.settings.name, route.isFirst);
+
+  /// Pure form of [_isCleanBase] (name + isFirst) so the stack-clean rule that
+  /// prevents the long/short flows from coexisting can be unit-tested without a
+  /// live Navigator. Returns true for the route to STOP at (keep as the base).
+  @visibleForTesting
+  static bool isCleanBaseRoute(String? routeName, bool isFirst) {
+    if (isFirst) return true;
+    if (routeName == null) return false; // transient/anonymous sheet → remove
+    return !_sendFlowRoutes.contains(routeName);
+  }
+
+  /// Open Send Funds, optionally pre-targeting [recipient].
   static void open({
     RecipientModel? recipient,
     bool autoContinue = false,
@@ -33,29 +71,32 @@ class SendFundsLauncher {
     String? prefillCurrency,
     bool checkRecurring = false,
   }) {
-    // "Repeat" and the empty-state "Send Money" are launched from a sheet
-    // sitting ON TOP of the send-flow screen the launcher navigates to, so the
-    // destination route is frequently the one we're already on. GetX's
-    // preventDuplicates (default true) silently swallows a navigation to the
-    // current route — the flow would never continue and the tap looks dead.
-    // For that auto-continue case (a recipient we intend to run immediately) we
-    // disable dedup so the navigation always lands. Each flow then continues via
-    // its OWN navigation and self-cleans: short → Get.offAllNamed(transferProof)
-    // on success / Get.back() on cancel; long → initiateSendFunds owns its
-    // forward nav to the confirmation + receipt.
+    // Each flow is launched with `offNamedUntil(_isCleanBase)` rather than a bare
+    // `toNamed`: it (a) atomically removes any stale send-flow route/transient
+    // sheet from the stack so the two flows can NEVER coexist, and (b) always
+    // lands (no preventDuplicates dedup swallowing the tap when "Repeat" is
+    // launched from a sheet sitting on the current send screen). Each flow then
+    // self-cleans forward: short → Get.offAllNamed(transferProof); long →
+    // initiateSendFunds owns its forward nav to confirm + receipt.
     final runsImmediately = recipient != null && autoContinue;
 
     if (FeatureFlags.sendFlowShortForSession) {
-      // Classic (short) flow: the Select Recipient screen owns amount → PIN →
-      // receipt. autoContinue jumps straight to the amount step with the
-      // repeated amount (minor units) pre-filled.
-      Get.toNamed(
-        AppRoutes.selectRecipient,
-        preventDuplicates: !runsImmediately,
+      // Classic (short) flow. A KNOWN recipient we run immediately (chat / QR /
+      // repeat) uses the TRANSPARENT quick-send host so the amount sheet opens
+      // directly over the caller with no opaque intermediate screen flashing on
+      // open/close. Everything else uses the standard (opaque) picker. The
+      // destination is decided HERE, up front — we navigate ONCE, never route
+      // then re-route based on the flow.
+      final route =
+          runsImmediately ? AppRoutes.quickSend : AppRoutes.selectRecipient;
+      Get.offNamedUntil(
+        route,
+        _isCleanBase,
         arguments: {
           'shortFlow': true,
           if (recipient != null) 'preselectedRecipient': recipient,
           if (runsImmediately) 'autoContinue': true,
+          if (runsImmediately) 'transparentHost': true,
           if (prefillAmountMinor != null) 'prefillAmount': prefillAmountMinor,
           if (prefillCurrency != null) 'prefillCurrency': prefillCurrency,
         },
@@ -69,9 +110,9 @@ class SendFundsLauncher {
       // autoShowConfirm make it open the confirmation sheet pre-filled, so a
       // Repeat only needs the user to confirm; checkRecurring lets it offer a
       // recurring rule.
-      Get.toNamed(
+      Get.offNamedUntil(
         AppRoutes.initiateSendFunds,
-        preventDuplicates: !runsImmediately,
+        _isCleanBase,
         arguments: {
           'recipient': recipient,
           if (prefillAmountMinor != null) 'prefillAmount': prefillAmountMinor,
@@ -83,7 +124,7 @@ class SendFundsLauncher {
     } else {
       // No recipient → the long-flow recipient picker
       // (SelectRecipients defaults to shortFlow:false).
-      Get.toNamed(AppRoutes.selectRecipient);
+      Get.offNamedUntil(AppRoutes.selectRecipient, _isCleanBase);
     }
   }
 }

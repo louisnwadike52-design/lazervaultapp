@@ -16,8 +16,7 @@ import 'package:google_fonts/google_fonts.dart' hide Config;
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
-import 'package:lazervault/core/config/feature_flags.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/service_chat_bottom_sheet.dart';
@@ -759,23 +758,9 @@ class _P2PChatPageState extends State<P2PChatPage>
       type: 'internal',
     );
 
-    if (FeatureFlags.sendFlowShortForSession) {
-      // Short flow lives on the select-recipient screen (it owns the amount
-      // sheet + dispatch). Hand it the preselected peer so it runs the short
-      // tail directly — reusing all balance/PIN/receipt edge-case handling.
-      Get.toNamed(
-        AppRoutes.selectRecipient,
-        arguments: {
-          'shortFlow': true,
-          'preselectedRecipient': recipient,
-          'autoContinue': true,
-        },
-      );
-    } else {
-      // Long flow: the full amount-entry screen accepts a recipient directly.
-      Get.toNamed(AppRoutes.initiateSendFunds,
-          arguments: {'recipient': recipient});
-    }
+    // Single entry point: honours the short/long flow setting and unwinds any
+    // stale send-flow route so the flows never coexist (see SendFundsLauncher).
+    SendFundsLauncher.open(recipient: recipient, autoContinue: true);
   }
 
   /// ⚠️ Fraud-detection warning shown ONLY to the counterparty when the other

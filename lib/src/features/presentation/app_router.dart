@@ -505,7 +505,6 @@ import 'package:lazervault/src/features/currency_exchange/presentation/views/exc
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_history_screen.dart';
 
 // Settings imports
-import 'package:lazervault/src/features/settings/presentation/view/privacy_policy_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/referral_dashboard_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/all_referrals_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/lazer_points_screen.dart';
@@ -849,6 +848,22 @@ class AppRouter {
         child: serviceLocator<SelectRecipientScreen>(),
       ),
       transition: Transition.rightToLeft,
+    ),
+    // Transparent quick-send host for the short-flow autoContinue case (chat/QR/
+    // repeat). Same screen + cubits as selectRecipient, but opaque:false +
+    // noTransition so the amount sheet presents directly over the caller with no
+    // opaque intermediate screen flashing on open or close.
+    GetPage(
+      name: AppRoutes.quickSend,
+      opaque: false,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<RecipientCubit>()),
+          BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
+        ],
+        child: serviceLocator<SelectRecipientScreen>(),
+      ),
+      transition: Transition.noTransition,
     ),
     GetPage(
       name: AppRoutes.addRecipient,
@@ -3312,13 +3327,6 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
 
-    // Settings screens
-    GetPage(
-      name: '/privacy-policy',
-      page: () => const PrivacyPolicyScreen(),
-      transition: Transition.rightToLeft,
-    ),
-
     // Crowdfund routes
     GetPage(
       name: AppRoutes.crowdfund,
@@ -3529,10 +3537,22 @@ GetPage(
     ),
     GetPage(
       name: AppRoutes.voiceEnrollment,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<VoiceEnrollmentCubit>(),
-        child: const VoiceEnrollmentCarouselScreen(),
-      ),
+      page: () {
+        // Callers can pass {'openVoiceSheetOnComplete': false} to make enrollment
+        // POP BACK to the launcher (e.g. Voice Settings) on completion — refreshing
+        // the enrolled status there — instead of the onboarding default of clearing
+        // the stack to the dashboard and auto-opening the voice command sheet.
+        // Anything else / no args keeps the onboarding default (true).
+        final args = Get.arguments;
+        final openSheet =
+            !(args is Map && args['openVoiceSheetOnComplete'] == false);
+        return BlocProvider(
+          create: (_) => serviceLocator<VoiceEnrollmentCubit>(),
+          child: VoiceEnrollmentCarouselScreen(
+            openVoiceSheetOnComplete: openSheet,
+          ),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(

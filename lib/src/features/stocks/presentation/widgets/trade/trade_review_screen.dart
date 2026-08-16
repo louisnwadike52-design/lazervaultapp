@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
@@ -306,9 +307,24 @@ class TradeReviewScreen extends StatelessWidget {
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(
-                    'By placing this order you agree to our terms and risk disclosures.',
-                    style: InvestTradingUi.labelMuted().copyWith(height: 1.4),
+                  child: Builder(
+                    builder: (context) => GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PartnerWebViewScreen(
+                            url: 'https://lazervault.app/legal/investments',
+                            title: 'Investment Terms',
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'By placing this order you agree to our terms and risk disclosures.',
+                        style: InvestTradingUi.labelMuted().copyWith(
+                          height: 1.4,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],

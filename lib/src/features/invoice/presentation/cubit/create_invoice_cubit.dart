@@ -418,6 +418,18 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   }
 
   bool validateScreen3({bool required = false}) {
+    // Split mode replaces the single-payer contact form with a list of tagged
+    // app users, so validate the split instead. The exact amount-balance check
+    // runs at submit time (splitIsValid); here we just need at least one payer.
+    if (_splitMode) {
+      if (_splitPayers.isEmpty) {
+        emit(const CreateInvoiceValidationError(
+            'Add at least one person to split with'));
+        return false;
+      }
+      return true;
+    }
+
     // Skip validation if payer section wasn't shown and no data entered
     final hasAnyData = _payerContact.trim().isNotEmpty ||
         _payerEmail.trim().isNotEmpty;
@@ -533,6 +545,9 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       total: total,
       payerImagePath: _payerImage?.path,
       recipientImagePath: _recipientImage?.path,
+      splitMode: _splitMode,
+      splitCustom: _splitCustom,
+      splitPayers: List.unmodifiable(_splitPayers),
     ));
   }
 

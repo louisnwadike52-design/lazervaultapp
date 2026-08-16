@@ -12,6 +12,11 @@ class GeneralChatMessageEntity extends Equatable {
   final String? localMediaPath; // Local file path (before upload / for preview)
   final int? audioDurationMs; // Voice note duration in milliseconds
   final String? transcript; // Voice note transcription text
+  // Swipe-to-reply context: snippet + author of the earlier chat message this
+  // (user) message was sent in reply to, so the sent bubble renders the quoted
+  // "replied message" block above its own text.
+  final String? replyToText;
+  final bool? replyToIsUser;
 
   const GeneralChatMessageEntity({
     required this.text,
@@ -24,10 +29,13 @@ class GeneralChatMessageEntity extends Equatable {
     this.localMediaPath,
     this.audioDurationMs,
     this.transcript,
+    this.replyToText,
+    this.replyToIsUser,
   });
 
   @override
-  List<Object?> get props => [text, isUser, timestamp, serviceRoutedTo, mediaType];
+  List<Object?> get props =>
+      [text, isUser, timestamp, serviceRoutedTo, mediaType, replyToText];
 
   GeneralChatMessageEntity copyWith({
     String? text,
@@ -40,6 +48,8 @@ class GeneralChatMessageEntity extends Equatable {
     String? localMediaPath,
     int? audioDurationMs,
     String? transcript,
+    String? replyToText,
+    bool? replyToIsUser,
   }) {
     return GeneralChatMessageEntity(
       text: text ?? this.text,
@@ -52,6 +62,8 @@ class GeneralChatMessageEntity extends Equatable {
       localMediaPath: localMediaPath ?? this.localMediaPath,
       audioDurationMs: audioDurationMs ?? this.audioDurationMs,
       transcript: transcript ?? this.transcript,
+      replyToText: replyToText ?? this.replyToText,
+      replyToIsUser: replyToIsUser ?? this.replyToIsUser,
     );
   }
 }

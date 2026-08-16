@@ -196,6 +196,7 @@ class VoiceSettingsService {
     required bool? requirePin,
     required int? thresholdKobo,
     String? entryMode,
+    String? interactionMode,
   }) async {
     try {
       final token = await _getAuthToken();
@@ -207,6 +208,10 @@ class VoiceSettingsService {
       // threshold save never wipes the entry-mode choice server-side.
       if (entryMode != null) {
         body['entry_mode'] = entryMode;
+      }
+      // Same tri-state rule for interaction_mode ('' clears → defer to admin).
+      if (interactionMode != null) {
+        body['interaction_mode'] = interactionMode;
       }
       final response = await _client.put(
         Uri.parse('$_voiceGatewayUrl/voice/txpin/settings'),
@@ -260,6 +265,14 @@ class VoiceTxPinSettings {
   /// Resolved platform default entry mode ('sheet'|'voice').
   final String adminEntryMode;
 
+  /// Per-user INTERACTION-mode override: '' = defer to the admin default;
+  /// 'continuous'|'hold'|'tap'|'double_tap' = pin the choice. UX preference for
+  /// how the user talks to the voice agent (NOT a security control).
+  final String interactionMode;
+
+  /// Resolved platform default interaction mode ('continuous'|'hold'|'tap'|'double_tap').
+  final String adminInteractionMode;
+
   const VoiceTxPinSettings({
     this.requirePin,
     this.thresholdKobo,
@@ -267,6 +280,8 @@ class VoiceTxPinSettings {
     this.adminRequirePin = false,
     this.adminThresholdKobo = 0,
     this.adminEntryMode = 'sheet',
+    this.interactionMode = '',
+    this.adminInteractionMode = 'continuous',
   });
 
   factory VoiceTxPinSettings.fromJson(Map<String, dynamic> j) => VoiceTxPinSettings(
@@ -278,6 +293,11 @@ class VoiceTxPinSettings {
         adminEntryMode: (j['admin_entry_mode'] as String?)?.isNotEmpty == true
             ? j['admin_entry_mode'] as String
             : 'sheet',
+        interactionMode: (j['interaction_mode'] as String?) ?? '',
+        adminInteractionMode:
+            (j['admin_interaction_mode'] as String?)?.isNotEmpty == true
+                ? j['admin_interaction_mode'] as String
+                : 'continuous',
       );
 
   /// The effective "PIN required in voice" the user experiences right now.
@@ -289,4 +309,11 @@ class VoiceTxPinSettings {
   /// The effective PIN-entry mode ('sheet'|'voice') — per-user override wins.
   String get effectiveEntryMode =>
       entryMode.isNotEmpty ? entryMode : adminEntryMode;
+
+  /// The effective interaction mode the user experiences right now — per-user
+  /// override wins, else the admin default. Never empty (falls back to 'continuous').
+  String get effectiveInteractionMode {
+    final v = interactionMode.isNotEmpty ? interactionMode : adminInteractionMode;
+    return v.isNotEmpty ? v : 'continuous';
+  }
 }

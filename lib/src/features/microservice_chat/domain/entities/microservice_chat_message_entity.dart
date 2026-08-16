@@ -12,6 +12,12 @@ class MicroserviceChatMessageEntity extends Equatable {
   final String? localMediaPath; // Local file path (before upload / for preview)
   final int? audioDurationMs; // Voice note duration in milliseconds
   final String? transcript; // Voice note transcription text
+  // Swipe-to-reply context: when this (user) message was sent as a reply to an
+  // earlier chat message, [replyToText] holds a snippet of that referenced
+  // message and [replyToIsUser] tags who authored it — so the sent bubble can
+  // render the quoted "replied message" block above its own text.
+  final String? replyToText;
+  final bool? replyToIsUser;
 
   const MicroserviceChatMessageEntity({
     required this.text,
@@ -25,6 +31,8 @@ class MicroserviceChatMessageEntity extends Equatable {
     this.localMediaPath,
     this.audioDurationMs,
     this.transcript,
+    this.replyToText,
+    this.replyToIsUser,
   });
 
   @override
@@ -40,6 +48,8 @@ class MicroserviceChatMessageEntity extends Equatable {
         localMediaPath,
         audioDurationMs,
         transcript,
+        replyToText,
+        replyToIsUser,
       ];
 
   MicroserviceChatMessageEntity copyWith({
@@ -54,6 +64,8 @@ class MicroserviceChatMessageEntity extends Equatable {
     String? localMediaPath,
     int? audioDurationMs,
     String? transcript,
+    String? replyToText,
+    bool? replyToIsUser,
   }) {
     return MicroserviceChatMessageEntity(
       text: text ?? this.text,
@@ -67,6 +79,8 @@ class MicroserviceChatMessageEntity extends Equatable {
       localMediaPath: localMediaPath ?? this.localMediaPath,
       audioDurationMs: audioDurationMs ?? this.audioDurationMs,
       transcript: transcript ?? this.transcript,
+      replyToText: replyToText ?? this.replyToText,
+      replyToIsUser: replyToIsUser ?? this.replyToIsUser,
     );
   }
 }

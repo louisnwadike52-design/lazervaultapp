@@ -28,6 +28,7 @@ import 'crypto_transaction_history_screen.dart';
 import 'crypto_receipt_screen.dart';
 import 'smart_trading_screen.dart';
 import '../../../lifestyle/presentation/screens/partner_webview_screen.dart';
+import '../../../settings/presentation/widgets/webview_bottom_sheet.dart';
 import 'secure_wallet_screen.dart';
 import 'pro_exchange_screen.dart';
 import 'learn_earn_screen.dart';
@@ -104,6 +105,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
                     _buildPriceAlertsSection(state),
                     _buildCryptoCardsRow(state),
                     _buildTopMoversSection(state),
+                    _buildRiskWarning(state),
                     _buildFooter(),
                   ] else if (state is CryptoLoading) ...[
                     const CryptoShimmerLoading(),
@@ -2401,15 +2403,71 @@ class _CryptoScreenState extends State<CryptoScreen> {
     );
   }
 
+  /// High-risk investment warning (UK FCA-style). Restored to the landing page.
+  /// When an admin has set `crypto.risk_disclaimer_url` (surfaced on
+  /// GlobalMarketData.learnMoreUrl), the whole card is tappable and "Take 2 mins
+  /// to learn more" renders as a link that opens the URL in the app's in-app
+  /// web-view bottom sheet; with no URL configured it stays plain, static text.
+  Widget _buildRiskWarning(CryptosLoaded state) {
+    final url = (state.globalMarketData?.learnMoreUrl ?? '').trim();
+    final base = TextStyle(color: Colors.grey[400], fontSize: 12.sp, height: 1.5);
+    const warning =
+        "Don't invest unless you're prepared to lose all the money you invest. "
+        "This is a high-risk investment and you should not expect to be protected "
+        "if something goes wrong. ";
+    final card = Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            const TextSpan(text: warning),
+            TextSpan(
+              text: 'Take 2 mins to learn more',
+              // Link styling only when a URL is configured (the whole card
+              // carries the tap — no per-span recognizer to leak).
+              style: url.isEmpty
+                  ? null
+                  : base.copyWith(
+                      color: const Color(0xFF3B82F6),
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.w600,
+                    ),
+            ),
+          ],
+        ),
+        style: base,
+        textAlign: TextAlign.center,
+      ),
+    );
+    if (url.isEmpty) return card;
+    return GestureDetector(
+      onTap: () => showWebViewBottomSheet(
+        context,
+        url: url,
+        title: 'Crypto risk warning',
+      ),
+      child: card,
+    );
+  }
+
   Widget _buildFooter() {
     return BlocBuilder<CryptoCubit, CryptoState>(
       builder: (context, state) {
         // Disclosure URL is admin-managed via system_settings
-        // (`crypto.disclosure_url`). Hide the CTA entirely when ops
-        // hasn't set a URL so the footer never opens a dead link.
-        final url = state is CryptosLoaded
+        // (`crypto.disclosure_url`). When ops hasn't set one, fall back to the
+        // published default so the Crypto Risk Disclosure is ALWAYS reachable
+        // (App Store / Play compliance) instead of the CTA being hidden.
+        final configured = state is CryptosLoaded
             ? (state.globalMarketData?.disclosureUrl ?? '')
             : '';
+        final url = configured.trim().isNotEmpty
+            ? configured.trim()
+            : 'https://lazervault.app/legal/crypto';
         return Padding(
           padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
           child: Column(

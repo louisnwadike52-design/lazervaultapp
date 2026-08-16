@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
@@ -29,10 +32,25 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen> {
   // LiveScanCameraView hands back a still.
   AiScanCubit? _aiScanCubit;
 
+  // Active country for the on-device extractor: gates the NG-tuned fast path and
+  // picks the right on-device bank list. Sourced from the dashboard locale (NG
+  // fallback), mirroring _handleOcrResolved's country resolution.
+  String _country = 'NG';
+
   @override
   void initState() {
     super.initState();
     _aiScanCubit = context.read<AiScanCubit>();
+    try {
+      final c = GetIt.I<LocaleManager>().currentCountry;
+      if (c.isNotEmpty) _country = c;
+    } catch (_) {/* keep NG default */}
+    // Warm the bank list so the on-device extractor can auto-fill the bank name
+    // (fire-and-forget; the Verify sheet re-warms + re-resolves regardless, so a
+    // cold list only means the user picks the bank manually — never a failure).
+    try {
+      GetIt.I<BankRepository>().warmUp(_country);
+    } catch (_) {/* bank auto-fill is best-effort */}
   }
 
   @override
@@ -92,7 +110,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen> {
             // WITHOUT the backend GPT-vision call. Falls back to onCapture above
             // (the /scan/extract GPT route) for invoices / ambiguous / unclear.
             onDeviceResolve: (text) =>
-                const OnDeviceScanExtractor().extract(text),
+                const OnDeviceScanExtractor().extract(text, country: _country),
             onResolved: (obj) {
               if (obj is SmartScanResult) {
                 _aiScanCubit?.resolveOnDeviceScan(obj);

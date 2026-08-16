@@ -23,6 +23,7 @@ import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank
 import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_prediction_alert.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:uuid/uuid.dart';
 
@@ -44,6 +45,7 @@ import '../widgets/move_fee_breakdown.dart';
 import '../widgets/reauth_required_overlay.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Single-screen Move Money transfer flow (modelled after the Exchange Convert flow).
 ///
@@ -65,7 +67,7 @@ class MoveTransferFlowScreen extends StatefulWidget {
 }
 
 class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
-    with TransactionPinMixin, BankLinkFeeMixin {
+    with TransactionPinMixin, BankLinkFeeMixin, LinkedBalanceRefreshMixin {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -82,6 +84,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   final _amountController = TextEditingController();
   final _narrationController = TextEditingController();
   MoveFeeCalculation? _feeCalculation;
+  // True only when the LAST fee quote attempt for the current amount ERRORED (distinct
+  // from "not fetched yet"). Gates the CTA so a tap can't re-fire a guaranteed-fail
+  // fetch into a snackbar; cleared the moment the amount changes or a quote succeeds.
+  bool _feeError = false;
   bool _isCalculatingFee = false;
   bool _isTransferInProgress = false;
   String? _amountError;
@@ -209,9 +215,18 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         });
       } else if (s is OpenBankingError && s.operation == 'refreshBalance') {
         setState(() {
-          final inFlight = Set<String>.from(_refreshingBalanceIds);
-          _refreshingBalanceIds.clear();
-          _balanceRefreshFailedIds.addAll(inFlight);
+          // Fail ONLY the account that errored (the cubit tags the error with
+          // its account_id) — not every in-flight refresh. Fallback to the
+          // in-flight set only if the id is somehow absent.
+          final failedId = s.details?['account_id'] as String?;
+          if (failedId != null) {
+            _refreshingBalanceIds.remove(failedId);
+            _balanceRefreshFailedIds.add(failedId);
+          } else {
+            final inFlight = Set<String>.from(_refreshingBalanceIds);
+            _refreshingBalanceIds.clear();
+            _balanceRefreshFailedIds.addAll(inFlight);
+          }
         });
       }
     });
@@ -234,6 +249,14 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
   void _onAmountChanged() {
     final amountKobo = _parseAmountKobo();
+    // Drop the prior quote IMMEDIATELY on every change so a stale fee for a DIFFERENT
+    // amount can never reach the PIN sheet (a fast A→B→A edit within the debounce could
+    // otherwise leave B's quote showing for A). The submit path force-fetches when null.
+    if (_feeCalculation != null) {
+      _feeCalculation = null;
+    }
+    // Any edit invalidates a prior fee error — the user gets a clean retry.
+    _feeError = false;
     if (amountKobo > 0) {
       String? error;
       if (amountKobo < _minAmountKobo) {
@@ -341,6 +364,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     final user = authState.profile.user;
     final customerName = '${user.firstName} ${user.lastName}'.trim();
 
+    // CONNECTION-FEE CONSENT FIRST — before the Mono Connect webview, not after
+    // the user has already linked. On "Not now" we abort without opening it.
+    final proceed = await showBankConnectionFeeNotice(context);
+    if (!proceed || !mounted) return;
+    // One idempotency id for this whole link attempt.
+    final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
+
     final result = await showMonoConnectBottomSheet(
       context: context,
       publicKey: MonoConfig.publicKey,
@@ -351,21 +381,20 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
     if (result != null && mounted) {
       final obc = context.read<OpenBankingCubit>();
-      // Cost-confirmed link (fee + txPIN when an operator has enabled it; free
-      // otherwise). Auto-mandate: passes user info so mandate is created too.
-      await linkBankWithFee(
-        context: context,
-        doLink: (token, txnId) async => obc.linkAccount(
-          userId: user.id,
-          code: result.code,
-          accessToken: authState.profile.session.accessToken,
-          userEmail: user.email.isNotEmpty ? user.email : null,
-          userName: customerName.isNotEmpty ? customerName : null,
-          userPhone:
-              (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
-          verificationToken: token,
-          transactionId: txnId,
-        ),
+      // Fee already consented above — link straight through (no second notice).
+      // Only a SOURCE bank needs a Direct Debit mandate (leg 1 pulls from it); a
+      // TARGET/payout-only bank must NOT get a debit mandate it never uses (avoids a
+      // stuck awaiting_authorization mandate + an unnecessary consent webview).
+      await obc.linkAccount(
+        userId: user.id,
+        code: result.code,
+        accessToken: authState.profile.session.accessToken,
+        autoCreateMandate: _pendingLinkIsSource ?? false,
+        userEmail: user.email.isNotEmpty ? user.email : null,
+        userName: customerName.isNotEmpty ? customerName : null,
+        userPhone:
+            (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
+        transactionId: txnId,
       );
       if (!mounted) return;
       obc.fetchLinkedAccounts(
@@ -776,59 +805,23 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   Future<void> _manualRefreshBalance(LinkedBankAccount account) async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
-    final userId = authState.profile.userId;
-    final accessToken = authState.profile.session.accessToken;
-    final cubit = context.read<OpenBankingCubit>();
-
-    final feeKobo = await cubit.quoteRefreshFee(
-      accountId: account.id,
-      userId: userId,
-      accessToken: accessToken,
-    );
-    if (!mounted) return;
-    if (feeKobo <= 0) {
-      cubit.refreshBalance(
-        accountId: account.id,
-        userId: userId,
-        accessToken: accessToken,
-        isManual: true,
-      );
-      return;
-    }
-
-    final feeNaira = feeKobo / 100.0;
-    final txnId =
-        'refresh-${account.id}-${DateTime.now().millisecondsSinceEpoch}';
-    await validateTransactionPin(
-      context: context,
-      transactionId: txnId,
-      transactionType: 'balance_refresh',
-      amount: feeNaira,
-      fee: feeNaira,
-      totalAmount: feeNaira,
-      currency: 'NGN',
-      title: 'Refresh balance',
-      message:
-          'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Your last-known balance is shown otherwise.',
-      successMessage: 'Balance refreshed',
-      onPinValidated: (token) async {
-        await cubit.refreshBalance(
-          accountId: account.id,
-          userId: userId,
-          accessToken: accessToken,
-          isManual: true,
-          verificationToken: token,
-          transactionId: txnId,
-        );
-      },
+    // ONE shared, per-account, fee-gated refresh (LinkedBalanceRefreshMixin) — the
+    // same function deposit + withdrawal use, driving the singleton cubit so the
+    // update reflects on every linked-bank surface. A live Mono balance read is
+    // billed per account, so this is always fee-gated (never a free bypass read).
+    await refreshLinkedBalance(
+      context,
+      account,
+      userId: authState.profile.userId,
+      accessToken: authState.profile.session.accessToken,
     );
   }
 
   /// Balance line for the From/To tiles. We never auto-pull a billed live read,
   /// so the tile shows the LAST-KNOWN figure with a tap-to-refresh (cost-
   /// confirmed) affordance; states: refreshing → spinner, failed → "Refresh",
-  /// otherwise the cached figure (green tick when it just went live, else a
-  /// grey "not live" hint).
+  /// otherwise the cached figure (green refresh icon when it just went live,
+  /// else a grey "Updated Xm ago" last-read label — never a faked timestamp).
   Widget _buildTileBalance(LinkedBankAccount account) {
     if (_refreshingBalanceIds.contains(account.id)) {
       return Row(mainAxisSize: MainAxisSize.min, children: [
@@ -870,11 +863,17 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             color: isLive
                 ? const Color(0xFF10B981)
                 : const Color(0xFF9CA3AF)),
-        if (everFetched && !isLive) ...[
-          SizedBox(width: 3.w),
-          Text('not live',
+        if (everFetched) ...[
+          SizedBox(width: 4.w),
+          Flexible(
+            child: Text(
+              linkedBalanceLastUpdatedLabel(account.balanceUpdatedAt),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF), fontSize: 9.5.sp)),
+                  color: const Color(0xFF9CA3AF), fontSize: 9.5.sp),
+            ),
+          ),
         ],
       ]),
     );
@@ -990,6 +989,23 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       return;
     }
 
+    // Guarantee the AUTHORITATIVE aggregated fee (Mono debit + FW payout + stamp duty
+    // + service) is shown on the tx-PIN sheet — force-fetch if the debounced quote
+    // hasn't landed and BLOCK on failure (never pass a null fee / undisclosed charge).
+    var feeCalc = _feeCalculation;
+    if (feeCalc == null) {
+      feeCalc = await context.read<MoveMoneyCubit>().fetchFee(amountKobo);
+      if (!mounted) return;
+      if (feeCalc == null) {
+        Get.snackbar('Fee unavailable',
+            "We couldn't confirm the transfer fee. Please try again.",
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
+        return;
+      }
+      setState(() => _feeCalculation = feeCalc);
+    }
+
     // The ENTIRE initiate (gateway -> banking-service -> Mono debit) runs
     // INSIDE the PIN sheet's processing phase, so the user watches one
     // continuous sheet (PIN -> Processing -> Success) and lands straight on
@@ -1002,9 +1018,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       transactionId: moveTransactionId,
       transactionType: 'move_money_transfer',
       amount: amountNaira,
-      fee: _feeCalculation != null ? _feeCalculation!.totalFee / 100.0 : null,
-      totalAmount:
-          _feeCalculation != null ? _feeCalculation!.totalDebit / 100.0 : null,
+      fee: feeCalc.totalFee / 100.0,
+      totalAmount: feeCalc.totalDebit / 100.0,
       currency: 'NGN',
       title: 'Beam Money',
       message: 'Confirm Lazerbeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
@@ -1057,6 +1072,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         final authSuccess = await _handleDirectPayAuthorization(
           currentState.paymentUrl!,
         );
+        // The auth webview is async; the screen may have been disposed while it was
+        // open — guard before touching context (context.read / receipt payload).
+        if (!mounted) return;
 
         if (authSuccess) {
           // Start polling transfer status
@@ -1108,7 +1126,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         amountKobo >= _minAmountKobo &&
         amountKobo <= _maxAmountKobo &&
         _amountError == null &&
-        !_isCalculatingFee;
+        !_isCalculatingFee &&
+        // Never enable the CTA over a known fee-quote error (a tap would just re-fire a
+        // guaranteed-fail fetch). A null-but-not-errored fee is fine — submit force-fetches.
+        !_feeError;
 
     // Kick off the (non-blocking) success prediction after this frame so we
     // never emit a new cubit state mid-build. Guarded by destination key.
@@ -1144,6 +1165,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             listener: (context, state) {
               if (state is MoveMoneyFeeCalculated) {
                 setState(() {
+                  _feeError = false;
                   _feeCalculation = state.feeCalculation;
                   // Adopt the authoritative, admin-tunable bounds from the server
                   // so the client enforces/displays the SAME cap as the backend.
@@ -1159,6 +1181,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                 setState(() {
                   _isCalculatingFee = false;
                   _feeCalculation = null;
+                  _feeError = true;
                 });
               } else if (state is MoveMoneyInsufficientFunds) {
                 Get.snackbar(
@@ -1170,17 +1193,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   duration: const Duration(seconds: 5),
                   mainButton: TextButton(
                     onPressed: () {
+                      // Fee-gated shared refresh (a live Mono balance read is billed)
+                      // — never a free direct bypass read.
                       if (_sourceAccount != null) {
-                        final authState =
-                            context.read<AuthenticationCubit>().state;
-                        if (authState is AuthenticationSuccess) {
-                          context.read<OpenBankingCubit>().refreshBalance(
-                                accountId: _sourceAccount!.id,
-                                userId: authState.profile.userId,
-                                accessToken:
-                                    authState.profile.session.accessToken,
-                              );
-                        }
+                        _manualRefreshBalance(_sourceAccount!);
                       }
                     },
                     child: Text(
@@ -1306,6 +1322,18 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                     colorText: Colors.white,
                     snackPosition: SnackPosition.BOTTOM,
                   );
+                }
+              } else if (state is OpenBankingError &&
+                  state.operation == 'linkAccount') {
+                // Linked-bank cap (admin-tunable default 3) / provider capacity
+                // exhausted — styled modal with a "Manage banks" CTA, not a toast.
+                // Nothing was charged (both checked before any fee). Clear the
+                // pending side so the next link attempt isn't misrouted.
+                setState(() => _pendingLinkIsSource = null);
+                if (state.errorCode == kLinkLimitReachedCode) {
+                  showLinkLimitReachedDialog(context, state.message);
+                } else if (state.errorCode == kLinkingCapacityCode) {
+                  showLinkingCapacityDialog(context);
                 }
               }
             },
@@ -1434,28 +1462,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                                 // from the linked bank (Mono) for this account.
                                 GestureDetector(
                                   onTap: () {
+                                    // Fee-gated shared refresh (a live Mono balance
+                                    // read is billed) — not a free bypass read.
                                     if (_sourceAccount == null) return;
-                                    final authState = context
-                                        .read<AuthenticationCubit>()
-                                        .state;
-                                    if (authState is AuthenticationSuccess) {
-                                      context
-                                          .read<OpenBankingCubit>()
-                                          .refreshBalance(
-                                            accountId: _sourceAccount!.id,
-                                            userId: authState.profile.userId,
-                                            accessToken: authState
-                                                .profile.session.accessToken,
-                                          );
-                                      Get.snackbar(
-                                        'Refreshing',
-                                        'Updating balance from your bank...',
-                                        snackPosition: SnackPosition.BOTTOM,
-                                        backgroundColor: const Color(0xFF1F1F1F),
-                                        colorText: const Color(0xFFFB923C),
-                                        duration: const Duration(seconds: 2),
-                                      );
-                                    }
+                                    _manualRefreshBalance(_sourceAccount!);
                                   },
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,

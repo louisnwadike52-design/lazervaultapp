@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 
 import '../data/datasources/move_money_grpc_datasource.dart';
+import '../domain/entities/move_fee_calculation.dart';
 import 'move_money_state.dart';
 
 /// Cubit for managing move money feature state
@@ -23,6 +24,21 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
   void calculateFeeDebounced(int amountKobo) {
     _feeRetryCount = 0;
     _feeDebouncer.run(() => calculateFee(amountKobo));
+  }
+
+  /// Force-fetch the authoritative fee and RETURN it (also emits the state), so the
+  /// submit path can guarantee the tx-PIN sheet shows the real fee — never null — and
+  /// block when the quote can't be confirmed. Returns null on failure.
+  Future<MoveFeeCalculation?> fetchFee(int amountKobo) async {
+    if (amountKobo <= 0) return null;
+    try {
+      final feeCalc = await _dataSource.calculateMoveFee(amount: amountKobo);
+      _feeRetryCount = 0;
+      if (!isClosed) emit(MoveMoneyFeeCalculated(feeCalculation: feeCalc));
+      return feeCalc;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Calculate fee breakdown

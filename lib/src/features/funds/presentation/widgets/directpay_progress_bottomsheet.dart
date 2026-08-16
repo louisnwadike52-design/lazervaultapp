@@ -171,6 +171,10 @@ class DirectPayProgressController extends ChangeNotifier {
   String? _errorMessage;
   String? _errorTitle;
   bool _retryable = true;
+  // Optional label for the primary recovery button. Null → the default
+  // "Try Again". A re-link recovery (unverified bank details) sets "Re-link bank"
+  // so the action reads as what it actually does.
+  String? _retryLabel;
   // A failure that the user can only clear by completing identity verification
   // (BVN). Distinct from a normal retryable failure: instead of "Try Again" we
   // show a "Verify Now" CTA that routes into KYC. Never set alongside a normal
@@ -187,6 +191,7 @@ class DirectPayProgressController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get errorTitle => _errorTitle;
   bool get retryable => _retryable;
+  String? get retryLabel => _retryLabel;
   bool get kycRequired => _kycRequired;
   String? get bankName => _bankName;
   double? get amount => _amount;
@@ -210,6 +215,7 @@ class DirectPayProgressController extends ChangeNotifier {
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
+    _retryLabel = null;
     _kycRequired = false;
     _isVisible = true;
     notifyListeners();
@@ -220,6 +226,7 @@ class DirectPayProgressController extends ChangeNotifier {
     String? errorMessage,
     String? errorTitle,
     bool retryable = true,
+    String? retryLabel,
   }) {
     if (stage == DirectPayStage.failed) {
       // Remember the step we failed AT (only if we were on a real rail step),
@@ -234,6 +241,7 @@ class DirectPayProgressController extends ChangeNotifier {
     _errorMessage = errorMessage;
     _errorTitle = errorTitle;
     _retryable = retryable;
+    _retryLabel = retryLabel;
     // A plain stage update is never a KYC gate — clear any prior KYC flag so a
     // later retryable/transient failure renders the normal Retry CTA.
     _kycRequired = false;
@@ -657,7 +665,7 @@ class _DirectPayProgressBottomsheetState
                 // form to fix the input, since an identical retry would fail.
                 if (widget.controller.retryable && widget.onRetry != null)
                   _buildPrimaryButton(
-                    label: 'Try Again',
+                    label: widget.controller.retryLabel ?? 'Try Again',
                     color: const Color.fromARGB(255, 78, 3, 208),
                     onPressed: () => _dismiss(context, widget.onRetry),
                   )

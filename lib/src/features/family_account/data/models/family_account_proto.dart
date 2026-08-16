@@ -1,5 +1,7 @@
 // Proto message definitions for Family Accounts
 // These correspond to the backend proto definitions
+import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart'
+    show FamilyAccountSummary;
 
 // Enums
 enum FamilyAccountStatusProto {
@@ -241,6 +243,14 @@ class FamilyAccountProto {
   final String fundDistributionMode;
   final bool setupCompleted;
   final bool spendingVisibilityEnabled;
+  final String fundingPolicy;
+  final String? accountNumber;
+  final String? bankName;
+  final String? virtualAccountStatus;
+  // Aggregated funders/spenders breakdown, attached on GetFamilyAccount only
+  // (the summary rides on the RESPONSE, not the account message, so it's set by
+  // the datasource after mapping rather than being a constructor field).
+  FamilyAccountSummary? summary;
 
   FamilyAccountProto({
     required this.id,
@@ -261,6 +271,10 @@ class FamilyAccountProto {
     this.fundDistributionMode = 'custom_allocation',
     this.setupCompleted = false,
     this.spendingVisibilityEnabled = true,
+    this.fundingPolicy = 'any_member',
+    this.accountNumber,
+    this.bankName,
+    this.virtualAccountStatus,
   });
 
   factory FamilyAccountProto.fromJson(Map<String, dynamic> json) {
@@ -285,6 +299,10 @@ class FamilyAccountProto {
       fundDistributionMode: json['fund_distribution_mode'] as String? ?? 'custom_allocation',
       setupCompleted: json['setup_completed'] as bool? ?? false,
       spendingVisibilityEnabled: json['spending_visibility_enabled'] as bool? ?? true,
+      fundingPolicy: json['funding_policy'] as String? ?? 'any_member',
+      accountNumber: json['account_number'] as String?,
+      bankName: json['bank_name'] as String?,
+      virtualAccountStatus: json['virtual_account_status'] as String?,
     );
   }
 

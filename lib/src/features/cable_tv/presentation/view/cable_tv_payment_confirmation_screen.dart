@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:uuid/uuid.dart';
 
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/account_manager.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -101,9 +102,18 @@ class _CableTVPaymentConfirmationScreenState
         .where((a) => a.currency.toUpperCase() == 'NGN')
         .toList();
     if (ngnAccounts.isEmpty) return;
+    // Default the displayed source to the ACTIVE account (the family pool when the
+    // user is on a family card) so the shown account matches what actually gets
+    // debited (the debit follows activeAccountId via the X-Account-Id header).
+    final activeId = GetIt.I<AccountManager>().activeAccountId;
+    final active = activeId == null
+        ? null
+        : ngnAccounts
+            .where((a) => a.spendingAccountId == activeId || a.id == activeId)
+            .firstOrNull;
     final primary = ngnAccounts.where((a) => a.isPrimary).firstOrNull;
     setState(() {
-      _selectedAccount = primary ?? ngnAccounts.first;
+      _selectedAccount = active ?? primary ?? ngnAccounts.first;
       _accountAutoSelected = true;
     });
   }
@@ -266,6 +276,14 @@ class _CableTVPaymentConfirmationScreenState
 
     final transactionId = const Uuid().v4();
     final idempotencyKey = const Uuid().v4();
+
+    // Honor the selected source: cable debits the account in the X-Account-Id
+    // header (activeAccountId). Bind it to the selected account's spendingAccountId
+    // (the pool VA for a family card) BEFORE PIN verify so the token, the header
+    // and the debit all target the same account even if the user changed the pick.
+    if (_selectedAccount != null) {
+      GetIt.I<AccountManager>().setActiveAccount(_selectedAccount!.spendingAccountId);
+    }
 
     String? verificationToken;
 

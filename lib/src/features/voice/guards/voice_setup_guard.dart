@@ -4,14 +4,16 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Voice Setup Guard
 /// Middleware to protect features requiring voice enrollment
 /// Shows setup prompt when user tries to access voice/microphone features
 class VoiceSetupGuard {
   final VoiceActivationManager _voiceManager;
-  final FlutterSecureStorage _storage = serviceLocator<FlutterSecureStorage>();
+  // Resolve the current user from the live session (access-token sub), NOT the
+  // raw cached user_id key which can lag behind an account switch.
+  final SecureStorageService _secure = serviceLocator<SecureStorageService>();
 
   VoiceSetupGuard({
     required VoiceActivationManager voiceManager,
@@ -25,7 +27,7 @@ class VoiceSetupGuard {
     BuildContext context,
     String featureName,
   ) async {
-    final userId = await _storage.read(key: 'user_id');
+    final userId = await _secure.getCurrentUserId();
     if (userId == null) {
       if (!context.mounted) return false;
       _showNotLoggedInDialog(context);
@@ -344,7 +346,7 @@ class VoiceSetupGuard {
   /// Quick check if user is enrolled (no dialogs)
   /// Use this for UI state management
   Future<bool> isEnrolled() async {
-    final userId = await _storage.read(key: 'user_id');
+    final userId = await _secure.getCurrentUserId();
     if (userId == null) return false;
     return await _voiceManager.isVoiceEnrolled(userId);
   }

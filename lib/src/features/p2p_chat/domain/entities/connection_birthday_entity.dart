@@ -1,6 +1,11 @@
+import 'package:equatable/equatable.dart';
+
 /// One financial connection's upcoming birthday, as served by
 /// p2p-chat-service `GET /api/v1/chat/connections/birthdays`.
-class ConnectionBirthdayEntity {
+///
+/// Equatable so an identical birthdays list value-compares equal — part of
+/// keeping [P2PConversationsLoaded] stable across silent refreshes (no flicker).
+class ConnectionBirthdayEntity extends Equatable {
   final String userId;
   final String name;
   final String dateOfBirth; // ISO YYYY-MM-DD
@@ -34,4 +39,8 @@ class ConnectionBirthdayEntity {
     if (daysUntil == 1) return 'Tomorrow';
     return 'in $daysUntil days';
   }
+
+  @override
+  List<Object?> get props =>
+      [userId, name, dateOfBirth, daysUntil, isToday, nextBirthday];
 }

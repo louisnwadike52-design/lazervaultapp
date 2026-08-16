@@ -1704,6 +1704,7 @@ class GetGlobalMarketDataResponse extends $pb.GeneratedMessage {
     $core.int? markets,
     $1.Timestamp? updatedAt,
     $core.String? disclosureUrl,
+    $core.String? learnMoreUrl,
   }) {
     final result = create();
     if (totalMarketCap != null) result.totalMarketCap = totalMarketCap;
@@ -1717,6 +1718,7 @@ class GetGlobalMarketDataResponse extends $pb.GeneratedMessage {
     if (markets != null) result.markets = markets;
     if (updatedAt != null) result.updatedAt = updatedAt;
     if (disclosureUrl != null) result.disclosureUrl = disclosureUrl;
+    if (learnMoreUrl != null) result.learnMoreUrl = learnMoreUrl;
     return result;
   }
 
@@ -1748,6 +1750,7 @@ class GetGlobalMarketDataResponse extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'updatedAt',
         subBuilder: $1.Timestamp.create)
     ..aOS(8, _omitFieldNames ? '' : 'disclosureUrl')
+    ..aOS(9, _omitFieldNames ? '' : 'learnMoreUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1852,6 +1855,15 @@ class GetGlobalMarketDataResponse extends $pb.GeneratedMessage {
   $core.bool hasDisclosureUrl() => $_has(7);
   @$pb.TagNumber(8)
   void clearDisclosureUrl() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get learnMoreUrl => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set learnMoreUrl($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasLearnMoreUrl() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearLearnMoreUrl() => $_clearField(9);
 }
 
 class GetCryptoFiatRateRequest extends $pb.GeneratedMessage {

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 
 /// ChatPinPromptCard — secure PIN handoff for chat-driven money moves.
 ///
@@ -178,6 +179,10 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
       message: recipientSummary.isEmpty
           ? 'Enter your PIN to continue.'
           : recipientSummary,
+      // Show the recipient's photo + name on the secure pad so the user
+      // confirms who they're paying while entering the PIN.
+      recipientImageUrl: _s('recipient_image_url'),
+      recipientName: _s('recipient_name'),
       fee: feeRaw,
       totalAmount: totalRaw,
       onPinValidated: (verificationToken) async {
@@ -204,6 +209,10 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
     final fee = _s('fee');
     final total = _s('total_amount');
     final recipient = _s('recipient_summary');
+    final recipientName = _s('recipient_name');
+    final recipientImage = _s('recipient_image_url');
+    final hasRecipientIdentity =
+        recipientName.isNotEmpty || recipientImage.isNotEmpty;
     final feeNum = double.tryParse(fee) ?? 0.0;
     final disabled = _completed || _isExpired;
     final accent = _completed
@@ -224,14 +233,26 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+              // Recipient avatar when we know who's being paid (internal
+              // Lazervault user); otherwise the transaction-type icon box.
+              if (hasRecipientIdentity)
+                UserAvatar(
+                  size: 36,
+                  imageUrl: recipientImage.isEmpty ? null : recipientImage,
+                  firstName: recipientName.split(' ').first,
+                  lastName: recipientName.split(' ').length > 1
+                      ? recipientName.split(' ').sublist(1).join(' ')
+                      : null,
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(_typeIcon, color: accent, size: 18),
                 ),
-                child: Icon(_typeIcon, color: accent, size: 18),
-              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -245,10 +266,10 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (recipient.isNotEmpty) ...[
+                    if (recipientName.isNotEmpty || recipient.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        recipient,
+                        recipientName.isNotEmpty ? recipientName : recipient,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF9CA3AF),
                           fontSize: 11,

@@ -32,6 +32,12 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
   final double total;
   final String? payerImagePath;
   final String? recipientImagePath;
+  // Split payment: included in props so toggling split mode, adding/removing
+  // payers, or editing a share produces a DISTINCT state — otherwise Bloc dedups
+  // the emit (props unchanged) and the split UI/switch never rebuilds.
+  final bool splitMode;
+  final bool splitCustom;
+  final List<TaggedUserInfo> splitPayers;
 
   const CreateInvoiceFormUpdated({
     required this.invoiceType,
@@ -45,6 +51,9 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
     required this.total,
     this.payerImagePath,
     this.recipientImagePath,
+    this.splitMode = false,
+    this.splitCustom = false,
+    this.splitPayers = const [],
   });
 
   @override
@@ -60,6 +69,9 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
         total,
         payerImagePath,
         recipientImagePath,
+        splitMode,
+        splitCustom,
+        splitPayers,
       ];
 }
 

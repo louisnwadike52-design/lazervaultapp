@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
+import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart'
+    show linkedBalanceRefreshFailureMessage;
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_categories.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -265,6 +267,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       message:
           'Refreshing ${account.bankName} pulls a live balance and costs ₦${feeNaira.toStringAsFixed(2)}. Your last-known balance is shown otherwise.',
       successMessage: 'Balance refreshed',
+      // Honest failure: a failed live read shows the sheet's unsuccessful state
+      // with category copy, never a false "balance refreshed".
+      failureMessageBuilder: linkedBalanceRefreshFailureMessage,
       onPinValidated: (token) async {
         await cubit.refreshBalance(
           accountId: account.id,
@@ -273,6 +278,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           isManual: true,
           verificationToken: token,
           transactionId: txnId,
+          rethrowOnError: true,
         );
       },
     );
@@ -340,14 +346,12 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   _buildHeader(),
                   SizedBox(height: 12.h),
 
-                  // ============ SOURCE FILTER (the tabs) ============
-                  // LazerVault wallet only / external banks only / combined —
-                  // plus, when banks are in scope, All-banks vs one linked bank.
-                  _buildSourceFilterBar(),
-
-                  // Wallet account selector — only meaningful for wallet/all
-                  // scopes; hidden on the Banks tab (bank chips scope there).
-                  _buildWalletAccountRow(),
+                  // ============ ONE COMPACT FILTER BAR ============
+                  // Source / Banks / Period / Wallet-account chips — each shows
+                  // the current selection, opens its own picker sheet, and
+                  // scopes EVERY section below. Replaces the old always-inline
+                  // source segments + wallet row + Analytics period selector.
+                  _buildCompactFilterBar(),
                   SizedBox(height: 12.h),
 
                   // Honesty signal: when bank data couldn't be fetched from
@@ -365,13 +369,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   _buildCreditScoreCTA(),
                   SizedBox(height: 16.h),
 
-                  // ==================== QUICK ACTIONS SECTION (always) ========
-                  _buildSectionHeader('Quick Actions'),
-                  SizedBox(height: 12.h),
-                  _buildFeatureGrid(),
-                  SizedBox(height: 16.h),
-
                   // ==================== STATS CONTENT (skeleton-or-real) ======
+                  // Collapsible sections; the Quick Actions grid is now folded
+                  // into the "Budgets & Management" section, not a separate block.
                   _buildStatsContent(state),
                   SizedBox(height: 100.h),
                 ],
@@ -413,29 +413,368 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         // Metrics below depend on real transaction data. For a BANK-ONLY scope
         // whose data couldn't be read, we already show the notice above and
         // SKIP the metric sections rather than render misleading zeros/scores.
+        // Each section is a collapsible card whose heavy chart subtree is built
+        // ONLY when expanded (lazy) — collapsed charts never render.
         if (!_bankScopeDataMissing) ...[
-          _buildSectionHeader('Overview', trailing: _buildScopeBadge()),
+          _CollapsibleSection(
+            key: const ValueKey('overview'),
+            title: 'Overview',
+            trailing: _buildScopeBadge(),
+            initiallyExpanded: true,
+            childBuilder: (_) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildQuickStats(state),
+                SizedBox(height: 12.h),
+                _buildPerformanceAlert(state),
+              ],
+            ),
+          ),
           SizedBox(height: 12.h),
-          _buildQuickStats(state),
+          _CollapsibleSection(
+            key: const ValueKey('insights'),
+            title: 'Insights',
+            childBuilder: (_) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFinancialHealthScore(state),
+                SizedBox(height: 12.h),
+                _buildCashFlowInsights(state),
+              ],
+            ),
+          ),
           SizedBox(height: 12.h),
-          _buildPerformanceAlert(state),
-          SizedBox(height: 16.h),
-          _buildSectionHeader('Insights'),
+          _CollapsibleSection(
+            key: const ValueKey('analytics'),
+            title: 'Analytics',
+            childBuilder: (_) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSpendingChart(state),
+                SizedBox(height: 12.h),
+                _buildMonthlyTrendChart(state),
+              ],
+            ),
+          ),
           SizedBox(height: 12.h),
-          _buildFinancialHealthScore(state),
-          SizedBox(height: 12.h),
-          _buildCashFlowInsights(state),
-          SizedBox(height: 16.h),
-          _buildSectionHeader('Analytics', trailing: _buildPeriodSelector()),
-          SizedBox(height: 12.h),
-          _buildSpendingChart(state),
-          SizedBox(height: 12.h),
-          _buildMonthlyTrendChart(state),
-          SizedBox(height: 16.h),
-          _buildCategoryAnalysisSection(state),
-          SizedBox(height: 16.h),
+          if (_hasCategoryData(state)) ...[
+            _CollapsibleSection(
+              key: const ValueKey('categories'),
+              title: 'Categories',
+              childBuilder: (_) => _buildCategoryAnalysisContent(state),
+            ),
+            SizedBox(height: 12.h),
+          ],
         ],
-        _buildManagementSection(state),
+        _CollapsibleSection(
+          key: const ValueKey('budgets_management'),
+          title: 'Budgets & Management',
+          childBuilder: (_) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildFeatureGrid(),
+              _buildManagementSection(state),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============ CONSOLIDATED FILTER BAR ============
+  // One compact, horizontally-scrollable row of chips that each open a picker
+  // sheet and scope EVERY section below. Replaces the old always-inline source
+  // segments + wallet row + Analytics period selector; the bank list now lives
+  // in a bottom sheet instead of clustering the page inline.
+  /// The filter area: a dedicated Lazervault / Both / Bank source toggle on top,
+  /// with the Period / Banks / Wallet pills BELOW it. The pills that show are
+  /// keyed off the selected source — Banks only when a bank is in scope, Wallet
+  /// only when the wallet is in scope — so e.g. selecting "Lazervault" hides the
+  /// "All banks" pill entirely.
+  Widget _buildCompactFilterBar() {
+    final includesWallet = _statsSource != StatisticsSource.bank;
+    final banksActive = _selectedBankIds.isNotEmpty;
+    final banksLabel = _selectedBankIds.isEmpty
+        ? 'All banks'
+        : '${_selectedBankIds.length} bank${_selectedBankIds.length == 1 ? '' : 's'}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSourceToggle(),
+        SizedBox(height: 10.h),
+        SizedBox(
+          height: 40.h,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            children: [
+              _filterChip(Icons.calendar_today_rounded, selectedPeriod,
+                  () => _openFilterSheet('Period', _buildPeriodSheet())),
+              if (_statsSource.includesExternal) ...[
+                SizedBox(width: 8.w),
+                _filterChip(Icons.account_balance_rounded, banksLabel,
+                    () => _openFilterSheet('Banks', _buildBanksSheet()),
+                    active: banksActive),
+              ],
+              if (includesWallet) ...[
+                SizedBox(width: 8.w),
+                _filterChip(Icons.account_balance_wallet_rounded, 'Wallet',
+                    () => _openFilterSheet('Wallet account', _buildWalletSheet())),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Segmented Lazervault | Both | Bank source selector — one tap to switch
+  /// scope (replaces the old chip → sheet → tile flow). "Both" sits in the
+  /// middle as the union of the two. Drives [_statsSource] + the cubit scope.
+  Widget _buildSourceToggle() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          _sourceSegment(StatisticsSource.lazervault, 'Lazervault',
+              Icons.account_balance_wallet_rounded),
+          _sourceSegment(
+              StatisticsSource.both, 'Both', Icons.dashboard_rounded),
+          _sourceSegment(
+              StatisticsSource.bank, 'Bank', Icons.account_balance_rounded),
+        ],
+      ),
+    );
+  }
+
+  Widget _sourceSegment(StatisticsSource value, String label, IconData icon) {
+    final selected = _statsSource == value;
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (_statsSource == value) return;
+          // Mirror StatisticsCubit.changeSource(), which WIPES the per-bank
+          // filter on every source switch. Without clearing the local set too,
+          // the Banks pill would keep showing "N banks"/active-purple while the
+          // cubit has actually reverted to All — a lie the user can't explain.
+          setState(() {
+            _statsSource = value;
+            _selectedBankIds = <String>{};
+          });
+          context.read<StatisticsCubit>().changeSource(value);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: EdgeInsets.symmetric(vertical: 9.h),
+          decoration: BoxDecoration(
+            color: selected
+                ? InvoiceThemeColors.primaryPurple
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 14.sp,
+                  color: selected ? Colors.white : const Color(0xFF9CA3AF)),
+              SizedBox(width: 6.w),
+              Flexible(
+                child: Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color:
+                            selected ? Colors.white : const Color(0xFF9CA3AF),
+                        fontSize: 12.sp,
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChip(IconData icon, String label, VoidCallback onTap,
+      {bool active = false}) {
+    final accent = InvoiceThemeColors.primaryPurple;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: active
+              ? accent.withValues(alpha: 0.16)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+              color: active
+                  ? accent.withValues(alpha: 0.55)
+                  : const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 14.sp,
+                color: active ? accent : const Color(0xFFB9A5E8)),
+            SizedBox(width: 6.w),
+            Text(label,
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600)),
+            SizedBox(width: 4.w),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                size: 16.sp,
+                color: active ? accent : const Color(0xFF9CA3AF)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens a dark, rounded picker sheet. The sheet is pushed on the root
+  /// navigator (ABOVE the tab's MultiBlocProvider), so re-provide the cubits the
+  /// sheet content reads (BankScopePills is a BlocBuilder<OpenBankingCubit>).
+  Future<void> _openFilterSheet(String title, Widget child) {
+    final statsCubit = context.read<StatisticsCubit>();
+    final obCubit = context.read<OpenBankingCubit>();
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => MultiBlocProvider(
+        providers: [
+          BlocProvider<StatisticsCubit>.value(value: statsCubit),
+          BlocProvider<OpenBankingCubit>.value(value: obCubit),
+        ],
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(title,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 12.h),
+                Flexible(child: SingleChildScrollView(child: child)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeriodSheet() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: timePeriods.map((period) {
+        final selected = period == selectedPeriod;
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          onTap: () {
+            if (period != selectedPeriod) {
+              setState(() => selectedPeriod = period);
+              context.read<StatisticsCubit>().changePeriod(period.toLowerCase());
+            }
+            Navigator.of(context).pop();
+          },
+          title: Text(period,
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+          trailing: selected
+              ? Icon(Icons.check_rounded,
+                  color: InvoiceThemeColors.primaryPurple, size: 20.sp)
+              : null,
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildBanksSheet() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildBankScopeChips(),
+        SizedBox(height: 8.h),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Done',
+                style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.primaryPurple,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWalletSheet() => _buildWalletAccountRow();
+
+  /// True when the loaded state carries any income/expense category rows — used
+  /// to skip the Categories collapsible entirely when there's nothing to show.
+  bool _hasCategoryData(StatisticsState state) {
+    if (state is! StatisticsLoaded) return false;
+    final c = state.categoryAnalytics;
+    return c != null &&
+        (c.incomeCategories.isNotEmpty || c.expenseCategories.isNotEmpty);
+  }
+
+  /// The category breakdown CONTENT (toggle + income/expense analysis) WITHOUT
+  /// its own section header — the collapsible card supplies the title.
+  Widget _buildCategoryAnalysisContent(StatisticsState state) {
+    if (state is! StatisticsLoaded) return const SizedBox.shrink();
+    final catAnalytics = state.categoryAnalytics;
+    final hasIncome =
+        catAnalytics != null && catAnalytics.incomeCategories.isNotEmpty;
+    final hasExpense =
+        catAnalytics != null && catAnalytics.expenseCategories.isNotEmpty;
+    if (!hasIncome && !hasExpense) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildToggleSection(),
+        SizedBox(height: 12.h),
+        showIncome && hasIncome
+            ? _buildIncomeAnalysis(state)
+            : (!showIncome && hasExpense
+                ? _buildExpenseAnalysis(state)
+                : const SizedBox.shrink()),
       ],
     );
   }
@@ -1001,121 +1340,6 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       itemBuilder: (context, index) {
         return _FeatureCard(feature: features[index]);
       },
-    );
-  }
-
-  Widget _buildPeriodSelector() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D3F),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedPeriod,
-          dropdownColor: const Color(0xFF1F1F1F),
-          icon: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: const Color(0xFFFB923C),
-            size: 20.sp,
-          ),
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w600,
-          ),
-          items: timePeriods.map((String period) {
-            return DropdownMenuItem<String>(
-              value: period,
-              child: Text(period),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            if (newValue != null) {
-              setState(() => selectedPeriod = newValue);
-              context.read<StatisticsCubit>().changePeriod(
-                    newValue.toLowerCase(),
-                  );
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  /// THE source filter — one bar that scopes EVERY section below it.
-  /// Row 1: segmented Wallet / Banks / All. Row 2 (when banks in scope):
-  /// a single bank-scope pill that opens a bottom sheet to pick All banks or
-  /// one linked bank.
-  Widget _buildSourceFilterBar() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(4.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
-            ),
-            child: Row(
-              children: [
-                _sourceSegment('LazerVault', Icons.account_balance_wallet_rounded,
-                    StatisticsSource.lazervault),
-                _sourceSegment('Banks', Icons.account_balance_rounded,
-                    StatisticsSource.bank),
-                _sourceSegment('All', Icons.dashboard_rounded,
-                    StatisticsSource.both),
-              ],
-            ),
-          ),
-          if (_statsSource.includesExternal) ...[
-            SizedBox(height: 10.h),
-            _buildBankScopeChips(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _sourceSegment(String label, IconData icon, StatisticsSource value) {
-    final selected = _statsSource == value;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          if (_statsSource == value) return;
-          setState(() => _statsSource = value);
-          context.read<StatisticsCubit>().changeSource(value);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: EdgeInsets.symmetric(vertical: 9.h),
-          decoration: BoxDecoration(
-            color: selected ? InvoiceThemeColors.primaryPurple : Colors.transparent,
-            borderRadius: BorderRadius.circular(10.r),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon,
-                  size: 14.sp,
-                  color: selected ? Colors.white : const Color(0xFF9CA3AF)),
-              SizedBox(width: 6.w),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  color: selected ? Colors.white : const Color(0xFF9CA3AF),
-                  fontSize: 12.sp,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -1740,32 +1964,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     );
   }
 
-  Widget _buildCategoryAnalysisSection(StatisticsState state) {
-    if (state is! StatisticsLoaded) {
-      return const SizedBox.shrink();
-    }
-
-    final catAnalytics = state.categoryAnalytics;
-    final hasIncome = catAnalytics != null && catAnalytics.incomeCategories.isNotEmpty;
-    final hasExpense = catAnalytics != null && catAnalytics.expenseCategories.isNotEmpty;
-
-    if (!hasIncome && !hasExpense) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader('Category Breakdown'),
-        SizedBox(height: 12.h),
-        _buildToggleSection(),
-        SizedBox(height: 12.h),
-        showIncome && hasIncome
-            ? _buildIncomeAnalysis(state)
-            : (!showIncome && hasExpense ? _buildExpenseAnalysis(state) : const SizedBox.shrink()),
-      ],
-    );
-  }
+  // _buildCategoryAnalysisSection was split into _hasCategoryData +
+  // _buildCategoryAnalysisContent (the collapsible "Categories" card supplies
+  // the header), so the old header-bearing builder is gone.
 
   Widget _buildManagementSection(StatisticsState state) {
     // Only show failed transactions card if available
@@ -1869,7 +2070,6 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           curr is AccountLinkedWithMandate ||
           curr is AccountUnlinked ||
           curr is BalanceRefreshed ||
-          curr is AllAccountsSynced ||
           curr is AccountTransactionsSynced ||
           curr is OpenBankingInitial ||
           curr is OpenBankingError,
@@ -1918,9 +2118,10 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   // bank pills above, not by tapping the list.
                   _showBankManagementSheet(account);
                 },
-                // Refresh is handled inside the widget (transactions sync) and
-                // per-bank via the management sheet (cost-confirmed balance
-                // read) — no silent bulk balance pull here.
+                // Per-card refresh icon → the SAME fee-gated path (quote fee →
+                // cost-confirm tx-PIN → live Mono read). Never a free direct
+                // read; no silent bulk balance pull here.
+                onRefreshBalance: _costConfirmedRefresh,
                 onRefresh: null,
               ),
             );
@@ -2453,6 +2654,90 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
 }
 
 // ==================== WIDGET CLASSES ====================
+
+/// A dark, rounded collapsible card used to group the statistics sections so
+/// only what the user opens renders. LAZY: the heavy child subtree (charts) is
+/// built ONLY while expanded — a collapsed section never builds its content.
+class _CollapsibleSection extends StatefulWidget {
+  final String title;
+  final Widget? trailing;
+  final bool initiallyExpanded;
+  final Widget Function(BuildContext) childBuilder;
+
+  const _CollapsibleSection({
+    super.key,
+    required this.title,
+    required this.childBuilder,
+    this.trailing,
+    this.initiallyExpanded = false,
+  });
+
+  @override
+  State<_CollapsibleSection> createState() => _CollapsibleSectionState();
+}
+
+class _CollapsibleSectionState extends State<_CollapsibleSection> {
+  late bool _expanded = widget.initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(14.r),
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (widget.trailing != null) ...[
+                    widget.trailing!,
+                    SizedBox(width: 8.w),
+                  ],
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(Icons.keyboard_arrow_down_rounded,
+                        color: const Color(0xFF9CA3AF), size: 22.sp),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _expanded
+                ? Padding(
+                    padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 14.h),
+                    child: widget.childBuilder(context),
+                  )
+                : const SizedBox(width: double.infinity),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _FeatureCard extends StatelessWidget {
   final _FeatureItem feature;

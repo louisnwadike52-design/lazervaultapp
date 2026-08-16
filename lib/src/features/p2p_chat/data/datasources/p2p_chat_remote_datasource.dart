@@ -19,24 +19,36 @@ class P2PChatRemoteDatasource {
     print('P2P_DEBUG [$method $url] status=${response.statusCode} body=${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
   }
 
-  String get _baseUrl {
-    final host = dotenv.env['P2P_CHAT_HOST'] ?? endpointRegistry.grpcHost;
-    final portStr = dotenv.env['P2P_CHAT_PORT'] ?? '8018';
-    final port = int.tryParse(portStr) ?? 8018;
-    // Cloudflare edge on 443 expects TLS — speak https. Loopback dev ports
-    // (8018, 7878, …) stay plain http.
-    final scheme = port == 443 ? 'https' : 'http';
-    final hostPort = port == 443 ? host : '$host:$port';
-    return '$scheme://$hostPort/api/v1/chat';
-  }
+  String get _baseUrl => _resolveHttpBase(
+      hostEnv: 'P2P_CHAT_HOST', portEnv: 'P2P_CHAT_PORT', suffix: '/api/v1/chat');
 
-  String get _coreGatewayUrl {
-    final host = dotenv.env['CORE_GATEWAY_HOST'] ?? endpointRegistry.grpcHost;
-    final portStr = dotenv.env['CORE_GATEWAY_PORT'] ?? '7878';
-    final port = int.tryParse(portStr) ?? 7878;
+  String get _coreGatewayUrl => _resolveHttpBase(
+      hostEnv: 'CORE_GATEWAY_HOST', portEnv: 'CORE_GATEWAY_PORT', suffix: '/api/v1');
+
+  /// Build an HTTP base URL. A dev/local `*_HOST` override uses its own `*_PORT`
+  /// (loopback like 8018/7878 → plain http). With NO host override (prod / the
+  /// dev tunnel), we MUST follow the tunnel host AND its port together — the old
+  /// code kept the tunnel host but defaulted the port to 8018/7878, so prod
+  /// dialed `http://api.lazervault.app:8018/…` which the Cloudflare edge never
+  /// serves → the request hung and the page span forever.
+  String _resolveHttpBase({
+    required String hostEnv,
+    required String portEnv,
+    required String suffix,
+  }) {
+    final overrideHost = dotenv.env[hostEnv];
+    if (overrideHost != null && overrideHost.trim().isNotEmpty) {
+      final port = int.tryParse(dotenv.env[portEnv] ?? '') ?? 8018;
+      final scheme = port == 443 ? 'https' : 'http';
+      final hostPort = port == 443 ? overrideHost : '$overrideHost:$port';
+      return '$scheme://$hostPort$suffix';
+    }
+    // Prod / dev-tunnel: host + port come from the registry TOGETHER (443/https).
+    final host = endpointRegistry.grpcHost;
+    final port = endpointRegistry.grpcPort;
     final scheme = port == 443 ? 'https' : 'http';
     final hostPort = port == 443 ? host : '$host:$port';
-    return '$scheme://$hostPort/api/v1';
+    return '$scheme://$hostPort$suffix';
   }
 
   Map<String, String> _headers(String accessToken) => {

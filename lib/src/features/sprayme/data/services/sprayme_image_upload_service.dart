@@ -29,12 +29,20 @@ class SpraymeImageUploadService {
           .replaceAll(RegExp(r'/api/v1$'), '');
     }
     // LIFESTYLE_GATEWAY_HOST defaults differ per platform:
-    // Android emulator: 10.0.2.2, iOS simulator: localhost, real device: actual IP
-    final host = dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??
-        dotenv.env['PAYMENT_GRPC_HOST'] ??
-        endpointRegistry.grpcHost;
-    final port = dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? '8088';
-    return 'http://$host:$port';
+    // Android emulator: 10.0.2.2, iOS simulator: localhost, real device: actual IP.
+    // With NO dev override (prod) we follow the tunnel host+port together (443 →
+    // https). The old code kept the tunnel host but forced port 8088 + http, so
+    // prod hit http://api.lazervault.app:8088 — a port/scheme the edge never
+    // serves → uploads failed.
+    final ep = endpointRegistry.resolveServiceHostPort(
+      overrideHost: dotenv.env['LIFESTYLE_GATEWAY_HOST'] ??
+          dotenv.env['PAYMENT_GRPC_HOST'],
+      overridePort: int.tryParse(dotenv.env['LIFESTYLE_GATEWAY_PORT'] ?? ''),
+      devPort: 8088,
+    );
+    final scheme = ep.port == 443 ? 'https' : 'http';
+    final hostPort = ep.port == 443 ? ep.host : '${ep.host}:${ep.port}';
+    return '$scheme://$hostPort';
   }
 
   /// Validates and uploads an image file, returning the hosted URL.

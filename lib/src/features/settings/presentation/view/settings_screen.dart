@@ -37,6 +37,7 @@ import 'package:lazervault/src/features/identity/domain/repositories/i_identity_
 import 'package:lazervault/src/features/identity/presentation/view/device_permissions_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/trusted_devices_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/delete_account_screen.dart';
+import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
 import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/lock_account_sheet.dart';
 import 'package:lazervault/src/features/settings/presentation/view/login_activity_screen.dart';
@@ -467,7 +468,7 @@ class _SettingsViewState extends State<_SettingsView> {
           'login method', 'email password', 'phone passcode', 'send flow',
           'transfer flow', 'service tiles', 'home tiles', 'entrance animation',
           'appearance', 'preferences', 'send money', 'classic', 'standard',
-          'sign in', 'transfer style',
+          'sign in', 'transfer style', 'send funds', 'sendfunds', 'transfer',
         ],
       ),
       _SectionSpec(
@@ -495,13 +496,20 @@ class _SettingsViewState extends State<_SettingsView> {
         _SectionSpec(
           title: 'Voice & Chat Assistant',
           icon: Icons.record_voice_over_outlined,
-          subtitle: 'Voice setup, cloning, language & transactions',
+          // No subtitle — the section header stays clean like the other
+          // accordion sections; details live inside the body.
           body: _voiceAssistantBody(),
           keywords: const [
             'voice assistant', 'chat assistant', 'ai', 'chatbot', 'voice agent',
             'voice setup', 'voice clone', 'cloning', 'clone my voice',
             'voice enrollment', 'enroll', 'voice recognition', 'my voice',
             'assistant voice', 'tts', 'voice selection', 'voice language',
+            // Voice transaction-PIN controls (VoiceTxPinSection).
+            'pin', 'transaction pin', 'ask for my pin', 'ask for my pin in voice',
+            'require pin', 'voice pin', 'skip pin', 'pin entry', 'say my pin',
+            // Per-service tuning entry points.
+            'per-service voice', 'per service', 'transfers voice', 'crypto voice',
+            'bills voice', 'exchange voice',
           ],
         ),
       _SectionSpec(
@@ -738,8 +746,11 @@ class _SettingsViewState extends State<_SettingsView> {
         final isEmailMode = currentMode == 'email_password';
         final sendMoneyTile = _navTile(
           icon: Icons.bolt_rounded,
-          title: 'Send Money',
-          keywords: const ['transfer style', 'classic', 'standard', 'send'],
+          title: 'Send Funds',
+          keywords: const [
+            'transfer style', 'classic', 'standard', 'send',
+            'transfer', 'send funds', 'sendfunds', 'send money',
+          ],
           subtitle: _transferStyleClassic
               ? 'Classic — fast, streamlined'
               : 'Standard — full transfer form',
@@ -799,6 +810,41 @@ class _SettingsViewState extends State<_SettingsView> {
             );
           },
         );
+        // Deposit: re-enable (or hide) the one-time "keep your balance live"
+        // guide on the deposit screen. Reads the SAME uid-scoped flag the modal's
+        // "Don't show this again" checkbox writes, so the two stay in sync.
+        final uid = user?.id ?? '';
+        final depositGuideOn =
+            uid.isNotEmpty ? FeatureFlags.depositBalanceGuideEnabled(uid) : true;
+        final depositTipsTile = _switchTile(
+          icon: Icons.tips_and_updates_rounded,
+          title: 'Deposit balance tips',
+          keywords: const [
+            'deposit',
+            'balance',
+            'refresh',
+            'tips',
+            'guide',
+            'keep balance live',
+            'linked bank',
+          ],
+          subtitle:
+              'Show the "keep your balance live" guide on the deposit screen',
+          value: depositGuideOn,
+          onChanged: (v) async {
+            if (uid.isEmpty) return; // no profile yet — nothing to scope to
+            await FeatureFlags.setDepositBalanceGuideEnabled(uid, v);
+            if (!mounted) return;
+            setState(() {});
+            showAppSnackbar(
+              v ? 'Deposit tips on' : 'Deposit tips off',
+              v
+                  ? 'The guide will show next time you open Deposit.'
+                  : 'The guide stays hidden on the deposit screen.',
+              type: AppSnackbarType.success,
+            );
+          },
+        );
         // While searching, drop the group labels/spacing and filter down to the
         // matching tiles (item-level search, consistent with the other
         // sections). Non-searching keeps the grouped, spaced layout with labels.
@@ -807,6 +853,7 @@ class _SettingsViewState extends State<_SettingsView> {
             sendMoneyTile,
             dashboardLayoutTile,
             adaptiveServicesTile,
+            depositTipsTile,
             loginMethodTile,
           ]);
         }
@@ -818,7 +865,7 @@ class _SettingsViewState extends State<_SettingsView> {
             SizedBox(height: 14.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: _customizeGroupLabel('Send money'),
+              child: _customizeGroupLabel('Send Funds'),
             ),
             SizedBox(height: 10.h),
             // Transfer style is now chosen in a bottom sheet — same interaction
@@ -833,6 +880,13 @@ class _SettingsViewState extends State<_SettingsView> {
             dashboardLayoutTile,
             SizedBox(height: 10.h),
             adaptiveServicesTile,
+            SizedBox(height: 18.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: _customizeGroupLabel('Deposit'),
+            ),
+            SizedBox(height: 10.h),
+            depositTipsTile,
             SizedBox(height: 18.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1387,39 +1441,62 @@ class _SettingsViewState extends State<_SettingsView> {
   }
 
   Widget _voiceAssistantBody() {
+    // Every agent-backed service (slugs mirror the chat-*-service domains +
+    // labelForChatService in per_service_voice_settings.dart). The voice & chat
+    // assistant accommodates all of them, not just transfers.
     const services = <_VoiceServiceTile>[
       _VoiceServiceTile(
           slug: 'transfers',
-          label: 'Transfers',
+          label: 'Send funds & transfers',
           icon: Icons.swap_horiz_rounded),
       _VoiceServiceTile(
           slug: 'crypto',
           label: 'Crypto',
           icon: Icons.currency_bitcoin),
       _VoiceServiceTile(
+          slug: 'investments',
+          label: 'Investments',
+          icon: Icons.trending_up_rounded),
+      _VoiceServiceTile(
           slug: 'exchange',
-          label: 'Currency Exchange',
+          label: 'Currency exchange',
           icon: Icons.swap_calls_rounded),
+      _VoiceServiceTile(
+          slug: 'banking',
+          label: 'Banking (deposits & withdrawals)',
+          icon: Icons.account_balance_outlined),
+      _VoiceServiceTile(
+          slug: 'products',
+          label: 'Bills & utilities',
+          icon: Icons.receipt_long_outlined),
+      _VoiceServiceTile(
+          slug: 'commerce',
+          label: 'Invoices & gift cards',
+          icon: Icons.card_giftcard_outlined),
       _VoiceServiceTile(
           slug: 'insurance',
           label: 'Insurance',
           icon: Icons.shield_outlined),
       _VoiceServiceTile(
-          slug: 'expenses',
-          label: 'Expenses',
-          icon: Icons.receipt_long_outlined),
-      _VoiceServiceTile(
           slug: 'business',
-          label: 'Business',
+          label: 'Business (payroll & customers)',
           icon: Icons.business_center_outlined),
       _VoiceServiceTile(
-          slug: 'investments',
-          label: 'Investments',
-          icon: Icons.trending_up_rounded),
+          slug: 'statistics',
+          label: 'Spending insights',
+          icon: Icons.insights_outlined),
       _VoiceServiceTile(
-          slug: 'banking',
-          label: 'Banking',
-          icon: Icons.account_balance_outlined),
+          slug: 'sprayme',
+          label: 'Lazerspray',
+          icon: Icons.celebration_outlined),
+      _VoiceServiceTile(
+          slug: 'lifestyle',
+          label: 'Lifestyle',
+          icon: Icons.spa_outlined),
+      _VoiceServiceTile(
+          slug: 'accounts',
+          label: 'Accounts & cards',
+          icon: Icons.credit_card_outlined),
     ];
     return _filterableColumn([
         // Full voice-agent setup — opens the SAME screen the in-call settings
@@ -1446,7 +1523,7 @@ class _SettingsViewState extends State<_SettingsView> {
         // Voice transactions — per-user PIN policy for money moves by voice.
         if (_searchQuery.trim().isEmpty)
           Padding(
-            padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
+            padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
             child: Text(
               'Voice transactions',
               style: TextStyle(
@@ -1456,12 +1533,17 @@ class _SettingsViewState extends State<_SettingsView> {
               ),
             ),
           ),
-        const VoiceTxPinSection(),
+        // Same 16.w side inset as the nav rows so the PIN card doesn't sit flush
+        // against the accordion card's edges.
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: const VoiceTxPinSection(),
+        ),
         SizedBox(height: 18.h),
         // Per-service voice tuning (language, voice and prompt hints per service).
         if (_searchQuery.trim().isEmpty)
           Padding(
-            padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
+            padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
             child: Text(
               'Per-service voice',
               style: TextStyle(
@@ -1477,6 +1559,11 @@ class _SettingsViewState extends State<_SettingsView> {
             title: s.label,
             subtitle: 'Language, voice and prompt hints',
             onTap: () => _openVoiceSettingsFor(s.slug),
+            keywords: [
+              'voice', 'chat', 'assistant', 'voice agent', 'per-service',
+              'language', 'voice selection', 'prompt hint',
+              s.label.toLowerCase(), s.slug,
+            ],
           ),
       ]);
   }
@@ -1591,6 +1678,38 @@ class _SettingsViewState extends State<_SettingsView> {
                   ? cfg.aboutUrl
                   : HelpConfig.fallback.aboutUrl,
               'About Lazervault'),
+        ),
+        // Open-source licenses — Flutter's built-in license registry page.
+        // Standard/expected on both stores; no URL needed.
+        _navTile(
+          icon: Icons.article_outlined,
+          title: 'Open-source licenses',
+          subtitle: 'Third-party software we use',
+          onTap: () => showLicensePage(
+            context: context,
+            applicationName: 'Lazervault',
+          ),
+        ),
+        // Replay the first-run dashboard coach-mark tour on demand. Clears the
+        // seen flag then rebuilds the dashboard fresh so its first-frame trigger
+        // restarts the showcase (and bumps the tracked view count).
+        _navTile(
+          icon: Icons.tips_and_updates_outlined,
+          title: 'Replay app tour',
+          subtitle: 'See the dashboard walkthrough again',
+          onTap: () async {
+            // Replay for THIS account only (per-account gating). Clear the
+            // current user's seen flag, then reload the dashboard so its
+            // first-frame trigger restarts the tour + bumps their view count.
+            final uid = context
+                    .read<AuthenticationCubit>()
+                    .currentProfile
+                    ?.user
+                    .id ??
+                '';
+            await DashboardWalkthrough.reset(uid);
+            Get.offAllNamed(AppRoutes.dashboard);
+          },
         ),
         // Self-lock: temporarily block sign-in + all transactions for a chosen
         // Account lock (scheduled + emergency) now lives in its own dedicated
@@ -2026,6 +2145,9 @@ class _SectionSpec {
     required this.title,
     required this.icon,
     required this.body,
+    // Reusable header subtitle — currently no section sets one (the Voice &
+    // Chat Assistant header was deliberately cleared), kept for future use.
+    // ignore: unused_element_parameter
     this.subtitle,
     this.keywords = const [],
   });

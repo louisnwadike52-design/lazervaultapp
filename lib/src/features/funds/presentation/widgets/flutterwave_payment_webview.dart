@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -248,7 +250,15 @@ class _FlutterwavePaymentSheetState extends State<_FlutterwavePaymentSheet> {
                 if (_hasError)
                   _buildErrorState()
                 else
-                  WebViewWidget(controller: _controller),
+                  WebViewWidget(
+                    controller: _controller,
+                    // Vertical-drag recognizer so the payment page scrolls fully
+                    // inside the sheet (button at the bottom stays reachable).
+                    gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                      Factory<VerticalDragGestureRecognizer>(
+                          () => VerticalDragGestureRecognizer()),
+                    },
+                  ),
                 if (_isLoading)
                   const Center(
                     child: LazerVaultLoader.small(),

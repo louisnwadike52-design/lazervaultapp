@@ -81,13 +81,20 @@ class MonoInstitutionsService {
   Future<List<MonoInstitutionData>> _fetchFromBackend({String? accessToken}) async {
     final client = _getClient();
 
-    // Build call options with auth if available
-    CallOptions? options;
+    // Build call options with auth if available. ALWAYS carry a deadline: the
+    // institutions list is a best-effort convenience (the Mono Connect widget
+    // has its own bank selector), so a slow/failing Mono call on the backend
+    // must never let this gRPC hang indefinitely and stall the deposit/link
+    // screen. Bounded to 12s (> the backend's own ~8s Mono cap) so the backend
+    // fails first and we degrade to cached/empty/config banks quickly.
+    final metadata = <String, String>{};
     if (accessToken != null && accessToken.isNotEmpty) {
-      options = CallOptions(metadata: {
-        'authorization': 'Bearer $accessToken',
-      });
+      metadata['authorization'] = 'Bearer $accessToken';
     }
+    final options = CallOptions(
+      metadata: metadata,
+      timeout: const Duration(seconds: 12),
+    );
 
     final request = GetMonoInstitutionsRequest();
     final response = await client.getMonoInstitutions(request, options: options);

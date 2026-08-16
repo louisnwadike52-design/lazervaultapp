@@ -114,20 +114,12 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
               // Capture the cubit before popping — context is invalidated once
               // the dialog closes.
               final profileCubit = context.read<ProfileCubit>();
-              Navigator.of(context).pop();
-              if (hasPhone && !verified) {
-                // Verify the EXISTING number (OTP to the current phone). Coming
-                // from a logged-in profile surface, so fromSettings=true: no
-                // "skip → passcode" onboarding hop; back cancels, success pops
-                // back here.
-                Get.toNamed(AppRoutes.phoneVerification, arguments: {
-                  'phoneNumber': phone,
-                  'isRequired': false,
-                  'fromSettings': true,
-                });
-              } else {
+
+              Future<void> changeToNewNumber() async {
                 // Change to a BRAND-NEW number: OTP to the new number, uniqueness
                 // + verification enforced server-side (never changed silently).
+                // Works even when the current number is unverified — auth-service
+                // RequestPhoneChange has no "current must be verified" guard.
                 final result = await Get.to(() => const ChangePhoneScreen());
                 // On a confirmed change, re-fetch the profile so the new number
                 // shows immediately (no app restart).
@@ -135,6 +127,87 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   profileCubit.getUserProfile();
                 }
               }
+
+              if (hasPhone && !verified) {
+                // Unverified existing number: let the user EITHER verify it OR
+                // switch to a different one. Previously only "Verify" was offered,
+                // which trapped anyone who typed the wrong number at signup.
+                final choice = await showModalBottomSheet<String>(
+                  context: context,
+                  backgroundColor: const Color(0xFF1A1A1A),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+                  ),
+                  builder: (ctx) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(height: 8.h),
+                        Container(
+                          width: 40.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3A3A3A),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Text(
+                            'Update phone number',
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        ListTile(
+                          leading: const Icon(Icons.verified_outlined,
+                              color: Color(0xFF10B981)),
+                          title: Text('Verify this number',
+                              style: GoogleFonts.inter(
+                                  fontSize: 14.sp, color: Colors.white)),
+                          subtitle: Text(phone,
+                              style: GoogleFonts.inter(
+                                  fontSize: 12.sp,
+                                  color: const Color(0xFF9CA3AF))),
+                          onTap: () => Navigator.of(ctx).pop('verify'),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.edit_outlined,
+                              color: Color(0xFF4E03D0)),
+                          title: Text('Use a different number',
+                              style: GoogleFonts.inter(
+                                  fontSize: 14.sp, color: Colors.white)),
+                          onTap: () => Navigator.of(ctx).pop('change'),
+                        ),
+                        SizedBox(height: 8.h),
+                      ],
+                    ),
+                  ),
+                );
+                if (!mounted || choice == null) return;
+                Navigator.of(context).pop(); // close the edit dialog
+                if (choice == 'verify') {
+                  // Verify the EXISTING number (OTP to the current phone). From a
+                  // logged-in profile surface, so fromSettings=true: no "skip →
+                  // passcode" onboarding hop; back cancels, success pops back.
+                  Get.toNamed(AppRoutes.phoneVerification, arguments: {
+                    'phoneNumber': phone,
+                    'isRequired': false,
+                    'fromSettings': true,
+                  });
+                } else {
+                  await changeToNewNumber();
+                }
+                return;
+              }
+
+              Navigator.of(context).pop();
+              await changeToNewNumber();
             },
             child: Text(
               hasPhone && !verified ? 'Verify' : 'Change',

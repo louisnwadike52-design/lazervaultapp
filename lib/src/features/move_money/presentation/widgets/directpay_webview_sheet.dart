@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -195,7 +197,15 @@ class _DirectPayWebViewSheetState extends State<_DirectPayWebViewSheet> {
 
           // WebView
           Expanded(
-            child: WebViewWidget(controller: _controller),
+            child: WebViewWidget(
+              controller: _controller,
+              // Claim vertical drags so the page scrolls to its end inside the
+              // bottom sheet (otherwise the sheet swallows the scroll gesture).
+              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                Factory<VerticalDragGestureRecognizer>(
+                    () => VerticalDragGestureRecognizer()),
+              },
+            ),
           ),
         ],
       ),

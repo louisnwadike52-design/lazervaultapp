@@ -256,10 +256,13 @@ class OpenBankingError extends OpenBankingState {
     this.operation,
   });
 
-  /// Create from a BankingException
+  /// Create from a BankingException. [accountId], when supplied (e.g. a per-account
+  /// balance refresh), is merged into `details` so listeners can scope the failure
+  /// to exactly that account instead of every in-flight one.
   factory OpenBankingError.fromException(
     BankingException exception, {
     String? operation,
+    String? accountId,
   }) {
     return OpenBankingError(
       message: exception.userMessage,
@@ -271,7 +274,10 @@ class OpenBankingError extends OpenBankingState {
           : exception is RateLimitException
               ? exception.retryAfter
               : null,
-      details: exception.details,
+      details: {
+        ...?exception.details,
+        if (accountId != null) 'account_id': accountId,
+      },
       operation: operation,
     );
   }
@@ -476,23 +482,7 @@ class CreditScoreAIInsightsError extends OpenBankingState {
 }
 
 // ===== External Transaction Sync States =====
-
-/// All accounts are being synced
-class AllAccountsSyncing extends OpenBankingState {}
-
-/// All accounts sync completed
-class AllAccountsSynced extends OpenBankingState {
-  final int accountsSynced;
-  final int transactionsSynced;
-
-  const AllAccountsSynced({
-    required this.accountsSynced,
-    required this.transactionsSynced,
-  });
-
-  @override
-  List<Object?> get props => [accountsSynced, transactionsSynced];
-}
+// (AllAccountsSyncing / AllAccountsSynced removed with the bulk sync-all path.)
 
 /// Single account transactions are being synced
 class AccountTransactionsSyncing extends OpenBankingState {

@@ -892,6 +892,24 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
+    // 3c. Un-provisioned family wallet guard — a family card whose pool virtual
+    // account is still processing has an empty virtualAccountId, so
+    // spendingAccountId falls back to the non-spendable group id and the debit
+    // would fail server-side. Block BEFORE the PIN step with a clear message.
+    if (selectedAccount.isFamilyWalletProvisioning) {
+      Get.snackbar(
+        'Wallet still being set up',
+        'This family account\'s wallet is still being set up. '
+            'Please try again in a few minutes.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFB923C),
+        colorText: Colors.white,
+        margin: EdgeInsets.all(12.w),
+        duration: const Duration(seconds: 5),
+      );
+      return;
+    }
+
     double transferAmountMajor = double.parse(amount) / 100.0;
 
     // 4. Validate minimum transfer amount (e.g., 0.01)
@@ -1924,9 +1942,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final recurringAccount = recurringSummaries[selectedCardIndex];
     final recurringAmountMajor = int.tryParse(amount) != null ? int.parse(amount) / 100.0 : 0.0;
     final recurringReference = _referenceController.text.trim();
-    final recurringNarration = selectedCategory != null
-        ? '${selectedCategory!.displayName}: ${recurringReference.isNotEmpty ? recurringReference : "Transfer"}'
-        : (recurringReference.isNotEmpty ? recurringReference : 'Transfer');
+    // Same builder as the immediate send: stamps the analytics-label prefix (NOT
+    // displayName) so the recurring rule's executions are attributed to the right
+    // subcategory when the worker fires them.
+    final recurringNarration = ServiceCategory.buildTransferNarration(
+      category: selectedCategory,
+      note: recurringReference,
+      defaultNarration: 'Transfer',
+    );
 
     _recurringSetupPending = true;
     _recurringSetupInitiated = true;

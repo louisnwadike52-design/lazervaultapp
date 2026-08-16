@@ -6,6 +6,7 @@ import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Screen to link a bank account using Mono Connect
 class LinkBankScreen extends StatefulWidget {
@@ -274,12 +275,36 @@ class _LinkBankScreenState extends State<LinkBankScreen>
             );
             Navigator.pop(context, true);
           } else if (state is OpenBankingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            // Per-user cap OR provider capacity exhausted → styled modal with
+            // CTAs, not a red snackbar. Landing here means the link was rejected,
+            // so pop back to the linked-banks list once dismissed (don't strand
+            // the user on the dead Mono webview).
+            final nav = Navigator.of(context);
+            if (state.errorCode == kLinkLimitReachedCode) {
+              showLinkLimitReachedDialog(context, state.message).then((_) {
+                if (mounted) nav.pop(false);
+              });
+            } else if (state.errorCode == kLinkingCapacityCode) {
+              showLinkingCapacityDialog(context).then((_) {
+                if (mounted) nav.pop(false);
+              });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } else if (state is ServiceUnavailable || state is OpenBankingOffline) {
+            // Banking / Mono backend unreachable → themed "temporarily
+            // unavailable" modal (not a snackbar), then back out of the dead
+            // webview so the user isn't stuck.
+            final nav = Navigator.of(context);
+            showServiceUnavailableDialog(context, serviceLabel: 'Bank linking')
+                .then((_) {
+              if (mounted) nav.pop(false);
+            });
           }
         },
         builder: (context, state) {

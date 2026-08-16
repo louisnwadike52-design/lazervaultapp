@@ -12,6 +12,11 @@ abstract class AppRoutes {
   static const String cameraScan = '/camera-scan';
   static const String uploadImage = '/upload-image';
   static const String selectRecipient = '/select-recipient';
+  // Transparent host for the short-flow "quick send" to a KNOWN recipient
+  // (chat/QR/repeat autoContinue). Same screen + cubits as selectRecipient but
+  // registered opaque:false so the amount sheet presents directly over the
+  // caller with no opaque intermediate flashing on open/close.
+  static const String quickSend = '/quick-send';
   static const String addRecipient = '/add-recipient';
   static const String qrScanner = '/qr-scanner';
   static const String myQRCode = '/my-qr-code';

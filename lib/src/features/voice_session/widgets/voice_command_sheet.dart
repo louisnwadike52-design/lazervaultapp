@@ -141,6 +141,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   bool _lowConfidenceWarned = false;
   final TextEditingController _feedbackController = TextEditingController();
 
+  /// Resolved voice interaction mode ('continuous'|'hold'|'tap'|'double_tap').
+  /// Loaded from the user's voice settings (admin default → per-user override) at
+  /// session start; also togglable in-sheet. Drives the talk button + docked bar.
+  String _interactionMode = 'continuous';
+  bool get _isPtt => _interactionMode != 'continuous';
+
   @override
   void initState() {
     super.initState();
@@ -340,11 +346,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     if (_isClosing || _isMinimizing) return;
     _isMinimizing = true;
     final cubit = context.read<VoiceSessionCubit>();
+    // In a push-to-talk mode, dock a bottom BAR that keeps the talk button live
+    // (per the spec — NOT a floating icon). Continuous mode keeps the floating
+    // bubble. Both keep the app-scoped cubit/room alive.
     VoiceMiniBubbleController.instance.show(
       context,
       cubit: cubit,
       serviceName: widget.serviceName,
       conversationId: widget.conversationId,
+      docked: _isPtt,
+      interactionMode: _interactionMode,
     );
     if (mounted) {
       Navigator.of(context, rootNavigator: true).pop();
@@ -458,6 +469,112 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       currency: activeCurrency,
       userId: userId,
     );
+    // Resolve the interaction mode (admin default → per-user override) and apply
+    // it to the cubit so a PTT user isn't auto-listened to before they gesture.
+    unawaited(_applyInteractionModeFromSettings());
+  }
+
+  /// Fetch the user's effective voice interaction mode and apply it to the cubit +
+  /// this sheet. Fail-safe: any failure leaves the default 'continuous' mode.
+  Future<void> _applyInteractionModeFromSettings() async {
+    try {
+      if (!serviceLocator.isRegistered<VoiceSettingsService>()) return;
+      final s =
+          await serviceLocator<VoiceSettingsService>().getTxPinSettings();
+      if (s == null || !mounted) return;
+      final mode = s.effectiveInteractionMode;
+      setState(() => _interactionMode = mode);
+      context.read<VoiceSessionCubit>().setInteractionMode(mode);
+    } catch (_) {/* keep the default continuous mode */}
+  }
+
+  /// Cycle to the next interaction mode from the in-sheet toggle and persist it as
+  /// a per-user override. Order: continuous → hold → tap → double_tap → continuous.
+  Future<void> _cycleInteractionMode() async {
+    const order = ['continuous', 'hold', 'tap', 'double_tap'];
+    final next = order[(order.indexOf(_interactionMode) + 1) % order.length];
+    setState(() => _interactionMode = next);
+    context.read<VoiceSessionCubit>().setInteractionMode(next);
+    try {
+      if (serviceLocator.isRegistered<VoiceSettingsService>()) {
+        await serviceLocator<VoiceSettingsService>().updateTxPinSettings(
+          requirePin: null,
+          thresholdKobo: null,
+          interactionMode: next,
+        );
+      }
+    } catch (_) {/* the in-session choice still applies even if the save fails */}
+  }
+
+  /// Human label for an interaction mode (used on the toggle chip + docked bar).
+  String _interactionModeLabel(String m) {
+    switch (m) {
+      case 'hold':
+        return 'Hold to talk';
+      case 'tap':
+        return 'Tap to talk';
+      case 'double_tap':
+        return 'Double-tap';
+      default:
+        return 'Continuous';
+    }
+  }
+
+  /// The push-to-talk button. Gesture semantics depend on the mode:
+  ///  • hold       — press & hold to capture, release to send;
+  ///  • tap        — tap to start, tap again to send;
+  ///  • double_tap — double-tap to start, double-tap to send.
+  /// The mic opens only while engaged; `cubit.isPttCapturing` drives the visual
+  /// (the sheet rebuilds via BlocConsumer as the cubit emits speaking/processing).
+  Widget _buildPttTalkButton(VoiceSessionState state) {
+    final cubit = context.read<VoiceSessionCubit>();
+    final capturing = cubit.isPttCapturing;
+    const active = Color(0xFF10B981); // capturing (green)
+    const accent = Color(0xFF5B45C9); // sheet brand accent
+    final bg = capturing ? active : accent;
+
+    void begin() => cubit.pttBegin();
+    void end() => cubit.pttEnd();
+    void toggle() => capturing ? end() : begin();
+
+    final button = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 72.w,
+      height: 72.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: bg.withValues(alpha: capturing ? 0.9 : 0.18),
+        border: Border.all(color: bg.withValues(alpha: 0.6), width: 2),
+        boxShadow: capturing
+            ? [
+                BoxShadow(
+                    color: active.withValues(alpha: 0.5),
+                    blurRadius: 18,
+                    spreadRadius: 2)
+              ]
+            : null,
+      ),
+      child: Icon(
+        capturing ? Icons.graphic_eq_rounded : Icons.mic_none_rounded,
+        color: capturing ? Colors.white : bg,
+        size: 30.sp,
+      ),
+    );
+
+    switch (_interactionMode) {
+      case 'hold':
+        return GestureDetector(
+          onTapDown: (_) => begin(),
+          onTapUp: (_) => end(),
+          onTapCancel: end,
+          child: button,
+        );
+      case 'double_tap':
+        return GestureDetector(onDoubleTap: toggle, child: button);
+      case 'tap':
+      default:
+        return GestureDetector(onTap: toggle, child: button);
+    }
   }
 
   /// Resolve whether to offer the "Your Voice" (cloned voice) row for the given
@@ -1256,6 +1373,20 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 _continuousChat = _showCaptions;
               }),
               onLongPress: _showChatHistorySheet,
+            ),
+          ),
+          // Interaction mode: cycles continuous → hold → tap → double-tap and
+          // saves the per-user override. In a PTT mode the mic opens only when the
+          // talk button is engaged (see _buildPttTalkButton).
+          Expanded(
+            child: _buildControlChip(
+              icon: _isPtt
+                  ? Icons.touch_app_rounded
+                  : Icons.graphic_eq_rounded,
+              label: _interactionModeLabel(_interactionMode),
+              active: _isPtt,
+              activeColor: const Color(0xFF5B45C9),
+              onTap: _cycleInteractionMode,
             ),
           ),
           // Deeper per-service / global voice settings screen.
@@ -2873,6 +3004,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             ),
           ),
 
+          // Push-to-talk button — only in a PTT interaction mode. The primary
+          // control: the mic opens only while this is engaged (hold) or toggled.
+          if (_isPtt && isActive) ...[
+            SizedBox(width: 24.w),
+            _buildPttTalkButton(state),
+          ],
+
           if (isActive) ...[
             SizedBox(width: 24.w),
 
@@ -4007,6 +4145,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     try {
       final success = await validateTransactionPin(
         context: context,
+        // The voice-agent sheet is itself a modal bottom sheet; a cancelled PIN
+        // must close ONLY the PIN sheet on top, leaving the voice sheet open so
+        // the user can continue the conversation.
+        preserveHostSheet: true,
         headerAction: pinHeaderAction,
         transactionId: transactionId,
         transactionType: transactionType,

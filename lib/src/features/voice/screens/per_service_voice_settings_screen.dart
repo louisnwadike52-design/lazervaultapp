@@ -4,20 +4,28 @@
 /// caller pushes `PerServiceVoiceSettingsScreen(serviceName: 'crypto')`
 /// from the crypto landing's "Voice Assistant Settings" entry, etc.
 ///
-/// Layout mirrors the existing general voice settings screen so
-/// users find the familiar shape: language picker, voice picker,
-/// free-text "prompt hint" field, then a Save row with Reset to
-/// defaults / Revert / Save buttons.
+/// Layout mirrors the general voice settings screen so users find the
+/// familiar shape: language picker, an "assistant voice" row that
+/// INHERITS the already-set general voice (no provider/model picker —
+/// the platform default voice is used), a free-text "prompt hint"
+/// field, then a Save row with Reset to defaults / Save buttons.
+///
+/// THEME: this screen is reached from the settings hub, so it uses the
+/// light [SettingsTheme] tokens to match the surrounding settings
+/// sections — NOT the dark in-call voice UI.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 
 import '../cubit/per_service_voice_settings_cubit.dart';
 import '../models/per_service_voice_settings.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/settings/presentation/theme/settings_theme.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 class PerServiceVoiceSettingsScreen extends StatelessWidget {
   final String serviceName;
@@ -30,15 +38,15 @@ class PerServiceVoiceSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: SettingsTheme.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: SettingsTheme.card,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: SettingsTheme.textPrimary),
         title: Text(
           'Voice & chat settings',
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: SettingsTheme.textPrimary,
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -116,7 +124,7 @@ class _LoadedBodyState extends State<_LoadedBody> {
           Text(
             labelForChatService(widget.serviceName),
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: SettingsTheme.textPrimary,
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -128,7 +136,7 @@ class _LoadedBodyState extends State<_LoadedBody> {
             "assistant. Leave any field blank to inherit your "
             "general voice settings.",
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: SettingsTheme.textSecondary,
               fontSize: 12.sp,
               height: 1.4,
             ),
@@ -144,14 +152,14 @@ class _LoadedBodyState extends State<_LoadedBody> {
             ),
           ),
           SizedBox(height: 12.h),
+          // Voice is NOT chosen here per service. It inherits the single
+          // source of truth — your already-set general assistant voice (or
+          // the platform default). This keeps every surface speaking with the
+          // same voice and removes provider/model choices from this screen.
           _section(
             title: 'Voice',
-            child: _VoiceDropdown(
-              selected: settings.voiceId,
-              languageCode: settings.languageCode,
-              onChanged: (v) => context
-                  .read<PerServiceVoiceSettingsCubit>()
-                  .selectVoice(v),
+            child: _InheritedVoiceRow(
+              onOpenVoiceSettings: () => Get.toNamed(AppRoutes.voiceSettings),
             ),
           ),
           SizedBox(height: 12.h),
@@ -168,30 +176,28 @@ class _LoadedBodyState extends State<_LoadedBody> {
               onChanged: (v) => context
                   .read<PerServiceVoiceSettingsCubit>()
                   .setPromptHint(v),
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+              style: GoogleFonts.inter(
+                  color: SettingsTheme.textPrimary, fontSize: 13.sp),
               decoration: InputDecoration(
                 hintText: 'Optional. Folded into the assistant\'s '
                     'system prompt for this service.',
                 hintStyle: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
+                  color: SettingsTheme.textTertiary,
                   fontSize: 12.sp,
                 ),
                 filled: true,
-                fillColor: const Color(0xFF1F1F1F),
+                fillColor: SettingsTheme.surfaceAlt,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF2D2D2D)),
+                  borderSide: const BorderSide(color: SettingsTheme.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF2D2D2D)),
+                  borderSide: const BorderSide(color: SettingsTheme.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF3B82F6)),
+                  borderSide: const BorderSide(color: SettingsTheme.brand),
                 ),
               ),
             ),
@@ -203,7 +209,7 @@ class _LoadedBodyState extends State<_LoadedBody> {
               child: Text(
                 widget.state.error!,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFFEF4444),
+                  color: SettingsTheme.danger,
                   fontSize: 12.sp,
                 ),
               ),
@@ -218,13 +224,13 @@ class _LoadedBodyState extends State<_LoadedBody> {
                           .read<PerServiceVoiceSettingsCubit>()
                           .resetToDefaults(),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF2D2D2D)),
+                    side: const BorderSide(color: SettingsTheme.divider),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   child: Text(
                     'Reset to defaults',
                     style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: SettingsTheme.textPrimary,
                       fontSize: 13.sp,
                     ),
                   ),
@@ -239,17 +245,15 @@ class _LoadedBodyState extends State<_LoadedBody> {
                           .read<PerServiceVoiceSettingsCubit>()
                           .save(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: SettingsTheme.brand,
+                    disabledBackgroundColor:
+                        SettingsTheme.brand.withValues(alpha: 0.4),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   child: widget.state.saving
                       ? LazerVaultLoader(size: 18)
                       : Text(
-                          widget.state.dirty
-                              ? 'Save'
-                              : (widget.state.savedAt == null
-                                  ? 'Saved'
-                                  : 'Saved'),
+                          widget.state.dirty ? 'Save' : 'Saved',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 13.sp,
@@ -276,7 +280,7 @@ class _LoadedBodyState extends State<_LoadedBody> {
         Text(
           title,
           style: GoogleFonts.inter(
-            color: Colors.white.withValues(alpha: 0.85),
+            color: SettingsTheme.textPrimary,
             fontSize: 13.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -286,7 +290,7 @@ class _LoadedBodyState extends State<_LoadedBody> {
           Text(
             help,
             style: GoogleFonts.inter(
-              color: const Color(0xFF6B7280),
+              color: SettingsTheme.textTertiary,
               fontSize: 11.sp,
               height: 1.4,
             ),
@@ -322,16 +326,18 @@ class _LanguageDropdown extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: SettingsTheme.surfaceAlt,
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        border: Border.all(color: SettingsTheme.divider),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: (selected == null || selected!.isEmpty) ? '' : selected,
           isExpanded: true,
-          dropdownColor: const Color(0xFF1F1F1F),
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+          dropdownColor: SettingsTheme.card,
+          style: GoogleFonts.inter(
+              color: SettingsTheme.textPrimary, fontSize: 13.sp),
+          iconEnabledColor: SettingsTheme.textSecondary,
           items: _kLanguages
               .map((l) => DropdownMenuItem<String>(
                     value: l['code'],
@@ -348,84 +354,67 @@ class _LanguageDropdown extends StatelessWidget {
   }
 }
 
-/// Voice list per language. Free-tier voices only — premium options
-/// (ElevenLabs custom-cloned voices) appear when the user has
-/// completed voice cloning in the general settings.
-const Map<String, List<Map<String, String>>> _kVoicesByLang = {
-  'en': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'openai-nova', 'label': 'Nova (OpenAI, warm)'},
-    {'id': 'openai-onyx', 'label': 'Onyx (OpenAI, deep)'},
-    {'id': 'eleven-rachel', 'label': 'Rachel (ElevenLabs, calm)'},
-  ],
-  'yo': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'yarn-yoruba-female', 'label': 'Yoruba (YarnGPT, female)'},
-    {'id': 'yarn-yoruba-male', 'label': 'Yoruba (YarnGPT, male)'},
-  ],
-  'ig': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'yarn-igbo-female', 'label': 'Igbo (YarnGPT, female)'},
-  ],
-  'ha': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'yarn-hausa-male', 'label': 'Hausa (YarnGPT, male)'},
-  ],
-  'pcm': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'yarn-pidgin-female', 'label': 'Pidgin (YarnGPT, female)'},
-  ],
-  'fr': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'openai-shimmer', 'label': 'Shimmer (OpenAI)'},
-  ],
-  'es': [
-    {'id': '', 'label': 'Default'},
-    {'id': 'openai-alloy', 'label': 'Alloy (OpenAI)'},
-  ],
-};
-
-class _VoiceDropdown extends StatelessWidget {
-  final String? selected;
-  final String? languageCode;
-  final ValueChanged<String?> onChanged;
-  const _VoiceDropdown({
-    required this.selected,
-    required this.languageCode,
-    required this.onChanged,
-  });
+/// Read-only "voice inherits your general assistant voice" row. Replaces the
+/// old provider/model voice picker — per the product decision, the platform
+/// uses the already-set general voice (or the default) for every service, so
+/// there is nothing to pick here. A single affordance jumps to the general
+/// Voice & Language setting (the single source of truth) if the user wants to
+/// change the voice for everything at once.
+class _InheritedVoiceRow extends StatelessWidget {
+  final VoidCallback onOpenVoiceSettings;
+  const _InheritedVoiceRow({required this.onOpenVoiceSettings});
 
   @override
   Widget build(BuildContext context) {
-    final lang = (languageCode == null || languageCode!.isEmpty)
-        ? 'en'
-        : languageCode!;
-    final voices = _kVoicesByLang[lang] ?? _kVoicesByLang['en']!;
-    final currentValue = (selected == null || selected!.isEmpty) ? '' : selected;
-    final hasMatch = voices.any((v) => v['id'] == currentValue);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: SettingsTheme.surfaceAlt,
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        border: Border.all(color: SettingsTheme.divider),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: hasMatch ? currentValue : '',
-          isExpanded: true,
-          dropdownColor: const Color(0xFF1F1F1F),
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
-          items: voices
-              .map((v) => DropdownMenuItem<String>(
-                    value: v['id'],
-                    child: Text(v['label']!),
-                  ))
-              .toList(),
-          onChanged: (v) {
-            onChanged((v == null || v.isEmpty) ? null : v);
-          },
-        ),
+      child: Row(
+        children: [
+          Icon(Icons.record_voice_over_rounded,
+              color: SettingsTheme.brand, size: 20.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Uses your assistant voice',
+                  style: GoogleFonts.inter(
+                    color: SettingsTheme.textPrimary,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'Follows your general Voice & Language setting for the '
+                  'selected language.',
+                  style: GoogleFonts.inter(
+                    color: SettingsTheme.textTertiary,
+                    fontSize: 11.sp,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: onOpenVoiceSettings,
+            child: Text(
+              'Change',
+              style: GoogleFonts.inter(
+                color: SettingsTheme.brand,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

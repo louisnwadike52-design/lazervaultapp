@@ -20,13 +20,29 @@ import 'package:lazervault/core/services/voice_biometrics_service.dart';
 ///
 /// Used by the passcode login screen's mic button.
 class VoiceLoginSheet extends StatefulWidget {
-  final String userId;
-  final String phone;
-  const VoiceLoginSheet({super.key, required this.userId, required this.phone});
+  // Two identity modes: cached (userId+phone, from the passcode lock) OR email
+  // (from the email sign-in screen — the server resolves the account).
+  final String? userId;
+  final String? phone;
+  final String? email;
+  const VoiceLoginSheet({super.key, this.userId, this.phone, this.email});
 
-  /// Shows the sheet and returns the login result (null = cancelled/failed).
+  /// Cached-identity mode (passcode lock). Returns the login result (null =
+  /// cancelled/failed).
   static Future<VoiceLoginResult?> show(BuildContext context,
       {required String userId, required String phone}) {
+    return _present(context, VoiceLoginSheet(userId: userId, phone: phone));
+  }
+
+  /// EMAIL mode (email sign-in screen) — verify the voiceprint for the account
+  /// owning [email] and mint a session.
+  static Future<VoiceLoginResult?> showForEmail(BuildContext context,
+      {required String email}) {
+    return _present(context, VoiceLoginSheet(email: email));
+  }
+
+  static Future<VoiceLoginResult?> _present(
+      BuildContext context, VoiceLoginSheet sheet) {
     return showModalBottomSheet<VoiceLoginResult>(
       context: context,
       isScrollControlled: true,
@@ -34,7 +50,7 @@ class VoiceLoginSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => VoiceLoginSheet(userId: userId, phone: phone),
+      builder: (_) => sheet,
     );
   }
 
@@ -133,12 +149,19 @@ class _VoiceLoginSheetState extends State<VoiceLoginSheet> {
         throw Exception('recording too short');
       }
       // SERVER-attested login: the gateway verifies + mints a session. We NEVER
-      // decide "verified" on the client.
-      final result = await _voice.loginWithVoice(
-        userId: widget.userId,
-        phone: widget.phone,
-        audioSample: Uint8List.fromList(bytes),
-      );
+      // decide "verified" on the client. Email mode resolves the account
+      // server-side; cached mode passes the known userId+phone.
+      final sample = Uint8List.fromList(bytes);
+      final result = (widget.email != null && widget.email!.isNotEmpty)
+          ? await _voice.loginWithEmail(
+              email: widget.email!,
+              audioSample: sample,
+            )
+          : await _voice.loginWithVoice(
+              userId: widget.userId ?? '',
+              phone: widget.phone ?? '',
+              audioSample: sample,
+            );
       if (!mounted) return;
       if (result.hasSession) {
         Navigator.of(context).pop(result);

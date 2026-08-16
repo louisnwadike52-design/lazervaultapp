@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/widgets/bill_auto_recharge_create_sheet.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
@@ -107,6 +108,22 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
         .where((a) => a.currency.toUpperCase() == currency.toUpperCase())
         .toList();
 
+    // Prefer the currently ACTIVE account (so a family pool the user is viewing is
+    // the default source) — matched by spendingAccountId/id. NOTE: _selectedAccountId
+    // stores account.id (the UI-selection key compared against a.id); the debit
+    // resolves spendingAccountId at submit time (_processPayment).
+    final activeId = GetIt.I<AccountManager>().activeAccountId;
+    if (activeId != null) {
+      final active = matchingAccounts
+          .where((a) => a.spendingAccountId == activeId || a.id == activeId)
+          .firstOrNull;
+      if (active != null) {
+        _selectedAccountId = active.id.toString();
+        _autoSelectedAccount = true;
+        return;
+      }
+    }
+
     for (final account in matchingAccounts) {
       if (_hasSufficientBalance(account)) {
         _selectedAccountId = account.id.toString();
@@ -137,12 +154,18 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
       return;
     }
 
+    // Resolve the debit source: for a family card this is the pool VA
+    // (spendingAccountId), not the raw id. Falls back to the selection id.
+    String sourceAccountId = _selectedAccountId!;
     // Check for insufficient balance before proceeding
     final accountState = context.read<AccountCardsSummaryCubit>().state;
     if (accountState is AccountCardsSummaryLoaded) {
       final selectedAccount = accountState.accountSummaries
           .where((a) => a.id.toString() == _selectedAccountId)
           .firstOrNull;
+      if (selectedAccount != null) {
+        sourceAccountId = selectedAccount.spendingAccountId;
+      }
       if (selectedAccount != null && !_hasSufficientBalance(selectedAccount)) {
         final currency = country?.currency ?? 'NGN';
         final needed = totalAmount ?? amount ?? 0;
@@ -161,6 +184,11 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
     if (networkProvider != null && phoneNumber != null && amount != null && country != null) {
       setState(() => _isProcessing = true);
       final transactionId = 'airtime_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
+
+      // Bind the PIN token + header to the actual debit source (spendingAccountId)
+      // BEFORE verifying, so the token and the debit target the same account
+      // (critical for a family pool source).
+      GetIt.I<AccountManager>().setActiveAccount(sourceAccountId);
 
       String? verificationToken;
 
@@ -193,7 +221,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
         'currency': country!.currency,
         'transactionId': transactionId,
         'verificationToken': verificationToken!,
-        'sourceAccountId': _selectedAccountId!,
+        'sourceAccountId': sourceAccountId,
         'operatorId': networkProvider!.operatorId,
         'reloadlyOperatorId': networkProvider!.reloadlyOperatorId,
         'providerName': networkProvider!.name,

@@ -52,7 +52,7 @@ class PanicBalanceSettings extends StatelessWidget {
           children: [
             Text(
               "Show a fake balance to disguise your real money in unsafe "
-              "situations. It's display-only — your real balance, transfers and "
+              "situations. It's display-only. Your real balance, transfers and "
               "limits are never affected, so a transfer still goes through normally.",
               style: GoogleFonts.inter(fontSize: 12.sp, color: muted, height: 1.4),
             ),
@@ -70,7 +70,7 @@ class PanicBalanceSettings extends StatelessWidget {
                 muted,
                 Icons.info_outline,
                 'Use the triggers below to show or hide the decoy. It stays on '
-                'until you toggle it off — even after closing and reopening the '
+                'until you toggle it off, even after closing and reopening the '
                 'app.',
               ),
               SizedBox(height: 16.h),
@@ -78,12 +78,12 @@ class PanicBalanceSettings extends StatelessWidget {
                   style: GoogleFonts.inter(
                       fontSize: 13.sp, fontWeight: FontWeight.w700)),
               SizedBox(height: 2.h),
-              Text('Choose how the decoy is shown/hidden — enable either or both.',
+              Text('Choose how the decoy is shown or hidden. Enable either or both.',
                   style: GoogleFonts.inter(fontSize: 11.sp, color: muted)),
               _toggleTile(
                 icon: Icons.vibration,
-                title: 'Shake to toggle',
-                subtitle: 'Shake your phone to flip the decoy',
+                title: 'Shake twice to toggle',
+                subtitle: 'Shake your phone twice to flip the decoy',
                 value: _panic.shakeTriggerEnabled,
                 onChanged: _panic.setShakeTrigger,
               ),
@@ -104,7 +104,7 @@ class PanicBalanceSettings extends StatelessWidget {
                       SizedBox(width: 6.w),
                       Expanded(
                         child: Text(
-                          'No trigger enabled — you won\'t be able to show the '
+                          'No trigger enabled. You won\'t be able to show the '
                           'decoy until you turn one on.',
                           style: GoogleFonts.inter(fontSize: 11.sp, color: _warn),
                         ),

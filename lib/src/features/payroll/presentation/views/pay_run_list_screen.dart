@@ -11,6 +11,8 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class PayRunListScreen extends StatefulWidget {
   const PayRunListScreen({super.key});
@@ -105,6 +107,19 @@ class _PayRunListScreenState extends State<PayRunListScreen>
         ),
         centerTitle: true,
         actions: [
+          ServiceVoiceButton(
+            serviceName: 'payroll',
+            iconColor: InvoiceThemeColors.primaryPurpleLight,
+            backgroundColor: InvoiceThemeColors.primaryPurple,
+          ),
+          SizedBox(width: 4.w),
+          MicroserviceChatIcon(
+            serviceName: 'Payroll',
+            sourceContext: 'payroll',
+            icon: Icons.chat_bubble_outline,
+            iconColor: InvoiceThemeColors.primaryPurpleLight,
+          ),
+          SizedBox(width: 8.w),
           IconButton(
             onPressed: () {
               Navigator.of(context)

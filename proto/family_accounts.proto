@@ -387,6 +387,8 @@ message CreateFamilyAccountRequest {
   string initial_currency = 3; // Optional: Currency code (default: USD)
   double initial_funding = 4; // Optional: Initial amount to fund the account with
   bool allow_member_contributions = 5; // NEW: Allow members to contribute (default: true)
+  string funding_policy = 6; // any_member (default) | creator_only | specific_members
+  repeated string specific_member_ids = 7; // member ids allowed to fund when funding_policy=specific_members
 }
 
 message CreateFamilyAccountResponse {
@@ -681,6 +683,8 @@ message SetupFamilyAccountRequest {
   FundDistributionMode fund_distribution_mode = 2;
   bool spending_visibility_enabled = 3;
   repeated MemberAllocation allocations = 4;
+  string funding_policy = 5; // any_member | creator_only | specific_members
+  repeated string specific_member_ids = 6;
 }
 
 message MemberAllocation {
@@ -729,6 +733,10 @@ message FamilyAccount {
   bool spending_visibility_enabled = 18;
   string currency = 19; // Account currency (e.g. NGN) — drives the UI symbol
   string virtual_account_id = 20; // family virtual account id (real-money pool); spend FROM this
+  string funding_policy = 21;
+  string account_number = 22;
+  string bank_name = 23;
+  string virtual_account_status = 24; // processing | active | frozen
 }
 
 // Family Member
@@ -758,6 +766,7 @@ message FamilyMember {
   double per_transaction_limit = 23; // NEW: Maximum amount per single transaction (0 = unlimited)
   double allocation_percentage_cap = 24; // NEW: Maximum % of total pool that can be allocated to this member
   double remaining_balance = 25; // NEW: Calculated: allocated_balance - spent_today
+  bool can_contribute = 26;
 }
 
 // Family Transaction
@@ -799,6 +808,8 @@ message FamilyAccountSummary {
   double total_spent_today = 3;
   int32 transaction_count_this_month = 4;
   repeated FamilyMemberSpending top_spenders = 5; // Top 5 spenders this month
+  double total_contributed = 6; // Total contributed to the pool this month
+  repeated FamilyMemberSpending top_funders = 7; // Top 5 funders this month
 }
 
 // Family Member Spending Stats

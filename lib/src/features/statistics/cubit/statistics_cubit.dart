@@ -46,7 +46,6 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   List<String> _selectedBankAccountIds = const [];
   String _userId = '';
   bool _isLoading = false;
-  bool _syncedThisSession = false;
   final _periodDebouncer = Debouncer.typing();
 
   StatisticsCubit({
@@ -236,35 +235,12 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       // Monthly trends has no source filter — load once for every source.
       final monthlyTrendsFuture = analyticsRepository.getMonthlyTrends(months: 6);
 
-      // Freshness: incremental sync of all linked banks once per session
-      // before the first external-including load. The sync OUTCOME drives the
-      // honesty signal below — a failed sync surfaces as 'unavailable', never
-      // as fabricated zeros.
-      bool syncFailedHard = false;
-      String? syncError;
-      if (includesExternal && !_syncedThisSession && bankingDataSource != null && _userId.isNotEmpty) {
-        try {
-          final res = await bankingDataSource!
-              .syncAllAccountTransactions(userId: _userId, syncType: 'incremental')
-              .timeout(const Duration(seconds: 25));
-          _syncedThisSession = true;
-          final relevant = loadBanks.isEmpty
-              ? res.accounts
-              : res.accounts.where((a) => loadBanks.contains(a.accountId)).toList();
-          if (relevant.isNotEmpty && relevant.every((a) => !a.success)) {
-            syncFailedHard = true;
-            // Never surface the raw banking-service/provider error string.
-            syncError = sanitizeUserFacingError(
-                relevant.first.error ?? 'Could not sync bank transactions.');
-          }
-        } on TimeoutException {
-          syncFailedHard = true;
-          syncError = 'Bank sync timed out. Pull to refresh to try again.';
-        } catch (e) {
-          syncFailedHard = true;
-          syncError = 'Could not reach your bank right now.';
-        }
-      }
+      // Freshness note: analytics read the LAST-SYNCED external transactions
+      // stored in banking-service — never a live Mono pull on load. The old
+      // once-per-session bulk `syncAllAccountTransactions` (a cost-incurring
+      // unattended Mono fan-out over every linked bank) was REMOVED; the store
+      // is kept fresh by the mono.events.account_updated webhook, per-account
+      // sync, and each bank card's explicit fee-gated refresh.
 
       // ---- Wallet leg (accounts-service, external rows excluded) ----
       accounts_pb.GetFinancialAnalyticsResponse? walletFinancial;
@@ -295,9 +271,6 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         if (bankingDataSource == null || _userId.isEmpty) {
           externalStatus = ExternalDataStatus.unavailable;
           externalError = 'Bank data is not available right now.';
-        } else if (syncFailedHard) {
-          externalStatus = ExternalDataStatus.unavailable;
-          externalError = syncError;
         } else {
           try {
             final resp = await bankingDataSource!.getExternalBankAnalytics(
@@ -515,9 +488,9 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     return d;
   }
 
-  /// Refresh all data (also re-syncs external banks once per pull).
+  /// Refresh all data (re-reads the last-synced external analytics; no live
+  /// Mono pull — bulk refresh was removed).
   Future<void> refresh() async {
-    _syncedThisSession = false; // pull-to-refresh implies "get me fresh data"
     if (_isLoading) return;
     if (state is StatisticsLoaded) {
       final currentState = state as StatisticsLoaded;

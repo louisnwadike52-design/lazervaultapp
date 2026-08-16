@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart'
@@ -15,7 +16,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/username
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
 /// Post-creation setup flow for Family & Friends accounts.
-/// 4-step wizard: Distribution Mode → Configure Allocation → Spending Visibility → Review & Activate
+/// 5-step wizard: Distribution Mode → Invite Members → Configure Allocation → Spending Visibility → Review & Activate
 class FamilyActivationSetupScreen extends StatefulWidget {
   final String familyId;
 
@@ -37,6 +38,11 @@ class _FamilyActivationSetupScreenState
   // Setup data
   FundDistributionMode _selectedMode = FundDistributionMode.sharedPool;
   bool _spendingVisibilityEnabled = true;
+  // Who may fund the pool: any_member (default) | creator_only | specific_members.
+  String _fundingPolicy = 'any_member';
+  // Member ids allowed to fund when policy == specific_members (real ids: members
+  // already exist on this resume path).
+  final Set<String> _specificContributorIds = {};
   final Map<String, TextEditingController> _allocationControllers = {};
 
   // Spending limits per member (memberId → controllers)
@@ -134,11 +140,16 @@ class _FamilyActivationSetupScreenState
       }
     }
 
+    final specificMemberIds = _fundingPolicy == 'specific_members'
+        ? _specificContributorIds.toList()
+        : const <String>[];
     _cubit.setupAccount(
       familyId: widget.familyId,
       fundDistributionMode: _selectedMode.value,
       spendingVisibilityEnabled: _spendingVisibilityEnabled,
       allocations: allocations,
+      fundingPolicy: _fundingPolicy,
+      specificMemberIds: specificMemberIds,
     );
   }
 
@@ -175,6 +186,16 @@ class _FamilyActivationSetupScreenState
     }
 
     if (!mounted) return;
+    // Force-refresh the dashboard summaries so the newly-ACTIVE family card
+    // renders immediately. The dashboard SKIPS re-fetch on navigation when it
+    // already has cached data, so returning to it would otherwise show the stale
+    // pending card until a manual pull-to-refresh.
+    try {
+      final accountsCubit = context.read<AccountCardsSummaryCubit>();
+      if (accountsCubit.currentUserId != null) {
+        accountsCubit.fetchAccountSummaries(userId: accountsCubit.currentUserId!);
+      }
+    } catch (_) {}
     Get.snackbar(
       'Account Activated',
       'Your family account is now active!',
@@ -185,16 +206,60 @@ class _FamilyActivationSetupScreenState
     Get.offAllNamed(AppRoutes.dashboard);
   }
 
+  /// Modal shown when an allocation exceeds the available pool balance.
+  /// Preferred over a red snackbar for over-allocation so the user has to
+  /// acknowledge it explicitly.
+  void _showAllocationErrorDialog(BuildContext context, String message) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          'Allocation exceeds balance',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(
+            color: const Color(0xFFB0B7C3),
+            fontSize: 14.sp,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: const Color(0xFF2D2B6B),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getStepTitle() {
     switch (_currentStep) {
       case 0:
         return 'Distribution Mode';
       case 1:
-        return 'Configure Allocation';
-      case 2:
-        return 'Spending Visibility';
-      case 3:
         return 'Invite Members';
+      case 2:
+        return 'Configure Allocation';
+      case 3:
+        return 'Spending Visibility';
       case 4:
         return 'Review & Activate';
       default:
@@ -257,13 +322,19 @@ class _FamilyActivationSetupScreenState
               return; // Navigation happens in _applySpendingLimitsAndNavigate
             } else if (state is FamilyAccountError) {
               setState(() => _isInviting = false);
-              Get.snackbar(
-                'Error',
-                state.message,
-                backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-              );
+              final msg = state.message.toLowerCase();
+              if (msg.contains('exceed') || msg.contains('insufficient')) {
+                _showAllocationErrorDialog(context, state.message);
+              } else {
+                Get.snackbar(
+                  'Error',
+                  state.message,
+                  backgroundColor:
+                      const Color(0xFFEF4444).withValues(alpha: 0.9),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                );
+              }
             }
           },
           builder: (context, state) {
@@ -282,9 +353,9 @@ class _FamilyActivationSetupScreenState
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildDistributionModeStep(),
+                      _buildInviteMembersStep(),
                       _buildConfigureAllocationStep(),
                       _buildSpendingVisibilityStep(),
-                      _buildInviteMembersStep(),
                       _buildReviewStep(state),
                     ],
                   ),
@@ -875,8 +946,149 @@ class _FamilyActivationSetupScreenState
             'As the account admin, you will always have access to full spending analytics regardless of this setting.',
           ),
           SizedBox(height: 32.h),
+          Text(
+            'Who can fund the pool',
+            style: TextStyle(
+                color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Choose who is allowed to add money to the pool.',
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.4),
+          ),
+          SizedBox(height: 16.h),
+          _buildFundingPolicyCard('any_member', 'Any member',
+              'Every member can add money to the pool.', Icons.groups),
+          _buildFundingPolicyCard('creator_only', 'Only me',
+              'Only you (the creator) can add money to the pool.', Icons.person),
+          _buildFundingPolicyCard('specific_members', 'Specific members',
+              'Only members you pick can add money.', Icons.checklist),
+          if (_fundingPolicy == 'specific_members') _buildSpecificContributorsList(),
+          SizedBox(height: 32.h),
           _buildContinueButton(onTap: _nextStep),
           SizedBox(height: 20.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFundingPolicyCard(
+      String value, String title, String desc, IconData icon) {
+    const accent = Color(0xFF2D2B6B);
+    final selected = _fundingPolicy == value;
+    return GestureDetector(
+      onTap: () => setState(() => _fundingPolicy = value),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+              color: selected ? accent : const Color(0xFF2D2D2D),
+              width: selected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: selected ? accent.withValues(alpha: 0.25) : const Color(0xFF2D2D2D),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon,
+                  color: selected ? Colors.white : const Color(0xFF9CA3AF), size: 22.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 3.h),
+                  Text(desc,
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.sp, height: 1.3)),
+                ],
+              ),
+            ),
+            if (selected) const Icon(Icons.check_circle, color: accent, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecificContributorsList() {
+    // The creator can always fund, so only invited members are pickable.
+    final members = (_familyAccount?.members ?? [])
+        .where((m) => m.userId != _familyAccount?.creatorId)
+        .toList();
+    if (members.isEmpty) {
+      return Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Text(
+          'No other members yet. Until you add members, only you can fund the pool.',
+          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+        ),
+      );
+    }
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        children: [
+          for (final m in members)
+            InkWell(
+              onTap: () => setState(() {
+                if (_specificContributorIds.contains(m.id)) {
+                  _specificContributorIds.remove(m.id);
+                } else {
+                  _specificContributorIds.add(m.id);
+                }
+              }),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                child: Row(
+                  children: [
+                    Icon(
+                      _specificContributorIds.contains(m.id)
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      color: _specificContributorIds.contains(m.id)
+                          ? const Color(0xFF2D2B6B)
+                          : const Color(0xFF9CA3AF),
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        m.fullName.trim().isEmpty
+                            ? (m.username ?? 'Member')
+                            : m.fullName.trim(),
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

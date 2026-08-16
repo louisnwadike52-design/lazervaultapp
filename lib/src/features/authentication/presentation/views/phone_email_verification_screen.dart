@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
+import 'package:lazervault/src/core/config/app_environment.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_passcode_cubit.dart';
@@ -145,8 +146,12 @@ class _PhoneEmailVerificationScreenState
           isLoading: isLoading,
           onPrimary: isLoading ? null : _onPrimary,
           // Skip is only offered once the account exists (code phase) and only
-          // when the admin hasn't made email verification mandatory.
-          secondaryAction: (inCode && !_required)
+          // when the admin hasn't made email verification mandatory. Hidden on
+          // PROD builds: email verification is mandatory in production, so the
+          // "Skip for now" escape hatch is dev/staging only.
+          secondaryAction: (inCode &&
+                  !_required &&
+                  !currentAppEnvironment.isProduction)
               ? Center(
                   child: TextButton(
                     onPressed: isLoading ? null : _onSkip,

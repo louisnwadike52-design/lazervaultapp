@@ -1,176 +1,445 @@
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Compact account preview card shown at the top of the bottom sheet
-class AccountPreviewCard extends StatelessWidget {
+/// Reusable account/card preview shown at the top of the account-actions bottom
+/// sheet (and anywhere a "card" needs to be previewed with live status).
+///
+/// Renders like an actual payment card — chip, masked number, holder, brand,
+/// and the current balances. When [isFrozen] flips true the card performs a
+/// smart 3D back-flip into a frosted, blurred "Frozen" face; flipping back to
+/// false rotates it forward again. Balances stay readable in BOTH states — the
+/// frozen face re-surfaces the available balance clearly on top of the frost so
+/// the user always sees their money as of now.
+class AccountPreviewCard extends StatefulWidget {
   final Map<String, dynamic> accountArgs;
   final String currencySymbol;
+
+  /// Whether the card is frozen. When null we derive it from
+  /// `accountArgs['status']` so existing call-sites keep working; callers that
+  /// want live freeze/unfreeze animation should pass this explicitly.
+  final bool? isFrozen;
 
   const AccountPreviewCard({
     super.key,
     required this.accountArgs,
     required this.currencySymbol,
+    this.isFrozen,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final balance = (accountArgs['balance'] as double?) ?? 0.0;
-    final availableBalance = (accountArgs['availableBalance'] as double?) ?? balance;
-    final reservedBalance = (accountArgs['reservedBalance'] as double?) ?? 0.0;
-    final currency = (accountArgs['currency'] as String?) ?? 'NGN';
-    final status = (accountArgs['status'] as String?) ?? 'active';
-    final accountType = (accountArgs['accountType'] as String?) ?? 'Personal';
-    final pendingBalance = balance - availableBalance;
-    final hasPendingFunds = pendingBalance > 0.01;
-    // Overdraft surfaces when the spendable balance has gone negative —
-    // typically an authorised but unsettled debit. We show it explicitly
-    // (red dot + "Overdraft" label) instead of just rendering a negative
-    // Available number so the user understands their state.
-    final overdraftAmount =
-        availableBalance < 0 ? availableBalance.abs() : 0.0;
-    final hasOverdraft = overdraftAmount > 0.01;
+  State<AccountPreviewCard> createState() => _AccountPreviewCardState();
+}
 
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF4E03D0),
-            Color(0xFF4F46E5),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
+class _AccountPreviewCardState extends State<AccountPreviewCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _flip;
+  late final Animation<double> _curved;
+
+  bool get _frozen =>
+      widget.isFrozen ??
+      _statusIsFrozen((widget.accountArgs['status'] as String?) ?? 'active');
+
+  static bool _statusIsFrozen(String status) {
+    switch (status.toLowerCase()) {
+      case 'frozen':
+      case 'blocked_temporary':
+      case 'blocked_permanent':
+      case 'blocked_stolen':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _flip = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 620),
+      value: _frozen ? 1.0 : 0.0,
+    );
+    // A gentle overshoot on the way in reads as the card "settling" into its
+    // frozen state; plain ease on the way back out.
+    _curved = CurvedAnimation(
+      parent: _flip,
+      curve: Curves.easeInOutCubic,
+      reverseCurve: Curves.easeInOutCubic,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant AccountPreviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_frozen && _flip.status != AnimationStatus.completed) {
+      _flip.forward();
+    } else if (!_frozen && _flip.status != AnimationStatus.dismissed) {
+      _flip.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _flip.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _curved,
+      builder: (context, _) {
+        final t = _curved.value; // 0 (front/active) → 1 (back/frozen)
+        final angle = t * math.pi; // 0 → 180°
+        final showBack = angle > math.pi / 2;
+
+        // Perspective + Y rotation for the flip.
+        final transform = Matrix4.identity()
+          ..setEntry(3, 2, 0.0011)
+          ..rotateY(angle);
+
+        return Transform(
+          alignment: Alignment.center,
+          transform: transform,
+          child: showBack
+              // Counter-rotate the back face so its content isn't mirrored.
+              ? Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()..rotateY(math.pi),
+                  child: _buildFrozenFace(t),
+                )
+              : _buildActiveFace(),
+        );
+      },
+    );
+  }
+
+  // ── Data helpers ──────────────────────────────────────────────────────────
+
+  double get _balance => (widget.accountArgs['balance'] as double?) ?? 0.0;
+  double get _available =>
+      (widget.accountArgs['availableBalance'] as double?) ?? _balance;
+  double get _reserved =>
+      (widget.accountArgs['reservedBalance'] as double?) ?? 0.0;
+  String get _accountType =>
+      (widget.accountArgs['accountType'] as String?) ?? 'Personal';
+
+  /// Real account-holder name for the card face. Prefers an explicit
+  /// `holderName`, then the provisioned `accountName` (NUBAN holder). Returns
+  /// an empty string when neither is set — the card face then simply shows no
+  /// holder rather than a mock ("LAZERVAULT") or the account type.
+  String get _holderName {
+    final holder = (widget.accountArgs['holderName'] as String?)?.trim();
+    if (holder != null && holder.isNotEmpty) return holder;
+    final name = (widget.accountArgs['accountName'] as String?)?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    return '';
+  }
+
+  String get _money => '${widget.currencySymbol}${_available.toStringAsFixed(2)}';
+
+  String get _maskedNumber {
+    final raw = (widget.accountArgs['accountNumber'] as String?) ??
+        (widget.accountArgs['accountNumberLast4'] as String?) ??
+        (widget.accountArgs['cardNumber'] as String?);
+    final digits = (raw ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+    final last4 = digits.length >= 4
+        ? digits.substring(digits.length - 4)
+        : (digits.isEmpty ? '••••' : digits.padLeft(4, '•'));
+    return '••••  ••••  ••••  $last4';
+  }
+
+  List<Color> get _activeGradient {
+    switch (_accountType.toLowerCase()) {
+      case 'savings':
+        return const [Color(0xFF0EA5E9), Color(0xFF2563EB)];
+      case 'investment':
+        return const [Color(0xFF059669), Color(0xFF0D9488)];
+      case 'family':
+        return const [Color(0xFF7C3AED), Color(0xFF4F46E5)];
+      case 'business':
+        return const [Color(0xFF9333EA), Color(0xFF4E03D0)];
+      default:
+        return const [Color(0xFF4E03D0), Color(0xFF4F46E5)];
+    }
+  }
+
+  // ── Active (front) face ───────────────────────────────────────────────────
+
+  Widget _buildActiveFace() {
+    return _cardShell(
+      gradient: _activeGradient,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  _getIconForAccountType(accountType),
-                  color: Colors.white,
-                  size: 24.sp,
-                ),
-              ),
-              SizedBox(width: 16.w),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatAccountType(accountType),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    // Show available balance as primary (what user can spend)
-                    Text(
-                      '$currencySymbol${availableBalance.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Available Balance',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  _formatAccountType(_accountType),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.4,
+                  ),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(status).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20.r),
+              _statusPill(active: true),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: [
+              _chip(),
+              SizedBox(width: 10.w),
+              Icon(Icons.contactless_rounded,
+                  color: Colors.white.withValues(alpha: 0.75), size: 20.sp),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            _maskedNumber,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.92),
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.5,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          _balanceBlock(labelColor: Colors.white.withValues(alpha: 0.65)),
+          SizedBox(height: 4.h),
+          _secondaryBalances(),
+          SizedBox(height: 12.h),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  // Real NUBAN holder name (provider value) — NOT a mock and
+                  // NOT the account type. Blank until the backend provisions it.
+                  _holderName.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6.w,
-                      height: 6.w,
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(status),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: 6.w),
-                    Text(
-                      _formatStatus(status),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              ),
+              Text(
+                'lazervault',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
             ],
           ),
-          // Always show account breakdown
-          SizedBox(height: 12.h),
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10.r),
+        ],
+      ),
+    );
+  }
+
+  // ── Frozen (back) face — blurred, frosted, balance still visible ──────────
+
+  Widget _buildFrozenFace(double t) {
+    // Blur ramps up with the flip so the card visibly "frosts over".
+    final blur = 8.0 * t.clamp(0.0, 1.0);
+    return _cardShell(
+      gradient: const [Color(0xFF1E3A5F), Color(0xFF334155)],
+      child: Stack(
+        children: [
+          // Faint underlying card art (blurred) so it reads as the same card.
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 8.h),
+                  _chip(),
+                  SizedBox(height: 14.h),
+                  Text(
+                    _maskedNumber,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 15.sp,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              children: [
-                _buildBalanceRow(
-                  'Total Balance',
-                  '$currencySymbol${balance.toStringAsFixed(2)}',
-                  Colors.white,
+          ),
+          // Frost pane: blur + cold white wash over the whole card.
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18.r),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.10 * t),
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
                 ),
-                SizedBox(height: 6.h),
-                _buildBalanceRow(
-                  'Available',
-                  '$currencySymbol${availableBalance.toStringAsFixed(2)}',
-                  const Color(0xFF10B981),
+              ),
+            ),
+          ),
+          // Foreground: Frozen badge (centre) + clear balance (never blurred).
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _formatAccountType(_accountType),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  _statusPill(active: false),
+                ],
+              ),
+              const Spacer(),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.35)),
+                      ),
+                      child: Icon(Icons.ac_unit_rounded,
+                          color: Colors.white, size: 22.sp),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'Frozen',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      'Spending is paused',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                  ],
                 ),
-                if (hasPendingFunds) ...[
-                  SizedBox(height: 6.h),
-                  _buildBalanceRow(
-                    'Pending / In Transit',
-                    '$currencySymbol${pendingBalance.toStringAsFixed(2)}',
-                    const Color(0xFFFB923C),
-                  ),
-                ],
-                if (reservedBalance > 0.01) ...[
-                  SizedBox(height: 6.h),
-                  _buildBalanceRow(
-                    'Held (Reserved)',
-                    '$currencySymbol${reservedBalance.toStringAsFixed(2)}',
-                    const Color(0xFFF59E0B),
-                  ),
-                ],
-                if (hasOverdraft) ...[
-                  SizedBox(height: 6.h),
-                  _buildBalanceRow(
-                    'Overdraft',
-                    '-$currencySymbol${overdraftAmount.toStringAsFixed(2)}',
-                    const Color(0xFFEF4444),
-                  ),
-                ],
-              ],
+              ),
+              const Spacer(),
+              // Balance stays legible even while frozen. A small bottom gap keeps
+              // the balance items off the card's bottom edge so they align with
+              // the active face's rhythm rather than sitting flush.
+              _balanceBlock(labelColor: Colors.white.withValues(alpha: 0.7)),
+              SizedBox(height: 4.h),
+              _secondaryBalances(),
+              SizedBox(height: 6.h),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Shared building blocks ────────────────────────────────────────────────
+
+  Widget _cardShell({required List<Color> gradient, required Widget child}) {
+    return Container(
+      width: double.infinity,
+      // Fixed height so (a) both faces are identical size for a clean flip and
+      // (b) the frozen face's Spacers have a bounded parent to centre against.
+      height: 238.h,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradient,
+        ),
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.last.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _chip() {
+    return Container(
+      width: 38.w,
+      height: 28.h,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFE7C873), Color(0xFFB8891F)],
+        ),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Center(
+        child: Container(
+          width: 22.w,
+          height: 14.h,
+          decoration: BoxDecoration(
+            border: Border.all(
+                color: Colors.black.withValues(alpha: 0.25), width: 0.8),
+            borderRadius: BorderRadius.circular(3.r),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statusPill({required bool active}) {
+    final color = active ? const Color(0xFF10B981) : const Color(0xFF93C5FD);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(active ? Icons.circle : Icons.ac_unit_rounded,
+              color: color, size: active ? 7.sp : 11.sp),
+          SizedBox(width: 5.w),
+          Text(
+            active ? 'Active' : 'Frozen',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -178,55 +447,46 @@ class AccountPreviewCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceRow(String label, String value, Color dotColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  /// Primary balance (available) — big, always shown.
+  Widget _balanceBlock({required Color labelColor}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 6.w,
-              height: 6.w,
-              decoration: BoxDecoration(
-                color: dotColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 11.sp,
-              ),
-            ),
-          ],
-        ),
         Text(
-          value,
+          'Available balance',
+          style: TextStyle(color: labelColor, fontSize: 10.sp),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          _money,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
     );
   }
 
-  IconData _getIconForAccountType(String type) {
-    switch (type.toLowerCase()) {
-      case 'savings':
-        return Icons.savings_outlined;
-      case 'investment':
-        return Icons.trending_up_outlined;
-      case 'family':
-        return Icons.family_restroom_outlined;
-      case 'business':
-        return Icons.business_outlined;
-      default:
-        return Icons.account_balance_wallet_outlined;
-    }
+  /// Compact secondary line: total + held/reserved, so no balance info is lost
+  /// even in the card-style layout (shown in both active and frozen faces).
+  Widget _secondaryBalances() {
+    final parts = <String>[
+      'Total ${widget.currencySymbol}${_balance.toStringAsFixed(2)}',
+      if (_reserved > 0.01)
+        'Held ${widget.currencySymbol}${_reserved.toStringAsFixed(2)}',
+    ];
+    return Text(
+      parts.join('   •   '),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.7),
+        fontSize: 11.sp,
+        fontWeight: FontWeight.w500,
+      ),
+    );
   }
 
   String _formatAccountType(String type) {
@@ -243,34 +503,6 @@ class AccountPreviewCard extends StatelessWidget {
         return 'Business Account';
       default:
         return 'Account';
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return const Color(0xFF10B981);
-      case 'frozen':
-      case 'blocked_temporary':
-      case 'blocked_permanent':
-        return const Color(0xFFEF4444);
-      default:
-        return const Color(0xFFF59E0B);
-    }
-  }
-
-  String _formatStatus(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'Active';
-      case 'frozen':
-        return 'Frozen';
-      case 'blocked_temporary':
-        return 'Blocked';
-      case 'blocked_permanent':
-        return 'Blocked';
-      default:
-        return status;
     }
   }
 }

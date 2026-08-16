@@ -94,12 +94,19 @@ class SelectRecipients extends StatefulWidget {
   /// [autoContinue] runs — used by "Repeat" from a transaction's history so the
   /// prior amount is prefilled in whichever send flow is active.
   final int? prefillAmountMinor;
+
+  /// When true (the transparent quick-send host), the [autoContinue] placeholder
+  /// is rendered TRANSPARENT instead of the opaque dark loader, so the caller
+  /// (chat/QR) shows through and the amount sheet appears to open directly over
+  /// it — no opaque intermediate screen flashing on open/close.
+  final bool transparentHost;
   const SelectRecipients({
     super.key,
     this.shortFlow = false,
     this.preselectedRecipient,
     this.autoContinue = false,
     this.prefillAmountMinor,
+    this.transparentHost = false,
   });
 
   @override
@@ -339,12 +346,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
     if (!mounted) return;
     final r = widget.preselectedRecipient!;
     if (widget.shortFlow) {
-      // Short flow owns the amount sheet → PIN → receipt here. On success it
-      // navigates away (Get.offAllNamed); if it returns we were cancelled/failed
-      // (still mounted) → go back to the caller rather than showing the list.
+      // Short flow owns the amount sheet → PIN → receipt here. On SUCCESS it
+      // navigates away via Get.offAllNamed(transferProof) and sets
+      // `_shortPendingReceipt`; on cancel/failure it returns without navigating
+      // and `_shortPendingReceipt` stays null. Gate the back-pop on that
+      // explicit signal — NOT on `mounted`: the host route isn't torn down until
+      // a later frame, so we're still mounted here during the success teardown,
+      // and an unconditional Get.back() would risk popping the fresh receipt.
       await _startShortSend(r,
           saveRecipient: false, prefillAmountMinor: widget.prefillAmountMinor);
-      if (mounted) Get.back();
+      if (mounted && _shortPendingReceipt == null) Get.back();
     } else {
       // Long flow: replace this screen with the amount-entry screen so the
       // select screen isn't left in the back stack.
@@ -447,9 +458,18 @@ class _SelectRecipientsState extends State<SelectRecipients>
   @override
   Widget build(BuildContext context) {
     // When launched to send to a known recipient (e.g. from chat), don't flash
-    // the full recipient list — show a clean loader while the amount sheet /
-    // send flow runs over it.
+    // the full recipient list. In the transparent quick-send host we render
+    // NOTHING opaque so the caller shows through and the amount sheet appears to
+    // open directly over it (no dark screen flashing on open/close). Otherwise
+    // (standalone route) show a clean loader while the sheet runs over it.
     if (_autoContinuing) {
+      if (widget.transparentHost) {
+        // Transparent, but ABSORB pointers so a tap in the brief window before
+        // the amount sheet appears (or after it's dismissed, before Get.back)
+        // can't fall through to the caller (chat/QR) beneath this opaque:false
+        // host route.
+        return const AbsorbPointer(child: SizedBox.expand());
+      }
       return const ColoredBox(
         color: Color(0xFF070111),
         child: Center(child: LazerVaultLoader()),
@@ -538,10 +558,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         Row(
                           children: [
                             GestureDetector(
+                              // Opaque hit-test so taps anywhere in the padded
+                              // box register, not only on the icon glyph.
+                              behavior: HitTestBehavior.opaque,
                               onTap: () => Get.offAllNamed(AppRoutes.dashboard),
                               child: Container(
-                                width: 40.w,
-                                height: 40.h,
+                                width: 46.w,
+                                height: 46.w,
+                                alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12.r),
@@ -549,7 +573,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 child: Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
-                                  size: 20.sp,
+                                  size: 22.sp,
                                 ),
                               ),
                             ),
@@ -780,6 +804,15 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                     badgeCount: pendingCount,
                                   );
                                 },
+                              ),
+                              // Scheduled / recurring transfers — surfaced here so
+                              // users can find their upcoming & repeating payments
+                              // at a glance (shown in both flows).
+                              _buildQuickAction(
+                                icon: Icons.event_repeat_outlined,
+                                label: 'Scheduled',
+                                onTap: () =>
+                                    Get.toNamed(AppRoutes.recurringTransfers),
                               ),
                               // Transfer History — short flow only (replaces the
                               // removed "Add User"); long flow uses the History
@@ -1102,10 +1135,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
         transferType: isInternal ? 'internal' : 'external',
         destinationBankCode: isInternal ? null : r.sortCode,
         availableBalanceMajor: active.availableBalance,
+        // Clean, compact source label — just the account name/type (no number or
+        // mask); the header shows it beside the recipient with the balance below.
         sourceAccountLabel: (active.accountName != null &&
                 active.accountName!.isNotEmpty)
-            ? '${active.accountName} • ••••${active.accountNumberLast4}'
-            : '${active.accountType} • ••••${active.accountNumberLast4}',
+            ? active.accountName!
+            : active.accountType,
         transferCubit: context.read<TransferCubit>(),
         initialAmountMinor: prefillAmountMinor,
       ),
@@ -1116,6 +1151,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final category = result.category;
     final expenseCategory = category?.budgetCategory;
     final recurring = result.recurring;
+    final note = result.note;
 
     // Budget enforcement (parity with the long flow) — strict budgets BLOCK via
     // the override dialog, flexible budgets WARN via the warning sheet. Runs
@@ -1142,7 +1178,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     // to the right subcategory (short flow has no note field → detail defaults).
     final shortNarration = ServiceCategory.buildTransferNarration(
       category: category,
-      note: null,
+      note: note,
       defaultNarration: shortDefaultNarration,
     );
     try {
@@ -1174,6 +1210,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 saveRecipient: saveRecipient,
                 scheduledAt: scheduledAt,
                 category: category,
+                note: note,
                 expenseCategory: expenseCategory);
           },
         );
@@ -1190,6 +1227,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
             saveRecipient: saveRecipient,
             scheduledAt: scheduledAt,
             category: category,
+            note: note,
             expenseCategory: expenseCategory);
         if (!mounted) return;
         if (recurring != null) {
@@ -1286,6 +1324,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     required bool saveRecipient,
     DateTime? scheduledAt,
     ServiceCategory? category,
+    String? note,
     int? expenseCategory,
   }) async {
     final transferCubit = context.read<TransferCubit>();
@@ -1302,11 +1341,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
         ? 'Transfer from $senderName'
         : 'Transfer from Lazervault';
     // Same builder the long flow uses: stamps the "Category: …" prefix so
-    // subcategory analytics attribute the spend identically across flows. The
-    // short flow has no note field, so the detail falls back to the default.
+    // subcategory analytics attribute the spend identically across flows, plus
+    // the optional user note from the amount sheet.
     final narration = ServiceCategory.buildTransferNarration(
       category: category,
-      note: null,
+      note: note,
       defaultNarration: defaultNarration,
     );
 
@@ -1378,6 +1417,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
       recipientCubit.addRecipient(
         recipient: r.copyWith(id: '0', isSaved: true),
         accessToken: token,
+        // Silent: the receipt is already on screen; no "Recipient added" toast.
+        silent: true,
       );
     }
     // NOTE: recurring setup is intentionally NOT done here. It runs in
@@ -1404,7 +1445,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
     var attempt = 0;
     while (true) {
       cubit.createRecurringTransfer(
-        fromAccountId: active.id,
+        // Match the immediate transfer's source (spendingAccountId) for
+        // consistency. NOTE: the backend CreateRecurringTransfer resolves the
+        // account from the x-account-id metadata header and ignores this body
+        // field, so this has no runtime effect today — kept aligned so the two
+        // calls never diverge if the backend ever starts reading the body.
+        fromAccountId: active.spendingAccountId,
         toAccountNumber: r.accountNumber,
         recipientName: r.name,
         recipientBankCode: r.sortCode,

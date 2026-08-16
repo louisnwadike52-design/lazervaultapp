@@ -1,11 +1,14 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 
 /// Voice Setup Manager
 /// Manages voice setup prompts on dashboard with skip count logic
 class VoiceSetupManager {
   final FlutterSecureStorage _storage = serviceLocator<FlutterSecureStorage>();
+  // Current-session user id (access-token sub), not the stale cached key.
+  final SecureStorageService _secure = serviceLocator<SecureStorageService>();
   final VoiceActivationManager _voiceManager;
 
   VoiceSetupManager({
@@ -14,7 +17,7 @@ class VoiceSetupManager {
 
   /// Check voice setup status and determine if prompt should be shown
   Future<VoiceSetupStatus> checkVoiceSetupStatus() async {
-    final userId = await _storage.read(key: 'user_id');
+    final userId = await _secure.getCurrentUserId();
     if (userId == null) return VoiceSetupStatus.notApplicable;
 
     // Check if already enrolled

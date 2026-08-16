@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
@@ -185,11 +187,35 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
   Widget _buildAccountPreview() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      child: AccountPreviewCard(
-        accountArgs: widget.accountArgs,
-        currencySymbol: _getCurrencySymbol(),
+      // Rebuild the preview on cubit state so a freeze/unfreeze (from the
+      // Controls tab) flips the card live. Prefer the freshest status from the
+      // loaded/mutated details; fall back to the status passed in accountArgs.
+      child: BlocBuilder<AccountActionsCubit, AccountActionsState>(
+        builder: (context, state) {
+          final details = _detailsFromState(state);
+          final isFrozen = details?.isFrozen ??
+              _statusIsFrozen(
+                  (widget.accountArgs['status'] as String?) ?? 'active');
+          return AccountPreviewCard(
+            accountArgs: widget.accountArgs,
+            currencySymbol: _getCurrencySymbol(),
+            isFrozen: isFrozen,
+          );
+        },
       ),
     );
+  }
+
+  static bool _statusIsFrozen(String status) {
+    switch (status.toLowerCase()) {
+      case 'frozen':
+      case 'blocked_temporary':
+      case 'blocked_permanent':
+      case 'blocked_stolen':
+        return true;
+      default:
+        return false;
+    }
   }
 
   Widget _buildTabBar() {

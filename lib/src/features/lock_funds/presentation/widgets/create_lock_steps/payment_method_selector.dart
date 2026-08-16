@@ -14,7 +14,7 @@ import '../../../../account_cards_summary/domain/entities/account_summary_entity
 import '../../cubit/create_lock_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-/// Payment slide — step 5 of 5.
+/// Payment slide — bottom half of wizard step 2 (Details & Payment).
 ///
 ///   - Shows the dashboard's primary same-currency account as a
 ///     static row. No picker; the resolver handles fallback for
@@ -110,7 +110,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         final amount = cubit.amount ?? 0.0;
         final currency = cubit.currency;
 
-        return SingleChildScrollView(
+        return Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

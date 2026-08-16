@@ -248,3 +248,39 @@ class DepositFeeCalculation {
     );
   }
 }
+
+/// One fee split into the Mono provider cost and the LazerVault margin. All
+/// amounts are in MINOR units (kobo). total = monoCost + lazervaultFee.
+class FeeLeg {
+  final int monoCost;
+  final int lazervaultFee;
+  final int total;
+
+  const FeeLeg({this.monoCost = 0, this.lazervaultFee = 0, this.total = 0});
+
+  bool get isFree => total <= 0;
+}
+
+/// Consolidated fee quote for the deposit-link flow: the one-time connect fee
+/// (first-time link only) + the per-deposit fee for the chosen rail. Amounts in
+/// MINOR units (kobo).
+class DepositFeeQuote {
+  final int amount;
+  final FeeLeg connectFee;
+  final FeeLeg depositFee;
+  final int grandTotal;
+  final int netAmount;
+  final String rail; // "direct_debit" | "direct_pay"
+
+  const DepositFeeQuote({
+    required this.amount,
+    this.connectFee = const FeeLeg(),
+    this.depositFee = const FeeLeg(),
+    this.grandTotal = 0,
+    this.netAmount = 0,
+    this.rail = 'direct_pay',
+  });
+
+  /// True when nothing is chargeable — the modal can then skip the fee sheet.
+  bool get isFree => grandTotal <= 0;
+}

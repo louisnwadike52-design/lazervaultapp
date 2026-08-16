@@ -116,8 +116,14 @@ class TransferWebSocketService {
   /// Connect using WebSocket protocol
   /// Uses transfer-gateway **HTTP** port (default 8084), not gRPC 50076 — see PORTS_CONFIG.json / service-discovery.sh.
   Future<void> _connectWebSocket(String userId, String accessToken) async {
-    final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
+    final ep = endpointRegistry.resolveServiceHostPort(
+      overrideHost:
+          dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'],
+      overridePort: int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? ''),
+      devPort: 8084,
+    );
+    final wsHost = ep.host;
+    final wsPort = ep.port;
     // Tunnel termination is TLS — when the env points at the public host
     // (port 443) we must speak wss, not plain ws. On the loopback dev
     // setup the gateway HTTP port stays clear-text ws as before.
@@ -126,7 +132,7 @@ class TransferWebSocketService {
     final wsUrl = Uri(
       scheme: tlsTunnel ? 'wss' : 'ws',
       host: wsHost,
-      port: wsPort,
+      port: tlsTunnel ? null : wsPort,
       path: '/ws/transfer',
       queryParameters: {
         'user_id': userId,
@@ -166,14 +172,20 @@ class TransferWebSocketService {
 
   /// Connect using Server-Sent Events (SSE) - fallback (same host/port as WebSocket: transfer-gateway HTTP).
   Future<void> _connectSSE(String userId, String accessToken) async {
-    final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? endpointRegistry.grpcHost;
-    final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
+    final ep = endpointRegistry.resolveServiceHostPort(
+      overrideHost:
+          dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'],
+      overridePort: int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? ''),
+      devPort: 8084,
+    );
+    final wsHost = ep.host;
+    final wsPort = ep.port;
     final tlsTunnel = wsPort == 443;
 
     final sseUrl = Uri(
       scheme: tlsTunnel ? 'https' : 'http',
       host: wsHost,
-      port: wsPort,
+      port: tlsTunnel ? null : wsPort,
       path: '/ws/transfer',
       queryParameters: {
         'user_id': userId,

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/app_update_service.dart';
 
 /// One-time bottom-sheet modal for an OPTIONAL update. Shown once per new
-/// latest build. "Update now" opens the store; "Later" dismisses.
+/// latest build. "Update now" opens the store; "Not now" dismisses (industry-
+/// standard soft-update flow — the user can keep using the current build).
 Future<void> showUpdateModal(
   BuildContext context, {
   required AppUpdateInfo info,
@@ -28,7 +29,7 @@ class _UpdateModalContent extends StatelessWidget {
     const Color cardBackground = Color(0xFF1F1F1F);
     const Color textPrimary = Colors.white;
     const Color textSecondary = Color(0xFF9CA3AF);
-    const Color primary = Color(0xFF3B82F6);
+    const Color primary = Color(0xFF4E03D0); // LazerVault brand purple
 
     final title = info.latestVersion.isNotEmpty
         ? 'Update to ${info.latestVersion}'
@@ -118,7 +119,7 @@ class _UpdateModalContent extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text(
-              'Later',
+              'Not now',
               style: TextStyle(color: textSecondary, fontSize: 14),
             ),
           ),

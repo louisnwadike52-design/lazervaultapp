@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -134,6 +136,45 @@ class SecureStorageService {
   // User ID (stored during login by AuthenticationCubit)
   Future<String?> getUserId() async {
     return await _storage.read(key: _keyUserId);
+  }
+
+  /// The user signed in RIGHT NOW, resolved from the current access token's
+  /// `sub` claim first and only falling back to the stored `user_id` key.
+  ///
+  /// Why not just [getUserId]: the stored `user_id` key is written by
+  /// `_saveSession` (email/passcode logins) but NOT by every path — biometric/
+  /// Face-ID unlock and the phone `hydrateProfile` path don't rewrite it, and
+  /// some logout paths don't clear it. After logging out of account A and into
+  /// account B via one of those paths, the stale account-A id lingered in the
+  /// key. The access token, by contrast, is minted fresh for whoever logs in
+  /// (any path) and deleted on logout, so its `sub` is the authoritative
+  /// "current user". Use this anywhere a feature needs the live account id and
+  /// must never act on a previous account (voice enrollment/recognition, etc.).
+  Future<String?> getCurrentUserId() async {
+    final token = await _storage.read(key: _keyAccessToken);
+    final fromToken = _userIdFromJwt(token);
+    if (fromToken != null && fromToken.isNotEmpty) return fromToken;
+    return await _storage.read(key: _keyUserId);
+  }
+
+  /// Decode a JWT and return its `sub` (falling back to a `user_id` claim).
+  /// Returns null on any malformed input — callers fall back to the stored key.
+  static String? _userIdFromJwt(String? token) {
+    if (token == null || token.isEmpty) return null;
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      var payload = parts[1];
+      while (payload.length % 4 != 0) {
+        payload += '=';
+      }
+      final claims =
+          jsonDecode(utf8.decode(base64Url.decode(payload))) as Map<String, dynamic>;
+      final id = (claims['sub'] ?? claims['user_id'] ?? '').toString();
+      return id.isEmpty ? null : id;
+    } catch (_) {
+      return null;
+    }
   }
 
   // User full name (stored during login by AuthenticationCubit)

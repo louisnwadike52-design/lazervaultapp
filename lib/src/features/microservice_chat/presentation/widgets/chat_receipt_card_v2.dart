@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
+import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/chat_receipt_pdf_service.dart';
@@ -280,6 +281,18 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
     final status = _s('status');
     final statusColor = _statusColor;
     final feeNum = double.tryParse(fee) ?? 0.0;
+    // Recipient identity for the header avatar (transfers). Lives in `extra`;
+    // empty for non-transfer receipts or external/bank recipients → icon box.
+    final extra = widget.payload['extra'];
+    final recipientImage =
+        (extra is Map ? extra['recipient_image_url']?.toString() : null) ?? '';
+    final recipientName = (extra is Map
+            ? (extra['recipient_display_name'] ?? extra['recipient_name'])
+                ?.toString()
+            : null) ??
+        '';
+    final hasRecipientIdentity =
+        recipientImage.isNotEmpty || recipientName.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -295,14 +308,26 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+              // Recipient avatar (internal transfers) — matches the PIN pad the
+              // user just confirmed on; otherwise the transaction-type icon box.
+              if (hasRecipientIdentity)
+                UserAvatar(
+                  size: 36,
+                  imageUrl: recipientImage.isEmpty ? null : recipientImage,
+                  firstName: recipientName.split(' ').first,
+                  lastName: recipientName.split(' ').length > 1
+                      ? recipientName.split(' ').sublist(1).join(' ')
+                      : null,
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(_typeIcon, color: statusColor, size: 18),
                 ),
-                child: Icon(_typeIcon, color: statusColor, size: 18),
-              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(

@@ -20,7 +20,7 @@ class ForcedUpdateScreen extends StatelessWidget {
     const Color background = Color(0xFF0A0A0A);
     const Color textPrimary = Colors.white;
     const Color textSecondary = Color(0xFF9CA3AF);
-    const Color primary = Color(0xFF3B82F6);
+    const Color primary = Color(0xFF4E03D0); // LazerVault brand purple
 
     return PopScope(
       canPop: false,

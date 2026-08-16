@@ -355,6 +355,107 @@ class VoiceBiometricsService {
     }
   }
 
+  /// EMAIL-based voice login (email sign-in screen). The server resolves the
+  /// account from [email], verifies the voiceprint with a server-enforced
+  /// threshold, and — only on a match — mints a real session. The client never
+  /// decides "verified". Mirrors [loginWithVoice] but keyed by email.
+  Future<VoiceLoginResult> loginWithEmail({
+    required String email,
+    required Uint8List audioSample,
+  }) async {
+    if (email.isEmpty) {
+      throw VoiceBiometricsException('email is required');
+    }
+    if (audioSample.isEmpty) {
+      throw VoiceBiometricsException('audioSample cannot be empty');
+    }
+    try {
+      final uri = Uri.parse('$baseUrl/voice/auth/login');
+      final response = await _retryRequest(
+        () => _client
+            .post(
+              uri,
+              headers: _buildHeaders(),
+              body: json.encode({
+                'email': email,
+                'audio_sample': base64Encode(audioSample),
+              }),
+            )
+            .timeout(timeout),
+      );
+
+      if (response.statusCode == 200) {
+        return VoiceLoginResult.fromJson(_parseJson(response.body));
+      }
+      String status;
+      switch (response.statusCode) {
+        case 401:
+          status = 'VOICE_NOT_RECOGNIZED';
+          break;
+        case 403:
+          status = 'IDENTITY_MISMATCH';
+          break;
+        case 404:
+          status = 'NOT_ENROLLED';
+          break;
+        default:
+          if (response.statusCode >= 500) {
+            throw VoiceBiometricsServerException(
+                'Voice login server error: ${response.statusCode}',
+                statusCode: response.statusCode);
+          }
+          status = 'ERROR';
+      }
+      return VoiceLoginResult(verified: false, status: status);
+    } on SocketException catch (e) {
+      throw VoiceBiometricsNetworkException('No internet connection: ${e.message}');
+    } on TimeoutException catch (_) {
+      throw VoiceBiometricsNetworkException(
+          'Voice login timed out after ${timeout.inSeconds} seconds');
+    } on http.ClientException catch (e) {
+      throw VoiceBiometricsNetworkException('Network error during voice login: ${e.message}');
+    } catch (e) {
+      if (e is VoiceBiometricsException) rethrow;
+      throw VoiceBiometricsException('Error during voice login: $e');
+    }
+  }
+
+  /// Whether the account owning [email] has a voice enrollment — used by the
+  /// email sign-in screen to decide whether to offer Voice login. An unknown
+  /// email resolves to not-enrolled (the server never leaks account existence).
+  Future<VoiceEnrollmentStatus> checkEnrollmentByEmail(String email) async {
+    if (email.isEmpty) {
+      throw VoiceBiometricsException('email cannot be empty');
+    }
+    try {
+      final uri = Uri.parse('$baseUrl/voice/auth/status')
+          .replace(queryParameters: {'email': email});
+      final response = await _retryRequest(
+        () => _client.get(uri, headers: _buildHeaders()).timeout(timeout),
+      );
+      if (response.statusCode == 200) {
+        return VoiceEnrollmentStatus.fromJson(_parseJson(response.body));
+      } else if (response.statusCode == 404) {
+        return VoiceEnrollmentStatus(isEnrolled: false);
+      } else if (response.statusCode >= 500) {
+        throw VoiceBiometricsServerException('Server error: ${response.statusCode}',
+            statusCode: response.statusCode);
+      }
+      throw VoiceBiometricsException(
+          'Failed to check enrollment status: ${response.statusCode}');
+    } on SocketException catch (e) {
+      throw VoiceBiometricsNetworkException('No internet connection: ${e.message}');
+    } on TimeoutException catch (_) {
+      throw VoiceBiometricsNetworkException(
+          'Request timed out after ${timeout.inSeconds} seconds');
+    } on http.ClientException catch (e) {
+      throw VoiceBiometricsNetworkException('Network error: ${e.message}');
+    } catch (e) {
+      if (e is VoiceBiometricsException) rethrow;
+      throw VoiceBiometricsException('Error checking enrollment: $e');
+    }
+  }
+
   /// Delete user's voice enrollment
   Future<bool> deleteVoiceEnrollment(String userId) async {
     if (userId.isEmpty) {

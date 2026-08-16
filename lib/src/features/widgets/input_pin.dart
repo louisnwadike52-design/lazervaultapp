@@ -150,7 +150,11 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
                     setState(() => isLoading = true);
                     try {
                       await Future.delayed(Duration(seconds: 1)); // Simulate API call
-                      Get.toNamed(AppRoutes.transferProof, arguments: widget.recipient);
+                      // Terminal: wipe the flow (amount/account/PIN) so the
+                      // receipt can never fall back onto the send screen — matches
+                      // every real flow (all use offAllNamed to reach the receipt).
+                      Get.offAllNamed(AppRoutes.transferProof,
+                          arguments: widget.recipient);
                     } finally {
                       setState(() => isLoading = false);
                     }

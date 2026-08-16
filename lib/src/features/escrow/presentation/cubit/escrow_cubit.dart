@@ -152,7 +152,60 @@ class EscrowCubit extends Cubit<EscrowState> {
     emit(const EscrowActionInProgress());
     try {
       final deal = await repository.openDispute(dealId: dealId, reason: reason, evidenceUrl: evidenceUrl);
-      emit(EscrowActionSuccess('Dispute opened — our team will review it', deal));
+      emit(EscrowActionSuccess('Dispute opened. Our team will review it', deal));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  /// Attach an already-uploaded piece of media to a deal. Best effort: returns
+  /// false on failure so callers can keep going without breaking the main flow.
+  /// Does NOT emit state, so it never disturbs an in-flight action.
+  Future<bool> addAttachment({
+    required String dealId,
+    required String purpose,
+    required String mediaKind,
+    required String url,
+    String contentType = '',
+    int sizeBytes = 0,
+    int durationSeconds = 0,
+  }) async {
+    try {
+      await repository.addAttachment(
+        dealId: dealId,
+        purpose: purpose,
+        mediaKind: mediaKind,
+        url: url,
+        contentType: contentType,
+        sizeBytes: sizeBytes,
+        durationSeconds: durationSeconds,
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Buyer asks for a refund after delivery.
+  Future<void> requestRefund({required String dealId, required String reason}) async {
+    emit(const EscrowActionInProgress());
+    try {
+      final deal = await repository.requestRefund(dealId: dealId, reason: reason);
+      emit(EscrowActionSuccess('Refund requested. We let the seller know', deal));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  /// Seller accepts or declines a pending refund request.
+  Future<void> respondRefund({required String dealId, required bool accept, String note = ''}) async {
+    emit(const EscrowActionInProgress());
+    try {
+      final deal = await repository.respondRefund(dealId: dealId, accept: accept, note: note);
+      emit(EscrowActionSuccess(
+        accept ? 'Refund sent to the buyer' : 'Sent to our team to review',
+        deal,
+      ));
     } catch (e) {
       emit(EscrowError(_clean(e)));
     }

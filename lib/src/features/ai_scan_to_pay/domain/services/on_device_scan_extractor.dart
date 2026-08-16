@@ -37,7 +37,13 @@ class OnDeviceScanExtractor {
 
   /// Parse [rawText] (ML Kit OCR of the captured still) into a routable
   /// [SmartScanResult], or null to fall back to the GPT backend.
+  ///
+  /// On-device parsing is deliberately **Nigeria-tuned** (10-digit NUBAN,
+  /// 11-digit/+234 phone). For any other market it returns null so the scan
+  /// falls back to the country-agnostic GPT-vision path — a US/UK account that
+  /// happens to be 10 digits must never be mis-read as an NG NUBAN + NG bank.
   SmartScanResult? extract(String rawText, {String country = 'NG'}) {
+    if (country.toUpperCase() != 'NG') return null;
     final text = rawText.replaceAll('\n', ' ');
     if (text.trim().isEmpty) return null;
 

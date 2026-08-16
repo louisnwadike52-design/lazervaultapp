@@ -258,6 +258,10 @@ Future<void> showQuoteTimerSheet(
   required CryptoCubit cubit,
   Future<void> Function()? onConfirm,
 }) async {
+  // True only while the Confirm→PIN→confirm chain is running (the PIN sheet is
+  // stacked above this one). Used to suppress the auto-pop below so we never
+  // close the PIN sheet mid-processing.
+  var confirmInFlight = false;
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -265,22 +269,42 @@ Future<void> showQuoteTimerSheet(
     builder: (sheetCtx) {
       return BlocProvider.value(
         value: cubit,
-        child: QuoteTimerCard(
-          // Confirm runs the tx-PIN + trade confirmation (the PIN sheet's own
-          // processing phase), THEN we pop this quote sheet so the caller
-          // navigates to the receipt on a clean stack. No state-driven auto-pop
-          // (would close the PIN sheet stacked above this one mid-processing).
-          onConfirm: onConfirm == null
-              ? null
-              : () async {
-                  await onConfirm();
-                  if (sheetCtx.mounted && Navigator.canPop(sheetCtx)) {
-                    Navigator.of(sheetCtx).pop();
-                  }
-                },
-          onCancelled: () {
-            if (Navigator.canPop(sheetCtx)) Navigator.of(sheetCtx).pop();
+        child: BlocListener<CryptoCubit, CryptoState>(
+          // Auto-pop when the trade leaves SwapQuotePending WITHOUT a confirm in
+          // flight — e.g. the 15s auto-refresh RPC threw → SwapFailed, which would
+          // otherwise render the card blank and hang the whole flow forever (the
+          // caller's await never returns, the Buy/Sell button spins indefinitely).
+          // During a confirm the PIN sheet is stacked above, so the confirm path
+          // owns the pop instead.
+          listenWhen: (a, b) => b is! SwapQuotePending,
+          listener: (ctx, state) {
+            if (!confirmInFlight &&
+                sheetCtx.mounted &&
+                Navigator.canPop(sheetCtx)) {
+              Navigator.of(sheetCtx).pop();
+            }
           },
+          child: QuoteTimerCard(
+            // Confirm runs the tx-PIN + trade confirmation (the PIN sheet's own
+            // processing phase), THEN we pop this quote sheet so the caller
+            // navigates to the receipt on a clean stack.
+            onConfirm: onConfirm == null
+                ? null
+                : () async {
+                    confirmInFlight = true;
+                    try {
+                      await onConfirm();
+                    } finally {
+                      confirmInFlight = false;
+                    }
+                    if (sheetCtx.mounted && Navigator.canPop(sheetCtx)) {
+                      Navigator.of(sheetCtx).pop();
+                    }
+                  },
+            onCancelled: () {
+              if (Navigator.canPop(sheetCtx)) Navigator.of(sheetCtx).pop();
+            },
+          ),
         ),
       );
     },

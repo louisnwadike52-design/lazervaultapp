@@ -1,10 +1,17 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 
+import 'src/core/config/app_environment.dart' show resolvedFlavor;
+
 import 'firebase_options_dev.dart' as dev;
 import 'firebase_options_prod.dart' as prod;
 import 'firebase_options_staging.dart' as staging;
 
-const _flavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
+// Single source of truth for the build tier — the SAME fail-closed value that
+// drives the backend tier (see app_environment.dart `resolvedFlavor`). Using it
+// here (instead of a separate `String.fromEnvironment('FLAVOR')`, which was
+// fail-open to 'dev') guarantees the Firebase project can never silently
+// disagree with the backend a release build talks to.
+const _flavor = resolvedFlavor;
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {

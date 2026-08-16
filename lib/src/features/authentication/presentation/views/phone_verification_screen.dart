@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
@@ -119,10 +120,24 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
   int _resendCooldown = 0;
   int _expiryCountdown = 0;
   bool _isExpired = false;
+  // Belt-and-braces for the DEFAULT next-step: whether the user already has a
+  // passcode, so an entry path that didn't thread `nextRoute` (e.g. cold-boot
+  // resume) still never re-asks for a passcode they already set.
+  bool _hasPasscode = false;
 
   @override
   void initState() {
     super.initState();
+    // Best-effort read of the persisted passcode flag (written on login/setup).
+    () async {
+      try {
+        final v = await serviceLocator<FlutterSecureStorage>()
+            .read(key: 'has_passcode');
+        if (mounted && (v == 'true' || v == '1')) {
+          setState(() => _hasPasscode = true);
+        }
+      } catch (_) {/* default false — worst case shows passcode setup */}
+    }();
 
     // Initialize the cubit with the phone number
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -251,8 +266,15 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
         'isRequired': false, // Secondary verification is skippable
         'secondaryPhone': null,
       });
+    } else if (_hasPasscode) {
+      // Already has a passcode — never re-ask for it. Go to the transaction-PIN
+      // setup gate (which itself no-ops if a PIN is already set), matching the
+      // resume resolver's post-verify routing.
+      Get.offAllNamed(AppRoutes.transactionPinSetup, arguments: {
+        'fromLoginFlow': true,
+      });
     } else {
-      // No secondary verification, go to passcode setup
+      // No passcode yet — genuine passcode setup.
       Get.offAllNamed(AppRoutes.passcodeSetup);
     }
   }

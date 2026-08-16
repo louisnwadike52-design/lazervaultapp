@@ -12,7 +12,8 @@ import '../../../../../../core/services/injection_container.dart';
 import '../../../../../../core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
-/// Amount and duration selection screen - Step 2 of 5
+/// Amount and duration selection — bottom half of wizard step 1
+/// (Plan & Amount).
 ///
 /// Allows user to enter amount, select currency and duration
 /// Shows live interest calculation preview
@@ -146,7 +147,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
         final cubit = context.read<CreateLockCubit>();
         final selectedDuration = cubit.lockDurationDays;
 
-        return SingleChildScrollView(
+        return Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

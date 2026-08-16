@@ -256,7 +256,10 @@ class ProveKycHttpService {
       return backendMessage;
     }
     if (status == 401) return 'Your session expired. Please log in again.';
-    if (status >= 500) return 'We couldn\'t reach the verification service. Please try again.';
+    if (status == 503 || status == 502 || status == 504 || status >= 500) {
+      return 'Identity verification is temporarily unavailable. Please try '
+          'again in a moment.';
+    }
     return 'We couldn\'t verify your BVN. Please check it and try again.';
   }
 }

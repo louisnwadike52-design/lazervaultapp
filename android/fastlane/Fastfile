@@ -6,7 +6,7 @@ def flutter(args)
   Dir.chdir(FLUTTER_DIR) { sh("flutter #{args}") }
 end
 
-# --- Durable env-file strategy + Shorebird release --------------------------
+# --- Durable env-file strategy + OTA code-push release --------------------------
 require "fileutils"
 require "shellwords"
 require "tmpdir"
@@ -56,53 +56,27 @@ def use_env(name)
   UI.message("env: .env <- .env.#{name} (build will bundle #{name} backend config)")
 end
 
-# Build a PATCH-CAPABLE release AAB via Shorebird (drop-in for
-# `flutter build appbundle`). Shorebird runs the Flutter build AND registers the
-# release so future Dart-only changes ship OTA via `shorebird patch` — no store
-# review. The AAB lands in the same gradle path, so aab_for()/upload lanes are
-# unchanged. Uses the per-flavor app_id from shorebird.yaml.
-SHOREBIRD_FLUTTER_ARGS = "--tree-shake-icons --obfuscate --split-debug-info=#{FLUTTER_DIR}/build/symbols/android".freeze
-# Pin Shorebird to the app's own Flutter version — Shorebird's bundled Flutter
-# (a newer patch) failed the native-lib debug-symbol strip during the release
-# build; the app is validated on this version. Keep in sync with pubspec/CI.
-SHOREBIRD_FLUTTER_VERSION = "3.44.2".freeze
-def shorebird_release_aab(flavor)
-  Dir.chdir(FLUTTER_DIR) do
-    sh("shorebird release android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --artifact aab " \
-       "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
-  end
-end
+# OTA code-push REMOVED entirely (helpers + constants deleted). Store builds ship
+# full binaries only — no OTA code-push, no per-flavor OTA code-push app_ids.
 
-# OTA code-push: pushes a Dart-only diff to an already-shipped Shorebird
-# release. No AAB, no store upload — live on devices in minutes.
-def shorebird_patch_android(flavor)
-  Dir.chdir(FLUTTER_DIR) do
-    sh("shorebird patch android --flavor #{flavor} --flutter-version=#{SHOREBIRD_FLUTTER_VERSION} " \
-       "-- --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{SHOREBIRD_FLUTTER_ARGS}")
-  end
-end
-
-# Build the release AAB. Shorebird (patch-capable, consumes the Shorebird plan)
-# ONLY when opted in via --shorebird (options[:shorebird]); otherwise a plain
-# flutter build so normal CI/deploys never touch Shorebird.
-def build_release_aab(flavor, use_shorebird)
-  if use_shorebird
-    UI.message("build: Shorebird release (patch-capable) for #{flavor}")
-    shorebird_release_aab(flavor)
-  else
-    begin
-      flutter("build appbundle --flavor #{flavor} --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{COMPRESSION_FLAGS}")
-    rescue => e
-      # `flutter build` can exit non-zero on a SPURIOUS post-build native-strip
-      # check even after gradle produced a correct, fully-stripped AAB (see
-      # aab_native_libs_stripped?). Swallow that false alarm ONLY when the AAB is
-      # present and its native libs are verifiably DWARF-free; otherwise the
-      # failure is real → re-raise so the deploy aborts.
-      raise e unless aab_native_libs_stripped?(flavor)
-      UI.important("flutter build exited non-zero on the post-build strip check, " \
-                   "but the AAB is present and its native libs are verified " \
-                   "stripped (0 DWARF sections) — treating as success.")
-    end
+# Build the release AAB via a plain, full flutter build.
+# ONLY when opted in via --code-push (options[:code-push]); otherwise a plain
+# flutter build so normal CI/deploys never touch OTA code-push.
+def build_release_aab(flavor, _unused = nil)
+  # OTA code-push REMOVED — always a plain, full `flutter build` (no OTA code-push).
+  # A code-push patch was overriding store builds with a dev-flavored bundle.
+  begin
+    flutter("build appbundle --flavor #{flavor} --dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor} #{COMPRESSION_FLAGS}")
+  rescue => e
+    # `flutter build` can exit non-zero on a SPURIOUS post-build native-strip
+    # check even after gradle produced a correct, fully-stripped AAB (see
+    # aab_native_libs_stripped?). Swallow that false alarm ONLY when the AAB is
+    # present and its native libs are verifiably DWARF-free; otherwise the
+    # failure is real → re-raise so the deploy aborts.
+    raise e unless aab_native_libs_stripped?(flavor)
+    UI.important("flutter build exited non-zero on the post-build strip check, " \
+                 "but the AAB is present and its native libs are verified " \
+                 "stripped (0 DWARF sections) — treating as success.")
   end
 end
 
@@ -156,6 +130,33 @@ def release_notes
   `git -C #{FLUTTER_DIR} log -1 --pretty=%B`.strip
 end
 
+# --- Shorebird OTA code-push (flag-gated, additive) -----------------------------
+# The Shorebird CLI is installed under ~/.shorebird/bin but is NOT on PATH by
+# default. Prepend it (idempotently) so `shorebird` resolves inside the lane.
+def ensure_shorebird_on_path
+  sb = File.join(Dir.home, ".shorebird", "bin")
+  ENV["PATH"] = "#{sb}#{File::PATH_SEPARATOR}#{ENV['PATH']}" unless ENV["PATH"].to_s.split(File::PATH_SEPARATOR).include?(sb)
+  UI.user_error!("Shorebird CLI not found at #{sb}/shorebird — install it or add it to PATH") unless File.exist?(File.join(sb, "shorebird"))
+end
+
+# The Flutter revision Shorebird builds against. Must match a version Shorebird
+# supports; the last known-good invocation used 3.44.2. Keep in sync with the
+# Flutter used by the plain lanes.
+SHOREBIRD_FLUTTER_VERSION = "3.44.2".freeze
+
+# Run a shorebird subcommand from the Flutter project root, with the SAME
+# --dart-define flavor wiring the plain `flutter build` lanes use (passed after
+# the `--` separator straight through to `flutter build`).
+def shorebird(subcommand, flavor)
+  ensure_shorebird_on_path
+  defines = "--dart-define=FLAVOR=#{flavor} --dart-define=FLUTTER_FLAVOR=#{flavor}"
+  Dir.chdir(FLUTTER_DIR) do
+    sh("shorebird #{subcommand} android --flavor #{flavor} " \
+       "--flutter-version=#{SHOREBIRD_FLUTTER_VERSION} --artifact aab --no-confirm " \
+       "-- #{defines} #{COMPRESSION_FLAGS}")
+  end
+end
+
 # Resolve the Play Console service-account JSON path. One Play account
 # hosts one app (com.lazervault.app) across three tracks (internal /
 # alpha / production), so one SA drives every Android upload. The SA
@@ -202,13 +203,8 @@ platform :android do
   desc "Dev → Play Console internal track (PROD build: prod backend/Firebase, auto-rolls to internal testers)"
   lane :dev do |options|
     use_env("prod") # internal track tests against the PROD backend
-    if options[:patch]
-      shorebird_patch_android(STORE_FLAVOR)
-      UI.success("Shorebird OTA patch pushed (prod build → internal track) — no store upload")
-      next
-    end
     purge_stale_aab(STORE_FLAVOR)
-    build_release_aab(STORE_FLAVOR, options[:shorebird])
+    build_release_aab(STORE_FLAVOR)
     UI.success("Built fresh AAB: #{aab_for(STORE_FLAVOR)} (#{File.size(aab_for(STORE_FLAVOR))} bytes)")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
@@ -227,13 +223,8 @@ platform :android do
   desc "Staging → Play Console closed (alpha) track (PROD build: prod backend/Firebase, auto-rolls to alpha testers)"
   lane :staging do |options|
     use_env("prod") # alpha track tests against the PROD backend
-    if options[:patch]
-      shorebird_patch_android(STORE_FLAVOR)
-      UI.success("Shorebird OTA patch pushed (prod build → alpha track) — no store upload")
-      next
-    end
     purge_stale_aab(STORE_FLAVOR)
-    build_release_aab(STORE_FLAVOR, options[:shorebird])
+    build_release_aab(STORE_FLAVOR)
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "alpha",
@@ -251,13 +242,8 @@ platform :android do
   desc "Production → Play Console production track (release-signed AAB, HOLDS rollout in draft)"
   lane :production do |options|
     use_env("prod")
-    if options[:patch]
-      shorebird_patch_android("prod")
-      UI.success("Shorebird OTA patch pushed (prod → production) — no store upload")
-      next
-    end
     purge_stale_aab("prod")
-    build_release_aab("prod", options[:shorebird])
+    build_release_aab("prod")
     upload_to_play_store(
       package_name:               "com.lazervault.app",
       track:                      "production",
@@ -317,5 +303,46 @@ platform :android do
     }
     args[:groups] = ENV["FAD_GROUPS"] if ENV["FAD_GROUPS"] && !ENV["FAD_GROUPS"].empty?
     firebase_app_distribution(args)
+  end
+
+  # --- Shorebird OTA code-push lanes (additive; plain lanes above are unchanged)
+  # These are ONLY invoked via the --shorebird / --patch deploy flags. They do NOT
+  # replace the normal build lanes — a plain deploy never calls them.
+  #
+  # shorebird_release: builds a PATCH-CAPABLE release AAB (ships as a normal new
+  #   build to Play Console, but is now patchable via `shorebird patch`). Pass
+  #   flavor:<f> (default prod, same as the store lanes). The AAB it produces is
+  #   uploaded to the internal track here; promote in Play Console as usual.
+  desc "Shorebird patch-capable RELEASE (AAB) → Play Console internal track"
+  lane :shorebird_release do |options|
+    flavor = (options[:flavor] || STORE_FLAVOR).to_s
+    use_env("prod")
+    shorebird("release", flavor)
+    aab = aab_for(flavor)
+    UI.user_error!("Shorebird release produced no AAB at #{aab}") unless File.exist?(aab)
+    UI.success("Built patch-capable AAB: #{aab} (#{File.size(aab)} bytes)")
+    upload_to_play_store(
+      package_name:               "com.lazervault.app",
+      track:                      "internal",
+      aab:                        aab,
+      json_key:                   play_store_json_key_path,
+      skip_upload_apk:            true,
+      skip_upload_metadata:       true,
+      skip_upload_changelogs:     false,
+      skip_upload_images:         true,
+      skip_upload_screenshots:    true,
+      release_status:             "completed",
+    )
+  end
+
+  # shorebird_patch: pushes a Dart-only OTA PATCH to the already-shipped release
+  #   for this flavor. NO version bump, NO store upload — live on devices in
+  #   minutes. Requires a prior `shorebird_release` for the same flavor to target.
+  desc "Shorebird OTA PATCH (Dart-only) → already-shipped release (no store, no bump)"
+  lane :shorebird_patch do |options|
+    flavor = (options[:flavor] || STORE_FLAVOR).to_s
+    use_env("prod")
+    shorebird("patch", flavor)
+    UI.success("Shorebird OTA patch pushed for flavor=#{flavor} (no store upload, no build bump)")
   end
 end

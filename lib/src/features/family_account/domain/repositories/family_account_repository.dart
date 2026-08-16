@@ -133,6 +133,8 @@ abstract class FamilyAccountRepository {
     required String fundDistributionMode,
     required bool spendingVisibilityEnabled,
     List<MemberAllocationEntry> allocations = const [],
+    String fundingPolicy = 'any_member',
+    List<String> specificMemberIds = const [],
   });
 
   // Update fund distribution mode for an active account

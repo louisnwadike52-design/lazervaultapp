@@ -576,14 +576,16 @@ class _MyQRCodeScreenState extends State<MyQRCodeScreen> {
         icon: Icon(
           _requestAmount != null ? Icons.edit : Icons.payments_outlined,
           size: 20.sp,
-          color: const Color(0xFF4E03D0),
+          // Lighter lavender: the deep brand purple (0xFF4E03D0) was nearly
+          // invisible against the dark sheet once an amount was set.
+          color: const Color(0xFFB388FF),
         ),
         label: Text(
           _requestAmount != null
               ? 'Amount: ${_requestCurrency ?? 'NGN'} ${_requestAmount!.toStringAsFixed(2)} (tap to change)'
               : 'Request Specific Amount',
           style: GoogleFonts.inter(
-            color: const Color(0xFF4E03D0),
+            color: const Color(0xFFB388FF),
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),

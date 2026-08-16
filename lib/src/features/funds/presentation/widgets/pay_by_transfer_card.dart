@@ -50,15 +50,34 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     );
   }
 
+  // Bare account-TYPE tokens that must NEVER be shown as the holder NAME. A real
+  // Flutterwave holder name is a multi-word person/entity; when provisioning
+  // hasn't returned one yet the backend sometimes echoes the account type
+  // ("personal"), which read as a bogus name. Treat those as "not provisioned"
+  // so the row falls back to the muted "Being set up" state (empty is the
+  // user-approved fallback over a mock/type).
+  static const Set<String> _accountTypeTokens = {
+    'personal', 'business', 'savings', 'investment', 'family',
+    'family & friends', 'joint', 'group', 'multi-currency', 'multicurrency',
+    'usd', 'gbp', 'eur', 'ngn', 'account', 'wallet',
+  };
+
+  /// The holder name to display, with bare account-type tokens scrubbed to ''.
+  String get _displayAccountName {
+    final n = widget.accountName.trim();
+    if (n.isEmpty) return '';
+    return _accountTypeTokens.contains(n.toLowerCase()) ? '' : n;
+  }
+
   /// Build a clean, multi-line block of all the account details. Empty fields
   /// are omitted entirely so the clipboard never carries a "null"/blank line.
   String _buildDetailsBlock() {
+    final name = _displayAccountName;
     final lines = <String>[
       if (widget.bankName.trim().isNotEmpty) 'Bank: ${widget.bankName.trim()}',
       if (widget.accountNumber.trim().isNotEmpty)
         'Account Number: ${widget.accountNumber.trim()}',
-      if (widget.accountName.trim().isNotEmpty)
-        'Account Name: ${widget.accountName.trim()}',
+      if (name.isNotEmpty) 'Account Name: $name',
     ];
     return lines.join('\n');
   }
@@ -235,9 +254,9 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
           _buildDetailRow(
             context,
             label: 'Account Name',
-            value: widget.accountName,
+            value: _displayAccountName,
             showCopy: true,
-            onCopy: () => _copyToClipboard(context, widget.accountName, 'Account name'),
+            onCopy: () => _copyToClipboard(context, _displayAccountName, 'Account name'),
           ),
 
           SizedBox(height: 16.h),
@@ -284,6 +303,11 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     bool showCopy = false,
     VoidCallback? onCopy,
   }) {
+    // Real-value-or-empty rule: a genuinely missing provider value (bank /
+    // NUBAN / holder name not provisioned yet) renders a muted "Being set up"
+    // note — never a blank line, never a mock, never the account type. Copy is
+    // hidden while empty so the user can't copy a placeholder.
+    final hasValue = value.trim().isNotEmpty;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
@@ -305,17 +329,21 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               ),
               SizedBox(height: 2.h),
               Text(
-                value,
+                hasValue ? value : 'Being set up',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: hasValue
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.45),
                   fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: label == 'Account Number' ? 1.2 : 0,
+                  fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
+                  fontStyle: hasValue ? FontStyle.normal : FontStyle.italic,
+                  letterSpacing:
+                      (hasValue && label == 'Account Number') ? 1.2 : 0,
                 ),
               ),
             ],
           ),
-          if (showCopy)
+          if (showCopy && hasValue)
             GestureDetector(
               onTap: onCopy,
               child: Container(

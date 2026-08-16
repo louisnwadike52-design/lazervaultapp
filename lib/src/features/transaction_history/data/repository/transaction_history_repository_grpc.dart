@@ -12,6 +12,8 @@ import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
+import 'package:lazervault/src/features/transaction_history/data/repository/transaction_classifier.dart'
+    as classifier;
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
 
 /// gRPC-based Transaction History Repository
@@ -604,8 +606,27 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       serviceType = _mapServiceNameToServiceType(protoTx.serviceName);
     } else {
       // Infer service type from category when service_name is missing
-      serviceType = _inferServiceTypeFromCategory(
-          protoTx.category, protoTx.type, protoTx.description, protoTx.reference);
+      serviceType = _inferServiceTypeFromCategory(protoTx.category,
+          protoTx.type, protoTx.description, protoTx.reference, protoTx.serviceName);
+    }
+
+    // Correct the service type for the shared hold_capture bucket. Several
+    // capturing services (exchange-service, banking-service, financial-products-
+    // service) have no direct AppServiceName→backend mapping, so
+    // _mapServiceNameToServiceType returns `unknown`, and rows with no
+    // service_name fall to `giftCard`. Resolve the real domain from
+    // service_name + description and pin the type accordingly, so the icon/
+    // colour match the corrected title. Only override when we positively resolve
+    // a domain AND the current type is ambiguous (unknown/giftCard) — never
+    // downgrade an already-correct concrete type.
+    if (serviceType == TransactionServiceType.unknown ||
+        serviceType == TransactionServiceType.giftCard) {
+      final domain = _domainFromText(protoTx.category, protoTx.description,
+          protoTx.reference, protoTx.serviceName);
+      final domainType = _serviceTypeForDomain(domain);
+      if (domainType != null) {
+        serviceType = domainType;
+      }
     }
 
     // The utility-payments service serves airtime/data/electricity/water/tv/
@@ -713,8 +734,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     }
 
     // Generate title, enriched with counterparty name for transfers
-    String title = _generateTransactionTitle(
-        protoTx.category, protoTx.type, protoTx.description, protoTx.reference);
+    String title = _generateTransactionTitle(protoTx.category, protoTx.type,
+        protoTx.description, protoTx.reference, protoTx.serviceName);
     if (counterpartyName != null && counterpartyName.isNotEmpty) {
       final categoryLower = protoTx.category.toLowerCase();
       final typeLower = protoTx.type.toLowerCase();
@@ -724,7 +745,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       if (isInternational) {
         title = 'International transfer to $counterpartyName';
       } else if (categoryLower.contains('transfer') ||
-          _domainFromText(protoTx.category, protoTx.description, protoTx.reference) == 'transfer') {
+          _domainFromText(protoTx.category, protoTx.description,
+                  protoTx.reference, protoTx.serviceName) ==
+              'transfer') {
         title = typeLower == 'credit'
             ? 'Transfer from $counterpartyName'
             : 'Transfer to $counterpartyName';
@@ -757,98 +780,21 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     );
   }
 
-  /// Detects the true domain of a transaction whose accounts-service `category`
-  /// is the GENERIC shared bucket `hold_capture` — which giftcards, crypto,
-  /// insurance, etc. all use. The domain lives in the description/reference
-  /// (crypto → "crypto swap"/"CRYPTO-", giftcard → "gift"/"GC-",
-  /// insurance → "INS-"/"insurance"). Returns 'crypto' | 'giftcard' |
-  /// 'insurance' | ''.
-  String _domainFromText(String category, String description, String reference) {
-    final s = '$category $description $reference'.toLowerCase();
-    if (s.contains('crypto') || s.contains('crypto-')) return 'crypto';
-    if (s.contains('gift') || RegExp(r'\bgc-').hasMatch(s)) return 'giftcard';
-    if (s.contains('insurance') || RegExp(r'\bins-').hasMatch(s)) return 'insurance';
-    // External bank transfers capture a hold too (category 'hold_capture',
-    // description "Transfer to {name}", metadata.reference "TRF-…") — without
-    // this rule a completed send-funds transfer read as "Gift Card Purchase".
-    if (s.contains('transfer') || s.contains('trf-') || s.contains('c2c-')) {
-      return 'transfer';
-    }
-    return '';
-  }
+  // Transaction classification (domain/title/type) lives in
+  // `transaction_classifier.dart` as pure, unit-testable functions. These thin
+  // wrappers keep the call sites in this file unchanged.
+  String _domainFromText(String category, String description, String reference,
+          [String serviceName = '']) =>
+      classifier.classifyDomain(category, description, reference, serviceName);
 
-  /// Generate a user-friendly transaction title
+  TransactionServiceType? _serviceTypeForDomain(String domain) =>
+      classifier.serviceTypeForDomain(domain);
+
   String _generateTransactionTitle(
-      String category, String type, String description, String reference) {
-    final categoryLower = category.toLowerCase();
-    final typeLower = type.toLowerCase();
-
-    // Crypto first — a crypto buy captures a hold (category 'hold_capture',
-    // shared with giftcards/insurance) so it MUST be classified by content
-    // before the generic hold_capture→giftcard rule below, or every crypto buy
-    // reads as "Gift Card Purchase". Wallet history only ever shows the fiat
-    // legs: a debit is a BUY, a credit is a SELL (swap/send never touch the
-    // fiat wallet).
-    if (categoryLower.contains('crypto') ||
-        _domainFromText(category, description, reference) == 'crypto') {
-      return typeLower == 'credit' ? 'Crypto sell' : 'Crypto buy';
-    }
-    if (categoryLower.contains('insurance') ||
-        _domainFromText(category, description, reference) == 'insurance') {
-      return 'Insurance Payment';
-    }
-
-    if (_looksLikeEPinRef(reference) ||
-        categoryLower.contains('epin') ||
-        _text(description, category).contains('recharge card')) {
-      return typeLower == 'credit'
-          ? 'Recharge Card Refund'
-          : 'Recharge Card Purchase';
-    } else if (_looksLikeBettingRef(reference) ||
-        categoryLower.contains('betting') ||
-        _text(description, category).contains('betting')) {
-      return typeLower == 'credit' ? 'Betting Refund' : 'Betting Wallet Funding';
-    } else if (categoryLower.contains('airtime')) {
-      return typeLower == 'credit' ? 'Airtime Top-up' : 'Airtime Purchase';
-    } else if (categoryLower.contains('transfer') ||
-        _domainFromText(category, description, reference) == 'transfer') {
-      return typeLower == 'credit' ? 'Transfer Received' : 'Transfer Sent';
-    } else if (categoryLower.contains('gift_card_sell') || categoryLower.contains('sell_payout')) {
-      return 'Gift Card Sale';
-    } else if (categoryLower.contains('hold_capture') && typeLower == 'debit') {
-      return 'Gift Card Purchase';
-    } else if (categoryLower.contains('gift')) {
-      return typeLower == 'credit' ? 'Gift Card Refund' : 'Gift Card Purchase';
-    } else if (categoryLower.contains('electricity')) {
-      return 'Electricity Bill Payment';
-    } else if (categoryLower.contains('deposit')) {
-      return 'Account Deposit';
-    } else if (categoryLower.contains('withdrawal')) {
-      return 'Account Withdrawal';
-    } else if (categoryLower.contains('invoice')) {
-      return typeLower == 'credit' ? 'Invoice Received' : 'Invoice Payment';
-    } else if (categoryLower.contains('crypto')) {
-      return typeLower == 'credit' ? 'Crypto Sale' : 'Crypto Purchase';
-    } else if (categoryLower.contains('stock')) {
-      return typeLower == 'credit' ? 'Stock Sale' : 'Stock Purchase';
-    } else if (categoryLower.contains('insurance')) {
-      return 'Insurance Payment';
-    } else if (categoryLower.contains('tag')) {
-      return typeLower == 'credit' ? 'Tag Payment Received' : 'Tag Payment Sent';
-    } else if (categoryLower.contains('barcode')) {
-      return 'Barcode Payment';
-    } else if (categoryLower.contains('crowdfund') || categoryLower.contains('donation')) {
-      return 'Donation';
-    } else if (categoryLower.contains('autosave') || categoryLower.contains('auto_save')) {
-      return 'AutoSave Deposit';
-    } else if (categoryLower.contains('water')) {
-      return 'Water Bill Payment';
-    } else if (categoryLower.contains('tv') || categoryLower.contains('subscription')) {
-      return 'TV Subscription';
-    } else {
-      return typeLower == 'credit' ? 'Credit' : 'Debit';
-    }
-  }
+          String category, String type, String description, String reference,
+          [String serviceName = '']) =>
+      classifier.generateTransactionTitle(
+          category, type, description, reference, serviceName);
 
   /// Parse metadata JSON string to Map
   Map<String, dynamic>? _parseMetadata(String metadataJson) {
@@ -863,141 +809,23 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     }
   }
 
-  /// Infer service type from category when service_name is empty
   TransactionServiceType _inferServiceTypeFromCategory(
-      String category, String type, String description, String reference) {
-    final cat = category.toLowerCase();
-    // Disambiguate the shared 'hold_capture' bucket by content FIRST, so a
-    // crypto buy / insurance premium hold isn't misclassified as a giftcard.
-    final domain = _domainFromText(category, description, reference);
-    if (cat.contains('crypto') || domain == 'crypto') {
-      return TransactionServiceType.crypto;
-    }
-    if (cat.contains('insurance') || domain == 'insurance') {
-      return TransactionServiceType.insurance;
-    }
-    // Transfers before the generic hold_capture→giftCard fallback — an
-    // external bank transfer's capture row is category 'hold_capture' with
-    // "Transfer to {name}" in the description.
-    if (cat.contains('transfer') || domain == 'transfer') {
-      return TransactionServiceType.transfer;
-    }
-    if (cat.contains('gift_card') || cat.contains('hold_capture') || cat.contains('giftcard')) {
-      return TransactionServiceType.giftCard;
-    } else if (_looksLikeEPinRef(reference) ||
-        cat.contains('epin') ||
-        _text(description, category).contains('recharge card')) {
-      return TransactionServiceType.epin;
-    } else if (_looksLikeBettingRef(reference) ||
-        cat.contains('betting') ||
-        _text(description, category).contains('betting')) {
-      return TransactionServiceType.betting;
-    } else if (cat.contains('airtime')) {
-      return TransactionServiceType.airtime;
-    } else if (cat.contains('electricity')) {
-      return TransactionServiceType.electricity;
-    } else if (cat.contains('deposit') || (type == 'credit' && cat.contains('fund'))) {
-      return TransactionServiceType.deposit;
-    } else if (cat.contains('withdrawal')) {
-      return TransactionServiceType.withdrawal;
-    } else if (cat.contains('tag')) {
-      return TransactionServiceType.tagPay;
-    } else if (cat.contains('invoice')) {
-      return TransactionServiceType.invoice;
-    } else if (cat.contains('crypto')) {
-      return TransactionServiceType.crypto;
-    } else if (cat.contains('insurance')) {
-      return TransactionServiceType.insurance;
-    }
-    return TransactionServiceType.unknown;
-  }
+          String category, String type, String description, String reference,
+          [String serviceName = '']) =>
+      classifier.inferServiceTypeFromCategory(
+          category, type, description, reference, serviceName);
 
-  String _text(String description, String category) =>
-      '${description.toLowerCase()} ${category.toLowerCase()}';
+  bool _looksLikeUtilityRef(String reference) =>
+      classifier.looksLikeUtilityRef(reference);
 
-  /// ePIN references are minted as `EPIN-...` (holds as `HOLD-EPIN-...`,
-  /// reversals as `REV-EPIN-...`), so the prefix is authoritative.
-  bool _looksLikeEPinRef(String reference) {
-    final r = reference.toLowerCase();
-    return r.startsWith('epin') ||
-        r.startsWith('hold-epin') ||
-        r.contains('-epin-') ||
-        r.contains('epin');
-  }
-
-  /// Betting-wallet funding references are minted as `BET-...`.
-  bool _looksLikeBettingRef(String reference) {
-    final r = reference.toLowerCase();
-    return r.startsWith('bet-') ||
-        r.startsWith('hold-bet-') ||
-        r.contains('-bet-');
-  }
-
-  /// True when a reference looks like it belongs to any utility-payments bill —
-  /// used to trigger disambiguation even if service_name wasn't stamped.
-  bool _looksLikeUtilityRef(String reference) {
-    return _looksLikeEPinRef(reference) || _looksLikeBettingRef(reference);
-  }
-
-  /// The utility-payments family (airtime/data/electricity/water/tv/internet/
-  /// education/epin/betting) shares ONE backend service name, so mapping by
-  /// service name alone collapses them all onto the first match (electricity).
-  /// Refine to the specific bill type using the reference prefix (authoritative)
-  /// then the description/category text. Only acts on utility/unknown inputs and
-  /// only when it finds a positive signal, so it never mislabels other services.
   TransactionServiceType _refineUtilityServiceType(
     TransactionServiceType current,
     String reference,
     String description,
     String category,
-  ) {
-    const utility = {
-      TransactionServiceType.electricity,
-      TransactionServiceType.airtime,
-      TransactionServiceType.data,
-      TransactionServiceType.water,
-      TransactionServiceType.tvSubscription,
-      TransactionServiceType.internet,
-      TransactionServiceType.education,
-      TransactionServiceType.betting,
-      TransactionServiceType.epin,
-      TransactionServiceType.unknown,
-    };
-    if (!utility.contains(current)) return current;
-
-    final text = _text(description, category);
-    bool has(String kw) => text.contains(kw);
-
-    // Reference prefixes are authoritative.
-    if (_looksLikeEPinRef(reference) || has('recharge card') || has('epin')) {
-      return TransactionServiceType.epin;
-    }
-    if (_looksLikeBettingRef(reference) || has('betting')) {
-      return TransactionServiceType.betting;
-    }
-    if (has('airtime')) return TransactionServiceType.airtime;
-    if (has('data bundle') || has('data plan') || has('mobile data')) {
-      return TransactionServiceType.data;
-    }
-    if (has('electricity') || has('meter') || has('prepaid') || has('postpaid')) {
-      return TransactionServiceType.electricity;
-    }
-    if (has('water')) return TransactionServiceType.water;
-    if (has('cable') ||
-        has('dstv') ||
-        has('gotv') ||
-        has('startimes') ||
-        has('tv subscription')) {
-      return TransactionServiceType.tvSubscription;
-    }
-    if (has('internet') || has('broadband')) {
-      return TransactionServiceType.internet;
-    }
-    if (has('education') || has('waec') || has('jamb')) {
-      return TransactionServiceType.education;
-    }
-    return current;
-  }
+  ) =>
+      classifier.refineUtilityServiceType(
+          current, reference, description, category);
 
   /// Map TransactionServiceType to service name string using centralized mapping
   String? _mapServiceTypeToServiceName(TransactionServiceType type) {

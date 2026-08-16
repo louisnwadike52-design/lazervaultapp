@@ -59,4 +59,28 @@ abstract class EscrowRepository {
     required String reason,
     String evidenceUrl = '',
   });
+
+  /// Attach a piece of media evidence (already uploaded to storage) to a deal.
+  Future<void> addAttachment({
+    required String dealId,
+    required String purpose,
+    required String mediaKind,
+    required String url,
+    String contentType = '',
+    int sizeBytes = 0,
+    int durationSeconds = 0,
+  });
+
+  /// Buyer asks for a refund after delivery.
+  Future<EscrowDealEntity> requestRefund({
+    required String dealId,
+    required String reason,
+  });
+
+  /// Seller accepts or declines a pending refund request.
+  Future<EscrowDealEntity> respondRefund({
+    required String dealId,
+    required bool accept,
+    String note = '',
+  });
 }

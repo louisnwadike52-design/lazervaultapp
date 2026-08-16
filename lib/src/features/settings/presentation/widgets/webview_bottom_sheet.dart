@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -227,7 +229,19 @@ class _WebViewSheetState extends State<_WebViewSheet> {
     }
     return Stack(
       children: [
-        Container(color: _card, child: WebViewWidget(controller: _controller!)),
+        Container(
+          color: _card,
+          // Give the WebView a vertical-drag recognizer so IT wins the vertical
+          // gesture arena — otherwise the enclosing DraggableScrollableSheet
+          // swallows the drag and the page content can't be scrolled to the end.
+          child: WebViewWidget(
+            controller: _controller!,
+            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+              Factory<VerticalDragGestureRecognizer>(
+                  () => VerticalDragGestureRecognizer()),
+            },
+          ),
+        ),
         if (_loading)
           const Center(child: CircularProgressIndicator(color: Color(0xFF6D28D9))),
       ],

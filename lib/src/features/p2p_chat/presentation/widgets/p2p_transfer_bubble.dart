@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart' as grpc_helper;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -578,30 +578,17 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
             (widget.transferAmount != null && widget.transferAmount! > 0)
                 ? widget.transferAmount
                 : null;
-        // Honour the user's send-funds flow preference (short/classic vs
-        // long/standard) exactly like the chat header's "send money" does.
-        // Repeating a transfer must NOT force the long flow when the user is
-        // pinned to the short flow — the session flow is resolved/pinned at
-        // login (FeatureFlags.sendFlowShortForSession).
-        if (FeatureFlags.sendFlowShortForSession) {
-          // Short flow runs amount → PIN → send on the select-recipient screen.
-          Get.toNamed(
-            AppRoutes.selectRecipient,
-            arguments: {
-              'shortFlow': true,
-              'preselectedRecipient': recipient,
-              'autoContinue': true,
-              if (amount != null) 'prefillAmount': amount,
-            },
-          );
-        } else {
-          final args = <String, dynamic>{'recipient': recipient};
-          if (amount != null) args['prefillAmount'] = amount;
-          if (widget.transferCurrency != null) {
-            args['prefillCurrency'] = widget.transferCurrency;
-          }
-          Get.toNamed(AppRoutes.initiateSendFunds, arguments: args);
-        }
+        // Single entry point: honours the user's short/long flow preference AND
+        // unwinds any stale send-flow route so the two flows never coexist (the
+        // long-amount-page-flash bug). Repeating a transfer must not force the
+        // long flow when the user is pinned to short — SendFundsLauncher reads
+        // FeatureFlags.sendFlowShortForSession (pinned at login).
+        SendFundsLauncher.open(
+          recipient: recipient,
+          autoContinue: true,
+          prefillAmountMinor: amount,
+          prefillCurrency: widget.transferCurrency,
+        );
       } else {
         Get.snackbar(
           'Error',

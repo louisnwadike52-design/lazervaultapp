@@ -23,10 +23,19 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
   /// Expose the pin modal key so callers can drive processing/success phases
   GlobalKey<TransactionPinModalState> get pinModalKey => _pinModalKey;
 
+  /// When the host that launched the PIN flow is ITSELF a modal popup route
+  /// (e.g. the voice-agent bottom sheet), popping "every PopupRoute down to the
+  /// page" would also tear down that host. Callers that must survive a cancel
+  /// pass `preserveHostSheet: true` to [validateTransactionPin], which records
+  /// their route here so [_dismissPaymentSheets] stops AT it — closing only the
+  /// PIN sheet (+ any sub-sheets above the host), not the host itself.
+  ModalRoute<dynamic>? _pinHostBoundaryRoute;
+
   /// Close the PIN sheet AND any payment sheets stacked beneath it (amount /
   /// confirmation / account-verified, etc.), returning the user cleanly to the
   /// underlying page. Pops every modal popup route (bottom sheets + dialogs)
-  /// but stops at the first full-screen page route, so the page is preserved.
+  /// but stops at the first full-screen page route — OR at [_pinHostBoundaryRoute]
+  /// when set, so a host bottom sheet (voice agent) is preserved.
   ///
   /// Used on every TERMINAL, NON-SUCCESS PIN outcome (cancel, wrong-PIN
   /// exhausted, locked, network failure, transfer failure) so a cancelled or
@@ -36,7 +45,10 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
   void _dismissPaymentSheets(BuildContext context) {
     if (!mounted) return;
     try {
-      Navigator.of(context).popUntil((route) => route is! PopupRoute);
+      final boundary = _pinHostBoundaryRoute;
+      Navigator.of(context).popUntil(
+        (route) => (boundary != null && route == boundary) || route is! PopupRoute,
+      );
     } catch (_) {}
   }
 
@@ -77,10 +89,37 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     // before it's confirmed.
     String? successMessage,
     Widget? headerAction,
+    // Optional recipient identity shown as an avatar + name header on the PIN
+    // pad (chat-driven money moves pass these so the user sees WHO they're
+    // paying while entering the PIN — reviewing them IS the confirmation).
+    // Other callers omit them and the modal renders its default header.
+    String? recipientImageUrl,
+    String? recipientName,
+    // Per-phase subtitle overrides so a non-transfer flow (e.g. a balance
+    // refresh) doesn't read as "Your transfer is being processed".
+    String? processingSubtitle,
+    String? successSubtitle,
+    // When the post-PIN action ([onPinValidated]) throws, the sheet shows a
+    // FAILED state. By default the thrown error is run through [friendlyError]
+    // with a transfer-shaped context. A non-transfer flow (e.g. a balance
+    // refresh) can pass a builder to map its own error categories to friendly,
+    // flow-specific copy ("Couldn’t refresh — please re-link your bank account.")
+    // instead of a generic "We couldn’t complete your transfer" line.
+    String Function(Object error)? failureMessageBuilder,
+    // When the caller's own UI is a modal popup route that must OUTLIVE a
+    // cancelled/failed PIN (e.g. the voice-agent bottom sheet), pass true. On a
+    // terminal non-success outcome we then pop only down to the caller's route
+    // instead of clearing every popup down to the page. Default false preserves
+    // the existing "return to the page" behaviour for full-screen callers.
+    bool preserveHostSheet = false,
   }) async {
     // Reset the voice-flow outcome hints for this attempt.
     lastPinFailureReason = null;
     lastPinRemainingAttempts = null;
+    // Record the caller's route as the pop boundary (only when asked) so a
+    // cancel closes the PIN sheet but not the host sheet. Captured BEFORE the
+    // PIN sheet is pushed, so it resolves to the caller's route, not the sheet.
+    _pinHostBoundaryRoute = preserveHostSheet ? ModalRoute.of(context) : null;
     try {
       // Check if user has PIN set up
       print('[TransactionPinMixin] Checking if user has PIN...');
@@ -133,6 +172,11 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           currentAttempt: currentAttempt,
           errorMessage: errorMessage,
           headerAction: headerAction,
+          recipientImageUrl: recipientImageUrl,
+          recipientName: recipientName,
+          processingSubtitle: processingSubtitle,
+          successSubtitle: successSubtitle,
+          transactionType: transactionType,
           onPinSubmitted: (pin) {
             if (!completerRef.value.isCompleted) {
               completerRef.value.complete(pin);
@@ -208,10 +252,14 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
               return true;
             } catch (e) {
               // NEVER show raw e.toString() — a GrpcError stringifies to its
-              // status code + cloudflare trailers. friendlyError maps it to a
+              // status code + cloudflare trailers. A flow-specific
+              // [failureMessageBuilder] (e.g. balance refresh) maps the error to
+              // its own friendly copy; otherwise friendlyError maps it to a
               // clean, user-facing line (passing through a clean backend
               // failed-precondition message when present).
-              final failMsg = friendlyError(e, context: 'complete your transfer');
+              final failMsg = failureMessageBuilder != null
+                  ? failureMessageBuilder(e)
+                  : friendlyError(e, context: 'complete your transfer');
               if (_pinModalKey.currentState != null) {
                 _pinModalKey.currentState?.setFailed(failMsg);
                 await Future.delayed(const Duration(seconds: 2));

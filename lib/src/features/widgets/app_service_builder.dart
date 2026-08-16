@@ -2,11 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_home_screen.dart';
+
+/// Services that MOVE MONEY OUT of the active account (a debit/hold). These are
+/// pre-empted when the active account is frozen — the backend already blocks
+/// every debit on a frozen account, so this is the matching UX guard (point the
+/// user at Details to unfreeze rather than walk them into a doomed flow).
+/// Deliberately EXCLUDES view / business-admin / receive / setup services
+/// (invoice-create, business dashboards, statements, channel setup, groups)
+/// which stay usable while frozen. Incoming money is never blocked.
+const Set<AppServiceName> _frozenBlockedServices = {
+  AppServiceName.sendFunds,
+  AppServiceName.batchTransfer,
+  AppServiceName.tagPay,
+  AppServiceName.payBills,
+  AppServiceName.crypto,
+  AppServiceName.rmb,
+  AppServiceName.invest,
+  AppServiceName.stocks,
+  AppServiceName.exchange,
+  AppServiceName.giftCards,
+  AppServiceName.airtime,
+  AppServiceName.autoSave,
+  AppServiceName.lockFunds,
+  AppServiceName.escrow,
+  AppServiceName.crowdfund,
+  AppServiceName.uplift,
+  AppServiceName.payInvoice,
+  AppServiceName.rechargeCard,
+  AppServiceName.betting,
+  AppServiceName.payroll,
+  AppServiceName.qrPay,
+  AppServiceName.aiScanToPay,
+  AppServiceName.contactlessPay,
+  AppServiceName.insurance,
+};
 
 class AppServiceBuilder extends StatefulWidget {
   const AppServiceBuilder({required this.appService, super.key});
@@ -20,6 +55,14 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
   bool isHovered = false;
 
   void _handleGotoService() {
+    // FROZEN GUARD: if the active account is frozen, don't walk the user into a
+    // money-moving flow the backend will reject — point them at Details to
+    // unfreeze. Non-money (view/admin/receive) services stay usable.
+    if (_frozenBlockedServices.contains(widget.appService.serviceName) &&
+        serviceLocator<AccountManager>().isActiveAccountFrozen) {
+      _showFrozenServiceBlocked();
+      return;
+    }
     // Record usage for adaptive quick-services ordering (no-op unless the user
     // turned it on). Fire-and-forget — never blocks navigation.
     serviceLocator<ServiceUsageService>().record(widget.appService.serviceName);
@@ -145,6 +188,19 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.bettingHome);
         break;
     }
+  }
+
+  void _showFrozenServiceBlocked() {
+    Get.snackbar(
+      'Account frozen',
+      'Unfreeze this account from your card Details before using ${widget.appService.serviceName.displayName}.',
+      backgroundColor: const Color(0xFF1E3A5F).withValues(alpha: 0.95),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      margin: EdgeInsets.all(12.w),
+      icon: const Icon(Icons.ac_unit_rounded, color: Colors.white),
+      duration: const Duration(seconds: 4),
+    );
   }
 
   @override

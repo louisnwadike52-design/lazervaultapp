@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,11 +6,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
-import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import '../../data/services/escrow_image_upload_service.dart';
+import '../../data/services/escrow_media_upload_service.dart';
+import '../widgets/escrow_attachment_picker.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -52,10 +50,9 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
   static const int _totalPages = 2;
   static const List<String> _pageNames = ['Deal details', 'Amount & funding'];
 
-  // Buyer's product/service image — picked on page 1, uploaded to storage on
-  // submit, then persisted as the deal's buyer_item_image_url.
-  File? _buyerItemImage;
-  final ImagePicker _imagePicker = ImagePicker();
+  // Buyer's product/service evidence (photos and one short video), uploaded to
+  // storage as they are picked and attached to the deal once it is created.
+  List<EscrowMediaUploadResult> _dealItemMedia = const [];
 
   static const List<(int days, String label)> _deadlineOptions = [
     (0, 'None'),
@@ -113,21 +110,6 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
     } else {
       _pageController.previousPage(
           duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-    }
-  }
-
-  Future<void> _pickBuyerImage() async {
-    try {
-      final XFile? picked = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1600,
-        imageQuality: 85,
-      );
-      if (picked != null && mounted) {
-        setState(() => _buyerItemImage = File(picked.path));
-      }
-    } catch (_) {
-      _snack('Could not open the image picker', EscrowTheme.error);
     }
   }
 
@@ -199,25 +181,9 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
 
     setState(() => _submitting = true);
 
-    // Upload the buyer's product image (best-effort — a failed upload never
-    // blocks funding; the deal is created without the image and it can be
-    // added conceptually later). Runs after PIN so we don't upload on abandon.
-    String buyerImageUrl = '';
-    if (_buyerItemImage != null) {
-      try {
-        final uploader = EscrowImageUploadService(
-          endpoints: endpointRegistry,
-        );
-        final res = await uploader.uploadFromFile(_buyerItemImage!);
-        buyerImageUrl = res.publicUrl;
-      } catch (_) {
-        // Non-fatal: continue funding without the image.
-      }
-    }
-
-    // Success navigation (→ receipt) is handled in the BlocListener so the
-    // funded deal flows straight into the branded receipt screen.
-    await cubit.createDeal(
+    // The evidence photos/video were already validated and uploaded to storage
+    // by the attachment picker; we only attach them to the deal once it exists.
+    final deal = await cubit.createDeal(
       buyerAccountId: _selectedAccountId!,
       sellerQuery: _sellerCtrl.text.trim(),
       title: _titleCtrl.text.trim(),
@@ -227,8 +193,26 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       transactionId: txnId,
       verificationToken: token!,
       idempotencyKey: idem,
-      buyerItemImageUrl: buyerImageUrl,
     );
+
+    if (deal == null) {
+      // The BlocListener already surfaced the error and reset the button.
+      return;
+    }
+
+    // Attach the buyer's evidence (best effort). A failed attach never blocks
+    // the funded deal from flowing into the receipt.
+    if (_dealItemMedia.isNotEmpty) {
+      await attachEscrowMedia(
+        cubit: cubit,
+        dealId: deal.id,
+        purpose: 'deal_item',
+        items: _dealItemMedia,
+      );
+    }
+
+    Get.offNamed(AppRoutes.escrowReceipt,
+        arguments: {'deal': deal, 'kind': 'funded'});
   }
 
   void _snack(String m, Color c) {
@@ -249,13 +233,11 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       ),
       body: BlocListener<EscrowCubit, EscrowState>(
         listener: (context, state) {
+          // Success navigation (→ receipt) is driven from _submit so we can
+          // attach the buyer's evidence before leaving this screen.
           if (state is EscrowError) {
             if (mounted) setState(() => _submitting = false);
             _snack(state.message, EscrowTheme.error);
-          }
-          if (state is EscrowActionSuccess) {
-            Get.offNamed(AppRoutes.escrowReceipt,
-                arguments: {'deal': state.deal, 'kind': 'funded'});
           }
         },
         child: SafeArea(
@@ -343,8 +325,11 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
           _field(_descCtrl,
               hint: 'Describe the item, condition, delivery…', maxLines: 3),
           SizedBox(height: 16.h),
-          _label('Photo of the product / service (optional)'),
-          _buyerImagePicker(),
+          _label('Photos or a short video of what you want (optional)'),
+          EscrowAttachmentPicker(
+            onChanged: (media) => _dealItemMedia = media,
+            onError: (msg) => _snack(msg, EscrowTheme.error),
+          ),
           SizedBox(height: 16.h),
           _disclaimer(),
         ],
@@ -382,51 +367,6 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
           SizedBox(height: 16.h),
           _disclaimer(),
         ],
-      ),
-    );
-  }
-
-  Widget _buyerImagePicker() {
-    return GestureDetector(
-      onTap: _pickBuyerImage,
-      child: Container(
-        height: _buyerItemImage != null ? 180.h : 96.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: EscrowTheme.card,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: EscrowTheme.border),
-          image: _buyerItemImage != null
-              ? DecorationImage(
-                  image: FileImage(_buyerItemImage!), fit: BoxFit.cover)
-              : null,
-        ),
-        child: _buyerItemImage != null
-            ? Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.all(8.w),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _buyerItemImage = null),
-                    child: CircleAvatar(
-                      radius: 14.r,
-                      backgroundColor: Colors.black54,
-                      child: Icon(Icons.close, size: 16.sp, color: Colors.white),
-                    ),
-                  ),
-                ),
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_a_photo_outlined,
-                      color: EscrowTheme.primary, size: 24.sp),
-                  SizedBox(height: 8.h),
-                  Text('Add a photo of what you want',
-                      style: GoogleFonts.inter(
-                          color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
-                ],
-              ),
       ),
     );
   }
