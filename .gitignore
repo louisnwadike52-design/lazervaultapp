@@ -55,3 +55,25 @@ app.*.map.json
 # Portable signing/deploy credentials (keystores, ASC/APNs .p8, SA JSON).
 # In-repo for device portability; MUST NEVER be committed.
 credentials/
+
+# --- security: never commit secrets / env / keys / venvs (added 2026-08) ---
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+!*.example
+!*.sample
+!*.template
+*.pem
+*.p12
+*.jks
+*.keystore
+keys/*.pem
+secrets/
+service-account*.json
+*-key.json
+venv/
+.venv/
+__pycache__/
+*.pyc
