@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 
 /// Shared UX gate for open-banking bank LINKING.
 ///
@@ -129,6 +132,120 @@ void showPersonalAccountOnlyLinkDialog(BuildContext context) {
               child: Text('Got it',
                   style:
                       TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ]),
+      ),
+    ),
+  );
+}
+
+/// Shared KYC-tier gate for money flows that link a bank (deposit link-bank &
+/// pay-with-card, withdraw bank-linking, financial analytics, LazerBeam, autosave).
+///
+/// Returns `true` when the user is verified (KYC tier >= 2) and the caller may
+/// proceed. Otherwise it shows the "verify your identity" modal (routing to KYC
+/// on confirm) and returns `false` so the caller aborts the flow BEFORE opening
+/// Mono / the card sheet. Fails **open** on network/timeout error — the backend
+/// re-gates the actual link, so a transient KYC-status blip never blocks a
+/// genuinely verified user. Mirrors the deposit screen's `_ensureKycThenDeposit`
+/// so every bank-link entry point behaves identically.
+Future<bool> ensureKycTier2Verified(BuildContext context,
+    {String operation = 'link a bank'}) async {
+  try {
+    final status =
+        await ProveKycHttpService(serviceLocator<SecureStorageService>())
+            .status()
+            .timeout(const Duration(seconds: 8));
+    if (status.tier >= 2) return true;
+  } catch (_) {
+    return true; // fail open — backend re-gates the link
+  }
+  if (!context.mounted) return false;
+  await _showVerifyIdentityDialog(context, operation);
+  return false;
+}
+
+/// "Verify your identity" modal shown by [ensureKycTier2Verified] for an
+/// insufficient tier. "Verify now" routes into the progressive KYC flow.
+Future<void> _showVerifyIdentityDialog(BuildContext context, String operation) {
+  return showDialog(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.6),
+    builder: (dialogCtx) => Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 18.h),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: _kBrand.withValues(alpha: 0.35)),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 24,
+                offset: const Offset(0, 10)),
+          ],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 52.w,
+            height: 52.w,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle, color: _kBrand.withValues(alpha: 0.16)),
+            child:
+                Icon(Icons.verified_user_rounded, color: _kBrand, size: 26.sp),
+          ),
+          SizedBox(height: 14.h),
+          Text('Verify your identity',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w800)),
+          SizedBox(height: 8.h),
+          Text(
+            'To $operation, please complete a quick identity verification. It '
+            'keeps your money and account secure — it only takes a minute.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.72),
+                fontSize: 12.5.sp,
+                height: 1.4),
+          ),
+          SizedBox(height: 18.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                Get.toNamed(AppRoutes.kycProgressive);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kBrand,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 13.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+              child: Text('Verify now',
+                  style:
+                      TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700)),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              style: TextButton.styleFrom(
+                  foregroundColor: Colors.white.withValues(alpha: 0.7),
+                  padding: EdgeInsets.symmetric(vertical: 11.h)),
+              child: Text('Not now',
+                  style:
+                      TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
             ),
           ),
         ]),

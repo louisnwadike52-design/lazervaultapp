@@ -188,7 +188,17 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final user = authState.profile.user;
     final name = '${user.firstName} ${user.lastName}'.trim();
 
-    // CONNECTION-FEE CONSENT FIRST — before the Mono Connect webview, not after
+    // KYC GATE FIRST — verify identity (tier >= 2) before we open Mono / charge a
+    // connection fee. Unverified users get the "verify your identity" modal and
+    // the flow aborts here (same gate as deposit link-bank / pay-with-card,
+    // analytics, LazerBeam & autosave). Fails open on a KYC-status blip; the
+    // banking backend re-gates the actual LinkBankAccount call.
+    if (!await ensureKycTier2Verified(context, operation: 'withdraw to a bank')) {
+      return;
+    }
+    if (!mounted) return;
+
+    // CONNECTION-FEE CONSENT — before the Mono Connect webview, not after
     // the user has already linked. On "Not now" we abort without opening it.
     final proceed = await showBankConnectionFeeNotice(context);
     if (!proceed || !mounted) return;
