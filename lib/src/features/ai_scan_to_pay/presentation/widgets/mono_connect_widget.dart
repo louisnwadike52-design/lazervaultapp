@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mono_connect/mono_connect.dart';
 
 import '../../../../core/config/mono_config.dart';
+import '../../../open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Production-ready Mono Connect Widget using native SDK
 ///
@@ -49,6 +50,20 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   // their bank and the existing link is refreshed — no duplicate account row.
   String? reauthAccountId,
 }) async {
+  // KYC gate (single source of truth for ALL bank-linking entry points — deposit,
+  // withdraw, AI analytics, LazerBeam, autosave, move-money, statistics). Linking a
+  // NEW bank requires a verified identity (KYC tier ≥ 2); if the user isn't verified
+  // this shows the "Complete verification" sheet and aborts the link. REAUTH of an
+  // already-linked account is exempt (the user was verified when they first linked),
+  // and non-linking operations (directPay/mandate) are out of scope. Fails open on
+  // any lookup error so a transient KYC-service blip never blocks a verified user.
+  if (reauthAccountId == null && operation == MonoOperation.accountLinking) {
+    if (!await ensureKycTier2Verified(context, operation: 'link a bank')) {
+      return null;
+    }
+    if (!context.mounted) return null;
+  }
+
   final completer = MonoConnectCompleter();
 
   // Track selected institution for result
