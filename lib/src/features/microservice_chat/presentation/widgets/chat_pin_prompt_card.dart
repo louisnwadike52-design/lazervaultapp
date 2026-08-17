@@ -217,7 +217,7 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
     final disabled = _completed || _isExpired;
     final accent = _completed
         ? const Color(0xFF10B981)
-        : (_isExpired ? const Color(0xFFEF4444) : const Color(0xFF3B82F6));
+        : (_isExpired ? const Color(0xFFEF4444) : const Color(0xFF5B45C9));
 
     return Container(
       margin: const EdgeInsets.only(top: 8),

@@ -995,7 +995,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Language: ${state.language.toUpperCase()}'),
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF5B45C9),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -1421,7 +1421,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     required String label,
     required VoidCallback onTap,
     bool active = false,
-    Color activeColor = const Color(0xFF3B82F6),
+    Color activeColor = const Color(0xFF5B45C9),
     VoidCallback? onLongPress,
   }) {
     final tint = active ? activeColor : Colors.white.withValues(alpha: 0.6);
@@ -1485,10 +1485,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         state is VoiceSessionConnectingToRoom ||
         state is VoiceSessionMicPermissionGranted) {
       label = 'Connecting…';
-      color = const Color(0xFF3B82F6);
+      color = const Color(0xFF5B45C9);
     } else if (state is VoiceSessionPinRequired) {
       label = 'Enter PIN';
-      color = const Color(0xFF3B82F6);
+      color = const Color(0xFF5B45C9);
     } else if (state is VoiceSessionError ||
         state is VoiceSessionCredentialsError) {
       label = 'Connection error';
@@ -2135,9 +2135,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               height: 100.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                color: const Color(0xFF5B45C9).withValues(alpha: 0.08),
                 border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFF5B45C9).withValues(alpha: 0.15),
                   width: 1.5,
                 ),
               ),
@@ -2235,11 +2235,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               height: 72.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                color: const Color(0xFF5B45C9).withValues(alpha: 0.1),
               ),
               child: Icon(
                 Icons.mic_rounded,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF5B45C9),
                 size: 32.sp,
               ),
             ),
@@ -2325,13 +2325,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                color: const Color(0xFF5B45C9).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Center(
                 child: Icon(
                   Icons.language,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF5B45C9),
                   size: 22.sp,
                 ),
               ),
@@ -2854,7 +2854,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: opacity),
+          color: const Color(0xFF5B45C9).withValues(alpha: opacity),
           width: 1,
         ),
       ),
@@ -2865,7 +2865,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     if (state is VoiceSessionLocalUserSpeaking) return const Color(0xFF10B981);
     if (state is VoiceSessionAgentProcessing) return const Color.fromARGB(255, 78, 3, 208);
     if (state is VoiceSessionLowConfidenceWarning) return const Color(0xFFFB923C);
-    return const Color(0xFF3B82F6);
+    return const Color(0xFF5B45C9);
   }
 
   Widget _buildStatusSection(VoiceSessionState state) {
@@ -2899,7 +2899,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     } else if (state is VoiceSessionUserSearchRequired) {
       title = 'Select Recipient';
       subtitle = 'Choose from the results above';
-      titleColor = const Color(0xFF3B82F6);
+      titleColor = const Color(0xFF5B45C9);
     } else if (state is VoiceSessionTransferConfirmation) {
       title = 'Confirm Transfer';
       subtitle = 'Review the details above';
@@ -2907,7 +2907,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     } else if (state is VoiceSessionPinRequired) {
       title = 'Enter PIN';
       subtitle = 'Complete your transaction';
-      titleColor = const Color(0xFF3B82F6);
+      titleColor = const Color(0xFF5B45C9);
     } else if (state is VoiceSessionTransactionSuccess) {
       final success = (state as VoiceSessionTransactionSuccess).result['success'] as bool? ?? true;
       title = success ? 'Transfer Complete' : 'Transfer Failed';
@@ -4080,7 +4080,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                   child: Text(
                     'Done',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF5B45C9),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -4238,7 +4238,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     String label;
     switch (provider) {
       case 'elevenlabs':
-        badgeColor = const Color(0xFF3B82F6);
+        badgeColor = const Color(0xFF5B45C9);
         label = 'ElevenLabs';
         break;
       case 'yarngpt':

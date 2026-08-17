@@ -613,7 +613,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
         code == 'model_not_found';
     final borderColor = isHardError
         ? const Color(0xFFFB923C) // warning amber
-        : const Color(0xFF3B82F6); // info blue
+        : const Color(0xFF5B45C9); // info blue
     final iconBg = borderColor.withValues(alpha: 0.15);
 
     final label = switch (code) {
