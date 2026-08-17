@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dar
 import 'package:lazervault/src/features/plan_my_day/domain/entities/daily_summary.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/entities/reminder.dart';
 import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
+part 'plan_my_day_repository_impl_widgets.dart';
+
 
 class PlanMyDayRepository implements IPlanMyDayRepository {
   final String _baseUrl;
@@ -938,40 +940,4 @@ class PlanMyDayRepository implements IPlanMyDayRepository {
     final parts = time.split(':');
     return int.parse(parts[0]) * 60 + int.parse(parts[1]);
   }
-}
-
-// ==================== EXCEPTIONS ====================
-
-class PlanMyDayException implements Exception {
-  final String message;
-  PlanMyDayException(this.message);
-
-  @override
-  String toString() => message;
-}
-
-class PlanMyDayNetworkException extends PlanMyDayException {
-  PlanMyDayNetworkException(super.message);
-}
-
-class PlanMyDayAuthException extends PlanMyDayException {
-  PlanMyDayAuthException(super.message);
-}
-
-class PlanMyDayValidationException extends PlanMyDayException {
-  final dynamic details;
-  PlanMyDayValidationException(super.message, {this.details});
-}
-
-class PlanMyDayNotFoundException extends PlanMyDayException {
-  PlanMyDayNotFoundException(super.message);
-}
-
-class PlanMyDayParseException extends PlanMyDayException {
-  PlanMyDayParseException(super.message);
-}
-
-class PlanMyDayApiException extends PlanMyDayException {
-  final int statusCode;
-  PlanMyDayApiException(super.message, {this.statusCode = 500});
 }

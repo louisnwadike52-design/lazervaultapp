@@ -12,6 +12,8 @@ import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_state.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/spray_room_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'join_session_screen_widgets.dart';
+
 
 class JoinSessionScreen extends StatefulWidget {
   const JoinSessionScreen({super.key});
@@ -508,21 +510,6 @@ class _JoinSessionScreenState extends State<JoinSessionScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Uppercase Text Formatter ─────────────────────────────────────────────────
-
-class UpperCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return TextEditingValue(
-      text: newValue.text.toUpperCase(),
-      selection: newValue.selection,
     );
   }
 }

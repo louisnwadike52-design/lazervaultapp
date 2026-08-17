@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'insurance_claim_tracking_screen_widgets.dart';
+
 
 class InsuranceClaimTrackingScreen extends StatefulWidget {
   final InsuranceClaim claim;
@@ -983,5 +985,3 @@ class _InsuranceClaimTrackingScreenState
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }
-
-enum _StepState { done, current, future }

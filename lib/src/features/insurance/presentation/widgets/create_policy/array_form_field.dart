@@ -12,6 +12,8 @@ import '../../../data/array_item_encoder.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import 'monetary_form_field.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'array_form_field_widgets.dart';
+
 
 /// Renders MyCover.ai `array`-type form fields (e.g. `item_details`
 /// for Marine cargo, `items` for Home Content) as a repeating
@@ -616,6 +618,3 @@ class _ArrayFormFieldState extends State<ArrayFormField> {
     );
   }
 }
-
-/// Source the user picked in the per-item image bottom sheet.
-enum _ItemImageSource { camera, gallery, file }

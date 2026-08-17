@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+part 'insurance_how_it_works_screen_widgets.dart';
+
 
 class InsuranceHowItWorksScreen extends StatelessWidget {
   const InsuranceHowItWorksScreen({super.key});
@@ -563,28 +565,4 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _StepData {
-  final int number;
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const _StepData({
-    required this.number,
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-}
-
-class _BenefitData {
-  final String title;
-  final IconData icon;
-
-  const _BenefitData({
-    required this.title,
-    required this.icon,
-  });
 }

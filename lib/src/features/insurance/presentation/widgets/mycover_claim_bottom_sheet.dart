@@ -22,13 +22,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+part 'mycover_claim_bottom_sheet_widgets.dart';
 
-/// Distinguishes the two hosted MyCover flows (claim vs renewal) so the
-/// sheet can pick the right copy without duplicating the entire WebView
-/// scaffolding. Both flows are identical at the runtime level — a
-/// MyCover-hosted form opened in-app — only the user-facing labels
-/// differ.
-enum MyCoverHostedFlowKind { claim, renew, buy, manage }
 
 class MyCoverClaimBottomSheet extends StatefulWidget {
   const MyCoverClaimBottomSheet({

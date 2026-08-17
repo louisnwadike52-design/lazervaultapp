@@ -11,29 +11,8 @@ import 'package:lazervault/src/features/card_settings/cubit/card_settings_cubit.
 import 'package:lazervault/src/features/card_settings/cubit/card_settings_state.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'card_settings_screen_widgets.dart';
 
-class CardSettingsScreen extends StatelessWidget {
-  const CardSettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) => serviceLocator<CardSettingsCubit>(),
-        ),
-      ],
-      child: const _CardSettingsView(),
-    );
-  }
-}
-
-class _CardSettingsView extends StatefulWidget {
-  const _CardSettingsView();
-
-  @override
-  State<_CardSettingsView> createState() => _CardSettingsViewState();
-}
 
 class _CardSettingsViewState extends State<_CardSettingsView> {
   @override

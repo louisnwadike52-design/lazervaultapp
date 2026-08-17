@@ -11,11 +11,8 @@ import 'package:lazervault/src/features/microservice_chat/data/datasources/http_
 import 'package:lazervault/src/features/plan_my_day/domain/entities/category.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_state.dart';
+part 'create_task_bottom_sheet_widgets.dart';
 
-/// Task-creation input mode: a manual structured form, or a natural-language
-/// "AI" mode that hands the text to the Plan My Day agent (same planning
-/// source-context as the AI-plan modal) to create the task(s).
-enum _TaskMode { manual, ai }
 
 class CreateTaskBottomSheet extends StatefulWidget {
   final DateTime selectedDate;

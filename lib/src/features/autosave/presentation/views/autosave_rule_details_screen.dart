@@ -25,6 +25,8 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'autosave_rule_details_screen_widgets.dart';
+
 
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
   const AutoSaveRuleDetailsScreen({super.key});
@@ -1541,14 +1543,6 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       ],
     );
   }
-}
-
-/// Tiny pair returned by [_humaniseAutosaveError] — split-out so the
-/// snackbar can show a strong title + softer detail line.
-class _FriendlyError {
-  final String title;
-  final String body;
-  const _FriendlyError(this.title, this.body);
 }
 
 /// Map verbatim backend executor messages onto user-friendly copy.
