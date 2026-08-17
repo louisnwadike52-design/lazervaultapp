@@ -16,6 +16,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'unified_transaction_receipt_widgets.dart';
+
 
 class UnifiedTransactionReceipt extends StatefulWidget {
   final UnifiedTransaction transaction;
@@ -935,20 +937,4 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     // Capitalize first letter
     return result[0].toUpperCase() + result.substring(1);
   }
-}
-
-class _DetailEntry {
-  final String label;
-  final String value;
-  final bool copyable;
-  final String? logoBankName;
-  final String? logoBankCode;
-
-  const _DetailEntry(
-    this.label,
-    this.value, {
-    this.copyable = false,
-    this.logoBankName,
-    this.logoBankCode,
-  });
 }

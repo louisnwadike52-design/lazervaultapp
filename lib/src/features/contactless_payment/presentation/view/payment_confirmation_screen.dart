@@ -18,35 +18,8 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'payment_confirmation_screen_widgets.dart';
 
-class PaymentConfirmationScreen extends StatelessWidget {
-  final PaymentSessionEntity session;
-
-  const PaymentConfirmationScreen({
-    super.key,
-    required this.session,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ContactlessPaymentCubit(
-        repository: GetIt.instance<ContactlessPaymentRepository>(),
-      )..acknowledgeSessionRead(session.id),
-      child: _PaymentConfirmationView(session: session),
-    );
-  }
-}
-
-class _PaymentConfirmationView extends StatefulWidget {
-  final PaymentSessionEntity session;
-
-  const _PaymentConfirmationView({required this.session});
-
-  @override
-  State<_PaymentConfirmationView> createState() =>
-      _PaymentConfirmationViewState();
-}
 
 class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
     with SingleTickerProviderStateMixin, TransactionPinMixin {

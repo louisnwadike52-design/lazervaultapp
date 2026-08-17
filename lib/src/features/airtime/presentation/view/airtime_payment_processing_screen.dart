@@ -7,6 +7,8 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'airtime_payment_processing_screen_widgets.dart';
+
 
 class AirtimePaymentProcessingScreen extends StatefulWidget {
   const AirtimePaymentProcessingScreen({super.key});
@@ -560,18 +562,4 @@ class _AirtimePaymentProcessingScreenState
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color activeColor;
-
-  const _ProcessingStep({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.activeColor,
-  });
 }

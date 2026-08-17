@@ -20,6 +20,8 @@ import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
 import 'escrow_theme.dart';
+part 'escrow_deal_detail_screen_widgets.dart';
+
 
 class EscrowDealDetailScreen extends StatefulWidget {
   const EscrowDealDetailScreen({super.key});
@@ -1129,12 +1131,4 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
           ),
         ),
       );
-}
-
-/// Result of the seller's mark-delivered sheet: an optional note + optional
-/// proof-of-delivery media (already uploaded to storage by the picker).
-class _DeliveryResult {
-  final String note;
-  final List<EscrowMediaUploadResult> media;
-  const _DeliveryResult({required this.note, this.media = const []});
 }

@@ -15,6 +15,8 @@ import '../../domain/entities/crypto_entity.dart' as entities;
 import '../models/crypto_transaction_models.dart';
 import 'crypto_receipt_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'crypto_transaction_history_screen_widgets.dart';
+
 
 class CryptoTransactionHistoryScreen extends StatefulWidget {
   const CryptoTransactionHistoryScreen({super.key});
@@ -1096,33 +1098,4 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
 
   String _pdfLabel(String n) =>
       n.isEmpty ? n : n[0].toUpperCase() + n.substring(1);
-}
-
-// Transaction history model
-class CryptoTransactionHistory {
-  final String id;
-  final CryptoTransactionType type;
-  final String cryptoName;
-  final String cryptoSymbol;
-  final String amount;
-  final double gbpAmount;
-  final CryptoTransactionStatus status;
-  final DateTime timestamp;
-  final double fee;
-  final String? fromCrypto;
-  final String? toCrypto;
-
-  const CryptoTransactionHistory({
-    required this.id,
-    required this.type,
-    required this.cryptoName,
-    required this.cryptoSymbol,
-    required this.amount,
-    required this.gbpAmount,
-    required this.status,
-    required this.timestamp,
-    required this.fee,
-    this.fromCrypto,
-    this.toCrypto,
-  });
 } 

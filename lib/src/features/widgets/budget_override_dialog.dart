@@ -1,24 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+part 'budget_override_dialog_widgets.dart';
 
-/// Result of a budget override/adjustment action
-enum BudgetOverrideAction {
-  cancel,
-  overrideOnce,
-  increaseBudget,
-}
-
-/// Result data when user chooses to increase budget
-class BudgetIncreaseResult {
-  final double increaseAmount;
-  final bool confirmWithPin;
-
-  const BudgetIncreaseResult({
-    required this.increaseAmount,
-    this.confirmWithPin = true,
-  });
-}
 
 /// Dialog shown when a transaction is blocked due to budget exceeded (strict mode)
 /// Allows user to:

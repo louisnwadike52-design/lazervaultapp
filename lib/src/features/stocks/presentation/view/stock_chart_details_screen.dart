@@ -17,30 +17,8 @@ import 'package:flutter/services.dart';
 import '../widgets/price_overlay_indicators_painter.dart';
 import '../widgets/bottom_indicators_painter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'stock_chart_details_screen_widgets.dart';
 
-enum ChartType { line, candlestick, area, ohlc, volume, heikinAshi, hollowCandles }
-
-// Move IndicatorInfo class to top level
-class IndicatorInfo {
-  final String name;
-  final String description;
-  final String parameters;
-
-  const IndicatorInfo({
-    required this.name,
-    required this.description,
-    required this.parameters,
-  });
-}
-
-// Add this near the top of the file with other classes
-class DrawingToolInfo {
-  final DrawingTool tool;
-  final String name;
-  final String description;
-
-  const DrawingToolInfo(this.tool, this.name, this.description);
-}
 
 class StockChartDetailsScreen extends StatefulWidget {
   final Stock stock;

@@ -12,8 +12,8 @@ import '../cubit/data_beneficiary_state.dart';
 import '../cubit/data_reminder_cubit.dart';
 import '../cubit/data_reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'create_data_reminder_screen_widgets.dart';
 
-enum _Recurrence { daily, weekly, monthly }
 
 /// Create or edit a data reminder. Mirrors `CreateAirtimeReminderScreen`.
 /// Optional pre-fills via `Get.arguments`:

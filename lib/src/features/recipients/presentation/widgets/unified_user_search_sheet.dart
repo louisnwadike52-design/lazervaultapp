@@ -13,6 +13,8 @@ import 'package:lazervault/src/features/contacts/data/models/lazervault_user_mat
 import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault_users_usecase.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/unified_user_search_cubit.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
+part 'unified_user_search_sheet_widgets.dart';
+
 
 /// THE shared user-search bottom sheet for the whole app.
 ///
@@ -1023,13 +1025,4 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
           'Download the app: https://lazervault.app',
     ));
   }
-}
-
-/// Pairs a device contact with its optional resolved Lazervault user.
-class _ContactRow {
-  final DeviceContact contact;
-  final LazerVaultUserMatchModel? match;
-  const _ContactRow(this.contact, this.match);
-
-  bool get isLazervaultUser => match != null;
 }

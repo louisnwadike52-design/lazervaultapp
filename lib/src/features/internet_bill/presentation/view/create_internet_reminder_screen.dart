@@ -12,8 +12,8 @@ import '../cubit/internet_beneficiary_state.dart';
 import '../cubit/internet_reminder_cubit.dart';
 import '../cubit/internet_reminder_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'create_internet_reminder_screen_widgets.dart';
 
-enum _Recurrence { daily, weekly, monthly }
 
 /// Create or edit an internet reminder. Mirrors `CreateDataReminderScreen`.
 /// Optional pre-fills via `Get.arguments`:

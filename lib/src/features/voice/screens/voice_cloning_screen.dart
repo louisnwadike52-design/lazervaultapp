@@ -14,6 +14,8 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+part 'voice_cloning_screen_widgets.dart';
+
 
 /// Dedicated voice cloning recording screen.
 ///
@@ -30,8 +32,6 @@ class VoiceCloningScreen extends StatefulWidget {
   @override
   State<VoiceCloningScreen> createState() => _VoiceCloningScreenState();
 }
-
-enum _CloningStep { intro, recording, uploading, success, error }
 
 class _VoiceCloningScreenState extends State<VoiceCloningScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {

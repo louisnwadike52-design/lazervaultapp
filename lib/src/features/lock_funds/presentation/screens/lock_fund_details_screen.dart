@@ -15,6 +15,8 @@ import 'lock_fund_autosave_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'lock_fund_details_screen_widgets.dart';
+
 
 class LockFundDetailsScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -1368,13 +1370,4 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       }
     });
   }
-}
-
-/// Cancel-reason enum entry: short code shipped to the backend
-/// (so analytics groups by category) + human-readable label for
-/// the radio chip on the cancel modal.
-class _CancelReason {
-  final String code;
-  final String label;
-  const _CancelReason(this.code, this.label);
 }

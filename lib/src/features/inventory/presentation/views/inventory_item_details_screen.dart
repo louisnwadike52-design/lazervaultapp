@@ -10,6 +10,8 @@ import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
 import '../widgets/adjust_quantity_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'inventory_item_details_screen_widgets.dart';
+
 
 class InventoryItemDetailsScreen extends StatefulWidget {
   final InventoryItemEntity item;
@@ -736,11 +738,4 @@ class _InventoryItemDetailsScreenState
       ),
     );
   }
-}
-
-class _DetailRow {
-  final String label;
-  final String value;
-
-  const _DetailRow(this.label, this.value);
 }

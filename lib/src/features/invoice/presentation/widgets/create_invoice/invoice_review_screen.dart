@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../cubit/create_invoice_cubit.dart';
+part 'invoice_review_screen_widgets.dart';
+
 
 /// Screen 5: Review & Confirm
 ///
@@ -703,12 +705,5 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     if (country.isNotEmpty) parts.add(country);
 
     return parts.join('\n');
-  }
-}
-
-extension StringExtension on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

@@ -10,24 +10,8 @@ import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/schedule_repeat_sheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
+part 'send_funds_amount_sheet_widgets.dart';
 
-/// Result of the short-flow amount sheet: the amount plus the optional
-/// note / scheduling / recurring / category the user attached (parity with the
-/// long flow). Replaces the old bare `int` return.
-class SendFundsAmountResult {
-  final int amountMinor;
-  final String? note;
-  final DateTime? scheduledAt;
-  final ServiceCategory? category;
-  final RecurringTransferConfig? recurring;
-  const SendFundsAmountResult({
-    required this.amountMinor,
-    this.note,
-    this.scheduledAt,
-    this.category,
-    this.recurring,
-  });
-}
 
 /// Short-flow amount entry — a bottom sheet that collects the transfer amount
 /// (major units typed; returned in MINOR units) and shows a live fee from

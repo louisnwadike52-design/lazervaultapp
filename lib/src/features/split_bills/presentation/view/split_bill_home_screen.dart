@@ -12,25 +12,8 @@ import '../widgets/split_bill_shimmer.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+part 'split_bill_home_screen_widgets.dart';
 
-class SplitBillHomeScreen extends StatelessWidget {
-  const SplitBillHomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.I<SplitBillCubit>()..loadIncomingBills(),
-      child: const _SplitBillHomeView(),
-    );
-  }
-}
-
-class _SplitBillHomeView extends StatefulWidget {
-  const _SplitBillHomeView();
-
-  @override
-  State<_SplitBillHomeView> createState() => _SplitBillHomeViewState();
-}
 
 class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     with SingleTickerProviderStateMixin {

@@ -13,27 +13,8 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_confirmation_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'nfc_reader_screen_widgets.dart';
 
-class NfcReaderScreen extends StatelessWidget {
-  const NfcReaderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ContactlessPaymentCubit(
-        repository: GetIt.instance<ContactlessPaymentRepository>(),
-      ),
-      child: const _NfcReaderView(),
-    );
-  }
-}
-
-class _NfcReaderView extends StatefulWidget {
-  const _NfcReaderView();
-
-  @override
-  State<_NfcReaderView> createState() => _NfcReaderViewState();
-}
 
 class _NfcReaderViewState extends State<_NfcReaderView>
     with TickerProviderStateMixin {

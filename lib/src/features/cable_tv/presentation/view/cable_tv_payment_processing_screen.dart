@@ -11,6 +11,8 @@ import '../../domain/entities/tv_package_entity.dart';
 import '../cubit/cable_tv_cubit.dart';
 import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'cable_tv_payment_processing_screen_widgets.dart';
+
 
 class CableTVPaymentProcessingScreen extends StatefulWidget {
   const CableTVPaymentProcessingScreen({super.key});
@@ -502,18 +504,4 @@ class _CableTVPaymentProcessingScreenState
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color activeColor;
-
-  const _ProcessingStep({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.activeColor,
-  });
 }

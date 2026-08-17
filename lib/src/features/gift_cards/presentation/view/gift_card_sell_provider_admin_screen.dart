@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'gift_card_sell_provider_admin_screen_widgets.dart';
+
 
 /// Admin Dashboard Screen for Gift Card Sell Provider Management
 /// Allows administrators to toggle between manual and Prestmit automated selling
@@ -699,18 +701,4 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
       return '${difference.inDays}d ago';
     }
   }
-}
-
-class _ProviderChangeLog {
-  final DateTime timestamp;
-  final String from;
-  final String to;
-  final String admin;
-
-  _ProviderChangeLog({
-    required this.timestamp,
-    required this.from,
-    required this.to,
-    required this.admin,
-  });
 }

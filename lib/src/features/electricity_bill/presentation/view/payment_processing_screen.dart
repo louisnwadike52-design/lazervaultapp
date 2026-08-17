@@ -10,6 +10,8 @@ import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'payment_processing_screen_widgets.dart';
+
 
 class PaymentProcessingScreen extends StatefulWidget {
   const PaymentProcessingScreen({super.key});
@@ -692,18 +694,4 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color activeColor;
-
-  const _ProcessingStep({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.activeColor,
-  });
 }

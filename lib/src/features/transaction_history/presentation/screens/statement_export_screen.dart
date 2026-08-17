@@ -23,24 +23,8 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
+part 'statement_export_screen_widgets.dart';
 
-/// Preset date ranges offered to the user. Custom drops a date picker.
-enum _RangePreset { last30Days, last90Days, thisYear, custom }
-
-extension _RangePresetLabel on _RangePreset {
-  String get label {
-    switch (this) {
-      case _RangePreset.last30Days:
-        return 'Last 30 days';
-      case _RangePreset.last90Days:
-        return 'Last 90 days';
-      case _RangePreset.thisYear:
-        return 'This year';
-      case _RangePreset.custom:
-        return 'Custom range';
-    }
-  }
-}
 
 /// In-memory list of recently exported statements. Kept on the screen
 /// because the spec asks for a "Recent statements" surface in the

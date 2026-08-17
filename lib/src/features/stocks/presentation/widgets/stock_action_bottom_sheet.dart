@@ -9,8 +9,8 @@ import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'stock_action_bottom_sheet_widgets.dart';
 
-enum StockActionType { trending, movers, allStocks }
 
 class StockActionBottomSheet extends StatefulWidget {
   final StockActionType type;

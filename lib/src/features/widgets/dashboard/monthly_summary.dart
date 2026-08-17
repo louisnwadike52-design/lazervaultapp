@@ -13,8 +13,8 @@ import '../../statistics/cubit/statistics_cubit.dart';
 import '../../statistics/cubit/statistics_state.dart';
 import '../../../generated/accounts.pb.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'monthly_summary_widgets.dart';
 
-enum TimePeriod { day, week, month }
 
 class MonthlySummary extends StatefulWidget {
   const MonthlySummary({super.key});

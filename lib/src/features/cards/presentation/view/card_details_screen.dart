@@ -8,8 +8,8 @@ import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart'
     as card_entities;
+part 'card_details_screen_widgets.dart';
 
-typedef CardEntity = card_entities.Card;
 
 class CardDetailsScreen extends StatefulWidget {
   const CardDetailsScreen({super.key});
@@ -1141,22 +1141,4 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
     final year = date.year;
     return '$day/$month/$year';
   }
-}
-
-// ──────────────────────────────────────────────────
-// Internal model for action buttons
-// ──────────────────────────────────────────────────
-
-class _CardAction {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback? onTap;
-
-  const _CardAction({
-    required this.icon,
-    required this.label,
-    required this.color,
-    this.onTap,
-  });
 }

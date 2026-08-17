@@ -9,6 +9,8 @@ import '../../domain/entities/points_config_entity.dart';
 import '../cubit/referral_cubit.dart';
 import '../cubit/referral_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'lazer_points_screen_widgets.dart';
+
 
 class LazerPointsScreen extends StatefulWidget {
   const LazerPointsScreen({super.key});
@@ -583,18 +585,4 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
       _ => 0,
     };
   }
-}
-
-class _TierInfo {
-  final String label;
-  final IconData icon;
-  final Color gradientStart;
-  final Color gradientEnd;
-
-  const _TierInfo({
-    required this.label,
-    required this.icon,
-    required this.gradientStart,
-    required this.gradientEnd,
-  });
 }

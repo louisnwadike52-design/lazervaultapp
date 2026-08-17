@@ -7,8 +7,8 @@ import '../../domain/entities/stock_entity.dart';
 import 'chart_painters.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
+part 'advanced_chart_widget_widgets.dart';
 
-enum ChartType { line, candlestick, area, ohlc, volume }
 
 class AdvancedChartWidget extends StatefulWidget {
   final List<StockPrice> priceHistory;

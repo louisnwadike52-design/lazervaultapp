@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:shimmer/shimmer.dart';
+part 'lifestyle_screen_widgets.dart';
+
 
 class LifeStyleScreen extends StatefulWidget {
   const LifeStyleScreen({super.key});
@@ -2043,44 +2045,4 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
       ),
     );
   }
-}
-
-class LifestylePromo {
-  final String title;
-  final String description;
-  final String image;
-  final Color backgroundColor;
-
-  LifestylePromo({
-    required this.title,
-    required this.description,
-    required this.image,
-    required this.backgroundColor,
-  });
-}
-
-class LifestyleCategory {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final List<PerkItem> items;
-
-  LifestyleCategory({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.items,
-  });
-}
-
-class PerkItem {
-  final String title;
-  final String description;
-  final String image;
-
-  PerkItem({
-    required this.title,
-    required this.description,
-    required this.image,
-  });
 }

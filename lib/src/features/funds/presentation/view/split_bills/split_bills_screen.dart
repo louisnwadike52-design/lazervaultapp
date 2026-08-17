@@ -10,6 +10,8 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'split_bills_screen_widgets.dart';
+
 
 /// Split Bills Screen for dividing payments among multiple participants
 ///
@@ -849,10 +851,4 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
       ),
     );
   }
-}
-
-enum SplitMethod {
-  equal,
-  custom,
-  percentage,
 }

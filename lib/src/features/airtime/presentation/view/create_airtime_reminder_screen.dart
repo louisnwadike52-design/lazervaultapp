@@ -10,8 +10,8 @@ import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_state
     show AirtimeBeneficiariesLoaded, AirtimeBeneficiary, AirtimeReminder, AirtimeState;
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_state.dart';
+part 'create_airtime_reminder_screen_widgets.dart';
 
-enum _RecurrenceType { daily, weekly, monthly }
 
 class CreateAirtimeReminderScreen extends StatefulWidget {
   const CreateAirtimeReminderScreen({super.key});

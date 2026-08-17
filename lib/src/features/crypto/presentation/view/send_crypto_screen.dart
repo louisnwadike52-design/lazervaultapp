@@ -32,6 +32,8 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/generated/crypto.pbgrpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+part 'send_crypto_screen_widgets.dart';
+
 
 // SendCryptoScreen (PR6) — single-screen send flow:
 //   1. Pick asset (from user's holdings).
@@ -1701,24 +1703,4 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       ),
     );
   }
-}
-
-/// Immutable snapshot of a submitted send — captured at PIN-confirm time so the
-/// receipt screen can render the crypto amount, recipient, and network without
-/// re-reading the (possibly-cleared) form controllers.
-class _SentDetails {
-  final double amount;
-  final String symbol;
-  final String recipient;
-  final String network;
-  final String note;
-  final bool isInternal;
-  const _SentDetails({
-    required this.amount,
-    required this.symbol,
-    required this.recipient,
-    required this.network,
-    required this.note,
-    required this.isInternal,
-  });
 }

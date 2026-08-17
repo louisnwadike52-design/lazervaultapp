@@ -13,6 +13,8 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../services/exchange_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'exchange_detail_screen_widgets.dart';
+
 
 /// Transaction detail for a past exchange — opened from the history list.
 /// Visually identical to the post-transaction receipt: LazerVault logo
@@ -562,7 +564,3 @@ class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
     ));
   }
 }
-
-// Same three-way split as the receipt screen — kept private to each file
-// so we don't leak a UI enum into the domain layer.
-enum _RefundFlavour { none, refunded, refundPending }

@@ -15,14 +15,8 @@ import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'batch_transfer_processing_screen_widgets.dart';
 
-enum BatchProcessingStatus {
-  initiated,
-  validating,
-  reservingFunds,
-  processing,
-  completed,
-}
 
 class BatchTransferProcessingScreen extends StatefulWidget {
   const BatchTransferProcessingScreen({super.key});
@@ -789,18 +783,4 @@ class _BatchTransferProcessingScreenState
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final BatchProcessingStatus status;
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const _ProcessingStep({
-    required this.status,
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
 }

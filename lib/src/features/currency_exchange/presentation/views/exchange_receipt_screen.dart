@@ -17,6 +17,8 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../services/exchange_pdf_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'exchange_receipt_screen_widgets.dart';
+
 
 /// Exchange receipt — one widget for both flows (Convert + International
 /// Send Abroad). Visually modelled on the Send Funds
@@ -745,8 +747,3 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
     );
   }
 }
-
-// Refund flavour derived from failure_reason + status. The proto enum
-// collapses all terminal-sad states to FAILED/CANCELLED, so we recover
-// the richer label (Refunded / Refund Pending) from the reason string.
-enum _RefundFlavour { none, refunded, refundPending }

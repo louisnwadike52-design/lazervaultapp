@@ -9,15 +9,8 @@ import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'transfer_processing_screen_widgets.dart';
 
-/// Transfer processing states from backend
-enum TransferProcessingStatus {
-  initiated,
-  validating,
-  processing,
-  completed,
-  failed,
-}
 
 class TransferProcessingScreen extends StatefulWidget {
   const TransferProcessingScreen({super.key});
@@ -650,18 +643,4 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final TransferProcessingStatus status;
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const _ProcessingStep({
-    required this.status,
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
 }

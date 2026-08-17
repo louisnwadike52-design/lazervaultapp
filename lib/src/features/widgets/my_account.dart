@@ -15,24 +15,8 @@ import 'package:lazervault/src/features/settings/presentation/view/settings_scre
 import 'package:lazervault/src/features/settings/presentation/widgets/settings_tier_badge.dart';
 import 'package:lazervault/src/features/widgets/profile_picture_picker.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'my_account_widgets.dart';
 
-class MyAccount extends StatelessWidget {
-  const MyAccount({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Use global ProfileCubit - no need to create new instance
-    // Profile is already loaded after authentication
-    return const _MyAccountView();
-  }
-}
-
-class _MyAccountView extends StatefulWidget {
-  const _MyAccountView();
-
-  @override
-  State<_MyAccountView> createState() => _MyAccountViewState();
-}
 
 class _MyAccountViewState extends State<_MyAccountView> {
   bool _hasLoadedOnce = false;

@@ -11,13 +11,8 @@ import '../../domain/entities/invoice_fee_quote.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'invoice_processing_screen_widgets.dart';
 
-enum InvoiceProcessingStatus {
-  initiated,
-  validating,
-  processing,
-  completed,
-}
 
 class InvoiceProcessingScreen extends StatefulWidget {
   final Invoice invoice;
@@ -504,18 +499,4 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final InvoiceProcessingStatus status;
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const _ProcessingStep({
-    required this.status,
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
 }

@@ -16,9 +16,8 @@ import 'sell_crypto_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
+part 'crypto_detail_screen_widgets.dart';
 
-/// Controls which action buttons appear on the detail screen.
-enum CryptoDetailEntryMode { full, buyOnly, sellOnly }
 
 class CryptoDetailScreen extends StatefulWidget {
   final Crypto crypto;

@@ -16,14 +16,8 @@ import 'package:lazervault/src/features/recipients/domain/entities/unified_searc
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+part 'add_employee_screen_widgets.dart';
 
-/// A single step in the add-employee wizard. The set of steps is dynamic —
-/// an internal (Lazervault) employee skips the bank step entirely.
-class _WizardStep {
-  final String label;
-  final Widget Function() builder;
-  const _WizardStep(this.label, this.builder);
-}
 
 class AddEmployeeScreen extends StatefulWidget {
   const AddEmployeeScreen({super.key});

@@ -15,8 +15,8 @@ import '../cubit/cable_tv_reminder_cubit.dart';
 import '../cubit/cable_tv_reminder_state.dart';
 import '../cubit/cable_tv_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'create_cable_tv_reminder_screen_widgets.dart';
 
-enum _Recurrence { daily, weekly, monthly }
 
 class CreateCableTVReminderScreen extends StatefulWidget {
   const CreateCableTVReminderScreen({super.key});

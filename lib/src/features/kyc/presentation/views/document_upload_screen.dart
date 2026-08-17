@@ -9,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'document_upload_screen_widgets.dart';
+
 
 /// Document upload screen for Tier 3 KYC verification.
 ///
@@ -1247,15 +1249,4 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
       ),
     );
   }
-}
-
-/// Result of uploading a document to GCS via presigned URL
-class _GCSUploadResult {
-  final String storageKey;
-  final String objectUrl;
-
-  const _GCSUploadResult({
-    required this.storageKey,
-    required this.objectUrl,
-  });
 }

@@ -23,6 +23,8 @@ import '../widgets/lock_funds_empty_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'lock_funds_list_screen_widgets.dart';
+
 
 class LockFundsListScreen extends StatefulWidget {
   const LockFundsListScreen({super.key});
@@ -1335,15 +1337,4 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       }
     });
   }
-}
-
-/// One row in the status-filter strip on the lock-funds list
-/// screen. label is the chip text, status is the LockStatus to
-/// filter by (null = "All"), count is the number of rows matching
-/// the filter in the current loaded page.
-class _FilterTab {
-  final String label;
-  final LockStatus? status;
-  final int count;
-  const _FilterTab(this.label, this.status, this.count);
 }

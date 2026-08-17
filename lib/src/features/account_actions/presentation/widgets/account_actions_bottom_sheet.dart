@@ -19,15 +19,8 @@ import '../widgets/documents_tab.dart';
 import '../widgets/help_tab.dart';
 import '../widgets/account_preview_card.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'account_actions_bottom_sheet_widgets.dart';
 
-/// Tab enum for account actions
-enum AccountActionTab {
-  manageCard,
-  controls,
-  limits,
-  documents,
-  help,
-}
 
 /// Account Actions Bottom Sheet - Clean, tabbed interface for card management
 class AccountActionsBottomSheet extends StatefulWidget {

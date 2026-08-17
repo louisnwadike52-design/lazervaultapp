@@ -27,6 +27,8 @@ import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'my_gift_cards_screen_widgets.dart';
+
 
 class MyGiftCardsScreen extends StatefulWidget {
   const MyGiftCardsScreen({super.key});
@@ -885,20 +887,4 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
       ),
     );
   }
-}
-
-class _Tone {
-  final Color bg;
-  final Color fg;
-  const _Tone({required this.bg, required this.fg});
-}
-
-/// Argument bundle the router accepts for the purchase route. When
-/// `lockedAmount` is non-null the screen renders in repeat-purchase
-/// mode (pills + custom input hidden, buy CTA hot on mount). Public
-/// so the router can dispatch on type without coupling to internals.
-class PurchaseGiftCardArgs {
-  final GiftCardBrand brand;
-  final double? lockedAmount;
-  const PurchaseGiftCardArgs({required this.brand, this.lockedAmount});
 }

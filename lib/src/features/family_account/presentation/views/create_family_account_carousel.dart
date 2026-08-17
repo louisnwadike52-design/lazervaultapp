@@ -17,18 +17,8 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+part 'create_family_account_carousel_widgets.dart';
 
-/// One member the user has queued to invite while creating the account.
-/// [allocation] rides on the invitation and is only applied once the invitee
-/// accepts — money never sits in a non-member's balance.
-class _DraftMember {
-  final UserSearchResultEntity user;
-  double allocation = 0;
-  double dailyLimit = 0;
-  double monthlyLimit = 0;
-
-  _DraftMember(this.user);
-}
 
 /// Consolidated invoice-style flow that creates a Family & Friends account,
 /// funds the shared pool immediately, invites multiple members at once, and

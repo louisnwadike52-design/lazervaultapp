@@ -43,8 +43,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_code_usecase.dart';
+part 'add_recipient_widgets.dart';
 
-enum AddRecipientMethod { bankDetails, lazervaultUser, contacts }
 
 /// Brand purple used across the add-recipient surface (matches SelectRecipients).
 const Color _kBrandPurple = Color(0xFF4E03D0);

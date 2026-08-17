@@ -13,6 +13,8 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../data/services/business_overview_service.dart';
 import '../../domain/entities/business_overview_entity.dart';
 import '../cubit/business_dashboard_cubit.dart';
+part 'business_dashboard_screen_widgets.dart';
+
 
 /// The Lazavote Business dashboard — the hub shown behind the Business account
 /// card. Combines the business account BALANCE (passed in from the accounts
@@ -517,26 +519,4 @@ class BusinessDashboardScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Kpi {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  _Kpi(this.label, this.value, this.icon, this.color);
-}
-
-class _Bar {
-  final String label;
-  final double value;
-  final Color color;
-  _Bar(this.label, this.value, this.color);
-}
-
-class _Action {
-  final String label;
-  final IconData icon;
-  final String route;
-  _Action(this.label, this.icon, this.route);
 }

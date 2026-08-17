@@ -5,6 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+part 'modern_onboarding_screen_widgets.dart';
+
 
 class ModernOnboardingScreen extends StatefulWidget {
   const ModernOnboardingScreen({super.key});
@@ -521,27 +523,4 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
       },
     );
   }
-}
-
-class OnboardingPage {
-  final String title;
-  final String subtitle;
-  final String description;
-  final IconData icon;
-  final List<String> features;
-  final LinearGradient gradient;
-  // Per-page accent color — drives the icon halo, indicator dots and the
-  // primary CTA. Distinguishes slides without abandoning the unified dark
-  // base. Tap-points (button + dots) use the accent; surfaces use white.
-  final Color accent;
-
-  OnboardingPage({
-    required this.title,
-    required this.subtitle,
-    required this.description,
-    required this.icon,
-    required this.features,
-    required this.gradient,
-    required this.accent,
-  });
 }

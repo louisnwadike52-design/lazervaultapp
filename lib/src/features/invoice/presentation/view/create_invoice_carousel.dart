@@ -25,6 +25,8 @@ import '../../data/services/invoice_image_upload_service.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'create_invoice_carousel_widgets.dart';
+
 
 /// Main carousel controller for invoice creation
 ///
@@ -784,11 +786,4 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       ),
     );
   }
-}
-
-class _ChipField {
-  final String key;
-  final String label;
-  final IconData icon;
-  const _ChipField(this.key, this.label, this.icon);
 }

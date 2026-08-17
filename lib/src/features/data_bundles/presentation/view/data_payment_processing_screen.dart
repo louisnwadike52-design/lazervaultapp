@@ -8,6 +8,8 @@ import '../../domain/entities/data_plan_entity.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../cubit/data_bundles_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'data_payment_processing_screen_widgets.dart';
+
 
 class DataPaymentProcessingScreen extends StatefulWidget {
   const DataPaymentProcessingScreen({super.key});
@@ -553,18 +555,4 @@ class _DataPaymentProcessingScreenState
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color activeColor;
-
-  const _ProcessingStep({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.activeColor,
-  });
 }

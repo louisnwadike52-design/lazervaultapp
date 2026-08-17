@@ -13,6 +13,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
+part 'chatbot_transfer_screen_widgets.dart';
+
 
 /// Chatbot-powered transfer screen
 /// Uses AI chat interface for seamless transfer experience
@@ -594,15 +596,4 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
   String _formatTime(DateTime timestamp) {
     return '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
   }
-}
-
-class _BottomNavItem {
-  final IconData icon;
-  final String label;
-  final String route;
-  _BottomNavItem({
-    required this.icon,
-    required this.label,
-    required this.route,
-  });
 }

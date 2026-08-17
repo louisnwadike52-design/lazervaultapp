@@ -15,25 +15,8 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import '../cubit/split_bill_cubit.dart';
 import '../cubit/split_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'pay_split_bill_screen_widgets.dart';
 
-class PaySplitBillScreen extends StatelessWidget {
-  const PaySplitBillScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.I<SplitBillCubit>(),
-      child: const _PaySplitBillView(),
-    );
-  }
-}
-
-class _PaySplitBillView extends StatefulWidget {
-  const _PaySplitBillView();
-
-  @override
-  State<_PaySplitBillView> createState() => _PaySplitBillViewState();
-}
 
 class _PaySplitBillViewState extends State<_PaySplitBillView>
     with TransactionPinMixin {

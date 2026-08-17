@@ -12,6 +12,8 @@ import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
 import 'customer_statement_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'customer_details_screen_widgets.dart';
+
 
 class CustomerDetailsScreen extends StatefulWidget {
   final CustomerEntity customer;
@@ -872,18 +874,4 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
-}
-
-class _DetailRow {
-  final String label;
-  final String value;
-  final String? logoBankName;
-  final String? logoBankCode;
-
-  const _DetailRow(
-    this.label,
-    this.value, {
-    this.logoBankName,
-    this.logoBankCode,
-  });
 }

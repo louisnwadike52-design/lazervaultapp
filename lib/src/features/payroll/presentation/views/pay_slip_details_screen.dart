@@ -11,6 +11,8 @@ import 'employee_details_screen.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+part 'pay_slip_details_screen_widgets.dart';
+
 
 class PaySlipDetailsScreen extends StatefulWidget {
   final String paySlipId;
@@ -604,12 +606,4 @@ class _PaySlipDetailsScreenState extends State<PaySlipDetailsScreen> {
       ),
     );
   }
-}
-
-class _SectionRow {
-  final String label;
-  final String value;
-  final bool isBold;
-
-  const _SectionRow(this.label, this.value, {this.isBold = false});
 }

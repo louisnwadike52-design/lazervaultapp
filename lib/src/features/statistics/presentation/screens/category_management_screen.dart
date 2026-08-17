@@ -5,6 +5,8 @@ import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/src/features/statistics/cubit/category_management_cubit.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'category_management_screen_widgets.dart';
+
 
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
       'transfer' => 'Transfers',
@@ -495,22 +497,4 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       ),
     );
   }
-}
-
-class _CategoryDisplayItem {
-  final String originalName;
-  final String displayName;
-  final String parentCategory;
-  final int displayOrder;
-  final int transactionCount;
-  final double amount;
-
-  _CategoryDisplayItem({
-    required this.originalName,
-    required this.displayName,
-    required this.parentCategory,
-    required this.displayOrder,
-    required this.transactionCount,
-    required this.amount,
-  });
 }

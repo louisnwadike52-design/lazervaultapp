@@ -19,6 +19,8 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/entity_create_sheet.dart';
 import 'package:lazervault/core/widgets/infinite_scroll_mixin.dart';
+part 'purchase_order_list_screen_widgets.dart';
+
 
 class PurchaseOrderListScreen extends StatefulWidget {
   const PurchaseOrderListScreen({super.key});
@@ -1399,20 +1401,5 @@ class _PurchaseOrderListScreenState extends State<PurchaseOrderListScreen>
         ],
       ),
     );
-  }
-}
-
-/// Helper class to hold text controllers for a single PO line item input.
-class _PurchaseOrderItemInput {
-  final itemIdController = TextEditingController();
-  final itemNameController = TextEditingController();
-  final quantityController = TextEditingController();
-  final priceController = TextEditingController();
-
-  void dispose() {
-    itemIdController.dispose();
-    itemNameController.dispose();
-    quantityController.dispose();
-    priceController.dispose();
   }
 }

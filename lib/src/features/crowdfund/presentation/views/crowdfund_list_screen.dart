@@ -12,6 +12,8 @@ import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/crowdfund_card.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'crowdfund_list_screen_widgets.dart';
+
 
 class CrowdfundListScreen extends StatefulWidget {
   const CrowdfundListScreen({super.key});
@@ -1207,20 +1209,4 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       ),
     );
   }
-}
-
-/// Cached campaign metadata used by the My Funded tab to resolve
-/// real campaign titles + render the correct status badge without
-/// hitting the network on every render.
-class _CampaignMeta {
-  final String title;
-  final String status;
-  const _CampaignMeta({required this.title, required this.status});
-
-  @override
-  bool operator ==(Object other) =>
-      other is _CampaignMeta && other.title == title && other.status == status;
-
-  @override
-  int get hashCode => Object.hash(title, status);
 }

@@ -9,6 +9,8 @@ import '../../domain/entities/internet_provider_entity.dart';
 import '../cubit/internet_bill_cubit.dart';
 import '../cubit/internet_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'internet_payment_processing_screen_widgets.dart';
+
 
 /// Stepped processing screen for internet subscription purchases.
 /// Mirrors the electricity bill processing screen's visual pattern:
@@ -783,18 +785,4 @@ class _InternetPaymentProcessingScreenState
       ),
     );
   }
-}
-
-class _ProcessingStep {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color activeColor;
-
-  const _ProcessingStep({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.activeColor,
-  });
 }

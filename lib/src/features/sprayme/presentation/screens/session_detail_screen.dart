@@ -18,6 +18,8 @@ import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_repla
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'session_detail_screen_widgets.dart';
+
 
 /// Comprehensive session detail screen showing all activity for a past session.
 /// Displays transactions, comments, participants, and stats for both created and joined sessions.
@@ -878,30 +880,5 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     } else {
       return 'Just now';
     }
-  }
-}
-
-class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
-
-  _SliverTabBarDelegate(this.tabBar);
-
-  @override
-  double get minExtent => tabBar.preferredSize.height;
-
-  @override
-  double get maxExtent => tabBar.preferredSize.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: const Color(0xFF0A0A0A),
-      child: tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) {
-    return tabBar != oldDelegate.tabBar;
   }
 }

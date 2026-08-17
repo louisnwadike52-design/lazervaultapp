@@ -12,28 +12,8 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'nfc_broadcast_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'create_payment_session_screen_widgets.dart';
 
-class CreatePaymentSessionScreen extends StatelessWidget {
-  const CreatePaymentSessionScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ContactlessPaymentCubit(
-        repository: GetIt.instance<ContactlessPaymentRepository>(),
-      ),
-      child: const _CreatePaymentSessionView(),
-    );
-  }
-}
-
-class _CreatePaymentSessionView extends StatefulWidget {
-  const _CreatePaymentSessionView();
-
-  @override
-  State<_CreatePaymentSessionView> createState() =>
-      _CreatePaymentSessionViewState();
-}
 
 class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
     with SingleTickerProviderStateMixin {

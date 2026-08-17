@@ -22,6 +22,8 @@ import '../../../stocks/presentation/widgets/technical_indicators_bottom_sheet.d
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/webview_bottom_sheet.dart';
+part 'crypto_chart_details_screen_widgets.dart';
+
 
 // Available indicators surfaced in the bottom-sheet picker. Order matters —
 // it's the visual order on the bottom-sheet list, kept consistent across
@@ -54,49 +56,6 @@ const Set<String> _kPriceOverlayIndicators = <String>{
   'VWAP',
   'Parabolic SAR',
 };
-
-enum ChartType { line, candlestick, area, ohlc, volume, heikinAshi, hollowCandles }
-
-// CryptoPrice data model for chart
-class CryptoPrice {
-  final DateTime timestamp;
-  final double open;
-  final double high;
-  final double low;
-  final double close;
-  final double volume;
-
-  CryptoPrice({
-    required this.timestamp,
-    required this.open,
-    required this.high,
-    required this.low,
-    required this.close,
-    required this.volume,
-  });
-}
-
-// IndicatorInfo class
-class IndicatorInfo {
-  final String name;
-  final String description;
-  final String parameters;
-
-  const IndicatorInfo({
-    required this.name,
-    required this.description,
-    required this.parameters,
-  });
-}
-
-// DrawingToolInfo class
-class DrawingToolInfo {
-  final DrawingTool tool;
-  final String name;
-  final String description;
-
-  const DrawingToolInfo(this.tool, this.name, this.description);
-}
 
 class CryptoChartDetailsScreen extends StatefulWidget {
   final Crypto crypto;

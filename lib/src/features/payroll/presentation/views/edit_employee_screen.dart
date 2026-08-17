@@ -14,12 +14,8 @@ import 'package:lazervault/core/widgets/app_phone_field.dart';
 import 'package:lazervault/core/widgets/bank_picker_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
+part 'edit_employee_screen_widgets.dart';
 
-class _WizardStep {
-  final String label;
-  final Widget Function() builder;
-  const _WizardStep(this.label, this.builder);
-}
 
 class EditEmployeeScreen extends StatefulWidget {
   final EmployeeEntity employee;

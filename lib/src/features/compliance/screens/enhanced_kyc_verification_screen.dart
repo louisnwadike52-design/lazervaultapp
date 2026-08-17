@@ -10,6 +10,8 @@ import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/user.pb.dart' as user_pb;
 import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'enhanced_kyc_verification_screen_widgets.dart';
+
 
 /// Enhanced KYC Verification Screen with AI Document Extraction
 ///
@@ -1952,17 +1954,4 @@ class _EnhancedKYCVerificationScreenState
       icon: Icon(Icons.check_circle, color: Colors.white),
     );
   }
-}
-
-/// KYC Step model
-class KycStep {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-
-  const KycStep({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-  });
 }

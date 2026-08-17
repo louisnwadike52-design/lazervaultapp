@@ -17,6 +17,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../services/escrow_pdf_service.dart';
 import 'escrow_theme.dart';
+part 'escrow_receipt_screen_widgets.dart';
+
 
 /// Escrow receipt screen — shown after a deal is funded, released, or refunded.
 ///
@@ -695,11 +697,4 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       ),
     );
   }
-}
-
-class _DetailEntry {
-  final String label;
-  final String value;
-  final bool copyable;
-  const _DetailEntry(this.label, this.value, {this.copyable = false});
 }
