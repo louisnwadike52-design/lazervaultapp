@@ -24,7 +24,7 @@ class TagPayStatsRow extends StatelessWidget {
             child: _buildStatCard(
               label: 'Total',
               value: totalCount.toString(),
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
             ),
           ),
           SizedBox(width: 12.w),

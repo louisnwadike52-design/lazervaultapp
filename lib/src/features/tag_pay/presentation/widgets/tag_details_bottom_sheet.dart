@@ -100,7 +100,7 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
       Get.snackbar(
         'Info',
         'Receipt is only available after payment is completed.',
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF4E03D0),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );

@@ -95,7 +95,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
             context.read<TagPayCubit>().loadHomeData();
           }
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF4E03D0),
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           'Request Funds',
@@ -223,7 +223,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+                    colors: [Color(0xFF1E3A8A), Color(0xFF4E03D0)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -318,12 +318,12 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                 width: 44.w,
                 height: 44.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(22.r),
                 ),
                 child: Icon(
                   Icons.person_outline_rounded,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 22.sp,
                 ),
               ),
@@ -356,12 +356,12 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                 width: 36.w,
                 height: 36.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(18.r),
                 ),
                 child: Icon(
                   Icons.edit_rounded,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 18.sp,
                 ),
               ),
@@ -425,7 +425,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF4E03D0),
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -466,7 +466,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                    ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(20.r),
               ),
@@ -474,7 +474,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                 filter,
                 style: GoogleFonts.inter(
                   color: isSelected
-                      ? const Color(0xFF3B82F6)
+                      ? const Color(0xFF4E03D0)
                       : const Color(0xFF9CA3AF),
                   fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
@@ -499,7 +499,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
           if (tags.isEmpty) {
             return RefreshIndicator(
               onRefresh: _onRefresh,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -516,7 +516,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
           }
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -536,7 +536,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         if (state is TagPayError) {
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -565,7 +565,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
           if (tags.isEmpty) {
             return RefreshIndicator(
               onRefresh: _onRefresh,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -578,7 +578,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
           }
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -598,7 +598,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         if (state is TagPayError) {
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -808,7 +808,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF4E03D0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -857,7 +857,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
             ElevatedButton(
               onPressed: _onRefresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF4E03D0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),

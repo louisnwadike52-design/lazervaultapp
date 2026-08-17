@@ -124,7 +124,7 @@ class _SetUsernameSheetState extends State<_SetUsernameSheet> {
                 ),
                 prefixText: '@ ',
                 prefixStyle: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -145,8 +145,8 @@ class _SetUsernameSheetState extends State<_SetUsernameSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                  backgroundColor: const Color(0xFF4E03D0),
+                  disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14.r),
                   ),

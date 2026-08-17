@@ -339,7 +339,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF3B82F6)),
+                side: const BorderSide(color: Color(0xFF4E03D0)),
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -363,7 +363,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF3B82F6)),
+                side: const BorderSide(color: Color(0xFF4E03D0)),
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),

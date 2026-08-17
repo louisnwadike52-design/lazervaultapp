@@ -81,15 +81,15 @@ class _MaintenanceModalState extends State<MaintenanceModal> {
                     height: 84.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
                       border: Border.all(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.35),
                         width: 1.5,
                       ),
                     ),
                     child: Icon(
                       widget.icon,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       size: 38.sp,
                     ),
                   ),
@@ -119,9 +119,9 @@ class _MaintenanceModalState extends State<MaintenanceModal> {
                     child: ElevatedButton(
                       onPressed: _retrying ? null : _retry,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF4E03D0),
                         disabledBackgroundColor:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                            const Color(0xFF4E03D0).withValues(alpha: 0.5),
                         padding: EdgeInsets.symmetric(vertical: 15.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),

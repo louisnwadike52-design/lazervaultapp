@@ -60,13 +60,13 @@ class TagPayPaginationBar extends StatelessWidget {
         height: 36.w,
         decoration: BoxDecoration(
           color: enabled
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Icon(
           icon,
-          color: enabled ? const Color(0xFF3B82F6) : const Color(0xFF4B5563),
+          color: enabled ? const Color(0xFF4E03D0) : const Color(0xFF4B5563),
           size: 20.sp,
         ),
       ),

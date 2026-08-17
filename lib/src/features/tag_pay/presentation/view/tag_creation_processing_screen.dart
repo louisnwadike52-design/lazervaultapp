@@ -195,13 +195,13 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
               width: 120.w,
               height: 120.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Icon(
                   Icons.sell,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 60.sp,
                 ),
               ),

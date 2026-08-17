@@ -235,11 +235,11 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
               CircleAvatar(
                 radius: 12.r,
                 backgroundColor:
-                    const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                    const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 child: Text(
                   user.initials,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -330,7 +330,7 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
               Text(
                 _currency,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -455,9 +455,9 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
           child: ElevatedButton(
             onPressed: isLoading ? null : _createTag,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4E03D0),
               disabledBackgroundColor:
-                  const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.5),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),

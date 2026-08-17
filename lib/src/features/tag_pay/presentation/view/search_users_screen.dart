@@ -308,7 +308,7 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(color: const Color(0xFF3B82F6), width: 2),
+            borderSide: BorderSide(color: const Color(0xFF4E03D0), width: 2),
           ),
         ),
         onChanged: (value) {
@@ -435,13 +435,13 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
           children: [
             CircleAvatar(
               radius: 30.r,
-              backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.1),
               child: Text(
                 tagPay.displayName.isNotEmpty
                     ? tagPay.displayName[0].toUpperCase()
                     : '\$',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
                 ),

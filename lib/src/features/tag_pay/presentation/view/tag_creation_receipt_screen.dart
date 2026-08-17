@@ -226,14 +226,14 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                       width: 36.w,
                       height: 36.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(18.r),
                       ),
                       child: Center(
                         child: Text(
                           t.taggedUserName.isNotEmpty ? t.taggedUserName[0].toUpperCase() : '?',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF3B82F6),
+                            color: const Color(0xFF4E03D0),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w700,
                           ),
@@ -257,7 +257,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                             Text(
                               '@${t.taggedUserTagPay}',
                               style: GoogleFonts.inter(
-                                color: const Color(0xFF3B82F6),
+                                color: const Color(0xFF4E03D0),
                                 fontSize: 12.sp,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -400,8 +400,8 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF3B82F6),
-                    side: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+                    foregroundColor: const Color(0xFF4E03D0),
+                    side: const BorderSide(color: Color(0xFF4E03D0), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -417,7 +417,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                     Get.offAllNamed(AppRoutes.tagPay);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4E03D0),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),

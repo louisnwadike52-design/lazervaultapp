@@ -368,12 +368,12 @@ class _TagPaymentConfirmationScreenState
 
   Color _getAccountColor(VirtualAccountType type) {
     return switch (type) {
-      VirtualAccountType.personal => const Color(0xFF3B82F6),
+      VirtualAccountType.personal => const Color(0xFF4E03D0),
       VirtualAccountType.usd => const Color(0xFF10B981),
       VirtualAccountType.gbp => const Color.fromARGB(255, 78, 3, 208),
       VirtualAccountType.eur => const Color(0xFF06B6D4),
       VirtualAccountType.family => const Color(0xFFF59E0B),
-      VirtualAccountType.main => const Color(0xFF3B82F6),
+      VirtualAccountType.main => const Color(0xFF4E03D0),
       _ => const Color(0xFF6B7280),
     };
   }
@@ -471,7 +471,7 @@ class _TagPaymentConfirmationScreenState
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+            color: isSelected ? const Color(0xFF4E03D0) : Colors.transparent,
             width: 2,
           ),
         ),
@@ -520,7 +520,7 @@ class _TagPaymentConfirmationScreenState
                   if (isSelected)
                     Icon(
                       Icons.check_circle,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       size: 24.sp,
                     ),
                 ],
@@ -569,12 +569,12 @@ class _TagPaymentConfirmationScreenState
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.swap_horiz, color: const Color(0xFF3B82F6), size: 18.sp),
+                      Icon(Icons.swap_horiz, color: const Color(0xFF4E03D0), size: 18.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Change',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -685,11 +685,11 @@ class _TagPaymentConfirmationScreenState
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.12)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: isSelected
-              ? Border.all(color: const Color(0xFF3B82F6), width: 1.5)
+              ? Border.all(color: const Color(0xFF4E03D0), width: 1.5)
               : null,
         ),
         child: Row(
@@ -750,7 +750,7 @@ class _TagPaymentConfirmationScreenState
                 padding: EdgeInsets.only(left: 8.w),
                 child: Icon(
                   Icons.check_circle,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 22.sp,
                 ),
               ),

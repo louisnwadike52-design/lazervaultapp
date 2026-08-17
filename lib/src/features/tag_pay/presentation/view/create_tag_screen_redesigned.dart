@@ -189,7 +189,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
             decoration: BoxDecoration(
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: const Color(0xFF3B82F6), width: 1),
+              border: Border.all(color: const Color(0xFF4E03D0), width: 1),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -197,11 +197,11 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
                 CircleAvatar(
                   radius: 12.r,
                   backgroundColor:
-                      const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   child: Text(
                     user.initials,
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w700,
                     ),
@@ -310,11 +310,11 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
             margin: EdgeInsets.only(bottom: 4.h),
             decoration: BoxDecoration(
               color: alreadySelected
-                  ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
+                  ? const Color(0xFF4E03D0).withValues(alpha: 0.12)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12.r),
               border: alreadySelected
-                  ? Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4), width: 1)
+                  ? Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.4), width: 1)
                   : null,
             ),
             child: ListTile(
@@ -323,12 +323,12 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
                   width: 40.w,
                   height: 40.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Icon(
                     Icons.person,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     size: 20.sp,
                   ),
                 ),
@@ -345,7 +345,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
                 subtitle: Text(
                   '@${user.username}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -365,11 +365,11 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
                         width: 32.w,
                         height: 32.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.add,
-                            color: const Color(0xFF3B82F6), size: 20.sp),
+                            color: const Color(0xFF4E03D0), size: 20.sp),
                       ),
               ),
             );
@@ -409,7 +409,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
         child: ElevatedButton(
           onPressed: _goToAmountScreen,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF4E03D0),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.r),

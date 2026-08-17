@@ -34,7 +34,7 @@ class TagItemCard extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: showQuickPay
-              ? Border.all(color: const Color(0xFF3B82F6), width: 1)
+              ? Border.all(color: const Color(0xFF4E03D0), width: 1)
               : null,
         ),
         child: Column(
@@ -48,7 +48,7 @@ class TagItemCard extends StatelessWidget {
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(24.r),
                     ),
                     child: Center(
@@ -57,7 +57,7 @@ class TagItemCard extends StatelessWidget {
                             ? otherUserName[0].toUpperCase()
                             : '?',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 20.sp,
                           fontWeight: FontWeight.w700,
                         ),
@@ -151,7 +151,7 @@ class TagItemCard extends StatelessWidget {
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(15.r),
                     bottomRight: Radius.circular(15.r),
@@ -166,13 +166,13 @@ class TagItemCard extends StatelessWidget {
                       Icon(
                         Icons.flash_on_rounded,
                         size: 18.sp,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                       ),
                       SizedBox(width: 8.w),
                       Text(
                         'Quick Pay',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),
