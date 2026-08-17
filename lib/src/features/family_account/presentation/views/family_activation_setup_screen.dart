@@ -239,7 +239,7 @@ class _FamilyActivationSetupScreenState
             child: Text(
               'OK',
               style: TextStyle(
-                color: const Color(0xFF2D2B6B),
+                color: const Color(0xFF4E03D0),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -418,7 +418,7 @@ class _FamilyActivationSetupScreenState
                   decoration: BoxDecoration(
                     gradient: index <= _currentStep
                         ? const LinearGradient(
-                            colors: [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
+                            colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
                           )
                         : null,
                     color: index <= _currentStep ? null : const Color(0xFF2D2D2D),
@@ -500,7 +500,7 @@ class _FamilyActivationSetupScreenState
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2D2B6B) : const Color(0xFF2D2D2D),
+            color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -511,13 +511,13 @@ class _FamilyActivationSetupScreenState
               height: 48.h,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF2D2B6B).withValues(alpha: 0.3)
+                    ? const Color(0xFF4E03D0).withValues(alpha: 0.3)
                     : const Color(0xFF2D2D2D),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF2D2B6B) : const Color(0xFF9CA3AF),
+                color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF9CA3AF),
                 size: 24.sp,
               ),
             ),
@@ -549,7 +549,7 @@ class _FamilyActivationSetupScreenState
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF2D2B6B),
+                color: const Color(0xFF4E03D0),
                 size: 24.sp,
               ),
           ],
@@ -693,7 +693,7 @@ class _FamilyActivationSetupScreenState
             children: [
               CircleAvatar(
                 radius: 18.r,
-                backgroundColor: const Color(0xFF2D2B6B).withValues(alpha: 0.3),
+                backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                 child: Text(
                   member.fullName.isNotEmpty ? member.fullName[0].toUpperCase() : '?',
                   style: TextStyle(
@@ -782,14 +782,14 @@ class _FamilyActivationSetupScreenState
               children: [
                 Icon(
                   isExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: const Color(0xFF2D2B6B),
+                  color: const Color(0xFF4E03D0),
                   size: 18.sp,
                 ),
                 SizedBox(width: 4.w),
                 Text(
                   'Spending Limits',
                   style: TextStyle(
-                    color: const Color(0xFF2D2B6B),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -868,13 +868,13 @@ class _FamilyActivationSetupScreenState
               width: 80.w,
               height: 80.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2B6B).withValues(alpha: 0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.visibility_outlined,
                 size: 40.sp,
-                color: const Color(0xFF2D2B6B),
+                color: const Color(0xFF4E03D0),
               ),
             ),
           ),
@@ -934,7 +934,7 @@ class _FamilyActivationSetupScreenState
                   value: _spendingVisibilityEnabled,
                   onChanged: (v) =>
                       setState(() => _spendingVisibilityEnabled = v),
-                  activeThumbColor: const Color(0xFF2D2B6B),
+                  activeThumbColor: const Color(0xFF4E03D0),
                 ),
               ],
             ),
@@ -974,7 +974,7 @@ class _FamilyActivationSetupScreenState
 
   Widget _buildFundingPolicyCard(
       String value, String title, String desc, IconData icon) {
-    const accent = Color(0xFF2D2B6B);
+    const accent = Color(0xFF4E03D0);
     final selected = _fundingPolicy == value;
     return GestureDetector(
       onTap: () => setState(() => _fundingPolicy = value),
@@ -1071,7 +1071,7 @@ class _FamilyActivationSetupScreenState
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
                       color: _specificContributorIds.contains(m.id)
-                          ? const Color(0xFF2D2B6B)
+                          ? const Color(0xFF4E03D0)
                           : const Color(0xFF9CA3AF),
                       size: 20.sp,
                     ),
@@ -1145,8 +1145,8 @@ class _FamilyActivationSetupScreenState
                         style: TextStyle(fontSize: 14.sp),
                       ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF3B82F6),
-                        side: const BorderSide(color: Color(0xFF3B82F6)),
+                        foregroundColor: const Color(0xFF4E03D0),
+                        side: const BorderSide(color: Color(0xFF4E03D0)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
@@ -1236,7 +1236,7 @@ class _FamilyActivationSetupScreenState
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D2B6B),
+                      backgroundColor: const Color(0xFF4E03D0),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -1273,7 +1273,7 @@ class _FamilyActivationSetupScreenState
                     children: [
                       CircleAvatar(
                         radius: 18.r,
-                        backgroundColor: const Color(0xFF2D2B6B).withValues(alpha: 0.3),
+                        backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                         child: Text(
                           member.fullName.isNotEmpty
                               ? member.fullName[0].toUpperCase()
@@ -1370,13 +1370,13 @@ class _FamilyActivationSetupScreenState
       decoration: BoxDecoration(
         color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
+        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 20.r,
-            backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+            backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
             backgroundImage: user.profilePicture.isNotEmpty
                 ? NetworkImage(user.profilePicture)
                 : null,
@@ -1384,7 +1384,7 @@ class _FamilyActivationSetupScreenState
                 ? Text(
                     user.initials,
                     style: TextStyle(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1505,13 +1505,13 @@ class _FamilyActivationSetupScreenState
             width: 80.w,
             height: 80.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF2D2B6B).withValues(alpha: 0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.rocket_launch_outlined,
               size: 40.sp,
-              color: const Color(0xFF2D2B6B),
+              color: const Color(0xFF4E03D0),
             ),
           ),
           SizedBox(height: 20.h),
@@ -1583,12 +1583,12 @@ class _FamilyActivationSetupScreenState
             height: 56.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
+                colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
               ),
               borderRadius: BorderRadius.circular(28.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1A1A3E).withValues(alpha: 0.4),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -1660,16 +1660,16 @@ class _FamilyActivationSetupScreenState
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2B6B).withValues(alpha: 0.08),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF2D2B6B).withValues(alpha: 0.2),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFF2D2B6B), size: 24.sp),
+          Icon(icon, color: const Color(0xFF4E03D0), size: 24.sp),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -1706,12 +1706,12 @@ class _FamilyActivationSetupScreenState
       height: 56.h,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
+          colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
         ),
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A1A3E).withValues(alpha: 0.4),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

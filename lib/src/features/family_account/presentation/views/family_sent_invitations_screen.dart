@@ -112,7 +112,7 @@ class _FamilySentInvitationsScreenState extends State<FamilySentInvitationsScree
                     }
                     return RefreshIndicator(
                       onRefresh: _onRefresh,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       backgroundColor: const Color(0xFF1F1F1F),
                       child: ListView.separated(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -154,14 +154,14 @@ class _FamilySentInvitationsScreenState extends State<FamilySentInvitationsScree
         selected: selected,
         onSelected: (_) => _setStatusFilter(filterValue),
         backgroundColor: const Color(0xFF1F1F1F),
-        selectedColor: const Color(0xFF3B82F6),
+        selectedColor: const Color(0xFF4E03D0),
         labelStyle: TextStyle(
           color: selected ? Colors.white : const Color(0xFF9CA3AF),
           fontSize: 12.sp,
           fontWeight: FontWeight.w600,
         ),
         side: BorderSide(
-          color: selected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+          color: selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
         ),
       ),
     );

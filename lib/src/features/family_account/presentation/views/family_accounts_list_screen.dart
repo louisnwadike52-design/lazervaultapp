@@ -103,7 +103,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
           final result = await Get.toNamed(AppRoutes.familyCreate);
           if (result == true) _onRefresh();
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF4E03D0),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: SafeArea(
@@ -203,7 +203,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF4E03D0),
           borderRadius: BorderRadius.circular(12.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -237,7 +237,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
 
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -257,7 +257,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   Widget _buildEmptyState() {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -368,7 +368,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   Widget _buildAccountCard(FamilyAccount account) {
     final statusColor = switch (account.status) {
       FamilyAccountStatus.active => const Color(0xFF10B981),
-      FamilyAccountStatus.frozen => const Color(0xFF3B82F6),
+      FamilyAccountStatus.frozen => const Color(0xFF4E03D0),
       FamilyAccountStatus.pendingSetup => const Color(0xFFFB923C),
       FamilyAccountStatus.closed => const Color(0xFFEF4444),
     };
@@ -409,8 +409,8 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                        const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                        const Color(0xFFA78BFA).withValues(alpha: 0.1),
                       ],
                     ),
                     shape: BoxShape.circle,
@@ -614,8 +614,8 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                   Get.toNamed(AppRoutes.familyInvitations);
                 },
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF3B82F6),
-                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  foregroundColor: const Color(0xFF4E03D0),
+                  side: const BorderSide(color: Color(0xFF4E03D0)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -659,12 +659,12 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.family_restroom,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 20.sp,
                 ),
               ),
@@ -781,7 +781,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF4E03D0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r),
                       ),

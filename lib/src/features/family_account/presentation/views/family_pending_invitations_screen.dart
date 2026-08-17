@@ -88,7 +88,7 @@ class _FamilyPendingInvitationsScreenState
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF3B82F6),
+          indicatorColor: const Color(0xFF4E03D0),
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
           labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
@@ -203,7 +203,7 @@ class _FamilyPendingInvitationsScreenState
                 }
                 return RefreshIndicator(
                   onRefresh: _onHistoryRefresh,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -244,7 +244,7 @@ class _FamilyPendingInvitationsScreenState
         selected: selected,
         onSelected: (_) => _setHistoryStatusFilter(filterValue),
         backgroundColor: const Color(0xFF1F1F1F),
-        selectedColor: const Color(0xFF3B82F6),
+        selectedColor: const Color(0xFF4E03D0),
         labelStyle: TextStyle(
           color: selected ? Colors.white : const Color(0xFF9CA3AF),
           fontSize: 12.sp,
@@ -252,7 +252,7 @@ class _FamilyPendingInvitationsScreenState
         ),
         side: BorderSide(
           color: selected
-              ? const Color(0xFF3B82F6)
+              ? const Color(0xFF4E03D0)
               : const Color(0xFF2D2D2D),
         ),
       ),
@@ -406,7 +406,7 @@ class _FamilyPendingInvitationsScreenState
   Widget _buildEmptyState() {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -445,7 +445,7 @@ class _FamilyPendingInvitationsScreenState
   Widget _buildInvitationsList(List<PendingInvitation> invitations) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -629,9 +629,9 @@ class _FamilyPendingInvitationsScreenState
                           _pendingCubit.acceptInvitation(invitation.invitationToken);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4E03D0),
                     disabledBackgroundColor:
-                        const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
                     ),

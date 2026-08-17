@@ -304,7 +304,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
                       decoration: BoxDecoration(
                         gradient: _hasChanges()
                             ? const LinearGradient(
-                                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                                colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                               )
                             : null,
                         color: _hasChanges() ? null : Colors.white.withValues(alpha: 0.1),
@@ -312,7 +312,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
                         boxShadow: _hasChanges()
                             ? [
                                 BoxShadow(
-                                  color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                                  color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -369,13 +369,13 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF3B82F6).withValues(alpha: 0.2),
-            const Color(0xFF60A5FA).withValues(alpha: 0.1),
+            const Color(0xFF4E03D0).withValues(alpha: 0.2),
+            const Color(0xFFA78BFA).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -388,8 +388,8 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                  const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                  const Color(0xFFA78BFA).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -499,7 +499,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
       children: [
         Icon(
           icon,
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF4E03D0),
           size: 20.sp,
         ),
         SizedBox(width: 8.w),
@@ -530,7 +530,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isModified ? const Color(0xFF3B82F6).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
+          color: isModified ? const Color(0xFF4E03D0).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
           width: isModified ? 2 : 1,
         ),
       ),
@@ -544,7 +544,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
                 children: [
                   Icon(
                     icon,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     size: 18.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -592,7 +592,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             decoration: InputDecoration(
               prefixText: '${CurrencySymbols.currentSymbol} ',
               prefixStyle: TextStyle(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -617,7 +617,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
                 borderSide: const BorderSide(
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF4E03D0),
                   width: 2,
                 ),
               ),
@@ -659,7 +659,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isModified ? const Color(0xFF3B82F6).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
+          color: isModified ? const Color(0xFF4E03D0).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
           width: isModified ? 2 : 1,
         ),
       ),
@@ -673,7 +673,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
                 children: [
                   Icon(
                     icon,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     size: 18.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -721,7 +721,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             decoration: InputDecoration(
               prefixText: '${CurrencySymbols.currentSymbol} ',
               prefixStyle: TextStyle(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -746,7 +746,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
                 borderSide: const BorderSide(
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF4E03D0),
                   width: 2,
                 ),
               ),
@@ -789,7 +789,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isModified ? const Color(0xFF3B82F6).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
+          color: isModified ? const Color(0xFF4E03D0).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
           width: isModified ? 2 : 1,
         ),
       ),
@@ -836,7 +836,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
               Text(
                 '${_allocationPercentageCap.toStringAsFixed(0)}%',
                 style: TextStyle(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 28.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -856,7 +856,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
             min: 1,
             max: 100,
             divisions: 99,
-            activeColor: const Color(0xFF3B82F6),
+            activeColor: const Color(0xFF4E03D0),
             onChanged: (value) {
               setState(() {
                 _allocationPercentageCap = value;
@@ -894,14 +894,14 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.3)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.3)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(4.r),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.5),
+            color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.5),
             fontSize: 11.sp,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
@@ -918,7 +918,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isModified ? const Color(0xFF3B82F6).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
+          color: isModified ? const Color(0xFF4E03D0).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.1),
           width: isModified ? 2 : 1,
         ),
       ),
@@ -949,13 +949,13 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected ? const Color(0xFF4E03D0).withValues(alpha: 0.2) : Colors.transparent,
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: isSelected ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.6),
+              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -968,7 +968,7 @@ class _FamilyEditMemberLimitsScreenState extends State<FamilyEditMemberLimitsScr
                       Text(
                         title,
                         style: TextStyle(
-                          color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                          color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),

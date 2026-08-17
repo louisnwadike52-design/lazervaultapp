@@ -205,7 +205,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         ),
         prefixIcon: Icon(
           Icons.person_search,
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF4E03D0),
           size: 22.sp,
         ),
         suffixIcon: _searchController.text.isNotEmpty
@@ -237,7 +237,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       ),
@@ -288,7 +288,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
           children: [
             CircleAvatar(
               radius: 20.r,
-              backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+              backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               backgroundImage: user.profilePicture.isNotEmpty
                   ? NetworkImage(user.profilePicture)
                   : null,
@@ -296,7 +296,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
                   ? Text(
                       user.initials,
                       style: TextStyle(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -339,7 +339,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
             ),
             Icon(
               Icons.add_circle_outline,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               size: 24.sp,
             ),
           ],
@@ -353,10 +353,10 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
           width: 2,
         ),
       ),
@@ -364,7 +364,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         children: [
           CircleAvatar(
             radius: 24.r,
-            backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+            backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
             backgroundImage: user.profilePicture.isNotEmpty
                 ? NetworkImage(user.profilePicture)
                 : null,
@@ -372,7 +372,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
                 ? Text(
                     user.initials,
                     style: TextStyle(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -396,7 +396,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
                 Text(
                   '@${user.username}',
                   style: TextStyle(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -475,7 +475,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
       decoration: BoxDecoration(
         gradient: hasSelection
             ? const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
               )
             : null,
         color: hasSelection ? null : const Color(0xFF2D2D2D),
@@ -483,7 +483,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         boxShadow: hasSelection
             ? [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),

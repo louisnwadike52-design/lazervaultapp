@@ -104,24 +104,24 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 24.r,
-                  backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   backgroundImage:
                       userPic.isNotEmpty ? NetworkImage(userPic) : null,
                   child: userPic.isEmpty
                       ? Text(
                           initials,
                           style: TextStyle(
-                            color: const Color(0xFF3B82F6),
+                            color: const Color(0xFF4E03D0),
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -145,7 +145,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                       Text(
                         '@$destination',
                         style: TextStyle(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 14.sp,
                         ),
                       ),
@@ -190,7 +190,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                   'Role',
                   role == 'admin' ? 'Admin' : 'Member',
                   valueColor:
-                      role == 'admin' ? const Color(0xFF3B82F6) : null,
+                      role == 'admin' ? const Color(0xFF4E03D0) : null,
                 ),
                 SizedBox(height: 20.h),
 
@@ -207,7 +207,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                         horizontal: 12.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color:
-                          const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                          const Color(0xFF4E03D0).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Row(
@@ -215,14 +215,14 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                       children: [
                         Icon(
                           Icons.all_inclusive,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           size: 16.sp,
                         ),
                         SizedBox(width: 8.w),
                         Text(
                           'No Spending Limits',
                           style: TextStyle(
-                            color: const Color(0xFF3B82F6),
+                            color: const Color(0xFF4E03D0),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -287,7 +287,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide:
-                    const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                    const BorderSide(color: Color(0xFF4E03D0), width: 2),
               ),
               contentPadding: EdgeInsets.all(16.w),
               counterStyle: TextStyle(
@@ -309,13 +309,13 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                    colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                   ),
                   borderRadius: BorderRadius.circular(28.r),
                   boxShadow: [
                     BoxShadow(
                       color:
-                          const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                          const Color(0xFF4E03D0).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -360,17 +360,17 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -396,12 +396,12 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF3B82F6), size: 18.sp),
+        Icon(icon, color: const Color(0xFF4E03D0), size: 18.sp),
         SizedBox(width: 8.w),
         Text(
           title,
           style: TextStyle(
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),

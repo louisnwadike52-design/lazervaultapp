@@ -280,7 +280,7 @@ class _FamilyInviteMemberFlowScreenState
                 decoration: BoxDecoration(
                   gradient: index <= _currentStep
                       ? const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                          colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                         )
                       : null,
                   color:

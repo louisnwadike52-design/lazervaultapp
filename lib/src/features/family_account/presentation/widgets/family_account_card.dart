@@ -34,8 +34,8 @@ class FamilyAccountCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF3B82F6).withValues(alpha: 0.15),
-            const Color(0xFF60A5FA).withValues(alpha: 0.05),
+            const Color(0xFF4E03D0).withValues(alpha: 0.15),
+            const Color(0xFFA78BFA).withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
@@ -47,7 +47,7 @@ class FamilyAccountCard extends StatelessWidget {
             : null,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -145,7 +145,7 @@ class FamilyAccountCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Row(
@@ -153,14 +153,14 @@ class FamilyAccountCard extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.people,
-                    color: const Color(0xFF60A5FA),
+                    color: const Color(0xFFA78BFA),
                     size: 16.sp,
                   ),
                   SizedBox(width: 4.w),
                   Text(
                     '$familyAccount.activeMemberCount',
                     style: TextStyle(
-                      color: const Color(0xFF60A5FA),
+                      color: const Color(0xFFA78BFA),
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -377,19 +377,19 @@ class FamilySetupCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF3B82F6).withValues(alpha: 0.3),
-              const Color(0xFF60A5FA).withValues(alpha: 0.15),
+              const Color(0xFF4E03D0).withValues(alpha: 0.3),
+              const Color(0xFFA78BFA).withValues(alpha: 0.15),
             ],
           ),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.5),
             width: 2,
             style: BorderStyle.solid,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -448,7 +448,7 @@ class FamilySetupCard extends StatelessWidget {
                   Text(
                     'Get Started',
                     style: TextStyle(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -456,7 +456,7 @@ class FamilySetupCard extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Icon(
                     Icons.arrow_forward,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     size: 18.sp,
                   ),
                 ],

@@ -42,7 +42,7 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
   static const Color _card = Color(0xFF1F1F1F);
   static const Color _border = Color(0xFF2D2D2D);
   static const Color _muted = Color(0xFF9CA3AF);
-  static const Color _blue = Color(0xFF3B82F6);
+  static const Color _blue = Color(0xFF4E03D0);
   static const Color _purple = Color.fromARGB(255, 78, 3, 208);
 
   int _currentPage = 0;

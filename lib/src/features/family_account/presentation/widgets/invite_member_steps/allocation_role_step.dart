@@ -159,7 +159,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                     decoration: InputDecoration(
                       prefixText: '\$ ',
                       prefixStyle: TextStyle(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                         fontSize: 36.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -233,12 +233,12 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: _noLimits
-                      ? const Color(0xFF3B82F6).withValues(alpha: 0.08)
+                      ? const Color(0xFF4E03D0).withValues(alpha: 0.08)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: _noLimits
-                        ? const Color(0xFF3B82F6)
+                        ? const Color(0xFF4E03D0)
                         : const Color(0xFF2D2D2D),
                     width: _noLimits ? 2 : 1,
                   ),
@@ -248,7 +248,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                     Icon(
                       Icons.all_inclusive,
                       color: _noLimits
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF4E03D0)
                           : const Color(0xFF9CA3AF),
                       size: 22.sp,
                     ),
@@ -258,7 +258,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                         'No Spending Limits',
                         style: TextStyle(
                           color: _noLimits
-                              ? const Color(0xFF3B82F6)
+                              ? const Color(0xFF4E03D0)
                               : Colors.white,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
@@ -268,7 +268,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                     Switch(
                       value: _noLimits,
                       onChanged: (v) => setState(() => _noLimits = v),
-                      activeThumbColor: const Color(0xFF3B82F6),
+                      activeThumbColor: const Color(0xFF4E03D0),
                     ),
                   ],
                 ),
@@ -317,11 +317,11 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
               SizedBox(height: 8.h),
               SliderTheme(
                 data: SliderThemeData(
-                  activeTrackColor: const Color(0xFF3B82F6),
+                  activeTrackColor: const Color(0xFF4E03D0),
                   inactiveTrackColor: const Color(0xFF2D2D2D),
-                  thumbColor: const Color(0xFF3B82F6),
+                  thumbColor: const Color(0xFF4E03D0),
                   overlayColor:
-                      const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   trackHeight: 6.h,
                   thumbShape:
                       RoundSliderThumbShape(enabledThumbRadius: 10.r),
@@ -373,12 +373,12 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.08)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.08)
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF3B82F6)
+                ? const Color(0xFF4E03D0)
                 : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
@@ -390,14 +390,14 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
               height: 40.h,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                    ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
                     : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? const Color(0xFF3B82F6)
+                    ? const Color(0xFF4E03D0)
                     : const Color(0xFF9CA3AF),
                 size: 22.sp,
               ),
@@ -407,7 +407,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
               title,
               style: TextStyle(
                 color: isSelected
-                    ? const Color(0xFF3B82F6)
+                    ? const Color(0xFF4E03D0)
                     : Colors.white,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
@@ -426,7 +426,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
               SizedBox(height: 6.h),
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 size: 18.sp,
               ),
             ],
@@ -450,7 +450,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF3B82F6), size: 20.sp),
+          Icon(icon, color: const Color(0xFF4E03D0), size: 20.sp),
           SizedBox(width: 10.w),
           Text(
             label,
@@ -479,7 +479,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
               decoration: InputDecoration(
                 prefixText: '\$ ',
                 prefixStyle: TextStyle(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 14.sp,
                 ),
                 hintText: '0',
@@ -504,12 +504,12 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
       height: 56.h,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+          colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
         ),
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

@@ -1007,7 +1007,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       end: Alignment.bottomRight,
                       colors: [
                         _kFamilyPurple.withValues(alpha: 0.15),
-                        const Color(0xFF60A5FA).withValues(alpha: 0.05),
+                        const Color(0xFFA78BFA).withValues(alpha: 0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16.r),
@@ -1487,7 +1487,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     Icons.account_balance_wallet_outlined,
                     'From',
                     'Your Personal Account',
-                    const Color(0xFF3B82F6),
+                    const Color(0xFF4E03D0),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 6.h),
@@ -1956,12 +1956,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF2D2B6B).withValues(alpha: 0.3)
+                            ? const Color(0xFF4E03D0).withValues(alpha: 0.3)
                             : const Color(0xFF1F1F1F),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF7C6BF0)
+                              ? const Color(0xFFA78BFA)
                               : Colors.white.withValues(alpha: 0.1),
                           width: isSelected ? 1.5 : 1,
                         ),
@@ -1970,7 +1970,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         children: [
                           Icon(
                             isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                            color: isSelected ? const Color(0xFF7C6BF0) : Colors.white.withValues(alpha: 0.4),
+                            color: isSelected ? const Color(0xFFA78BFA) : Colors.white.withValues(alpha: 0.4),
                             size: 20.sp,
                           ),
                           SizedBox(width: 12.w),
@@ -1993,13 +1993,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                                       Container(
                                         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF7C6BF0).withValues(alpha: 0.2),
+                                          color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
                                           borderRadius: BorderRadius.circular(4.r),
                                         ),
                                         child: Text(
                                           'Current',
                                           style: TextStyle(
-                                            color: const Color(0xFFB8ABFF),
+                                            color: const Color(0xFFA78BFA),
                                             fontSize: 10.sp,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -4084,7 +4084,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       style: GoogleFonts.inter(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -180,7 +180,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
                 decoration: BoxDecoration(
                   gradient: index <= _currentStep
                       ? const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                          colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                         )
                       : null,
                   color: index <= _currentStep ? null : const Color(0xFF2D2D2D),
@@ -270,8 +270,8 @@ class FamilyWelcomeStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                  const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  const Color(0xFFA78BFA).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -279,7 +279,7 @@ class FamilyWelcomeStep extends StatelessWidget {
             child: Icon(
               Icons.family_restroom,
               size: 50.sp,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
             ),
           ),
           SizedBox(height: 20.h),
@@ -335,12 +335,12 @@ class FamilyWelcomeStep extends StatelessWidget {
             height: 50.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
               ),
               borderRadius: BorderRadius.circular(25.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -398,12 +398,12 @@ class FamilyWelcomeStep extends StatelessWidget {
             width: 40.w,
             height: 40.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               size: 20.sp,
             ),
           ),
@@ -467,8 +467,8 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                  const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  const Color(0xFFA78BFA).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -476,7 +476,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
             child: Icon(
               Icons.check,
               size: 50.sp,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
             ),
           ),
           SizedBox(height: 32.h),
@@ -576,12 +576,12 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                    colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                   ),
                   borderRadius: BorderRadius.circular(28.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -717,8 +717,8 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                  const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  const Color(0xFFA78BFA).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -726,7 +726,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
             child: Icon(
               Icons.group_add,
               size: 40.sp,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
             ),
           ),
           SizedBox(height: 24.h),
@@ -757,12 +757,12 @@ class FamilyInviteMembersStep extends StatelessWidget {
             height: 56.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
               ),
               borderRadius: BorderRadius.circular(28.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -842,10 +842,10 @@ class FamilyInviteMembersStep extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -853,7 +853,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),

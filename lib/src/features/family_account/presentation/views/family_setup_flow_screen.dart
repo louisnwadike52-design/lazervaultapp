@@ -113,7 +113,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: const BorderSide(
-                    color: Color(0xFF3B82F6),
+                    color: Color(0xFF4E03D0),
                     width: 2,
                   ),
                 ),
@@ -187,7 +187,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: const BorderSide(
-                    color: Color(0xFF3B82F6),
+                    color: Color(0xFF4E03D0),
                     width: 2,
                   ),
                 ),
@@ -244,7 +244,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: const BorderSide(
-                    color: Color(0xFF3B82F6),
+                    color: Color(0xFF4E03D0),
                     width: 2,
                   ),
                 ),
@@ -309,7 +309,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                         _allowMemberContributions = value;
                       });
                     },
-                    activeThumbColor: const Color(0xFF3B82F6),
+                    activeThumbColor: const Color(0xFF4E03D0),
                   ),
                 ],
               ),
@@ -322,12 +322,12 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
               height: 56.h,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                  colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                 ),
                 borderRadius: BorderRadius.circular(28.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
