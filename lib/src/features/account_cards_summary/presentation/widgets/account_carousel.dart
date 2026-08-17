@@ -131,7 +131,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
   /// 4-4-4 card-PIN spacing — this is an account number, not a card).
   /// Falls back to the raw value if it's already ≤4 chars.
   String _maskAccountNumber(String raw) {
-    if (raw.isEmpty) return raw;
+    // Not-yet-provisioned VA: show an asterisk placeholder that occupies the
+    // account-number space (never blank, never '?').
+    if (raw.isEmpty) return '**** **** **';
     if (raw.length <= 4) return raw;
     final hiddenCount = raw.length - 4;
     final visibleTail = raw.substring(raw.length - 4);

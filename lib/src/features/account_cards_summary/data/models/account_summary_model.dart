@@ -28,7 +28,7 @@ class AccountSummaryModel extends AccountSummaryEntity {
       } else if (masked.isNotEmpty) {
         return masked; // Return the whole string if less than 4 chars
       }
-      return '????'; // Return placeholder if empty
+      return '****'; // Not-yet-provisioned placeholder — asterisks, never '?'
     }
 
     // Debug logging to understand what backend is returning
