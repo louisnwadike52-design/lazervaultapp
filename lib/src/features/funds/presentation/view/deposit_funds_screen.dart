@@ -1116,7 +1116,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             onPressed: () {
               if (!_validateSheetAmount()) return;
               Navigator.of(sheetCtx).pop();
-              _startFlutterwaveDeposit(context, paymentMethod: 'apple_pay', sourceLabel: 'Apple Pay');
+              // KYC-gate Apple Pay too (parity with card / Link & Deposit).
+              _ensureKycThenDeposit(
+                proceed: () => _startFlutterwaveDeposit(context,
+                    paymentMethod: 'apple_pay', sourceLabel: 'Apple Pay'),
+              );
             },
           ),
           SizedBox(height: 10.h),
@@ -1134,7 +1138,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               // need a positive amount.
               if (!_validateSheetAmount(min: _isNGN ? 100 : 0)) return;
               Navigator.of(sheetCtx).pop();
-              _startFlutterwaveDeposit(context, paymentMethod: 'card', sourceLabel: 'Card');
+              // KYC-gate card deposits too (parity with Link & Deposit): an
+              // unverified user sees the verify modal before the Flutterwave
+              // checkout instead of paying then being blocked.
+              _ensureKycThenDeposit(
+                proceed: () => _startFlutterwaveDeposit(context,
+                    paymentMethod: 'card', sourceLabel: 'Card'),
+              );
             },
           ),
           SizedBox(height: 10.h),
