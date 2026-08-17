@@ -23,6 +23,8 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'group_details_screen_widgets.dart';
+
 
 class GroupDetailsScreen extends StatefulWidget {
   final String groupId;
@@ -1641,31 +1643,5 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         'contribution': contribution,
       },
     );
-  }
-}
-
-class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double height;
-
-  _SliverTabBarDelegate({required this.child, required this.height});
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: const Color(0xFF0A0A0A),
-      child: child,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) {
-    return oldDelegate.height != height;
   }
 }

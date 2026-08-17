@@ -10,21 +10,8 @@ import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_pdf_service.dart';
 import '../../utils/group_export_helper.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'share_contribution_bottom_sheet_widgets.dart';
 
-enum SharePlatform {
-  whatsapp,
-  telegram,
-  email,
-  sms,
-  copyLink,
-  other,
-}
-
-enum ShareFormat {
-  summaryText,
-  pdfReport,
-  csvSpreadsheet,
-}
 
 class ShareContributionBottomSheet extends StatefulWidget {
   final Contribution contribution;

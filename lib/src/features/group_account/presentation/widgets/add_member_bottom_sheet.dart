@@ -13,6 +13,8 @@ import '../cubit/group_account_state.dart';
 import 'contact_picker_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+part 'add_member_bottom_sheet_widgets.dart';
+
 
 class AddMemberBottomSheet extends StatefulWidget {
   final GroupAccount group;
@@ -34,23 +36,6 @@ class AddMemberBottomSheet extends StatefulWidget {
 
   @override
   State<AddMemberBottomSheet> createState() => _AddMemberBottomSheetState();
-}
-
-/// Helper class to track selected users with their assigned roles
-class _SelectedMember {
-  final UserSearchResultEntity user;
-  GroupMemberRole role;
-
-  _SelectedMember({required this.user, required this.role});
-}
-
-/// Helper class to track pending invites (users not on LazerVault)
-class _PendingInvite {
-  final String email;
-  final String fullName;
-  GroupMemberRole role;
-
-  _PendingInvite({required this.email, required this.fullName, required this.role});
 }
 
 class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {

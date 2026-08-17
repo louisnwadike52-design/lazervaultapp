@@ -7,6 +7,8 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'contribution_payment_confirmation_screen.dart';
+part 'contribution_payment_processing_screen_widgets.dart';
+
 
 /// Payment processing screen that shows progress while the backend processes the payment.
 /// This screen listens to the GroupAccountCubit for payment state changes.
@@ -537,16 +539,4 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
   void _retryPayment() {
     Get.back();
   }
-}
-
-class ProcessingStep {
-  final String title;
-  final String description;
-  final int duration;
-
-  ProcessingStep({
-    required this.title,
-    required this.description,
-    required this.duration,
-  });
 } 

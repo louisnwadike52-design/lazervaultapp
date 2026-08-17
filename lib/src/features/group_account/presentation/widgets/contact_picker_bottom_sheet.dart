@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+part 'contact_picker_bottom_sheet_widgets.dart';
+
 
 class ContactPickerBottomSheet extends StatefulWidget {
   final Function(String name, String identifier, ContactIdentifierType type)
@@ -22,21 +24,6 @@ class ContactPickerBottomSheet extends StatefulWidget {
   @override
   State<ContactPickerBottomSheet> createState() =>
       _ContactPickerBottomSheetState();
-}
-
-enum ContactIdentifierType { email, phone }
-
-/// Info about a platform user matched from contacts
-class PlatformUserInfo {
-  final String userId;
-  final String userName;
-  final String? profileImage;
-
-  const PlatformUserInfo({
-    required this.userId,
-    required this.userName,
-    this.profileImage,
-  });
 }
 
 class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
