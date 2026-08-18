@@ -37,6 +37,11 @@ class AccountConfirmationBottomSheetState
   // Favorites are managed from the recipients list (star / 3-dot), not here.
   final bool _isFavorite = false;
   String? _alias;
+  // While the alias field is focused we compress the account card + hide the
+  // info box so the field stays visible above the keyboard (the sheet no longer
+  // rides up under the keyboard or hides the field being typed).
+  bool _aliasEditing = false;
+  final FocusNode _aliasFocusNode = FocusNode();
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
@@ -52,17 +57,29 @@ class AccountConfirmationBottomSheetState
       curve: Curves.elasticOut,
     );
     _animationController.forward();
+    _aliasFocusNode.addListener(() {
+      if (!mounted) return;
+      final editing = _aliasFocusNode.hasFocus;
+      if (editing != _aliasEditing) setState(() => _aliasEditing = editing);
+    });
   }
 
   @override
   void dispose() {
+    _aliasFocusNode.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      // Lift the whole sheet above the keyboard so the alias field is never
+      // covered; the animation keeps it smooth as the keyboard opens/closes.
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -88,13 +105,21 @@ class AccountConfirmationBottomSheetState
               children: [
                 SizedBox(height: 12.h),
 
-                // Account Details Card
-                _buildAccountDetailsCard(),
+                // Account Details Card — compresses to a compact row while the
+                // alias field is focused so it (and the field) stay visible.
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: _buildAccountDetailsCard(compact: _aliasEditing),
+                ),
 
-                SizedBox(height: 16.h),
-
-                // Warning Info Box
-                _buildInfoBox(),
+                // Warning Info Box — hidden while typing the alias to free the
+                // vertical room the field needs above the keyboard; reshown after.
+                if (!_aliasEditing) ...[
+                  SizedBox(height: 16.h),
+                  _buildInfoBox(),
+                ],
 
                 SizedBox(height: 16.h),
 
@@ -112,6 +137,7 @@ class AccountConfirmationBottomSheetState
           // Bottom Action Buttons
           _buildBottomActions(),
         ],
+      ),
       ),
     );
   }
@@ -178,7 +204,43 @@ class AccountConfirmationBottomSheetState
     );
   }
 
-  Widget _buildAccountDetailsCard() {
+  Widget _buildAccountDetailsCard({bool compact = false}) {
+    // Compact: a single bank-logo + name row (used while the alias field is
+    // focused so the card shrinks out of the keyboard's way).
+    if (compact) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF4E03D0), Color(0xFF5F14E1)],
+          ),
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Row(
+          children: [
+            BankLogo(
+                bankName: widget.bankName,
+                bankCode: widget.bankCode,
+                size: 30.w),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                widget.accountName.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
@@ -406,6 +468,7 @@ class AccountConfirmationBottomSheetState
             SizedBox(
               height: 36.h,
               child: TextFormField(
+                focusNode: _aliasFocusNode,
                 maxLength: 50,
                 style: TextStyle(fontSize: 12.sp),
                 decoration: InputDecoration(
