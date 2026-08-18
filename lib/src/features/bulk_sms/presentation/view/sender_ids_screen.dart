@@ -215,9 +215,11 @@ class _SenderIdsScreenState extends State<SenderIdsScreen> {
           SizedBox(height: 60),
           BulkSmsEmptyState(
             icon: Icons.badge_outlined,
-            title: 'No sender IDs yet',
+            title: 'Sending as "Lazervault"',
             subtitle:
-                'Request a sender ID so recipients recognise your messages.',
+                'Your messages already go out under our registered "Lazervault" '
+                'sender — no setup needed. Optionally request your own branded '
+                'sender name below (subject to network approval).',
           ),
         ],
       );

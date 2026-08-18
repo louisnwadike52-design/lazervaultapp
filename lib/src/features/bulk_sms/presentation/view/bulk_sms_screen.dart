@@ -162,14 +162,17 @@ class _BulkSmsScreenState extends State<BulkSmsScreen> {
     final String label;
     final IconData icon;
     if (approved.isNotEmpty) {
-      label = 'Sender ID: ${approved.first.senderId}';
+      label = 'Sending as: ${approved.first.senderId}';
       icon = Icons.verified_rounded;
     } else if (pending.isNotEmpty) {
       label = '${pending.first.senderId} · pending approval';
       icon = Icons.hourglass_bottom_rounded;
     } else {
-      label = 'No sender ID yet · tap to request';
-      icon = Icons.add_circle_outline_rounded;
+      // No custom sender ID — sends go out under the platform's registered
+      // "Lazervault" sender by default. Requesting a custom (branded) one is
+      // optional, so we DON'T imply it's required.
+      label = 'Sending as: Lazervault  ·  tap for a custom name';
+      icon = Icons.sms_rounded;
     }
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.bulkSmsSenderIds),
