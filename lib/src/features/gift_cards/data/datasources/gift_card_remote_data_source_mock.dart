@@ -1,3 +1,4 @@
+import '../../domain/entities/sell_card_entry.dart';
 import 'dart:math';
 import '../../domain/entities/gift_card_entity.dart';
 import '../models/gift_card_model.dart';
@@ -290,6 +291,7 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     String? ocrPin,
     double? ocrDenomination,
     String? ocrCurrency,
+    List<SellCardEntry>? cards,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();

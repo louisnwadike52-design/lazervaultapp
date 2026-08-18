@@ -1,3 +1,4 @@
+import '../../domain/entities/sell_card_entry.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../models/gift_card_model.dart';
 
@@ -94,6 +95,7 @@ abstract class IGiftCardRemoteDataSource {
     String? ocrPin,
     double? ocrDenomination,
     String? ocrCurrency,
+    List<SellCardEntry>? cards,
   });
 
   Future<GiftCardSaleModel> getSellStatus(String saleId);

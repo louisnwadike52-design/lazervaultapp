@@ -3,6 +3,7 @@ import 'package:grpc/grpc.dart';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../generated/giftcards.pb.dart' as pb;
 import '../../domain/entities/gift_card_entity.dart';
+import '../../domain/entities/sell_card_entry.dart';
 import '../models/gift_card_model.dart';
 import 'gift_card_remote_data_source.dart';
 
@@ -435,9 +436,10 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     double? ocrDenomination,
     String? ocrCurrency,
     // Multi-card batching (#81): when non-empty, the sale is submitted as a
-    // SINGLE Prestmit trade covering all items (backend sums the face values and
-    // joins the codes/images). Leave null/empty for the normal single-card flow.
-    List<pb.SellCardItem>? cards,
+    // SINGLE Prestmit/manual trade covering all items (backend sums the face
+    // values and joins the codes/images). Leave null/empty for the normal
+    // single-card flow. A 1-element list is a valid batch too.
+    List<SellCardEntry>? cards,
   }) async {
     try {
       final request = pb.SellGiftCardRequest(
@@ -478,7 +480,13 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         request.imageKeys.addAll(imageKeys);
       }
       if (cards != null && cards.isNotEmpty) {
-        request.cards.addAll(cards);
+        request.cards.addAll(cards.map((e) => pb.SellCardItem(
+              denomination: e.denomination,
+              cardCode: e.cardCode ?? '',
+              cardNumber: e.cardNumber ?? '',
+              cardPin: e.cardPin ?? '',
+              imageUrls: e.imageUrls,
+            )));
       }
 
       final options = await grpcClient.callOptions;

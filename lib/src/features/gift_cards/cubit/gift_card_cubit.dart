@@ -1,3 +1,4 @@
+import '../domain/entities/sell_card_entry.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -896,6 +897,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     String? ocrPin,
     double? ocrDenomination,
     String? ocrCurrency,
+    List<SellCardEntry>? cards,
   }) async {
     // Backend gate: explicit acceptance required. Mirror it client-side
     // so we can give immediate UX feedback without a round-trip.
@@ -952,6 +954,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         ocrPin: ocrPin,
         ocrDenomination: ocrDenomination,
         ocrCurrency: ocrCurrency,
+        cards: cards,
       );
       if (isClosed) return;
 

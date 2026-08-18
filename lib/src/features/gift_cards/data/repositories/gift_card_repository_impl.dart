@@ -1,3 +1,4 @@
+import '../../domain/entities/sell_card_entry.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:lazervault/core/errors/failure.dart';
 import 'package:lazervault/core/network/retry_policy.dart';
@@ -267,6 +268,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? ocrPin,
     double? ocrDenomination,
     String? ocrCurrency,
+    List<SellCardEntry>? cards,
   }) async {
     try {
       final sale = await RetryPolicy.critical.execute(
@@ -296,6 +298,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           ocrPin: ocrPin,
           ocrDenomination: ocrDenomination,
           ocrCurrency: ocrCurrency,
+          cards: cards,
         ),
       );
       return Right(sale);

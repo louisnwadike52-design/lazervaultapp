@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 /// Result of starting a Mono Prove session.
 class ProveInitiateResult {
@@ -146,6 +147,20 @@ class ProveKycHttpService {
       'redirect_url': 'lazervault://kyc/callback',
     });
 
+    // Async, non-blocking Loki trace of the KYC flow (AppLogger buffers +
+    // fire-and-forget flushes off the main thread — never awaited here).
+    AppLogger.event('kyc_prove', 'initiate.start',
+        screen: 'kyc_verification',
+        fields: {
+          'id_type': idType,
+          // Never log the raw BVN/NIN/phone — only whether they were supplied,
+          // so we can tell a pre-filled attempt from a widget-collected one.
+          'id_number_prefilled': idNumber.trim().isNotEmpty,
+          'phone_prefilled': phone.trim().isNotEmpty,
+          'has_email': email.trim().isNotEmpty,
+          'tier': tier,
+        });
+
     final res = await http
         .post(Uri.parse('$_base/initiate'),
             headers: await _headers(), body: body)
@@ -153,6 +168,14 @@ class ProveKycHttpService {
 
     final data = _decode(res);
     if (res.statusCode != 200 || data['success'] != true) {
+      AppLogger.event('kyc_prove', 'initiate.failed',
+          level: 'error',
+          screen: 'kyc_verification',
+          fields: {
+            'http_status': res.statusCode,
+            'error_code': _pick(data, 'error_code', 'errorCode'),
+            'error_message': _pick(data, 'error_message', 'errorMessage'),
+          });
       throw ProveKycException(
         _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
         code: _pick(data, 'error_code', 'errorCode'),
@@ -161,8 +184,14 @@ class ProveKycHttpService {
     final monoUrl = _pick(data, 'mono_url', 'monoUrl') ?? '';
     final reference = (data['reference'] ?? '').toString();
     if (monoUrl.isEmpty || reference.isEmpty) {
+      AppLogger.event('kyc_prove', 'initiate.no_url',
+          level: 'error', screen: 'kyc_verification',
+          fields: {'reference': reference, 'has_mono_url': monoUrl.isNotEmpty});
       throw ProveKycException('Could not start verification. Please try again.');
     }
+    AppLogger.event('kyc_prove', 'initiate.ok',
+        screen: 'kyc_verification',
+        fields: {'reference': reference, 'id_type': idType});
     return ProveInitiateResult(
       monoUrl: monoUrl,
       reference: reference,
@@ -180,13 +209,36 @@ class ProveKycHttpService {
 
     final data = _decode(res);
     if (res.statusCode != 200 || data['success'] != true) {
+      AppLogger.event('kyc_prove', 'complete.failed',
+          level: 'error',
+          screen: 'kyc_verification',
+          fields: {
+            'reference': reference,
+            'http_status': res.statusCode,
+            'error_code': _pick(data, 'error_code', 'errorCode'),
+            'error_message': _pick(data, 'error_message', 'errorMessage'),
+          });
       throw ProveKycException(
         _friendly(_pick(data, 'error_message', 'errorMessage'), res.statusCode),
         code: _pick(data, 'error_code', 'errorCode'),
       );
     }
+    final verified = data['verified'] == true;
+    AppLogger.event('kyc_prove', 'complete.result',
+        level: verified ? 'info' : 'warn',
+        screen: 'kyc_verification',
+        fields: {
+          'reference': reference,
+          'verified': verified,
+          'status': (data['status'] ?? '').toString(),
+          'tier': _asInt(data['tier']),
+          'completed_steps':
+              _asStringList(data['completedSteps'] ?? data['completed_steps']),
+          'next_requirements': _asStringList(
+              data['nextRequirements'] ?? data['next_requirements']),
+        });
     return ProveCompleteResult(
-      verified: data['verified'] == true,
+      verified: verified,
       status: (data['status'] ?? '').toString(),
       tier: _asInt(data['tier']),
       tierName: (data['tierName'] ?? data['tier_name'] ?? '').toString(),

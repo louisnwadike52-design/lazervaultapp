@@ -1,3 +1,4 @@
+import '../entities/sell_card_entry.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:lazervault/core/errors/failure.dart';
 import '../entities/gift_card_entity.dart';
@@ -109,6 +110,7 @@ abstract class IGiftCardRepository {
     String? ocrPin,
     double? ocrDenomination,
     String? ocrCurrency,
+    List<SellCardEntry>? cards,
   });
 
   Future<Either<Failure, GiftCardSale>> getSellStatus(String saleId);
