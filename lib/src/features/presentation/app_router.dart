@@ -524,6 +524,7 @@ import 'package:lazervault/src/features/channel_management/presentation/screens/
 
 // KYC imports
 import 'package:lazervault/src/features/kyc/presentation/views/bvn_verification_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/bvn_signup_screen.dart';
 // Payroll imports (Business)
 import 'package:lazervault/src/features/payroll/presentation/cubit/payroll_cubit.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/payroll_home_screen.dart';
@@ -3741,6 +3742,15 @@ GetPage(
     GetPage(
       name: AppRoutes.kycBVNVerification,
       page: () => const BVNVerificationScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Mandatory signup BVN capture — verified independently (Flutterwave VA
+    // mint) before the dashboard is reachable. Its own screen provisions the
+    // KYCCubit internally, so no BlocProvider wrapping is needed here.
+    GetPage(
+      name: AppRoutes.bvnSignup,
+      page: () => const BVNSignupScreen(),
       transition: Transition.rightToLeft,
     ),
 

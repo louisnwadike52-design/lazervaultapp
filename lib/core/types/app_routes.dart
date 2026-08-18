@@ -285,6 +285,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String faceScan = '/auth/face-scan';
   static const String facialLogin = '/auth/facial-login';
   static const String proofOfResidence = '/auth/proof-of-residence';
+  // Mandatory BVN capture in signup — verified independently (Flutterwave VA
+  // mint) BEFORE dashboard access. Distinct from the optional Mono Prove
+  // screen (kycBVNVerification), which stays skippable.
+  static const String bvnSignup = '/auth/bvn-signup';
 
   // Referral Routes
   static const String referralDashboard = '/referral/dashboard';

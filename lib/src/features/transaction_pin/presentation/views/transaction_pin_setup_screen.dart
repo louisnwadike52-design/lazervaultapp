@@ -5,7 +5,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/data/app_data.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:grpc/grpc.dart';
@@ -394,9 +396,27 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     final kycPending = await _readFlag('kyc_onboarding_pending');
     if (!mounted) return;
     if (kycPending == 'true') {
-      // First-time onboarding — show the (skippable) KYC step. Reached via
-      // offAllNamed, so its Skip/Done routes FORWARD to the dashboard.
-      Get.offAllNamed(AppRoutes.kycBVNVerification);
+      // First-time onboarding KYC step. The DEFAULT flow is Mono Prove
+      // (kycBVNVerification): its completion webhook already auto-creates the
+      // Flutterwave virtual account server-side (Mono verify → kyc.tier.upgrade
+      // → accounts provisioner), so no separate BVN entry is needed.
+      //
+      // When the admin enables the standalone BVN screen
+      // (bvn_signup_screen_enabled), signup instead shows that screen — unless
+      // this signup already captured a BVN, in which case skip straight ahead.
+      if (FeatureFlags.isBvnSignupScreenEnabled()) {
+        String? storedBvn;
+        try {
+          storedBvn = await serviceLocator<SecureStorageService>().getBvn();
+        } catch (_) {/* storage unavailable — fall through to the BVN screen */}
+        if (!mounted) return;
+        Get.offAllNamed(storedBvn == null || storedBvn.trim().isEmpty
+            ? AppRoutes.bvnSignup
+            : AppRoutes.dashboard);
+      } else {
+        // Default: skippable Mono Prove onboarding step.
+        Get.offAllNamed(AppRoutes.kycBVNVerification);
+      }
     } else {
       Get.offAllNamed(AppRoutes.dashboard);
     }

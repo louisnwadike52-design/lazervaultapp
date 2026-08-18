@@ -826,11 +826,19 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       }
     } catch (_) {/* profile not available — backend resolves what it can */}
 
+    // Pre-fill the BVN the user already entered + verified at signup (stored
+    // encrypted) so the Prove widget starts on the ownership/liveness step
+    // instead of asking for the number again. Empty if none on file.
+    var storedBvn = '';
     try {
-      // 1) Start the real Mono Prove session. No identity number is sent — the
-      //    hosted widget collects the BVN/NIN itself.
+      storedBvn = (await serviceLocator<SecureStorageService>().getBvn()) ?? '';
+    } catch (_) {/* no stored BVN — the hosted widget will collect it */}
+
+    try {
+      // 1) Start the real Mono Prove session. The BVN verified at signup is
+      //    passed through when present; otherwise the hosted widget collects it.
       final session = await _prove.initiate(
-        idNumber: '',
+        idNumber: storedBvn,
         firstName: firstName,
         lastName: lastName,
         phone: phone,

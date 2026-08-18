@@ -77,6 +77,10 @@ class EndpointRegistry {
     // action + whether scanned identifiers resolve to internal users.
     'scan_account_details_enabled',
     'scan_resolve_users_enabled',
+    // Standalone signup BVN screen (admin-toggled, OFF by default). Gates
+    // whether signup shows the dedicated BVN screen; the default onboarding
+    // uses Mono Prove (whose webhook auto-provisions the virtual account).
+    'bvn_signup_screen_enabled',
     // Insurance hosted-webview entry points (admin-toggled). The toggle gates
     // whether Buy + Manage open MyCover's hosted webview; the link is the
     // universal base the app composes the per-user URL from. Read via

@@ -88,6 +88,13 @@ class FeatureFlags {
   //   false ignores resolution (bank/external routing only). UI gate.
   static const String scanResolveUsersEnabled = 'scan_resolve_users_enabled';
 
+  /// Standalone BVN-capture screen in signup (admin-toggled). OFF by default:
+  /// the default onboarding uses the Mono Prove flow, whose completion webhook
+  /// already auto-creates the Flutterwave virtual account server-side. When the
+  /// admin turns this ON, signup shows the dedicated BVN screen after the
+  /// transaction-PIN step. Read via [isBvnSignupScreenEnabled].
+  static const String bvnSignupScreenEnabled = 'bvn_signup_screen_enabled';
+
   // ── Platform authentication mode (admin-selected) ─────────────────────────
   // Single mutually-exclusive enum mirrored from system_settings(auth_mode):
   //   'email_password' (DEFAULT) | 'phone_passcode'
@@ -223,6 +230,7 @@ class FeatureFlags {
       batchTransferPinRequired,
       scanAccountDetailsEnabled,
       scanResolveUsersEnabled,
+      bvnSignupScreenEnabled,
       insuranceHostedEntrypointsEnabled,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
@@ -556,6 +564,12 @@ class FeatureFlags {
   static bool get scanResolveUsersIsEnabled {
     return _prefs?.getBool(scanResolveUsersEnabled) ?? true;
   }
+
+  /// Whether the standalone signup BVN screen is enabled (admin-toggled).
+  /// Defaults to `false` → onboarding uses the Mono Prove flow (its webhook
+  /// auto-creates the virtual account). Synchronous read — call after [init].
+  static bool isBvnSignupScreenEnabled() =>
+      _prefs?.getBool(bvnSignupScreenEnabled) ?? false;
 
   // ── Insurance hosted-webview entry points ────────────────────────────────
   /// `false` by default → native in-app Buy + Manage flows. When `true`, those
