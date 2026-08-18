@@ -74,11 +74,6 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   Timer? _proveProbeTimer;
   String? _lastBlockedKey;
   bool _blockedDialogOpen = false;
-  // Consecutive probe ticks where "Grant Permission" is disabled but we found
-  // no actionable item to surface (e.g. the provider rejected a detail like an
-  // invalid date of birth). After a few ticks we show a generic "couldn't
-  // complete" hint so the user isn't stuck on a dead button.
-  int _disabledNoActionTicks = 0;
 
   // Outcome is classified inline in _handleRedirect from the explicit
   // status/reason query params (success > failure > ambiguous-close-debounce).
@@ -284,26 +279,26 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
       if (!disabled) {
         // Grant Permission is enabled (or the page moved on) — fully resolved.
         _lastBlockedKey = null;
-        _disabledNoActionTicks = 0;
         return;
       }
       if (incomplete.isNotEmpty) {
         // We know exactly what is outstanding — guide the user to provide it.
-        _disabledNoActionTicks = 0;
         final key = incomplete.join(',');
         if (key == _lastBlockedKey) return; // already guided for this exact set
         _lastBlockedKey = key;
         _showProveActionNeededDialog(incomplete);
         return;
       }
-      // Grant Permission disabled but nothing actionable we can detect (e.g. the
-      // provider rejected a detail like an invalid date of birth). Give it a few
-      // ticks in case it is still validating, then surface a generic "couldn't
-      // complete" hint so the user isn't stuck staring at a dead button.
-      _disabledNoActionTicks++;
-      if (_disabledNoActionTicks >= 4) {
-        _showProveStuckDialog();
-      }
+      // Grant Permission disabled with nothing actionable we can detect. This is
+      // the NORMAL in-progress state for MOST of the Prove flow: the button only
+      // enables at the very end, and the user is usually still entering their
+      // BVN/NIN on a sub-screen this JS probe can't introspect. Treating it as a
+      // failure previously popped a "We couldn't complete verification" modal
+      // every ~12s mid-entry — forcing users to dismiss it over and over while
+      // filling in their BVN (and its "Try Again" reloaded the widget, losing
+      // their progress). So do NOTHING here: the user drives the flow and can
+      // close the sheet themselves if they are genuinely stuck. A real terminal
+      // failure still surfaces via the redirect/status path, not this heuristic.
     } catch (_) {
       // Page not ready / eval blocked — ignore and try again next tick.
     }
@@ -392,63 +387,6 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0)),
             child: const Text('Got it'),
-          ),
-        ],
-      ),
-    ).then((_) => _blockedDialogOpen = false);
-  }
-
-  /// Shown when "Grant Permission" stays disabled with nothing actionable we can
-  /// detect (e.g. the provider rejected a detail like an invalid date of birth),
-  /// so the user isn't left staring at a dead button. Offers a retry (reload) or
-  /// a clean close (returns cancelled — the host can then offer skip/continue).
-  void _showProveStuckDialog() {
-    if (!mounted || _blockedDialogOpen) return;
-    _blockedDialogOpen = true;
-    showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-        title: Row(
-          children: [
-            Icon(Icons.error_outline_rounded,
-                color: const Color(0xFFEF4444), size: 24.sp),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Text("We couldn't complete verification",
-                  style: TextStyle(
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1E3A5F))),
-            ),
-          ],
-        ),
-        content: Text(
-          "Some of your details couldn't be confirmed by our verification "
-          'partner. Please try again, or close and continue — you can finish '
-          'verifying later.',
-          style: TextStyle(fontSize: 14.sp, color: Colors.grey[700], height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pop(DirectPayAuthResult.cancelled());
-            },
-            child: Text('Close', style: TextStyle(color: Colors.grey[700])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _disabledNoActionTicks = 0;
-              _lastBlockedKey = null;
-              _controller.reload();
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4E03D0)),
-            child: const Text('Try Again'),
           ),
         ],
       ),
