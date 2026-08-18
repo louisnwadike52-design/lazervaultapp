@@ -39,6 +39,8 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/services/push_notifications_service.dart';
 import 'src/features/authentication/cubit/authentication_cubit.dart';
+import 'src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
+import 'src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/database/database_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -338,6 +340,21 @@ void main() {
         conversationId: m.data['conversation_id']?.toString(),
       );
       PendingChatNavigation.instance.consumeAndNavigate();
+      return;
+    }
+    // Plan My Day reminder push → open the Reminders screen. Guarded on auth so
+    // a cold-start tap by a not-yet-logged-in user isn't pushed over the login
+    // gate (the notification content already delivered the reminder itself).
+    if (m.data['type'] == 'planning_reminder') {
+      final authed = serviceLocator.isRegistered<AuthenticationCubit>() &&
+          serviceLocator<AuthenticationCubit>().isAuthenticated;
+      if (authed) {
+        Get.to(() => BlocProvider<PlanMyDayCubit>(
+              create: (_) => serviceLocator<PlanMyDayCubit>()..loadReminders(),
+              child: const ReminderManagementScreen(),
+            ));
+      }
+      return;
     }
   };
   unawaited(pushSvc.initialize());

@@ -41,6 +41,7 @@ import 'package:lazervault/src/features/plan_my_day/notes/presentation/notes_scr
 import 'package:lazervault/src/features/plan_my_day/habits/presentation/habits_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/widgets/upcoming_reminders_card.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/widgets/reminders_list_body.dart';
 part 'plan_my_day_screen_widgets.dart';
 
 
@@ -177,7 +178,9 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
           ],
         ),
         // People view brings its own "add contact" FAB, so hide this one there.
-        floatingActionButton: _currentViewIndex == 2
+        // People (2) brings its own "add contact" FAB; Reminders (3) has its own
+        // scoped-cubit FAB inside its view — hide the shared task/event FAB there.
+        floatingActionButton: (_currentViewIndex == 2 || _currentViewIndex == 3)
             ? null
             : FloatingActionButton(
                 backgroundColor: const Color(0xFF4E03D0),
@@ -196,7 +199,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
               // over the same PlanMyDayLoaded dataset.
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: 3,
+                itemCount: 4,
                 onPageChanged: (index) {
                   setState(() {
                     _currentViewIndex = index;
@@ -210,6 +213,8 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
                       return _buildBoardView();
                     case 2:
                       return _buildPeopleView();
+                    case 3:
+                      return _buildRemindersView();
                     default:
                       return const SizedBox.shrink();
                   }
@@ -241,6 +246,11 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
           SizedBox(width: 4.w),
           Expanded(
             child: _buildViewToggleItem('People', 2, Icons.people_alt_outlined),
+          ),
+          SizedBox(width: 4.w),
+          Expanded(
+            child: _buildViewToggleItem(
+                'Reminders', 3, Icons.notifications_active_outlined),
           ),
         ],
       ),
@@ -295,6 +305,26 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
     return BlocProvider<ContactCubit>(
       create: (_) => serviceLocator<ContactCubit>(),
       child: const ContactsListScreen(),
+    );
+  }
+
+  /// Reminders tab. Its own scoped PlanMyDayCubit (so ReminderListLoaded never
+  /// clobbers the board/day state) + a transparent nested Scaffold that hosts
+  /// the create-reminder FAB wired to that cubit.
+  Widget _buildRemindersView() {
+    return BlocProvider<PlanMyDayCubit>(
+      create: (_) => serviceLocator<PlanMyDayCubit>()..loadReminders(),
+      child: Builder(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: const Color(0xFF4E03D0),
+            onPressed: () => RemindersListBody.openCreateSheet(ctx),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+          body: const RemindersListBody(),
+        ),
+      ),
     );
   }
 
