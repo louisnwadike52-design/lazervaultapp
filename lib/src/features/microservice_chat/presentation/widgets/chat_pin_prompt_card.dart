@@ -123,6 +123,8 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         return Icons.public_rounded;
       case 'split_bill_pay':
         return Icons.group;
+      case 'fraud_unfreeze':
+        return Icons.lock_open_rounded;
       default:
         return Icons.lock_outline;
     }
@@ -154,6 +156,8 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
         return 'Confirm international transfer';
       case 'split_bill_pay':
         return 'Confirm split-bill payment';
+      case 'fraud_unfreeze':
+        return 'Unlock your account';
       default:
         return 'Confirm payment';
     }
