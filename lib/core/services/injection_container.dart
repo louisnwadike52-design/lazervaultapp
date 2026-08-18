@@ -145,6 +145,8 @@ import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/virtual_account/domain/repositories/i_virtual_account_repository.dart';
 import 'package:lazervault/src/features/virtual_account/data/repositories/virtual_account_repository_impl.dart';
 import 'package:lazervault/src/features/virtual_account/domain/usecases/create_virtual_account_usecase.dart';
+import 'package:lazervault/src/features/virtual_account/domain/services/va_provisioning_service.dart';
+import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 // End Virtual Account Imports
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
@@ -3634,6 +3636,14 @@ Future<void> init() async {
   );
   serviceLocator.registerLazySingleton<CreateVirtualAccountUseCase>(
     () => CreateVirtualAccountUseCase(serviceLocator<IVirtualAccountRepository>()),
+  );
+  // Proactive VA provisioning (dashboard-on-land + deposit fallback).
+  serviceLocator.registerLazySingleton<VaProvisioningService>(
+    () => VaProvisioningService(
+      serviceLocator<CreateVirtualAccountUseCase>(),
+      serviceLocator<SecureStorageService>(),
+      ProveKycHttpService(serviceLocator<SecureStorageService>()),
+    ),
   );
 
   // Cache Data Source - SQLite for offline support

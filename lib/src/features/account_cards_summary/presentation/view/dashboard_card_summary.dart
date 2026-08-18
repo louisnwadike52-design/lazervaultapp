@@ -19,6 +19,8 @@ import 'package:lazervault/src/features/account_actions/presentation/cubit/accou
 import '../widgets/empty_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/virtual_account/domain/services/va_provisioning_service.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -191,6 +193,59 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
         );
   }
 
+  // Guards a single provision attempt per mount so state churn never re-fires
+  // createVirtualAccount.
+  bool _provisionAttempted = false;
+
+  /// If the verified user's active-locale PERSONAL account has no NUBAN yet,
+  /// provision it in the background then silently refresh so the deposit account
+  /// appears on the dashboard automatically — no manual "activate" step. NUBANs
+  /// are minted for NG only today, so this targets the NGN personal account.
+  /// Best-effort + guarded; never blocks the UI.
+  Future<void> _maybeProvisionMissingVA(
+      List<AccountSummaryEntity> summaries) async {
+    if (_provisionAttempted || !mounted) return;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final user = authState.profile.user;
+
+    String activeCurrency = 'NGN';
+    final profileState = context.read<ProfileCubit>().state;
+    if (profileState is ProfileLoaded &&
+        profileState.preferences.currency.isNotEmpty) {
+      activeCurrency = profileState.preferences.currency;
+    }
+    if (activeCurrency.toUpperCase() != 'NGN') return;
+
+    AccountSummaryEntity? target;
+    for (final s in summaries) {
+      if (s.isPersonalAccount &&
+          s.currency.toUpperCase() == activeCurrency.toUpperCase() &&
+          (s.accountNumber == null || s.accountNumber!.trim().isEmpty)) {
+        target = s;
+        break;
+      }
+    }
+    if (target == null) return; // already provisioned (or no personal account)
+
+    _provisionAttempted = true;
+    try {
+      final va = await serviceLocator<VaProvisioningService>().ensurePersonalVA(
+        currency: activeCurrency,
+        locale: 'en-NG',
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber ?? '',
+        isPrimary: target.isPrimary,
+      );
+      if (!mounted) return;
+      if (va != null) {
+        _refreshAccountSummaries(silent: true);
+      }
+    } catch (_) {/* best-effort — provisioning is an enhancement */}
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get user for the header
@@ -299,11 +354,13 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                   // Add listener to observe state changes received by the UI
                   print(
                       "_DashboardCardSummaryView BlocConsumer Listener: Received state -> $state");
-                  // You could add specific side-effects here if needed in the future,
-                  // e.g., showing a snackbar on error without rebuilding the main content.
-                  // if (state is AccountCardsSummaryError) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
-                  // }
+                  // Proactive VA provisioning: the moment the summaries land, if a
+                  // verified user's active-locale personal account has no NUBAN yet,
+                  // mint it in the background and silently refresh so they simply
+                  // SEE their deposit account on the dashboard (no "activate" step).
+                  if (state is AccountCardsSummaryLoaded) {
+                    _maybeProvisionMissingVA(state.accountSummaries);
+                  }
                 },
                 builder: (context, state) {
                   // Get country code from user profile for empty state handling
