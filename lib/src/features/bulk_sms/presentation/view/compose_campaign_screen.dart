@@ -37,6 +37,11 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
     cubit.loadBalance();
     cubit.loadProviders();
     _message.addListener(() => setState(() {}));
+    // Default to the platform's registered sender so a brand-new user (no
+    // approved sender IDs of their own) can send immediately without typing —
+    // "Lazervault" is Termii-registered. Used as the manual-field default and as
+    // the send fallback; a user with approved IDs picks one (auto-selected below).
+    _senderIdField.text = 'Lazervault';
   }
 
   @override
@@ -164,6 +169,15 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
   Widget _senderIdSection(BulkSmsState state) {
     final approved =
         state.senderIds.where((s) => s.status.isApproved).toList();
+    // Auto-select the first approved sender ID so the user isn't silently sending
+    // as the default "Lazervault" when they have their own approved IDs.
+    if (approved.isNotEmpty && _selectedSenderId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedSenderId == null) {
+          setState(() => _selectedSenderId = approved.first.senderId);
+        }
+      });
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
