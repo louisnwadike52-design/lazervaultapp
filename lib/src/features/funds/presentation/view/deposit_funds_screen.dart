@@ -1020,16 +1020,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
     if (!mounted) return;
     if (res.status == DepositReadiness.needsKyc) return; // verification took over
+    if (res.status == DepositReadiness.provisioning) {
+      // The NUBAN mint didn't complete this attempt — BLOCK the flow with a modal
+      // and do NOT open the method sheet, so the user never lands in a deposit
+      // method they can't complete. They retry once the account is ready.
+      await showAccountSetupPendingModal(context);
+      return;
+    }
+    // ready — capture the freshly-minted NUBAN so the sheet shows it, then proceed.
     if (res.mintedAccountNumber != null) {
       setState(() => _provisionedAccountNumber = res.mintedAccountNumber);
-    } else if (res.status == DepositReadiness.provisioning) {
-      Get.snackbar(
-        'Setting up your account',
-        'Your deposit account is being set up — this only takes a moment. You can continue.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF1F1F1F),
-        colorText: Colors.white,
-      );
     }
     if (!mounted) return;
     _openMethodSheet(method);

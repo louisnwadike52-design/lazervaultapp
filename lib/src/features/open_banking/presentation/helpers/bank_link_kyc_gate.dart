@@ -113,15 +113,16 @@ Future<DepositGateResult> ensureDepositReady(
     return const DepositGateResult(DepositReadiness.ready);
   }
 
-  // No NUBAN yet — show the loading overlay from the outset so the tap never
-  // looks like it did nothing while we resolve verify + mint.
+  // No NUBAN yet — show a BLOCKING "Setting up your account" modal from the
+  // outset (not a bottomsheet, not a transient snackbar) so the tap never looks
+  // like it did nothing, and the user cannot proceed into the deposit flow while
+  // we resolve verify + mint. Non-dismissible — it owns the screen until we know
+  // the outcome.
   showDialog<void>(
     context: context,
     barrierDismissible: false,
-    barrierColor: Colors.black54,
-    builder: (_) => const Center(
-      child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
-    ),
+    barrierColor: Colors.black87,
+    builder: (_) => const _AccountSetupModal(),
   );
   void hideLoader() {
     if (Navigator.of(context, rootNavigator: true).canPop()) {
@@ -200,4 +201,96 @@ Future<bool> _promptVerify(BuildContext context) async {
     Get.toNamed(AppRoutes.kycBVNVerification, arguments: {'fromDeposit': true});
   }
   return false; // link aborted; verification takes over
+}
+
+/// The blocking "Setting up your account" modal shown while the NUBAN is being
+/// provisioned. A centered dialog (never a bottomsheet) with a spinner + copy, so
+/// the user understands what's happening and cannot proceed until it resolves.
+class _AccountSetupModal extends StatelessWidget {
+  const _AccountSetupModal();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false, // can't be dismissed while provisioning is in flight
+      child: Dialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 28.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 44.r,
+                height: 44.r,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 3, color: Color(0xFF4E03D0)),
+              ),
+              SizedBox(height: 20.h),
+              Text(
+                'Setting up your account',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'We\'re creating your deposit account. This only takes a moment — '
+                'please don\'t close this screen.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.45),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Blocking modal shown when the NUBAN mint didn't complete in this attempt. It
+/// PREVENTS continuation of the deposit flow (the caller does not open the method
+/// sheet) and tells the user to try again shortly. Dismiss returns to the screen.
+Future<void> showAccountSetupPendingModal(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      title: Row(
+        children: [
+          Icon(Icons.hourglass_top_rounded,
+              color: const Color(0xFFFB923C), size: 20.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text('Almost ready',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+      content: Text(
+        'Your deposit account is still being set up. Please give it a moment and '
+        'try again shortly — we\'ll take you through once it\'s ready.',
+        style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.45),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text('OK',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF4E03D0),
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ),
+  );
 }
