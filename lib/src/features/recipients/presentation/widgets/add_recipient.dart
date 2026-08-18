@@ -687,11 +687,13 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                         child: TextField(
                           controller: _accountController,
                           keyboardType: TextInputType.number,
-                          maxLength: 10,
+                          // 11 so a wallet phone with a leading zero (OPay/
+                          // PalmPay/Moniepoint) fits; a 10-digit NUBAN still works.
+                          maxLength: 11,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.grey[50],
-                            hintText: 'Enter 10-digit account number',
+                            hintText: 'Account or phone (OPay, PalmPay…)',
                             hintStyle: TextStyle(color: Colors.grey[500]),
                             prefixIcon: Icon(
                                 Icons.account_balance_wallet_rounded,
@@ -714,7 +716,8 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
                             counterText: '',
                             // Only the completion check lives inside the field
                             // now; the scan action moved to its own button.
-                            suffixIcon: _accountController.text.length == 10
+                            suffixIcon: _isAccountNumberComplete(
+                                    _accountController.text)
                                 ? Padding(
                                     padding: EdgeInsets.only(right: 8.w),
                                     child: Icon(Icons.check_circle,
@@ -3270,16 +3273,23 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     );
   }
 
+  /// A recipient account is "complete" at a 10-digit NUBAN OR an 11-digit wallet
+  /// phone with a leading zero (OPay/PalmPay/Moniepoint) — the backend
+  /// normalises the latter to its 10-digit NUBAN for resolution + suggestions.
+  static bool _isAccountNumberComplete(String v) =>
+      v.length == 10 || (v.length == 11 && v.startsWith('0'));
+
   void _onAccountNumberChanged(String value) {
     _suggestDebounce?.cancel();
+    final complete = _isAccountNumberComplete(value);
     setState(() {
       if (_verificationResult != null) _verificationResult = null;
-      if (value.length != 10) {
+      if (!complete) {
         _bankSuggestions = [];
         _loadingSuggestions = false;
       }
     });
-    if (value.length == 10) {
+    if (complete) {
       setState(() => _loadingSuggestions = true);
       _suggestDebounce = Timer(
         const Duration(milliseconds: 400),
