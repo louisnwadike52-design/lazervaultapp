@@ -15,6 +15,7 @@ import 'package:lazervault/core/utils/image_compressor.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
+import '../../domain/entities/sell_card_entry.dart';
 import '../../domain/validation/gift_card_validation.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
@@ -85,6 +86,38 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // with the step-0 browse code — so it's now effectively const.
   final String _selectedCountry = 'US';
   String _selectedFormat = 'ecode'; // "ecode" or "physical"
+
+  // Multi-card batching (#81): ADDITIONAL e-code cards beyond the primary one on
+  // screen. All cards share the SAME brand + payout + verify/PIN; only the
+  // denomination + code differ. When non-empty, the sale is submitted as ONE
+  // Prestmit/manual trade covering every card (backend sums the faces + joins the
+  // codes). Empty ⇒ the normal single-card path is used, unchanged.
+  final List<_ExtraSellCard> _extraCards = [];
+
+  void _addExtraCard() => setState(() => _extraCards.add(_ExtraSellCard()));
+  void _removeExtraCard(int i) =>
+      setState(() => _extraCards.removeAt(i).dispose());
+
+  /// Sum of the primary denomination + every additional card's denomination.
+  double get _multiCardTotalFace {
+    var total = _selectedDenomination ??
+        (double.tryParse(_denominationController.text.trim()) ?? 0);
+    for (final c in _extraCards) {
+      total += double.tryParse(c.denomination.text.trim()) ?? 0;
+    }
+    return total;
+  }
+
+  /// First unmet requirement across the extra cards, or null when all valid.
+  String? _extraCardsError() {
+    for (var i = 0; i < _extraCards.length; i++) {
+      final c = _extraCards[i];
+      final d = double.tryParse(c.denomination.text.trim()) ?? 0;
+      if (d <= 0) return 'Enter a valid amount for card ${i + 2}.';
+      if (c.code.text.trim().isEmpty) return 'Enter the code for card ${i + 2}.';
+    }
+    return null;
+  }
   String? _cardNumberError;
   String? _cardPinError;
 
@@ -159,6 +192,9 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     _cardNumberController.dispose();
     _cardPinController.dispose();
     _denominationController.dispose();
+    for (final c in _extraCards) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -734,6 +770,9 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             SizedBox(height: 12.h),
           ],
 
+          // Multi-card batching (#81): add more e-code cards to this same sale.
+          _buildAdditionalCardsSection(),
+
           // Scan Card with AI button (optional, only when images uploaded)
           if (_uploadedImageUrls.isNotEmpty)
             SizedBox(
@@ -1279,14 +1318,28 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   void _onGetRate() {
     if (!_validateCardFields()) return;
 
+    // Multi-card: every ADDITIONAL card must have a valid amount + code before we
+    // price/verify — same standard we hold the first card to.
+    final extraErr = _extraCardsError();
+    if (extraErr != null) {
+      Get.snackbar('Check your cards', extraErr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF1F1F1F),
+          colorText: Colors.white);
+      return;
+    }
+
     // Fetch the sell rate, and load payout methods in the background only
     // to auto-resolve the payout currency from the dashboard default
     // (DefaultPayoutMethod, e.g. NAIRA for the NGN locale). No payout-
     // currency selection screen exists; the active-locale currency drives
     // payout end to end, so advance straight to confirm (step 3).
+    // For a multi-card batch, price on the TOTAL face so the verify/confirm
+    // payout reflects every card (the backend also settles on the sum).
     context.read<GiftCardCubit>().getSellRate(
       cardType: _selectedCard!.cardType,
-      denomination: _selectedDenomination!,
+      denomination:
+          _extraCards.isEmpty ? _selectedDenomination! : _multiCardTotalFace,
     );
     context.read<GiftCardCubit>().loadPayoutMethods();
     // Advance to the Verify-balance step (step 2). The rate loads in the
@@ -2492,8 +2545,27 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     // Subcategory id is the Prestmit numeric id used as `giftcard_id`.
     final subcategoryId = _selectedCard?.subcategoryId ?? '';
 
+    // Multi-card batch: when the user added extra e-code cards, submit them as ONE
+    // trade — the primary card (its own amount + code) plus each extra. The backend
+    // sums the faces and joins the codes; a null/empty list keeps the single-card
+    // path unchanged.
+    final List<SellCardEntry>? cardsBatch = _extraCards.isEmpty
+        ? null
+        : <SellCardEntry>[
+            SellCardEntry(
+              denomination: _selectedDenomination!,
+              cardCode: _cardNumberController.text.trim(),
+            ),
+            for (final c in _extraCards)
+              SellCardEntry(
+                denomination: double.tryParse(c.denomination.text.trim()) ?? 0,
+                cardCode: c.code.text.trim(),
+              ),
+          ];
+
     // Execute sell AFTER modal is dismissed
     await context.read<GiftCardCubit>().sellGiftCard(
+      cards: cardsBatch,
       cardType: _selectedCard!.cardType,
       cardNumber: _cardNumberController.text.trim(),
       cardPin: _cardPinController.text.trim(),
@@ -2596,5 +2668,164 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     if (hay.contains('australia')) return 'AUD';
     if (hay.contains('ghana')) return 'GHS';
     return 'USD';
+  }
+
+  // ── Multi-card (additional e-code cards) ─────────────────────────────────
+  /// The "Sell more than one card at once" section, shown on the Ecode details
+  /// step. Each additional card is an accordion with its own amount + code; the
+  /// batch is submitted as ONE trade. Physical cards keep the single-card image
+  /// flow (batching there would need per-card photo sets).
+  Widget _buildAdditionalCardsSection() {
+    if (_selectedFormat != 'ecode') return const SizedBox.shrink();
+    const purple = Color(0xFF4E03D0);
+    final total = _multiCardTotalFace;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 20.h),
+        Row(children: [
+          Icon(Icons.style_outlined, color: purple, size: 18.sp),
+          SizedBox(width: 8.w),
+          Text('Selling more than one card?',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600)),
+        ]),
+        SizedBox(height: 4.h),
+        Text(
+          'Add each extra card below — same brand, one payout. We submit them together.',
+          style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.55), fontSize: 11.5.sp),
+        ),
+        SizedBox(height: 12.h),
+        for (var i = 0; i < _extraCards.length; i++)
+          _buildExtraCardTile(i, _extraCards[i], purple),
+        SizedBox(height: 4.h),
+        InkWell(
+          onTap: _addExtraCard,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: purple.withValues(alpha: 0.5), width: 1.2),
+            ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.add, color: purple, size: 18.sp),
+              SizedBox(width: 6.w),
+              Text('Add another card',
+                  style: GoogleFonts.inter(
+                      color: purple,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
+            ]),
+          ),
+        ),
+        if (_extraCards.isNotEmpty) ...[
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+                color: purple.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${_extraCards.length + 1} cards · total face',
+                    style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 12.5.sp)),
+                Text('${total.toStringAsFixed(0)} ${_selectedCard?.currencies.isNotEmpty == true ? _selectedCard!.currencies.first : ''}',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildExtraCardTile(int i, _ExtraSellCard card, Color accent) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B1626),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          tilePadding: EdgeInsets.symmetric(horizontal: 14.w),
+          childrenPadding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+          iconColor: accent,
+          collapsedIconColor: Colors.white54,
+          title: Text('Card ${i + 2}',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.5.sp,
+                  fontWeight: FontWeight.w600)),
+          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+            IconButton(
+              icon: Icon(Icons.delete_outline,
+                  color: Colors.redAccent.withValues(alpha: 0.8), size: 20.sp),
+              onPressed: () => _removeExtraCard(i),
+            ),
+            Icon(Icons.expand_more, color: Colors.white54, size: 20.sp),
+          ]),
+          children: [
+            TextField(
+              controller: card.denomination,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+              onChanged: (_) => setState(() {}),
+              decoration: _extraFieldDecoration('Amount (face value)'),
+            ),
+            SizedBox(height: 10.h),
+            TextField(
+              controller: card.code,
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+              decoration: _extraFieldDecoration('Card code / e-code'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _extraFieldDecoration(String hint) => InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.4), fontSize: 13.sp),
+        filled: true,
+        fillColor: const Color(0xFF0A0A0A),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12))),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12))),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 1.4)),
+      );
+}
+
+/// One additional e-code card in a multi-card SELL batch (owns its controllers).
+class _ExtraSellCard {
+  final TextEditingController denomination = TextEditingController();
+  final TextEditingController code = TextEditingController();
+  void dispose() {
+    denomination.dispose();
+    code.dispose();
   }
 }
