@@ -16,6 +16,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../domain/entities/sell_card_entry.dart';
+import '../utils/sell_card_logo.dart';
 import '../../domain/validation/gift_card_validation.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
@@ -659,19 +660,29 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           _buildDenominationChips(),
           SizedBox(height: 20.h),
 
-          // Card number
-          _buildFieldLabel('Card Number', hasOcr: _ocrCardNumber.isNotEmpty),
+          // Card code / number. For an e-code the redemption payload IS a single
+          // code (same as each "add another card" tile), so we relabel to
+          // "Card Code / E-Code", drop the XXXX-XXXX physical-card grouping, and
+          // don't force a PIN. Physical cards keep the grouped 16-digit number.
+          _buildFieldLabel(
+            _selectedFormat == 'ecode' ? 'Card Code / E-Code' : 'Card Number',
+            hasOcr: _ocrCardNumber.isNotEmpty,
+          ),
           SizedBox(height: 8.h),
           _buildTextField(
             fieldKey: const Key('sell_card_number_field'),
             controller: _cardNumberController,
-            hintText: 'XXXX-XXXX-XXXX-XXXX',
+            hintText: _selectedFormat == 'ecode'
+                ? 'Enter the gift card code'
+                : 'XXXX-XXXX-XXXX-XXXX',
             keyboardType: TextInputType.text,
             errorText: _cardNumberError,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\-]')),
-              _CardNumberFormatter(),
-            ],
+            inputFormatters: _selectedFormat == 'ecode'
+                ? [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\-]'))]
+                : [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\-]')),
+                    _CardNumberFormatter(),
+                  ],
             // Live validation: re-evaluate on every keystroke so the
             // Get-Rate CTA + the inline error stay in sync with the
             // current input. Until the field is non-empty we suppress
@@ -687,13 +698,19 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ),
           SizedBox(height: 16.h),
 
-          // Card PIN
-          _buildFieldLabel('Card PIN', hasOcr: _ocrPin.isNotEmpty),
+          // Card PIN — optional for e-codes (most e-codes are a single code with
+          // no separate PIN), required for physical cards.
+          _buildFieldLabel(
+            _selectedFormat == 'ecode' ? 'Card PIN (optional)' : 'Card PIN',
+            hasOcr: _ocrPin.isNotEmpty,
+          ),
           SizedBox(height: 8.h),
           _buildTextField(
             fieldKey: const Key('sell_card_pin_field'),
             controller: _cardPinController,
-            hintText: 'Enter gift card PIN',
+            hintText: _selectedFormat == 'ecode'
+                ? 'Enter PIN if the card has one'
+                : 'Enter gift card PIN',
             keyboardType: TextInputType.text,
             errorText: _cardPinError,
             inputFormatters: [
@@ -1210,9 +1227,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   }
 
   bool _canGetRate() {
+    // E-code: only the code is required (PIN optional). Physical: code + PIN.
     final hasDetails = _selectedDenomination != null &&
         _cardNumberController.text.trim().isNotEmpty &&
-        _cardPinController.text.trim().isNotEmpty;
+        (_selectedFormat == 'ecode' ||
+            _cardPinController.text.trim().isNotEmpty);
     if (!hasDetails) return false;
 
     // Physical cards: require 2 images (front + back) — operators
@@ -1249,17 +1268,20 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   static final _kAlnumPattern = RegExp(r'^[A-Za-z0-9]+$');
 
   String? _validateCardNumberValue(String raw) {
+    // Label the field the way the UI does so errors match ("Card code" for
+    // e-codes, "Card number" for physical).
+    final label = _selectedFormat == 'ecode' ? 'Card code' : 'Card number';
     // Dashes are formatting only; the actual code is the alnum payload.
     final v = raw.replaceAll('-', '').replaceAll(' ', '').trim();
-    if (v.isEmpty) return 'Card number is required';
+    if (v.isEmpty) return '$label is required';
     if (v.length < _kCardNumberMinLen) {
-      return 'Card number must be at least $_kCardNumberMinLen characters';
+      return '$label must be at least $_kCardNumberMinLen characters';
     }
     if (v.length > _kCardNumberMaxLen) {
-      return 'Card number is too long (max $_kCardNumberMaxLen characters)';
+      return '$label is too long (max $_kCardNumberMaxLen characters)';
     }
     if (!_kAlnumPattern.hasMatch(v)) {
-      return 'Card number can only contain letters and numbers';
+      return '$label can only contain letters and numbers';
     }
     return null;
   }
@@ -1291,13 +1313,24 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ? 'Enter an amount'
           : 'Pick a denomination';
     }
-    if (_cardNumberController.text.trim().isEmpty) return 'Enter the card number';
-    if (_validateCardNumberValue(_cardNumberController.text) != null) {
-      return 'Card number looks invalid';
+    final isEcode = _selectedFormat == 'ecode';
+    if (_cardNumberController.text.trim().isEmpty) {
+      return isEcode ? 'Enter the card code' : 'Enter the card number';
     }
-    if (_cardPinController.text.trim().isEmpty) return 'Enter the card PIN';
-    if (_validateCardPinValue(_cardPinController.text) != null) {
-      return 'PIN looks invalid';
+    if (_validateCardNumberValue(_cardNumberController.text) != null) {
+      return isEcode ? 'Card code looks invalid' : 'Card number looks invalid';
+    }
+    if (isEcode) {
+      // PIN optional for e-codes — only flag it if the user typed an invalid one.
+      if (_cardPinController.text.trim().isNotEmpty &&
+          _validateCardPinValue(_cardPinController.text) != null) {
+        return 'PIN looks invalid';
+      }
+    } else {
+      if (_cardPinController.text.trim().isEmpty) return 'Enter the card PIN';
+      if (_validateCardPinValue(_cardPinController.text) != null) {
+        return 'PIN looks invalid';
+      }
     }
     if (_selectedFormat == 'physical' && _uploadedImageUrls.length < 2) {
       return 'Upload front and back photos';
@@ -1307,7 +1340,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
 
   bool _validateCardFields() {
     final numErr = _validateCardNumberValue(_cardNumberController.text);
-    final pinErr = _validateCardPinValue(_cardPinController.text);
+    // E-code PIN is optional — validate only a PIN the user actually typed.
+    final pinEmpty = _cardPinController.text.trim().isEmpty;
+    final pinErr = (_selectedFormat == 'ecode' && pinEmpty)
+        ? null
+        : _validateCardPinValue(_cardPinController.text);
     setState(() {
       _cardNumberError = numErr;
       _cardPinError = pinErr;
@@ -2055,7 +2092,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.r),
               child: CachedNetworkImage(
-                imageUrl: _selectedCard!.logoUrl,
+                // Prestmit sell cards ship no logoUrl — derive a Clearbit brand
+                // logo from the name (shared with the sell grid), then degrade
+                // to the gift-card icon if even that fails to load.
+                imageUrl: sellCardLogoUrl(_selectedCard!),
                 fit: BoxFit.contain,
                 errorWidget: (context, url, error) => Icon(
                   Icons.card_giftcard_rounded,
