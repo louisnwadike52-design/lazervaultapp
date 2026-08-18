@@ -96,39 +96,44 @@ class AccountConfirmationBottomSheetState
           // Header
           _buildHeader(),
 
-          // Content
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(height: 12.h),
+          // Content — scrollable so that on the smallest screens the content +
+          // keyboard can never exceed the sheet height and throw a RenderFlex
+          // overflow; it just scrolls instead. Flexible bounds it to the space
+          // left above the (keyboard-lifted) bottom actions.
+          Flexible(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 12.h),
 
-                // Account Details Card — compresses to a compact row while the
-                // alias field is focused so it (and the field) stay visible.
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child: _buildAccountDetailsCard(compact: _aliasEditing),
-                ),
+                  // Account Details Card — compresses to a compact row while the
+                  // alias field is focused so it (and the field) stay visible.
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    child: _buildAccountDetailsCard(compact: _aliasEditing),
+                  ),
 
-                // Warning Info Box — hidden while typing the alias to free the
-                // vertical room the field needs above the keyboard; reshown after.
-                if (!_aliasEditing) ...[
+                  // Warning Info Box — hidden while typing the alias to free the
+                  // vertical room the field needs above the keyboard; reshown after.
+                  if (!_aliasEditing) ...[
+                    SizedBox(height: 16.h),
+                    _buildInfoBox(),
+                  ],
+
                   SizedBox(height: 16.h),
-                  _buildInfoBox(),
+
+                  // Favorite Toggle
+                  _buildFavoriteToggle(),
+
+                  // Alias Input (shown when favorite is toggled on)
+                  _buildAliasInput(),
                 ],
-
-                SizedBox(height: 16.h),
-
-                // Favorite Toggle
-                _buildFavoriteToggle(),
-
-                // Alias Input (shown when favorite is toggled on)
-                _buildAliasInput(),
-              ],
+              ),
             ),
           ),
 
@@ -226,15 +231,36 @@ class AccountConfirmationBottomSheetState
                 size: 30.w),
             SizedBox(width: 10.w),
             Expanded(
-              child: Text(
-                widget.accountName.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+              // Keep BOTH the name and the account NUMBER visible in compact
+              // mode — the user is verifying this recipient while typing an
+              // alias, so the number must never scroll out of view.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.accountName.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    widget.accountNumber,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

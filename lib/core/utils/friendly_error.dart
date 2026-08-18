@@ -31,6 +31,21 @@ bool isFrozenAccountError(Object? error) {
   return _messageLooksFrozen(raw);
 }
 
+/// True when [error] is the behavioural-fraud enforce-block rejection — a
+/// transfer refused because it was unusually large and the account was just
+/// frozen for review. core-payments returns this as FailedPrecondition with the
+/// guidance text; callers use this to launch the tx-PIN self-unfreeze modal
+/// instead of only showing the message.
+bool isFraudBlockError(Object? error) {
+  if (error == null) return false;
+  final raw = error is GrpcError
+      ? (error.message ?? '')
+      : error is String
+          ? error
+          : error.toString();
+  return raw.toLowerCase().contains('blocked for your security');
+}
+
 /// Shared substring detector for the frozen/suspended-account server error.
 bool _messageLooksFrozen(String raw) {
   if (raw.isEmpty) return false;

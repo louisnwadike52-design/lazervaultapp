@@ -31,6 +31,13 @@ bool isSelfLock(String? message) =>
 /// account after a suspicious transfer). The login gate tags it with a "[fraud]"
 /// marker so the modal shows security-review copy + a support path instead of the
 /// self-discipline countdown.
+///
+/// NOTE: a fraud MONEY-freeze is intentionally login-OPEN (FreezeMoneyMovement
+/// does not set self_locked_until) so the user can sign in and self-unfreeze via
+/// the dashboard FraudFreezeModal / chatbot. So in the current design this login
+/// branch is DORMANT for fraud — it stays here as a defensive fallback in case a
+/// fraud freeze ever also gates login (login-blocking freeze), so login copy is
+/// never wrong. Fraud handling on login is otherwise dashboard-owned.
 bool isFraudFreeze(String? message) =>
     (message ?? '').toLowerCase().contains('[fraud]');
 

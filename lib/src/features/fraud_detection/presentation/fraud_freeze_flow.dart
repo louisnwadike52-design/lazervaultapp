@@ -62,6 +62,11 @@ class _FraudFreezeModalState extends State<FraudFreezeModal>
         transactionType: 'fraud_unfreeze',
         amount: 0,
         currency: 'NGN',
+        // This modal is itself a PopupRoute; without preserveHostSheet the mixin's
+        // popUntil(!PopupRoute) on a PIN cancel/failure/exhaustion tears THIS dialog
+        // down too, and the once-per-mount dashboard guard means it won't reappear
+        // until an app restart — losing the primary self-service recovery path.
+        preserveHostSheet: true,
         title: "Verify it's you",
         message: 'Enter your transaction PIN to unlock your account.',
         successMessage: 'Account unlocked',

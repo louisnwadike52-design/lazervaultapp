@@ -1,0 +1,4 @@
+# Firebase App Distribution auth (dev + staging lanes).
+# Single SA hosted in lazervault-28875 (where the SA-key org policy is
+# overridden); has firebaseappdistribution.admin on all 3 Firebase projects.
+FIREBASE_SERVICE_ACCOUNT_JSON=/Users/lazervaultserver/.config/play-store/firebase-app-distribution-sa.json

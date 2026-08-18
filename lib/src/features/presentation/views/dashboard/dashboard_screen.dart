@@ -182,16 +182,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     WidgetsBinding.instance.addObserver(this);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _applyInitialTab();
       // If a P2P push was tapped while signed out (cold start), the dashboard
       // is the first authenticated screen — open the stashed conversation now
       // (pushed on top, so Back returns here).
       PendingChatNavigation.instance.consumeAndNavigate();
-      _checkAndShowVoiceSetup();
-      _checkAutoOpenVoiceSheet();
-      // Background app-update check (store version). Never blocks launch.
-      _updateCubit.checkNow();
       // Shorebird OTA: if a Dart-only patch was downloaded in the background,
       // gently nudge a restart to apply it. No-op on non-Shorebird builds.
       _maybeNudgePatchRestart();
@@ -199,19 +195,35 @@ class _DashboardScreenState extends State<DashboardScreen>
       // NEXT restart (auto_update:false → never applied mid-session). Fire-and-
       // forget; safe no-op on plain store builds.
       serviceLocator<AppPatchService>().checkAndDownloadUpdate();
-      _maybeCheckFraudFreeze();
+      // Fraud freeze is security-critical: resolve it FIRST and let it own the
+      // screen, so voice-setup / update modals can't stack on top of it. The
+      // other prompts (which check _fraudModalActive) fire only once it's done.
+      await _maybeCheckFraudFreeze();
+      if (!mounted) return;
+      _checkAndShowVoiceSetup();
+      _checkAutoOpenVoiceSheet();
+      // Background app-update check (store version). Never blocks launch.
+      _updateCubit.checkNow();
     });
   }
 
-  bool _fraudFreezeChecked = false;
+  /// True while the fraud freeze modal is on screen — other land-time modals
+  /// (voice setup, optional-update) check this so they don't stack on top of the
+  /// security-critical unfreeze dialog.
+  bool _fraudModalActive = false;
 
   /// If the account is frozen for suspicious activity, surface the freeze modal
-  /// with a tx-PIN self-unfreeze the moment the user lands on the dashboard.
-  /// Once-per-mount + best-effort (a status-call failure is silent).
+  /// with a tx-PIN self-unfreeze the moment the user lands on the dashboard (and
+  /// again on resume, in case an enforce-block froze it mid-session). Guarded so
+  /// it never stacks on itself; best-effort (a status-call failure is silent).
   Future<void> _maybeCheckFraudFreeze() async {
-    if (_fraudFreezeChecked || !mounted) return;
-    _fraudFreezeChecked = true;
-    await checkAndShowFraudFreeze(context);
+    if (_fraudModalActive || !mounted) return;
+    _fraudModalActive = true;
+    try {
+      await checkAndShowFraudFreeze(context);
+    } finally {
+      _fraudModalActive = false;
+    }
   }
 
   /// Show a non-blocking snackbar when a downloaded OTA code-push patch is staged
@@ -243,6 +255,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Check-on-resume: stage any newer OTA patch for the next restart. Safe
       // no-op on non-Shorebird builds; never swaps code in the current session.
       serviceLocator<AppPatchService>().checkAndDownloadUpdate();
+      // Re-check fraud freeze on resume: an enforce-block can freeze the account
+      // mid-session (e.g. a transfer bounced while backgrounded), and the modal
+      // must re-surface without a cold start. Guarded so it never stacks.
+      _maybeCheckFraudFreeze();
     }
   }
 
@@ -266,6 +282,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Skip setup prompt if we're auto-opening the voice sheet (enrollment just completed)
     if (_autoOpenVoiceSheetRequested) return;
+
+    // Don't stack on top of the security-critical fraud freeze dialog.
+    if (_fraudModalActive) return;
 
     final setupManager = VoiceSetupManager(
       voiceManager: VoiceActivationManager(),
@@ -408,6 +427,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Show the one-time optional modal for [info] if it hasn't been shown for
   /// this latest build yet, then mark it seen.
   Future<void> _maybeShowUpdateModal(AppUpdateInfo info) async {
+    // Defer the optional-update modal while the fraud freeze dialog owns the
+    // screen — it'll resurface on the next check once the freeze is handled.
+    if (_fraudModalActive) return;
     final should =
         await _updateCubit.service.shouldShowOptionalModal(info.latestBuild);
     if (!should || !mounted) return;
