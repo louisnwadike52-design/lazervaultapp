@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/fraud_detection/data/fraud_detection_service.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/theme/theme_controller.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -153,6 +154,43 @@ class _SettingsViewState extends State<_SettingsView> {
       if (mounted) setState(() => _helpConfig = cfg);
     });
     _loadSignupFlow();
+    _loadFraudSetting();
+  }
+
+  // Fraud-detection opt-out (default ON). Loaded best-effort; failure leaves the
+  // toggle showing ON (fail-safe — protection stays on).
+  bool _fraudDetectionEnabled = true;
+  bool _fraudSettingBusy = false;
+
+  Future<void> _loadFraudSetting() async {
+    try {
+      final on =
+          await serviceLocator<FraudDetectionService>().getEnabled();
+      if (mounted) setState(() => _fraudDetectionEnabled = on);
+    } catch (_) {/* keep default ON */}
+  }
+
+  Future<void> _setFraudSetting(bool enabled) async {
+    if (_fraudSettingBusy) return;
+    final prev = _fraudDetectionEnabled;
+    setState(() {
+      _fraudDetectionEnabled = enabled; // optimistic
+      _fraudSettingBusy = true;
+    });
+    try {
+      final saved =
+          await serviceLocator<FraudDetectionService>().setEnabled(enabled);
+      if (mounted) setState(() => _fraudDetectionEnabled = saved);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _fraudDetectionEnabled = prev); // revert on failure
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Couldn't update fraud detection. Please try again."),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _fraudSettingBusy = false);
+    }
   }
 
   @override
@@ -949,6 +987,22 @@ class _SettingsViewState extends State<_SettingsView> {
           title: 'Passcode',
           subtitle: 'Set up or change your 6-digit login passcode',
           onTap: () => _openPasscodeFlow(context),
+        ),
+        _switchTile(
+          icon: Icons.shield_outlined,
+          title: 'Fraud detection',
+          subtitle:
+              'Automatically pause unusually large transfers on your account for review',
+          value: _fraudDetectionEnabled,
+          onChanged: _fraudSettingBusy ? (_) {} : _setFraudSetting,
+          keywords: const [
+            'fraud',
+            'fraud detection',
+            'security',
+            'anomaly',
+            'freeze',
+            'protection',
+          ],
         ),
         _navTile(
           icon: Icons.lock_clock_outlined,

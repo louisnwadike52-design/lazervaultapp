@@ -146,6 +146,7 @@ import 'package:lazervault/src/features/virtual_account/domain/repositories/i_vi
 import 'package:lazervault/src/features/virtual_account/data/repositories/virtual_account_repository_impl.dart';
 import 'package:lazervault/src/features/virtual_account/domain/usecases/create_virtual_account_usecase.dart';
 import 'package:lazervault/src/features/virtual_account/domain/services/va_provisioning_service.dart';
+import 'package:lazervault/src/features/fraud_detection/data/fraud_detection_service.dart';
 import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 // End Virtual Account Imports
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
@@ -1101,6 +1102,13 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<payments_grpc.PaymentsServiceClient>(
     () => payments_grpc.PaymentsServiceClient(
       serviceLocator<ClientChannel>(instanceName: 'transferChannel'),
+    ),
+  );
+  // Behavioural fraud detection (per-user toggle + freeze status + self-unfreeze).
+  serviceLocator.registerLazySingleton<FraudDetectionService>(
+    () => FraudDetectionService(
+      serviceLocator<payments_grpc.PaymentsServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 

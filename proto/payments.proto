@@ -769,6 +769,42 @@ service PaymentsService {
       security: { security_requirement: { key: "bearer"; } };
     };
   }
+
+  // ===== Behavioural fraud detection (per-user) =====
+  rpc GetFraudDetectionSetting(GetFraudDetectionSettingRequest) returns (FraudDetectionSetting) {
+    option (google.api.http) = { get: "/api/v1/fraud-detection/setting" };
+  }
+  rpc SetFraudDetectionSetting(SetFraudDetectionSettingRequest) returns (FraudDetectionSetting) {
+    option (google.api.http) = { put: "/api/v1/fraud-detection/setting" body: "*" };
+  }
+  rpc GetFraudFreezeStatus(GetFraudFreezeStatusRequest) returns (FraudFreezeStatus) {
+    option (google.api.http) = { get: "/api/v1/fraud-detection/freeze-status" };
+  }
+  rpc RequestFraudUnfreeze(RequestFraudUnfreezeRequest) returns (RequestFraudUnfreezeResponse) {
+    option (google.api.http) = { post: "/api/v1/fraud-detection/unfreeze" body: "*" };
+  }
+}
+
+message GetFraudDetectionSettingRequest {}
+message SetFraudDetectionSettingRequest { bool enabled = 1; }
+message FraudDetectionSetting { bool enabled = 1; }
+message GetFraudFreezeStatusRequest {}
+message FraudFreezeStatus {
+  bool frozen = 1;
+  string reason = 2;
+  int64 amount_minor = 3;
+  int64 limit_minor = 4;
+  string blocked_at = 5;
+  string reference = 6;
+  string blocked_id = 7;
+}
+message RequestFraudUnfreezeRequest {
+  string verification_token = 1;
+  string transaction_id = 2;
+}
+message RequestFraudUnfreezeResponse {
+  bool success = 1;
+  string message = 2;
 }
 
 // ===== MODELS =====
