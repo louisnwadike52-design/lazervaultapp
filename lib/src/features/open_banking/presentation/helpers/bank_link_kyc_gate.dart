@@ -75,9 +75,16 @@ enum DepositReadiness {
 /// (when one was provisioned in this call) so the caller can display it without a
 /// round-trip.
 class DepositGateResult {
-  const DepositGateResult(this.status, {this.mintedAccountNumber});
+  const DepositGateResult(
+    this.status, {
+    this.mintedAccountNumber,
+    this.mintedAccountName,
+    this.mintedBankName,
+  });
   final DepositReadiness status;
   final String? mintedAccountNumber;
+  final String? mintedAccountName;
+  final String? mintedBankName;
 }
 
 /// The PRIMARY deposit gate. A deposit can only land if the destination account
@@ -153,6 +160,8 @@ Future<DepositGateResult> ensureDepositReady(
     return DepositGateResult(
       number.isNotEmpty ? DepositReadiness.ready : DepositReadiness.provisioning,
       mintedAccountNumber: number.isNotEmpty ? number : null,
+      mintedAccountName: number.isNotEmpty ? minted?.accountName : null,
+      mintedBankName: number.isNotEmpty ? minted?.bankName : null,
     );
   } catch (_) {
     hideLoader();

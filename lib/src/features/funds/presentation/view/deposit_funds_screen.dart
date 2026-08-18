@@ -16,7 +16,6 @@ import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
-import 'package:lazervault/src/features/virtual_account/domain/usecases/create_virtual_account_usecase.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -3104,77 +3103,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   Future<void> _activateBankTransferAccount() async {
     if (_activatingAccount) return;
     setState(() => _activatingAccount = true);
-    try {
-      final storage = serviceLocator<SecureStorageService>();
-      final status = await ProveKycHttpService(storage)
-          .status()
-          .timeout(const Duration(seconds: 8));
-      if (!mounted) return;
-      if (status.tier < 2) {
-        setState(() => _activatingAccount = false);
-        _saveAndGoToKyc(); // genuinely unverified → verify path
-        return;
-      }
-      // Verified but no NUBAN — provision it now (idempotent server-side: the
-      // backend upgrades the existing local NGN account rather than duplicating).
-      final bvn = (await storage.getBvn())?.trim() ?? '';
-      final email = (await storage.getUserEmail())?.trim() ?? '';
-      final fullName = (await storage.getUserFullName())?.trim() ?? '';
-      final parts = fullName.isEmpty ? <String>[] : fullName.split(RegExp(r'\s+'));
-      final firstName = parts.isNotEmpty ? parts.first : '';
-      final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-      final result = await serviceLocator<CreateVirtualAccountUseCase>()(
-        accountName: fullName.isNotEmpty
-            ? fullName
-            : ((widget.selectedCard['accountName'] ??
-                widget.selectedCard['account_name'] ??
-                '') as String),
-        accountType: (widget.selectedCard['accountType'] ??
-                widget.selectedCard['type'] ??
-                'personal')
-            .toString(),
-        currency: _currency,
-        locale: _currency == 'NGN' ? 'en-NG' : 'en-NG',
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        phoneNumber: '',
-        bvn: bvn,
-        isPrimary: widget.selectedCard['isPrimary'] == true,
-      );
-      if (!mounted) return;
-      result.fold(
-        (failure) {
-          setState(() => _activatingAccount = false);
-          Get.snackbar(
-            'Setting up your account',
-            'Your deposit account is being set up — this can take a moment after '
-                'verification. Please try again shortly.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF1F1F1F),
-            colorText: Colors.white,
-          );
-        },
-        (va) {
-          setState(() {
-            _provisionedAccountNumber = va.accountNumber;
-            _provisionedAccountName = va.accountName;
-            _provisionedBankName = va.bankName;
-            _activatingAccount = false;
-          });
-        },
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _activatingAccount = false);
-      Get.snackbar(
-        'Setting up your account',
-        "Couldn't set up your deposit account right now. Please try again shortly.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF1F1F1F),
-        colorText: Colors.white,
-      );
+    // Single source of truth: the central VA gate. It runs the ONE check
+    // (does the NUBAN exist?), shows the blocking "Setting up your account" modal
+    // while minting when it doesn't (minting requires the BVN KYC), routes to
+    // verification when that isn't possible, and controls the flow via modals —
+    // no separate Prove-status check, no snackbars.
+    final res = await ensureDepositReady(
+      context,
+      accountHasVirtualAccount: _targetHasVirtualAccount,
+      currency: _currency,
+      isPrimary: widget.selectedCard['isPrimary'] == true,
+    );
+    if (!mounted) return;
+    setState(() => _activatingAccount = false);
+    if (res.status == DepositReadiness.ready && res.mintedAccountNumber != null) {
+      setState(() {
+        _provisionedAccountNumber = res.mintedAccountNumber;
+        _provisionedAccountName = res.mintedAccountName ?? _provisionedAccountName;
+        _provisionedBankName = res.mintedBankName ?? _provisionedBankName;
+      });
+    } else if (res.status == DepositReadiness.provisioning) {
+      await showAccountSetupPendingModal(context);
     }
+    // needsKyc → verification took over inside the gate; nothing to do here.
   }
 
   /// APPLE PAY / CARD — Flutterwave hosted checkout. The CTA initiates the
