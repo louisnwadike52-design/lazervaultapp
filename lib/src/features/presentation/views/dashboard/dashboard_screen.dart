@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/src/features/fraud_detection/presentation/fraud_freeze_flow.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -198,7 +199,19 @@ class _DashboardScreenState extends State<DashboardScreen>
       // NEXT restart (auto_update:false → never applied mid-session). Fire-and-
       // forget; safe no-op on plain store builds.
       serviceLocator<AppPatchService>().checkAndDownloadUpdate();
+      _maybeCheckFraudFreeze();
     });
+  }
+
+  bool _fraudFreezeChecked = false;
+
+  /// If the account is frozen for suspicious activity, surface the freeze modal
+  /// with a tx-PIN self-unfreeze the moment the user lands on the dashboard.
+  /// Once-per-mount + best-effort (a status-call failure is silent).
+  Future<void> _maybeCheckFraudFreeze() async {
+    if (_fraudFreezeChecked || !mounted) return;
+    _fraudFreezeChecked = true;
+    await checkAndShowFraudFreeze(context);
   }
 
   /// Show a non-blocking snackbar when a downloaded OTA code-push patch is staged
