@@ -83,7 +83,14 @@ class _CategorySelectionBottomSheetState
             c.displayName.toLowerCase().contains(_searchQuery) ||
             c.subCategoryName.toLowerCase().contains(_searchQuery)).toList();
 
-    return Container(
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      // Lift the sheet above the keyboard so the custom-category input (which
+      // autofocuses on open) is visible instead of hidden behind the keyboard
+      // (previously it looked like an empty overlay with no content).
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
@@ -279,6 +286,7 @@ class _CategorySelectionBottomSheetState
           ],
           SizedBox(height: 20.h),
         ],
+      ),
       ),
     );
   }
