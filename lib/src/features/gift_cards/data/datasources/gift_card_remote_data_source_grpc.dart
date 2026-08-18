@@ -434,6 +434,10 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     String? ocrPin,
     double? ocrDenomination,
     String? ocrCurrency,
+    // Multi-card batching (#81): when non-empty, the sale is submitted as a
+    // SINGLE Prestmit trade covering all items (backend sums the face values and
+    // joins the codes/images). Leave null/empty for the normal single-card flow.
+    List<pb.SellCardItem>? cards,
   }) async {
     try {
       final request = pb.SellGiftCardRequest(
@@ -472,6 +476,9 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       }
       if (imageKeys != null && imageKeys.isNotEmpty) {
         request.imageKeys.addAll(imageKeys);
+      }
+      if (cards != null && cards.isNotEmpty) {
+        request.cards.addAll(cards);
       }
 
       final options = await grpcClient.callOptions;
