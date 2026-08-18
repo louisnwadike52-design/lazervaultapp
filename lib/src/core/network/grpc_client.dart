@@ -22,6 +22,7 @@ import '../../generated/contactless_payment.pbgrpc.dart';
 import '../../generated/split_bill.pbgrpc.dart';
 import '../../generated/utility-payments.pbgrpc.dart';
 import '../../generated/escrow.pbgrpc.dart';
+import '../../generated/bulk-sms.pbgrpc.dart';
 
 class GrpcClient {
   final ClientChannel _channel;
@@ -45,6 +46,7 @@ class GrpcClient {
   late SplitBillServiceClient _splitBillClient;
   late UtilityPaymentsServiceClient _utilityPaymentsClient;
   late EscrowServiceClient _escrowClient;
+  late BulkSmsServiceClient _bulkSmsClient;
 
   final FlutterSecureStorage _secureStorage;
   final GrpcCallOptionsHelper? _callOptionsHelper;
@@ -84,6 +86,7 @@ class GrpcClient {
     _splitBillClient = SplitBillServiceClient(_channel);
     _utilityPaymentsClient = UtilityPaymentsServiceClient(_channel);
     _escrowClient = EscrowServiceClient(_channel);
+    _bulkSmsClient = BulkSmsServiceClient(_channel);
   }
 
   InvoiceServiceClient get invoiceClient => _invoiceClient;
@@ -107,6 +110,7 @@ class GrpcClient {
   SplitBillServiceClient get splitBillClient => _splitBillClient;
   UtilityPaymentsServiceClient get utilityPaymentsClient => _utilityPaymentsClient;
   EscrowServiceClient get escrowClient => _escrowClient;
+  BulkSmsServiceClient get bulkSmsClient => _bulkSmsClient;
 
   /// Get call options with authentication token
   /// If callOptionsHelper is available, use it for automatic token rotation

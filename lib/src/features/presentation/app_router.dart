@@ -218,6 +218,17 @@ import 'package:lazervault/src/features/betting/presentation/view/betting_proces
 import 'package:lazervault/src/features/betting/presentation/view/betting_receipt_screen.dart';
 import 'package:lazervault/src/features/betting/presentation/view/betting_history_screen.dart';
 import 'package:lazervault/src/features/betting/presentation/view/betting_beneficiaries_screen.dart';
+// Bulk SMS imports
+import 'package:lazervault/src/features/bulk_sms/presentation/cubit/bulk_sms_cubit.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/bulk_sms_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/buy_credits_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/compose_campaign_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/campaign_review_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/campaign_processing_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/campaign_receipt_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/campaigns_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/campaign_detail_screen.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/view/sender_ids_screen.dart';
 // Airtime imports
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/intl_airtime_cubit.dart';
@@ -2420,6 +2431,80 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<BettingCubit>(),
         child: const BettingBeneficiariesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Bulk SMS routes
+    GetPage(
+      name: AppRoutes.bulkSms,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const BulkSmsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsBuyCredits,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const BuyCreditsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsCompose,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const ComposeCampaignScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsReview,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const CampaignReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const CampaignProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsReceipt,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const CampaignReceiptScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsCampaigns,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const CampaignsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsCampaignDetail,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const CampaignDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.bulkSmsSenderIds,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BulkSmsCubit>(),
+        child: const SenderIdsScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

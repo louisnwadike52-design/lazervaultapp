@@ -213,6 +213,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF3B82F6);
       case AppServiceName.betting:
         return const Color(0xFF8B5CF6);
+      case AppServiceName.bulkSms:
+        return const Color(0xFF4E03D0);
     }
   }
 

@@ -35,6 +35,7 @@ enum AppServiceName {
   sales,
   rechargeCard,
   betting,
+  bulkSms,
 }
 
 extension AppServiceRevenuePriority on AppServiceName {
@@ -59,6 +60,7 @@ extension AppServiceRevenuePriority on AppServiceName {
         AppServiceName.stocks => 10,
         AppServiceName.betting => 11,
         AppServiceName.rechargeCard => 12,
+        AppServiceName.bulkSms => 13,
         // Non-revenue / P2P / internal + business tiles keep their enum order.
         _ => 100 + index,
       };
@@ -139,6 +141,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Recharge Cards';
       case AppServiceName.betting:
         return 'Fund Betting';
+      case AppServiceName.bulkSms:
+        return 'Bulk SMS';
     }
   }
 
@@ -218,6 +222,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'utility-payments-service';
       case AppServiceName.betting:
         return 'utility-payments-service';
+      case AppServiceName.bulkSms:
+        return 'bulk-sms-service';
     }
   }
 }
@@ -266,6 +272,7 @@ enum AppServiceImg {
   sales,
   rechargeCard,
   betting,
+  bulkSms,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -342,6 +349,10 @@ extension AppServiceImgExtension on AppServiceImg {
       case AppServiceImg.rechargeCard:
         return 'assets/images/airtime.png';
       case AppServiceImg.betting:
+        return 'assets/images/receive-square.png';
+      case AppServiceImg.bulkSms:
+        // No dedicated asset — the tile renders a Material icon via
+        // app_service_builder's icon switch (Icons.sms_rounded).
         return 'assets/images/receive-square.png';
     }
   }

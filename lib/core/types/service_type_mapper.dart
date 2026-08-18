@@ -75,6 +75,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.airtime;
       case AppServiceName.betting:
         return TransactionServiceType.betting;
+      case AppServiceName.bulkSms:
+        return TransactionServiceType.unknown;
     }
   }
 }

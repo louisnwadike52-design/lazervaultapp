@@ -133,6 +133,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.idPay,
         serviceImg: AppServiceImg.idPay),
+    AppService(
+        serviceName: AppServiceName.bulkSms,
+        serviceImg: AppServiceImg.bulkSms),
   ];
 
   // Business services (shown when Business card is active).

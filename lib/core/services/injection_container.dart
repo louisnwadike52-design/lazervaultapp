@@ -537,6 +537,11 @@ import 'package:lazervault/src/features/betting/data/datasources/betting_remote_
 import 'package:lazervault/src/features/betting/data/repositories/betting_repository_impl.dart';
 import 'package:lazervault/src/features/betting/domain/repositories/betting_repository.dart';
 import 'package:lazervault/src/features/betting/presentation/cubit/betting_cubit.dart';
+// Bulk SMS Imports
+import 'package:lazervault/src/features/bulk_sms/data/datasources/bulk_sms_remote_datasource.dart';
+import 'package:lazervault/src/features/bulk_sms/data/repositories/bulk_sms_repository_impl.dart';
+import 'package:lazervault/src/features/bulk_sms/domain/repositories/bulk_sms_repository.dart';
+import 'package:lazervault/src/features/bulk_sms/presentation/cubit/bulk_sms_cubit.dart';
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_beneficiary_remote_datasource.dart';
@@ -2505,6 +2510,25 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => BettingCubit(
         repository: serviceLocator<BettingRepository>(),
         accountManager: serviceLocator<AccountManager>(),
+      ));
+
+  // ================== Feature: Bulk SMS ==================
+  // Routed via commerce-gateway (bulk-sms-service). Buy units + send/schedule
+  // campaigns are the only money moves — both PIN-gated.
+  serviceLocator.registerLazySingleton<BulkSmsRemoteDataSource>(
+    () => BulkSmsRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+
+  serviceLocator.registerLazySingleton<BulkSmsRepository>(
+    () => BulkSmsRepositoryImpl(
+      remoteDataSource: serviceLocator<BulkSmsRemoteDataSource>(),
+    ),
+  );
+
+  serviceLocator.registerFactory(() => BulkSmsCubit(
+        repository: serviceLocator<BulkSmsRepository>(),
       ));
 
   // ================== Feature: International Airtime ==================

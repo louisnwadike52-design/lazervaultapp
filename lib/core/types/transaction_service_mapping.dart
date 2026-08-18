@@ -141,6 +141,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.epin; // Recharge-card (ePIN) printing
       case AppServiceName.betting:
         return TransactionServiceType.betting; // Betting wallet funding
+      case AppServiceName.bulkSms:
+        return TransactionServiceType.unknown; // Bulk SMS units/campaigns
     }
   }
 }

@@ -36,6 +36,7 @@ const Set<AppServiceName> _frozenBlockedServices = {
   AppServiceName.payInvoice,
   AppServiceName.rechargeCard,
   AppServiceName.betting,
+  AppServiceName.bulkSms,
   AppServiceName.payroll,
   AppServiceName.qrPay,
   AppServiceName.aiScanToPay,
@@ -186,6 +187,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.betting:
         Get.toNamed(AppRoutes.bettingHome);
+        break;
+      case AppServiceName.bulkSms:
+        Get.toNamed(AppRoutes.bulkSms);
         break;
     }
   }
@@ -394,6 +398,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.betting:
         iconData = Icons.sports_soccer;
+        break;
+      case AppServiceName.bulkSms:
+        iconData = Icons.sms_rounded;
         break;
     }
 

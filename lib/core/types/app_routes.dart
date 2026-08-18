@@ -433,6 +433,17 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String bettingHistory = '/betting/history';
   static const String bettingBeneficiaries = '/betting/beneficiaries';
 
+  // Bulk SMS Routes
+  static const String bulkSms = '/bulk-sms';
+  static const String bulkSmsBuyCredits = '/bulk-sms/buy-credits';
+  static const String bulkSmsCompose = '/bulk-sms/compose';
+  static const String bulkSmsReview = '/bulk-sms/review';
+  static const String bulkSmsProcessing = '/bulk-sms/processing';
+  static const String bulkSmsReceipt = '/bulk-sms/receipt';
+  static const String bulkSmsCampaigns = '/bulk-sms/campaigns';
+  static const String bulkSmsCampaignDetail = '/bulk-sms/campaigns/detail';
+  static const String bulkSmsSenderIds = '/bulk-sms/sender-ids';
+
   // AutoSave Routes
   static const String autoSave = '/auto-save';
   static const String autoSaveDashboard = '/auto-save';
