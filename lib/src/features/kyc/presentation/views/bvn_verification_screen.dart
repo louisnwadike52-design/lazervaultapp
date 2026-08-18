@@ -661,8 +661,125 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     );
   }
 
+  /// Shown BEFORE the Prove flow: verification checks the BVN/NIN + a live selfie
+  /// against the holder's official NIBSS/NIMC records, so any mismatch in name,
+  /// DOB or the ID number will fail. Returns true only if the user taps Continue.
+  Future<bool?> _showPreKycMatchWarning() {
+    const purple = Color(0xFF4E03D0);
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1B1626),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 24, 22, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                      color: purple.withValues(alpha: 0.18),
+                      shape: BoxShape.circle),
+                  child: const Icon(Icons.badge_outlined, color: purple, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text('Before you verify',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ]),
+              const SizedBox(height: 16),
+              Text(
+                'We verify your identity against your official records. Make sure your '
+                'details EXACTLY match what is registered on your BVN/NIN:',
+                style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    fontSize: 13.5,
+                    height: 1.45),
+              ),
+              const SizedBox(height: 12),
+              ..._kycMatchPoint('Your full name (spelling + order)'),
+              ..._kycMatchPoint('Your date of birth'),
+              ..._kycMatchPoint('The BVN / NIN number you enter'),
+              ..._kycMatchPoint('A clear, well-lit live selfie of your face'),
+              const SizedBox(height: 12),
+              Text(
+                'If any of these don’t match, verification will fail — that’s the '
+                'verification partner, not the app.',
+                style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.60),
+                    fontSize: 12.5,
+                    height: 1.4),
+              ),
+              const SizedBox(height: 20),
+              Row(children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text('Cancel',
+                        style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: purple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
+                    child: Text('Continue',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _kycMatchPoint(String text) => [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Icon(Icons.check_circle_outline,
+                color: Color(0xFF4E03D0), size: 17),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(text,
+                  style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13,
+                      height: 1.35)),
+            ),
+          ]),
+        ),
+      ];
+
   Future<void> _startVerification() async {
     if (_isSubmitting) return;
+
+    // Pre-flight warning: Mono Prove verifies the BVN/NIN + a live selfie against
+    // the holder's OFFICIAL records (NIBSS/NIMC). If the user's full name, date of
+    // birth, or BVN/NIN don't EXACTLY match those records, verification will fail.
+    // Surface that up front so a genuine data mismatch isn't mistaken for an app
+    // bug (this was a real prod confusion point).
+    final proceed = await _showPreKycMatchWarning();
+    if (proceed != true || !mounted) return;
 
     // Pre-flight: a valid email is a HARD requirement for Mono Prove. Catch a
     // missing/invalid one HERE — before the camera permission + webview — with
