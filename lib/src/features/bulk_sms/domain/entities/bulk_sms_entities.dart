@@ -115,6 +115,26 @@ class SmsRecipientEntity extends Equatable {
   List<Object?> get props => [phoneNumber, name, variables];
 }
 
+/// A saved recipient group (reusable address book) the user can pull into a
+/// campaign in one tap. `members` back the same merge-field `variables` the
+/// send flow uses.
+class BulkSmsGroup extends Equatable {
+  final String id;
+  final String name;
+  final int memberCount;
+  final List<SmsRecipientEntity> members;
+
+  const BulkSmsGroup({
+    required this.id,
+    required this.name,
+    required this.memberCount,
+    this.members = const [],
+  });
+
+  @override
+  List<Object?> get props => [id, name, memberCount, members];
+}
+
 /// Lifecycle status of a campaign, decoupled from the pb enum.
 enum SmsCampaignStatus {
   pending,

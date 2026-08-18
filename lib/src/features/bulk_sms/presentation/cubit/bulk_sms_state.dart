@@ -60,6 +60,11 @@ class BulkSmsState extends Equatable {
   final ActionStatus senderIdRequestStatus;
   final SenderIdEntity? requestedSenderId;
 
+  // ── Saved recipient groups ─────────────────────────────────────────
+  final SectionStatus groupsStatus;
+  final List<BulkSmsGroup> groups;
+  final ActionStatus groupActionStatus;
+
   /// Last user-facing error (set alongside any *error / *failed status).
   final String? errorMessage;
 
@@ -87,6 +92,9 @@ class BulkSmsState extends Equatable {
     this.cancelResult,
     this.senderIdRequestStatus = ActionStatus.idle,
     this.requestedSenderId,
+    this.groupsStatus = SectionStatus.initial,
+    this.groups = const [],
+    this.groupActionStatus = ActionStatus.idle,
     this.errorMessage,
   });
 
@@ -114,6 +122,9 @@ class BulkSmsState extends Equatable {
     SmsCancelResultEntity? cancelResult,
     ActionStatus? senderIdRequestStatus,
     SenderIdEntity? requestedSenderId,
+    SectionStatus? groupsStatus,
+    List<BulkSmsGroup>? groups,
+    ActionStatus? groupActionStatus,
     String? errorMessage,
   }) {
     return BulkSmsState(
@@ -141,6 +152,9 @@ class BulkSmsState extends Equatable {
       senderIdRequestStatus:
           senderIdRequestStatus ?? this.senderIdRequestStatus,
       requestedSenderId: requestedSenderId ?? this.requestedSenderId,
+      groupsStatus: groupsStatus ?? this.groupsStatus,
+      groups: groups ?? this.groups,
+      groupActionStatus: groupActionStatus ?? this.groupActionStatus,
       errorMessage: errorMessage,
     );
   }
@@ -170,6 +184,9 @@ class BulkSmsState extends Equatable {
         cancelResult,
         senderIdRequestStatus,
         requestedSenderId,
+        groupsStatus,
+        groups,
+        groupActionStatus,
         errorMessage,
       ];
 }

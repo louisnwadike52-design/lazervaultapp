@@ -59,6 +59,15 @@ abstract class BulkSmsRemoteDataSource {
     required String country,
     required String purpose,
   });
+
+  // ── Saved recipient groups ─────────────────────────────────────────
+  Future<List<BulkSmsGroup>> listGroups();
+  Future<BulkSmsGroup> getGroup(String groupId);
+  Future<BulkSmsGroup> createGroup({
+    required String name,
+    required List<SmsRecipientEntity> recipients,
+  });
+  Future<bool> deleteGroup(String groupId);
 }
 
 class BulkSmsRemoteDataSourceImpl implements BulkSmsRemoteDataSource {
@@ -298,6 +307,59 @@ class BulkSmsRemoteDataSourceImpl implements BulkSmsRemoteDataSource {
       return BulkSmsMappers.senderId(res.senderId);
     } on GrpcError catch (e) {
       throw Exception('Failed to request sender ID: ${e.message}');
+    }
+  }
+
+  @override
+  Future<List<BulkSmsGroup>> listGroups() async {
+    try {
+      final res = await grpcClient.bulkSmsClient.listRecipientGroups(
+          pb.ListRecipientGroupsRequest(),
+          options: await grpcClient.callOptions);
+      return res.groups.map(BulkSmsMappers.group).toList();
+    } on GrpcError catch (e) {
+      throw Exception('Failed to fetch recipient groups: ${e.message}');
+    }
+  }
+
+  @override
+  Future<BulkSmsGroup> getGroup(String groupId) async {
+    try {
+      final req = pb.GetRecipientGroupRequest()..groupId = groupId;
+      final res = await grpcClient.bulkSmsClient
+          .getRecipientGroup(req, options: await grpcClient.callOptions);
+      return BulkSmsMappers.group(res.group);
+    } on GrpcError catch (e) {
+      throw Exception('Failed to fetch recipient group: ${e.message}');
+    }
+  }
+
+  @override
+  Future<BulkSmsGroup> createGroup({
+    required String name,
+    required List<SmsRecipientEntity> recipients,
+  }) async {
+    try {
+      final req = pb.CreateRecipientGroupRequest()
+        ..name = name
+        ..members.addAll(BulkSmsMappers.recipients(recipients));
+      final res = await grpcClient.bulkSmsClient
+          .createRecipientGroup(req, options: await grpcClient.callOptions);
+      return BulkSmsMappers.group(res.group);
+    } on GrpcError catch (e) {
+      throw Exception('Failed to create recipient group: ${e.message}');
+    }
+  }
+
+  @override
+  Future<bool> deleteGroup(String groupId) async {
+    try {
+      final req = pb.DeleteRecipientGroupRequest()..groupId = groupId;
+      final res = await grpcClient.bulkSmsClient
+          .deleteRecipientGroup(req, options: await grpcClient.callOptions);
+      return res.success;
+    } on GrpcError catch (e) {
+      throw Exception('Failed to delete recipient group: ${e.message}');
     }
   }
 }

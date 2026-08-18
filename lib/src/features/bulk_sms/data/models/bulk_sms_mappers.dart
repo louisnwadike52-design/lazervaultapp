@@ -143,6 +143,21 @@ class BulkSmsMappers {
         message: p.message,
       );
 
+  /// Maps a single generated recipient to a domain recipient (inverse of
+  /// [recipients]). Used when reading saved groups back from the wire.
+  static SmsRecipientEntity recipient(pb.SmsRecipient p) => SmsRecipientEntity(
+        phoneNumber: p.phoneNumber,
+        name: p.name,
+        variables: Map<String, String>.from(p.variables),
+      );
+
+  static BulkSmsGroup group(pb.SmsRecipientGroup p) => BulkSmsGroup(
+        id: p.id,
+        name: p.name,
+        memberCount: p.memberCount,
+        members: p.members.map(recipient).toList(),
+      );
+
   /// Builds a repeated `SmsRecipient` list from domain recipients.
   static List<pb.SmsRecipient> recipients(List<SmsRecipientEntity> list) {
     return list.map((r) {

@@ -59,4 +59,13 @@ abstract class BulkSmsRepository {
     required String country,
     required String purpose,
   });
+
+  // ── Saved recipient groups (no money move) ─────────────────────────
+  Future<List<BulkSmsGroup>> listGroups();
+  Future<BulkSmsGroup> getGroup(String groupId);
+  Future<BulkSmsGroup> createGroup({
+    required String name,
+    required List<SmsRecipientEntity> recipients,
+  });
+  Future<bool> deleteGroup(String groupId);
 }

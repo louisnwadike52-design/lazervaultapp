@@ -280,6 +280,74 @@ class BulkSmsCubit extends Cubit<BulkSmsState> {
     }
   }
 
+  // ── Saved recipient groups (no money move) ───────────────────────────
+  Future<void> loadGroups() async {
+    if (isClosed) return;
+    emit(state.copyWith(groupsStatus: SectionStatus.loading));
+    try {
+      final groups = await repository.listGroups();
+      if (isClosed) return;
+      emit(state.copyWith(
+          groupsStatus: SectionStatus.loaded, groups: groups));
+    } catch (e) {
+      if (isClosed) return;
+      emit(state.copyWith(
+          groupsStatus: SectionStatus.error, errorMessage: _friendly(e)));
+    }
+  }
+
+  Future<void> createGroup({
+    required String name,
+    required List<SmsRecipientEntity> recipients,
+  }) async {
+    if (isClosed) return;
+    emit(state.copyWith(groupActionStatus: ActionStatus.processing));
+    try {
+      final group =
+          await repository.createGroup(name: name, recipients: recipients);
+      if (isClosed) return;
+      // Prepend so the fresh group shows at the top immediately.
+      emit(state.copyWith(
+        groupActionStatus: ActionStatus.success,
+        groups: [group, ...state.groups],
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(state.copyWith(
+          groupActionStatus: ActionStatus.failed, errorMessage: _friendly(e)));
+    }
+  }
+
+  /// Fetches a saved group's full members. The list endpoint omits members for
+  /// payload size, so the picker resolves them on tap. Returns `[]` on failure
+  /// (with [BulkSmsState.errorMessage] set for the caller to surface).
+  Future<List<SmsRecipientEntity>> resolveGroupMembers(String groupId) async {
+    try {
+      final group = await repository.getGroup(groupId);
+      return group.members;
+    } catch (e) {
+      if (!isClosed) emit(state.copyWith(errorMessage: _friendly(e)));
+      return const [];
+    }
+  }
+
+  Future<void> deleteGroup(String groupId) async {
+    if (isClosed) return;
+    emit(state.copyWith(groupActionStatus: ActionStatus.processing));
+    try {
+      await repository.deleteGroup(groupId);
+      if (isClosed) return;
+      emit(state.copyWith(
+        groupActionStatus: ActionStatus.success,
+        groups: state.groups.where((g) => g.id != groupId).toList(),
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(state.copyWith(
+          groupActionStatus: ActionStatus.failed, errorMessage: _friendly(e)));
+    }
+  }
+
   /// Reset the transient action statuses back to idle (call after a screen has
   /// consumed a success/failure so re-entering doesn't re-trigger navigation).
   void resetActions() {
@@ -289,6 +357,7 @@ class BulkSmsCubit extends Cubit<BulkSmsState> {
       sendStatus: ActionStatus.idle,
       cancelStatus: ActionStatus.idle,
       senderIdRequestStatus: ActionStatus.idle,
+      groupActionStatus: ActionStatus.idle,
     ));
   }
 

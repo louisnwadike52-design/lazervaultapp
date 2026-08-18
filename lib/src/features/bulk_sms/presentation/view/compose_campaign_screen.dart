@@ -80,7 +80,10 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => RecipientsPickerSheet(initial: _recipients),
+      builder: (_) => RecipientsPickerSheet(
+        cubit: context.read<BulkSmsCubit>(),
+        initial: _recipients,
+      ),
     );
     if (result != null && mounted) {
       setState(() => _recipients = result);

@@ -4,17 +4,27 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 import '../../domain/entities/bulk_sms_entities.dart';
+import '../cubit/bulk_sms_cubit.dart';
 import '../utils/bulk_sms_utils.dart';
 import '../view/bulk_sms_theme.dart';
 import 'recipients_contacts_sheet.dart';
 import 'recipients_csv_importer.dart';
+import 'recipients_groups_sheet.dart';
 
 /// Bottom sheet that builds the recipient list four ways: manual/paste,
-/// contacts, CSV/file import, and saved groups (stub). Returns the deduped
-/// recipient list to the caller.
+/// contacts, CSV/file import, and saved groups. Returns the deduped recipient
+/// list to the caller.
 class RecipientsPickerSheet extends StatefulWidget {
   final List<SmsRecipientEntity> initial;
-  const RecipientsPickerSheet({super.key, this.initial = const []});
+
+  /// Shared feature cubit — powers the saved-groups tab (list/create/delete).
+  final BulkSmsCubit cubit;
+
+  const RecipientsPickerSheet({
+    super.key,
+    required this.cubit,
+    this.initial = const [],
+  });
 
   @override
   State<RecipientsPickerSheet> createState() => _RecipientsPickerSheetState();
@@ -83,6 +93,19 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => RecipientsContactsSheet(existingNumbers: _numbers),
+    );
+    if (result != null && result.isNotEmpty) _addAll(result);
+  }
+
+  Future<void> _openGroups() async {
+    final result = await showModalBottomSheet<List<SmsRecipientEntity>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => RecipientsGroupsSheet(
+        cubit: widget.cubit,
+        currentRecipients: _recipients.values.toList(),
+      ),
     );
     if (result != null && result.isNotEmpty) _addAll(result);
   }
@@ -213,11 +236,7 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
               child: _methodTile(
                 icon: Icons.groups_2_outlined,
                 label: 'Saved groups',
-                disabled: true,
-                onTap: () => LVSnackbar.showInfo(
-                  title: 'Coming soon',
-                  message: 'Saved recipient groups arrive in a later update.',
-                ),
+                onTap: _openGroups,
               ),
             ),
           ],

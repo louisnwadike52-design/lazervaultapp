@@ -144,4 +144,22 @@ class BulkSmsRepositoryImpl implements BulkSmsRepository {
         country: country,
         purpose: purpose,
       );
+
+  @override
+  Future<List<BulkSmsGroup>> listGroups() => remoteDataSource.listGroups();
+
+  @override
+  Future<BulkSmsGroup> getGroup(String groupId) =>
+      remoteDataSource.getGroup(groupId);
+
+  @override
+  Future<BulkSmsGroup> createGroup({
+    required String name,
+    required List<SmsRecipientEntity> recipients,
+  }) =>
+      remoteDataSource.createGroup(name: name, recipients: recipients);
+
+  @override
+  Future<bool> deleteGroup(String groupId) =>
+      remoteDataSource.deleteGroup(groupId);
 }
