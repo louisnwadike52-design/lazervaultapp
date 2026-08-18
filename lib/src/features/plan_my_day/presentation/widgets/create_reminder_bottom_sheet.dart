@@ -326,10 +326,24 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
   }
 
   Widget _leadOffsets() {
+    // When both legs are on (the default) the backend applies the STANDARD
+    // admin schedule: all-day → 3 days / 1 day before + on the day; timed → an
+    // hour before. Turning one off narrows to that single leg (advanced).
+    final standard = _dayBefore && _hourBefore;
+    final summary = _allDay
+        ? "We'll remind you 3 days and 1 day before, and on the day."
+        : "We'll remind you an hour before.";
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (standard)
+          Padding(
+            padding: EdgeInsets.only(bottom: 4.h),
+            child: Text(summary,
+                style: TextStyle(color: Colors.grey[500], fontSize: 12.5.sp)),
+          ),
         _checkTile(
-          title: '1 day before',
+          title: _allDay ? 'Days before (3, 1, day-of)' : '1 day before',
           value: _dayBefore,
           onChanged: (v) => setState(() => _dayBefore = v),
         ),
