@@ -913,7 +913,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     final accent = const Color.fromARGB(255, 78, 3, 208);
     return InkWell(
       borderRadius: BorderRadius.circular(14.r),
-      onTap: isLoading ? null : () => _openMethodSheet(method),
+      onTap: isLoading ? null : () => _openDepositMethodGated(method),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -969,6 +969,20 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         ),
       ),
     );
+  }
+
+  /// Entry point from a method card: run the identity check FIRST (with a
+  /// loading state) BEFORE opening the amount sheet, so an unverified user sees
+  /// the verify prompt up front rather than filling in an amount and only then
+  /// being gated. Bank transfer just shows account details to copy — no gate.
+  /// The check is fast and fails open (backend re-gates). Because the sheet is
+  /// only reached once verified, the sheet CTAs proceed directly (no re-check).
+  void _openDepositMethodGated(_DepositMethod method) {
+    if (method == _DepositMethod.bankTransfer) {
+      _openMethodSheet(method);
+      return;
+    }
+    _ensureKycThenDeposit(proceed: () => _openMethodSheet(method));
   }
 
   /// Opens a focused modal for the chosen deposit method. Amount entry +
@@ -1094,12 +1108,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             icon: Icons.link,
             onPressed: () {
               if (!_validateSheetAmount(min: 200)) return;
-              // Pop the sheet FIRST (prevents a double-tap re-entering this
-              // action), then gate on KYC before launching Mono.
+              // Identity was verified before this sheet opened (the method-card
+              // tap gates KYC first). Pop the sheet, then launch Mono directly.
               Navigator.of(sheetCtx).pop();
-              _ensureKycThenDeposit(
-                proceed: () => _launchNGNMonoBottomsheet(context),
-              );
+              _launchNGNMonoBottomsheet(context);
             },
           ),
           SizedBox(height: 12.h),
@@ -1116,11 +1128,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             onPressed: () {
               if (!_validateSheetAmount()) return;
               Navigator.of(sheetCtx).pop();
-              // KYC-gate Apple Pay too (parity with card / Link & Deposit).
-              _ensureKycThenDeposit(
-                proceed: () => _startFlutterwaveDeposit(context,
-                    paymentMethod: 'apple_pay', sourceLabel: 'Apple Pay'),
-              );
+              // Identity already verified before this sheet opened.
+              _startFlutterwaveDeposit(context,
+                  paymentMethod: 'apple_pay', sourceLabel: 'Apple Pay');
             },
           ),
           SizedBox(height: 10.h),
@@ -1138,13 +1148,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
               // need a positive amount.
               if (!_validateSheetAmount(min: _isNGN ? 100 : 0)) return;
               Navigator.of(sheetCtx).pop();
-              // KYC-gate card deposits too (parity with Link & Deposit): an
-              // unverified user sees the verify modal before the Flutterwave
-              // checkout instead of paying then being blocked.
-              _ensureKycThenDeposit(
-                proceed: () => _startFlutterwaveDeposit(context,
-                    paymentMethod: 'card', sourceLabel: 'Card'),
-              );
+              // Identity already verified before this sheet opened.
+              _startFlutterwaveDeposit(context,
+                  paymentMethod: 'card', sourceLabel: 'Card');
             },
           ),
           SizedBox(height: 10.h),
