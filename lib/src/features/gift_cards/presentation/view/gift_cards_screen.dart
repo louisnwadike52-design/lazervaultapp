@@ -28,7 +28,11 @@ class GiftCardsScreen extends StatefulWidget {
 class _GiftCardsScreenState extends State<GiftCardsScreen> {
   String? _selectedCategory;
   int _currentTab = 0; // 0 = Buy, 1 = Sell
-  String _selectedCountryCode = ''; // Empty = All Countries (default)
+  String _selectedCountryCode = ''; // Empty = All Countries (default) — BUY tab
+  // The SELL catalogue is Prestmit-only and restricted to USA gift cards: the
+  // sellable list is always requested for the US so the Sell tab never shows
+  // other regions (UK/CA/…). Buy stays multi-country via _selectedCountryCode.
+  static const String _kSellCountryCode = 'US';
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   List<GiftCardCountry> _supportedCountries = [];
@@ -49,7 +53,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     final cubit = context.read<GiftCardCubit>();
     // Load data for both tabs so switching is instant
     cubit.loadGiftCardBrands();
-    cubit.loadSellableCards();
+    cubit.loadSellableCards(countryCode: _kSellCountryCode);
     cubit.loadSupportedCountries();
     _scrollController.addListener(_onScroll);
   }
@@ -79,7 +83,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
           );
     } else {
-      await context.read<GiftCardCubit>().loadSellableCards();
+      await context.read<GiftCardCubit>().loadSellableCards(countryCode: _kSellCountryCode);
     }
   }
 
@@ -1015,7 +1019,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                     _searchController.clear();
                     _sellSearchQuery = '';
                     setState(() => _currentTab = 1);
-                    context.read<GiftCardCubit>().loadSellableCards();
+                    context.read<GiftCardCubit>().loadSellableCards(countryCode: _kSellCountryCode);
                   }
                 },
                 child: Container(
@@ -1235,7 +1239,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               SizedBox(height: 24.h),
               ElevatedButton(
-                onPressed: () => context.read<GiftCardCubit>().loadSellableCards(),
+                onPressed: () => context.read<GiftCardCubit>().loadSellableCards(countryCode: _kSellCountryCode),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
