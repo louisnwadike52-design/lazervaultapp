@@ -376,7 +376,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                 final lockUntil = parseAccountLockUntil(msg);
                 if (lockUntil != null) {
                   showAccountLockedModal(context, lockUntil,
-                      selfLock: isSelfLock(msg));
+                      selfLock: isSelfLock(msg),
+                      fraudFreeze: isFraudFreeze(msg));
                   break;
                 }
                 // Never stack error snackbars — GetX queues them, so a fast

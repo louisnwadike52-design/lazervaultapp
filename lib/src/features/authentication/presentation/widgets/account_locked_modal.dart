@@ -13,7 +13,9 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 DateTime? parseAccountLockUntil(String? message) {
   if (message == null) return null;
   final lower = message.toLowerCase();
-  if (!lower.contains('locked until')) return null;
+  // Handles "account is self-locked until <ts>", the failed-login lockout, and
+  // the fraud freeze "account is locked for a security review until <ts>".
+  if (!lower.contains('locked') || !lower.contains('until')) return null;
   // Grab the ISO-8601 timestamp after "until".
   final m = RegExp(r'until\s+([0-9T:\-+.Zz]+)').firstMatch(message);
   if (m == null) return null;
@@ -24,6 +26,13 @@ DateTime? parseAccountLockUntil(String? message) {
 /// lockout — lets the modal use the right copy.
 bool isSelfLock(String? message) =>
     (message ?? '').toLowerCase().contains('self-locked');
+
+/// True when the lock is a behavioural-fraud FREEZE (the backend locked the
+/// account after a suspicious transfer). The login gate tags it with a "[fraud]"
+/// marker so the modal shows security-review copy + a support path instead of the
+/// self-discipline countdown.
+bool isFraudFreeze(String? message) =>
+    (message ?? '').toLowerCase().contains('[fraud]');
 
 /// Proactively surfaces the locked modal on a login screen when a self-lock
 /// deadline is cached locally (written when the user armed a lock / emergency
@@ -43,12 +52,15 @@ Future<void> maybeShowSelfLockOnLaunch(BuildContext context) async {
 /// Full-screen blocking modal shown on the login screens when the account is
 /// locked. Live countdown to the unlock time; the only way out is to wait.
 Future<void> showAccountLockedModal(BuildContext context, DateTime until,
-    {bool selfLock = true, bool emergency = false}) {
+    {bool selfLock = true, bool emergency = false, bool fraudFreeze = false}) {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (_) =>
-        _AccountLockedDialog(until: until, selfLock: selfLock, emergency: emergency),
+    builder: (_) => _AccountLockedDialog(
+        until: until,
+        selfLock: selfLock,
+        emergency: emergency,
+        fraudFreeze: fraudFreeze),
   );
 }
 
@@ -56,8 +68,12 @@ class _AccountLockedDialog extends StatefulWidget {
   final DateTime until;
   final bool selfLock;
   final bool emergency;
+  final bool fraudFreeze;
   const _AccountLockedDialog(
-      {required this.until, required this.selfLock, this.emergency = false});
+      {required this.until,
+      required this.selfLock,
+      this.emergency = false,
+      this.fraudFreeze = false});
 
   @override
   State<_AccountLockedDialog> createState() => _AccountLockedDialogState();
@@ -111,26 +127,45 @@ class _AccountLockedDialogState extends State<_AccountLockedDialog> {
           Container(
             padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
-              color: (widget.emergency ? const Color(0xFFEF4444) : const Color(0xFF4834D4))
+              color: (widget.fraudFreeze
+                      ? const Color(0xFFF59E0B)
+                      : widget.emergency
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF4834D4))
                   .withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              widget.emergency ? Icons.gpp_bad_rounded : Icons.lock_clock_rounded,
-              color: widget.emergency ? const Color(0xFFEF4444) : const Color(0xFF8B7FE8),
+              widget.fraudFreeze
+                  ? Icons.security_rounded
+                  : widget.emergency
+                      ? Icons.gpp_bad_rounded
+                      : Icons.lock_clock_rounded,
+              color: widget.fraudFreeze
+                  ? const Color(0xFFF59E0B)
+                  : widget.emergency
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF8B7FE8),
               size: 30.sp,
             ),
           ),
           SizedBox(height: 16.h),
-          Text(widget.emergency ? 'Emergency lock active' : 'Account locked',
+          Text(
+              widget.fraudFreeze
+                  ? 'Account locked for review'
+                  : widget.emergency
+                      ? 'Emergency lock active'
+                      : 'Account locked',
               style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
           SizedBox(height: 10.h),
           Text(
-            widget.emergency
-                ? 'You emergency-locked this account. Sign-in and all transactions are blocked until the timer ends — there\'s no early unlock.'
-                : widget.selfLock
-                    ? 'You locked your account. Sign-in and all transactions are paused — there\'s no early unlock.'
-                    : 'Too many attempts. Your account is temporarily locked.',
+            widget.fraudFreeze
+                ? 'We paused a transfer that looked unusually large for your account and locked it for your security. It unlocks automatically below — or contact support if you need it sooner.'
+                : widget.emergency
+                    ? 'You emergency-locked this account. Sign-in and all transactions are blocked until the timer ends — there\'s no early unlock.'
+                    : widget.selfLock
+                        ? 'You locked your account. Sign-in and all transactions are paused — there\'s no early unlock.'
+                        : 'Too many attempts. Your account is temporarily locked.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.5.sp, height: 1.45),
           ),

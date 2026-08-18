@@ -665,7 +665,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
               // Account is locked (self-lock or failed-login lockout) → show a
               // blocking countdown modal instead of a wrong-passcode shake.
               showAccountLockedModal(context, lockUntil,
-                  selfLock: isSelfLock(state.errorMessage));
+                  selfLock: isSelfLock(state.errorMessage),
+                  fraudFreeze: isFraudFreeze(state.errorMessage));
             } else if (state.errorMessage!.toLowerCase().contains('email_not_verified')) {
               Get.toNamed(AppRoutes.emailVerification, arguments: {
                 'isRequired': true,

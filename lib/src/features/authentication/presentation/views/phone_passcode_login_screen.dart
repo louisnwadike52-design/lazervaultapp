@@ -234,7 +234,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
           final lockUntil = parseAccountLockUntil(state.message);
           if (lockUntil != null) {
             showAccountLockedModal(context, lockUntil,
-                selfLock: isSelfLock(state.message));
+                selfLock: isSelfLock(state.message),
+                fraudFreeze: isFraudFreeze(state.message));
           } else {
             Haptics.error();
             _shakeKey.currentState?.shake();
