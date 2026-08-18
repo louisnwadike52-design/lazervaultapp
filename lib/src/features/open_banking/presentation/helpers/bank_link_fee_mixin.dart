@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/deposit.dart';
+import 'bank_link_kyc_gate.dart';
 
 /// Format a minor-unit (kobo) amount as a naira string with thousands separators,
 /// e.g. 159125 -> "₦1,591.25".
@@ -277,6 +278,14 @@ Future<void> linkBankWithConnectionNotice({
   required BuildContext context,
   required Future<void> Function(String? verificationToken, String? transactionId) doLink,
 }) async {
+  // IDENTITY CHECK FIRST — before the connection-fee notice (and any amount
+  // sheet). It shows a brief loading state so the tap never appears to do
+  // nothing, and routes an unverified user into BVN KYC instead of surfacing the
+  // fee dialog for a link they can't complete. Fast (single 8s-capped status
+  // call); fails open so a hiccup never blocks a legitimate link.
+  final verified = await ensureVerifiedForBankLink(context);
+  if (!verified || !context.mounted) return;
+
   final proceed = await showBankConnectionFeeNotice(context);
   if (!proceed || !context.mounted) return;
   final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
