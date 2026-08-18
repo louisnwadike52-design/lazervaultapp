@@ -461,6 +461,12 @@ platform :ios do
       skip_metadata:       true,
       skip_screenshots:    true,
       force:               true,
+      # Disable precheck: under App-Store-Connect API-key auth it CANNOT validate
+      # in-app purchases and hard-fails with "Precheck cannot check In-app
+      # purchases with the App Store Connect API Key" (this crashed build 187's
+      # production lane). We only manage the App Store version here and keep
+      # review submission MANUAL, so precheck adds nothing but the failure.
+      run_precheck_before_submit: false,
     )
   end
 
