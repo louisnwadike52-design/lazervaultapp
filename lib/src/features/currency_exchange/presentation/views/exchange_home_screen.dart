@@ -295,9 +295,12 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   }
 
   Future<void> _onPrimaryAction() async {
-    // Prevent double-tap (gRPC call + dialog is async)
+    // Prevent double-tap (gRPC call + dialog is async) and show a loading
+    // spinner on the CTA while the async balance / limit checks run so the tap
+    // doesn't feel stuck (parity with Send Abroad). Covers both Convert and
+    // Send Abroad — this is the shared primary path.
     if (_isPrimaryActionInProgress) return;
-    _isPrimaryActionInProgress = true;
+    setState(() => _isPrimaryActionInProgress = true);
 
     try {
       final cubit = context.read<ExchangeCubit>();
@@ -398,7 +401,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         _executeConversion();
       }
     } finally {
-      _isPrimaryActionInProgress = false;
+      if (mounted) {
+        setState(() => _isPrimaryActionInProgress = false);
+      } else {
+        _isPrimaryActionInProgress = false;
+      }
     }
   }
 
@@ -1029,7 +1036,9 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: canProceed ? _onPrimaryAction : null,
+                  onPressed: (canProceed && !_isPrimaryActionInProgress)
+                      ? _onPrimaryAction
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ExchangeTheme.primary,
                     disabledBackgroundColor: ExchangeTheme.surfaceElevated,
@@ -1037,14 +1046,21 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text(
-                    _mode == ExchangeMode.convert ? 'Convert Now' : 'Continue',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isPrimaryActionInProgress
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: LazerVaultLoader.small())
+                      : Text(
+                          _mode == ExchangeMode.convert
+                              ? 'Convert Now'
+                              : 'Continue',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),
