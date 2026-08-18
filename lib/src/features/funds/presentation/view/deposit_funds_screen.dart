@@ -28,6 +28,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_kyc_gate.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/open_banking/data/errors/banking_errors.dart';
@@ -981,18 +982,57 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     );
   }
 
-  /// Entry point from a method card: run the identity check FIRST (with a
-  /// loading state) BEFORE opening the amount sheet, so an unverified user sees
-  /// the verify prompt up front rather than filling in an amount and only then
-  /// being gated. Bank transfer just shows account details to copy — no gate.
-  /// The check is fast and fails open (backend re-gates). Because the sheet is
-  /// only reached once verified, the sheet CTAs proceed directly (no re-check).
-  void _openDepositMethodGated(_DepositMethod method) {
-    if (method == _DepositMethod.bankTransfer) {
+  /// True when the destination account already has a real, provisioned NUBAN —
+  /// i.e. it can receive deposits. A non-empty account number on a virtual
+  /// account is the signal (the backend leaves it empty until the mint lands).
+  bool get _targetHasVirtualAccount =>
+      (_provisionedAccountNumber ??
+              widget.selectedCard['accountNumber'] ??
+              widget.selectedCard['account_number'] ??
+              '')
+          .toString()
+          .trim()
+          .isNotEmpty;
+
+  /// Entry point from a method card — the SAME gate for EVERY method (transfer,
+  /// card, link, Apple Pay). The primary check is whether the destination can
+  /// RECEIVE money (a NUBAN exists), NOT whether the user is KYC-verified: a BVN
+  /// only matters because it's what mints the NUBAN, so KYC is the fallback.
+  ///
+  /// Runs the moment the method card is tapped, BEFORE the amount/fee sheet:
+  ///   • has NUBAN (or non-NGN, which doesn't use one) → open the sheet instantly;
+  ///   • no NUBAN + verified → loading overlay while we mint it, then open;
+  ///   • no NUBAN + unverified → route to BVN KYC (sheet never opens).
+  /// This unifies card/link (which used to check while already calling the
+  /// provider) with transfer (which checked first) and gives a proper loading
+  /// state from the tap instead of the sheet silently closing.
+  Future<void> _openDepositMethodGated(_DepositMethod method) async {
+    // Fast path: already fundable, or a non-NGN account (no NUBAN concept).
+    if (!_isNGN || _targetHasVirtualAccount) {
       _openMethodSheet(method);
       return;
     }
-    _ensureKycThenDeposit(proceed: () => _openMethodSheet(method));
+    final res = await ensureDepositReady(
+      context,
+      accountHasVirtualAccount: false,
+      currency: _currency,
+      isPrimary: widget.selectedCard['isPrimary'] == true,
+    );
+    if (!mounted) return;
+    if (res.status == DepositReadiness.needsKyc) return; // verification took over
+    if (res.mintedAccountNumber != null) {
+      setState(() => _provisionedAccountNumber = res.mintedAccountNumber);
+    } else if (res.status == DepositReadiness.provisioning) {
+      Get.snackbar(
+        'Setting up your account',
+        'Your deposit account is being set up — this only takes a moment. You can continue.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF1F1F1F),
+        colorText: Colors.white,
+      );
+    }
+    if (!mounted) return;
+    _openMethodSheet(method);
   }
 
   /// Opens a focused modal for the chosen deposit method. Amount entry +
