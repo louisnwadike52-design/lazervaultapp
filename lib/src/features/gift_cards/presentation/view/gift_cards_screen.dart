@@ -360,15 +360,19 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             ),
           ),
           SizedBox(width: 8.w),
-          // Filter buttons on the right
-          _buildFilterButton(
-            key: const Key('country_selector_button'),
-            label: 'Country',
-            value: countryLabel,
-            emoji: flag,
-            onTap: () => _showCountrySelection(),
-          ),
-          SizedBox(width: 8.w),
+          // Country filter — BUY tab only. The Sell flow is US-only (Prestmit
+          // sells US cards), so a country picker there is misleading; the sell
+          // list is already pinned to US (_kSellCountryCode).
+          if (_currentTab == 0) ...[
+            _buildFilterButton(
+              key: const Key('country_selector_button'),
+              label: 'Country',
+              value: countryLabel,
+              emoji: flag,
+              onTap: () => _showCountrySelection(),
+            ),
+            SizedBox(width: 8.w),
+          ],
           _buildFilterButton(
             label: 'Category',
             value: categoryLabel,
