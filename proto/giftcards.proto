@@ -764,6 +764,7 @@ message SellableCard {
   string subcategory_id = 11;
   // ISO/Prestmit country tag (e.g. "USA", "UK") for region variants.
   string country = 12;
+  bool requires_receipt = 13;
 }
 
 message SellRate {
@@ -1641,6 +1642,7 @@ message PendingVerification {
   int32  verification_attempts = 6;
   string last_checked          = 7;
   string status                = 8;
+  int32  payout_attempt        = 9;
 }
 
 message GetPendingVerificationsRequest {

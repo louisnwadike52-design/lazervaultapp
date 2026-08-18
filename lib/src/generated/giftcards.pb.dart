@@ -2413,6 +2413,7 @@ class SellableCard extends $pb.GeneratedMessage {
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'form')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subcategoryId')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
+    ..aOB(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresReceipt')
     ..hasRequiredFields = false
   ;
 
@@ -2430,6 +2431,7 @@ class SellableCard extends $pb.GeneratedMessage {
     $core.String? form,
     $core.String? subcategoryId,
     $core.String? country,
+    $core.bool? requiresReceipt,
   }) {
     final _result = create();
     if (cardType != null) {
@@ -2467,6 +2469,9 @@ class SellableCard extends $pb.GeneratedMessage {
     }
     if (country != null) {
       _result.country = country;
+    }
+    if (requiresReceipt != null) {
+      _result.requiresReceipt = requiresReceipt;
     }
     return _result;
   }
@@ -2586,6 +2591,15 @@ class SellableCard extends $pb.GeneratedMessage {
   $core.bool hasCountry() => $_has(11);
   @$pb.TagNumber(12)
   void clearCountry() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.bool get requiresReceipt => $_getBF(12);
+  @$pb.TagNumber(13)
+  set requiresReceipt($core.bool v) { $_setBool(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasRequiresReceipt() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearRequiresReceipt() => clearField(13);
 }
 
 class SellRate extends $pb.GeneratedMessage {
@@ -11124,6 +11138,7 @@ class PendingVerification extends $pb.GeneratedMessage {
     ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationAttempts', $pb.PbFieldType.O3)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastChecked')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payoutAttempt', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -11137,6 +11152,7 @@ class PendingVerification extends $pb.GeneratedMessage {
     $core.int? verificationAttempts,
     $core.String? lastChecked,
     $core.String? status,
+    $core.int? payoutAttempt,
   }) {
     final _result = create();
     if (id != null) {
@@ -11162,6 +11178,9 @@ class PendingVerification extends $pb.GeneratedMessage {
     }
     if (status != null) {
       _result.status = status;
+    }
+    if (payoutAttempt != null) {
+      _result.payoutAttempt = payoutAttempt;
     }
     return _result;
   }
@@ -11257,6 +11276,15 @@ class PendingVerification extends $pb.GeneratedMessage {
   $core.bool hasStatus() => $_has(7);
   @$pb.TagNumber(8)
   void clearStatus() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get payoutAttempt => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set payoutAttempt($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPayoutAttempt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPayoutAttempt() => clearField(9);
 }
 
 class GetPendingVerificationsRequest extends $pb.GeneratedMessage {

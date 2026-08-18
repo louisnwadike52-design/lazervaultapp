@@ -339,11 +339,12 @@ const SellableCard$json = const {
     const {'1': 'form', '3': 10, '4': 1, '5': 9, '10': 'form'},
     const {'1': 'subcategory_id', '3': 11, '4': 1, '5': 9, '10': 'subcategoryId'},
     const {'1': 'country', '3': 12, '4': 1, '5': 9, '10': 'country'},
+    const {'1': 'requires_receipt', '3': 13, '4': 1, '5': 8, '10': 'requiresReceipt'},
   ],
 };
 
 /// Descriptor for `SellableCard`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sellableCardDescriptor = $convert.base64Decode('CgxTZWxsYWJsZUNhcmQSGwoJY2FyZF90eXBlGAEgASgJUghjYXJkVHlwZRIhCgxkaXNwbGF5X25hbWUYAiABKAlSC2Rpc3BsYXlOYW1lEhkKCGxvZ29fdXJsGAMgASgJUgdsb2dvVXJsEhoKCGNhdGVnb3J5GAQgASgJUghjYXRlZ29yeRIkCg1kZW5vbWluYXRpb25zGAUgAygBUg1kZW5vbWluYXRpb25zEh4KCmN1cnJlbmNpZXMYBiADKAlSCmN1cnJlbmNpZXMSKQoQbWluX2Rlbm9taW5hdGlvbhgHIAEoAVIPbWluRGVub21pbmF0aW9uEikKEG1heF9kZW5vbWluYXRpb24YCCABKAFSD21heERlbm9taW5hdGlvbhIjCg1wcm92aWRlcl9uYW1lGAkgASgJUgxwcm92aWRlck5hbWUSEgoEZm9ybRgKIAEoCVIEZm9ybRIlCg5zdWJjYXRlZ29yeV9pZBgLIAEoCVINc3ViY2F0ZWdvcnlJZBIYCgdjb3VudHJ5GAwgASgJUgdjb3VudHJ5');
+final $typed_data.Uint8List sellableCardDescriptor = $convert.base64Decode('CgxTZWxsYWJsZUNhcmQSGwoJY2FyZF90eXBlGAEgASgJUghjYXJkVHlwZRIhCgxkaXNwbGF5X25hbWUYAiABKAlSC2Rpc3BsYXlOYW1lEhkKCGxvZ29fdXJsGAMgASgJUgdsb2dvVXJsEhoKCGNhdGVnb3J5GAQgASgJUghjYXRlZ29yeRIkCg1kZW5vbWluYXRpb25zGAUgAygBUg1kZW5vbWluYXRpb25zEh4KCmN1cnJlbmNpZXMYBiADKAlSCmN1cnJlbmNpZXMSKQoQbWluX2Rlbm9taW5hdGlvbhgHIAEoAVIPbWluRGVub21pbmF0aW9uEikKEG1heF9kZW5vbWluYXRpb24YCCABKAFSD21heERlbm9taW5hdGlvbhIjCg1wcm92aWRlcl9uYW1lGAkgASgJUgxwcm92aWRlck5hbWUSEgoEZm9ybRgKIAEoCVIEZm9ybRIlCg5zdWJjYXRlZ29yeV9pZBgLIAEoCVINc3ViY2F0ZWdvcnlJZBIYCgdjb3VudHJ5GAwgASgJUgdjb3VudHJ5EikKEHJlcXVpcmVzX3JlY2VpcHQYDSABKAhSD3JlcXVpcmVzUmVjZWlwdA==');
 @$core.Deprecated('Use sellRateDescriptor instead')
 const SellRate$json = const {
   '1': 'SellRate',
@@ -1489,11 +1490,12 @@ const PendingVerification$json = const {
     const {'1': 'verification_attempts', '3': 6, '4': 1, '5': 5, '10': 'verificationAttempts'},
     const {'1': 'last_checked', '3': 7, '4': 1, '5': 9, '10': 'lastChecked'},
     const {'1': 'status', '3': 8, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'payout_attempt', '3': 9, '4': 1, '5': 5, '10': 'payoutAttempt'},
   ],
 };
 
 /// Descriptor for `PendingVerification`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List pendingVerificationDescriptor = $convert.base64Decode('ChNQZW5kaW5nVmVyaWZpY2F0aW9uEg4KAmlkGAEgASgJUgJpZBIcCglyZWZlcmVuY2UYAiABKAlSCXJlZmVyZW5jZRIbCgljYXJkX3R5cGUYAyABKAlSCGNhcmRUeXBlEiIKDGRlbm9taW5hdGlvbhgEIAEoAVIMZGVub21pbmF0aW9uEhoKCGN1cnJlbmN5GAUgASgJUghjdXJyZW5jeRIzChV2ZXJpZmljYXRpb25fYXR0ZW1wdHMYBiABKAVSFHZlcmlmaWNhdGlvbkF0dGVtcHRzEiEKDGxhc3RfY2hlY2tlZBgHIAEoCVILbGFzdENoZWNrZWQSFgoGc3RhdHVzGAggASgJUgZzdGF0dXM=');
+final $typed_data.Uint8List pendingVerificationDescriptor = $convert.base64Decode('ChNQZW5kaW5nVmVyaWZpY2F0aW9uEg4KAmlkGAEgASgJUgJpZBIcCglyZWZlcmVuY2UYAiABKAlSCXJlZmVyZW5jZRIbCgljYXJkX3R5cGUYAyABKAlSCGNhcmRUeXBlEiIKDGRlbm9taW5hdGlvbhgEIAEoAVIMZGVub21pbmF0aW9uEhoKCGN1cnJlbmN5GAUgASgJUghjdXJyZW5jeRIzChV2ZXJpZmljYXRpb25fYXR0ZW1wdHMYBiABKAVSFHZlcmlmaWNhdGlvbkF0dGVtcHRzEiEKDGxhc3RfY2hlY2tlZBgHIAEoCVILbGFzdENoZWNrZWQSFgoGc3RhdHVzGAggASgJUgZzdGF0dXMSJQoOcGF5b3V0X2F0dGVtcHQYCSABKAVSDXBheW91dEF0dGVtcHQ=');
 @$core.Deprecated('Use getPendingVerificationsRequestDescriptor instead')
 const GetPendingVerificationsRequest$json = const {
   '1': 'GetPendingVerificationsRequest',
