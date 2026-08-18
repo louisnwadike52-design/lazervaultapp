@@ -271,7 +271,9 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        // Tighter padding so four equal-width tabs (Day/Board/People/Reminders)
+        // fit without overflow on narrow phones.
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 9.h),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF4E03D0) : Colors.transparent,
           borderRadius: BorderRadius.circular(10.r),
@@ -283,15 +285,25 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
             Icon(
               icon,
               color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-              size: 18,
+              size: 16,
             ),
-            SizedBox(width: 6.w),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-                fontSize: 13.sp,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            SizedBox(width: 5.w),
+            // Scale the label down to fit its slot instead of overflowing the
+            // border — keeps the full word, just smaller where space is tight.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: GoogleFonts.inter(
+                    color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
               ),
             ),
           ],
