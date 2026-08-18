@@ -95,6 +95,13 @@
 			<string>bluetooth-central</string>
 			<string>bluetooth-peripheral</string>
 		</array>
+		<!-- Google Sign-In (Plan My Day -> Connect Gmail). GIDClientID clears the
+		     iOS "No active configuration" init crash; the reversed-client URL
+		     scheme below receives the OAuth callback. Value is the Web OAuth
+		     client id (project lazervault-dev); serverClientId in email_cubit
+		     uses the same id for the serverAuthCode exchange. -->
+		<key>GIDClientID</key>
+		<string>961906506476-51ugt48f8os51a8r9pvmftavuo86ksul.apps.googleusercontent.com</string>
 		<!-- Deep link URL scheme for lazervault:// -->
 		<!-- Used for DirectPay authorization callbacks and other in-app redirects -->
 		<key>CFBundleURLTypes</key>
@@ -107,6 +114,16 @@
 				<key>CFBundleURLSchemes</key>
 				<array>
 					<string>lazervault</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>com.googleusercontent.apps.google-signin</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.961906506476-51ugt48f8os51a8r9pvmftavuo86ksul</string>
 				</array>
 			</dict>
 		</array>
