@@ -1018,6 +1018,23 @@ message SellGiftCardRequest {
   // liability/privacy terms; this flag is the audit-trail signal that
   // the user completed that step. Backend rejects when false.
   bool balance_attested = 26;
+
+  // Multi-card batching (#81). When set (length ≥ 1), the sale is a SINGLE
+  // Prestmit trade covering N cards of the SAME sellable card + form: amount =
+  // SUM of the per-item denominations, N ecodes joined into comments, N physical
+  // images flattened into attachments[]. Empty ⇒ legacy single-card path.
+  repeated SellCardItem cards = 27;
+}
+
+// SellCardItem is one card within a multi-card sell batch. Provide the value that
+// matches the batch form: Ecode → card_code (or card_number + card_pin); Physical
+// → image_urls. denomination is this card's own face value (summed server-side).
+message SellCardItem {
+  double denomination = 1;
+  string card_code = 2;
+  string card_number = 3;
+  string card_pin = 4;
+  repeated string image_urls = 5;
 }
 
 message SellGiftCardResponse {
