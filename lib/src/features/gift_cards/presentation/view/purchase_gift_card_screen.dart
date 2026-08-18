@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -316,7 +317,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  widget.brand.description,
+                  plainFromRichText(widget.brand.description),
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     color: const Color(0xFF9CA3AF),

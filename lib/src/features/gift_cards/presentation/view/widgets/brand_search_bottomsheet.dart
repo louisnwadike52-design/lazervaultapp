@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -377,7 +378,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    brand.description,
+                    plainFromRichText(brand.description),
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       color: const Color(0xFF9CA3AF),
