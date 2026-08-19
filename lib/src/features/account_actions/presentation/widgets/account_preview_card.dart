@@ -140,16 +140,32 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
 
   String get _money => '${widget.currencySymbol}${_available.toStringAsFixed(2)}';
 
-  String get _maskedNumber {
-    final raw = (widget.accountArgs['accountNumber'] as String?) ??
-        (widget.accountArgs['accountNumberLast4'] as String?) ??
-        (widget.accountArgs['cardNumber'] as String?);
-    final digits = (raw ?? '').replaceAll(RegExp(r'[^0-9]'), '');
-    final last4 = digits.length >= 4
-        ? digits.substring(digits.length - 4)
-        : (digits.isEmpty ? '••••' : digits.padLeft(4, '•'));
-    return '••••  ••••  ••••  $last4';
+  /// FULL account number for the account-details face — this is where the user
+  /// reads/copies their real deposit NUBAN, so it is never masked. Shows a
+  /// "being set up" placeholder only while the account is un-provisioned (no
+  /// real number yet). Digits are lightly grouped for readability.
+  String get _fullNumber {
+    final raw = (widget.accountArgs['accountNumber'] as String?) ?? '';
+    // A masked placeholder ("•••• 1234") or a too-short value is NOT a real
+    // deposit number — show the un-provisioned state instead of a partial number.
+    if (raw.contains('•')) return 'Being set up…';
+    final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length < 6) return 'Being set up…';
+    // Group in 3s for readability without altering the value (e.g. 9954855797
+    // → "995 485 5797"); the exact digits are preserved.
+    final buf = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buf.write(' ');
+      buf.write(digits[i]);
+    }
+    return buf.toString();
   }
+
+  /// The deposit bank name EXACTLY as the provider returned it (empty until the
+  /// account is provisioned). Shown on the card face in place of a brand label —
+  /// a bank account card should carry the bank, not the app name.
+  String get _bankName =>
+      (widget.accountArgs['bankName'] as String?)?.trim() ?? '';
 
   List<Color> get _activeGradient {
     switch (_accountType.toLowerCase()) {
@@ -202,12 +218,12 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
           ),
           SizedBox(height: 12.h),
           Text(
-            _maskedNumber,
+            _fullNumber,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.92),
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.5,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.0,
             ),
           ),
           SizedBox(height: 14.h),
@@ -218,10 +234,11 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              // Real NUBAN holder name (provider value) — NOT a mock and NOT the
+              // account type. Blank until the backend provisions it.
               Expanded(
+                flex: 3,
                 child: Text(
-                  // Real NUBAN holder name (provider value) — NOT a mock and
-                  // NOT the account type. Blank until the backend provisions it.
                   _holderName.toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -233,13 +250,21 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                   ),
                 ),
               ),
-              Text(
-                'lazervault',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  fontStyle: FontStyle.italic,
+              SizedBox(width: 8.w),
+              // The deposit bank (provider value) sits where a card would carry
+              // its network/bank mark — never the app's own name.
+              Flexible(
+                flex: 2,
+                child: Text(
+                  _bankName,
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -269,7 +294,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                   _chip(),
                   SizedBox(height: 14.h),
                   Text(
-                    _maskedNumber,
+                    _fullNumber,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 15.sp,
