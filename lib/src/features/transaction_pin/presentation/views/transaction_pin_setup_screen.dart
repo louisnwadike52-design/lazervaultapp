@@ -8,6 +8,7 @@ import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 import 'package:lazervault/core/utilities/auth_background.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:grpc/grpc.dart';
@@ -61,6 +62,15 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     } catch (_) {
       return null;
     }
+  }
+
+  Future<void> _deleteFlag(String key) async {
+    try {
+      await _flagsDefault.delete(key: key);
+    } catch (_) {/* best-effort */}
+    try {
+      await _flagsEncrypted.delete(key: key);
+    } catch (_) {/* best-effort */}
   }
 
   late TransactionPinCubit _transactionPinCubit;
@@ -396,6 +406,28 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     final kycPending = await _readFlag('kyc_onboarding_pending');
     if (!mounted) return;
     if (kycPending == 'true') {
+      // Already Tier 2+? (BVN inserted via Mono Prove, the BVN-only data-match
+      // path, or a server-side login catch-up that reconciled a dropped-before-
+      // liveness Prove session.) Then DON'T force the KYC screen on login — the
+      // user is past the compulsory BVN step. Clear the stale onboarding flag and
+      // go straight to the dashboard; further verification (Tier 3 liveness) is
+      // optional and done from Settings. Authoritative but bounded; on any error
+      // we fall SAFE to showing the (compulsory-below-Tier-2) step.
+      try {
+        final st = await serviceLocator<ProveKycHttpService>()
+            .status()
+            .timeout(const Duration(seconds: 4));
+        if (!mounted) return;
+        if (st.tier >= 2 || st.verified) {
+          await _deleteFlag('kyc_onboarding_pending');
+          if (!mounted) return;
+          Get.offAllNamed(AppRoutes.dashboard);
+          return;
+        }
+      } catch (_) {
+        // Status unavailable — fall through to the compulsory KYC step.
+      }
+      if (!mounted) return;
       // First-time onboarding KYC step. The DEFAULT flow is Mono Prove
       // (kycBVNVerification): its completion webhook already auto-creates the
       // Flutterwave virtual account server-side (Mono verify → kyc.tier.upgrade

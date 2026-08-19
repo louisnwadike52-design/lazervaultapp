@@ -1015,11 +1015,21 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   bool get _isOnboardingRoot =>
       _fromSignup || !(Navigator.of(context).canPop());
 
-  /// KYC is MANDATORY during onboarding — a new user cannot reach a funded /
-  /// dashboard state without a verified BVN. Skip controls are only offered
-  /// OUTSIDE onboarding (e.g. when the user opened KYC voluntarily from the
-  /// deposit "Verify Now" CTA, where backing out just returns to that screen).
-  bool get _allowSkip => !_isOnboardingRoot;
+  /// True once the user has reached KYC Tier 2 — i.e. their BVN has been
+  /// inserted/verified (which is what mints their virtual account). Reads the
+  /// authoritative banking Prove status; defaults to false until it loads so we
+  /// stay compulsory when the tier is still unknown.
+  bool get _reachedTier2 =>
+      (_status?.tier ?? 0) >= 2 || (_status?.verified ?? false);
+
+  /// KYC is COMPULSORY until the user reaches Tier 2 (BVN inserted). Below Tier 2
+  /// the step cannot be skipped ANYWHERE it appears — signup, the login gate, or
+  /// Settings — because a user must insert their BVN (and get their virtual
+  /// account) before deferring. Once at Tier 2+ they may skip and upgrade later
+  /// (e.g. Tier 3 liveness) from Settings. This replaces the old onboarding-root
+  /// binary so a tier-1 user who quit signup is re-gated (non-skippable) on the
+  /// next login, while a Prove-verified user is never force-blocked.
+  bool get _allowSkip => _reachedTier2;
 
   /// Finish a successful/complete verification: clear the onboarding flag and
   /// route to the right place (dashboard when at the onboarding root, otherwise
@@ -1124,15 +1134,16 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   /// `has_skipped_kyc` flag prevents a loop, and the tier reconciles on the next
   /// authenticated KYC status read).
   Future<void> _skipForNow() async {
-    // KYC is MANDATORY during onboarding — there is no skip. This is the
-    // authority guard: even if a skip control is ever surfaced in the onboarding
-    // context, it cannot bypass verification (never clears the pending flag,
-    // never routes to the dashboard).
-    if (_isOnboardingRoot) {
+    // KYC is COMPULSORY below Tier 2 — there is no skip until the BVN is inserted
+    // (which mints the virtual account). This is the authority guard: even if a
+    // skip control is ever surfaced below Tier 2, it cannot bypass verification
+    // (never clears the pending flag, never routes to the dashboard). At Tier 2+
+    // the user may defer and upgrade later from Settings.
+    if (!_reachedTier2) {
       if (mounted) {
         Get.snackbar(
           'Verification required',
-          'Please complete your identity verification to activate your account.',
+          'Please insert your BVN to activate your account. You can add extra verification later.',
           snackPosition: SnackPosition.BOTTOM,
         );
       }
