@@ -140,6 +140,28 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
 
   String get _money => '${widget.currencySymbol}${_available.toStringAsFixed(2)}';
 
+  /// Currencies for which a real deposit account (bank-transfer number) can be
+  /// issued: NGN today (Flutterwave v3), and GHS/KES/ZAR via v4 once enabled on
+  /// the account. Any other currency (e.g. USD/GBP) has NO deposit number — it is
+  /// funded by CONVERTING from another wallet, so we show that state rather than a
+  /// perpetual "being set up".
+  static const Set<String> _depositCapableCurrencies = {'NGN', 'GHS', 'KES', 'ZAR'};
+
+  String get _currency =>
+      ((widget.accountArgs['currency'] as String?) ?? '').trim().toUpperCase();
+
+  /// True when this wallet's currency can never receive a direct deposit number,
+  /// so it's funded by conversion (USD/GBP today).
+  bool get _isConvertOnly =>
+      _currency.isNotEmpty && !_depositCapableCurrencies.contains(_currency);
+
+  /// True when a REAL provisioned deposit number is present (not masked/partial).
+  bool get _hasRealNumber {
+    final raw = (widget.accountArgs['accountNumber'] as String?) ?? '';
+    if (raw.contains('•')) return false;
+    return raw.replaceAll(RegExp(r'[^0-9]'), '').length >= 6;
+  }
+
   /// FULL account number for the account-details face — this is where the user
   /// reads/copies their real deposit NUBAN, so it is never masked. Shows a
   /// "being set up" placeholder only while the account is un-provisioned (no
@@ -209,7 +231,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
           ),
           SizedBox(height: 20.h),
           Text(
-            'Account number',
+            _isConvertOnly && !_hasRealNumber ? 'Funding' : 'Account number',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.6),
               fontSize: 10.sp,
@@ -218,15 +240,39 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
             ),
           ),
           SizedBox(height: 4.h),
-          Text(
-            _fullNumber,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.95),
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2.0,
+          if (_isConvertOnly && !_hasRealNumber)
+            // No bank-transfer number exists for this currency (e.g. USD/GBP) —
+            // it's funded by converting from another wallet, not by a deposit.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.swap_horiz_rounded,
+                    color: Colors.white.withValues(alpha: 0.9), size: 18.sp),
+                SizedBox(width: 6.w),
+                Expanded(
+                  child: Text(
+                    'Fund by converting from another wallet',
+                    maxLines: 2,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              _fullNumber,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.95),
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2.0,
+              ),
             ),
-          ),
           SizedBox(height: 14.h),
           _balanceBlock(labelColor: Colors.white.withValues(alpha: 0.65)),
           SizedBox(height: 4.h),
