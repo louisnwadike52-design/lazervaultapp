@@ -47,15 +47,27 @@ class ServerStatusService {
   final http.Client _client;
 
   static const Duration _timeout = Duration(seconds: 6);
+  // Shorter per-probe timeout for the retry burst so confirming "really down"
+  // stays bounded (worst case ≈ _healthAttempts × _retryTimeout + gaps).
+  static const Duration _retryTimeout = Duration(seconds: 3);
+  static const Duration _retryGap = Duration(milliseconds: 700);
+
+  /// Minimum number of consecutive failed probes before we conclude the backend
+  /// is REALLY down (and let the caller surface the maintenance modal). A 5–7
+  /// retry floor: a one-off edge hiccup, a brief mobile-network drop, or a cold
+  /// gateway must NEVER flash "under maintenance" — that scares users when the
+  /// server is actually fine. We stop and report healthy the instant any single
+  /// probe answers 2xx.
+  static const int _healthAttempts = 6;
 
   /// Public, unauthenticated, Cloudflare-routed reachability endpoint.
   /// [endpointRegistry.httpCore] ends in `/api/v1`.
   Uri _healthUri() =>
       Uri.parse('${endpointRegistry.httpCore}/internal/voice-agents/settings');
 
-  Future<bool> _probeOnce() async {
+  Future<bool> _probeOnce({Duration? timeout}) async {
     try {
-      final resp = await _client.get(_healthUri()).timeout(_timeout);
+      final resp = await _client.get(_healthUri()).timeout(timeout ?? _timeout);
       // Strictly 2xx = backend up AND healthy. 401/404 would mean a wrong/gated
       // path, and 5xx/503 means degraded — both treated as NOT healthy here
       // because the public root /health is expected to answer 200 when good.
@@ -65,11 +77,20 @@ class ServerStatusService {
     }
   }
 
-  /// Returns true when the backend answered a 2xx health check. Retries ONCE on
-  /// failure (short gap) so a single transient blip doesn't flash maintenance.
+  /// Returns true when the backend answered a 2xx health check. Probes up to
+  /// [_healthAttempts] times (the 5–7 retry floor) with a short gap between,
+  /// returning true the instant ANY probe succeeds and false only after ALL
+  /// attempts fail — so the maintenance modal only appears when the server is
+  /// really, really down, not on a transient blip.
   Future<bool> isBackendHealthy() async {
-    if (await _probeOnce()) return true;
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-    return _probeOnce();
+    for (var attempt = 0; attempt < _healthAttempts; attempt++) {
+      final healthy =
+          await _probeOnce(timeout: attempt == 0 ? _timeout : _retryTimeout);
+      if (healthy) return true;
+      if (attempt < _healthAttempts - 1) {
+        await Future<void>.delayed(_retryGap);
+      }
+    }
+    return false;
   }
 }
