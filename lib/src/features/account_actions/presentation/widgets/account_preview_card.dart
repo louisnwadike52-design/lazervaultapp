@@ -207,21 +207,22 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
               _statusPill(active: true),
             ],
           ),
-          SizedBox(height: 14.h),
-          Row(
-            children: [
-              _chip(),
-              SizedBox(width: 10.w),
-              Icon(Icons.contactless_rounded,
-                  color: Colors.white.withValues(alpha: 0.75), size: 20.sp),
-            ],
+          SizedBox(height: 20.h),
+          Text(
+            'Account number',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.6,
+            ),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 4.h),
           Text(
             _fullNumber,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.92),
-              fontSize: 17.sp,
+              color: Colors.white.withValues(alpha: 0.95),
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               letterSpacing: 2.0,
             ),

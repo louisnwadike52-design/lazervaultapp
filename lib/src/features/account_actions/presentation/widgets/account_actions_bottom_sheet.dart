@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
@@ -378,9 +377,6 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     } else if (state is PINRevealed) {
       // Show PIN dialog
       _showPINDialog(state.pin, state.expiresAt);
-    } else if (state is CardDetailsRevealed && _cardsFeatureEnabled) {
-      // Show card details dialog (gated by cards feature flag)
-      _showCardDetailsDialog(state);
     } else if (state is DocumentDownloaded) {
       _openDownloadedDocument(state.document);
     }
@@ -476,113 +472,4 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     );
   }
 
-  void _showCardDetailsDialog(CardDetailsRevealed state) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-          side: const BorderSide(color: Color(0xFF2A2A2D)),
-        ),
-        title: Text(
-          'Card Details',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Card Number', state.cardNumber),
-            SizedBox(height: 10.h),
-            _buildDetailRow('Expiry Date', state.expiryDate),
-            SizedBox(height: 10.h),
-            _buildDetailRow('CVV', state.cvv),
-            SizedBox(height: 14.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD97706).withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(
-                    color: const Color(0xFFD97706).withValues(alpha: 0.30)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.lock_outline,
-                      size: 14.sp, color: const Color(0xFFD97706)),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'Keep this information secure. Never share it with anyone.',
-                      style: TextStyle(
-                          color: const Color(0xFFE0A23C),
-                          fontSize: 11.sp,
-                          height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              'Done',
-              style: TextStyle(
-                color: const Color(0xFF4E03D0),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    // Finer dark "card" surface per item: subtle elevated fill + hairline
-    // border + brand-accent label, so card details read as distinct chips
-    // rather than bare text.
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161618),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2A2A2D)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: const Color(0xFF8B8B93),
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.6.w,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.5.w,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
