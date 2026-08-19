@@ -278,13 +278,15 @@ Future<void> linkBankWithConnectionNotice({
   required BuildContext context,
   required Future<void> Function(String? verificationToken, String? transactionId) doLink,
 }) async {
-  // IDENTITY CHECK FIRST — before the connection-fee notice (and any amount
-  // sheet). It shows a brief loading state so the tap never appears to do
-  // nothing, and routes an unverified user into BVN KYC instead of surfacing the
-  // fee dialog for a link they can't complete. Fast (single 8s-capped status
-  // call); fails open so a hiccup never blocks a legitimate link.
-  final verified = await ensureVerifiedForBankLink(context);
-  if (!verified || !context.mounted) return;
+  // VIRTUAL-ACCOUNT CHECK FIRST — the SAME model as deposits, before the
+  // connection-fee notice (and any amount sheet). A bank link only makes sense
+  // once the user's account can receive money (a NUBAN exists ⇒ BVN KYC done),
+  // so the single source of truth is "does a NGN account number exist?": if yes
+  // → continue; if not → the blocking "Setting up your account" modal mints it or
+  // routes to verification, and the link continues only once ready. Fails open on
+  // a lookup hiccup (the backend re-gates server-side).
+  final ready = await ensureVirtualAccountForLink(context);
+  if (!ready || !context.mounted) return;
 
   final proceed = await showBankConnectionFeeNotice(context);
   if (!proceed || !context.mounted) return;

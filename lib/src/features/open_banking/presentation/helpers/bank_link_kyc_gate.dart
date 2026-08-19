@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 import 'package:lazervault/src/features/virtual_account/domain/services/va_provisioning_service.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
 
 /// The FAST identity check that must gate EVERY bank-link entry point BEFORE the
 /// connection-fee notice / amount sheet (deposit, AI-Analytics, statistics,
@@ -167,6 +168,53 @@ Future<DepositGateResult> ensureDepositReady(
     hideLoader();
     return const DepositGateResult(DepositReadiness.provisioning);
   }
+}
+
+/// The CENTRAL gate that EVERY bank-linking entry point must pass FIRST (deposit,
+/// financial-analytics/statistics, LazerBeam, autosave, move-money, the dedicated
+/// Link Bank screen …). It uses the SAME virtual-account model as deposits: a bank
+/// link only makes sense once the user's account can receive money — i.e. a NUBAN
+/// exists, which (by construction) means BVN KYC is already done. So the single
+/// check is "does a NGN account number exist?":
+///   • yes → proceed to link;
+///   • no  → the blocking "Setting up your account" modal mints it (BVN KYC path)
+///           or routes to verification, and the link only continues once ready.
+/// Returns true when the caller may continue the linking flow.
+Future<bool> ensureVirtualAccountForLink(BuildContext context) async {
+  bool hasVirtualAccount = false;
+  try {
+    final userId =
+        (await serviceLocator<SecureStorageService>().getUserId())?.trim() ?? '';
+    if (userId.isNotEmpty) {
+      final res = await serviceLocator<GetAccountSummariesUseCase>()
+          .call(userId: userId, country: 'NG');
+      hasVirtualAccount = res.fold(
+        (_) => false,
+        (accounts) => accounts.any((a) =>
+            a.currency.toUpperCase() == 'NGN' &&
+            (a.accountNumber?.trim().isNotEmpty ?? false)),
+      );
+    }
+  } catch (_) {
+    // Fail-open on a lookup hiccup — the backend re-gates the link server-side.
+    return true;
+  }
+  if (hasVirtualAccount) return true;
+
+  // No NUBAN yet — run the SAME deposit-readiness model: blocking setup modal,
+  // mint when verified, or route to BVN KYC. The link continues only when ready.
+  if (!context.mounted) return false;
+  final ready = await ensureDepositReady(
+    context,
+    accountHasVirtualAccount: false,
+    currency: 'NGN',
+    isPrimary: true,
+  );
+  if (ready.status == DepositReadiness.ready) return true;
+  if (ready.status == DepositReadiness.provisioning && context.mounted) {
+    await showAccountSetupPendingModal(context);
+  }
+  return false; // not ready (provisioning/KYC) — the link is aborted
 }
 
 Future<bool> _promptVerify(BuildContext context) async {
