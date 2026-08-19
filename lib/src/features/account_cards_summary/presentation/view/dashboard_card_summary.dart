@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -48,7 +50,9 @@ class _DashboardCardSummaryView extends StatefulWidget {
       _DashboardCardSummaryViewState();
 }
 
-class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
+class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
+    with WidgetsBindingObserver {
+  StreamSubscription<void>? _wsReconnectedSub;
   // Removed most state variables - they are now in CardDetailsBottomSheetState
   // Keep _currentIndex if AccountCarousel doesn't manage its own index
   // int _currentIndex = 0; // If needed for indicators outside carousel
@@ -77,9 +81,43 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Fetch data here using the globally provided cubit
     _fetchData();
     _setupWebSocketConnection();
+    // When the balance socket (re)connects — e.g. after returning from a bank app
+    // during an open-banking deposit — pull a fresh balance so any update that was
+    // broadcast while we were disconnected is caught up and the flip-counter
+    // animates to the new value (the server does not replay dropped broadcasts).
+    try {
+      _wsReconnectedSub =
+          context.read<BalanceWebSocketCubit>().onReconnected.listen((_) {
+        if (mounted) _refreshAccountSummaries(silent: true);
+      });
+    } catch (_) {/* cubit not in scope — resume handler still covers it */}
+  }
+
+  /// On returning to the foreground (the exact open-banking deposit case: the app
+  /// was backgrounded for the bank-app redirect while the deposit settled), pull a
+  /// fresh balance (animates to any change) and reconnect the balance socket for
+  /// future real-time updates. Both are silent + best-effort.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      if (!mounted) return;
+      _refreshAccountSummaries(silent: true);
+      try {
+        context.read<BalanceWebSocketCubit>().reconnectIfNeeded();
+      } catch (_) {/* not in scope */}
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _wsReconnectedSub?.cancel();
+    super.dispose();
   }
 
   void _fetchData() {

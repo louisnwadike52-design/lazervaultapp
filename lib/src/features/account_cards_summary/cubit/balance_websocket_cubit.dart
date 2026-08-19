@@ -78,6 +78,15 @@ class BalanceWebSocketCubit extends Cubit<BalanceWebSocketState> {
     }
   }
 
+  /// Reconnect the socket if it dropped (e.g. after the app was backgrounded for
+  /// an open-banking deposit redirect). No-op when already connected. Safe to
+  /// call from an app-lifecycle `resumed` handler.
+  Future<void> reconnectIfNeeded() => _wsService.reconnectIfNeeded();
+
+  /// Fires each time the socket (re)establishes — the dashboard pulls a fresh
+  /// balance on this so any update broadcast while disconnected is caught up.
+  Stream<void> get onReconnected => _wsService.onReconnected;
+
   /// Disconnect from WebSocket server
   void disconnect() {
     _wsService.disconnect();

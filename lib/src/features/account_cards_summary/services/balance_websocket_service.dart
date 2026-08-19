@@ -9,6 +9,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/remote_log_sink.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 part 'balance_websocket_service_widgets.dart';
 
@@ -35,6 +36,30 @@ class BalanceWebSocketService {
   bool _useSSE = false; // Flag to track if using SSE instead of WebSocket
   final SecureStorageService _secureStorage;
   final AccountManager? _accountManager;
+
+  // --- Auto-reconnect state -------------------------------------------------
+  // The socket drops whenever the app is backgrounded — most importantly during
+  // an open-banking (Mono) deposit redirect to the user's bank app. Without
+  // reconnection the socket stays dead on return, so a deposit that credits
+  // while backgrounded is never delivered ("No connected clients" server-side)
+  // and the balance never animates. We remember the last connect params and
+  // reconnect with capped exponential backoff until a live connection is
+  // re-established (or an explicit disconnect() opts out).
+  String? _lastUserId;
+  String? _lastCountryCode;
+  String? _lastAccessToken;
+  Timer? _reconnectTimer;
+  int _reconnectAttempts = 0;
+  bool _shouldReconnect = true;
+  bool _connecting = false;
+  static const int _maxReconnectAttempts = 12; // ~ caps backoff, not a hard stop
+  static const Duration _maxReconnectDelay = Duration(seconds: 30);
+
+  /// Emits once each time the socket (re)establishes a live connection, so
+  /// listeners (dashboard) can pull a fresh balance to catch any update that was
+  /// broadcast while we were disconnected (the server does not replay them).
+  final _reconnectedController = StreamController<void>.broadcast();
+  Stream<void> get onReconnected => _reconnectedController.stream;
 
   BalanceWebSocketService({
     required SecureStorageService secureStorage,
@@ -86,24 +111,98 @@ class BalanceWebSocketService {
     required String countryCode,
     required String accessToken,
   }) async {
-    if (_isConnected) {
-      print('BalanceWebSocketService: Already connected');
+    // Remember params so a dropped socket (backgrounding / open-banking redirect)
+    // can silently reconnect. A fresh connect() re-arms reconnection.
+    _lastUserId = userId;
+    _lastCountryCode = countryCode;
+    _lastAccessToken = accessToken;
+    _shouldReconnect = true;
+
+    if (_isConnected || _connecting) {
+      print('BalanceWebSocketService: Already connected/connecting');
       return;
     }
+    _connecting = true;
 
     // Try WebSocket first, fall back to SSE
     try {
       await _connectWebSocket(userId, countryCode, accessToken);
+      _onConnectSucceeded();
     } catch (e) {
       print('BalanceWebSocketService: WebSocket failed, trying SSE - $e');
       try {
         await _connectSSE(userId, countryCode, accessToken);
+        _onConnectSucceeded();
       } catch (sseError) {
         print('BalanceWebSocketService: SSE also failed - $sseError');
+        _connecting = false;
         _connectionController.add(WebSocketConnectionState.error);
-        rethrow;
+        // Do NOT rethrow — a failed attempt schedules a background reconnect
+        // instead of surfacing a user-facing error for a transient drop.
+        _scheduleReconnect();
       }
     }
+  }
+
+  /// Called after a successful WS or SSE connect: reset backoff, stop any
+  /// pending reconnect, and signal listeners to pull a fresh balance so any
+  /// update broadcast while we were disconnected is caught up + animated.
+  void _onConnectSucceeded() {
+    _connecting = false;
+    _reconnectAttempts = 0;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    RemoteLogSink.instance.log(
+      level: 'info',
+      flow: 'balance_ws',
+      message: _useSSE ? 'balance stream connected (SSE)' : 'balance socket connected',
+    );
+    if (!_reconnectedController.isClosed) _reconnectedController.add(null);
+  }
+
+  /// Reconnect if we have credentials and aren't already connected/connecting.
+  /// Called by the app-lifecycle observer on resume (e.g. returning from the
+  /// bank app after an open-banking deposit).
+  Future<void> reconnectIfNeeded() async {
+    if (_isConnected || _connecting) return;
+    if (_lastUserId == null || _lastAccessToken == null) return;
+    _shouldReconnect = true;
+    _reconnectTimer?.cancel();
+    await connect(
+      userId: _lastUserId!,
+      countryCode: _lastCountryCode ?? 'NG',
+      accessToken: _lastAccessToken!,
+    );
+  }
+
+  /// Schedule a reconnect with capped exponential backoff + jitter. No-op when
+  /// reconnection is disabled (explicit disconnect) or credentials are missing.
+  void _scheduleReconnect() {
+    if (!_shouldReconnect || _lastUserId == null || _lastAccessToken == null) {
+      return;
+    }
+    if (_reconnectTimer != null || _connecting || _isConnected) return;
+    _reconnectAttempts++;
+    final capped = _reconnectAttempts > _maxReconnectAttempts
+        ? _maxReconnectAttempts
+        : _reconnectAttempts;
+    var seconds = 1 << (capped - 1); // 1,2,4,8,... seconds
+    if (seconds > _maxReconnectDelay.inSeconds) {
+      seconds = _maxReconnectDelay.inSeconds;
+    }
+    // Jitter (±20%) so many clients reconnecting after an outage don't stampede.
+    final jitterMs = (seconds * 1000 * 0.2).round();
+    final delayMs = (seconds * 1000) +
+        (DateTime.now().microsecond % (jitterMs == 0 ? 1 : (jitterMs * 2))) -
+        jitterMs;
+    print('BalanceWebSocketService: scheduling reconnect #$_reconnectAttempts in ${delayMs}ms');
+    _reconnectTimer = Timer(Duration(milliseconds: delayMs.clamp(500, 60000)), () {
+      _reconnectTimer = null;
+      if (_isConnected || _connecting || !_shouldReconnect) return;
+      final uid = _lastUserId, cc = _lastCountryCode ?? 'NG', tok = _lastAccessToken;
+      if (uid == null || tok == null) return;
+      connect(userId: uid, countryCode: cc, accessToken: tok);
+    });
   }
 
   /// Connect using WebSocket protocol
@@ -260,6 +359,12 @@ class BalanceWebSocketService {
 
   /// Disconnect from the server (handles both WebSocket and SSE)
   void disconnect() {
+    // Explicit disconnect (logout / dispose) opts out of auto-reconnect.
+    _shouldReconnect = false;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _connecting = false;
+
     if (!_isConnected) {
       return;
     }
@@ -428,24 +533,43 @@ class BalanceWebSocketService {
   void _handleError(error) {
     print('BalanceWebSocketService: WebSocket error - $error');
     _isConnected = false;
+    _connecting = false;
+    _pingTimer?.cancel();
     _connectionController.add(WebSocketConnectionState.error);
+    RemoteLogSink.instance.log(
+      level: 'warn',
+      flow: 'balance_ws',
+      message: 'balance socket error — scheduling reconnect',
+      fields: {'error': error.toString()},
+    );
+    _scheduleReconnect();
   }
 
   /// Handle WebSocket connection closed
   void _handleDone() {
     print('BalanceWebSocketService: Connection closed');
     _isConnected = false;
+    _connecting = false;
+    _pingTimer?.cancel();
     _connectionController.add(WebSocketConnectionState.disconnected);
+    RemoteLogSink.instance.log(
+      level: 'info',
+      flow: 'balance_ws',
+      message: 'balance socket closed — scheduling reconnect',
+    );
+    _scheduleReconnect();
   }
 
   /// Dispose resources
   void dispose() {
     disconnect();
+    _reconnectTimer?.cancel();
     _eventController.close();
     _lockFundEventController.close();
     _insurancePurchaseEventController.close();
     _insuranceClaimEventController.close();
     _connectionController.close();
+    if (!_reconnectedController.isClosed) _reconnectedController.close();
   }
 
   /// Check if using SSE connection
