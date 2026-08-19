@@ -32,7 +32,18 @@ String _formatKobo(int minor) {
 /// genuinely new link, balance-checked, and unlinked on failure.
 
 /// Show the connection-fee notice. Returns true if the user chose to continue.
+///
+/// This is the UNIVERSAL chokepoint every bank-link flow passes through before
+/// linking (deposit, withdrawal, financial-analytics/statistics, LazerBeam,
+/// autosave, the Link Bank screen). So the virtual-account gate runs HERE, FIRST,
+/// exactly like the deposit flow: the single check is "does a NGN account number
+/// exist?" — if not, the blocking "Setting up your account" modal mints it (BVN
+/// KYC path) or routes to verification, and the fee notice is only shown once the
+/// account is ready. This guarantees every reference to linking a bank gets the
+/// VA modal first, regardless of which entry point called us.
 Future<bool> showBankConnectionFeeNotice(BuildContext context) async {
+  if (!await ensureVirtualAccountForLink(context)) return false;
+  if (!context.mounted) return false;
   final res = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -278,16 +289,9 @@ Future<void> linkBankWithConnectionNotice({
   required BuildContext context,
   required Future<void> Function(String? verificationToken, String? transactionId) doLink,
 }) async {
-  // VIRTUAL-ACCOUNT CHECK FIRST — the SAME model as deposits, before the
-  // connection-fee notice (and any amount sheet). A bank link only makes sense
-  // once the user's account can receive money (a NUBAN exists ⇒ BVN KYC done),
-  // so the single source of truth is "does a NGN account number exist?": if yes
-  // → continue; if not → the blocking "Setting up your account" modal mints it or
-  // routes to verification, and the link continues only once ready. Fails open on
-  // a lookup hiccup (the backend re-gates server-side).
-  final ready = await ensureVirtualAccountForLink(context);
-  if (!ready || !context.mounted) return;
-
+  // The virtual-account gate + fee notice both live inside
+  // showBankConnectionFeeNotice now (the universal chokepoint), so callers get
+  // the VA "Setting up your account" modal first, then the fee notice.
   final proceed = await showBankConnectionFeeNotice(context);
   if (!proceed || !context.mounted) return;
   final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';

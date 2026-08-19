@@ -5,6 +5,7 @@ import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,7 +32,6 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Withdraw funds to one of the user's linked bank accounts.
 ///
@@ -188,18 +188,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final user = authState.profile.user;
     final name = '${user.firstName} ${user.lastName}'.trim();
 
-    // KYC GATE FIRST — verify identity (tier >= 2) before we open Mono / charge a
-    // connection fee. Unverified users get the "verify your identity" modal and
-    // the flow aborts here (same gate as deposit link-bank / pay-with-card,
-    // analytics, LazerBeam & autosave). Fails open on a KYC-status blip; the
-    // banking backend re-gates the actual LinkBankAccount call.
-    if (!await ensureKycTier2Verified(context, operation: 'withdraw to a bank')) {
-      return;
-    }
-    if (!mounted) return;
-
-    // CONNECTION-FEE CONSENT — before the Mono Connect webview, not after
-    // the user has already linked. On "Not now" we abort without opening it.
+    // VIRTUAL-ACCOUNT GATE + CONNECTION-FEE CONSENT — the VA check now lives
+    // inside showBankConnectionFeeNotice (the universal chokepoint every link
+    // flow shares), so it runs FIRST: the "Setting up your account" modal mints
+    // the NUBAN / routes to BVN KYC before the fee notice, exactly like deposit,
+    // analytics, LazerBeam & autosave. No separate KYC pre-gate.
     final proceed = await showBankConnectionFeeNotice(context);
     if (!proceed || !mounted) return;
     // One idempotency id for this whole link attempt.
