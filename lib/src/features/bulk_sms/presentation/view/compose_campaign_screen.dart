@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import '../cubit/bulk_sms_cubit.dart';
 import '../cubit/bulk_sms_state.dart';
 import '../utils/bulk_sms_utils.dart';
@@ -37,11 +39,31 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
     cubit.loadBalance();
     cubit.loadProviders();
     _message.addListener(() => setState(() {}));
-    // Default to the platform's registered sender so a brand-new user (no
-    // approved sender IDs of their own) can send immediately without typing —
-    // "Lazervault" is Termii-registered. Used as the manual-field default and as
-    // the send fallback; a user with approved IDs picks one (auto-selected below).
-    _senderIdField.text = 'Lazervault';
+    // Default the brand name to the USER'S OWN name so a first-time sender needs
+    // zero setup — it's optional and editable (they can type a custom brand). If
+    // their name can't form a valid sender ID (providers require 3–11 alphanumeric
+    // chars), fall back to the platform-registered "Lazervault".
+    _loadDefaultBrandName();
+  }
+
+  Future<void> _loadDefaultBrandName() async {
+    final fullName =
+        (await serviceLocator<SecureStorageService>().getUserFullName())
+                ?.trim() ??
+            '';
+    final brand = _deriveSenderIdFromName(fullName);
+    if (!mounted) return;
+    setState(() => _senderIdField.text = brand.isNotEmpty ? brand : 'Lazervault');
+  }
+
+  /// Turn a user's name into a provider-valid sender ID: alphanumeric only,
+  /// 3–11 chars (Termii/AT limit). Returns '' when the name yields nothing usable.
+  String _deriveSenderIdFromName(String name) {
+    if (name.isEmpty) return '';
+    final first = name.split(RegExp(r'\s+')).first;
+    final clean = first.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+    if (clean.length < 3) return '';
+    return clean.length > 11 ? clean.substring(0, 11) : clean;
   }
 
   @override
@@ -94,8 +116,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
     final senderId = _selectedSenderId ?? _senderIdField.text.trim();
     if (senderId.isEmpty) {
       LVSnackbar.showError(
-          title: 'Sender ID required',
-          message: 'Select or enter a sender ID for your campaign.');
+          title: 'Brand name required',
+          message: 'Enter the brand name recipients will see as the sender.');
       return;
     }
     if (_message.text.trim().isEmpty) {
@@ -186,7 +208,7 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
       children: [
         Row(
           children: [
-            _sectionLabel('Sender ID'),
+            _sectionLabel('Brand name'),
             const Spacer(),
             GestureDetector(
               onTap: () => Get.toNamed(AppRoutes.bulkSmsSenderIds),
@@ -252,7 +274,7 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
           decoration: InputDecoration(
             counterStyle: TextStyle(
                 color: BulkSmsTheme.textSecondary, fontSize: 10.sp),
-            hintText: 'e.g. LazerVault',
+            hintText: 'Your brand name (what recipients see)',
             hintStyle: TextStyle(
                 color: BulkSmsTheme.textSecondary, fontSize: 14.sp),
             filled: true,
@@ -266,7 +288,8 @@ class _ComposeCampaignScreenState extends State<ComposeCampaignScreen> {
           ),
         ),
         Text(
-          'No approved sender ID yet — unregistered IDs may be rejected. Request one from Manage.',
+          'This is the name recipients see. You can send with it right away; '
+          'register it from Manage for guaranteed branded delivery.',
           style: TextStyle(
               color: BulkSmsTheme.textSecondary, fontSize: 11.sp, height: 1.3),
         ),
