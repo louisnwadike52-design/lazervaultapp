@@ -73,10 +73,12 @@ class AccountSummaryModel extends AccountSummaryEntity {
       availableBalance: effectiveAvailable,
       reservedBalance: reservedBal,
       accountNumberLast4: extractLast4(proto.maskedAccountNumber), // Use maskedAccountNumber
-      // Full virtual account details for deposits (Pay by Transfer)
+      // Full virtual account details for deposits (Pay by Transfer) — exactly the
+      // provider values surfaced by the backend (empty until a real NUBAN mints).
       accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       accountName: proto.accountName.isNotEmpty ? proto.accountName : null,
       accountLabel: proto.accountName.isNotEmpty ? proto.accountName : null,
+      bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
       // Account status (active/frozen/suspended/closed) — surfaced so transfer
       // source pickers can reflect a frozen account and block it before PIN,
       // mirroring the accounts-service enforcement.
