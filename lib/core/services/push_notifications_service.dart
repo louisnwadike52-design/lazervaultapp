@@ -12,6 +12,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/app_check_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/play_services_gate.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -80,20 +81,50 @@ class PushNotificationsService {
     if (_initialised) return;
     _initialised = true;
 
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // Firebase CORE init is safe without Play Services, but guard it so a
+    // misconfig / attestation hiccup can NEVER hard-block app open.
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } catch (e) {
+      debugPrint('PushNotificationsService: Firebase core init failed (non-fatal): $e');
+      return;
+    }
 
-    // Activate App Check (App Attest / Play Integrity) immediately after Firebase
-    // init, before any token is requested. Non-fatal if it fails.
-    await AppCheckService.instance.activate();
+    // App Check (Play Integrity) + FCM REQUIRE Google Play Services. On a device
+    // whose Play Services/Store is missing, disabled, or outdated, running them
+    // surfaces the native blocking "Check that Google Play is enabled … up-to-date
+    // … reinstall" dialog at app open. Gate on availability and skip cleanly —
+    // the app runs without push/attestation instead of hard-blocking. (App Check
+    // getToken() short-circuits to null when not activated, so gRPC calls proceed
+    // un-attested; the gateway runs App Check report-only until enforced.)
+    final gmsOk = await PlayServicesGate.isAvailable();
+    if (!gmsOk) {
+      debugPrint('PushNotificationsService: Google Play Services unavailable/outdated '
+          '— skipping App Check + FCM (no push/attestation on this device).');
+      // Local notifications don't need Play Services — keep them working.
+      try {
+        await _initLocalNotifications();
+      } catch (_) {}
+      return;
+    }
 
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    try {
+      // Activate App Check (App Attest / Play Integrity) before any token is
+      // requested. Non-fatal if it fails.
+      await AppCheckService.instance.activate();
 
-    await _requestPermission();
-    await _initLocalNotifications();
-    await _wireHandlers();
-    await _checkColdStartTap();
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+      await _requestPermission();
+      await _initLocalNotifications();
+      await _wireHandlers();
+      await _checkColdStartTap();
+    } catch (e) {
+      // Any FCM/attestation failure is non-fatal — the app must open regardless.
+      debugPrint('PushNotificationsService: FCM/App Check setup failed (non-fatal): $e');
+    }
   }
 
   Future<void> _requestPermission() async {

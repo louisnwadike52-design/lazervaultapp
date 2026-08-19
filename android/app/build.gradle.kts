@@ -209,4 +209,10 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Google Play Services base — provides GoogleApiAvailability / ConnectionResult
+    // used by MainActivity's play_services channel to check GMS availability WITHOUT
+    // surfacing the native "update Google Play" dialog (so App Check/FCM can be
+    // gated instead of hard-blocking app open). The Firebase plugins pull GMS
+    // transitively but don't expose play-services-base to the app compile classpath.
+    implementation("com.google.android.gms:play-services-base:18.5.0")
 }

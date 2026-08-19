@@ -12,6 +12,8 @@ import android.provider.Settings
 // FragmentActivity so it can attach the BiometricPrompt. With plain
 // FlutterActivity, getAvailableBiometrics()/authenticate() fail and every
 // method reports "unavailable". FlutterFragmentActivity is the required base.
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -20,6 +22,7 @@ class MainActivity : FlutterFragmentActivity() {
 
     private val hceChannelName = "com.lazervault.app/hce"
     private val settingsChannelName = "com.lazervault.app/settings"
+    private val playServicesChannelName = "com.lazervault.app/play_services"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -109,6 +112,33 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                     }
 
+                    else -> result.notImplemented()
+                }
+            }
+
+        // --- Google Play Services availability -----------------------------------
+        // Returns the raw ConnectionResult code (0 == SUCCESS) so Dart can decide
+        // whether to activate Firebase App Check (Play Integrity) + FCM. CRITICAL:
+        // we call the query-only isGooglePlayServicesAvailable() and NEVER
+        // getErrorDialog()/makeGooglePlayServicesAvailable(), so this check itself
+        // never surfaces the native "Something went wrong / update Google Play"
+        // dialog. That dialog was blocking app open on devices whose Play
+        // Services/Store is missing/outdated; gating on this code lets the app run
+        // (without push/attestation) instead of hard-blocking.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, playServicesChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "availability" -> {
+                        val code = try {
+                            GoogleApiAvailability.getInstance()
+                                .isGooglePlayServicesAvailable(this)
+                        } catch (e: Throwable) {
+                            // If the GMS lib can't run at all, don't over-block —
+                            // report SUCCESS and let the normal (guarded) init try.
+                            ConnectionResult.SUCCESS
+                        }
+                        result.success(code)
+                    }
                     else -> result.notImplemented()
                 }
             }
