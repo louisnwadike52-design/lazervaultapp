@@ -93,14 +93,19 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
     final accessToken = authState.profile.session.accessToken;
     final cubit = context.read<AccountCardsSummaryCubit>();
 
-    // Skip gRPC call if the cubit already holds data for this user.
-    // WebSocket keeps balances current — no need to re-fetch on every navigation.
+    // Returning user: the cubit already holds cached summaries, so paint them
+    // instantly (no spinner) — but STILL fetch fresh balances in the BACKGROUND
+    // so landing here (login / re-entry) auto-refreshes without a pull-to-refresh.
+    // `silent: true` keeps the current cards on screen, so when a changed balance
+    // arrives the CompactAnimatedBalance flip-counter rolls old→new value. This is
+    // the "auto-refresh + animate on login" behaviour; WebSocket then keeps it live.
     if (cubit.hasDataForUser(userId)) {
-      print("_DashboardCardSummaryView: Cubit already has data for user $userId, skipping fetch.");
+      _refreshAccountSummaries(silent: true);
       return;
     }
 
-    // First load or user changed — fetch from server
+    // First load or user changed — no cached data to animate from, so do a normal
+    // (visible) fetch; every subsequent landing takes the silent background path.
     final profileState = context.read<ProfileCubit>().state;
     String? activeCountry;
     if (profileState is ProfileLoaded) {

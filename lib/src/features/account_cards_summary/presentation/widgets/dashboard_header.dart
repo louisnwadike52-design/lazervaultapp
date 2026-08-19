@@ -213,11 +213,16 @@ class _DashboardHeaderState extends State<DashboardHeader>
                 final userId = authState.profile.user.id;
                 final accessToken = authState.profile.session.accessToken;
 
-                // Fetch accounts for the selected country
+                // Fetch accounts for the newly-selected locale in the BACKGROUND
+                // (silent: no loading spinner). Keeping the current cards on screen
+                // until the new-locale balances arrive lets the CompactAnimatedBalance
+                // flip-counter roll to the updated values instead of flashing a
+                // loader — the same auto-refresh+animate behaviour as on login.
                 await context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
                   userId: userId,
                   accessToken: accessToken,
                   country: selectedCountry.countryCode,
+                  silent: true,
                 );
 
                 // Check if we got any accounts
