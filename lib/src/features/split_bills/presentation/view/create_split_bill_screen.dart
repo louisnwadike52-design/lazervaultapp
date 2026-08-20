@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/recipients/data/repositories/bank_reposi
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_suggestion.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import '../cubit/split_bill_cubit.dart';
@@ -1032,6 +1034,56 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     }
   }
 
+  /// Opens the saved-recipients picker scoped to bank accounts (no LazerVault
+  /// users / device contacts here — the external-bank receiver settles to a NUBAN,
+  /// not an in-app user). On pick we prefill the account + bank and re-resolve
+  /// the holder name so the confirmed name is always current.
+  Future<void> _pickSavedExternalRecipient() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => EnhancedRecipientSelectionBottomSheet(
+        allowLazertagUsers: false,
+        allowContacts: false,
+        onRecipientSelected: (recipient) {
+          Navigator.pop(sheetCtx);
+          _applySavedExternalRecipient(recipient);
+        },
+      ),
+    );
+  }
+
+  void _applySavedExternalRecipient(RecipientModel r) {
+    final acct = r.accountNumber.trim();
+    // Only an external bank account (10-digit NUBAN) can be the receiver here;
+    // a saved LazerVault user belongs to the "Lazervault user" receiver mode.
+    if (r.isInternalUserRecipient || acct.length != 10) {
+      showAppSnackbar(
+        'Not a bank account',
+        'Choose a saved bank recipient with a 10-digit account number.',
+        type: AppSnackbarType.error,
+      );
+      return;
+    }
+    final bankCode = r.sortCode.trim();
+    _receiverAccountNumberController.text = acct;
+    setState(() {
+      _receiverBankSuggestions = const [];
+      _receiverBankAccountName = null; // re-resolved below
+      _receiverAccountNumber = acct;
+      _receiverBankName = r.displayBankName;
+      _receiverBankCode = bankCode.isNotEmpty ? bankCode : null;
+    });
+    // With a known bank code we can verify directly; otherwise resolve the bank
+    // from the account number (account-first), exactly like manual entry.
+    if (bankCode.isNotEmpty) {
+      _verifyReceiverBankAccount();
+    } else {
+      _suggestReceiverBanks(acct);
+    }
+  }
+
   void _verifyReceiverBankAccount() {
     final bankCode = _receiverBankCode;
     final acct = _receiverAccountNumberController.text.trim();
@@ -1140,6 +1192,44 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Choose from saved recipients — prefills the bank + account from a saved
+        // EXTERNAL bank recipient (same shortcut as Send Funds), so the user
+        // needn't retype a bank they've paid before. Hidden once an account is
+        // verified to keep the confirmed state clean.
+        if (!verified) ...[
+          GestureDetector(
+            onTap: _pickSavedExternalRecipient,
+            child: Container(
+              width: double.infinity,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.bookmark_border_rounded,
+                      color: Color(0xFF4834D4), size: 18),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Choose from saved recipients',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 18),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         // Account number FIRST (mirrors Send Funds). On 10 digits we auto-suggest
         // the bank with the holder name resolved; a manual bank picker is the fallback.
         TextField(
@@ -1257,48 +1347,29 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
             ),
           ),
         ],
-        // Verified account holder name (read-only confirmation)
+        // Resolved holder name shown INLINE, attached to the field (like the
+        // Send Funds retrieved-recipient tooltip) rather than a separate card,
+        // so it reads as part of the account input.
         if (verified) ...[
           const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.check_circle,
-                    color: Color(0xFF10B981), size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Account verified',
-                        style: TextStyle(
-                          color: Color(0xFF10B981),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        _receiverBankAccountName!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+          Row(
+            children: [
+              const Icon(Icons.check_circle,
+                  color: Color(0xFF10B981), size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  (_receiverBankName?.isNotEmpty ?? false)
+                      ? '${_receiverBankAccountName!}  •  ${_receiverBankName!}'
+                      : _receiverBankAccountName!,
+                  style: const TextStyle(
+                    color: Color(0xFF10B981),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
         const SizedBox(height: 8),

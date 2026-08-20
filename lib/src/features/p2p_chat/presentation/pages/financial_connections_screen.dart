@@ -1421,8 +1421,8 @@ class _FinancialConnectionsScreenState
   /// Lazervault user. The code is kept wired (gated behind [_kManualAddVisible])
   /// so it can be re-enabled without rebuilding the flow.
   Future<void> _openUnifiedSearch() async {
-    final result =
-        await UnifiedUserSearchSheet.show(context, title: 'Find people');
+    final result = await UnifiedUserSearchSheet.show(context,
+        title: 'Find people', internalOnly: true);
     if (result == null || !mounted) return;
     if (result.userId.isEmpty) return;
     Get.toNamed(

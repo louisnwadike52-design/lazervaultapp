@@ -64,7 +64,15 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
   final Debouncer _debouncer = Debouncer.snappy();
   static const int _pageSize = 20;
 
-  UnifiedUserSearchCubit(this._repo) : super(const UnifiedUserSearchState());
+  /// When true the search returns only LazerVault users (no saved external bank
+  /// recipients) — the "find a person" mode for split-bill participants and the
+  /// send-funds person search. Leave false where external-bank recipients are a
+  /// valid target (the external-bank send flow). Mutable so the shared
+  /// serviceLocator instance can be scoped per-sheet on open.
+  bool internalOnly;
+
+  UnifiedUserSearchCubit(this._repo, {this.internalOnly = false})
+      : super(const UnifiedUserSearchState());
 
   /// Debounced entry point wired to the search field's onChanged.
   void onQueryChanged(String raw) {
@@ -87,7 +95,8 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
       nextOffset: 0,
     ));
     try {
-      final page = await _repo.search(query, limit: _pageSize, offset: 0);
+      final page = await _repo.search(query,
+          limit: _pageSize, offset: 0, internalOnly: internalOnly);
       final seen = <String>{};
       final merged = <UnifiedSearchResult>[];
       for (final r in [...page.local, ...page.global]) {
@@ -122,7 +131,8 @@ class UnifiedUserSearchCubit extends Cubit<UnifiedUserSearchState> {
     final offset = state.nextOffset;
     emit(state.copyWith(status: UnifiedSearchStatus.loadingMore));
     try {
-      final page = await _repo.search(query, limit: _pageSize, offset: offset);
+      final page = await _repo.search(query,
+          limit: _pageSize, offset: offset, internalOnly: internalOnly);
       if (state.query != query) return; // query changed mid-flight
       final seen = state.results.map((r) => r.dedupeKey).toSet();
       final appended = <UnifiedSearchResult>[...state.results];

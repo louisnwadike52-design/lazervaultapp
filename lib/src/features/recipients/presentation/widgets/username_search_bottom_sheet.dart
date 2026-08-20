@@ -14,10 +14,20 @@ class UsernameSearchBottomSheet {
   const UsernameSearchBottomSheet._();
 
   /// Show the shared search sheet and return the picked user (or null).
-  static Future<UserSearchResultEntity?> show(BuildContext context) async {
+  ///
+  /// [internalOnly] defaults to true because every caller of this wrapper is a
+  /// "find a LazerVault person" flow (split-bill participants, family members,
+  /// invoice payer, add-recipient by @handle) — none of them can act on a saved
+  /// EXTERNAL bank recipient, so those are dropped server-side. A caller that
+  /// genuinely needs external recipients can pass false.
+  static Future<UserSearchResultEntity?> show(
+    BuildContext context, {
+    bool internalOnly = true,
+  }) async {
     final picked = await UnifiedUserSearchSheet.show(
       context,
       title: 'Find recipient',
+      internalOnly: internalOnly,
     );
     return picked?.toUserSearchResultEntity();
   }

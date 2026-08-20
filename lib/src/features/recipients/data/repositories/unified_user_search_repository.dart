@@ -25,6 +25,7 @@ class UnifiedUserSearchRepository {
     String query, {
     int limit = 20,
     int offset = 0,
+    bool internalOnly = false,
   }) async {
     final q = query.trim();
     if (q.length < 2) return UnifiedSearchPage.empty;
@@ -37,6 +38,10 @@ class UnifiedUserSearchRepository {
       'q': q,
       'limit': '$limit',
       'offset': '$offset',
+      // Person-search mode: only LazerVault users (drop saved external bank
+      // recipients). Sent only when requested so external-bank flows are
+      // unaffected.
+      if (internalOnly) 'internal_only': 'true',
     });
 
     final resp = await _client.get(uri, headers: {

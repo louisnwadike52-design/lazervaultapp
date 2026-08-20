@@ -116,6 +116,9 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _cubit = serviceLocator<UnifiedUserSearchCubit>();
+    // Scope the shared cubit to this sheet's mode so the backend returns only
+    // LazerVault users (no saved external bank recipients) in person-search.
+    _cubit.internalOnly = widget.internalOnly;
     _scroll.addListener(_onScroll);
     if ((widget.initialQuery ?? '').trim().isNotEmpty) {
       _controller.text = widget.initialQuery!.trim();
