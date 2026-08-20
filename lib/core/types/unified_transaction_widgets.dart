@@ -80,7 +80,10 @@ enum UnifiedTransactionStatus {
   completed('Completed', Color(0xFF10B981)),
   failed('Failed', Color(0xFFEF4444)),
   cancelled('Cancelled', Color(0xFF6B7280)),
-  refunded('Refunded', Color.fromARGB(255, 78, 3, 208)),
+  // Money returned to the user (failed/reversed transfer whose funds came back).
+  // Distinct deep-amber so it never reads as Pending (lighter amber) or Failed
+  // (red) — a resolved, non-alarming "you got your money back" state.
+  refunded('Refunded', Color(0xFFD97706)),
   expired('Expired', Color(0xFF9CA3AF)),
   // A future-dated transfer that hasn't fired yet — distinct violet so it never
   // reads as Completed/Pending. The scheduler flips it to completed on execution.

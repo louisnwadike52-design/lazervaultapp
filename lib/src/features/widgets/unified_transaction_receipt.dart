@@ -215,19 +215,56 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          Image.asset(
-            'assets/images/logo.png',
-            width: 28.w,
-            height: 28.w,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.shield_outlined,
-              color: const Color(0xFF3B82F6),
-              size: 24.sp,
-            ),
+          // Logo + "LazerVault" wordmark (matches the normal transfer-flow
+          // receipt header — see transfer_receipt_screen.dart).
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/logo.png',
+                width: 28.w,
+                height: 28.w,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.shield_outlined,
+                  color: const Color(0xFF3B82F6),
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(width: 7.w),
+              Text(
+                'LazerVault',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontFamily: 'Inter',
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  // Hero icon for a transfer receipt, chosen from the terminal status so a
+  // failed/refunded transfer never shows the success tick.
+  IconData _transferStatusIcon(UnifiedTransactionStatus status) {
+    switch (status) {
+      case UnifiedTransactionStatus.failed:
+      case UnifiedTransactionStatus.cancelled:
+      case UnifiedTransactionStatus.expired:
+        return Icons.close;
+      case UnifiedTransactionStatus.refunded:
+        return Icons.undo_rounded;
+      case UnifiedTransactionStatus.pending:
+      case UnifiedTransactionStatus.processing:
+      case UnifiedTransactionStatus.scheduled:
+        return Icons.schedule_rounded;
+      case UnifiedTransactionStatus.completed:
+        return Icons.check;
+    }
   }
 
   Widget _buildBrandingHeader() {
@@ -276,12 +313,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           Container(
             width: 48.w,
             height: 48.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFF10B981),
+            decoration: BoxDecoration(
+              // Status-aware hero: green check (completed), red close (failed),
+              // amber refund (refunded), else the status color. No longer a
+              // hard-coded green tick for every transfer regardless of outcome.
+              color: tx.status.color,
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.check,
+              _transferStatusIcon(tx.status),
               color: Colors.white,
               size: 26.sp,
             ),
@@ -336,8 +376,10 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               tx.status.displayName,
               style: TextStyle(
                 fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-                color: _labelColor,
+                fontWeight: FontWeight.w600,
+                // Completed=green, failed=red, refunded=amber (from the shared
+                // status enum) instead of flat grey, so the outcome reads at a glance.
+                color: tx.status.color,
                 fontFamily: 'Inter',
               ),
             ),
