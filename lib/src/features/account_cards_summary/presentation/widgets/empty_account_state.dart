@@ -38,10 +38,6 @@ class EmptyAccountState extends StatelessWidget {
   }
 
   /// Convert country code to locale string (e.g., "NG" -> "en-NG")
-  static String _countryToLocale(String countryCode) {
-    return 'en-${countryCode.toUpperCase()}';
-  }
-
   /// Get currency for country code using CountryLocales as the single source of truth.
   static String _currencyForCountry(String countryCode) {
     return CountryLocales.findByCountryCode(countryCode)?.currency ?? countryCode;
@@ -157,7 +153,7 @@ class EmptyAccountState extends StatelessWidget {
                     // Description
                     Text(
                       supported
-                          ? 'Create a ${_currencyForCountry(countryCode!)} wallet to send, receive, and exchange funds.'
+                          ? 'We\'re setting up your ${_currencyForCountry(countryCode!)} account so you can send, receive, and exchange funds.'
                           : 'Virtual accounts will be available in your region soon.',
                       textAlign: TextAlign.center,
                       maxLines: 2,
@@ -172,7 +168,7 @@ class EmptyAccountState extends StatelessWidget {
 
                     // Action button
                     if (supported)
-                      _buildCreateAccountButton(context)
+                      _buildSettingUpState(context)
                     else
                       _buildNotifyMeButton(context),
                   ],
@@ -185,50 +181,36 @@ class EmptyAccountState extends StatelessWidget {
     );
   }
 
-  Widget _buildCreateAccountButton(BuildContext context) {
-    return BlocBuilder<MultiCountryCubit, MultiCountryState>(
-      builder: (context, state) {
-        final isCreating = state is LocaleAccountCreating &&
-            state.locale == _countryToLocale(countryCode!);
-
-        return GestureDetector(
-          onTap: isCreating
-              ? null
-              : () {
-                  final locale = _countryToLocale(countryCode!);
-                  context.read<MultiCountryCubit>().createLocaleAccount(locale);
-                },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isCreating)
-                  LazerVaultLoader.tiny()
-                else
-                  Icon(
-                    Icons.add_circle_outline_rounded,
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    size: 16.sp,
-                  ),
-                SizedBox(width: 6.w),
-                Text(
-                  isCreating ? 'Creating...' : 'Create Account',
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+  // Accounts are provisioned AUTOMATICALLY by the backend on the first
+  // GetUserAccounts (GetOrCreateDefaultAccounts) — the user must never tap to
+  // create one. This is a passive "setting up" state; the dashboard re-fetches
+  // and the real card fills in the moment the rows land. Replaces the old manual
+  // "Create Account" button.
+  Widget _buildSettingUpState(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LazerVaultLoader.tiny(),
+          SizedBox(width: 8.w),
+          Flexible(
+            child: Text(
+              'Setting up your account, ready in a moment',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
