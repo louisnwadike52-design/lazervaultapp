@@ -37,6 +37,7 @@ import '../../cubit/move_money_cubit.dart';
 import '../../cubit/wallet_transfer_cubit.dart';
 import '../../cubit/wallet_transfer_state.dart';
 import '../../domain/entities/mandate_entity.dart';
+import '../widgets/mandate_status_badge.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/move_transfer.dart';
 import '../widgets/mandate_management_bottomsheet.dart';
@@ -1939,6 +1940,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
 
+    // Same mandate the card badge reads — so the detail sheet shows the
+    // DirectPay / Direct-Debit access badge and can open the manage/switch flow,
+    // mirroring the deposit linked-account sheet (minus the deposit CTA).
+    final mandate =
+        context.read<MandateCubit>().getMandateForAccount(account.id);
     final bankColor = _getBankColor(account.bankName);
 
     showModalBottomSheet(
@@ -2004,6 +2010,21 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                       ),
                     ),
                   ],
+                ),
+                SizedBox(height: 14.h),
+
+                // Payment-method access badge (DirectPay / Direct Debit). Tap to
+                // manage or switch the method — same shared flow as the deposit
+                // linked-account sheet.
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: MandateStatusBadge(
+                    mandate: mandate,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showMandateManagement(account, mandate);
+                    },
+                  ),
                 ),
                 SizedBox(height: 20.h),
 
