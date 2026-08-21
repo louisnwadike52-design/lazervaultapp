@@ -102,6 +102,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // (see deposit_service InitiateDeposit), so this default never blocks a deposit.
   bool _useRecurringAccess = true;
 
+  /// BVN/KYC standing for the Direct Debit toggle. Direct Debit needs a verified
+  /// BVN (Mono creates a customer keyed on BVN before a mandate) — so the toggle
+  /// is LOCKED until this is true, rather than letting the user flip it and get
+  /// silently downgraded to DirectPay. Fail-open default (true) is corrected by
+  /// [_ensureBvnKycForToggle] the moment the link sheet opens; `_bvnKycFetched`
+  /// guards against re-fetching on every sheet rebuild.
+  bool _bvnVerifiedForMandate = true;
+  bool _bvnKycFetched = false;
+  bool _bvnKycFetchInFlight = false;
+
 
   /// Methods available for the current currency + platform. The backend
   /// (banking-service routing + system_settings) remains the source of truth;
@@ -259,6 +269,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (!resumeRequested || !pending.pending) return;
 
     _isResuming = true;
+
+    // The user just returned from the identity/BVN gate — force the Direct Debit
+    // toggle to re-check KYC on the next sheet build so a freshly-verified user
+    // sees it unlocked (not the stale locked state).
+    _bvnKycFetched = false;
+    _bvnVerifiedForMandate = true;
 
     // ATOMIC CONSUME: snapshot EVERY field we need into locals, then clear the
     // PendingDeposit IMMEDIATELY — before any restore / snackbar / sheet work.
@@ -1144,12 +1160,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           ),
         ];
       case _DepositMethod.linkAccount:
+        // Resolve BVN/KYC standing once so the Direct Debit toggle reflects
+        // whether a mandate is even possible (locked → "Verify BVN" otherwise).
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _ensureBvnKycForToggle(setSheetState);
+        });
         return [
           _buildSheetAmountField(setSheetState),
           SizedBox(height: 16.h),
           RecurringAccessToggle(
             isRecurringEnabled: _useRecurringAccess,
+            kycVerified: _bvnVerifiedForMandate,
             onToggle: (v) => setSheetState(() => setState(() => _useRecurringAccess = v)),
+            onVerifyRequested: () {
+              Navigator.of(sheetCtx).pop();
+              _promptVerifyThenKyc();
+            },
           ),
           SizedBox(height: 16.h),
           _sheetPrimaryButton(
@@ -3932,6 +3958,38 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       proceed();
     } finally {
       _kycCheckInFlight = false;
+    }
+  }
+
+  /// Fetch the user's BVN/KYC tier for the Direct Debit toggle gate. Runs at
+  /// most once per sheet-open (guarded by [_bvnKycFetched]); same Prove source
+  /// of truth (`tier >= 2`) as the deposit gate. Fail-open on error (the backend
+  /// still re-gates and the mandate falls back to DirectPay). When the user
+  /// isn't tier-2 we also force the recurring switch OFF so the default-ON never
+  /// triggers a doomed mandate attempt for an unverified user.
+  Future<void> _ensureBvnKycForToggle(
+      void Function(void Function()) setSheetState) async {
+    if (_bvnKycFetched || _bvnKycFetchInFlight) return;
+    _bvnKycFetchInFlight = true;
+    try {
+      final status = await ProveKycHttpService(serviceLocator<SecureStorageService>())
+          .status()
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      final verified = status.tier >= 2;
+      setSheetState(() {
+        setState(() {
+          _bvnVerifiedForMandate = verified;
+          _bvnKycFetched = true;
+          if (!verified) _useRecurringAccess = false;
+        });
+      });
+    } catch (e) {
+      // Fail-open: leave the toggle usable; backend re-gates + mandate falls back.
+      debugPrint('[Deposit] BVN toggle KYC fetch failed (fail-open): $e');
+      if (mounted) _bvnKycFetched = true;
+    } finally {
+      _bvnKycFetchInFlight = false;
     }
   }
 

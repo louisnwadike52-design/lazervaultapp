@@ -507,15 +507,26 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
       print('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
       // Fee already consented above — link straight through (no second notice).
+      // When the direct-debit switch is ON we create the recurring mandate
+      // (autoCreateMandate) and MUST pass the customer email/name/phone —
+      // Mono/banking requires them to create the GSM mandate; omitting them made
+      // the mandate creation fail silently, so linking only ever did DirectPay.
       final obc = widget.openBankingCubit;
       await obc.linkAccount(
         userId: userId,
         code: result.code,
         accessToken: accessToken,
         transactionId: txnId,
+        autoCreateMandate: widget.useRecurringAccess,
+        userEmail: customerEmail.isNotEmpty ? customerEmail : null,
+        userName: customerName.isNotEmpty ? customerName : null,
+        userPhone: user.phoneNumber,
       );
-      if (!mounted) return;
-      widget.onSuccess();
+      // This sheet already popped itself (above), so completion is driven by the
+      // PARENT deposit screen's OpenBanking listener, which handles both
+      // AccountLinked and AccountLinkedWithMandate (incl. the mandate-auth
+      // branch). Calling onSuccess() here is a no-op (unmounted) and would race
+      // the mandate authorization, so we intentionally don't.
     } else {
       print('[MonoConnect] User cancelled or closed');
     }

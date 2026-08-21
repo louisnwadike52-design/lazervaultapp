@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import '../data/datasources/open_banking_remote_datasource.dart';
 import '../data/datasources/open_banking_grpc_datasource.dart';
@@ -156,19 +157,38 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
             userPhone: userPhone,
           );
           if (isClosed) return;
+          AppLogger.info(
+            'open-banking: direct-debit mandate created',
+            flow: 'open_banking',
+            fields: {
+              'account_id': account.id,
+              'needs_authorization': mandateResult.needsAuthorization,
+              'has_auth_url': (mandateResult.authorizationUrl ?? '').isNotEmpty,
+            },
+          );
           emit(AccountLinkedWithMandate(
             account: account,
             mandate: mandateResult.mandate,
             mandateNeedsAuthorization: mandateResult.needsAuthorization,
             mandateAuthorizationUrl: mandateResult.authorizationUrl,
           ));
-        } catch (_) {
+        } catch (e, st) {
           if (isClosed) return;
-          // Mandate creation failed — account is still linked, just no auto-debit yet
+          // Mandate creation failed — account is still linked, just no auto-debit
+          // yet. Previously this error was SWALLOWED (catch (_)), so a failed
+          // direct-debit setup was invisible in logs. Log the real cause to Loki
+          // and surface it so the next attempt is diagnosable.
+          AppLogger.error(
+            'open-banking: direct-debit mandate creation FAILED',
+            error: e,
+            stackTrace: st,
+            flow: 'open_banking',
+            fields: {'account_id': account.id, 'user_id': userId},
+          );
           emit(AccountLinkedWithMandate(
             account: account,
             mandateFailed: true,
-            mandateError: 'Auto-debit setup pending. You can set it up later.',
+            mandateError: 'Direct debit setup failed: ${_shortError(e)}',
           ));
         }
       } else {
@@ -178,6 +198,14 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       if (isClosed) return;
       _emitError(e, operation: 'linkAccount');
     }
+  }
+
+  /// Trims a raw exception to a short, user-safe one-liner for the mandate
+  /// error state (the full cause is already logged to Loki).
+  String _shortError(Object e) {
+    var s = e.toString().replaceFirst('Exception: ', '').trim();
+    if (s.length > 120) s = '${s.substring(0, 120)}…';
+    return s.isEmpty ? 'unexpected error' : s;
   }
 
   /// Reauthorize a linked account that has an expired bank session.

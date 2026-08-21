@@ -10,21 +10,35 @@ class RecurringAccessToggle extends StatelessWidget {
   final bool isRecurringEnabled;
   final ValueChanged<bool> onToggle;
 
+  /// Direct Debit requires a verified BVN identity (Mono creates a customer
+  /// keyed on BVN before it can register a mandate). When false the switch is
+  /// LOCKED so the user isn't silently downgraded to DirectPay after linking —
+  /// they see a clear "Verify your BVN" gate + CTA instead.
+  final bool kycVerified;
+
+  /// Invoked when the user taps "Verify BVN" on the locked toggle.
+  final VoidCallback? onVerifyRequested;
+
   const RecurringAccessToggle({
     super.key,
     required this.isRecurringEnabled,
     required this.onToggle,
+    this.kycVerified = true,
+    this.onVerifyRequested,
   });
 
   @override
   Widget build(BuildContext context) {
+    // When BVN isn't verified the mandate can't be created, so never present the
+    // toggle as ON — lock it OFF and route the user to verification.
+    final bool on = isRecurringEnabled && kycVerified;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isRecurringEnabled
+          color: on
               ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.5)
               : Colors.white.withValues(alpha: 0.1),
         ),
@@ -46,7 +60,9 @@ class RecurringAccessToggle extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
-                        isRecurringEnabled ? Icons.link : Icons.looks_one,
+                        !kycVerified
+                            ? Icons.lock_outline
+                            : (on ? Icons.link : Icons.looks_one),
                         color: const Color.fromARGB(255, 78, 3, 208),
                         size: 18.sp,
                       ),
@@ -84,9 +100,11 @@ class RecurringAccessToggle extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            isRecurringEnabled
-                                ? 'Direct Debit: future deposits are instant. No bank approval each time'
-                                : 'You will approve each deposit at your bank (one-time)',
+                            !kycVerified
+                                ? 'Verify your BVN to enable Direct Debit. Until then, deposits use one-time approval'
+                                : (on
+                                    ? 'Direct Debit: future deposits are instant. No bank approval each time'
+                                    : 'You will approve each deposit at your bank (one-time)'),
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 11.sp,
@@ -100,8 +118,10 @@ class RecurringAccessToggle extends StatelessWidget {
               ),
               SizedBox(width: 12.w),
               Switch(
-                value: isRecurringEnabled,
-                onChanged: onToggle,
+                value: on,
+                // Locked until BVN is verified — tapping the switch does nothing;
+                // the "Verify BVN" CTA below is the only way forward.
+                onChanged: kycVerified ? onToggle : null,
                 // On: bright white thumb on a SOLID lighter-violet track — the
                 // old deep purple (#4E03D0) blended into the dark sheet and read
                 // as "off". White-on-violet gives a clearly-visible enabled state.
@@ -112,7 +132,53 @@ class RecurringAccessToggle extends StatelessWidget {
               ),
             ],
           ),
-          if (isRecurringEnabled) ...[
+          if (!kycVerified) ...[
+            SizedBox(height: 12.h),
+            // BVN gate: give the user a direct route to verification instead of
+            // letting them flip the switch and get silently downgraded.
+            GestureDetector(
+              onTap: onVerifyRequested,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.verified_user_outlined,
+                        color: const Color.fromARGB(255, 138, 92, 246), size: 16.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        'Verify your BVN to turn on Direct Debit',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Verify',
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 138, 92, 246),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(width: 2.w),
+                    Icon(Icons.chevron_right,
+                        color: const Color.fromARGB(255, 138, 92, 246), size: 16.sp),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (on) ...[
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(10.w),
