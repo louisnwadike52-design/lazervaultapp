@@ -713,6 +713,12 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           accessToken: authState.profile.session.accessToken,
         );
     if (!mounted) return;
+    // Edge case: don't leave a dangling reference to a bank that no longer
+    // exists — clear it from the source/destination selection if it was picked.
+    setState(() {
+      if (_sourceAccount?.id == account.id) _sourceAccount = null;
+      if (_destinationAccount?.id == account.id) _destinationAccount = null;
+    });
     context
         .read<MandateCubit>()
         .fetchUserMandates(userId: authState.profile.userId);
