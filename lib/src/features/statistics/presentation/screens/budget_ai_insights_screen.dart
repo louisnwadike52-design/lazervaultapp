@@ -45,16 +45,15 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     double monthlyIncome = 0;
     List<Map<String, dynamic>> spendingData = [];
     final statisticsCubit = context.read<StatisticsCubit>();
-    // Ensure real, LINKED-BANK-INCLUSIVE stats exist before composing the AI
-    // prompt. The cubit defaults to `both` (wallet + linked banks) and merges
-    // external-bank analytics into categoryAnalytics/financialAnalytics, but a
-    // prior screen may have left it wallet-only, or it may not have loaded yet
-    // (cold deep link). Switch to include external, then WAIT for a settled
-    // load — loadStatistics() isn't re-entrant, so we await the cubit stream
-    // rather than the call, so the prompt is never built on a stale snapshot.
-    if (statisticsCubit.source == StatisticsSource.lazervault) {
-      statisticsCubit.changeSource(StatisticsSource.both); // triggers a reload
-    } else if (statisticsCubit.state is! StatisticsLoaded) {
+    // Respect the ACTIVE scope the user chose on the analytics page
+    // (Lazervault-only / Bank-only / Both) — the AI must reason about exactly the
+    // tab being viewed, not silently widen to "both" (the old force-to-both here
+    // is why AI insights always reflected everything regardless of the tab, and
+    // made a Lazervault-only view impossible). Any active-bank narrowing the cubit
+    // already applied is preserved. We only kick a load if no stats exist yet
+    // (cold deep link), then await a settled load below so the prompt is never
+    // built on a stale/refreshing snapshot.
+    if (statisticsCubit.state is! StatisticsLoaded) {
       statisticsCubit.loadStatistics();
     }
     final cur = statisticsCubit.state;
@@ -198,7 +197,12 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     // Tell the AI which money sources this spending reflects, so it reasons
     // about linked-bank spend explicitly and notes (rather than silently drops)
     // any bank data it couldn't load. Derived from the loaded scope.
-    final dataSources = <String, dynamic>{'wallet': true};
+    // Reflect the ACTIVE scope so the AI reasons only about the sources actually
+    // in view: wallet is excluded on the Bank-only tab; linked banks on the
+    // Lazervault-only tab.
+    final includesWallet = statsState is! StatisticsLoaded ||
+        statsState.source != StatisticsSource.bank;
+    final dataSources = <String, dynamic>{'wallet': includesWallet};
     if (statsState is StatisticsLoaded) {
       final includesExternal = statsState.source != StatisticsSource.lazervault;
       dataSources['linked_banks'] =

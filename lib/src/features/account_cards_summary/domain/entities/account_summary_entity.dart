@@ -141,8 +141,15 @@ class AccountSummaryEntity extends Equatable {
     return fs == 'frozen' || fs == 'suspended';
   }
 
-  /// Get the display name for the account type
-  String get displayName => accountLabel ?? accountType;
+  /// Get the display name for the account type — this is the account TYPE
+  /// ("Personal", "Investment", "Savings", "Family & Friends", …), used to
+  /// DIFFERENTIATE accounts in every picker/dropdown (Beam, batch, move-money,
+  /// crowdfund). It deliberately does NOT fall back to [accountLabel], because
+  /// the backend fills that with the account-HOLDER name (e.g. "Nnaemeka Chris"),
+  /// which made every account render as the same person's name. The holder name
+  /// / custom label is still available via [accountName]/[accountLabel] for the
+  /// carousel and deposit surfaces that want it.
+  String get displayName => accountType;
 
   /// Get the account type enum
   VirtualAccountType get accountTypeEnum => VirtualAccountType.fromString(accountType);

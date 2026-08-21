@@ -202,8 +202,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     }
 
     if (accounts.isNotEmpty) {
-      // Prefer personal account, fallback to first
-      final personal = accounts.where((a) => a.accountType == 'personal');
+      // Prefer the personal account, fallback to first. Case-insensitive: the
+      // model stores the capitalized display value ("Personal"), so a lowercase
+      // 'personal' compare never matched and the default always fell through.
+      final personal =
+          accounts.where((a) => a.accountType.toLowerCase() == 'personal');
       final selected = personal.isNotEmpty ? personal.first : accounts.first;
       accountManager.setActiveAccount(selected.id);
     }
@@ -959,13 +962,15 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
             isExpanded: true,
             style: TextStyle(color: Colors.white, fontSize: 12.sp),
             items: accounts.map((account) {
-              // Prefer the human-readable account name (Personal / Savings /
-              // Business) over the raw last-4 account number — accounts the
-              // user can name are easier to recognise at a glance.
-              final name = account.accountName;
-              final label = (name != null && name.isNotEmpty)
-                  ? name
-                  : '•••• ${account.accountNumberLast4}';
+              // Show the account TYPE (Personal / Investment / Savings) so the
+              // accounts are DISTINGUISHABLE — accountName is the holder's name
+              // (the same person on every account) and can't differentiate them.
+              // Append the last-4 so two accounts of the same type are still
+              // tellable apart.
+              final last4 = account.accountNumberLast4;
+              final label = (last4.isNotEmpty && last4 != '••••')
+                  ? '${account.accountType} •••• $last4'
+                  : account.accountType;
               return DropdownMenuItem<String>(
                 value: account.id,
                 child: Row(

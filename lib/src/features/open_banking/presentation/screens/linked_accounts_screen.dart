@@ -16,6 +16,11 @@ import '../mixins/linked_balance_refresh_mixin.dart'
 import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
 import 'link_bank_screen.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
+import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -45,6 +50,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   // reauthorizationRequired failure can offer Reconnect for the right bank.
   LinkedBankAccount? _lastRefreshAccount;
   String? _highlightAccountId;
+  // Resolved once in _fetchAccounts (widget.userId may be empty on a deep link).
+  String _userId = '';
 
   @override
   void initState() {
@@ -63,13 +70,58 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   Future<void> _fetchAccounts() async {
     final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
     final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+    _userId = userId;
 
     if (userId.isNotEmpty && accessToken.isNotEmpty) {
       context.read<OpenBankingCubit>().fetchLinkedAccounts(
             userId: userId,
             accessToken: accessToken,
           );
+      // Hydrate the shared MandateCubit so each card shows its Direct-Debit
+      // state (one-time vs recurring mandate) and can manage it — the same
+      // engine the deposit screen uses.
+      serviceLocator<MandateCubit>().fetchUserMandates(userId: userId);
     }
+  }
+
+  /// Builds the shared Direct-Debit state chip for a bank from the MandateCubit
+  /// cache (one-time / setting-up / switching / direct-debit), mirroring the
+  /// deposit screen's `_accessChip`.
+  Widget? _mandateChip(LinkedBankAccount account) {
+    final mandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    final LinkedAccountState state;
+    if (mandate == null) {
+      state = LinkedAccountState.oneTime;
+    } else if (mandate.switchProcessing) {
+      state = LinkedAccountState.switching;
+    } else if (mandate.isActive) {
+      state = LinkedAccountState.directDebit;
+    } else if (mandate.isActivating || mandate.awaitingUserAuthorization) {
+      state = LinkedAccountState.settingUp;
+    } else if (mandate.isPaused) {
+      state = LinkedAccountState.oneTime;
+    } else {
+      state = LinkedAccountState.oneTime;
+    }
+    return LinkedAccountStateChip(
+      state: state,
+      onTap: () => _manageDirectDebit(account),
+    );
+  }
+
+  /// Opens the shared Direct-Debit management sheet (set up / switch one-time↔
+  /// recurring / pause / cancel) for a bank — same sheet the deposit screen uses.
+  void _manageDirectDebit(LinkedBankAccount account) {
+    final MandateEntity? mandate =
+        serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    showMandateManagementBottomSheet(
+      context: context,
+      linkedAccountId: account.id,
+      userId: _userId,
+      bankName: account.bankName,
+      accountName: account.accountName,
+      mandate: mandate,
+    );
   }
 
   Future<String> _getUserId() async {
@@ -367,16 +419,24 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
                       final isRefreshing = refreshingAccountId == account.id;
                       return GestureDetector(
                         onTap: () => _showAccountDetailSheet(account),
-                        child: LinkedAccountCard(
-                          account: account,
-                          isRefreshing: isRefreshing,
-                          onUnlink: () => _onUnlink(account),
-                          onSetDefault: () => _onSetDefault(account),
-                          onReconnect: () =>
-                              startAccountReauthorization(context, account),
-                          onRefreshBalance: isRefreshing
-                              ? null
-                              : () => _onRefreshBalance(account),
+                        // Rebuild the card when mandates change so the Direct-Debit
+                        // badge stays live (setting-up → active, switch, pause…).
+                        child: BlocBuilder<MandateCubit, MandateState>(
+                          bloc: serviceLocator<MandateCubit>(),
+                          builder: (context, _) => LinkedAccountCard(
+                            account: account,
+                            isRefreshing: isRefreshing,
+                            onUnlink: () => _onUnlink(account),
+                            onSetDefault: () => _onSetDefault(account),
+                            onReconnect: () =>
+                                startAccountReauthorization(context, account),
+                            onRefreshBalance: isRefreshing
+                                ? null
+                                : () => _onRefreshBalance(account),
+                            mandateBadge: _mandateChip(account),
+                            onManageDirectDebit: () =>
+                                _manageDirectDebit(account),
+                          ),
                         ),
                       );
                     },

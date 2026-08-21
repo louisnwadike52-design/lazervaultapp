@@ -16,6 +16,15 @@ class LinkedAccountCard extends StatelessWidget {
   /// be a dead button (it previously carried a no-op `// TODO`).
   final VoidCallback? onReconnect;
 
+  /// Optional Direct-Debit state badge (the shared `LinkedAccountStateChip`),
+  /// supplied by the parent from the `MandateCubit`. Makes this card behave like
+  /// the deposit screen's linked-bank card (one-time vs recurring-mandate).
+  final Widget? mandateBadge;
+
+  /// Opens the Direct-Debit management sheet (set up / switch one-time↔recurring
+  /// / pause / cancel) for this bank. When null the menu item is hidden.
+  final VoidCallback? onManageDirectDebit;
+
   const LinkedAccountCard({
     super.key,
     required this.account,
@@ -24,6 +33,8 @@ class LinkedAccountCard extends StatelessWidget {
     this.onSetDefault,
     this.onRefreshBalance,
     this.onReconnect,
+    this.mandateBadge,
+    this.onManageDirectDebit,
   });
 
   @override
@@ -237,6 +248,10 @@ class LinkedAccountCard extends StatelessWidget {
                               ),
                               tooltip: 'Refresh balance',
                             ),
+                      if (mandateBadge != null) ...[
+                        mandateBadge!,
+                        SizedBox(width: 6.w),
+                      ],
                       PopupMenuButton<String>(
                         color: const Color(0xFF1F1F1F),
                         icon: Icon(
@@ -252,9 +267,24 @@ class LinkedAccountCard extends StatelessWidget {
                             case 'default':
                               onSetDefault?.call();
                               break;
+                            case 'direct_debit':
+                              onManageDirectDebit?.call();
+                              break;
                           }
                         },
                         itemBuilder: (context) => [
+                          if (onManageDirectDebit != null)
+                            const PopupMenuItem(
+                              value: 'direct_debit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.bolt_rounded, size: 20, color: Color(0xFF10B981)),
+                                  SizedBox(width: 8),
+                                  Text('Manage Direct Debit',
+                                      style: TextStyle(color: Colors.white)),
+                                ],
+                              ),
+                            ),
                           if (!account.isDefault)
                             const PopupMenuItem(
                               value: 'default',
