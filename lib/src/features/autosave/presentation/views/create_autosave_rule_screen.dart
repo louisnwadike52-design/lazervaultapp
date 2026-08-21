@@ -43,6 +43,9 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/core/config/mono_config.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_autosave_rule_screen_part1.dart';
 part 'create_autosave_rule_screen_part2.dart';
@@ -1128,12 +1131,18 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 );
               }
               if (accounts.isEmpty) {
-                return _PreviewCard(
-                  tint: _inflowTint,
-                  icon: Icons.link_off_rounded,
-                  title: 'No linked banks yet',
-                  body:
-                      'Link a bank account first (Deposit → Link bank). Once linked, it shows up here.',
+                return Column(
+                  children: [
+                    _PreviewCard(
+                      tint: _inflowTint,
+                      icon: Icons.link_off_rounded,
+                      title: 'No linked banks yet',
+                      body:
+                          'Link your bank to fund autosave by Direct Debit — no need to leave for the Deposit screen.',
+                    ),
+                    SizedBox(height: 12.h),
+                    _linkBankButton(label: 'Link a bank'),
+                  ],
                 );
               }
               return BlocBuilder<MandateCubit, MandateState>(
@@ -1151,6 +1160,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                       ),
                       SizedBox(height: 12.h),
                     ],
+                    _linkBankButton(label: 'Link another bank'),
                   ],
                 ),
               );
@@ -1195,6 +1205,72 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// Link a new bank in-flow — no more "go to Deposit to link". Same Mono link
+  /// flow the deposit/analytics screens use. autoCreateMandate:true because
+  /// autosave DEBITS the account; if the mandate can't be created (e.g. BVN not
+  /// verified) the cubit surfaces it and the user finishes setup by tapping the
+  /// bank row (management sheet). After linking we refresh accounts + mandates so
+  /// the new bank appears here immediately.
+  Future<void> _linkBankForAutosave() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    if (!MonoConfig.isEnabled) {
+      setState(() => _stepError =
+          'Bank linking is not available right now. Please try again later.');
+      return;
+    }
+    final user = authState.profile.user;
+    final customerName = '${user.firstName} ${user.lastName}'.trim();
+    final proceed = await showBankConnectionFeeNotice(context);
+    if (!proceed || !mounted) return;
+    final txnId = 'link-${DateTime.now().millisecondsSinceEpoch}';
+    final result = await showMonoConnectBottomSheet(
+      context: context,
+      publicKey: MonoConfig.publicKey,
+      customerName: customerName.isNotEmpty ? customerName : null,
+      customerEmail: user.email.isNotEmpty ? user.email : null,
+      reference: 'lzv_autosave_${DateTime.now().millisecondsSinceEpoch}',
+    );
+    if (result == null || !mounted) return;
+    final obc = context.read<OpenBankingCubit>();
+    await obc.linkAccount(
+      userId: user.id,
+      code: result.code,
+      accessToken: authState.profile.session.accessToken,
+      setAsDefault: obc.linkedAccounts.isEmpty,
+      transactionId: txnId,
+      // autosave needs to debit the account → set up the Direct Debit mandate.
+      autoCreateMandate: true,
+      userEmail: user.email.isNotEmpty ? user.email : null,
+      userName: customerName.isNotEmpty ? customerName : null,
+      userPhone: user.phoneNumber,
+    );
+    if (!mounted) return;
+    context.read<MandateCubit>().fetchUserMandates(userId: user.id);
+  }
+
+  /// The in-flow "Link a bank" CTA (replaces the old "go to Deposit" copy).
+  Widget _linkBankButton({required String label}) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _linkBankForAutosave,
+        icon: Icon(Icons.add_link_rounded, size: 18.sp, color: _inflowTint),
+        label: Text(label,
+            style: TextStyle(
+                color: _inflowTint,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600)),
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          side: BorderSide(color: _inflowTint.withValues(alpha: 0.5)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
       ),
     );
   }

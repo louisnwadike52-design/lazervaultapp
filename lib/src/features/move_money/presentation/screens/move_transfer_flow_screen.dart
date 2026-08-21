@@ -663,12 +663,59 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       bankName: account.bankName,
       accountName: account.accountName,
       mandate: mandate,
+      onUnlink: () => _confirmUnlinkBank(account),
     );
     if (mounted) {
       mandateCubit.fetchUserMandates(
         userId: authState.profile.userId,
       );
     }
+  }
+
+  /// Unlink a linked bank from the Beam flow (parity with the deposit/linked-
+  /// banks screens). Confirms first, then removes it via OpenBankingCubit (which
+  /// cancels any mandate on it) and refreshes the list.
+  Future<void> _confirmUnlinkBank(LinkedBankAccount account) async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r)),
+        title: const Text('Unlink bank',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        content: Text(
+          'Remove ${account.bankName} (${account.displayAccountNumber})? '
+          'Any Direct Debit on it is cancelled. You can re-link anytime.',
+          style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Keep',
+                style: TextStyle(color: Color(0xFF9CA3AF))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Unlink',
+                style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await context.read<OpenBankingCubit>().unlinkAccount(
+          accountId: account.id,
+          userId: authState.profile.userId,
+          accessToken: authState.profile.session.accessToken,
+        );
+    if (!mounted) return;
+    context
+        .read<MandateCubit>()
+        .fetchUserMandates(userId: authState.profile.userId);
   }
 
   /// Handle DirectPay authorization when transfer requires it (no mandate).

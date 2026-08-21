@@ -21,6 +21,9 @@ Future<void> showMandateManagementBottomSheet({
   required String bankName,
   required String accountName,
   required MandateEntity? mandate,
+  // When provided, an "Unlink bank" action is shown (dismisses the sheet, then
+  // runs this). Null default → existing callers are unchanged.
+  VoidCallback? onUnlink,
 }) async {
   await showModalBottomSheet(
     context: context,
@@ -42,6 +45,7 @@ Future<void> showMandateManagementBottomSheet({
         bankName: bankName,
         accountName: accountName,
         mandate: mandate,
+        onUnlink: onUnlink,
       ),
     ),
   );
@@ -53,6 +57,7 @@ class _MandateManagementSheet extends StatefulWidget {
   final String bankName;
   final String accountName;
   final MandateEntity? mandate;
+  final VoidCallback? onUnlink;
 
   const _MandateManagementSheet({
     required this.linkedAccountId,
@@ -60,6 +65,7 @@ class _MandateManagementSheet extends StatefulWidget {
     required this.bankName,
     required this.accountName,
     required this.mandate,
+    this.onUnlink,
   });
 
   @override
@@ -318,6 +324,26 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                       accountName: widget.accountName,
                     );
                   },
+                ),
+              ],
+
+              // Unlink bank — only when the caller wired it (e.g. LazerBeam).
+              // Removes the bank entirely (and any mandate with it); confirmation
+              // is handled by the caller's onUnlink.
+              if (widget.onUnlink != null) ...[
+                SizedBox(height: 12.h),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    widget.onUnlink!.call();
+                  },
+                  icon: Icon(Icons.link_off_rounded,
+                      size: 18.sp, color: Colors.redAccent),
+                  label: Text('Unlink bank',
+                      style: TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
 
