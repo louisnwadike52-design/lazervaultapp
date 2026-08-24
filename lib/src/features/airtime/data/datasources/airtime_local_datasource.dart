@@ -1,3 +1,5 @@
+import 'package:lazervault/core/utils/ng_network_prefixes.dart';
+
 import '../models/airtime_transaction_model.dart';
 import '../models/country_model.dart';
 import '../models/network_provider_model.dart';
@@ -628,9 +630,11 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'shortName': 'MTN',
       'type': 'mtn',
       'countryCode': 'NG',
-      // Per NCC allocation tables: MTN owns 0803 0806 0810 0813 0814 0816
-      // 0903 0906 0913 0916 plus the 0704 prefix from the Visafone takeover.
-      'prefixes': ['0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906', '0913', '0916', '0704'],
+      // Sourced from the shared canonical NCC map (NgNetworkPrefixes) so
+      // airtime and data detection can never drift apart again — this local
+      // copy used to miss 0703/0706/0707 and stranded those users on
+      // "detecting…".
+      'prefixes': NgNetworkPrefixes.localForm('mtn'),
       'logo': 'assets/images/mtn_logo.png',
       'primaryColor': '#FFCC00',
       'isActive': true,
@@ -645,9 +649,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'shortName': 'Airtel',
       'type': 'airtel',
       'countryCode': 'NG',
-      // Per NCC: Airtel owns 0801 0802 0808 0812 plus 0901 0902 0904 0907 0912.
-      // Adding 0801 and 0902 fixes "stuck at detecting" for those prefixes.
-      'prefixes': ['0801', '0802', '0808', '0812', '0901', '0902', '0904', '0907', '0912'],
+      'prefixes': NgNetworkPrefixes.localForm('airtel'),
       'logo': 'assets/images/airtel_logo.png',
       'primaryColor': '#FF0000',
       'isActive': true,
@@ -661,8 +663,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'name': 'Globacom Nigeria',
       'type': 'glo',
       'countryCode': 'NG',
-      // Per NCC: Glo owns 0805 0807 0811 0815 plus 0905 0915.
-      'prefixes': ['0805', '0807', '0811', '0815', '0905', '0915'],
+      'prefixes': NgNetworkPrefixes.localForm('glo'),
       'logoUrl': null,
       'primaryColor': '#00FF00',
       'isActive': true,
@@ -674,7 +675,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'name': '9mobile Nigeria',
       'type': 'ninemobile',
       'countryCode': 'NG',
-      'prefixes': ['0809', '0817', '0818', '0908', '0909'],
+      'prefixes': NgNetworkPrefixes.localForm('etisalat'),
       'logoUrl': null,
       'primaryColor': '#009900',
       'isActive': true,
@@ -874,7 +875,6 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
 
   @override
   Future<List<NetworkProviderModel>> getNetworkProviders(String countryCode) async {
-    await Future.delayed(const Duration(milliseconds: 500));
     final providers = _networkProvidersData
         .where((provider) => provider['countryCode'] == countryCode)
         .map((data) => NetworkProviderModel.fromJson(data))
@@ -896,8 +896,6 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
 
   @override
   Future<NetworkProviderModel?> detectNetworkFromPhoneNumber(String phoneNumber, String countryCode) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    
     // Clean phone number
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
 

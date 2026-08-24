@@ -4,9 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:lazervault/core/services/injection_container.dart';
+
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../../../../core/widgets/reminder_pause_resume_mixin.dart';
+import '../../domain/repositories/airtime_repository.dart';
 import '../cubit/airtime_reminder_cubit.dart';
 import '../cubit/airtime_reminder_state.dart';
 import '../cubit/airtime_state.dart' show AirtimeReminder;
@@ -30,10 +33,27 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
   /// complete/delete refetches don't flash a full-screen shimmer.
   List<AirtimeReminder>? _cachedList;
 
+  /// id → beneficiary phone, so "Top up now" can hand the recipient's number
+  /// to the purchase flow instead of landing on a blank form. Best-effort —
+  /// a failed load just means no prefill.
+  Map<String, String> _contactPhoneById = const {};
+
   @override
   void initState() {
     super.initState();
     context.read<AirtimeReminderCubit>().getReminders(includePast: true);
+    _loadContacts();
+  }
+
+  Future<void> _loadContacts() async {
+    try {
+      final list =
+          await serviceLocator<AirtimeRepository>().getAirtimeBeneficiaries();
+      if (!mounted) return;
+      setState(() => _contactPhoneById = {
+            for (final b in list) b.id: b.phoneNumber,
+          });
+    } catch (_) {/* best-effort */}
   }
 
   DateTime? _parseDate(String iso) {
@@ -128,8 +148,16 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
   }
 
   void _payNow(AirtimeReminder r) {
-    // Send the user into the normal airtime purchase flow.
-    Get.toNamed(AppRoutes.airtimePurchase);
+    // Send the user into the normal airtime purchase flow with the linked
+    // contact's number (and the reminder's amount) prefilled when we have it.
+    // The purchase screen only prefills under its repeat-purchase hand-off,
+    // which locks the phone to the recipient — exactly right for a reminder.
+    final phone = _contactPhoneById[r.beneficiaryId ?? ''] ?? '';
+    Get.toNamed(AppRoutes.airtimePurchase, arguments: {
+      if (phone.isNotEmpty) 'isRepeat': true,
+      if (phone.isNotEmpty) 'phoneNumber': phone,
+      if ((r.amount ?? 0) > 0) 'amount': r.amount,
+    });
   }
 
   @override

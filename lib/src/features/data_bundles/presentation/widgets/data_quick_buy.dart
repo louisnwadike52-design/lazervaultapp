@@ -14,6 +14,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/utils/ng_network_prefixes.dart';
 import 'package:lazervault/core/widgets/bill_auto_recharge_create_sheet.dart';
 import 'package:lazervault/core/widgets/network_logo.dart';
 import 'package:lazervault/core/widgets/save_beneficiary_controls.dart';
@@ -57,20 +58,6 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   static const _border = Color(0xFF2D2D2D);
   static const _muted = Color(0xFF9CA3AF);
   static const _currency = 'NGN';
-
-  /// NG mobile prefixes → backend data network code (leading-0-stripped first 3
-  /// digits). Same catalogue the old data_recipient_input_screen used.
-  static const Map<String, Set<String>> _networkPrefixes = {
-    'mtn-data': {
-      '703', '704', '706', '707', '801', '803', '806', '810',
-      '813', '814', '816', '903', '906', '913', '916',
-    },
-    'airtel-data': {
-      '701', '708', '802', '808', '812', '901', '902', '904', '907', '912',
-    },
-    'glo-data': {'705', '805', '807', '811', '815', '905', '915'},
-    'etisalat-data': {'809', '817', '818', '908', '909'},
-  };
 
   static const Map<String, (String, int)> _netMeta = {
     'mtn-data': ('MTN', 0xFFFFCC00),
@@ -177,6 +164,18 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   }
 
   Future<void> _prefillFromProfile() async {
+    // A hand-off (reminder "top up", repeat purchase, beneficiary pick) may
+    // navigate here with the recipient's number — that wins over the user's
+    // own profile number.
+    final args = Get.arguments;
+    if (args is Map) {
+      final v = args['phoneNumber'];
+      final argPhone = _toLocalNg(v is String ? v : '');
+      if (argPhone.isNotEmpty && _phoneController.text.isEmpty) {
+        _phoneController.text = argPhone; // listener triggers detection
+        return;
+      }
+    }
     try {
       final raw =
           await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
@@ -201,16 +200,10 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
   }
 
   String? _detectNetworkCode(String phone) {
-    var d = phone.replaceAll(RegExp(r'[^\d]'), '');
-    // Accept the number with or without the leading zero (0803… vs 803…). The
-    // +234 country code is a separate beside-field widget, not part of this value.
-    if (d.startsWith('0')) d = d.substring(1);
-    if (d.length < 3) return null;
-    final prefix = d.substring(0, 3);
-    for (final e in _networkPrefixes.entries) {
-      if (e.value.contains(prefix)) return e.key;
-    }
-    return null;
+    // Shared canonical NCC prefix map (same source airtime uses), mapped to
+    // the backend's data network code ("mtn" → "mtn-data").
+    final ticker = NgNetworkPrefixes.detect(phone);
+    return ticker == null ? null : '$ticker-data';
   }
 
   void _detectAndLoad() {

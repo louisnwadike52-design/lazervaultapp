@@ -238,7 +238,11 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
                       );
                     }
 
-                    return const SizedBox.shrink();
+                    // Initial state (entered without a network arg, so
+                    // initState never fetched) or a foreign state left on
+                    // this shared cubit — never render a dead blank grid.
+                    return _buildErrorState(
+                        'Unable to load data plans', network);
                   },
                 ),
               ),

@@ -143,7 +143,12 @@ class _DataRemindersScreenState extends State<DataRemindersScreen>
   }
 
   void _payNow(DataReminder r) {
-    Get.toNamed(AppRoutes.dataBundlesHome);
+    // Hand the linked contact's number to the quick-buy so "pay now" lands
+    // with the recipient prefilled + network auto-detected, not a blank form.
+    final b = _contactsById[r.beneficiaryId];
+    Get.toNamed(AppRoutes.dataBundlesHome, arguments: {
+      if (b != null && b.phoneNumber.isNotEmpty) 'phoneNumber': b.phoneNumber,
+    });
   }
 
   @override

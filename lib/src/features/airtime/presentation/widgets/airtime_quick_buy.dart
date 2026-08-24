@@ -156,6 +156,18 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   }
 
   Future<void> _prefillFromProfile() async {
+    // A hand-off (reminder "top up", repeat purchase, beneficiary pick) may
+    // navigate here with the recipient's number — that wins over the user's
+    // own profile number.
+    final args = Get.arguments;
+    if (args is Map) {
+      final v = args['phoneNumber'];
+      final argPhone = _toLocalNg(v is String ? v : '');
+      if (argPhone.isNotEmpty && _phoneController.text.isEmpty) {
+        _phoneController.text = argPhone; // triggers _onPhoneChanged → detect
+        return;
+      }
+    }
     try {
       final raw =
           await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
