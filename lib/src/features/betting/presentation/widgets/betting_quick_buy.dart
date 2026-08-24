@@ -12,10 +12,12 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/widgets/biller_logo.dart';
+import 'package:lazervault/core/widgets/save_beneficiary_controls.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../cubit/betting_cubit.dart';
 import '../cubit/betting_state.dart';
+import '../../domain/repositories/betting_repository.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 
@@ -59,6 +61,14 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
   Timer? _debounce;
   StreamSubscription<BettingState>? _sub;
 
+  // ── Save-recipient — the funding RPC persists (platform, account, name,
+  // nickname) server-side when the flag is on. Saved list loaded once so an
+  // already-saved account shows a passive row instead of inviting a duplicate.
+  bool _saveBeneficiary = false;
+  String? _saveNickname;
+  List<BettingBeneficiary> _beneficiaries = const [];
+  BettingBeneficiary? _existingBeneficiary;
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +83,37 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
     }
     _accountController.addListener(_onAccountChanged);
     _prefillPhone();
+    _loadSavedBeneficiaries();
+  }
+
+  /// Best-effort read of saved betting accounts for the duplicate-save guard.
+  Future<void> _loadSavedBeneficiaries() async {
+    try {
+      final list =
+          await serviceLocator<BettingRepository>().getBeneficiaries();
+      if (!mounted) return;
+      setState(() => _beneficiaries = list);
+      _recomputeExistingBeneficiary();
+    } catch (_) {/* best-effort — dedup just won't pre-flag */}
+  }
+
+  /// Match (platform, typed account id) against the saved list.
+  void _recomputeExistingBeneficiary() {
+    final typed = _accountController.text.trim().toLowerCase();
+    final plat = _platform?.code;
+    BettingBeneficiary? found;
+    if (typed.isNotEmpty) {
+      for (final b in _beneficiaries) {
+        if (b.accountUserid.trim().toLowerCase() == typed &&
+            (plat == null || b.platform == plat)) {
+          found = b;
+          break;
+        }
+      }
+    }
+    if (found?.id != _existingBeneficiary?.id) {
+      setState(() => _existingBeneficiary = found);
+    }
   }
 
   @override
@@ -125,10 +166,12 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
       _verification = null;
       _verifyError = null;
     });
+    _recomputeExistingBeneficiary();
     if (_accountController.text.trim().length >= 4) _verify();
   }
 
   void _onAccountChanged() {
+    _recomputeExistingBeneficiary();
     _debounce?.cancel();
     if (_verification != null || _verifyError != null) {
       setState(() {
@@ -221,7 +264,10 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
               transactionId: txnId,
               verificationToken: token,
               idempotencyKey: txnId,
-              saveBeneficiary: false,
+              // Server-side save of the VERIFIED account — never when it's
+              // already in the saved list (duplicate guard).
+              saveBeneficiary: _saveBeneficiary && _existingBeneficiary == null,
+              nickname: _saveNickname,
             );
             result = await completer.future.timeout(const Duration(seconds: 90));
           } finally {
@@ -326,10 +372,61 @@ class _BettingQuickBuyState extends State<BettingQuickBuy>
           SizedBox(height: 20.h),
           _confirmationCard(),
         ],
+        SizedBox(height: 14.h),
+        _saveRecipientToggle(),
         SizedBox(height: 16.h),
         _payButton(),
       ],
     );
+  }
+
+  /// Save-recipient control (same pattern as airtime/data/internet): passive
+  /// "already saved" row for a known account, otherwise a switch that opens
+  /// the nickname prompt on ON. The save itself runs server-side inside the
+  /// funding RPC, so only a successfully verified+funded account is saved.
+  Widget _saveRecipientToggle() {
+    if (_existingBeneficiary != null) {
+      final b = _existingBeneficiary!;
+      return SavedBeneficiaryInfoRow(
+        title: 'Account already saved',
+        subtitle:
+            'Saved as "${b.nickname.isNotEmpty ? b.nickname : b.accountUserid}"',
+      );
+    }
+    return SaveBeneficiaryToggleRow(
+      accent: _accent,
+      title: 'Save this account',
+      subtitle: _saveBeneficiary && (_saveNickname?.isNotEmpty ?? false)
+          ? 'Nickname: ${_saveNickname!}'
+          : 'Fund this account faster next time',
+      value: _saveBeneficiary,
+      onChanged: _onToggleSaveRecipient,
+    );
+  }
+
+  Future<void> _onToggleSaveRecipient(bool value) async {
+    if (!value) {
+      setState(() {
+        _saveBeneficiary = false;
+        _saveNickname = null;
+      });
+      return;
+    }
+    final nickname = await promptBeneficiaryNickname(
+      context,
+      accent: _accent,
+      title: 'Save this account',
+      prompt: 'Give this account a nickname so you can find it fast next time.',
+      hint: 'e.g. My Bet9ja, Main account',
+      initial: _saveNickname ?? '',
+    );
+    if (!mounted) return;
+    setState(() {
+      _saveBeneficiary = true;
+      if (nickname != null && nickname.trim().isNotEmpty) {
+        _saveNickname = nickname.trim();
+      }
+    });
   }
 
   Widget _label(String t) => Text(t,
